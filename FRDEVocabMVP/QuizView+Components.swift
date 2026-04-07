@@ -137,6 +137,14 @@ var quizSessionScreen: some View {
             systemImage: "lightbulb.fill"
         )
 
+        Button {
+            resetQuizToSetup()
+        } label: {
+            Label("Zurück zur Auswahl", systemImage: "arrow.left")
+                .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))
+
         AppSurfaceCard(tint: sectionStyle.accent) {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 HStack {

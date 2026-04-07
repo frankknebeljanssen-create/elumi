@@ -42,9 +42,7 @@ extension QuizView {
 
     func updateHoveredAnswer(for promptID: UUID) {
         selectedPromptID = promptID
-        selectedAnswerID = hoveredAnswerID
         hoveredAnswerID = droppedAnswerID(for: promptID)
-        selectedAnswerID = hoveredAnswerID
     }
 
     func finishDrag(for promptID: UUID, in question: QuizMatchingQuestion) {

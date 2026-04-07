@@ -142,17 +142,17 @@ extension QuizView {
                         ForEach(question.shuffledAnswers) { pair in
                             Text(visibleQuizAnswerText(pair.answer, category: question.category))
                                 .font(AppTheme.Typography.body)
-                                .foregroundStyle(matchingTextColor(for: pair.id))
+                                .foregroundStyle(matchingTextColor(for: pair.id, isAnswerSide: true))
                                 .multilineTextAlignment(.center)
                                 .frame(maxWidth: .infinity, minHeight: 72)
                                 .padding(.horizontal, AppTheme.Spacing.sm)
-                                .background(matchingBackground(for: pair.id))
+                                .background(matchingBackground(for: pair.id, isAnswerSide: true))
                                 .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                                        .stroke(matchingBorderColor(for: pair.id), lineWidth: matchingBorderWidth(for: pair.id))
+                                        .stroke(matchingBorderColor(for: pair.id, isAnswerSide: true), lineWidth: matchingBorderWidth(for: pair.id, isAnswerSide: true))
                                 )
-                                .shadow(color: matchingShadowColor(for: pair.id), radius: 8, x: 0, y: 4)
+                                .shadow(color: matchingShadowColor(for: pair.id, isAnswerSide: true), radius: 8, x: 0, y: 4)
                                 .scaleEffect(1)
                                 .background(
                                     GeometryReader { geo in
@@ -231,56 +231,65 @@ extension QuizView {
         return "circle.fill"
     }
 
-    func matchingBackground(for pairID: UUID) -> Color {
+    func matchingBackground(for pairID: UUID, isAnswerSide: Bool = false) -> Color {
         if matchedPairIDs.contains(pairID) {
             return AppTheme.Colors.success.opacity(0.18)
         }
         if pairID == flashingPromptID || pairID == flashingAnswerID {
             return AppTheme.Colors.error.opacity(0.2)
         }
-        if pairID == draggingPromptID {
+        if !isAnswerSide, pairID == draggingPromptID {
             return AppTheme.Colors.warning.opacity(0.22)
         }
-        if pairID == selectedPromptID || pairID == selectedAnswerID {
+        if !isAnswerSide, pairID == selectedPromptID {
+            return AppTheme.Colors.primary.opacity(0.14)
+        }
+        if isAnswerSide, pairID == selectedAnswerID {
             return AppTheme.Colors.primary.opacity(0.14)
         }
         return AppTheme.Colors.secondarySurface
     }
 
-    func matchingTextColor(for pairID: UUID) -> Color {
+    func matchingTextColor(for pairID: UUID, isAnswerSide: Bool = false) -> Color {
         if matchedPairIDs.contains(pairID) {
             return AppTheme.Colors.success
         }
         if pairID == flashingPromptID || pairID == flashingAnswerID {
             return AppTheme.Colors.error
         }
-        if pairID == draggingPromptID {
+        if !isAnswerSide, pairID == draggingPromptID {
             return AppTheme.Colors.warning
         }
-        if pairID == selectedPromptID || pairID == selectedAnswerID {
+        if !isAnswerSide, pairID == selectedPromptID {
+            return AppTheme.Colors.primary
+        }
+        if isAnswerSide, pairID == selectedAnswerID {
             return AppTheme.Colors.primary
         }
         return AppTheme.Colors.textPrimary
     }
 
-    func matchingBorderColor(for pairID: UUID) -> Color {
+    func matchingBorderColor(for pairID: UUID, isAnswerSide: Bool = false) -> Color {
         if matchedPairIDs.contains(pairID) {
             return AppTheme.Colors.success.opacity(0.7)
         }
         if pairID == flashingPromptID || pairID == flashingAnswerID {
             return AppTheme.Colors.error.opacity(0.75)
         }
-        if pairID == draggingPromptID {
+        if !isAnswerSide, pairID == draggingPromptID {
             return AppTheme.Colors.warning.opacity(0.92)
         }
-        if pairID == selectedPromptID || pairID == selectedAnswerID {
+        if !isAnswerSide, pairID == selectedPromptID {
+            return AppTheme.Colors.primary.opacity(0.45)
+        }
+        if isAnswerSide, pairID == selectedAnswerID {
             return AppTheme.Colors.primary.opacity(0.45)
         }
         return AppTheme.Colors.borderStrong
     }
 
-    func matchingBorderWidth(for pairID: UUID) -> CGFloat {
-        if pairID == draggingPromptID {
+    func matchingBorderWidth(for pairID: UUID, isAnswerSide: Bool = false) -> CGFloat {
+        if !isAnswerSide, pairID == draggingPromptID {
             return 2
         }
         if matchedPairIDs.contains(pairID) || pairID == flashingPromptID || pairID == flashingAnswerID {
@@ -289,14 +298,14 @@ extension QuizView {
         return 1
     }
 
-    func matchingShadowColor(for pairID: UUID) -> Color {
+    func matchingShadowColor(for pairID: UUID, isAnswerSide: Bool = false) -> Color {
         if matchedPairIDs.contains(pairID) {
             return AppTheme.Colors.success.opacity(0.18)
         }
         if pairID == flashingPromptID || pairID == flashingAnswerID {
             return AppTheme.Colors.error.opacity(0.18)
         }
-        if pairID == draggingPromptID {
+        if !isAnswerSide, pairID == draggingPromptID {
             return AppTheme.Colors.warning.opacity(0.24)
         }
         return AppTheme.Colors.shadow
