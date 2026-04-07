@@ -8,17 +8,17 @@ extension LexiconViewModel {
     ) async {
         lexiconReloadGeneration += 1
         let generation = lexiconReloadGeneration
-        if showLoadingState {
-            isLoadingLexiconEntries = true
-        }
+        isLoadingLexiconEntries = true
 
         let customItems = customLists
             .flatMap(\.items)
             .filter { $0.sourceLanguage == .french }
-        let reloadPriority: TaskPriority = showLoadingState ? .userInitiated : .utility
 
-        let curatedEntries = await Task.detached(priority: reloadPriority) {
-            DataStore.curatedLexiconEntries(with: customItems)
+        let curatedEntries = await Task.detached(priority: .userInitiated) {
+            let start = CFAbsoluteTimeGetCurrent()
+            let entries = DataStore.curatedLexiconEntries(with: customItems)
+            print("⏱ [Lexikon] curatedLexiconEntries: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms (\(entries.count) entries)")
+            return entries
         }.value
 
         guard generation == lexiconReloadGeneration else { return }

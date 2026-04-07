@@ -160,13 +160,14 @@ extension QuizBuildService {
                 category: card.category,
                 sourceHint: frenchHint
             )
-            let promptKey = normalizedLookupText(prompt)
-            let answerKey = normalizedLookupText(answer)
+            let promptKey = fastQuizKey(prompt)
+            let answerKey = fastQuizKey(answer)
 
             guard !promptKey.isEmpty, !answerKey.isEmpty else { continue }
             let uniqueKey = [promptKey, answerKey, card.category].joined(separator: "|")
             guard seen.insert(uniqueKey).inserted else { continue }
 
+            let hasArticle = startsWithGermanArticle(answer)
             candidates.append(
                 QuizCandidate(
                     id: uniqueKey,
@@ -180,15 +181,21 @@ extension QuizBuildService {
                     promptWordCount: prompt.split(separator: " ").count,
                     answerWordCount: answer.split(separator: " ").count,
                     answerCharacterCount: answer.count,
-                    answerHasArticle: startsWithGermanArticle(answer),
+                    answerHasArticle: hasArticle,
                     answerLeadingArticle: leadingGermanArticle(in: answer),
-                    answerInitial: answerKey.split(separator: " ").dropFirst(startsWithGermanArticle(answer) ? 1 : 0).first.map { String($0.prefix(1)) } ?? String(answerKey.prefix(1)),
+                    answerInitial: answerKey.split(separator: " ").dropFirst(hasArticle ? 1 : 0).first.map { String($0.prefix(1)) } ?? String(answerKey.prefix(1)),
                     isPhrase: card.category == CardType.phrases.categoryName
                 )
             )
         }
 
         return candidates
+    }
+
+    private static func fastQuizKey(_ text: String) -> String {
+        text.folding(options: .diacriticInsensitive, locale: .current)
+            .lowercased()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     static func nextQuizPromptCandidate(

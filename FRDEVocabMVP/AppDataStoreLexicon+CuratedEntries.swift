@@ -17,12 +17,10 @@ extension DataStoreLexiconSupport {
         let curatedEntries = SupplementalFreeDictLexicon.enrichMissingGenderInfo(in: mergeLexiconEntries(
             internalLexiconEntries + customLexiconEntries(from: customItems)
         )).sorted {
-            let lhs = $0.sourceTerm.folding(options: String.CompareOptions.diacriticInsensitive, locale: Locale.current).lowercased()
-            let rhs = $1.sourceTerm.folding(options: String.CompareOptions.diacriticInsensitive, locale: Locale.current).lowercased()
-            if lhs == rhs {
-                return $0.targetTerm.lowercased() < $1.targetTerm.lowercased()
+            if $0.sourceSortKey == $1.sourceSortKey {
+                return $0.targetSortKey < $1.targetSortKey
             }
-            return lhs < rhs
+            return $0.sourceSortKey < $1.sourceSortKey
         }
 
         curatedLexiconEntriesCacheLock.lock()
@@ -35,16 +33,31 @@ extension DataStoreLexiconSupport {
         return curatedEntries
     }
 
-    static let curatedInternalLexiconEntries: [LexiconEntry] = SupplementalFreeDictLexicon.enrichMissingGenderInfo(in: mergeLexiconEntries(
-        internalLexiconEntries
-    )).sorted {
-        let lhs = $0.sourceTerm.folding(options: String.CompareOptions.diacriticInsensitive, locale: Locale.current).lowercased()
-        let rhs = $1.sourceTerm.folding(options: String.CompareOptions.diacriticInsensitive, locale: Locale.current).lowercased()
-        if lhs == rhs {
-            return $0.targetTerm.lowercased() < $1.targetTerm.lowercased()
+    static let curatedInternalLexiconEntries: [LexiconEntry] = {
+        let totalStart = CFAbsoluteTimeGetCurrent()
+        var start = CFAbsoluteTimeGetCurrent()
+        let internal_ = internalLexiconEntries
+        print("⏱ [CuratedLexicon] internalLexiconEntries: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms (\(internal_.count) entries)")
+
+        start = CFAbsoluteTimeGetCurrent()
+        let merged = mergeLexiconEntries(internal_)
+        print("⏱ [CuratedLexicon] mergeLexiconEntries: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms (\(merged.count) entries)")
+
+        start = CFAbsoluteTimeGetCurrent()
+        let enriched = SupplementalFreeDictLexicon.enrichMissingGenderInfo(in: merged)
+        print("⏱ [CuratedLexicon] enrichMissingGenderInfo: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
+
+        start = CFAbsoluteTimeGetCurrent()
+        let sorted = enriched.sorted {
+            if $0.sourceSortKey == $1.sourceSortKey {
+                return $0.targetSortKey < $1.targetSortKey
+            }
+            return $0.sourceSortKey < $1.sourceSortKey
         }
-        return lhs < rhs
-    }
+        print("⏱ [CuratedLexicon] sort: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
+        print("⏱ [CuratedLexicon] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
+        return sorted
+    }()
 
     static func makeInternalLexiconEntries() -> [LexiconEntry] {
         var entries: [LexiconEntry] = []
@@ -113,12 +126,10 @@ extension DataStoreLexiconSupport {
         }
 
         return entries.sorted {
-            let lhs = $0.sourceTerm.folding(options: String.CompareOptions.diacriticInsensitive, locale: Locale.current).lowercased()
-            let rhs = $1.sourceTerm.folding(options: String.CompareOptions.diacriticInsensitive, locale: Locale.current).lowercased()
-            if lhs == rhs {
-                return $0.targetTerm.lowercased() < $1.targetTerm.lowercased()
+            if $0.sourceSortKey == $1.sourceSortKey {
+                return $0.targetSortKey < $1.targetSortKey
             }
-            return lhs < rhs
+            return $0.sourceSortKey < $1.sourceSortKey
         }
     }
 

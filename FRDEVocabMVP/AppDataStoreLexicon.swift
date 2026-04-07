@@ -12,12 +12,10 @@ enum DataStoreLexiconSupport {
             curatedLexiconEntries(with: customItems)
             + SupplementalFreeDictLexicon.lexiconEntries()
         ).sorted {
-            let lhs = $0.sourceTerm.folding(options: String.CompareOptions.diacriticInsensitive, locale: Locale.current).lowercased()
-            let rhs = $1.sourceTerm.folding(options: String.CompareOptions.diacriticInsensitive, locale: Locale.current).lowercased()
-            if lhs == rhs {
-                return $0.targetTerm.lowercased() < $1.targetTerm.lowercased()
+            if $0.sourceSortKey == $1.sourceSortKey {
+                return $0.targetSortKey < $1.targetSortKey
             }
-            return lhs < rhs
+            return $0.sourceSortKey < $1.sourceSortKey
         }
     }
 
@@ -26,12 +24,10 @@ enum DataStoreLexiconSupport {
             curatedLexiconEntries(with: customItems)
             + SupplementalFreeDictLexicon.previewLexiconEntries(limit: supplementLimit)
         ).sorted {
-            let lhs = $0.sourceTerm.folding(options: String.CompareOptions.diacriticInsensitive, locale: Locale.current).lowercased()
-            let rhs = $1.sourceTerm.folding(options: String.CompareOptions.diacriticInsensitive, locale: Locale.current).lowercased()
-            if lhs == rhs {
-                return $0.targetTerm.lowercased() < $1.targetTerm.lowercased()
+            if $0.sourceSortKey == $1.sourceSortKey {
+                return $0.targetSortKey < $1.targetSortKey
             }
-            return lhs < rhs
+            return $0.sourceSortKey < $1.sourceSortKey
         }
     }
 
@@ -40,34 +36,39 @@ enum DataStoreLexiconSupport {
         curatedEntries: [LexiconEntry],
         supplementLimit: Int = 80
     ) -> [LexiconEntry] {
+        let totalStart = CFAbsoluteTimeGetCurrent()
         let normalizedQuery = normalizedLookupText(query)
         let compactQuery = compactLookupKey(query)
         guard !normalizedQuery.isEmpty else { return [] }
 
+        var start = CFAbsoluteTimeGetCurrent()
         let curatedMatches = curatedEntries.filter { entry in
-            let sourceLookupKey = normalizedLookupText(entry.sourceTerm)
-            let sourceCompactKey = compactLookupKey(entry.sourceTerm)
-            let targetLookupKey = normalizedLookupText(entry.targetTerm)
-            let targetCompactKey = compactLookupKey(entry.targetTerm)
-
-            return sourceLookupKey.hasPrefix(normalizedQuery) ||
-                targetLookupKey.hasPrefix(normalizedQuery) ||
+            entry.sourceSortKey.hasPrefix(normalizedQuery) ||
+                entry.targetSortKey.hasPrefix(normalizedQuery) ||
                 (!compactQuery.isEmpty && (
-                    sourceCompactKey.hasPrefix(compactQuery) ||
-                    targetCompactKey.hasPrefix(compactQuery)
+                    entry.sourceSortKey.replacingOccurrences(of: " ", with: "").hasPrefix(compactQuery) ||
+                    entry.targetSortKey.replacingOccurrences(of: " ", with: "").hasPrefix(compactQuery)
                 ))
         }
+        print("⏱ [Search] curatedFilter (\(curatedEntries.count)→\(curatedMatches.count)): \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
 
-        return SupplementalFreeDictLexicon.enrichMissingGenderInfo(in: mergeLexiconEntries(
-            curatedMatches + SupplementalFreeDictLexicon.searchLexiconEntries(matching: normalizedQuery, limit: supplementLimit)
+        start = CFAbsoluteTimeGetCurrent()
+        let supplementResults = SupplementalFreeDictLexicon.searchLexiconEntries(matching: normalizedQuery, limit: supplementLimit)
+        print("⏱ [Search] SQLite supplement (\(supplementResults.count)): \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
+
+        start = CFAbsoluteTimeGetCurrent()
+        let merged = SupplementalFreeDictLexicon.enrichMissingGenderInfo(in: mergeLexiconEntries(
+            curatedMatches + supplementResults
         )).sorted {
-            let lhs = $0.sourceTerm.folding(options: String.CompareOptions.diacriticInsensitive, locale: Locale.current).lowercased()
-            let rhs = $1.sourceTerm.folding(options: String.CompareOptions.diacriticInsensitive, locale: Locale.current).lowercased()
-            if lhs == rhs {
-                return $0.targetTerm.lowercased() < $1.targetTerm.lowercased()
+            if $0.sourceSortKey == $1.sourceSortKey {
+                return $0.targetSortKey < $1.targetSortKey
             }
-            return lhs < rhs
+            return $0.sourceSortKey < $1.sourceSortKey
         }
+        print("⏱ [Search] merge+enrich+sort (\(merged.count)): \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
+        print("⏱ [Search] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
+
+        return merged
     }
 
 }

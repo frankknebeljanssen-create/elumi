@@ -11,7 +11,7 @@ final class VocabularyListStore: ObservableObject {
         didSet {
             rebuildDerivedLists()
             guard !isApplyingStoredState else { return }
-            saveCustomLists()
+            scheduleSave()
         }
     }
     @Published var selectedListID: UUID = builtInListID {
@@ -19,6 +19,17 @@ final class VocabularyListStore: ObservableObject {
             guard !isApplyingStoredState else { return }
             saveSelectedListID()
         }
+    }
+
+    private var pendingSaveWorkItem: DispatchWorkItem?
+
+    private func scheduleSave() {
+        pendingSaveWorkItem?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
+            self?.saveCustomLists()
+        }
+        pendingSaveWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: workItem)
     }
 
     let customListsKey = "FRDEVocabMVP.customLists.v2"
@@ -37,21 +48,34 @@ final class VocabularyListStore: ObservableObject {
         repository: VocabularyListStoreRepository = VocabularyListStoreRepository(),
         snapshot: VocabularyListStoreSnapshot? = nil
     ) {
+        let totalStart = CFAbsoluteTimeGetCurrent()
         self.repository = repository
+
+        var start = CFAbsoluteTimeGetCurrent()
+        let items = DataStore.builtInVocabularyItems
+        print("⏱ [ListStore.init] builtInVocabularyItems: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms (\(items.count) items)")
+
+        start = CFAbsoluteTimeGetCurrent()
         let builtInList = VocabularyList(
             id: Self.builtInListID,
             name: "Standardpaket",
-            items: DataStore.builtInVocabularyItems,
+            items: items,
             isBuiltIn: true
         )
         self.builtInListStorage = builtInList
         self.builtInWordsCountStorage = builtInList.items.filter { $0.cardType == .words }.count
         self.builtInPhrasesCountStorage = builtInList.items.filter { $0.cardType == .phrases }.count
+        print("⏱ [ListStore.init] builtInList+filters: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
+
+        start = CFAbsoluteTimeGetCurrent()
         if let snapshot {
             apply(snapshot: snapshot)
+            print("⏱ [ListStore.init] apply(snapshot): \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
         } else {
             loadState()
+            print("⏱ [ListStore.init] loadState: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
         }
+        print("⏱ [ListStore.init] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
     }
 
     var builtInList: VocabularyList {

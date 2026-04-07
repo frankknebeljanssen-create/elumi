@@ -70,13 +70,11 @@ struct HomeView: View {
 
         isHomeNavigationLocked = true
         pressedHomeScreen = screen
+        openScreen(screen)
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.09) {
-            openScreen(screen)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
-                pressedHomeScreen = nil
-                isHomeNavigationLocked = false
-            }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            pressedHomeScreen = nil
+            isHomeNavigationLocked = false
         }
     }
 

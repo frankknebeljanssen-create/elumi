@@ -30,25 +30,37 @@ private func restoringPlaceholderMarkers(in text: String) -> String {
         .replacingOccurrences(of: plusPrenomPlaceholderToken, with: "+ prénom")
 }
 
+private let _cleanedQuizNeedsRegex = CharacterSet(charactersIn: "[]/ˈˌːəæœøɥʁʀŋʃʒɲθðɑɔɛɪʊʌ*†‡•●▪◦※§~^_#`")
+
 func cleanedQuizDisplayText(_ text: String) -> String {
-    restoringPlaceholderMarkers(in:
+    let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty else { return trimmed }
+
+    // Fast path: skip all 18 regex operations if text has no special characters
+    if trimmed.rangeOfCharacter(from: _cleanedQuizNeedsRegex) == nil
+        && !trimmed.contains("’’")
+        && !trimmed.contains("  ") {
+        return trimmed
+    }
+
+    return restoringPlaceholderMarkers(in:
         protectingPlaceholderMarkers(in: text)
         .replacingOccurrences(of: #"\[[^\[\]]+\]"#, with: " ", options: .regularExpression)
         .replacingOccurrences(of: #"\/[^\/]+\/"#, with: " ", options: .regularExpression)
         .replacingOccurrences(of: #"(?iu)^\s*\[[^\]]*$"#, with: "", options: .regularExpression)
-        .replacingOccurrences(of: #"(?iu)(^|\s)\[[A-Za-zˈˌːəæœøɥʁʀŋʃʒɲθðɑɔɛɪʊʌ'’\-\.\,]+\b"#, with: " ", options: .regularExpression)
-        .replacingOccurrences(of: #"(?iu)^\s*\[[A-Za-zˈˌːəæœøɥʁʀŋʃʒɲθðɑɔɛɪʊʌ\s'’\-\.\,]+\s+"#, with: "", options: .regularExpression)
-        .replacingOccurrences(of: #"(?iu)\s+\[[A-Za-zˈˌːəæœøɥʁʀŋʃʒɲθðɑɔɛɪʊʌ\s'’\-\.\,]+$"#, with: "", options: .regularExpression)
-        .replacingOccurrences(of: #"(?iu)^\s*\[[A-Za-zˈˌːəæœøɥʁʀŋʃʒɲθðɑɔɛɪʊʌ\s'’\-\.\,]+$"#, with: "", options: .regularExpression)
+        .replacingOccurrences(of: #"(?iu)(^|\s)\[[A-Za-zˈˌːəæœøɥʁʀŋʃʒɲθðɑɔɛɪʊʌ’’\-\.\,]+\b"#, with: " ", options: .regularExpression)
+        .replacingOccurrences(of: #"(?iu)^\s*\[[A-Za-zˈˌːəæœøɥʁʀŋʃʒɲθðɑɔɛɪʊʌ\s’’\-\.\,]+\s+"#, with: "", options: .regularExpression)
+        .replacingOccurrences(of: #"(?iu)\s+\[[A-Za-zˈˌːəæœøɥʁʀŋʃʒɲθðɑɔɛɪʊʌ\s’’\-\.\,]+$"#, with: "", options: .regularExpression)
+        .replacingOccurrences(of: #"(?iu)^\s*\[[A-Za-zˈˌːəæœøɥʁʀŋʃʒɲθðɑɔɛɪʊʌ\s’’\-\.\,]+$"#, with: "", options: .regularExpression)
         .replacingOccurrences(of: #"(?iu)^\s*[\[/][^\s]+\s+"#, with: "", options: .regularExpression)
         .replacingOccurrences(of: #"(?iu)^\s*[^\s]*[ˈˌːəæœøɥʁʀŋʃʒɲθðɑɔɛɪʊʌ][^\s]*\s+"#, with: "", options: .regularExpression)
         .replacingOccurrences(of: #"(?u)^\s*[\[\]/]+|[\[\]/]+\s*$"#, with: "", options: .regularExpression)
         .replacingOccurrences(of: #"(?u)[*†‡•●▪◦※§]+"#, with: " ", options: .regularExpression)
         .replacingOccurrences(of: #"(?u)(^|\s)[~^_#]+(?=\s|$)"#, with: " ", options: .regularExpression)
-        .replacingOccurrences(of: #"(?u)(^|\s)['’`]+(?=\p{L})"#, with: "$1", options: .regularExpression)
-        .replacingOccurrences(of: #"(?u)^['’`]+"#, with: "", options: .regularExpression)
-        .replacingOccurrences(of: #"(?u)['’`]+$"#, with: "", options: .regularExpression)
-        .replacingOccurrences(of: #"(?u)(^|\s)[^\p{L}\p{M}\p{N}'’\-]+(?=\s|$)"#, with: " ", options: .regularExpression)
+        .replacingOccurrences(of: #"(?u)(^|\s)[‘’`]+(?=\p{L})"#, with: "$1", options: .regularExpression)
+        .replacingOccurrences(of: #"(?u)^[‘’`]+"#, with: "", options: .regularExpression)
+        .replacingOccurrences(of: #"(?u)[‘’`]+$"#, with: "", options: .regularExpression)
+        .replacingOccurrences(of: #"(?u)(^|\s)[^\p{L}\p{M}\p{N}’’\-]+(?=\s|$)"#, with: " ", options: .regularExpression)
         .replacingOccurrences(of: #"(?u)^[^\p{L}\p{M}\p{N}]+|[^\p{L}\p{M}\p{N}]+$"#, with: "", options: .regularExpression)
         .replacingOccurrences(of: #" + "#, with: " ", options: .regularExpression)
         .trimmingCharacters(in: .whitespacesAndNewlines)

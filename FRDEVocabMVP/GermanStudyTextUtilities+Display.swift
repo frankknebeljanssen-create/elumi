@@ -208,25 +208,11 @@ func canonicalGermanQuizText(
 ) -> String {
     let cleanedAnswer = cleanedQuizDisplayText(answer)
     guard !cleanedAnswer.isEmpty else { return cleanedAnswer }
-    guard promptLanguageCode == "fr-FR" else {
-        return germanDisplayText(
-            cleanedAnswer,
-            cardType: category == CardType.words.categoryName ? .words : .phrases,
-            sourceHint: sourceHint
-        )
-    }
-
-    if let lexiconAnswer = DataStore.bestLexiconTranslation(for: prompt, sourceLanguage: .french), !lexiconAnswer.isEmpty {
-        return germanDisplayText(
-            lexiconAnswer,
-            cardType: category == CardType.words.categoryName ? .words : .phrases,
-            sourceHint: sourceHint ?? prompt
-        )
-    }
+    let cardType: CardType = category == CardType.words.categoryName ? .words : .phrases
 
     return germanDisplayText(
         cleanedAnswer,
-        cardType: category == CardType.words.categoryName ? .words : .phrases,
+        cardType: cardType,
         sourceHint: sourceHint ?? prompt
     )
 }

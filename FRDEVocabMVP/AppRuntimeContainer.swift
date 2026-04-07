@@ -37,11 +37,27 @@ final class AppRuntimeContainer: ObservableObject {
         let vocabularyListRepository = self.vocabularyListRepository
         let flashcardSessionRepository = self.flashcardSessionRepository
 
+        // Phase 1: Create listStore IMMEDIATELY with built-in data only (0ms)
+        let emptySnapshot = VocabularyListStoreSnapshot(
+            customLists: [],
+            selectedListID: VocabularyListStore.builtInListID
+        )
+        let store = VocabularyListStore(repository: vocabularyListRepository, snapshot: emptySnapshot)
+        listStore = store
+        speechController = SpeechController()
+        speaker = Speaker()
+        print("⏱ [Bootstrap] listStore + speech + speaker created instantly")
+
+        // Phase 2: Load custom lists in background, update store when ready
         listWarmupTask?.cancel()
         flashcardWarmupTask?.cancel()
         homePreparationTask?.cancel()
-        listWarmupTask = Task.detached(priority: .utility) {
+
+        listWarmupTask = Task.detached(priority: .userInitiated) {
+            let totalStart = CFAbsoluteTimeGetCurrent()
             DataStore.prewarmBuiltInLaunchData()
+
+            var start = CFAbsoluteTimeGetCurrent()
             vocabularyListRepository.prewarmStoredStateIfNeeded(
                 customListsKey: "FRDEVocabMVP.customLists.v2",
                 selectedListKey: "FRDEVocabMVP.selectedListID.v2",
@@ -49,9 +65,20 @@ final class AppRuntimeContainer: ObservableObject {
                 builtInListID: VocabularyListStore.builtInListID,
                 sampleSeeds: sampleVocabularyListSeeds
             )
+            print("⏱ [Warmup:List] prewarmStored: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
+
+            let snapshot = vocabularyListRepository.cachedSnapshot()
+            if let snapshot {
+                await MainActor.run {
+                    store.apply(snapshot: snapshot)
+                    print("⏱ [Warmup:List] applied snapshot → \(store.customLists.count) custom lists")
+                }
+            }
+            print("⏱ [Warmup:List] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
         }
 
-        flashcardWarmupTask = Task.detached(priority: .utility) {
+        flashcardWarmupTask = Task.detached(priority: .userInitiated) {
+            let totalStart = CFAbsoluteTimeGetCurrent()
             DataStore.prewarmFlashcardLaunchData()
             flashcardSessionRepository.prewarmStoredStateIfNeeded(
                 defaultDeckID: DataStore.flashcardDecks.first?.id ?? "flashcards-1",
@@ -59,73 +86,47 @@ final class AppRuntimeContainer: ObservableObject {
                 selectedDirectionKey: appDirectionKey,
                 sessionKey: "FRDEVocabMVP.flashcardSession.v1"
             )
-        }
-
-        homePreparationTask = Task { [weak self] in
-            guard let self else { return }
-            await self.awaitListWarmupIfNeeded()
-            guard !Task.isCancelled else { return }
-            self.prepareHomeStudyDependenciesIfNeeded()
+            print("⏱ [Warmup:Flashcard] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
         }
     }
 
     func ensureDependenciesReady(markFlashcardsOpenTiming: ((String) -> Void)? = nil) async {
         ensureHomeShellDependenciesReady()
-        await ensureStudyDependenciesReady(markFlashcardsOpenTiming: markFlashcardsOpenTiming)
-    }
-
-    func ensureStudyDependenciesReady(markFlashcardsOpenTiming: ((String) -> Void)? = nil) async {
-        await awaitListWarmupIfNeeded()
-
-        if listStore == nil {
-            let start = CFAbsoluteTimeGetCurrent()
-            listStore = makeListStore()
-            let elapsedMS = Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded())
-            markFlashcardsOpenTiming?("init_listStore \(elapsedMS)ms")
-        }
-
-        if speechController == nil {
-            let start = CFAbsoluteTimeGetCurrent()
-            speechController = SpeechController()
-            let elapsedMS = Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded())
-            markFlashcardsOpenTiming?("init_speechController \(elapsedMS)ms")
-        }
-
-        if speaker == nil {
-            let start = CFAbsoluteTimeGetCurrent()
-            speaker = Speaker()
-            let elapsedMS = Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded())
-            markFlashcardsOpenTiming?("init_speaker \(elapsedMS)ms")
-        }
+        ensureBaseDependenciesReady()
 
         if flashcardSessionStore == nil {
             await awaitFlashcardWarmupIfNeeded()
             let start = CFAbsoluteTimeGetCurrent()
             flashcardSessionStore = makeFlashcardSessionStore()
-            let elapsedMS = Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded())
+            let elapsedMS = ms(since: start)
             markFlashcardsOpenTiming?("init_flashcardSessionStore \(elapsedMS)ms")
         }
     }
 
     func ensureTrainingDependenciesReady() async {
         ensureHomeShellDependenciesReady()
-        await awaitListWarmupIfNeeded()
-        prepareHomeStudyDependenciesIfNeeded()
+        ensureBaseDependenciesReady()
     }
 
     func ensureQuizDependenciesReady() async {
         ensureHomeShellDependenciesReady()
-        await awaitListWarmupIfNeeded()
-        if listStore == nil {
-            listStore = makeListStore()
-        }
+        ensureBaseDependenciesReady()
     }
 
     func ensureListDrivenDependenciesReady() async {
         ensureHomeShellDependenciesReady()
-        await awaitListWarmupIfNeeded()
+        ensureBaseDependenciesReady()
+    }
+
+    private func ensureBaseDependenciesReady() {
         if listStore == nil {
             listStore = makeListStore()
+        }
+        if speechController == nil {
+            speechController = SpeechController()
+        }
+        if speaker == nil {
+            speaker = Speaker()
         }
     }
 
@@ -154,27 +155,12 @@ final class AppRuntimeContainer: ObservableObject {
         )
     }
 
-    private func awaitListWarmupIfNeeded() async {
-        let task = listWarmupTask
-        await task?.value
-    }
-
     private func awaitFlashcardWarmupIfNeeded() async {
         let task = flashcardWarmupTask
         await task?.value
     }
 
-    private func prepareHomeStudyDependenciesIfNeeded() {
-        if listStore == nil {
-            listStore = makeListStore()
-        }
-
-        if speechController == nil {
-            speechController = SpeechController()
-        }
-
-        if speaker == nil {
-            speaker = Speaker()
-        }
+    private func ms(since start: CFAbsoluteTime) -> Int {
+        Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded())
     }
 }

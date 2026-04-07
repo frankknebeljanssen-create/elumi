@@ -85,16 +85,16 @@ enum QuizBuildService {
     static func consumedCandidateIDs(from question: QuizQuestion) -> Set<String> {
         switch question {
         case .multipleChoice(let multipleChoice):
-            let promptKey = normalizedLookupText(multipleChoice.prompt)
-            let answerKey = normalizedLookupText(multipleChoice.correctAnswer)
-            let categoryKey = normalizedLookupText(multipleChoice.category)
+            let promptKey = QuizBuildService.fastKey(multipleChoice.prompt)
+            let answerKey = QuizBuildService.fastKey(multipleChoice.correctAnswer)
+            let categoryKey = QuizBuildService.fastKey(multipleChoice.category)
             return [[promptKey, answerKey, categoryKey].joined(separator: "|")]
         case .matching(let matching):
             return Set(matching.pairs.map {
                 [
-                    normalizedLookupText($0.prompt),
-                    normalizedLookupText($0.answer),
-                    normalizedLookupText(matching.category)
+                    QuizBuildService.fastKey($0.prompt),
+                    QuizBuildService.fastKey($0.answer),
+                    QuizBuildService.fastKey(matching.category)
                 ].joined(separator: "|")
             })
         }
@@ -105,25 +105,31 @@ enum QuizBuildService {
         case .multipleChoice(let multipleChoice):
             return [
                 "mc",
-                normalizedLookupText(multipleChoice.prompt),
-                normalizedLookupText(multipleChoice.correctAnswer),
-                normalizedLookupText(multipleChoice.category)
+                QuizBuildService.fastKey(multipleChoice.prompt),
+                QuizBuildService.fastKey(multipleChoice.correctAnswer),
+                QuizBuildService.fastKey(multipleChoice.category)
             ].joined(separator: "|")
         case .matching(let matching):
             let pairSignature = matching.pairs
                 .map {
                     [
-                        normalizedLookupText($0.prompt),
-                        normalizedLookupText($0.answer)
+                        QuizBuildService.fastKey($0.prompt),
+                        QuizBuildService.fastKey($0.answer)
                     ].joined(separator: "->")
                 }
                 .sorted()
                 .joined(separator: "||")
             return [
                 "match",
-                normalizedLookupText(matching.category),
+                QuizBuildService.fastKey(matching.category),
                 pairSignature
             ].joined(separator: "|")
         }
+    }
+
+    static func fastKey(_ text: String) -> String {
+        text.folding(options: .diacriticInsensitive, locale: .current)
+            .lowercased()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

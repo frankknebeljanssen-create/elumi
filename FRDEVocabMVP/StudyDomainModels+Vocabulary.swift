@@ -62,14 +62,12 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
         french = try container.decode(String.self, forKey: .french)
-        let decodedGerman = try container.decode(String.self, forKey: .german)
+        german = try container.decode(String.self, forKey: .german)
         sourcePhonetic = try container.decodeIfPresent(String.self, forKey: .sourcePhonetic)
         targetPhonetic = try container.decodeIfPresent(String.self, forKey: .targetPhonetic)
         cardType = try container.decode(CardType.self, forKey: .cardType)
         level = try container.decodeIfPresent(VocabularyLevel.self, forKey: .level)
         sourceLanguage = try container.decodeIfPresent(StudyLanguage.self, forKey: .sourceLanguage) ?? .french
-        french = sourceDisplayText(french, sourceLanguage: sourceLanguage)
-        german = germanDisplayText(decodedGerman, cardType: cardType, sourceHint: french)
     }
 
     func card(for direction: Direction) -> FlashCard {

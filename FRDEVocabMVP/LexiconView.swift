@@ -179,38 +179,29 @@ struct LexiconView: View {
                 isSearchFieldFocused = true
             }
         }
-        .task {
-            await model.reloadEntries(
-                customLists: listStore.customLists,
-                selectedDirection: selectedLexiconDirection,
-                showLoadingState: false
-            )
-        }
         .task(id: model.searchText) {
-            try? await Task.sleep(nanoseconds: 180_000_000)
+            let query = model.searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !query.isEmpty else {
+                model.preparedEntries = []
+                model.isSearchingLexicon = false
+                return
+            }
+            try? await Task.sleep(nanoseconds: 250_000_000)
+            if model.mergedEntries.isEmpty {
+                await model.reloadEntries(
+                    customLists: listStore.customLists,
+                    selectedDirection: selectedLexiconDirection,
+                    showLoadingState: true
+                )
+            }
             await model.performSearch(
                 for: model.searchText,
                 customLists: listStore.customLists,
                 selectedDirection: selectedLexiconDirection
             )
         }
-        .onReceive(listStore.$customLists) { _ in
-            Task {
-                await model.reloadEntries(
-                    customLists: listStore.customLists,
-                    selectedDirection: selectedLexiconDirection,
-                    showLoadingState: hasActiveSearch
-                )
-            }
-        }
-        .onChange(of: selectedLexiconDirection) { _, direction in
-            Task {
-                await model.reloadEntries(
-                    customLists: listStore.customLists,
-                    selectedDirection: direction,
-                    showLoadingState: hasActiveSearch
-                )
-            }
+        .onChange(of: selectedLexiconDirection) { _, _ in
+            model.mergedEntries = []
         }
     }
 

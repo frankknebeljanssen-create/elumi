@@ -47,10 +47,19 @@ extension QuizSessionController {
         plannedQuestionCount = 0
         isLoadingRemainingQuestions = false
 
+        let totalItems = selectedLists.reduce(0) { $0 + $1.items.count }
+        print("⏱ [Quiz] rebuildMergedItems starting (\(selectedLists.count) lists, \(totalItems) items)")
+
         Task {
             let result = await Task.detached(priority: .userInitiated) {
+                var start = CFAbsoluteTimeGetCurrent()
                 let mergedItems = QuizBuildService.mergedItems(from: selectedLists, direction: direction)
+                print("⏱ [Quiz] mergedItems: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms (\(mergedItems.count) items)")
+
+                start = CFAbsoluteTimeGetCurrent()
                 let candidates = QuizBuildService.makeQuizCandidates(from: mergedItems, direction: direction)
+                print("⏱ [Quiz] makeQuizCandidates: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms (\(candidates.count) candidates)")
+
                 return (mergedItems: mergedItems, candidates: candidates)
             }.value
 
