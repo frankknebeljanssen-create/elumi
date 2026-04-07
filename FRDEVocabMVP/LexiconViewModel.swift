@@ -1,0 +1,46 @@
+import Foundation
+import SwiftUI
+
+struct PreparedLexiconEntry: Identifiable {
+    let id: String
+    let entries: [LexiconEntry]
+    let displayCardType: CardType
+    let displayCountryCode: String
+    let frenchGender: LexiconGenderInfo?
+    let germanGender: LexiconGenderInfo?
+    let sourceText: String
+    let targetText: String
+    let targetVariants: [String]
+    let sourceSearchKey: String
+    let targetSearchKey: String
+}
+
+enum LexiconWordClassMarker: String {
+    case adjective = "[adj]"
+    case verb = "[verb]"
+}
+
+@MainActor
+final class LexiconViewModel: ObservableObject {
+    @Published var searchText = ""
+    @Published var mergedEntries: [LexiconEntry] = []
+    @Published var selectedEntry: PreparedLexiconEntry?
+    @Published var isLoadingLexiconEntries = false
+    @Published var isSearchingLexicon = false
+    @Published var preparedEntries: [PreparedLexiconEntry] = []
+
+    var lexiconReloadGeneration = 0
+    var lexiconSearchGeneration = 0
+
+    var allEntries: [PreparedLexiconEntry] {
+        preparedEntries
+    }
+
+    var trimmedSearchText: String {
+        searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    var hasActiveSearch: Bool {
+        !trimmedSearchText.isEmpty
+    }
+}

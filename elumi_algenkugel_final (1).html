@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Elumi — Algenkugel Animation</title>
+<!--
+  ╔═══════════════════════════════════════════════════════════════╗
+  ║  ELUMI ALGENKUGEL — Entwickler-Handover                      ║
+  ║                                                               ║
+  ║  Animationstyp : CSS transform (translate + rotate)          ║
+  ║  Währung       : Legendäre Beute (Legendary)                 ║
+  ║                                                               ║
+  ║  ANIMATION-VARIABLEN (alle an einer Stelle anpassen):        ║
+  ║  --duration-roll  : Kompletter Hin-und-Her-Loop (6s)         ║
+  ║                     Schneller für App: 4s                    ║
+  ║                                                               ║
+  ║  ROLL-PHYSIK:                                                 ║
+  ║  Radius = 32px → Umfang = 2π×32 ≈ 201px                     ║
+  ║  Rollstrecke = 382px → Drehung = 382/201×360 ≈ 684°         ║
+  ║  Hin:  0° → 684° (im Uhrzeigersinn)                          ║
+  ║  Her:  684° → 0° (gegen Uhrzeigersinn)                       ║
+  ║  Pause an der Wand: 45%–55% (10% des Loops)                  ║
+  ║                                                               ║
+  ║  FARBCODES:                                                   ║
+  ║  #23A06A  elumiGreen     — Kugel-Körper                      ║
+  ║  #2EC4A9  elumiMint      — Algen-Hauptfarbe                  ║
+  ║  #3DD4B9  elumiMintLight — Algen-Highlights                  ║
+  ║  #FFFFFF  Weiß           — Glanzpunkt (NICHT rotierend!)     ║
+  ║                                                               ║
+  ║  SCHLÜSSEL-TRICK:                                             ║
+  ║  .ball-spin  rotiert  → Körper + Algen drehen sich           ║
+  ║  Highlights  NICHT in .ball-spin → bleiben immer oben-links  ║
+  ║  Das ist was dem Gehirn sagt: "echte rotierende Kugel"       ║
+  ║                                                               ║
+  ║  FÜR LOTTIE/RIVE:                                            ║
+  ║  ball-move  = Position-Keyframes auf gerader Linie           ║
+  ║  ball-spin  = Rotation-Keyframes (sync mit Position)         ║
+  ║  Algae      = Shape Layer innerhalb Rotation-Gruppe          ║
+  ║  Highlight  = separate Layer AUSSERHALB Rotation-Gruppe      ║
+  ╚═══════════════════════════════════════════════════════════════╝
+-->
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #0F2D48;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  flex-direction: column;
+  gap: 28px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+}
+
+/* ─────────────────────────────────────────
+   TIMING VARIABLES
+   Schnellere App-Version: --duration-roll: 4s
+───────────────────────────────────────── */
+:root {
+  --duration-roll : 6s;
+}
+
+/* ─────────────────────────────────────────
+   STAGE
+   Stage: 220px tall
+   Floor: 40px → top of floor at y=180
+   Ball center: y = 180 - 32 (radius) = 148px
+───────────────────────────────────────── */
+.stage {
+  width: 520px;
+  height: 220px;
+  background: #0F2D48;
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.floor {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 40px;
+  background: rgba(35,160,106,0.05);
+  border-top: 1px solid rgba(35,160,106,0.12);
+}
+
+/* ─────────────────────────────────────────
+   ROLL MOVEMENT — straight left↔right
+   y = 148px (ball center sits on floor line)
+   x: 48px (left) → 430px (right)
+   Pause 10% at each wall before reversing
+───────────────────────────────────────── */
+@keyframes roll-move {
+  0%   { transform: translate(48px,  148px); }
+  45%  { transform: translate(430px, 148px); }
+  55%  { transform: translate(430px, 148px); } /* pause at right wall */
+  100% { transform: translate(48px,  148px); }
+}
+
+/* ─────────────────────────────────────────
+   ROLL SPIN — physics-matched rotation
+   382px travel / 201px circumference × 360° = 684°
+───────────────────────────────────────── */
+@keyframes roll-spin {
+  0%   { transform: rotate(0deg);   }
+  45%  { transform: rotate(684deg); } /* rolled right */
+  55%  { transform: rotate(684deg); } /* pause */
+  100% { transform: rotate(0deg);   } /* rolled left back */
+}
+
+/* ─────────────────────────────────────────
+   SHADOW — subtle stretch when moving fast
+───────────────────────────────────────── */
+@keyframes shadow-anim {
+  0%,45%,55%,100% { transform: scaleX(1);    opacity: 0.28; }
+  22%             { transform: scaleX(1.06);  opacity: 0.32; }
+  78%             { transform: scaleX(1.06);  opacity: 0.32; }
+}
+
+/* ─────────────────────────────────────────
+   ALGA WAVES — subtle idle breathing
+   Independent of rotation, adds life
+───────────────────────────────────────── */
+@keyframes aw1 {
+  0%,100% { d: path("M-22,-26 Q-30,-12 -26,4 Q-32,18 -22,28"); }
+  50%     { d: path("M-20,-26 Q-28,-8 -24,8 Q-30,22 -20,30"); }
+}
+@keyframes aw2 {
+  0%,100% { d: path("M-5,-28 Q5,-14 0,2 Q8,18 -2,30"); }
+  50%     { d: path("M-3,-28 Q7,-10 2,6 Q10,22 0,32"); }
+}
+@keyframes aw3 {
+  0%,100% { d: path("M13,-26 Q22,-12 18,4 Q26,18 16,28"); }
+  50%     { d: path("M15,-26 Q24,-8 20,8 Q28,22 18,30"); }
+}
+
+/* ─────────────────────────────────────────
+   ELEMENT CLASSES
+───────────────────────────────────────── */
+.ball-move   { position: absolute; top: 0; left: 0; animation: roll-move   var(--duration-roll) ease-in-out infinite; }
+.ball-shadow { animation: shadow-anim var(--duration-roll) ease-in-out infinite; transform-origin: 0 0; }
+.ball-spin   { animation: roll-spin   var(--duration-roll) ease-in-out infinite; transform-origin: 0 0; }
+.a1 { animation: aw1 1.2s ease-in-out infinite; }
+.a2 { animation: aw2 1.5s ease-in-out infinite 0.2s; }
+.a3 { animation: aw3 1.3s ease-in-out infinite 0.4s; }
+
+/* ─────────────────────────────────────────
+   DEV INFO
+───────────────────────────────────────── */
+.info {
+  color: rgba(255,255,255,0.25);
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  text-align: center;
+  line-height: 1.9;
+}
+.chip {
+  display: inline-block;
+  background: rgba(35,160,106,0.18);
+  border: 1px solid rgba(35,160,106,0.35);
+  color: #2EC4A9;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin: 2px;
+  font-family: "SF Mono","Fira Code",monospace;
+}
+.tip {
+  margin-top: 6px;
+  color: rgba(255,255,255,0.18);
+  font-size: 11px;
+  font-style: italic;
+}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="floor"></div>
+
+  <div class="ball-move">
+
+    <!-- SHADOW (does not spin) -->
+    <svg class="ball-shadow" width="0" height="0" overflow="visible"
+         style="position:absolute;top:0;left:0;">
+      <ellipse cx="0" cy="34" rx="34" ry="7" fill="rgba(0,0,0,0.28)"/>
+    </svg>
+
+    <svg width="64" height="64" viewBox="-32 -32 64 64" overflow="visible">
+
+      <!-- ═══════════════════════════════════════════
+           SPINNING GROUP — body + algae rotate together
+           transform-origin: 0,0 = center of ball
+      ════════════════════════════════════════════ -->
+      <g class="ball-spin">
+
+        <!-- BODY — elumiGreen #23A06A -->
+        <circle cx="0" cy="0" r="32" fill="#23A06A"/>
+
+        <!-- ALGA STRANDS — elumiMint #2EC4A9 + elumiMintLight #3DD4B9 -->
+        <path class="a1" d="M-22,-26 Q-30,-12 -26,4 Q-32,18 -22,28"
+              fill="none" stroke="#2EC4A9" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+        <path class="a2" d="M-5,-28 Q5,-14 0,2 Q8,18 -2,30"
+              fill="none" stroke="#3DD4B9" stroke-width="4" stroke-linecap="round" opacity="0.75"/>
+        <path class="a3" d="M13,-26 Q22,-12 18,4 Q26,18 16,28"
+              fill="none" stroke="#2EC4A9" stroke-width="4" stroke-linecap="round" opacity="0.75"/>
+        <path d="M26,-20 Q32,-8 28,8 Q34,20 26,28"
+              fill="none" stroke="#3DD4B9" stroke-width="3.5" stroke-linecap="round" opacity="0.6"/>
+
+        <!-- BOTTOM FRONDS -->
+        <path d="M-14,24 Q-20,32 -14,38" fill="none" stroke="#2EC4A9" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+        <path d="M2,26  Q0,34 6,40"      fill="none" stroke="#3DD4B9" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+        <path d="M16,24 Q22,32 16,38"    fill="none" stroke="#2EC4A9" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
+
+      </g>
+      <!-- ═══ END SPINNING GROUP ═══ -->
+
+
+      <!-- ═══════════════════════════════════════════
+           HIGHLIGHT — NOT inside .ball-spin
+           Stays fixed top-left = 3D sphere illusion
+      ════════════════════════════════════════════ -->
+      <circle cx="-13" cy="-14" r="13" fill="rgba(255,255,255,0.22)"/>
+      <circle cx="-18" cy="-19" r="7"  fill="rgba(255,255,255,0.30)"/>
+      <circle cx="-8"  cy="-24" r="3"  fill="rgba(255,255,255,0.20)"/>
+
+      <!-- rim light -->
+      <circle cx="0" cy="0" r="32" fill="none"
+              stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
+
+    </svg>
+  </div>
+</div>
+
+<!-- DEV INFO -->
+<div class="info">
+  <div>
+    <span class="chip">#23A06A elumiGreen</span>
+    <span class="chip">#2EC4A9 elumiMint</span>
+    <span class="chip">#3DD4B9 elumiMintLight</span>
+    <span class="chip">#FFFFFF Weiß</span>
+  </div>
+  <div style="margin-top:10px;">
+    Schnellere App-Animation: in <code style="color:#2EC4A9;">:root</code> setzen —
+    <code style="color:#2EC4A9;">--duration-roll: 4s</code>
+  </div>
+  <div class="tip">
+    Lottie: ball-spin = Rotation-Layer · Highlights = separater Layer AUSSERHALB Rotation-Gruppe · Algen = Shape Layer innerhalb Rotation-Gruppe
+  </div>
+</div>
+
+</body>
+</html>

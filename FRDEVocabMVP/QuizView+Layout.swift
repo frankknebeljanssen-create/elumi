@@ -1,0 +1,57 @@
+import SwiftUI
+
+extension QuizView {
+    var quizRootContent: some View {
+        Group {
+            if session.isShowingResult {
+                quizResultScreen
+            } else if session.questions.isEmpty {
+                quizSetupScreen
+            } else {
+                quizSessionScreen
+            }
+        }
+    }
+
+    var body: some View {
+        quizRootContent
+            .tint(sectionStyle.accent)
+            .appScreenBackground(sectionStyle)
+            .dismissKeyboardOnTap()
+            .toolbar(.hidden, for: .navigationBar)
+            .appLocalChrome(enabled: !usesGlobalChrome) {
+                AppTopBar(onBack: { handleBackNavigation() }, onInfo: openInfo)
+                    .padding(.horizontal, AppLayout.screenPadding)
+                    .padding(.top, quizTopBarSpacing)
+            } bottomBar: {
+                AppBottomBar(
+                    feedbackPlayer: feedbackPlayer,
+                    onHome: { dismissToHome() },
+                    onFavorite: nil,
+                    onScan: nil,
+                    onSettings: { openSettings() }
+                )
+            }
+            .onAppear {
+                handleQuizAppear()
+            }
+            .onChange(of: listStore.customLists) { _, _ in
+                handleQuizCustomListsChange()
+            }
+            .onChange(of: session.selectedListIDs) { _, _ in
+                handleQuizSelectedListsChange()
+            }
+            .onChange(of: selectedAppDirectionRaw) { _, _ in
+                handleQuizDirectionChange()
+            }
+            .onChange(of: session.questionCountOption) { _, _ in
+                handleQuizQuestionCountChange()
+            }
+            .onChange(of: session.isShowingResult) { _, isShowingResult in
+                handleQuizResultVisibilityChange(isShowingResult)
+            }
+            .onDisappear {
+                handleQuizDisappear()
+            }
+    }
+}

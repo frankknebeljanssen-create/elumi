@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Elumi — Gamification Handbook</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; background: #F7F7F5; color: #1A1A2E; font-size: 15px; line-height: 1.6; }
+.page { max-width: 920px; margin: 0 auto; padding: 48px 32px 100px; }
+.header { display: flex; align-items: center; gap: 20px; margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid #E0E0DC; }
+.logo { width: 72px; height: 72px; border-radius: 16px; background: #0F2D48; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.badge { display: inline-block; background: #2EC4A9; color: #fff; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.5px; margin-left: 8px; vertical-align: middle; }
+.badge-pink { background: #FF4D80; }
+.badge-amber { background: #FFD166; color: #0F2D48; }
+section { margin-bottom: 56px; }
+h2 { font-size: 11px; font-weight: 600; letter-spacing: 2px; color: #888; text-transform: uppercase; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid #E8E8E4; }
+h3 { font-size: 17px; font-weight: 600; color: #0F2D48; margin: 28px 0 10px; }
+h3:first-child { margin-top: 0; }
+h4 { font-size: 14px; font-weight: 600; color: #444; margin: 16px 0 6px; }
+p { color: #444; margin-bottom: 12px; line-height: 1.7; }
+p:last-child { margin-bottom: 0; }
+.note { background: #FFF0F3; border-left: 3px solid #FF4D80; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 14px; color: #555; }
+.note strong { color: #FF4D80; }
+.note-mint { background: #E8FBF7; border-left-color: #2EC4A9; }
+.note-mint strong { color: #1E9E87; }
+.note-amber { background: #FFF8E6; border-left-color: #FFD166; }
+.note-amber strong { color: #B8860B; }
+.note-navy { background: #E8EEF4; border-left-color: #0F2D48; }
+.note-navy strong { color: #0F2D48; }
+code { font-family: "SF Mono", "Fira Code", monospace; font-size: 12px; background: #F5F5F2; padding: 1px 5px; border-radius: 4px; color: #333; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+th { text-align: left; font-size: 11px; font-weight: 600; color: #888; letter-spacing: 1px; text-transform: uppercase; padding: 8px 12px; border-bottom: 1px solid #E0E0DC; background: #FAFAF8; }
+td { padding: 10px 12px; border-bottom: 1px solid #F0F0EC; color: #444; vertical-align: top; }
+td:first-child { font-weight: 500; color: #1A1A2E; white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+.tbl-wrap { border: 1px solid #E8E8E4; border-radius: 12px; overflow: hidden; margin-top: 16px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 16px; }
+.card { background: #fff; border: 1px solid #E8E8E4; border-radius: 14px; padding: 18px 20px; }
+.card-pink { background: #FFF0F3; border-color: #FFB3BA; }
+.card-mint { background: #E8FBF7; border-color: #9FE1CB; }
+.card-amber { background: #FFF8E6; border-color: #FAC775; }
+.card-navy { background: #0F2D48; border-color: #0F2D48; }
+.card-navy p, .card-navy h4 { color: rgba(255,255,255,0.85); }
+.card-navy h3 { color: #FFB3BA; }
+.pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 20px; margin-left: 6px; vertical-align: middle; }
+.pill-pink { background: #FF4D80; color: white; }
+.pill-mint { background: #2EC4A9; color: white; }
+.pill-amber { background: #FFD166; color: #0F2D48; }
+.pill-gray { background: #E0E0DC; color: #555; }
+.pill-green { background: #23A06A; color: white; }
+.swatch-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+.swatch { border-radius: 10px; padding: 12px 14px; flex: 1; min-width: 140px; }
+.swatch-name { font-size: 12px; font-weight: 600; margin-bottom: 3px; }
+.swatch-hex { font-family: "SF Mono", "Fira Code", monospace; font-size: 11px; opacity: 0.8; }
+.swatch-role { font-size: 11px; margin-top: 5px; opacity: 0.75; }
+.flow { display: flex; align-items: center; gap: 0; margin: 20px 0; flex-wrap: wrap; row-gap: 8px; }
+.flow-step { background: #FFF0F3; border: 1px solid #FFB3BA; border-radius: 10px; padding: 10px 14px; font-size: 13px; font-weight: 500; color: #0F2D48; text-align: center; }
+.flow-step-mint { background: #E8FBF7; border-color: #9FE1CB; }
+.flow-step-amber { background: #FFF8E6; border-color: #FAC775; }
+.flow-step-navy { background: #0F2D48; color: white; border-color: #0F2D48; }
+.flow-arrow { font-size: 18px; color: #FF8FA3; padding: 0 8px; flex-shrink: 0; }
+.checklist { list-style: none; margin-top: 10px; }
+.checklist li { padding: 8px 0; border-bottom: 1px solid #F0F0EC; font-size: 14px; color: #444; display: flex; align-items: flex-start; gap: 10px; }
+.checklist li:last-child { border-bottom: none; }
+.checklist li::before { content: ""; width: 18px; height: 18px; min-width: 18px; border-radius: 50%; border: 1.5px solid #DDD; margin-top: 2px; }
+.highlight-row td { background: #FFF0F3; }
+.highlight-row-mint td { background: #E8FBF7; }
+.icon-row { display: flex; gap: 24px; align-items: flex-start; margin-top: 20px; flex-wrap: wrap; }
+.icon-entry { display: flex; gap: 20px; align-items: flex-start; background: #fff; border: 1px solid #E8E8E4; border-radius: 14px; padding: 20px; flex: 1; min-width: 260px; }
+.icon-entry-pink { background: #FFF0F3; border-color: #FFB3BA; }
+.icon-entry-mint { background: #E8FBF7; border-color: #9FE1CB; }
+.icon-entry-green { background: #EAF9F0; border-color: #9FE1CB; }
+.screens-row { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+.screen-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.screen-label { font-size: 12px; font-weight: 600; color: #555; }
+.footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid #E0E0DC; font-size: 12px; color: #aaa; display: flex; justify-content: space-between; }
+@media (max-width: 640px) {
+  .grid2, .grid3 { grid-template-columns: 1fr; }
+  .flow { flex-direction: column; align-items: flex-start; }
+  .flow-arrow { transform: rotate(90deg); }
+  .screens-row { flex-direction: column; align-items: center; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+        <ellipse cx="24" cy="30" rx="20" ry="15" fill="#FFB3BA"/>
+        <circle cx="15" cy="27" r="7" fill="#1A1A2E"/><circle cx="33" cy="27" r="7" fill="#1A1A2E"/>
+        <circle cx="17" cy="25" r="3" fill="white"/><circle cx="35" cy="25" r="3" fill="white"/>
+        <path d="M17,35 Q24,41 31,35" stroke="#FF4D80" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <line x1="7" y1="22" x2="4" y2="14" stroke="#FF4D80" stroke-width="2" stroke-linecap="round"/>
+        <line x1="6" y1="19" x2="3" y2="17" stroke="#FF4D80" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="41" y1="22" x2="44" y2="14" stroke="#FF4D80" stroke-width="2" stroke-linecap="round"/>
+        <line x1="42" y1="19" x2="45" y2="17" stroke="#FF4D80" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div style="font-size:26px;font-weight:700;letter-spacing:-0.5px;color:#0F2D48;">Elumi — Gamification Handbook <span class="badge">v1.0</span></div>
+      <div style="font-size:13px;color:#888;margin-top:4px;">Win-System · Beute-Icons · Screens · Progression · Farb-Tokens</div>
+    </div>
+  </div>
+
+  <!-- 01 KERN-KONZEPT -->
+  <section>
+    <h2>01 — Kern-Konzept</h2>
+    <p>Elumi basiert auf einem einzigen emotionalen Versprechen: <strong>Du lernst, Elumi frisst.</strong> Jede richtig beantwortete Vokabel bedeutet Futter für den Axolotl. Das schafft eine emotionale Bindung die über abstraktes Punktesammeln hinausgeht.</p>
+    <div class="note"><strong>Design-Prinzip:</strong> Keine Bestrafung — kein Lebensverlust, keine Countdown-Uhren. Das System belohnt Kontinuität, nicht Perfektion. Eine falsche Antwort kostet nichts; die richtige Antwort bringt etwas.</div>
+    <div class="grid2">
+      <div class="card card-pink"><h4>Was motiviert</h4><p>Elumi als Charakter, nicht als Icon. Er reagiert auf Erfolge, schläft bei Inaktivität, freut sich auf Futter. Die Bindung an das Maskottchen ist der stärkste Retention-Hebel.</p></div>
+      <div class="card card-mint"><h4>Was antreibt</h4><p>Drei Währungen mit unterschiedlicher Seltenheit schaffen immer etwas worauf man hinarbeitet — auch wenn kein Level-Up nahe ist.</p></div>
+    </div>
+  </section>
+
+  <!-- 02 SCAN-FLOW -->
+  <section>
+    <h2>02 — User Flow: Von der Seite zur Trainingseinheit</h2>
+    <p>Das Herzstück von Elumi ist der Scan-Flow. Die Nutzerin bringt eigenes Material mit — kein vorgegebener Kurs, keine Themenvorgabe.</p>
+    <div class="flow">
+      <div class="flow-step flow-step-navy">📷 Seite scannen<br><span style="font-size:11px;opacity:0.6;">Buchseite / Vokabelheft</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">KI erkennt Vokabeln<br><span style="font-size:11px;color:#888;">OCR + NLP</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Nutzerin prüft Liste<br><span style="font-size:11px;color:#888;">Editieren, löschen</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step flow-step-mint">Trainingswahl<br><span style="font-size:11px;color:#888;">3 Modi</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step flow-step-amber">Beute verdienen<br><span style="font-size:11px;color:#888;">Elumi frisst</span></div>
+    </div>
+    <div class="note note-navy"><strong>Scan-Bonus:</strong> Das Scannen selbst wird belohnt. Jede neue gescannte Seite bringt sofort +5 Würmchen — noch bevor die erste Lektion startet. Das senkt die Einstiegshürde erheblich.</div>
+
+    <h3>Die drei Trainingstypen</h3>
+    <div class="grid3">
+      <div class="card">
+        <div style="font-size:28px;margin-bottom:10px;">🗣️</div>
+        <h4>Mündliche Abfrage</h4>
+        <p style="font-size:13px;">Elumi fragt, Nutzerin spricht. Speech-to-Text prüft die Antwort.</p>
+        <p style="font-size:12px;color:#888;margin-top:10px;">Belohnung: <strong style="color:#FF4D80;">×1.5 Würmchen</strong><br>Höchstes Schwierigkeitslevel</p>
+      </div>
+      <div class="card">
+        <div style="font-size:28px;margin-bottom:10px;">🃏</div>
+        <h4>Karteikarte</h4>
+        <p style="font-size:13px;">Wort zeigen, Nutzerin schätzt sich selbst ein (kannte / kannte nicht).</p>
+        <p style="font-size:12px;color:#888;margin-top:10px;">Belohnung: <strong style="color:#FF4D80;">×1 Würmchen</strong><br>Klassischer Modus</p>
+      </div>
+      <div class="card">
+        <div style="font-size:28px;margin-bottom:10px;">❓</div>
+        <h4>Quiz</h4>
+        <p style="font-size:13px;">Multiple-Choice mit 4 Optionen. Schnell, gamifiziert, gut für Streaks.</p>
+        <p style="font-size:12px;color:#888;margin-top:10px;">Belohnung: <strong style="color:#FF4D80;">×1 Würmchen</strong><br>+ Schnelligkeitsbonus möglich</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 BEUTE-ICONS -->
+  <section>
+    <h2>03 — Beute-Icons</h2>
+    <p>Drei Beutetypen mit steigender Seltenheit. Icon-Dateien: <code>elumi_wuermchen.png</code>, <code>elumi_wasserfloh.png</code>, <code>elumi_algenkugel.png</code> (512×512 px, transparenter Hintergrund).</p>
+
+    <!-- WÜRMCHEN -->
+    <div class="icon-entry icon-entry-pink" style="margin-top:20px;">
+      <svg width="100" height="100" viewBox="0 0 200 200" style="flex-shrink:0;border-radius:22px;background:#FFF0F3;">
+        <path d="M108,170 C132,170 148,152 134,136 C120,120 102,124 98,108 C94,92 116,76 108,61 C100,46 80,42 76,57" fill="none" stroke="#FF4D80" stroke-width="32" stroke-linecap="round"/>
+        <path d="M108,170 C132,170 148,152 134,136 C120,120 102,124 98,108 C94,92 116,76 108,61 C100,46 80,42 76,57" fill="none" stroke="#FF8FA3" stroke-width="20" stroke-linecap="round" stroke-dasharray="0 28"/>
+        <path d="M104,167 C122,165 134,150 124,136 C114,122 100,124 97,110 C94,96 112,82 106,68" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="8" stroke-linecap="round"/>
+        <circle cx="108" cy="170" r="7" fill="#FF4D80"/>
+        <circle cx="65" cy="48" r="19" fill="#FF4D80"/>
+        <circle cx="58" cy="41" r="8" fill="rgba(255,255,255,0.18)"/>
+        <circle cx="58" cy="44" r="9" fill="white"/>
+        <circle cx="57" cy="43" r="5" fill="#1A1A2E"/>
+        <circle cx="58" cy="42" r="1.8" fill="white"/>
+        <ellipse cx="52" cy="56" rx="7" ry="4" fill="#FFB3BA" opacity="0.65"/>
+        <path d="M54,60 Q60,65 66,60" fill="none" stroke="#1A1A2E" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <span style="font-size:20px;font-weight:700;color:#0F2D48;">Würmchen</span>
+          <span class="pill pill-pink">Häufig</span>
+        </div>
+        <p style="font-size:13px;">Die Hauptwährung. Kommt bei jeder richtigen Antwort. Der Wert entsteht durch Menge, nicht durch Seltenheit — und durch Elumis sichtbare Freude beim Fressen.</p>
+        <div class="tbl-wrap" style="margin-top:12px;">
+          <table>
+            <tr><th>Element</th><th>Hex</th><th>Token</th><th>Neu?</th></tr>
+            <tr><td>Körper</td><td><code>#FF4D80</code></td><td><code>elumiPink</code></td><td>—</td></tr>
+            <tr><td>Segmente</td><td><code>#FF8FA3</code></td><td><code>elumiRose</code></td><td>—</td></tr>
+            <tr><td>Wange</td><td><code>#FFB3BA</code></td><td><code>elumiBlush</code></td><td>—</td></tr>
+            <tr><td>Auge Pupille</td><td><code>#1A1A2E</code></td><td><code>elumiNavy</code></td><td>—</td></tr>
+          </table>
+        </div>
+        <div class="note" style="margin-top:10px;font-size:13px;">Keine neuen Farben — nutzt ausschließlich das bestehende Elumi-Farbsystem.</div>
+      </div>
+    </div>
+
+    <!-- WASSERFLOH -->
+    <div class="icon-entry icon-entry-mint" style="margin-top:16px;">
+      <svg width="100" height="100" viewBox="0 0 200 200" style="flex-shrink:0;border-radius:22px;background:#E8FBF7;">
+        <ellipse cx="100" cy="120" rx="30" ry="42" fill="rgba(46,196,169,0.2)"/>
+        <ellipse cx="100" cy="116" rx="30" ry="40" fill="#2EC4A9"/>
+        <ellipse cx="94" cy="102" rx="17" ry="22" fill="rgba(255,255,255,0.18)"/>
+        <path d="M86,82 Q72,60 60,48" fill="none" stroke="#2EC4A9" stroke-width="4.5" stroke-linecap="round"/>
+        <circle cx="58" cy="46" r="5.5" fill="#2EC4A9"/>
+        <path d="M94,78 Q86,56 82,42" fill="none" stroke="#2EC4A9" stroke-width="4.5" stroke-linecap="round"/>
+        <circle cx="81" cy="40" r="5.5" fill="#2EC4A9"/>
+        <line x1="70" y1="108" x2="50" y2="118" stroke="#2EC4A9" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="70" y1="120" x2="48" y2="133" stroke="#2EC4A9" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="70" y1="132" x2="52" y2="148" stroke="#2EC4A9" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="130" y1="108" x2="150" y2="118" stroke="#2EC4A9" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="130" y1="120" x2="152" y2="133" stroke="#2EC4A9" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="130" y1="132" x2="148" y2="148" stroke="#2EC4A9" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M108,155 Q126,160 128,150 Q130,140 118,136" fill="none" stroke="#1E9E87" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="88" cy="100" r="16" fill="white"/>
+        <circle cx="87" cy="99" r="10" fill="#1A1A2E"/>
+        <circle cx="89" cy="96" r="4" fill="white"/>
+        <circle cx="84" cy="103" r="2" fill="rgba(255,255,255,0.5)"/>
+        <ellipse cx="80" cy="112" rx="7" ry="4" fill="rgba(255,255,255,0.28)"/>
+      </svg>
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <span style="font-size:20px;font-weight:700;color:#0F2D48;">Wasserfloh</span>
+          <span class="pill pill-mint">Selten</span>
+        </div>
+        <p style="font-size:13px;">Zweite Seltenheitsstufe. Für Perfekt-Lektionen und erste Streak-Meilensteine. Fühlt sich besonderer an als ein Würmchen, kommt aber oft genug um motivierend zu bleiben.</p>
+        <div class="tbl-wrap" style="margin-top:12px;">
+          <table>
+            <tr><th>Element</th><th>Hex</th><th>Token</th><th>Neu?</th></tr>
+            <tr><td>Körper / Beine / Fühler</td><td><code>#2EC4A9</code></td><td><code>elumiMint</code></td><td>—</td></tr>
+            <tr><td>Schwanz / Tiefe</td><td><code>#1E9E87</code></td><td><code>elumiMintDark</code></td><td>⚡ neu</td></tr>
+            <tr><td>Auge Pupille</td><td><code>#1A1A2E</code></td><td><code>elumiNavy</code></td><td>—</td></tr>
+            <tr><td>Auge Weiß + Glanz</td><td><code>#FFFFFF</code></td><td>Weiß</td><td>—</td></tr>
+          </table>
+        </div>
+        <div class="note note-mint" style="margin-top:10px;font-size:13px;"><strong>1 neue Farbe:</strong> <code>elumiMintDark #1E9E87</code> — etwas dunkler als Mint, für Tiefendetails.</div>
+      </div>
+    </div>
+
+    <!-- ALGENKUGEL -->
+    <div class="icon-entry icon-entry-green" style="margin-top:16px;">
+      <svg width="100" height="100" viewBox="0 0 200 200" style="flex-shrink:0;border-radius:22px;background:#EAF9F0;">
+        <ellipse cx="100" cy="155" rx="60" ry="11" fill="rgba(0,0,0,0.1)"/>
+        <circle cx="100" cy="104" r="68" fill="#23A06A"/>
+        <path d="M60,72 Q48,88 55,104 Q46,120 58,134" fill="none" stroke="#2EC4A9" stroke-width="5.5" stroke-linecap="round" opacity="0.75"/>
+        <path d="M78,64 Q90,81 73,97 Q80,114 78,128" fill="none" stroke="#3DD4B9" stroke-width="5.5" stroke-linecap="round" opacity="0.65"/>
+        <path d="M100,62 Q112,80 94,96 Q103,113 102,126" fill="none" stroke="#2EC4A9" stroke-width="5.5" stroke-linecap="round" opacity="0.65"/>
+        <path d="M122,65 Q134,83 120,99 Q130,116 118,128" fill="none" stroke="#3DD4B9" stroke-width="5.5" stroke-linecap="round" opacity="0.6"/>
+        <path d="M140,74 Q148,90 144,106 Q152,122 142,134" fill="none" stroke="#2EC4A9" stroke-width="4.5" stroke-linecap="round" opacity="0.5"/>
+        <path d="M74,138 Q66,152 72,162" fill="none" stroke="#2EC4A9" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+        <path d="M100,142 Q98,156 104,164" fill="none" stroke="#3DD4B9" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+        <path d="M126,138 Q134,150 128,162" fill="none" stroke="#2EC4A9" stroke-width="4" stroke-linecap="round" opacity="0.45"/>
+        <circle cx="78" cy="76" r="22" fill="rgba(255,255,255,0.2)"/>
+        <circle cx="70" cy="68" r="10" fill="rgba(255,255,255,0.28)"/>
+      </svg>
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <span style="font-size:20px;font-weight:700;color:#0F2D48;">Algenkugel</span>
+          <span class="pill pill-green">Legendär</span>
+        </div>
+        <p style="font-size:13px;">Die seltenste Beute. Nur für echte Meilensteine — 7-Tage-Streak, Level-Up, besondere Events. Darf sich wie ein Mini-Event anfühlen. Elumi zeigt eine besondere Reaktion wenn er eine bekommt.</p>
+        <div class="tbl-wrap" style="margin-top:12px;">
+          <table>
+            <tr><th>Element</th><th>Hex</th><th>Token</th><th>Neu?</th></tr>
+            <tr><td>Kugel-Körper</td><td><code>#23A06A</code></td><td><code>elumiGreen</code></td><td>⚡ neu</td></tr>
+            <tr><td>Algen-Highlights</td><td><code>#3DD4B9</code></td><td><code>elumiMintLight</code></td><td>⚡ neu</td></tr>
+            <tr><td>Algen-Hauptfarbe</td><td><code>#2EC4A9</code></td><td><code>elumiMint</code></td><td>—</td></tr>
+            <tr><td>Glanzpunkt</td><td><code>#FFFFFF</code> 20–28%</td><td>Weiß</td><td>—</td></tr>
+          </table>
+        </div>
+        <div class="note note-amber" style="margin-top:10px;font-size:13px;"><strong>2 neue Farben:</strong> <code>elumiGreen #23A06A</code> und <code>elumiMintLight #3DD4B9</code> — beide im grünen Farbfamilien-Bereich, passend zu Mint.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 NEUE FARB-TOKENS -->
+  <section>
+    <h2>04 — Neue Farb-Tokens (Icon-Erweiterung)</h2>
+    <p>Drei neue Tokens kommen durch die Beute-Icons dazu. Alle anderen Beute-Farben nutzen das bestehende System. Nach dieser Erweiterung: 11 Tokens total.</p>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#1E9E87;">
+        <div class="swatch-name" style="color:white;">elumiMintDark</div>
+        <div class="swatch-hex" style="color:white;">#1E9E87</div>
+        <div class="swatch-role" style="color:white;">Wasserfloh — Schwanz &amp; Tiefe<br>R: 0.118  G: 0.620  B: 0.529</div>
+      </div>
+      <div class="swatch" style="background:#23A06A;">
+        <div class="swatch-name" style="color:white;">elumiGreen</div>
+        <div class="swatch-hex" style="color:white;">#23A06A</div>
+        <div class="swatch-role" style="color:white;">Algenkugel — Hauptkörper<br>R: 0.137  G: 0.627  B: 0.416</div>
+      </div>
+      <div class="swatch" style="background:#3DD4B9;">
+        <div class="swatch-name" style="color:white;">elumiMintLight</div>
+        <div class="swatch-hex" style="color:white;">#3DD4B9</div>
+        <div class="swatch-role" style="color:white;">Algenkugel — Algen-Highlights<br>R: 0.239  G: 0.831  B: 0.725</div>
+      </div>
+    </div>
+    <pre style="background:#1A1A2E;color:#FFB3BA;padding:18px;border-radius:12px;font-family:'SF Mono','Fira Code',monospace;font-size:12px;line-height:1.8;overflow-x:auto;margin-top:16px;"><span style="color:#FF8FA3">extension</span> <span style="color:#FFD166">Color</span> {
+    <span style="color:#2EC4A9">// Beute-Erweiterung (3 neue Tokens)</span>
+    <span style="color:#FF8FA3">static let</span> elumiMintDark  = Color(<span style="color:#FFD166">"elumiMintDark"</span>)   <span style="color:#555">// #1E9E87 — Wasserfloh Schwanz</span>
+    <span style="color:#FF8FA3">static let</span> elumiGreen     = Color(<span style="color:#FFD166">"elumiGreen"</span>)      <span style="color:#555">// #23A06A — Algenkugel Körper</span>
+    <span style="color:#FF8FA3">static let</span> elumiMintLight = Color(<span style="color:#FFD166">"elumiMintLight"</span>)  <span style="color:#555">// #3DD4B9 — Algenkugel Algen</span>
+}</pre>
+  </section>
+
+  <!-- 05 WIN-SYSTEM TABELLE -->
+  <section>
+    <h2>05 — Win-System: Was du verdienst</h2>
+    <div class="tbl-wrap">
+      <table>
+        <tr>
+          <th>Aktion</th><th>Trainingstyp</th>
+          <th>
+            <svg width="14" height="14" viewBox="0 0 200 200" style="vertical-align:middle;margin-right:3px;">
+              <path d="M100,170 C124,170 140,152 126,136 C112,120 94,124 90,108 C86,92 108,76 100,61 C92,46 72,42 68,57" fill="none" stroke="#FF4D80" stroke-width="32" stroke-linecap="round"/>
+              <circle cx="100" cy="170" r="8" fill="#FF4D80"/>
+              <circle cx="57" cy="48" r="19" fill="#FF4D80"/>
+              <circle cx="50" cy="44" r="8" fill="white"/><circle cx="50" cy="43" r="4.5" fill="#1A1A2E"/>
+            </svg>
+            Würm.
+          </th>
+          <th>
+            <svg width="14" height="14" viewBox="0 0 200 200" style="vertical-align:middle;margin-right:3px;">
+              <ellipse cx="100" cy="116" rx="30" ry="40" fill="#2EC4A9"/>
+              <circle cx="84" cy="100" r="12" fill="white"/><circle cx="83" cy="99" r="7" fill="#1A1A2E"/><circle cx="85" cy="97" r="3" fill="white"/>
+            </svg>
+            Wassfl.
+          </th>
+          <th>
+            <svg width="14" height="14" viewBox="0 0 200 200" style="vertical-align:middle;margin-right:3px;">
+              <circle cx="100" cy="104" r="68" fill="#23A06A"/>
+              <path d="M78,64 Q90,81 73,97 Q80,114 78,128" fill="none" stroke="#3DD4B9" stroke-width="6" stroke-linecap="round" opacity="0.8"/>
+              <circle cx="72" cy="78" r="18" fill="rgba(255,255,255,0.22)"/>
+            </svg>
+            Algenk.
+          </th>
+          <th>XP</th>
+        </tr>
+        <tr><td>Richtig (Karteikarte / Quiz)</td><td>Karteikarte, Quiz</td><td>+1</td><td>—</td><td>—</td><td>+10</td></tr>
+        <tr><td>Richtig (Mündlich)</td><td>Mündliche Abfrage</td><td>+2</td><td>—</td><td>—</td><td>+15</td></tr>
+        <tr><td>Erster Versuch richtig</td><td>Alle</td><td>+2</td><td>—</td><td>—</td><td>+10</td></tr>
+        <tr class="highlight-row"><td>Perfekte Lektion</td><td>Alle</td><td>+5</td><td>+1</td><td>—</td><td>+50</td></tr>
+        <tr><td>Tagesziel (10 Würmchen)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>+25</td></tr>
+        <tr><td>Neue Liste gescannt</td><td>—</td><td>+5</td><td>—</td><td>—</td><td>+20</td></tr>
+        <tr><td>Erste Lektion aus Scan</td><td>Alle</td><td>+3</td><td>—</td><td>—</td><td>+30</td></tr>
+        <tr class="highlight-row-mint"><td>7-Tage-Streak</td><td>—</td><td>—</td><td>+1</td><td>+1</td><td>+100</td></tr>
+        <tr class="highlight-row-mint"><td>30-Tage-Streak</td><td>—</td><td>—</td><td>+3</td><td>+1</td><td>+300</td></tr>
+        <tr><td>Level-Up</td><td>—</td><td>+20</td><td>+2</td><td>+1</td><td>—</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 06 STREAK + LEVEL VISUALISIERT -->
+  <section>
+    <h2>06 — Streak-Multiplikator &amp; Level-Progression</h2>
+
+    <h3>Streak-Multiplikator</h3>
+    <p>Gilt für alle Würmchen-Einnahmen während des aktiven Streaks. Meilensteine bei Tag 7 und 30 geben zusätzlich eine Algenkugel.</p>
+
+    <div style="margin:20px 0;">
+      <svg width="100%" viewBox="0 0 860 80" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0"   y="24" width="160" height="32" rx="8" fill="#FFF0F3" stroke="#FFB3BA" stroke-width="1"/>
+        <rect x="168" y="24" width="160" height="32" rx="8" fill="#FFE0E8" stroke="#FF8FA3" stroke-width="1"/>
+        <rect x="336" y="24" width="160" height="32" rx="8" fill="#FF8FA3"/>
+        <rect x="504" y="24" width="160" height="32" rx="8" fill="#FF6090"/>
+        <rect x="672" y="24" width="188" height="32" rx="8" fill="#FF4D80"/>
+        <text x="80"  y="36" font-family="system-ui,sans-serif" font-size="10" fill="#888" text-anchor="middle">Tag 1–2</text>
+        <text x="248" y="36" font-family="system-ui,sans-serif" font-size="10" fill="#888" text-anchor="middle">Tag 3–6</text>
+        <text x="416" y="36" font-family="system-ui,sans-serif" font-size="10" fill="white" text-anchor="middle">Tag 7–13</text>
+        <text x="584" y="36" font-family="system-ui,sans-serif" font-size="10" fill="white" text-anchor="middle">Tag 14–29</text>
+        <text x="766" y="36" font-family="system-ui,sans-serif" font-size="10" fill="white" text-anchor="middle">Tag 30+</text>
+        <text x="80"  y="51" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#FF4D80" text-anchor="middle">×1</text>
+        <text x="248" y="51" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#FF4D80" text-anchor="middle">×1.5</text>
+        <text x="416" y="51" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="white" text-anchor="middle">×2</text>
+        <text x="584" y="51" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="white" text-anchor="middle">×2.5</text>
+        <text x="766" y="51" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="white" text-anchor="middle">×3</text>
+        <!-- Algenkugel markers -->
+        <circle cx="336" cy="24" r="10" fill="#23A06A" stroke="white" stroke-width="2"/>
+        <text x="336" y="28" font-family="system-ui,sans-serif" font-size="8" fill="white" text-anchor="middle">ALG</text>
+        <circle cx="672" cy="24" r="10" fill="#23A06A" stroke="white" stroke-width="2"/>
+        <text x="672" y="28" font-family="system-ui,sans-serif" font-size="8" fill="white" text-anchor="middle">ALG</text>
+        <text x="336" y="72" font-family="system-ui,sans-serif" font-size="10" fill="#23A06A" text-anchor="middle">+ Algenkugel</text>
+        <text x="672" y="72" font-family="system-ui,sans-serif" font-size="10" fill="#23A06A" text-anchor="middle">+ Algenkugel</text>
+      </svg>
+    </div>
+
+    <h3>Level-Progression</h3>
+    <p>5 Level mit steigendem XP-Bedarf. Jedes Level-Up bringt sofort eine Belohnungs-Welle aus allen drei Beutetypen.</p>
+
+    <div style="margin:20px 0;">
+      <svg width="100%" viewBox="0 0 860 110" xmlns="http://www.w3.org/2000/svg">
+        <!-- Track -->
+        <rect x="40" y="44" width="780" height="8" rx="4" fill="#FFF0F3"/>
+        <rect x="40" y="44" width="312" height="8" rx="4" fill="#FF4D80"/>
+        <!-- Nodes -->
+        <circle cx="40"  cy="48" r="20" fill="#FF4D80"/>
+        <circle cx="235" cy="48" r="20" fill="#FF4D80"/>
+        <circle cx="430" cy="48" r="20" fill="#FFF0F3" stroke="#FF4D80" stroke-width="2.5"/>
+        <circle cx="625" cy="48" r="20" fill="#EBEBEA"/>
+        <circle cx="820" cy="48" r="20" fill="#EBEBEA"/>
+        <text x="40"  y="53" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="white"       text-anchor="middle">1</text>
+        <text x="235" y="53" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="white"       text-anchor="middle">2</text>
+        <text x="430" y="53" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#FF4D80"     text-anchor="middle">3</text>
+        <text x="625" y="53" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#aaa"        text-anchor="middle">4</text>
+        <text x="820" y="53" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#aaa"        text-anchor="middle">5</text>
+        <!-- Labels -->
+        <text x="40"  y="84" font-family="system-ui,sans-serif" font-size="12" font-weight="600" fill="#0F2D48" text-anchor="middle">Anfänger</text>
+        <text x="235" y="84" font-family="system-ui,sans-serif" font-size="12" font-weight="600" fill="#0F2D48" text-anchor="middle">Sprachschüler</text>
+        <text x="430" y="84" font-family="system-ui,sans-serif" font-size="12" font-weight="600" fill="#FF4D80" text-anchor="middle">Vokabel-Profi</text>
+        <text x="625" y="84" font-family="system-ui,sans-serif" font-size="12" fill="#aaa" text-anchor="middle">Sprachmeister</text>
+        <text x="820" y="84" font-family="system-ui,sans-serif" font-size="12" fill="#aaa" text-anchor="middle">Elumi-Legende</text>
+        <text x="40"  y="100" font-family="system-ui,sans-serif" font-size="10" fill="#aaa" text-anchor="middle">0 XP</text>
+        <text x="235" y="100" font-family="system-ui,sans-serif" font-size="10" fill="#aaa" text-anchor="middle">100 XP</text>
+        <text x="430" y="100" font-family="system-ui,sans-serif" font-size="10" fill="#FF8FA3" text-anchor="middle">300 XP ← du bist hier</text>
+        <text x="625" y="100" font-family="system-ui,sans-serif" font-size="10" fill="#aaa" text-anchor="middle">700 XP</text>
+        <text x="820" y="100" font-family="system-ui,sans-serif" font-size="10" fill="#aaa" text-anchor="middle">1500 XP</text>
+      </svg>
+    </div>
+
+    <div class="note note-amber"><strong>Level 5 — Elumi-Legende:</strong> Elumi bekommt dauerhaft goldene Kiemen als visuellen Status-Indikator. Sichtbar auch im Profil-Avatar wenn später Social Features kommen.</div>
+  </section>
+
+  <!-- 07 SCREENS -->
+  <section>
+    <h2>07 — Schlüssel-Screens</h2>
+    <p>Drei emotionale Kern-Momente der App — jeder hat seine eigene visuelle Sprache und eine Elumi-Reaktion.</p>
+
+    <div class="screens-row">
+
+      <!-- SCREEN 1: Richtig -->
+      <div class="screen-wrap">
+        <svg width="200" height="390" viewBox="0 0 200 390" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="200" height="390" rx="28" fill="#0F2D48"/>
+          <rect x="8" y="8" width="184" height="374" rx="20" fill="#FFF0F3"/>
+          <rect x="44" y="0" width="52" height="14" rx="7" fill="#0F2D48"/>
+          <!-- Top bar -->
+          <rect x="18" y="18" width="56" height="22" rx="11" fill="#FFD166"/>
+          <text x="46" y="33" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#0F2D48" text-anchor="middle">🔥 5</text>
+          <rect x="126" y="18" width="56" height="22" rx="11" fill="#FF4D80"/>
+          <text x="154" y="33" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="white" text-anchor="middle">🪱 12</text>
+          <!-- Vocab card -->
+          <rect x="18" y="52" width="164" height="98" rx="14" fill="white"/>
+          <text x="100" y="76" font-family="system-ui,sans-serif" font-size="9" fill="#888" text-anchor="middle">FRANZÖSISCH</text>
+          <text x="100" y="100" font-family="system-ui,sans-serif" font-size="20" font-weight="700" fill="#0F2D48" text-anchor="middle">le chat</text>
+          <text x="100" y="120" font-family="system-ui,sans-serif" font-size="12" fill="#888" text-anchor="middle">die Katze</text>
+          <rect x="28" y="134" width="144" height="6" rx="3" fill="#FFF0F3"/>
+          <rect x="28" y="134" width="90" height="6" rx="3" fill="#FF4D80"/>
+          <!-- Win banner -->
+          <rect x="8" y="160" width="184" height="222" rx="20" fill="#2EC4A9"/>
+          <rect x="8" y="160" width="184" height="20" fill="#2EC4A9"/>
+          <!-- Elumi happy -->
+          <ellipse cx="100" cy="208" rx="32" ry="24" fill="#FFB3BA"/>
+          <circle cx="86" cy="200" r="11" fill="#1A1A2E"/><circle cx="90" cy="196" r="4" fill="white"/>
+          <circle cx="114" cy="200" r="11" fill="#1A1A2E"/><circle cx="118" cy="196" r="4" fill="white"/>
+          <path d="M84,216 Q100,227 116,216" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="68" y1="196" x2="62" y2="185" stroke="#FF4D80" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="60" y1="188" x2="56" y2="181" stroke="#FF8FA3" stroke-width="2" stroke-linecap="round"/>
+          <line x1="132" y1="196" x2="138" y2="185" stroke="#FF4D80" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="140" y1="188" x2="144" y2="181" stroke="#FF8FA3" stroke-width="2" stroke-linecap="round"/>
+          <text x="100" y="252" font-family="system-ui,sans-serif" font-size="16" font-weight="700" fill="white" text-anchor="middle">Super!</text>
+          <!-- Worm + counter -->
+          <path d="M82,292 C86,292 89,288 86,285" fill="none" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+          <circle cx="86" cy="283" r="4.5" fill="white"/>
+          <circle cx="85" cy="282" r="1.8" fill="#2EC4A9"/>
+          <text x="110" y="291" font-family="system-ui,sans-serif" font-size="18" font-weight="700" fill="white" text-anchor="middle">+1</text>
+          <text x="100" y="308" font-family="system-ui,sans-serif" font-size="11" fill="rgba(255,255,255,0.8)" text-anchor="middle">Würmchen</text>
+          <text x="100" y="323" font-family="system-ui,sans-serif" font-size="10" fill="rgba(255,255,255,0.6)" text-anchor="middle">+10 XP</text>
+          <rect x="38" y="340" width="124" height="32" rx="16" fill="white"/>
+          <text x="100" y="360" font-family="system-ui,sans-serif" font-size="13" font-weight="600" fill="#2EC4A9" text-anchor="middle">Weiter →</text>
+        </svg>
+        <div class="screen-label">Richtig beantwortet</div>
+      </div>
+
+      <!-- SCREEN 2: Perfekte Lektion -->
+      <div class="screen-wrap">
+        <svg width="200" height="390" viewBox="0 0 200 390" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="200" height="390" rx="28" fill="#0F2D48"/>
+          <rect x="8" y="8" width="184" height="374" rx="20" fill="#FFF0F3"/>
+          <rect x="44" y="0" width="52" height="14" rx="7" fill="#0F2D48"/>
+          <!-- Stars -->
+          <polygon points="100,44 103,35 106,44 115,44 108,49 111,59 100,54 89,59 92,49 85,44" fill="#FFD166"/>
+          <polygon points="70,50 72,43 74,50 81,50 76,54 78,60 70,57 62,60 64,54 59,50" fill="#FFD166" opacity="0.7"/>
+          <polygon points="130,50 132,43 134,50 141,50 136,54 138,60 130,57 122,60 124,54 119,50" fill="#FFD166" opacity="0.7"/>
+          <text x="100" y="82" font-family="system-ui,sans-serif" font-size="16" font-weight="700" fill="#0F2D48" text-anchor="middle">Perfekte</text>
+          <text x="100" y="100" font-family="system-ui,sans-serif" font-size="16" font-weight="700" fill="#0F2D48" text-anchor="middle">Lektion!</text>
+          <text x="100" y="116" font-family="system-ui,sans-serif" font-size="10" fill="#888" text-anchor="middle">Kein einziger Fehler</text>
+          <!-- Rewards -->
+          <rect x="18" y="128" width="164" height="80" rx="14" fill="white"/>
+          <text x="100" y="148" font-family="system-ui,sans-serif" font-size="9" fill="#888" text-anchor="middle">VERDIENT</text>
+          <!-- 5 worms mini -->
+          <path d="M40,170 C43,170 45,167 43,165" fill="none" stroke="#FF4D80" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="43" cy="163" r="2.5" fill="#FF4D80"/>
+          <text x="50" y="170" font-family="system-ui,sans-serif" font-size="11" font-weight="700" fill="#FF4D80">×5</text>
+          <!-- Wasserfloh mini -->
+          <ellipse cx="90" cy="166" rx="7" ry="9" fill="#2EC4A9"/>
+          <circle cx="87" cy="163" r="3.5" fill="white"/><circle cx="86.5" cy="162.5" r="2" fill="#1A1A2E"/>
+          <text x="100" y="170" font-family="system-ui,sans-serif" font-size="11" font-weight="700" fill="#2EC4A9">×1</text>
+          <!-- XP star -->
+          <polygon points="130,162 132,157 134,162 139,162 135,165 137,170 130,167 123,170 125,165 121,162" fill="#FFD166"/>
+          <text x="143" y="169" font-family="system-ui,sans-serif" font-size="10" font-weight="700" fill="#B8860B">+50</text>
+          <text x="100" y="198" font-family="system-ui,sans-serif" font-size="9" fill="#888" text-anchor="middle">XP</text>
+          <!-- Progress -->
+          <text x="18" y="224" font-family="system-ui,sans-serif" font-size="10" fill="#888">Level 3 → 4</text>
+          <text x="182" y="224" font-family="system-ui,sans-serif" font-size="10" fill="#FF4D80" text-anchor="end">580/700 XP</text>
+          <rect x="18" y="228" width="164" height="6" rx="3" fill="#FFF0F3"/>
+          <rect x="18" y="228" width="136" height="6" rx="3" fill="#FF4D80"/>
+          <!-- Streak -->
+          <rect x="18" y="244" width="164" height="48" rx="12" fill="#FFF8E6"/>
+          <text x="100" y="264" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#0F2D48" text-anchor="middle">🔥 5-Tage-Streak</text>
+          <text x="100" y="280" font-family="system-ui,sans-serif" font-size="10" fill="#888" text-anchor="middle">Noch 2 Tage bis ×2</text>
+          <!-- Button -->
+          <rect x="38" y="304" width="124" height="32" rx="16" fill="#FF4D80"/>
+          <text x="100" y="324" font-family="system-ui,sans-serif" font-size="13" font-weight="600" fill="white" text-anchor="middle">Weiter →</text>
+          <!-- Worm reward prominent -->
+          <rect x="18" y="344" width="164" height="36" rx="12" fill="#FFF0F3"/>
+          <text x="100" y="366" font-family="system-ui,sans-serif" font-size="11" font-weight="600" fill="#FF4D80" text-anchor="middle">Elumi ist satt und glücklich 🪱</text>
+        </svg>
+        <div class="screen-label">Perfekte Lektion</div>
+      </div>
+
+      <!-- SCREEN 3: 7-Tage Streak -->
+      <div class="screen-wrap">
+        <svg width="200" height="390" viewBox="0 0 200 390" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="200" height="390" rx="28" fill="#0F2D48"/>
+          <rect x="8" y="8" width="184" height="374" rx="20" fill="#0F2D48"/>
+          <rect x="44" y="0" width="52" height="14" rx="7" fill="#1A1A2E"/>
+          <!-- Flame big -->
+          <path d="M100,72 C100,60 110,50 107,40 C104,30 94,26 92,35 C88,26 80,29 83,38 C79,31 70,35 73,44 C69,41 67,50 71,56 C68,57 66,65 70,70 C69,77 76,84 90,85 C104,84 112,77 111,70 C115,65 113,57 110,58 C113,52 111,42 108,44 C111,40 109,50 100,72Z" fill="#FF4D80"/>
+          <path d="M92,78 C89,70 92,62 92,62 C92,62 96,70 92,78Z" fill="#FFD166"/>
+          <text x="100" y="106" font-family="system-ui,sans-serif" font-size="22" font-weight="700" fill="white" text-anchor="middle">7 Tage!</text>
+          <text x="100" y="122" font-family="system-ui,sans-serif" font-size="11" fill="rgba(255,255,255,0.7)" text-anchor="middle">Streak-Meilenstein</text>
+          <!-- Week dots -->
+          <rect x="18" y="136" width="164" height="44" rx="12" fill="rgba(255,255,255,0.1)"/>
+          <text x="22" y="150" font-family="system-ui,sans-serif" font-size="8" fill="rgba(255,255,255,0.5)">Mo  Di  Mi  Do  Fr  Sa  So</text>
+          <circle cx="28"  cy="168" r="8" fill="#FF4D80"/>
+          <circle cx="50"  cy="168" r="8" fill="#FF4D80"/>
+          <circle cx="72"  cy="168" r="8" fill="#FF4D80"/>
+          <circle cx="94"  cy="168" r="8" fill="#FF4D80"/>
+          <circle cx="116" cy="168" r="8" fill="#FF4D80"/>
+          <circle cx="138" cy="168" r="8" fill="#FF4D80"/>
+          <circle cx="160" cy="168" r="8" fill="#FF4D80"/>
+          <text x="28"  y="172" font-family="system-ui,sans-serif" font-size="8" fill="white" text-anchor="middle">✓</text>
+          <text x="50"  y="172" font-family="system-ui,sans-serif" font-size="8" fill="white" text-anchor="middle">✓</text>
+          <text x="72"  y="172" font-family="system-ui,sans-serif" font-size="8" fill="white" text-anchor="middle">✓</text>
+          <text x="94"  y="172" font-family="system-ui,sans-serif" font-size="8" fill="white" text-anchor="middle">✓</text>
+          <text x="116" y="172" font-family="system-ui,sans-serif" font-size="8" fill="white" text-anchor="middle">✓</text>
+          <text x="138" y="172" font-family="system-ui,sans-serif" font-size="8" fill="white" text-anchor="middle">✓</text>
+          <text x="160" y="172" font-family="system-ui,sans-serif" font-size="8" fill="white" text-anchor="middle">✓</text>
+          <!-- Algenkugel reward -->
+          <rect x="18" y="192" width="164" height="76" rx="14" fill="rgba(255,255,255,0.12)"/>
+          <text x="100" y="210" font-family="system-ui,sans-serif" font-size="9" fill="rgba(255,255,255,0.7)" text-anchor="middle">BELOHNUNG</text>
+          <circle cx="52" cy="240" r="22" fill="#23A06A"/>
+          <path d="M42,228 Q37,238 41,248" fill="none" stroke="#3DD4B9" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M52,226 Q58,236 54,246" fill="none" stroke="#2EC4A9" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M62,228 Q67,238 63,248" fill="none" stroke="#3DD4B9" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="43" cy="229" r="6" fill="rgba(255,255,255,0.25)"/>
+          <text x="130" y="237" font-family="system-ui,sans-serif" font-size="18" font-weight="700" fill="white" text-anchor="middle">×1</text>
+          <text x="130" y="254" font-family="system-ui,sans-serif" font-size="11" fill="rgba(255,255,255,0.7)" text-anchor="middle">Algenkugel</text>
+          <!-- Multiplier active -->
+          <rect x="18" y="280" width="164" height="36" rx="12" fill="#FF4D80"/>
+          <text x="100" y="296" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="white" text-anchor="middle">Würmchen ×2 aktiv!</text>
+          <text x="100" y="309" font-family="system-ui,sans-serif" font-size="10" fill="rgba(255,255,255,0.8)" text-anchor="middle">Ab jetzt doppelt</text>
+          <!-- Button -->
+          <rect x="38" y="328" width="124" height="32" rx="16" fill="white"/>
+          <text x="100" y="348" font-family="system-ui,sans-serif" font-size="13" font-weight="600" fill="#0F2D48" text-anchor="middle">Krass! →</text>
+          <!-- Elumi sleeping note -->
+          <text x="100" y="376" font-family="system-ui,sans-serif" font-size="10" fill="rgba(255,255,255,0.4)" text-anchor="middle">Elumi dreht vor Freude durch</text>
+        </svg>
+        <div class="screen-label">7-Tage-Meilenstein</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 08 WIN-SYSTEM TABELLE -->
+  <section>
+    <h2>08 — Belohnungs-Tabelle</h2>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Aktion</th><th>Trainingstyp</th><th>Würmchen</th><th>Wasserfloh</th><th>Algenkugel</th><th>XP</th></tr>
+        <tr><td>Richtig (Karteikarte / Quiz)</td><td>Karteikarte, Quiz</td><td>+1</td><td>—</td><td>—</td><td>+10</td></tr>
+        <tr><td>Richtig (Mündlich)</td><td>Mündliche Abfrage</td><td>+2</td><td>—</td><td>—</td><td>+15</td></tr>
+        <tr><td>Erster Versuch richtig</td><td>Alle</td><td>+2</td><td>—</td><td>—</td><td>+10</td></tr>
+        <tr class="highlight-row"><td>Perfekte Lektion</td><td>Alle</td><td>+5</td><td>+1</td><td>—</td><td>+50</td></tr>
+        <tr><td>Tagesziel (10 Würmchen)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>+25</td></tr>
+        <tr><td>Neue Liste gescannt</td><td>—</td><td>+5</td><td>—</td><td>—</td><td>+20</td></tr>
+        <tr><td>Erste Lektion aus Scan</td><td>Alle</td><td>+3</td><td>—</td><td>—</td><td>+30</td></tr>
+        <tr class="highlight-row-mint"><td>7-Tage-Streak</td><td>—</td><td>—</td><td>+1</td><td>+1</td><td>+100</td></tr>
+        <tr class="highlight-row-mint"><td>30-Tage-Streak</td><td>—</td><td>—</td><td>+3</td><td>+1</td><td>+300</td></tr>
+        <tr><td>Level-Up</td><td>—</td><td>+20</td><td>+2</td><td>+1</td><td>—</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 09 LEVEL TABELLE -->
+  <section>
+    <h2>09 — Level-Tabelle</h2>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Level</th><th>Name</th><th>XP</th><th>Belohnung bei Aufstieg</th><th>Elumi-Reaktion</th></tr>
+        <tr><td>1</td><td>Anfänger</td><td>0</td><td>Tutorial-Würmchen (×10)</td><td>Aufgeregtes Wackeln</td></tr>
+        <tr><td>2</td><td>Sprachschüler</td><td>100</td><td>×20 Würmchen, ×1 Wasserfloh</td><td>Freudensprung</td></tr>
+        <tr><td>3</td><td>Vokabel-Profi</td><td>300</td><td>×20 Würmchen, ×2 Wasserflöhe, ×1 Algenkugel</td><td>Kiemen-Fächer auf</td></tr>
+        <tr><td>4</td><td>Sprachmeister</td><td>700</td><td>×20 Würmchen, ×3 Wasserflöhe, ×1 Algenkugel</td><td>Leuchtende Augen</td></tr>
+        <tr><td>5</td><td>Elumi-Legende</td><td>1500</td><td>×20 Würmchen, ×5 Wasserflöhe, ×3 Algenkugeln</td><td>Goldene Kiemen (dauerhaft)</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 10 ELUMI ZUSTÄNDE -->
+  <section>
+    <h2>10 — Elumi-Zustände &amp; Animationen</h2>
+    <div class="grid2">
+      <div class="card card-mint"><h4>Freude — Richtige Antwort</h4><p>Kurzes Hüpfen + Kiemen fächern auf. Dauer: 0.4s.</p><p style="font-size:12px;color:#888;margin-top:8px;"><code>AnimationState.correct</code></p></div>
+      <div class="card card-pink"><h4>Schmerz — Falsche Antwort</h4><p>Leichtes Schütteln, Augen kurz zukneifen. Kein Lebensverlust. Dauer: 0.3s.</p><p style="font-size:12px;color:#888;margin-top:8px;"><code>AnimationState.incorrect</code></p></div>
+      <div class="card card-amber"><h4>Entzücken — Perfekte Lektion</h4><p>Große Freudenanimation + Kiemen leuchten auf + Wasserfloh fliegt durchs Bild. Dauer: 1.2s.</p><p style="font-size:12px;color:#888;margin-top:8px;"><code>AnimationState.perfect</code></p></div>
+      <div class="card card-navy"><h4 style="color:#FFB3BA;">Schlaf — 3+ Tage inaktiv</h4><p>Geschlossene Augen, Zzz-Blasen, Loop. Wird beim App-Start abgespielt wenn inaktiv.</p><p style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:8px;"><code>AnimationState.sleeping</code></p></div>
+    </div>
+    <div class="note" style="margin-top:20px;"><strong>Technologie:</strong> Lottie für alle Elumi-Animationen. JSON-Dateien können unabhängig vom App-Release aktualisiert werden. Jeder Zustand = eine eigene Lottie-Datei.</div>
+  </section>
+
+  <!-- 11 CHECKLISTE -->
+  <section>
+    <h2>11 — Implementierungs-Checkliste</h2>
+    <ul class="checklist">
+      <li>3 neue Xcode Color Sets: <code>elumiMintDark</code>, <code>elumiGreen</code>, <code>elumiMintLight</code></li>
+      <li>Icons in Assets.xcassets: <code>wuermchen@3x.png</code>, <code>wasserfloh@3x.png</code>, <code>algenkugel@3x.png</code></li>
+      <li>Würmchen-Counter im Tab Bar, persistent in Core Data</li>
+      <li>Streak-Logik mit 6h-Puffer (Mitternacht bis 06:00 gilt als gleicher Tag)</li>
+      <li>Streak-Multiplikator auf alle Würmchen-Transaktionen anwenden</li>
+      <li>Scan-Bonus: +5 Würmchen beim ersten Speichern einer neuen Liste</li>
+      <li>Mündliche Abfrage: ×1.5 Würmchen (aufgerundet)</li>
+      <li>Perfekte Lektion Screen mit Wasserfloh + Kugel-Belohnungs-Animation</li>
+      <li>Level-Up Screen mit Elumi-Animation (Lottie)</li>
+      <li>7-Tage-Streak Screen mit Algenkugel-Drop + ×2-Multiplikator-Aktivierung</li>
+      <li>Elumi Schlaf-Animation bei 3+ Tagen Inaktivität (beim App-Start prüfen)</li>
+      <li>SM-2 Spaced Repetition pro Vokabelliste</li>
+      <li>Listen-Status (Neu / In Arbeit / Gemeistert / Perfekt) tracken und anzeigen</li>
+      <li>Lottie-Dateien: correct, incorrect, perfect, sleeping, levelUp (5 Dateien)</li>
+    </ul>
+  </section>
+
+  <div class="footer">
+    <span>Elumi · Gamification Handbook v1.0 · 2026</span>
+    <span>Erstellt mit Claude / Anthropic</span>
+  </div>
+
+</div>
+</body>
+</html>

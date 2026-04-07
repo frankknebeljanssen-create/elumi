@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Elumi — Wasserfloh Animation</title>
+<!--
+  ╔═══════════════════════════════════════════════════════════════╗
+  ║  ELUMI WASSERFLOH — Entwickler-Handover                      ║
+  ║                                                               ║
+  ║  Animationstyp : CSS transform (translate + rotate + scaleX) ║
+  ║  Währung       : Seltene Beute (Rare)                        ║
+  ║                                                               ║
+  ║  ANIMATION-VARIABLEN (alle an einer Stelle anpassen):        ║
+  ║  --duration-swim    : Kompletter Schwimm-Loop (6s = aktuell) ║
+  ║  --duration-legs    : Beinzappeln (0.28s = aktuell)          ║
+  ║  --duration-ant     : Fühler-Sweep (0.9s = aktuell)          ║
+  ║  --duration-bubble  : Blasen aufsteigen (1.6–2.0s)           ║
+  ║                                                               ║
+  ║  FARBCODES:                                                   ║
+  ║  #2EC4A9  elumiMint     — Körper, Beine, Fühler              ║
+  ║  #1E9E87  elumiMintDark — Schwanz, Körper-Tiefe              ║
+  ║  #1A1A2E  elumiNavy     — Pupille                            ║
+  ║  #FFFFFF  Weiß          — Auge, Glanz                        ║
+  ║                                                               ║
+  ║  SCHWIMMPFAD-LOGIK (swim @keyframes):                        ║
+  ║  Der Floh bewegt sich in einer weichen 8er-Kurve.            ║
+  ║  An Wendepunkten flippt scaleX: 1 → -1 (dreht um).          ║
+  ║  rotate() gibt leichte Neigung in Fahrtrichtung.             ║
+  ║  Kombination: translate + scaleX(-1) + rotate = natürlich.   ║
+  ║                                                               ║
+  ║  FÜR LOTTIE-EXPORT:                                          ║
+  ║  swim = Position-Keyframes auf geschwungener Bézierkurve     ║
+  ║  + Rotation-Keyframes + Horizontal-Flip bei Wendepunkten.    ║
+  ║  legs = Rotation-Loop auf Gelenkpunkt der Beine.             ║
+  ╚═══════════════════════════════════════════════════════════════╝
+-->
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #0A2540;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  flex-direction: column;
+  gap: 28px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+}
+
+/* ─────────────────────────────────────────
+   TIMING VARIABLES
+   Schnellere App-Version: --duration-swim: 4s, --duration-legs: 0.18s
+───────────────────────────────────────── */
+:root {
+  --duration-swim    : 6s;
+  --duration-legs    : 0.28s;
+  --duration-ant     : 0.9s;
+  --duration-bubble1 : 1.6s;
+  --duration-bubble2 : 2.0s;
+  --duration-bubble3 : 1.8s;
+}
+
+/* ─────────────────────────────────────────
+   STAGE
+───────────────────────────────────────── */
+.stage {
+  width: 520px;
+  height: 280px;
+  background: #0A2540;
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(46,196,169,0.1);
+}
+
+/* ─────────────────────────────────────────
+   WATER SHIMMER LINES (background)
+───────────────────────────────────────── */
+@keyframes waterShimmer {
+  0%,100% { opacity: 0.06; }
+  50%     { opacity: 0.13; }
+}
+.wline { animation: waterShimmer ease-in-out infinite; }
+
+/* ─────────────────────────────────────────
+   BACKGROUND BUBBLES (ambient)
+───────────────────────────────────────── */
+@keyframes bgBubble {
+  0%   { transform: translateY(0) translateX(0); opacity: 0.25; }
+  50%  { transform: translateY(-120px) translateX(8px); opacity: 0.18; }
+  100% { transform: translateY(-280px) translateX(0); opacity: 0; }
+}
+.bb {
+  animation: bgBubble linear infinite;
+  border-radius: 50%;
+  background: rgba(46,196,169,0.3);
+  position: absolute;
+}
+
+/* ─────────────────────────────────────────
+   SWIM PATH
+   Soft figure-8 arc across the stage.
+   scaleX flips direction at turning points.
+   rotate gives natural tilt into the curve.
+
+   Waypoints (approximate):
+   0%   bottom-left,  facing right
+   22%  top-center,   facing right
+   25%  top-center,   FLIPS to face left
+   48%  bottom-right, facing left
+   50%  bottom-right, FLIPS to face right
+   72%  top-left,     facing right  (loops)
+   75%  top-left,     FLIPS left
+   97%  bottom-left,  facing left → snaps to 0%
+───────────────────────────────────────── */
+@keyframes swim {
+  0%   { transform: translate(24px,  160px) scaleX(1)  rotate(-5deg);  }
+  12%  { transform: translate(160px,  80px) scaleX(1)  rotate(-12deg); }
+  22%  { transform: translate(280px,  46px) scaleX(1)  rotate(0deg);   }
+  25%  { transform: translate(312px,  50px) scaleX(-1) rotate(0deg);   }
+  38%  { transform: translate(400px, 110px) scaleX(-1) rotate(8deg);   }
+  48%  { transform: translate(442px, 184px) scaleX(-1) rotate(5deg);   }
+  50%  { transform: translate(444px, 194px) scaleX(1)  rotate(5deg);   }
+  62%  { transform: translate(300px, 230px) scaleX(1)  rotate(3deg);   }
+  72%  { transform: translate(160px, 200px) scaleX(1)  rotate(-3deg);  }
+  75%  { transform: translate(128px, 194px) scaleX(-1) rotate(-3deg);  }
+  88%  { transform: translate(60px,  130px) scaleX(-1) rotate(-8deg);  }
+  97%  { transform: translate(20px,  156px) scaleX(-1) rotate(-5deg);  }
+  100% { transform: translate(24px,  160px) scaleX(1)  rotate(-5deg);  }
+}
+
+/* ─────────────────────────────────────────
+   LEGS — alternating kick
+   transform-origin on the joint point
+───────────────────────────────────────── */
+@keyframes legKick {
+  0%,100% { transform: rotate(-28deg); }
+  50%     { transform: rotate(28deg); }
+}
+@keyframes legKick2 {
+  0%,100% { transform: rotate(-22deg); }
+  50%     { transform: rotate(22deg); }
+}
+
+/* ─────────────────────────────────────────
+   ANTENNAE
+───────────────────────────────────────── */
+@keyframes antSweep {
+  0%,100% { transform: rotate(-10deg); }
+  50%     { transform: rotate(18deg); }
+}
+
+/* ─────────────────────────────────────────
+   BUBBLE TRAIL (follows behind flea)
+───────────────────────────────────────── */
+@keyframes trailBubble {
+  0%   { transform: translate(0,0) scale(1);   opacity: 0.55; }
+  100% { transform: translate(6px,-44px) scale(1.5); opacity: 0; }
+}
+
+/* ─────────────────────────────────────────
+   ELEMENT CLASSES
+───────────────────────────────────────── */
+.flea {
+  position: absolute;
+  top: 0; left: 0;
+  animation: swim var(--duration-swim) ease-in-out infinite;
+}
+
+/* Left legs (3) — opposite phase to right */
+.leg-l1 { animation: legKick  var(--duration-legs) ease-in-out infinite alternate;       transform-origin: 0px 0px; }
+.leg-l2 { animation: legKick2 var(--duration-legs) ease-in-out infinite alternate 0.07s; transform-origin: 0px 0px; }
+.leg-l3 { animation: legKick  var(--duration-legs) ease-in-out infinite alternate 0.14s; transform-origin: 0px 0px; }
+
+/* Right legs (3) — offset phase */
+.leg-r1 { animation: legKick2 var(--duration-legs) ease-in-out infinite alternate;       transform-origin: 0px 0px; }
+.leg-r2 { animation: legKick  var(--duration-legs) ease-in-out infinite alternate 0.07s; transform-origin: 0px 0px; }
+.leg-r3 { animation: legKick2 var(--duration-legs) ease-in-out infinite alternate 0.14s; transform-origin: 0px 0px; }
+
+.antennae { animation: antSweep var(--duration-ant) ease-in-out infinite alternate; transform-origin: -3px 15px; }
+
+.tb1 { animation: trailBubble var(--duration-bubble1) ease-out infinite; }
+.tb2 { animation: trailBubble var(--duration-bubble2) ease-out infinite 0.5s; }
+.tb3 { animation: trailBubble var(--duration-bubble3) ease-out infinite 1.0s; }
+
+/* ─────────────────────────────────────────
+   DEV INFO
+───────────────────────────────────────── */
+.info {
+  color: rgba(255,255,255,0.25);
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  text-align: center;
+  line-height: 1.9;
+}
+.chip {
+  display: inline-block;
+  background: rgba(46,196,169,0.18);
+  border: 1px solid rgba(46,196,169,0.32);
+  color: #2EC4A9;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin: 2px;
+  font-family: "SF Mono","Fira Code",monospace;
+}
+.tip {
+  margin-top: 6px;
+  color: rgba(255,255,255,0.18);
+  font-size: 11px;
+  font-style: italic;
+}
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <!-- ── WATER BACKGROUND ── -->
+  <svg style="position:absolute;top:0;left:0;width:100%;height:100%;"
+       viewBox="0 0 520 280" preserveAspectRatio="xMidYMid slice">
+    <path class="wline" style="animation-duration:2.8s;"
+          d="M0,200 Q65,190 130,200 Q195,210 260,200 Q325,190 390,200 Q455,210 520,200"
+          fill="none" stroke="#2EC4A9" stroke-width="1"/>
+    <path class="wline" style="animation-duration:3.4s;animation-delay:0.6s;"
+          d="M0,170 Q85,160 170,170 Q255,180 340,170 Q425,160 520,170"
+          fill="none" stroke="#2EC4A9" stroke-width="1"/>
+    <path class="wline" style="animation-duration:4.1s;animation-delay:1.2s;"
+          d="M0,230 Q110,220 220,230 Q330,240 440,230 Q480,226 520,230"
+          fill="none" stroke="#2EC4A9" stroke-width="0.8"/>
+    <path class="wline" style="animation-duration:3.7s;animation-delay:2s;"
+          d="M0,140 Q75,132 150,140 Q225,148 300,140 Q375,132 520,140"
+          fill="none" stroke="#1E9E87" stroke-width="0.7"/>
+  </svg>
+
+  <!-- ambient rising bubbles -->
+  <div class="bb" style="width:5px;height:5px;left:48px; bottom:0;animation-duration:3.5s;"></div>
+  <div class="bb" style="width:4px;height:4px;left:130px;bottom:0;animation-duration:4.2s;animation-delay:1s;"></div>
+  <div class="bb" style="width:6px;height:6px;left:220px;bottom:0;animation-duration:3.9s;animation-delay:0.4s;"></div>
+  <div class="bb" style="width:3px;height:3px;left:330px;bottom:0;animation-duration:4.8s;animation-delay:1.6s;"></div>
+  <div class="bb" style="width:5px;height:5px;left:420px;bottom:0;animation-duration:3.6s;animation-delay:2.4s;"></div>
+  <div class="bb" style="width:3px;height:3px;left:70px; bottom:0;animation-duration:5.1s;animation-delay:0.8s;"></div>
+  <div class="bb" style="width:4px;height:4px;left:385px;bottom:0;animation-duration:4.0s;animation-delay:3.1s;"></div>
+
+  <!-- ── WASSERFLOH ── -->
+  <div class="flea">
+    <svg width="80" height="90" viewBox="-40 -52 80 90" overflow="visible">
+
+      <!-- body shadow -->
+      <ellipse cx="2" cy="34" rx="20" ry="6" fill="rgba(0,0,0,0.25)"/>
+
+      <!-- BODY — elumiMint #2EC4A9 -->
+      <ellipse cx="0" cy="0" rx="21" ry="30" fill="#2EC4A9"/>
+      <!-- body sheen -->
+      <ellipse cx="-5" cy="-10" rx="13" ry="18" fill="rgba(255,255,255,0.16)"/>
+
+      <!-- ANTENNAE — pivot at top of head -->
+      <g class="antennae">
+        <line x1="-9" y1="-28" x2="-22" y2="-50" stroke="#2EC4A9" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="-23" cy="-52" r="4" fill="#2EC4A9"/>
+        <line x1="-6" y1="-28" x2="-15" y2="-50" stroke="#1E9E87" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="-16" cy="-52" r="4" fill="#1E9E87"/>
+      </g>
+
+      <!-- LEFT LEGS — pivot at body edge (-20, y) -->
+      <g class="leg-l1" style="transform-origin:-20px -6px;">
+        <line x1="-20" y1="-6"  x2="-36" y2="2"  stroke="#2EC4A9" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="-38" cy="3"  r="2.5" fill="#1E9E87"/>
+      </g>
+      <g class="leg-l2" style="transform-origin:-20px 4px;">
+        <line x1="-20" y1="4"   x2="-36" y2="14" stroke="#2EC4A9" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="-38" cy="15" r="2.5" fill="#1E9E87"/>
+      </g>
+      <g class="leg-l3" style="transform-origin:-20px 14px;">
+        <line x1="-20" y1="14"  x2="-36" y2="26" stroke="#2EC4A9" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="-37" cy="27" r="2"   fill="#1E9E87"/>
+      </g>
+
+      <!-- RIGHT LEGS — opposite kick phase -->
+      <g class="leg-r1" style="transform-origin:20px -6px;">
+        <line x1="20" y1="-6"  x2="36" y2="2"  stroke="#2EC4A9" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="38" cy="3"  r="2.5" fill="#1E9E87"/>
+      </g>
+      <g class="leg-r2" style="transform-origin:20px 4px;">
+        <line x1="20" y1="4"   x2="36" y2="14" stroke="#2EC4A9" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="38" cy="15" r="2.5" fill="#1E9E87"/>
+      </g>
+      <g class="leg-r3" style="transform-origin:20px 14px;">
+        <line x1="20" y1="14"  x2="36" y2="26" stroke="#2EC4A9" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="37" cy="27" r="2"   fill="#1E9E87"/>
+      </g>
+
+      <!-- TAIL SPINE — elumiMintDark #1E9E87 -->
+      <path d="M12,26 Q30,32 32,22 Q34,12 24,8"
+            fill="none" stroke="#1E9E87" stroke-width="4.5" stroke-linecap="round"/>
+      <circle cx="32" cy="22" r="3" fill="#1E9E87"/>
+
+      <!-- EYE -->
+      <circle cx="-7" cy="-8" r="13" fill="white"/>
+      <circle cx="-8" cy="-9" r="9"  fill="#1A1A2E"/>  <!-- elumiNavy pupil -->
+      <circle cx="-5" cy="-12" r="3.5" fill="white"/>  <!-- main shine -->
+      <circle cx="-11" cy="-4" r="2"   fill="rgba(255,255,255,0.4)"/> <!-- micro shine -->
+
+      <!-- CHEEK BLUSH -->
+      <ellipse cx="-16" cy="4" rx="6" ry="3.5" fill="rgba(255,255,255,0.22)"/>
+
+      <!-- BUBBLE TRAIL (behind flea, dissipates upward) -->
+      <circle class="tb1" cx="24" cy="-6"  r="3.5" fill="rgba(255,255,255,0.45)"/>
+      <circle class="tb2" cx="28" cy="4"   r="2.5" fill="rgba(255,255,255,0.35)"/>
+      <circle class="tb3" cx="22" cy="14"  r="2"   fill="rgba(255,255,255,0.3)"/>
+
+    </svg>
+  </div>
+
+</div>
+
+<!-- DEV INFO -->
+<div class="info">
+  <div>
+    <span class="chip">#2EC4A9 elumiMint</span>
+    <span class="chip">#1E9E87 elumiMintDark</span>
+    <span class="chip">#1A1A2E elumiNavy</span>
+    <span class="chip">#FFFFFF Weiß</span>
+  </div>
+  <div style="margin-top:10px;">
+    Für schnellere Animation in der App: in <code style="color:#2EC4A9;">:root</code> setzen —
+    <code style="color:#2EC4A9;">--duration-swim: 4s</code> &nbsp;·&nbsp;
+    <code style="color:#2EC4A9;">--duration-legs: 0.18s</code>
+  </div>
+  <div class="tip">
+    Lottie/Rive: swim = Positions-Keyframes auf Bézierkurve + scaleX-Flip an Wendepunkten ·
+    legs = Rotation-Loop auf Gelenkpunkt · bubbles = Opacity + translateY fade-out
+  </div>
+</div>
+
+</body>
+</html>

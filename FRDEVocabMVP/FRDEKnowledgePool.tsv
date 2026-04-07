@@ -1,0 +1,641 @@
+# source_display	source_lookup	target_display	target_lookup	type	de_noun	fr_question	target_article
+# legacy rows below may still use the compact 3-column format: source	target	type
+À plus !	Bis später!	phrases
+À bientôt.	bis bald	phrases
+À demain matin.	bis morgen früh	phrases
+À quelle heure ouvre la boulangerie ?	um wie viel uhr öffnet die bäckerei	phrases
+abeille		words
+abeille	biene	words
+abonnement		words
+abonnement	abonnement	words
+adaptation		words
+adaptation	anpassung	words
+aéroport	flughafen	words
+agenda		words
+ambiguïté		words
+ambiguïté	mehrdeutigkeit	words
+amélioration	verbesserung	words
+ah	ach, ach so	words
+ami	freund	words
+analyse	analyse	words
+annulation		words
+anticipation		words
+anticipation	vorausahnung	words
+appartenance		words
+argent	geld	words
+argument		words
+arrogance		words
+aspirateur		words
+assurance		words
+attention		words
+auberge		words
+automne		words
+automne	herbst	words
+autonomie		words
+autonomie	selbstständigkeit	words
+avance		words
+avenir	zukunft	words
+bagage		words
+bagage	gepäck	words
+baleine		words
+baleine	wal	words
+banane	banane	words
+banlieue		words
+batterie		words
+batterie	batterie	words
+bébé		words
+bibliothèque		words
+bibliothèque	bibliothek	words
+bienveillance		words
+bienveillance	freundlichkeit	words
+Bienvenue chez nous.	willkommen bei uns	phrases
+billet	ticket	words
+blanc		words
+blessure		words
+bleu		words
+Bon appétit !	guten appetit	phrases
+bof	Na ja./Es geht so.	phrases
+bonjour	guten tag	words
+boulangerie		words
+boulangerie	bäckerei	words
+bouleversement		words
+bouleversement	umbruch	words
+bras	arm	words
+bureau	büro	words
+C est parfait.	das ist perfekt	phrases
+C'est parti !	Los geht's!	phrases
+C est très bien.	das ist sehr gut	phrases
+café	kaffee	words
+cahier		words
+campagne		words
+candidature	bewerbung	words
+carrefour		words
+carrefour	kreuzung	words
+cartable		words
+cascade		words
+cascade	wasserfall	words
+Ce défi demande beaucoup d énergie.	diese herausforderung braucht viel energie	phrases
+Cela va bien.	es geht gut	phrases
+Ça va ?	Wie geht's?/Geht's (dir) gut?	phrases
+Ça va.	Es geht mir gut.	phrases
+la Tour Eiffel	der Eiffelturm	phrases
+Tour Eiffel	der Eiffelturm	phrases
+Ça sonne !	Es klingelt!	phrases
+certitude		words
+certitude	gewissheit	words
+Cette candidature mérite une réponse rapide.	diese bewerbung verdient eine schnelle antwort	phrases
+Cette décision aura des conséquences importantes.	diese entscheidung wird wichtige folgen haben	phrases
+Cette expérience m a beaucoup appris.	diese erfahrung hat mir viel beigebracht	phrases
+Cette falaise est impressionnante.	diese klippe ist beeindruckend	phrases
+Cette habitude m aide à progresser.	diese gewohnheit hilft mir beim fortschritt	phrases
+Cette perspective me semble plus réaliste.	diese perspektive erscheint mir realistischer	phrases
+Cette proposition semble intéressante.	dieser vorschlag wirkt interessant	phrases
+Cette randonnée est assez longue.	diese wanderung ist ziemlich lang	phrases
+Cette rue est très calme.	diese straße ist sehr ruhig	phrases
+Cette tâche demande beaucoup de précision.	diese aufgabe verlangt viel genauigkeit	phrases
+chaise	stuhl	words
+chargeur		words
+chargeur	ladegerät	words
+chat	katze	words
+chaud		words
+chaussure	schuh	words
+chemise	hemd	words
+cheval	pferd	words
+cheveux	haare	words
+chien	hund	words
+ciel	himmel	words
+circulation		words
+classe		words
+clavier		words
+clavier	tastatur	words
+clé	schlüssel	words
+cohérence		words
+cohérence	stimmigkeit	words
+colis		words
+colis	paket	words
+Combien de temps faut il ?	wie lange dauert es	phrases
+Comment ça va ?	wie geht es dir	phrases
+complexité		words
+comportement	verhalten	words
+compromis		words
+concours		words
+confiance	vertrauen	words
+confrontation		words
+connaissance	wissen	words
+conseil		words
+conséquence		words
+contrainte		words
+contrainte	einschränkung	words
+contrat	vertrag	words
+conviction		words
+conviction	überzeugung	words
+coopération		words
+courage	mut	words
+court		words
+cousin		words
+cousine		words
+crayon		words
+créativité		words
+créativité	kreativität	words
+crocodile		words
+crocodile	krokodil	words
+cuisine	küche	words
+dauphin		words
+dauphin	delfin	words
+décision	entscheidung	words
+défi	herausforderung	words
+déjeuner	mittagessen	words
+démarche		words
+démarche	vorgehensweise	words
+désaccord		words
+désaccord	meinungsverschiedenheit	words
+développement	entwicklung	words
+devoir		words
+difficile		words
+dilemme		words
+dilemme	zwiespalt	words
+dimanche		words
+dîner	abendessen	words
+discipline		words
+discours		words
+discours	rede	words
+discussion		words
+diversité		words
+diversité	vielfalt	words
+dossier		words
+douane		words
+durabilité		words
+durabilité	nachhaltigkeit	words
+eau	wasser	words
+écharpe		words
+école	schule	words
+écran		words
+écran	bildschirm	words
+écureuil	eichhörnchen	words
+efficacité	effizienz	words
+effort		words
+égalité		words
+égalité	gleichheit	words
+éléphant		words
+éléphant	elefant	words
+élève		words
+embauche		words
+embouteillage		words
+engagement		words
+et	und	words
+Et toi ?	Und du?	phrases
+Et toi ?	Und dir?	phrases
+enjeu		words
+enjeu	tragweite	words
+entreprise	unternehmen	words
+entretien		words
+entretien	gespräch	words
+environnement	umgebung	words
+épanouissement		words
+épanouissement	entfaltung	words
+épuisement		words
+équilibre	balance	words
+escale		words
+été	sommer	words
+éthique		words
+éthique	ethik	words
+étoile	stern	words
+éventualité		words
+éventualité	möglichkeit	words
+examen		words
+Excusez moi.	entschuldigen sie	phrases
+exemple		words
+exigence		words
+exigence	anforderung	words
+expérience	erfahrung	words
+explication		words
+facile		words
+facture		words
+facture	rechnung	words
+faible		words
+falaise		words
+falaise	klippe	words
+famille	familie	words
+fenêtre	fenster	words
+Ferme la porte, s’il te plaît.	schließ bitte die tür	phrases
+Fermez la fenêtre, s il vous plaît.	schließen sie bitte das fenster	phrases
+feuille		words
+fiabilité		words
+fiabilité	zuverlässigkeit	words
+fille		words
+fleur	blume	words
+forêt	wald	words
+formulaire		words
+fort		words
+frère		words
+froid		words
+fromage	käse	words
+frontière		words
+frontière	grenze	words
+gants		words
+garçon		words
+gare	bahnhof	words
+gâteau	kuchen	words
+girafe		words
+girafe	giraffe	words
+gomme		words
+grand		words
+gratitude		words
+gratitude	dankbarkeit	words
+grenouille		words
+grenouille	frosch	words
+gris		words
+habitude		words
+habitude	gewohnheit	words
+héritage		words
+héritage	vermächtnis	words
+heureux		words
+histoire	geschichte	words
+hiver	winter	words
+hôpital	krankenhaus	words
+hypothèse		words
+hypothèse	hypothese	words
+identité		words
+Il fait meilleur qu hier.	das wetter ist besser als gestern	phrases
+Il faut analyser la situation avec précision.	wir müssen die situation genau analysieren	phrases
+Il faut suivre les indications.	man muss den hinweisen folgen	phrases
+Il faut tenir compte du contexte.	man muss den kontext berücksichtigen	phrases
+Il faut trouver une solution durable.	wir müssen eine dauerhafte lösung finden	phrases
+Il manque encore quelques détails essentiels.	es fehlen noch einige wichtige details	phrases
+Il neige ce matin.	es schneit heute morgen	phrases
+Il pleut depuis ce matin.	es regnet seit heute morgen	phrases
+Il serait utile de pratiquer plus souvent.	es wäre sinnvoll öfter zu üben	phrases
+Il vaut mieux prévenir que guérir.	vorsicht ist besser als nachsicht	phrases
+Il y a des étoiles ce soir.	heute abend sieht man sterne	phrases
+Il y a trop de bruit ici.	hier ist es zu laut	phrases
+immeuble		words
+imprimante		words
+imprimante	drucker	words
+influence		words
+injustice		words
+injustice	ungerechtigkeit	words
+innovation		words
+innovation	innovation	words
+inquiétude		words
+itinéraire		words
+itinéraire	route	words
+J ai besoin de prendre un peu de recul.	ich muss etwas abstand gewinnen	phrases
+J ai faim.	ich habe hunger	phrases
+J ai oublié mon billet.	ich habe mein ticket vergessen	phrases
+J ai soif.	ich habe durst	phrases
+J ai une réservation.	ich habe eine reservierung	phrases
+J aime la musique.	ich mag musik	phrases
+J aimerais améliorer ma prononciation chaque jour.	ich möchte meine aussprache jeden tag verbessern	phrases
+J essaie de garder un bon équilibre.	ich versuche eine gute balance zu halten	phrases
+jamais		words
+jambe	bein	words
+jardin	garten	words
+jaune		words
+Je cherche mes chaussures.	ich suche meine schuhe	phrases
+Je cherche mon hôtel.	ich suche mein hotel	phrases
+Je cherche un environnement plus calme.	ich suche eine ruhigere umgebung	phrases
+Je cherche une pharmacie de garde.	ich suche eine notapotheke	phrases
+Je dois acheter un médicament.	ich muss ein medikament kaufen	phrases
+Je dois appeler ma famille.	ich muss meine familie anrufen	phrases
+Je lave mes mains.	ich wasche meine hände	phrases
+Je m appelle Marie.	ich heiße marie	phrases
+Je m'appelle + Name.	Ich heiße + Name.	phrases
+Je manque parfois de confiance en moi.	mir fehlt manchmal das selbstvertrauen	phrases
+Je me sens plus à l aise en français.	ich fühle mich auf französisch sicherer	phrases
+Je n ai pas encore pris ma décision.	ich habe meine entscheidung noch nicht getroffen	phrases
+Je n étais pas d accord au début.	ich war am anfang nicht einverstanden	phrases
+Je ne comprends pas.	ich verstehe nicht	phrases
+Je préfère réfléchir avant de répondre.	ich denke lieber nach bevor ich antworte	phrases
+Je préfère voyager en train.	ich reise lieber mit dem zug	phrases
+Je prends le train à huit heures.	ich nehme den zug um acht uhr	phrases
+Je prépare le dîner ce soir.	ich bereite heute abend das abendessen vor	phrases
+Je prépare mon bagage.	ich packe mein gepäck	phrases
+Je suis en retard.	ich bin zu spät	phrases
+Je suis fatigué.	ich bin müde	phrases
+Je suis perdu.	ich habe mich verlaufen	phrases
+Je suis prêt.	ich bin bereit	phrases
+Je travaille au bureau aujourd hui.	ich arbeite heute im büro	phrases
+Je traverse le carrefour.	ich überquere die kreuzung	phrases
+Je vais au marché.	ich gehe zum markt	phrases
+Je vois un oiseau.	ich sehe einen vogel	phrases
+Je voudrais approfondir ce sujet.	ich möchte dieses thema vertiefen	phrases
+Je voudrais changer de chambre.	ich möchte das zimmer wechseln	phrases
+Je voudrais réserver une table.	ich möchte einen tisch reservieren	phrases
+Je voudrais un café.	ich möchte einen kaffee	phrases
+jeudi		words
+jeune		words
+jour	tag	words
+journal	zeitung	words
+jus	saft	words
+J’ai imprimé le document ce matin.	ich habe das dokument heute morgen ausgedruckt	phrases
+J’aime lire le soir.	ich lese gern am abend	phrases
+J’attends une livraison importante.	ich warte auf eine wichtige lieferung	phrases
+J’ouvre la fenêtre.	ich öffne das fenster	phrases
+La batterie de mon téléphone est presque vide.	der akku von meinem telefon ist fast leer	phrases
+La bibliothèque ferme à dix-huit heures.	die bibliothek schließt um achtzehn uhr	phrases
+La cascade est magnifique.	der wasserfall ist wunderschön	phrases
+La frontière est encore loin.	die grenze ist noch weit entfernt	phrases
+La météo annonce du vent demain.	der wetterbericht meldet morgen wind	phrases
+La pharmacie est elle ouverte ?	ist die apotheke geöffnet	phrases
+La qualité de ce travail est remarquable.	die qualität dieser arbeit ist bemerkenswert	phrases
+La soupe est chaude.	die suppe ist warm	phrases
+lait	milch	words
+lapin	kaninchen	words
+Le chat dort sur la chaise.	die katze schläft auf dem stuhl	phrases
+Le cheval est dans le champ.	das pferd ist auf dem feld	phrases
+Le ciel est bleu.	der himmel ist blau	phrases
+Le colis arrive demain.	das paket kommt morgen an	phrases
+Le magasin ferme à six heures.	das geschäft schließt um sechs uhr	phrases
+Le musée ouvre à dix heures.	das museum öffnet um zehn uhr	phrases
+Le quartier change rapidement.	das viertel verändert sich schnell	phrases
+Le soutien de l équipe était précieux.	die unterstützung des teams war wertvoll	phrases
+Le village est très calme.	das dorf ist sehr ruhig	phrases
+Le voisin parle très fort.	der nachbar spricht sehr laut	phrases
+leçon		words
+légitimité		words
+légitimité	legitimität	words
+lent		words
+Les résultats sont meilleurs que prévu.	die ergebnisse sind besser als erwartet	phrases
+lessive		words
+liberté	freiheit	words
+librairie		words
+lion		words
+lion	löwe	words
+livraison		words
+livre	buch	words
+long		words
+loup		words
+loup	wolf	words
+lucidité		words
+lucidité	klarheit	words
+lundi		words
+lune	mond	words
+Ma montre est neuve.	meine uhr ist neu	phrases
+magasin	geschäft	words
+main	hand	words
+maison	haus	words
+Malgré le retard, nous sommes restés calmes.	trotz der verspätung sind wir ruhig geblieben	phrases
+marché	markt	words
+mardi		words
+marron		words
+matin	morgen	words
+médicament		words
+médicament	medikament	words
+méfiance		words
+méfiance	misstrauen	words
+mémoire		words
+mémoire	erinnerung	words
+merci	danke	words
+mercredi		words
+mère		words
+météo	wetter	words
+métro	u bahn	words
+modernité		words
+modernité	moderne	words
+mois		words
+Mon chargeur est dans le bureau.	mein ladegerät ist im büro	phrases
+Mon ordinateur est trop lent.	mein computer ist zu langsam	phrases
+Mon téléphone ne fonctionne plus.	mein telefon funktioniert nicht mehr	phrases
+montagne	berg	words
+montre	uhr	words
+morale		words
+mot de passe		words
+musique	musik	words
+navette		words
+négociation		words
+négociation	verhandlung	words
+neige		words
+neige	schnee	words
+noir		words
+non	nein	words
+Nous avons besoin d aide.	wir brauchen hilfe	phrases
+Nous avons besoin d une réponse rapide.	wir brauchen eine schnelle antwort	phrases
+Nous avons discuté du projet pendant une heure.	wir haben eine stunde über das projekt gesprochen	phrases
+Nous avons finalement trouvé un compromis.	wir haben am ende einen kompromiss gefunden	phrases
+Nous avons pris un abonnement mensuel.	wir haben ein monatliches abonnement abgeschlossen	phrases
+Nous avons reçu la facture par e-mail.	wir haben die rechnung per e mail erhalten	phrases
+Nous devons respecter la date limite.	wir müssen die frist einhalten	phrases
+Nous faisons une promenade en forêt.	wir machen einen spaziergang im wald	phrases
+Nous mangeons une salade.	wir essen einen salat	phrases
+Nous partons ce soir.	wir fahren heute abend los	phrases
+Nous restons trois nuits.	wir bleiben drei nächte	phrases
+Nous sommes dans le jardin.	wir sind im garten	phrases
+Nous suivons le même itinéraire.	wir folgen derselben route	phrases
+Nous visitons la ville demain.	wir besuchen morgen die stadt	phrases
+nuage		words
+nuage	wolke	words
+nuance		words
+nuance	nuance	words
+nuit	nacht	words
+occasion	gelegenheit	words
+oiseau	vogel	words
+oncle		words
+orange		words
+ordinateur	computer	words
+ordonnance		words
+ordonnance	rezept	words
+Où est la gare ?	wo ist der bahnhof	phrases
+Où est ma clé ?	wo ist mein schlüssel	phrases
+Où habites tu ?	wo wohnst du	phrases
+Où puis je acheter un billet ?	wo kann ich ein ticket kaufen	phrases
+Où sont les toilettes ?	wo ist die toilette	phrases
+Où ?	Wo?	phrases
+Où?	Wo?	phrases
+oui	ja	words
+ours		words
+ours	bär	words
+Ouvrez la porte, s il vous plaît.	öffnen sie bitte die tür	phrases
+pain	brot	words
+pansement		words
+pantalon	hose	words
+papillon		words
+papillon	schmetterling	words
+parapluie		words
+parfois		words
+Parlez plus lentement, s il vous plaît.	sprechen sie bitte langsamer	phrases
+patience		words
+pauvreté	armut	words
+paysage		words
+pension		words
+pénurie		words
+pénurie	knappheit	words
+père		words
+persévérance		words
+persévérance	ausdauer	words
+perspective		words
+perspective	perspektive	words
+perspicacité		words
+perspicacité	scharfsinn	words
+pertinence		words
+petit		words
+petit déjeuner	frühstück	words
+Peux-tu vérifier l’adresse ?	kannst du die adresse überprüfen	phrases
+pharmacie		words
+pharmacie	apotheke	words
+phoque		words
+phoque	robbe	words
+pieuvre		words
+pieuvre	krake	words
+piscine		words
+plage	strand	words
+pluie		words
+pluie	regen	words
+poisson		words
+poisson	fisch	words
+polémique	kontroverse	words
+politesse		words
+pomme	apfel	words
+porte	tür	words
+Pourquoi tu ris ?	warum lachst du	phrases
+Pouvez vous m aider ?	können sie mir helfen	phrases
+Pouvez vous répéter la question ?	können sie die frage wiederholen	phrases
+Pouvez vous résumer les points principaux ?	können sie die wichtigsten punkte zusammenfassen	phrases
+pouvoir		words
+précarité		words
+précarité	unsicherheit	words
+précision	genauigkeit	words
+printemps		words
+printemps	frühling	words
+priorité		words
+priorité	priorität	words
+problème	problem	words
+professeur		words
+progrès		words
+prononciation		words
+proposition	vorschlag	words
+propre		words
+prospérité		words
+prospérité	wohlstand	words
+Puis je payer par carte ?	kann ich mit karte bezahlen	phrases
+qualité	qualität	words
+quartier		words
+quartier	viertel	words
+Quelle heure est il ?	wie spät ist es	phrases
+question	frage	words
+raisonnement		words
+raisonnement	gedankengang	words
+randonnée		words
+randonnée	wanderung	words
+rangement		words
+rapide		words
+rayonnement	ausstrahlung	words
+réception		words
+recherche	forschung	words
+réconciliation		words
+réconciliation	versöhnung	words
+règle		words
+renard		words
+renard	fuchs	words
+réparation		words
+réponse	antwort	words
+réputation		words
+réputation	ruf	words
+requin		words
+requin	hai	words
+résilience		words
+résilience	widerstandskraft	words
+responsabilité		words
+responsabilité	verantwortung	words
+résultat	ergebnis	words
+retard		words
+réticence		words
+réunion		words
+réunion	meeting	words
+réussite		words
+réussite	erfolg	words
+revendication		words
+revendication	forderung	words
+richesse	reichtum	words
+rigueur		words
+rigueur	strenge	words
+rivière	fluss	words
+rose		words
+rouge		words
+rue	straße	words
+s il vous plaît	bitte	words
+salade	salat	words
+salaire		words
+sale		words
+Salut !	Hallo! auch: Tschüss!	phrases
+samedi		words
+semaine		words
+sensibilité		words
+sensibilité	sensibilität	words
+sentier		words
+sentiment	gefühl	words
+singe		words
+singe	affe	words
+soeur		words
+soir	abend	words
+soleil	sonne	words
+solidarité		words
+solidarité	solidarität	words
+solidité	stabilität	words
+solution	lösung	words
+Son comportement a changé récemment.	sein verhalten hat sich kürzlich verändert	phrases
+Son discours était clair et convaincant.	seine rede war klar und überzeugend	phrases
+super	super, toll	words
+soulagement		words
+soulagement	erleichterung	words
+soupe	suppe	words
+souris		words
+souris	maus	words
+soutien	unterstützung	words
+souvent		words
+stabilité		words
+stade		words
+stage		words
+stratégie		words
+table	tisch	words
+tante		words
+tard		words
+téléphone	telefon	words
+témoignage		words
+témoignage	zeugnis	words
+thé	tee	words
+toi	du	words
+tigre		words
+tigre	tiger	words
+tolérance		words
+tolérance	toleranz	words
+tortue		words
+tortue	schildkröte	words
+tôt		words
+tradition		words
+traduction		words
+train	zug	words
+traitement		words
+transformation		words
+transformation	veränderung	words
+travail	arbeit	words
+triste		words
+trottoir		words
+trousse		words
+Tu t'appelles comment ?	Wie heißt du?	phrases
+Tu as froid ?	ist dir kalt	phrases
+Tu veux du jus ?	möchtest du saft	phrases
+vacances	urlaub	words
+valeur	wert	words
+valise	koffer	words
+vendredi		words
+vent		words
+vent	wind	words
+vert		words
+vieux		words
+vigilance	wachsamkeit	words
+village	dorf	words
+ville	stadt	words
+violet		words
+visage	gesicht	words
+vitesse	geschwindigkeit	words
+Voici mon billet.	hier ist mein ticket	phrases
+voisin		words
+voisin	nachbar	words
+voisinage		words
+voisine		words
+voiture	auto	words
+voyage	reise	words
+vulnérabilité		words
+vulnérabilité	verletzlichkeit	words
+zèbre		words
+zèbre	zebra	words
