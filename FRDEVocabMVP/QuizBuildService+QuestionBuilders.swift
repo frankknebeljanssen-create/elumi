@@ -192,6 +192,34 @@ extension QuizBuildService {
         return candidates
     }
 
+    static func nextTypingQuestion(
+        from candidates: [QuizCandidate],
+        usedPromptKeys: inout [String: Int],
+        usedCandidateIDs: inout Set<String>,
+        usedQuestionSignatures: inout Set<String>
+    ) -> QuizQuestion? {
+        guard let candidate = nextQuizPromptCandidate(
+            from: candidates,
+            usedPromptKeys: usedPromptKeys,
+            usedCandidateIDs: usedCandidateIDs
+        ) else { return nil }
+
+        let question = QuizTypingQuestion(
+            prompt: candidate.prompt,
+            correctAnswer: candidate.answer,
+            category: candidate.category,
+            promptLanguageCode: candidate.promptLanguageCode,
+            answerLanguageCode: candidate.answerLanguageCode
+        )
+
+        let wrappedQuestion = QuizQuestion.typing(question)
+        let sig = QuizBuildService.signature(wrappedQuestion)
+        guard usedQuestionSignatures.insert(sig).inserted else { return nil }
+        usedPromptKeys[candidate.promptKey, default: 0] += 1
+        usedCandidateIDs.insert(candidate.id)
+        return wrappedQuestion
+    }
+
     private static func fastQuizKey(_ text: String) -> String {
         text.folding(options: .diacriticInsensitive, locale: .current)
             .lowercased()

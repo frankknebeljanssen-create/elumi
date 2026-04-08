@@ -39,6 +39,10 @@ struct QuizView: View {
     @State var unlockedRewardLevels: [ElumiLevelTier] = []
     @State var didPersistHearts = false
     @State var advanceTask: DispatchWorkItem?
+    @State var typingInput = ""
+    @State var typingLocked = false
+    @State var typingShowCorrectAnswer: String?
+    @FocusState var isTypingFieldFocused: Bool
 
     var selectedAppDirection: Direction {
         (Direction(rawValue: selectedAppDirectionRaw) ?? .frenchToGerman).sanitizedForFrenchOnly

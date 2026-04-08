@@ -168,6 +168,8 @@ var quizSessionScreen: some View {
                 multipleChoiceCard(question)
             case .matching(let question):
                 matchingCard(question)
+            case .typing(let question):
+                typingCard(question)
             }
         } else if session.isLoadingRemainingQuestions {
             AppSurfaceCard(tint: sectionStyle.accent) {

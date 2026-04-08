@@ -73,6 +73,18 @@ extension QuizBuildService {
                     usedCandidateIDs: &usedCandidateIDs,
                     usedQuestionSignatures: &usedQuestionSignatures
                 )
+            case .typing:
+                nextQuestion = nextTypingQuestion(
+                    from: availableCandidates,
+                    usedPromptKeys: &usedPromptKeys,
+                    usedCandidateIDs: &usedCandidateIDs,
+                    usedQuestionSignatures: &usedQuestionSignatures
+                ) ?? nextMultipleChoiceQuestion(
+                    from: availableCandidates,
+                    usedPromptKeys: &usedPromptKeys,
+                    usedCandidateIDs: &usedCandidateIDs,
+                    usedQuestionSignatures: &usedQuestionSignatures
+                )
             }
 
             if let nextQuestion {
@@ -138,6 +150,18 @@ extension QuizBuildService {
                 usedCandidateIDs: &usedCandidateIDs,
                 usedQuestionSignatures: &usedQuestionSignatures
             )
+        case .typing:
+            question = nextTypingQuestion(
+                from: candidates,
+                usedPromptKeys: &usedPromptKeys,
+                usedCandidateIDs: &usedCandidateIDs,
+                usedQuestionSignatures: &usedQuestionSignatures
+            ) ?? nextMultipleChoiceQuestion(
+                from: candidates,
+                usedPromptKeys: &usedPromptKeys,
+                usedCandidateIDs: &usedCandidateIDs,
+                usedQuestionSignatures: &usedQuestionSignatures
+            )
         }
 
         guard let question else { return nil }
@@ -189,14 +213,13 @@ extension QuizBuildService {
     static func plannedQuizQuestionKinds(for candidates: [QuizCandidate], requestedCount: Int) -> [QuizQuestionKind] {
         let actualCount = min(requestedCount, max(1, candidates.count))
         let canDoMatching = candidates.count >= 4
+        let rotation: [QuizQuestionKind] = canDoMatching
+            ? [.multipleChoice, .matching, .typing]
+            : [.multipleChoice, .typing]
 
         var kinds: [QuizQuestionKind] = []
         for i in 0..<actualCount {
-            if canDoMatching, i % 2 == 1 {
-                kinds.append(.matching)
-            } else {
-                kinds.append(.multipleChoice)
-            }
+            kinds.append(rotation[i % rotation.count])
         }
 
         return kinds

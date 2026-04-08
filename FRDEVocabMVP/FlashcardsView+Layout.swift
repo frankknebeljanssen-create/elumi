@@ -151,17 +151,15 @@ extension FlashcardsView {
                     .padding(.horizontal, flashcardSessionCardInset)
 
                 // Response Card
-                Spacer().frame(height: AppTheme.Spacing.md)
+                Spacer(minLength: AppTheme.Spacing.lg)
 
                 flashcardResponseCard
                     .padding(.horizontal, flashcardSessionCardInset)
             }
-
-            Spacer(minLength: 0)
         }
         .padding(.horizontal, AppLayout.screenPadding)
         .padding(.top, AppLayout.contentTopPadding)
-        .padding(.bottom, AppLayout.screenPadding)
+        .padding(.bottom, AppTheme.Layout.footerHeight + flashcardBottomBarSpacing + AppTheme.Spacing.sm)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
@@ -169,7 +167,7 @@ extension FlashcardsView {
     var flashcardSetupScreen: some View {
         ScrollViewReader { proxy in
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
                     ScreenHeaderCard(
                         style: sectionStyle,
                         title: "Karteikarten",
@@ -181,7 +179,7 @@ extension FlashcardsView {
                         setup.showingStackComposer = true
                     } label: {
                         largeFlashcardToggleCard(
-                            title: "Ausgewählte Pakete",
+                            title: "Ausgewählte Listen",
                             value: selectedStackSummary
                         )
                     }
@@ -192,6 +190,8 @@ extension FlashcardsView {
                     }
 
                     flashcardCountLimitCard
+
+                    Spacer().frame(height: AppTheme.Spacing.sm)
 
                     Button {
                         startFlashcardsFromSetup(autoplayPrompt: true)

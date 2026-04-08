@@ -26,6 +26,7 @@ struct QuizCandidate: Identifiable, Hashable {
 enum QuizQuestionKind {
     case multipleChoice
     case matching
+    case typing
 }
 
 struct QuizMergedItemsCacheKey: Hashable {
@@ -97,6 +98,11 @@ enum QuizBuildService {
                     QuizBuildService.fastKey(matching.category)
                 ].joined(separator: "|")
             })
+        case .typing(let typing):
+            let promptKey = QuizBuildService.fastKey(typing.prompt)
+            let answerKey = QuizBuildService.fastKey(typing.correctAnswer)
+            let categoryKey = QuizBuildService.fastKey(typing.category)
+            return [[promptKey, answerKey, categoryKey].joined(separator: "|")]
         }
     }
 
@@ -123,6 +129,13 @@ enum QuizBuildService {
                 "match",
                 QuizBuildService.fastKey(matching.category),
                 pairSignature
+            ].joined(separator: "|")
+        case .typing(let typing):
+            return [
+                "typing",
+                QuizBuildService.fastKey(typing.prompt),
+                QuizBuildService.fastKey(typing.correctAnswer),
+                QuizBuildService.fastKey(typing.category)
             ].joined(separator: "|")
         }
     }

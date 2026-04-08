@@ -45,7 +45,7 @@ extension TrainingView {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, AppLayout.screenPadding)
-        .padding(.bottom, AppLayout.screenPadding)
+        .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.lg)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }

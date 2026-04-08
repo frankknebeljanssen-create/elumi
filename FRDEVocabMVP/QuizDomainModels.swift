@@ -20,6 +20,15 @@ struct QuizMultipleChoiceQuestion: Identifiable, Hashable {
     let category: String
 }
 
+struct QuizTypingQuestion: Identifiable, Hashable {
+    let id = UUID()
+    let prompt: String
+    let correctAnswer: String
+    let category: String
+    let promptLanguageCode: String
+    let answerLanguageCode: String
+}
+
 struct QuizMatchingPair: Identifiable, Hashable {
     let id = UUID()
     let prompt: String
@@ -52,22 +61,21 @@ struct QuizAnswerFramePreferenceKey: PreferenceKey {
 enum QuizQuestion: Identifiable, Hashable {
     case multipleChoice(QuizMultipleChoiceQuestion)
     case matching(QuizMatchingQuestion)
+    case typing(QuizTypingQuestion)
 
     var id: UUID {
         switch self {
-        case .multipleChoice(let question):
-            return question.id
-        case .matching(let question):
-            return question.id
+        case .multipleChoice(let q): return q.id
+        case .matching(let q): return q.id
+        case .typing(let q): return q.id
         }
     }
 
     var category: String {
         switch self {
-        case .multipleChoice(let question):
-            return question.category
-        case .matching(let question):
-            return question.category
+        case .multipleChoice(let q): return q.category
+        case .matching(let q): return q.category
+        case .typing(let q): return q.category
         }
     }
 }

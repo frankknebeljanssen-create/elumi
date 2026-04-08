@@ -1,6 +1,68 @@
 import SwiftUI
 
 extension QuizView {
+    func typingCard(_ question: QuizTypingQuestion) -> some View {
+        AppSurfaceCard(tint: sectionStyle.accent) {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                Text("Eintippen")
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+
+                Text(visibleQuizPromptText(question.prompt, category: question.category))
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, AppTheme.Spacing.sm)
+
+                if let correctAnswer = typingShowCorrectAnswer {
+                    VStack(spacing: 4) {
+                        Text("Richtige Antwort:")
+                            .font(AppTheme.Typography.caption)
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                        Text(correctAnswer)
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.success)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, AppTheme.Spacing.xs)
+                } else {
+                    TextField("Antwort eingeben", text: $typingInput)
+                        .font(.system(size: 18, weight: .semibold, design: .rounded))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(AppTheme.Colors.secondarySurface)
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                                .stroke(sectionStyle.accent.opacity(0.3), lineWidth: 1)
+                        )
+                        .focused($isTypingFieldFocused)
+                        .submitLabel(.done)
+                        .onSubmit {
+                            submitTyping(for: question)
+                        }
+                        .disabled(typingLocked)
+
+                    Button {
+                        submitTyping(for: question)
+                    } label: {
+                        Text("Überprüfen")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(AppPrimaryButtonStyle(color: typingInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? AppTheme.Colors.textDisabled : AppTheme.Colors.cta))
+                    .disabled(typingInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || typingLocked)
+                }
+            }
+        }
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                isTypingFieldFocused = true
+            }
+        }
+    }
+
     func resultStatCard(title: String, value: String, tint: Color) -> some View {
         VStack(spacing: AppTheme.Spacing.xxs) {
             Text(value)

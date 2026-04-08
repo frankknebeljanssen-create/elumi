@@ -105,15 +105,10 @@ extension FlashcardsView {
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.textSecondary)
 
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(isAll ? "Alle" : "\(displayCount)")
-                    .font(.system(size: 32, weight: .black, design: .rounded))
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(isAll ? "Alle \(maxCards) Karten" : "\(displayCount) Karten")
+                    .font(.system(size: 28, weight: .black, design: .rounded))
                     .foregroundStyle(sectionStyle.accent)
-                    .contentTransition(.numericText())
-                    .animation(.easeInOut(duration: 0.15), value: displayCount)
-                Text(isAll ? "(\(maxCards) Karten)" : (displayCount == 1 ? "Karte" : "Karten"))
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
             }
             .frame(maxWidth: .infinity, alignment: .center)
 
@@ -123,11 +118,11 @@ extension FlashcardsView {
 
                 HStack {
                     Text("\(minSlider)")
-                        .font(AppTheme.Typography.caption)
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                     Spacer()
                     Text("Alle")
-                        .font(AppTheme.Typography.caption)
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
                 .padding(.horizontal, 4)

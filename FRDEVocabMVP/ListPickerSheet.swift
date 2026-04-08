@@ -33,6 +33,17 @@ struct ListPickerSheet: View {
         }
     }
 
+    private var selectedList: VocabularyList? {
+        displayedLists.first(where: { $0.id == selectedListID })
+    }
+
+    private var summaryText: String {
+        if let selected = selectedList {
+            return "\(selected.name) · \(selected.items.count) Einträge"
+        }
+        return "Keine Liste ausgewählt"
+    }
+
     var body: some View {
         VStack(spacing: AppTheme.Spacing.md) {
             AppSheetHeader(
@@ -40,6 +51,16 @@ struct ListPickerSheet: View {
                 leadingTint: style.accent,
                 onLeading: { dismiss() }
             )
+
+            Text(summaryText)
+                .font(AppTheme.Typography.cardTitle)
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(AppTheme.Spacing.md)
+                .background(AppTheme.Colors.success.opacity(0.85))
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
 
             ScrollView {
                 VStack(spacing: 10) {
@@ -55,7 +76,6 @@ struct ListPickerSheet: View {
                                         .foregroundStyle(AppTheme.Colors.textPrimary)
                                         .lineLimit(1)
                                         .minimumScaleFactor(0.8)
-                                        .minimumScaleFactor(0.85)
                                     Text("\(listCollectionSummary(for: list)) · \(list.items.count) Einträge")
                                         .font(AppTheme.Typography.caption)
                                         .foregroundStyle(AppTheme.Colors.textSecondary)
@@ -64,15 +84,17 @@ struct ListPickerSheet: View {
 
                                 Spacer(minLength: 0)
 
-                                if list.id == selectedListID {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .font(.system(size: 22, weight: .bold))
-                                        .foregroundStyle(style.accent)
-                                }
+                                Image(systemName: list.id == selectedListID ? "checkmark.circle.fill" : "circle")
+                                    .font(.system(size: 22, weight: .bold))
+                                    .foregroundStyle(list.id == selectedListID ? style.accent : AppTheme.Colors.textDisabled)
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
-                            .appCardBackground(style, intensity: list.id == selectedListID ? 0.13 : 0.07, cornerRadius: 18)
+                            .appCardBackground(style, intensity: list.id == selectedListID ? 0.22 : 0.05, cornerRadius: 18)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    .stroke(list.id == selectedListID ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
+                            )
                         }
                         .buttonStyle(.plain)
                     }
