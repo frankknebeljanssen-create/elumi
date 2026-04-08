@@ -9,6 +9,7 @@ struct ListPickerSheet: View {
     let onDelete: (VocabularyList) -> Void
 
     @State private var listPendingDeletion: VocabularyList?
+    @State private var localSelectedID: UUID?
 
     private var displayedLists: [VocabularyList] {
         lists.sorted { lhs, rhs in
@@ -33,8 +34,12 @@ struct ListPickerSheet: View {
         }
     }
 
+    private var currentSelectedID: UUID {
+        localSelectedID ?? selectedListID
+    }
+
     private var selectedList: VocabularyList? {
-        displayedLists.first(where: { $0.id == selectedListID })
+        displayedLists.first(where: { $0.id == currentSelectedID })
     }
 
     private var summaryText: String {
@@ -48,8 +53,14 @@ struct ListPickerSheet: View {
         VStack(spacing: AppTheme.Spacing.md) {
             AppSheetHeader(
                 title: "Liste wählen",
+                trailingTitle: "Fertig",
                 leadingTint: style.accent,
-                onLeading: { dismiss() }
+                trailingTint: style.accent,
+                onLeading: { dismiss() },
+                onTrailing: {
+                    onSelect(currentSelectedID)
+                    dismiss()
+                }
             )
 
             Text(summaryText)
@@ -66,8 +77,7 @@ struct ListPickerSheet: View {
                 VStack(spacing: 10) {
                     ForEach(displayedLists) { list in
                         Button {
-                            onSelect(list.id)
-                            dismiss()
+                            localSelectedID = list.id
                         } label: {
                             HStack(spacing: 12) {
                                 VStack(alignment: .leading, spacing: 4) {
@@ -84,16 +94,16 @@ struct ListPickerSheet: View {
 
                                 Spacer(minLength: 0)
 
-                                Image(systemName: list.id == selectedListID ? "checkmark.circle.fill" : "circle")
+                                Image(systemName: list.id == currentSelectedID ? "checkmark.circle.fill" : "circle")
                                     .font(.system(size: 22, weight: .bold))
-                                    .foregroundStyle(list.id == selectedListID ? style.accent : AppTheme.Colors.textDisabled)
+                                    .foregroundStyle(list.id == currentSelectedID ? style.accent : AppTheme.Colors.textDisabled)
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
-                            .appCardBackground(style, intensity: list.id == selectedListID ? 0.22 : 0.05, cornerRadius: 18)
+                            .appCardBackground(style, intensity: list.id == currentSelectedID ? 0.22 : 0.05, cornerRadius: 18)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .stroke(list.id == selectedListID ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
+                                    .stroke(list.id == currentSelectedID ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
                             )
                         }
                         .buttonStyle(.plain)

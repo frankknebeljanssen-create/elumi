@@ -269,6 +269,8 @@ enum TrainingSource: String, CaseIterable, Identifiable {
 enum ListCollectionGroup: String, CaseIterable, Codable, Identifiable {
     case books = "Bücher"
     case ownVocabulary = "Eigene Vokabeln"
+    case standardLevel = "Wortschatz nach Niveau"
+    case standardTopic = "Wortschatz nach Thema"
     case other = "Sonstiges"
 
     var id: String { rawValue }
@@ -279,8 +281,12 @@ enum ListCollectionGroup: String, CaseIterable, Codable, Identifiable {
             return 0
         case .ownVocabulary:
             return 1
-        case .other:
+        case .standardLevel:
             return 2
+        case .standardTopic:
+            return 3
+        case .other:
+            return 4
         }
     }
 }
@@ -290,6 +296,8 @@ enum ListCollectionPreset: String, CaseIterable, Codable, Identifiable {
     case grammarNotebook = "Grammatikheft"
     case vocabularyNotebook = "Vokabelheft"
     case worksheets = "Arbeitsblätter"
+    case standardLevel = "Niveau"
+    case standardTopic = "Thema"
     case other = "Sonstiges"
 
     var id: String { rawValue }
@@ -300,6 +308,10 @@ enum ListCollectionPreset: String, CaseIterable, Codable, Identifiable {
             return .books
         case .vocabularyNotebook, .worksheets:
             return .ownVocabulary
+        case .standardLevel:
+            return .standardLevel
+        case .standardTopic:
+            return .standardTopic
         case .other:
             return .other
         }
@@ -319,8 +331,12 @@ enum ListCollectionPreset: String, CaseIterable, Codable, Identifiable {
             return 2
         case .worksheets:
             return 3
-        case .other:
+        case .standardLevel:
             return 4
+        case .standardTopic:
+            return 5
+        case .other:
+            return 6
         }
     }
 }

@@ -37,7 +37,10 @@ extension TrainingSessionController {
             dictionaryLists = []
         }
 
-        return dictionaryLists + listStore.practiceLists
+        return dictionaryLists
+            + listStore.practiceLists
+            + StandardVocabularyLoader.levelLists
+            + StandardVocabularyLoader.topicLists
     }
 
     func selectedTrainingList(
@@ -62,11 +65,18 @@ extension TrainingSessionController {
         selectedAppDirection: Direction,
         launchContext: TrainingLaunchContext?
     ) -> [VocabularyItem] {
-        selectedTrainingList(
-            from: listStore,
-            selectedAppDirection: selectedAppDirection,
-            launchContext: launchContext
-        )?.items.filter { item in
+        // Multi-select: merge items from all selected lists
+        let allAvailable = availableTrainingLists(from: listStore, selectedAppDirection: selectedAppDirection, launchContext: launchContext)
+        let selectedLists: [VocabularyList]
+        if !selectedTrainingListIDs.isEmpty {
+            selectedLists = allAvailable.filter { selectedTrainingListIDs.contains($0.id) }
+        } else if let single = selectedTrainingList(from: listStore, selectedAppDirection: selectedAppDirection, launchContext: launchContext) {
+            selectedLists = [single]
+        } else {
+            return []
+        }
+
+        return selectedLists.flatMap(\.items).filter { item in
             guard item.sourceLanguage == selectedAppDirection.sourceLanguage else { return false }
 
             switch trainingMode {

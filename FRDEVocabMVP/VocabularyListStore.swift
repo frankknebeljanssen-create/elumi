@@ -91,7 +91,9 @@ final class VocabularyListStore: ObservableObject {
     }
 
     var allLists: [VocabularyList] {
-        [builtInList] + customLists
+        customLists
+        + StandardVocabularyLoader.levelLists
+        + StandardVocabularyLoader.topicLists
     }
 
     var sortedCustomLists: [VocabularyList] {

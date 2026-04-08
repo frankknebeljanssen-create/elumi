@@ -19,17 +19,9 @@ extension FlashcardsSetupController {
         }
 
         var lists: [VocabularyList] = []
-        if let dictionaryList = loadedDictionaryStackList,
-           dictionaryList.items.contains(where: {
-               $0.sourceLanguage == selectedAppDirection.sourceLanguage &&
-               (preferredCardType == nil || $0.cardType == preferredCardType)
-           }) {
-            lists.append(dictionaryList)
-        }
         lists.append(contentsOf: matchingPracticeLists)
-        if builtInMatches {
-            lists.append(listStore.builtInList)
-        }
+        lists.append(contentsOf: StandardVocabularyLoader.levelLists)
+        lists.append(contentsOf: StandardVocabularyLoader.topicLists)
         return lists
     }
 

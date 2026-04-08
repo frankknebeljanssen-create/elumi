@@ -4,6 +4,7 @@ import SwiftUI
 @MainActor
 final class TrainingSessionController: ObservableObject {
     @Published var selectedTrainingListID: UUID?
+    @Published var selectedTrainingListIDs: Set<UUID> = []
     @Published var direction: Direction = .frenchToGerman
     @Published var cardType: CardType = .words
     @Published var trainingMode: TrainingMode = .vocabulary

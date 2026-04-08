@@ -959,7 +959,6 @@ l'atelier	die Werkstatt	words	A1	noun	m	Allgemein	atelier	34.62
 désoler	leid tun	words	A1	verb		Allgemein	désoler	34.61
 le légume	das Gemüse	words	A1	noun	m	Allgemein	légume	34.58
 le concert	das Konzert	words	A1	noun	n	Allgemein	concert	34.16
-bien	gut	words	A1	adverb		Allgemein	ben	33.91
 francophone	französischsprachig	words	A1	adjective		Allgemein	francophone	33.78
 la viande	das Fleisch	words	A1	noun	f	Allgemein	viande	33.35
 la côte	die Küste	words	A1	noun	f	Allgemein	côte	33.33
@@ -1977,7 +1976,6 @@ rapporter	bringen	words	B1	verb		Allgemein	rapporter	46.69
 le caractère	der Charakter	words	B1	noun	m	Allgemein	caractère	46.57
 le propos	der Vorschlag	words	B1	noun	m	Allgemein	propos	46.26
 transmettre	übertragen	words	B1	verb		Allgemein	transmettre	45.99
-écrire	schreiben	words	B1	verb		Allgemein	écrier	45.87
 séduire	verführen	words	B1	verb		Allgemein	séduire	45.77
 un millier	der Tausend	words	B1	noun	m	Allgemein	millier	45.74
 une absence	die Abwesenheit	words	B1	noun	f	Allgemein	absence	45.69
@@ -2026,7 +2024,6 @@ effectuer	durchführen	words	B1	verb		Allgemein	effectuer	40.72
 signer	unterschreiben	words	B1	verb		Allgemein	signer	40.54
 régulièrement	regelmäßig	words	B1	adverb		Allgemein	régulièrement	40.51
 l'aspect	der Aspekt	words	B1	noun	m	Allgemein	aspect	40.30
-le sommet	der Gipfel	words	B1	noun	m	Allgemein	somme	40.22
 la disparition	das Verschwinden	words	B1	noun	f	Allgemein	disparition	40.13
 réel	real	words	B1	adjective		Allgemein	réel	40.01
 contribuer	beitragen	words	B1	verb		Allgemein	contribuer	40.00
@@ -3126,7 +3123,6 @@ l'équipage	die Besatzung	words	B1	noun	f	Allgemein	équipage	4.30
 frissonner	frösteln	words	B1	verb		Allgemein	frissonner	4.30
 la boucle	die Schleife	words	B1	noun	f	Allgemein	boucle	4.30
 différemment	anders	words	B1	adverb		Allgemein	différemment	4.29
-rentrer	zurückkehren	words	B1	verb		Allgemein	rentraire	4.28
 pêcher	fischen	words	B1	verb		Allgemein	pêcher	4.27
 l'aiguille	die Nadel	words	B1	noun	f	Allgemein	aiguille	4.26
 la permission	die Erlaubnis	words	B1	noun	f	Allgemein	permission	4.26
@@ -4008,7 +4004,6 @@ enthousiaste	begeistert	words	B2	adjective		Allgemein	enthousiaste	7.08
 l'excellence	die Exzellenz	words	B2	noun	f	Allgemein	excellence	7.07
 fixement	starr	words	B2	adverb		Allgemein	fixement	7.06
 vilain	hässlich	words	B2	adjective		Allgemein	vilain	7.04
-l'oubli	das Vergessen	words	B2	noun	n	Allgemein	oubli	7.04
 fasciner	faszinieren	words	B2	verb		Allgemein	fasciner	7.04
 polluer	verschmutzen	words	B2	verb		Allgemein	polluer	7.03
 représentatif	repräsentativ	words	B2	adjective		Allgemein	représentatif	7.02
@@ -4744,7 +4739,6 @@ hexagonal	sechseckig	words	B2	adjective		Allgemein	hexagonal	3.41
 neutre	neutral	words	B2	adjective		Allgemein	neutre	3.41
 parallèle	parallel	words	B2	adjective		Allgemein	parallèle	3.39
 brutalement	brutal	words	B2	adverb		Allgemein	brutalement	3.39
-ajouter	hinzufügen	words	B2	verb		Allgemein	adjoindre	3.38
 l'extension	die Erweiterung	words	B2	noun	f	Allgemein	extension	3.38
 élancer	schnellen	words	B2	verb		Allgemein	élancer	3.37
 le capteur	der Sensor	words	B2	noun	m	Medien & Technik	capteur	3.35
@@ -5973,7 +5967,6 @@ la marine	die Marine	words	B2	noun	f	Allgemein	marine	1.48
 la querelle	der Streit	words	B2	noun	f	Familie & Freunde	querelle	1.48
 désireux	begierig	words	B2	adjective		Gefühle & Charakter	désireux	1.48
 la prédisposition	die Veranlagung	words	B2	noun	f	Allgemein	prédisposition	1.48
-le sort	das Schicksal	words	B2	noun	m	Allgemein	sors	1.48
 bronzer	bräunen	words	B2	verb		Körper & Gesundheit	bronzer	1.48
 hautain	hochmütig	words	B2	adjective		Gefühle & Charakter	hautain	1.48
 pavaner	prahlen	words	B2	verb		Gefühle & Charakter	pavaner	1.48
@@ -6176,7 +6169,6 @@ fuser	fusionieren	words	B2	verb		Allgemein	fuser	1.35
 le porte-bonheur	der Glücksbringer	words	B2	noun	m	Allgemein	porte-bonheur	1.35
 démonter	demontieren	words	B2	verb		Allgemein	démonter	1.35
 la cuiller	der Löffel	words	B2	noun	f	Essen & Trinken	cuiller	1.35
-tiens	hier	words	B2	pronoun		Allgemein	tien	1.35
 le micro-ordinateur	der Mikrocomputer	words	B2	noun	m	Medien & Technik	micro-ordinateur	1.35
 le réfrigérateur	der Kühlschrank	words	B2	noun	m	Wohnen & Haus	réfrigérateur	1.35
 le génome	das Genom	words	B2	noun	m	Allgemein	génome	1.35
@@ -7569,7 +7561,6 @@ l'impressionnisme	der Impressionismus	words	B2	noun	m	Allgemein	impressionnisme	
 le malfaiteur	der Übeltäter	words	B2	noun	m	Allgemein	malfaiteur	0.67
 le commandement	das Kommando	words	B2	noun	m	Allgemein	commandement	0.67
 l'arbuste	der Strauch	words	B2	noun	m	Tiere & Natur	arbuste	0.67
-bondir	springen	words	B2	verb		Allgemein	bonder	0.67
 parader	paradieren	words	B2	verb		Allgemein	parader	0.67
 le transit	der Transit	words	B2	noun	m	Stadt & Verkehr	transit	0.67
 la brutalité	die Brutalität	words	B2	noun	f	Allgemein	brutalité	0.67
@@ -8131,7 +8122,6 @@ l'écaille	die Schuppe	words	B2	noun	f	Tiere & Natur	écaille	0.52
 étourdir	benebeln	words	B2	verb		Allgemein	étourdir	0.52
 circonscrire	eingrenzen	words	B2	verb		Allgemein	circonscrire	0.52
 le nickel	das Nickel	words	B2	noun	m	Allgemein	nickel	0.52
-le patron	der Chef	words	B2	noun	m	Arbeit & Beruf	parton	0.52
 allongé	lang	words	B2	adjective		Allgemein	allongé	0.52
 lié	gebunden	words	B2	adjective		Allgemein	lié	0.52
 modérer	mäßigen	words	B2	verb		Allgemein	modérer	0.52
@@ -8163,7 +8153,6 @@ le wolof	der Wolof	words	B2	noun	m	Allgemein	wolof	0.50
 la piastre	die Piastre	words	B2	noun	f	Einkaufen & Geld	piastre	0.50
 argenté	silbern	words	B2	adjective		Allgemein	argenté	0.50
 terminal	Terminal	words	B2	adjective		Allgemein	terminal	0.50
-la boîte	die Box	words	B2	noun	f	Allgemein	boite	0.50
 décollé	abgehoben	words	B2	adjective		Allgemein	décollé	0.50
 communier	kommunizieren	words	B2	verb		Allgemein	communier	0.50
 immergé	eingetaucht	words	B2	adjective		Allgemein	immergé	0.50
@@ -9700,7 +9689,6 @@ l'emmerdeur	der Nervensäge	words	C1	noun	m	Allgemein	emmerdeur	0.07
 l'empathie	die Empathie	words	C1	noun	f	Gefühle & Charakter	empathie	0.07
 empathique	empathisch	words	C1	adjective		Gefühle & Charakter	empathique	0.07
 encombrant	bulky	words	C1	adjective		Allgemein	encombrant	0.07
-encore	noch	words	C1	adverb		Allgemein	encor	0.07
 l'entre-deux	das Dazwischen	words	C1	noun	n	Allgemein	entre-deux	0.07
 entêter	verwirren	words	C1	verb		Allgemein	entêter	0.07
 l'esse	das Wesen	words	C1	noun	n	Allgemein	esse	0.07
@@ -10989,7 +10977,6 @@ troisièmement	drittens	words	C1	adverb		Allgemein	troisièmement	0.05
 trouer	löchern	words	C1	verb		Allgemein	trouer	0.05
 voiturier	Fahrzeugführer	words	C1	adjective		Allgemein	voiturier	0.05
 l'affectivité	die Affektivität	words	C1	noun	f	Gefühle & Charakter	affectivité	0.05
-aimable	freundlich	words	C1	adjective		Gefühle & Charakter	amiable	0.05
 antarctique	antarktisch	words	C1	adjective		Allgemein	antarctique	0.05
 l'anxiété	die Angst	words	C1	noun	f	Körper & Gesundheit	anxiété	0.05
 l'arrière-plan	der Hintergrund	words	C1	noun	m	Allgemein	arrière-plan	0.05
@@ -12205,7 +12192,6 @@ le mousquet	das Musket	words	C2	noun	m	Allgemein	mousquet	0.04
 napolitain	neapolitanisch	words	C2	adjective		Allgemein	napolitain	0.04
 la naïveté	die Naivität	words	C2	noun	f	Allgemein	naïveté	0.04
 nonchalamment	lässig	words	C2	adverb		Allgemein	nonchalamment	0.04
-nuire	schaden	words	C2	verb		Allgemein	nuer	0.04
 orageux	stürmisch	words	C2	adjective		Wetter & Jahreszeiten	orageux	0.04
 pardieu	bei Gott	words	C2	interjection		Allgemein	pardieu	0.04
 pensif	nachdenklich	words	C2	adjective		Gefühle & Charakter	pensif	0.04

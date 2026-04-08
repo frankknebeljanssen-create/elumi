@@ -30,6 +30,24 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
         self.sourceLanguage = sourceLanguage
     }
 
+    /// Raw init that skips text processing — for pre-processed data (GPT translations)
+    init(
+        rawFrench french: String,
+        rawGerman german: String,
+        cardType: CardType,
+        level: VocabularyLevel? = nil,
+        sourceLanguage: StudyLanguage = .french
+    ) {
+        self.id = UUID()
+        self.french = french
+        self.german = german
+        self.sourcePhonetic = nil
+        self.targetPhonetic = nil
+        self.cardType = cardType
+        self.level = level
+        self.sourceLanguage = sourceLanguage
+    }
+
     init(
         bootstrappedFrench french: String,
         bootstrappedGerman german: String,

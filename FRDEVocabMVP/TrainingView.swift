@@ -38,6 +38,18 @@ struct TrainingView: View {
         runtimeSpeaker
     }
 
+    var trainingListSummary: String {
+        let ids = session.selectedTrainingListIDs
+        if ids.isEmpty { return "Listen wählen" }
+        let allAvailable = availableTrainingLists
+        let selected = allAvailable.filter { ids.contains($0.id) }
+        if selected.count == 1, let first = selected.first {
+            return "\(first.name) · \(first.items.count) Einträge"
+        }
+        let totalItems = selected.reduce(0) { $0 + $1.items.count }
+        return "\(selected.count) Listen · \(totalItems) Einträge"
+    }
+
     var activeItems: [VocabularyItem] {
         session.activeItems(
             from: listStore,

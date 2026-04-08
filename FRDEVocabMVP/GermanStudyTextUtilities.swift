@@ -95,7 +95,11 @@ func listCollectionSummary(for list: VocabularyList) -> String {
     }
 
     if list.isBuiltIn {
-        return "Standardpaket"
+        switch list.collectionPreset {
+        case .standardLevel: return "Wortschatz nach Niveau"
+        case .standardTopic: return "Wortschatz nach Thema"
+        default: return "Standardpaket"
+        }
     }
 
     if list.isAggregateVocabulary {

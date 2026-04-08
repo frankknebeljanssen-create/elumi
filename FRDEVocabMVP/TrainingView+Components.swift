@@ -1,6 +1,54 @@
 import SwiftUI
 
 extension TrainingView {
+    var trainingDirectionCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Abfragerichtung")
+                .font(AppTheme.Typography.caption)
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+
+            HStack(spacing: 10) {
+                Button {
+                    selectedAppDirectionRaw = Direction.frenchToGerman.rawValue
+                } label: {
+                    HStack(spacing: 10) {
+                        StraightFlagBadge(countryCode: "FR", width: 34, height: 23, labelFontSize: 11)
+                        Text("→")
+                            .font(.system(size: 18, weight: .black))
+                        StraightFlagBadge(countryCode: "DE", width: 34, height: 23, labelFontSize: 11)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 50)
+                    .foregroundStyle(selectedAppDirection == .frenchToGerman ? .white : AppTheme.Colors.textPrimary)
+                    .background(selectedAppDirection == .frenchToGerman ? trainingActionTint : AppTheme.Colors.secondarySurface)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    selectedAppDirectionRaw = Direction.germanToFrench.rawValue
+                } label: {
+                    HStack(spacing: 10) {
+                        StraightFlagBadge(countryCode: "DE", width: 34, height: 23, labelFontSize: 11)
+                        Text("→")
+                            .font(.system(size: 18, weight: .black))
+                        StraightFlagBadge(countryCode: "FR", width: 34, height: 23, labelFontSize: 11)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 50)
+                    .foregroundStyle(selectedAppDirection == .germanToFrench ? .white : AppTheme.Colors.textPrimary)
+                    .background(selectedAppDirection == .germanToFrench ? trainingActionTint : AppTheme.Colors.secondarySurface)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 12)
+        .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+    }
+
     var dictionaryTrainingLevelCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Lernniveau")

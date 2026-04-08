@@ -78,8 +78,8 @@ extension TrainingView {
                 session.showingTrainingListPicker = true
             } label: {
                 largeTrainingSelectionCard(
-                    title: "Ausgewählte Liste(n)",
-                    value: selectedTrainingList?.name ?? "Liste wählen"
+                    title: "Ausgewählte Listen",
+                    value: trainingListSummary
                 )
             }
             .buttonStyle(.plain)
@@ -87,6 +87,8 @@ extension TrainingView {
             if isDictionaryTrainingSelected {
                 dictionaryTrainingLevelCard
             }
+
+            trainingDirectionCard
 
             if session.trainingMode == .vocabulary {
                 largeTrainingTypeCard
@@ -114,18 +116,15 @@ extension TrainingView {
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .sheet(isPresented: $session.showingTrainingListPicker) {
-            ListPickerSheet(
+            FlashcardStackComposerSheet(
                 style: sectionStyle,
                 lists: availableTrainingLists,
-                selectedListID: session.selectedTrainingListID ?? availableTrainingLists.first?.id ?? VocabularyListStore.dictionaryListID
-            ) { pickedID in
-                session.selectedTrainingListID = pickedID
+                selectedListIDs: session.selectedTrainingListIDs,
+                language: selectedAppDirection.sourceLanguage,
+                cardTypeFilter: nil
+            ) { updatedSelection in
+                session.selectedTrainingListIDs = updatedSelection
                 session.showingTrainingListPicker = false
-            } onDelete: { deletedList in
-                listStore.deleteCustomList(id: deletedList.id)
-                if session.selectedTrainingListID == deletedList.id {
-                    session.selectedTrainingListID = listStore.customLists.first?.id
-                }
             }
         }
     }

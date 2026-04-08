@@ -16,16 +16,29 @@ enum StandardVocabularyLoader {
 
     static let allEntries: [Entry] = loadEntries()
 
-    static let vocabularyItems: [VocabularyItem] = allEntries.map { entry in
-        let cardType: CardType = entry.sourceDisplay.split(separator: " ").count >= 3 ? .phrases : .words
-        return VocabularyItem(
-            french: entry.sourceDisplay,
-            german: entry.target,
-            cardType: cardType,
-            level: vocabularyLevel(for: entry.level),
-            sourceLanguage: .french
-        )
-    }
+    static let vocabularyItems: [VocabularyItem] = {
+        var seen = Set<String>()
+        return allEntries.compactMap { entry -> VocabularyItem? in
+            let cardType: CardType = entry.sourceDisplay.split(separator: " ").count >= 3 ? .phrases : .words
+            // Deduplicate by normalized key to prevent crashes
+            let key = [
+                entry.sourceDisplay.lowercased()
+                    .folding(options: .diacriticInsensitive, locale: .current),
+                entry.target.lowercased()
+                    .folding(options: .diacriticInsensitive, locale: .current),
+                cardType.rawValue
+            ].joined(separator: "|")
+            guard seen.insert(key).inserted else { return nil }
+
+            return VocabularyItem(
+                rawFrench: entry.sourceDisplay,
+                rawGerman: entry.target,
+                cardType: cardType,
+                level: vocabularyLevel(for: entry.level),
+                sourceLanguage: .french
+            )
+        }
+    }()
 
     static func items(for level: String) -> [VocabularyItem] {
         vocabularyItems.enumerated().compactMap { index, item in
@@ -59,6 +72,60 @@ enum StandardVocabularyLoader {
     static var allLevels: [String] {
         ["A1", "A2", "B1", "B2", "C1", "C2"]
     }
+
+    // MARK: - Pre-built VocabularyLists for the list picker
+
+    private static let levelNames: [String: String] = [
+        "A1": "A1 Grundwortschatz",
+        "A2": "A2 Aufbauwortschatz",
+        "B1": "B1 Mittelstufe",
+        "B2": "B2 Oberstufe",
+        "C1": "C1 Fortgeschritten",
+        "C2": "C2 Experte"
+    ]
+
+    static let levelLists: [VocabularyList] = {
+        var lists: [VocabularyList] = []
+        let levelUUIDs: [String: UUID] = [
+            "A1": UUID(uuidString: "F1E1EEE1-A100-4000-A000-000000000001")!,
+            "A2": UUID(uuidString: "F1E1EEE1-A200-4000-A000-000000000002")!,
+            "B1": UUID(uuidString: "F1E1EEE1-B100-4000-A000-000000000003")!,
+            "B2": UUID(uuidString: "F1E1EEE1-B200-4000-A000-000000000004")!,
+            "C1": UUID(uuidString: "F1E1EEE1-C100-4000-A000-000000000005")!,
+            "C2": UUID(uuidString: "F1E1EEE1-C200-4000-A000-000000000006")!,
+        ]
+        for level in ["A1", "A2", "B1", "B2", "C1", "C2"] {
+            let levelItems = items(for: level)
+            guard !levelItems.isEmpty else { continue }
+            lists.append(VocabularyList(
+                id: levelUUIDs[level]!,
+                name: levelNames[level] ?? level,
+                items: levelItems,
+                isBuiltIn: true,
+                collectionPreset: .standardLevel
+            ))
+        }
+        return lists
+    }()
+
+    static let topicLists: [VocabularyList] = {
+        let minItems = 20
+        var lists: [VocabularyList] = []
+        let sortedTopics = allTopics.filter { $0 != "Allgemein" }
+        for (index, topic) in sortedTopics.enumerated() {
+            let topicItems = items(forTopic: topic)
+            guard topicItems.count >= minItems else { continue }
+            let idString = String(format: "AAAA0000-0000-4000-A000-%012d", index + 1)
+            lists.append(VocabularyList(
+                id: UUID(uuidString: idString) ?? UUID(),
+                name: topic,
+                items: topicItems,
+                isBuiltIn: true,
+                collectionPreset: .standardTopic
+            ))
+        }
+        return lists.sorted { $0.items.count > $1.items.count }
+    }()
 
     // MARK: - Private
 

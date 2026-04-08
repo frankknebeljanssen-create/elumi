@@ -95,13 +95,11 @@ extension FlashcardsView {
                 Button {
                     selectedAppDirectionRaw = Direction.frenchToGerman.rawValue
                 } label: {
-                    HStack(spacing: 8) {
-                        Text("🇫🇷")
-                            .font(.system(size: 28))
+                    HStack(spacing: 10) {
+                        StraightFlagBadge(countryCode: "FR", width: 34, height: 23, labelFontSize: 11)
                         Text("→")
-                            .font(.system(size: 20, weight: .black))
-                        Text("🇩🇪")
-                            .font(.system(size: 28))
+                            .font(.system(size: 18, weight: .black))
+                        StraightFlagBadge(countryCode: "DE", width: 34, height: 23, labelFontSize: 11)
                     }
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: 50)
@@ -114,13 +112,11 @@ extension FlashcardsView {
                 Button {
                     selectedAppDirectionRaw = Direction.germanToFrench.rawValue
                 } label: {
-                    HStack(spacing: 6) {
-                        Text("🇩🇪")
-                            .font(.system(size: 20))
+                    HStack(spacing: 10) {
+                        StraightFlagBadge(countryCode: "DE", width: 34, height: 23, labelFontSize: 11)
                         Text("→")
-                            .font(.system(size: 14, weight: .bold))
-                        Text("🇫🇷")
-                            .font(.system(size: 20))
+                            .font(.system(size: 18, weight: .black))
+                        StraightFlagBadge(countryCode: "FR", width: 34, height: 23, labelFontSize: 11)
                     }
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: 50)
@@ -159,7 +155,7 @@ extension FlashcardsView {
 
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(isAll ? "Alle \(maxCards) Karten" : "\(displayCount) Karten")
-                    .font(.system(size: 28, weight: .black, design: .rounded))
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
                     .foregroundStyle(sectionStyle.accent)
             }
             .frame(maxWidth: .infinity, alignment: .center)

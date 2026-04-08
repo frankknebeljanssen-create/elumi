@@ -69,56 +69,28 @@ struct FlashcardStackComposerSheet: View {
             .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
 
             ScrollView {
-                VStack(spacing: 10) {
-                    ForEach(displayedLists) { list in
-                        VStack(spacing: 0) {
-                            Button {
-                                toggleSelection(for: list)
-                            } label: {
-                                HStack(spacing: 12) {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(flashcardListDisplayName(list))
-                                            .font(.system(size: 14, weight: .bold, design: .rounded))
-                                            .foregroundStyle(AppTheme.Colors.textPrimary)
-                                            .lineLimit(1)
-                                            .minimumScaleFactor(0.8)
-                                            .minimumScaleFactor(0.8)
+                VStack(spacing: 6) {
+                    // Section: Eigene Listen
+                    if !ownLists.isEmpty {
+                        sectionHeader("📝 Meine Listen")
+                        ForEach(ownLists) { list in
+                            listRow(list)
+                        }
+                    }
 
-                                        if !list.isBuiltIn {
-                                            Text(listCollectionSummary(for: list))
-                                                .font(AppTheme.Typography.caption)
-                                                .foregroundStyle(AppTheme.Colors.textSecondary)
-                                                .lineLimit(1)
-                                        }
-                                    }
+                    // Section: Wortschatz nach Niveau
+                    if !levelLists.isEmpty {
+                        sectionHeader("📚 Wortschatz nach Niveau")
+                        ForEach(levelLists) { list in
+                            listRow(list)
+                        }
+                    }
 
-                                    Spacer(minLength: 0)
-
-                                    Text(countLabel(cardCount(for: list), singular: "Karte", plural: "Karten"))
-                                        .font(AppTheme.Typography.caption)
-                                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                                        .monospacedDigit()
-                                        .multilineTextAlignment(.trailing)
-                                        .frame(minWidth: 78, alignment: .trailing)
-
-                                    Image(systemName: localSelection.contains(list.id) ? "checkmark.circle.fill" : "circle")
-                                        .font(.system(size: 22, weight: .bold))
-                                        .foregroundStyle(localSelection.contains(list.id) ? style.accent : .secondary)
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 13)
-                                .appCardBackground(style, intensity: localSelection.contains(list.id) ? 0.22 : 0.05, cornerRadius: 18)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                        .stroke(localSelection.contains(list.id) ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
-                                )
-                            }
-                            .buttonStyle(.plain)
-
-                            if list.isAggregateVocabulary {
-                                Color.clear
-                                    .frame(height: 8)
-                            }
+                    // Section: Wortschatz nach Thema
+                    if !topicLists.isEmpty {
+                        sectionHeader("🏷️ Wortschatz nach Thema")
+                        ForEach(topicLists) { list in
+                            listRow(list)
                         }
                     }
                 }
@@ -149,6 +121,64 @@ struct FlashcardStackComposerSheet: View {
         } else {
             localSelection.insert(list.id)
         }
+    }
+
+    private var ownLists: [VocabularyList] {
+        displayedLists.filter { !$0.isBuiltIn || $0.isAggregateVocabulary }
+    }
+
+    private var levelLists: [VocabularyList] {
+        displayedLists.filter { $0.collectionPreset == .standardLevel }
+    }
+
+    private var topicLists: [VocabularyList] {
+        displayedLists.filter { $0.collectionPreset == .standardTopic }
+    }
+
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.system(size: 13, weight: .bold, design: .rounded))
+            .foregroundStyle(AppTheme.Colors.textSecondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 12)
+            .padding(.bottom, 2)
+    }
+
+    private func listRow(_ list: VocabularyList) -> some View {
+        Button {
+            toggleSelection(for: list)
+        } label: {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(flashcardListDisplayName(list))
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+
+                    if !list.isBuiltIn || list.collectionPreset == .standardLevel || list.collectionPreset == .standardTopic {
+                        Text("\(cardCount(for: list)) Einträge")
+                            .font(AppTheme.Typography.caption)
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                            .lineLimit(1)
+                    }
+                }
+
+                Spacer(minLength: 0)
+
+                Image(systemName: localSelection.contains(list.id) ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(localSelection.contains(list.id) ? style.accent : .secondary)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 11)
+            .appCardBackground(style, intensity: localSelection.contains(list.id) ? 0.22 : 0.05, cornerRadius: 18)
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(localSelection.contains(list.id) ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
+            )
+        }
+        .buttonStyle(.plain)
     }
 
     private func cardCount(for list: VocabularyList) -> Int {
