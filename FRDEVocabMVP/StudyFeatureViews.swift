@@ -108,7 +108,7 @@ struct TrainingView: View {
     }
 
     private var solutionUnlockThreshold: Int {
-        5
+        2
     }
 
     private var canRevealSolution: Bool {
@@ -1600,7 +1600,7 @@ struct FlashcardsView: View {
         .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
-    private var flashcardCountLimitCard: some View {
+    private var flashcardCountLimitCardLegacy: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Anzahl der Karten")
                 .font(AppTheme.Typography.caption)

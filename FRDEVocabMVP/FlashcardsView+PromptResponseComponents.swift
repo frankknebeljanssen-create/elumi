@@ -92,11 +92,6 @@ extension FlashcardsView {
                     .font(AppTheme.Typography.body)
                     .foregroundStyle(sectionStyle.accent)
                     .frame(maxWidth: .infinity, alignment: .center)
-            } else if interaction.lastResult?.label == "Falsch" {
-                Text("Falsch")
-                    .font(AppTheme.Typography.body)
-                    .foregroundStyle(AppTheme.Colors.error)
-                    .frame(maxWidth: .infinity, alignment: .center)
             } else if interaction.lastResult?.label == "Nicht erkannt" {
                 Text("Nicht erkannt, bitte nochmal versuchen.")
                     .font(AppTheme.Typography.body)

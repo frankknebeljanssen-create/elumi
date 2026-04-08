@@ -188,31 +188,17 @@ extension QuizBuildService {
 
     static func plannedQuizQuestionKinds(for candidates: [QuizCandidate], requestedCount: Int) -> [QuizQuestionKind] {
         let actualCount = min(requestedCount, max(1, candidates.count))
-        let matchingCapacity = candidates
-            .uniqued(by: \.promptKey)
-            .uniqued(by: \.answerKey)
-            .count / 3
+        let canDoMatching = candidates.count >= 4
 
-        let desiredMatchingCount: Int
-        if actualCount >= 10, matchingCapacity >= 2 {
-            desiredMatchingCount = min(3, matchingCapacity)
-        } else if actualCount >= 5, matchingCapacity >= 1, candidates.count >= 6 {
-            desiredMatchingCount = 1
-        } else {
-            desiredMatchingCount = 0
-        }
-
-        let multipleChoiceCount = max(0, actualCount - desiredMatchingCount)
-        var kinds = Array(repeating: QuizQuestionKind.multipleChoice, count: multipleChoiceCount)
-
-        if desiredMatchingCount > 0 {
-            let step = Double(actualCount) / Double(desiredMatchingCount + 1)
-            for index in 0..<desiredMatchingCount {
-                let insertAt = min(kinds.count, max(1, Int(round(step * Double(index + 1))) - 1))
-                kinds.insert(.matching, at: insertAt)
+        var kinds: [QuizQuestionKind] = []
+        for i in 0..<actualCount {
+            if canDoMatching, i % 2 == 1 {
+                kinds.append(.matching)
+            } else {
+                kinds.append(.multipleChoice)
             }
         }
 
-        return Array(kinds.prefix(actualCount))
+        return kinds
     }
 }

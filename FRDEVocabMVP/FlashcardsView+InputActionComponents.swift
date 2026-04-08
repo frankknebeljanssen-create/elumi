@@ -54,7 +54,7 @@ extension FlashcardsView {
                         Text("Korrekt! 🙂")
                             .font(.system(size: 24, weight: .bold, design: .rounded))
                     } else if showsWrongOnlyMessage {
-                        Text("Falsch")
+                        Text("Falsch 😕")
                             .font(.system(size: 24, weight: .bold, design: .rounded))
                     } else {
                         Image(systemName: recordingSymbolName)

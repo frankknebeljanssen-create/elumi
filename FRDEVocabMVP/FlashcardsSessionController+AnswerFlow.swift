@@ -59,24 +59,26 @@ extension FlashcardsSessionController {
             animateCorrectCardRemoval(
                 sessionStore: sessionStore,
                 speechController: speechController,
+                speaker: speaker,
                 feedbackPlayer: feedbackPlayer
             )
             return
         }
 
         feedbackPlayer.playFlashcardError()
-        lastResult = ScoreResult(label: "Falsch", detail: "")
+        lastResult = ScoreResult(label: "Falsch 😕", detail: "")
         showingSolution = false
         isFlashcardFlipped = false
         pushCurrentFlashcardToHistory(revealingSolution: true, sessionStore: sessionStore)
         sessionStore.markWrong()
         syncDisplayedCard(with: sessionStore)
-        scheduleNextPrompt(after: 0.55, sessionStore: sessionStore, speechController: speechController)
+        scheduleNextPrompt(after: 0.55, sessionStore: sessionStore, speechController: speechController, speaker: speaker, areSoundsEnabled: true)
     }
 
     func animateCorrectCardRemoval(
         sessionStore: FlashcardSessionStore,
         speechController: SpeechController,
+        speaker: Speaker,
         feedbackPlayer: FeedbackPlayer
     ) {
         cancelPendingFeedback()
@@ -98,7 +100,7 @@ extension FlashcardsSessionController {
                 feedbackPlayer.playFlashcardAchievement()
             }
             self.resetCardFlyOut()
-            self.scheduleNextPrompt(after: 0.32, sessionStore: sessionStore, speechController: speechController)
+            self.scheduleNextPrompt(after: 0.32, sessionStore: sessionStore, speechController: speechController, speaker: speaker, areSoundsEnabled: true)
         }
         pendingFeedbackTask = workItem
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.22, execute: workItem)

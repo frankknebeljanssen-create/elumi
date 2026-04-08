@@ -24,6 +24,8 @@ struct TrainingView: View {
     @State var isMicPulseVisible = false
     @State var hasTriggeredAudioPreparation = false
     @State var isPreparingAudioDependencies = false
+    @State var wasSpeakerSpeaking = false
+    @State var wasRecording = false
     @FocusState var typedAnswerFieldFocused: Bool
 
     var speechController: SpeechController? {
@@ -103,7 +105,7 @@ struct TrainingView: View {
     }
 
     var showsRetryOnlyMessage: Bool {
-        lastResult?.label == "Falsch"
+        lastResult?.label.hasPrefix("Falsch") == true
     }
 
     var showsNotRecognizedMessage: Bool {
@@ -119,7 +121,7 @@ struct TrainingView: View {
     }
 
     var solutionUnlockThreshold: Int {
-        5
+        2
     }
 
     var canRevealSolution: Bool {
@@ -132,7 +134,7 @@ struct TrainingView: View {
         }
 
         if showsRetryOnlyMessage {
-            return AppTheme.Colors.warning
+            return Color(red: 0.9, green: 0.3, blue: 0.15)
         }
 
         return AppTheme.Colors.warning
@@ -171,7 +173,7 @@ struct TrainingView: View {
     }
 
     var sessionPromptFont: Font {
-        .system(size: session.cardType == .phrases ? 24 : 28, weight: .bold, design: .rounded)
+        .system(size: session.cardType == .phrases ? 20 : 28, weight: .bold, design: .rounded)
     }
 
     var canStartTraining: Bool {

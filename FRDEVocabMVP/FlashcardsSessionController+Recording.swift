@@ -52,15 +52,41 @@ extension FlashcardsSessionController {
         isMicPulseVisible = isRecording
     }
 
+    func beginAutomaticListeningIfNeeded(
+        sessionStore: FlashcardSessionStore,
+        speechController: SpeechController,
+        speaker: Speaker,
+        areSoundsEnabled: Bool,
+        dismissTypedAnswerFocus: () -> Void
+    ) {
+        guard sessionStore.hasActiveSession, currentFlashCard != nil else { return }
+        guard areSoundsEnabled else { return }
+        guard speechController.authorizationStatus != .denied,
+              speechController.authorizationStatus != .restricted else { return }
+        guard !showingTypedAnswerInput, !isFlashcardFlipped else { return }
+        guard !speechController.isRecording else { return }
+
+        shouldEvaluateAfterStop = true
+        dismissTypedAnswerFocus()
+        speechController.startRecording(localeIdentifier: sessionStore.selectedDirection.recognitionLocaleIdentifier)
+    }
+
     func speakCurrentPrompt(
         speechController: SpeechController,
         speaker: Speaker,
         areSoundsEnabled: Bool
     ) {
-        guard let currentFlashCard else { return }
+        guard let currentFlashCard else {
+            print("🔊 [FC-Speak] ❌ no currentFlashCard")
+            return
+        }
         stopListeningForTyping(speechController: speechController, speaker: speaker)
         hideTypedAnswerField()
-        guard areSoundsEnabled else { return }
+        guard areSoundsEnabled else {
+            print("🔊 [FC-Speak] ❌ sounds disabled")
+            return
+        }
+        print("🔊 [FC-Speak] ✅ speaking: \(currentFlashCard.prompt)")
         speaker.speak(text: currentFlashCard.prompt, languageCode: currentFlashCard.promptLanguageCode)
     }
 }

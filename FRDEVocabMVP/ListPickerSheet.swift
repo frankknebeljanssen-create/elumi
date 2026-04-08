@@ -51,9 +51,10 @@ struct ListPickerSheet: View {
                             HStack(spacing: 12) {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(list.name)
-                                        .font(AppTheme.Typography.cardTitle)
+                                        .font(.system(size: 14, weight: .bold, design: .rounded))
                                         .foregroundStyle(AppTheme.Colors.textPrimary)
                                         .lineLimit(1)
+                                        .minimumScaleFactor(0.8)
                                         .minimumScaleFactor(0.85)
                                     Text("\(listCollectionSummary(for: list)) · \(list.items.count) Einträge")
                                         .font(AppTheme.Typography.caption)
@@ -62,20 +63,6 @@ struct ListPickerSheet: View {
                                 }
 
                                 Spacer(minLength: 0)
-
-                                if !list.isBuiltIn &&
-                                    !list.isAggregateVocabulary &&
-                                    list.id != VocabularyListStore.dictionaryListID {
-                                    Button {
-                                        listPendingDeletion = list
-                                    } label: {
-                                        Image(systemName: "trash")
-                                            .font(.system(size: 18, weight: .bold))
-                                            .foregroundStyle(.red)
-                                            .frame(width: 34, height: 34)
-                                    }
-                                    .buttonStyle(.plain)
-                                }
 
                                 if list.id == selectedListID {
                                     Image(systemName: "checkmark.circle.fill")

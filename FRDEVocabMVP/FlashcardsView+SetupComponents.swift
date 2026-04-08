@@ -86,85 +86,59 @@ extension FlashcardsView {
     }
 
     var flashcardCountLimitCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        let maxCards = max(selectedStackCardCount, 1)
+        let minSlider = min(5, maxCards)
+        let sliderValue = Binding<Double>(
+            get: {
+                setup.selectedCardCount == 0 ? Double(maxCards) : Double(setup.selectedCardCount)
+            },
+            set: { newValue in
+                let rounded = Int(newValue.rounded())
+                setup.selectedCardCount = rounded >= maxCards ? 0 : max(minSlider, rounded)
+            }
+        )
+        let displayCount = setup.selectedCardCount == 0 ? maxCards : min(setup.selectedCardCount, maxCards)
+        let isAll = setup.selectedCardCount == 0 || setup.selectedCardCount >= maxCards
+
+        return VStack(alignment: .leading, spacing: 12) {
             Text("Anzahl der Karten")
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.textSecondary)
 
-            HStack(spacing: 10) {
-                Button {
-                    setup.isUsingAllCardCount = true
-                    isCardCountFieldFocused = false
-                } label: {
-                    flashcardCountModeCard(
-                        title: "ALLE",
-                        subtitle: countLabel(selectedStackCardCount, singular: "Karte", plural: "Karten"),
-                        isSelected: setup.isUsingAllCardCount
-                    )
-                }
-                .buttonStyle(.plain)
-
-                Button {
-                    setup.isUsingAllCardCount = false
-                    isCardCountFieldFocused = true
-                } label: {
-                    flashcardCountModeCard(
-                        title: "ANZAHL",
-                        subtitle: !setup.isUsingAllCardCount && effectiveSelectedCardCount > 0
-                            ? countLabel(effectiveSelectedCardCount, singular: "Karte", plural: "Karten")
-                            : "Eigene Zahl",
-                        isSelected: !setup.isUsingAllCardCount
-                    )
-                }
-                .buttonStyle(.plain)
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(isAll ? "Alle" : "\(displayCount)")
+                    .font(.system(size: 32, weight: .black, design: .rounded))
+                    .foregroundStyle(sectionStyle.accent)
+                    .contentTransition(.numericText())
+                    .animation(.easeInOut(duration: 0.15), value: displayCount)
+                Text(isAll ? "(\(maxCards) Karten)" : (displayCount == 1 ? "Karte" : "Karten"))
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
             }
+            .frame(maxWidth: .infinity, alignment: .center)
 
-            if !setup.isUsingAllCardCount {
-                HStack(spacing: 10) {
-                    TextField("Anzahl eingeben", text: $setup.customCardCountText)
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .keyboardType(.numberPad)
-                        .submitLabel(.done)
-                        .focused($isCardCountFieldFocused)
+            if maxCards > minSlider {
+                Slider(value: sliderValue, in: Double(minSlider)...Double(maxCards), step: 1)
+                    .tint(sectionStyle.accent)
 
-                    Button("OK") {
-                        confirmCardCountEntry()
-                    }
-                    .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+                HStack {
+                    Text("\(minSlider)")
+                        .font(AppTheme.Typography.caption)
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                    Spacer()
+                    Text("Alle")
+                        .font(AppTheme.Typography.caption)
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity, minHeight: 64)
-                .background(AppTheme.Colors.secondarySurface)
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .id(flashcardCountInputScrollID)
+                .padding(.horizontal, 4)
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(minHeight: 156)
         .padding(.horizontal, 18)
-        .padding(.vertical, 6)
+        .padding(.vertical, 14)
         .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
-    func flashcardCountModeCard(title: String, subtitle: String, isSelected: Bool) -> some View {
-        VStack(spacing: 8) {
-            Text(title)
-                .font(.system(size: 15, weight: .bold, design: .rounded))
-            Text(subtitle)
-                .font(AppTheme.Typography.caption)
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .minimumScaleFactor(0.82)
-                .foregroundStyle(isSelected ? Color.white.opacity(0.84) : AppTheme.Colors.textSecondary)
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 12)
-        .frame(maxWidth: .infinity, minHeight: 82)
-        .foregroundStyle(isSelected ? .white : AppTheme.Colors.textPrimary)
-        .background(isSelected ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-    }
 
     func largeFlashcardToggleCard(title: String, value: String) -> some View {
         let valueParts = value.components(separatedBy: "·").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }

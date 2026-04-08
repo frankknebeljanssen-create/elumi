@@ -113,15 +113,15 @@ struct FlashcardsView: View {
     }
 
     var showsWrongOnlyMessage: Bool {
-        interaction.lastResult?.label == "Falsch"
+        interaction.lastResult?.label.hasPrefix("Falsch") == true
     }
 
     var flashcardRecordingButtonColor: Color {
         if showsSuccessOnlyMessage {
-            return .green
+            return AppTheme.Colors.success
         }
         if showsWrongOnlyMessage {
-            return AppTheme.Colors.error
+            return Color(red: 0.9, green: 0.3, blue: 0.15)
         }
         return sectionStyle.accent
     }

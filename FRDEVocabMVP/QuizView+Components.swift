@@ -45,9 +45,10 @@ var quizSetupScreen: some View {
                             HStack(spacing: 10) {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(list.name)
-                                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                                        .font(.system(size: 14, weight: .bold, design: .rounded))
                                         .foregroundStyle(AppTheme.Colors.textPrimary)
-                                        .lineLimit(2)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.8)
                                     Text("\(list.items.count) Einträge")
                                         .font(.system(size: 12, weight: .medium, design: .rounded))
                                         .foregroundStyle(AppTheme.Colors.textSecondary)

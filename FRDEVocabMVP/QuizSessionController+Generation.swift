@@ -28,7 +28,11 @@ extension QuizSessionController {
 
     func startQuiz(direction: Direction) {
         let candidates = cachedCandidates
-        guard candidates.count >= 2 else { return }
+        print("🧩 [Quiz] session.startQuiz candidates=\(candidates.count)")
+        guard candidates.count >= 2 else {
+            print("🧩 [Quiz] ❌ not enough candidates (<2)")
+            return
+        }
 
         normalizeReuseHistory(using: candidates)
         let roundExclusionCandidateIDs = reusedCandidateIDs

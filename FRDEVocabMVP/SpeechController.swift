@@ -82,7 +82,7 @@ final class SpeechController: NSObject, ObservableObject {
         }
 
         do {
-            try audioSession.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker, .duckOthers])
+            try audioSession.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker])
             try audioSession.setPreferredIOBufferDuration(0.005)
             try audioSession.setActive(true)
 

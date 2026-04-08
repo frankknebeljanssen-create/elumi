@@ -5,6 +5,7 @@ import SwiftUI
 final class FlashcardsSetupController: ObservableObject {
     @Published var selectedSetupDirection: Direction = .frenchToGerman
     @Published var selectedSetupContent: FlashcardContentSelection = .mixed
+    @Published var selectedCardCount: Int = 0
     @Published var isUsingAllCardCount = true
     @Published var customCardCountText = ""
     @Published var isShowingSetup = true

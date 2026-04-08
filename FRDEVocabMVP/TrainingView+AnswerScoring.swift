@@ -33,7 +33,7 @@ extension TrainingView {
             feedbackPlayer.playStudyError()
             session.incrementFailedAttempts()
             lastResult = ScoreResult(
-                label: "Falsch",
+                label: "Falsch 😕",
                 detail: "Bitte nochmal."
             )
             typedAnswer = ""

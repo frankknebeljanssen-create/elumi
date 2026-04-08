@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 extension FlashcardsView {
     var flashcardsLifecycleStage1: AnyView {
@@ -72,6 +73,19 @@ extension FlashcardsView {
     var flashcardsLifecycleContent: AnyView {
         AnyView(
             flashcardsLifecycleStage3
+                .onReceive(speaker.$isSpeaking.removeDuplicates()) { isSpeaking in
+                    let was = interaction.wasSpeakerSpeaking
+                    interaction.wasSpeakerSpeaking = isSpeaking
+                    if was, !isSpeaking, sessionStore.hasActiveSession, interaction.currentFlashCard != nil {
+                        interaction.beginAutomaticListeningIfNeeded(
+                            sessionStore: sessionStore,
+                            speechController: speechController,
+                            speaker: speaker,
+                            areSoundsEnabled: feedbackPlayer.areSoundsEnabled,
+                            dismissTypedAnswerFocus: { dismissTypedAnswerFocus() }
+                        )
+                    }
+                }
                 .onChange(of: feedbackPlayer.areSoundsEnabled) { _, isEnabled in
                     interaction.handleAudioModeChange(
                         isEnabled: isEnabled,

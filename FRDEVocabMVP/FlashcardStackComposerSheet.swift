@@ -77,9 +77,10 @@ struct FlashcardStackComposerSheet: View {
                                 HStack(spacing: 12) {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(flashcardListDisplayName(list))
-                                            .font(AppTheme.Typography.cardTitle)
+                                            .font(.system(size: 14, weight: .bold, design: .rounded))
                                             .foregroundStyle(AppTheme.Colors.textPrimary)
-                                            .lineLimit(2)
+                                            .lineLimit(1)
+                                            .minimumScaleFactor(0.8)
                                             .minimumScaleFactor(0.8)
 
                                         if !list.isBuiltIn {
@@ -105,7 +106,11 @@ struct FlashcardStackComposerSheet: View {
                                 }
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 13)
-                                .appCardBackground(style, intensity: localSelection.contains(list.id) ? 0.13 : 0.07, cornerRadius: 18)
+                                .appCardBackground(style, intensity: localSelection.contains(list.id) ? 0.22 : 0.05, cornerRadius: 18)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                        .stroke(localSelection.contains(list.id) ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
+                                )
                             }
                             .buttonStyle(.plain)
 

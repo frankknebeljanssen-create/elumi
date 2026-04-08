@@ -15,6 +15,7 @@ final class FlashcardsSessionController: ObservableObject {
     @Published var displayedFlashCard: FlashCard?
 
     var shouldEvaluateAfterStop = false
+    var wasSpeakerSpeaking = false
     var pendingFeedbackTask: DispatchWorkItem?
     var flashcardHistory: [HistoryEntry] = []
 

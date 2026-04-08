@@ -74,7 +74,10 @@ extension FlashcardsView {
         ) else { return }
         interaction.syncDisplayedCard(with: sessionStore)
         if autoplayPrompt {
-            speakCurrentPrompt()
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 150_000_000)
+                speakCurrentPrompt()
+            }
         }
     }
 
@@ -140,7 +143,7 @@ extension FlashcardsView {
         interaction.syncDisplayedCard(with: sessionStore)
         if setup.shouldAutoStartFromLaunch {
             setup.shouldAutoStartFromLaunch = false
-            startFlashcardsFromSetup(autoplayPrompt: false)
+            startFlashcardsFromSetup(autoplayPrompt: true)
         } else {
             syncSetupSelection()
         }

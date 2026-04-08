@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 extension TrainingView {
     var trainingRootContent: some View {
@@ -155,14 +156,16 @@ extension TrainingView {
             .onChange(of: session.showingTrainingListPicker) { _, _ in
                 handleTrainingListPickerChange()
             }
-            .onChange(of: isSpeechRecording) { wasRecording, isRecording in
-                handleTrainingRecordingTransition(from: wasRecording, to: isRecording)
-            }
-            .onChange(of: isSpeechRecording) { _, isRecording in
+            .onReceive(runtimeSpeechController?.$isRecording.removeDuplicates().eraseToAnyPublisher() ?? Just(false).eraseToAnyPublisher()) { isRecording in
+                let was = wasRecording
+                wasRecording = isRecording
+                handleTrainingRecordingTransition(from: was, to: isRecording)
                 handleTrainingRecordingPulseChange(isRecording)
             }
-            .onChange(of: isSpeakerSpeaking) { wasSpeaking, isSpeaking in
-                handleTrainingSpeakerTransition(from: wasSpeaking, to: isSpeaking)
+            .onReceive(runtimeSpeaker?.$isSpeaking.removeDuplicates().eraseToAnyPublisher() ?? Just(false).eraseToAnyPublisher()) { isSpeaking in
+                let was = wasSpeakerSpeaking
+                wasSpeakerSpeaking = isSpeaking
+                handleTrainingSpeakerTransition(from: was, to: isSpeaking)
             }
             .onChange(of: feedbackPlayer.areSoundsEnabled) { _, isEnabled in
                 handleAudioModeChange(isEnabled: isEnabled)

@@ -59,7 +59,9 @@ extension FlashcardsSessionController {
     func scheduleNextPrompt(
         after delay: TimeInterval,
         sessionStore: FlashcardSessionStore,
-        speechController: SpeechController
+        speechController: SpeechController,
+        speaker: Speaker? = nil,
+        areSoundsEnabled: Bool = false
     ) {
         cancelPendingFeedback()
         let workItem = DispatchWorkItem { [weak self] in
@@ -73,6 +75,17 @@ extension FlashcardsSessionController {
 
             if sessionStore.session?.isCompleted == true {
                 return
+            }
+
+            if let speaker, areSoundsEnabled {
+                Task { @MainActor in
+                    try? await Task.sleep(nanoseconds: 80_000_000)
+                    self.speakCurrentPrompt(
+                        speechController: speechController,
+                        speaker: speaker,
+                        areSoundsEnabled: areSoundsEnabled
+                    )
+                }
             }
         }
         pendingFeedbackTask = workItem

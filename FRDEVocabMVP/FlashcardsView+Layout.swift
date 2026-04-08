@@ -65,7 +65,7 @@ extension FlashcardsView {
                         if setup.isShowingSetup && !setup.isUsingAllCardCount {
                             Spacer()
                             Button("OK") {
-                                confirmCardCountEntry()
+                                setup.confirmCardCountEntry()
                             }
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                         }
@@ -78,7 +78,7 @@ extension FlashcardsView {
                 }
                 .safeAreaInset(edge: .bottom, spacing: 0) {
                     if setup.isShowingSetup && !setup.isUsingAllCardCount && isCardCountFieldFocused {
-                        flashcardKeyboardConfirmBar
+                        EmptyView()
                     }
                 }
         )
@@ -89,7 +89,7 @@ extension FlashcardsView {
     }
 
     var flashcardSessionScreen: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 0) {
             ScreenHeaderCard(
                 style: sectionStyle,
                 title: "Karteikarten",
@@ -98,8 +98,12 @@ extension FlashcardsView {
             )
 
             if isFlashcardSessionCompleted {
+                Spacer().frame(height: AppTheme.Spacing.sm)
+
                 flashcardCompletionCard
                     .padding(.horizontal, flashcardSessionCardInset)
+
+                Spacer().frame(height: AppTheme.Spacing.md)
 
                 Button {
                     returnToFlashcardSetup()
@@ -111,6 +115,9 @@ extension FlashcardsView {
                 .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
                 .padding(.horizontal, flashcardSessionCardInset)
             } else {
+                // Navigation
+                Spacer().frame(height: 4)
+
                 Button {
                     returnToFlashcardSetup()
                 } label: {
@@ -131,10 +138,21 @@ extension FlashcardsView {
                 .buttonStyle(.plain)
                 .padding(.horizontal, flashcardSessionCardInset)
 
+                // Prompt Card
+                Spacer().frame(height: AppTheme.Spacing.sm)
+
                 flashcardPromptCard
                     .padding(.horizontal, flashcardSessionCardInset)
+
+                // Action Buttons
+                Spacer().frame(height: AppTheme.Spacing.md)
+
                 flashcardActionButtons
                     .padding(.horizontal, flashcardSessionCardInset)
+
+                // Response Card
+                Spacer().frame(height: AppTheme.Spacing.md)
+
                 flashcardResponseCard
                     .padding(.horizontal, flashcardSessionCardInset)
             }
@@ -173,11 +191,10 @@ extension FlashcardsView {
                         flashcardDictionaryLevelCard
                     }
 
-                    largeFlashcardContentCard
                     flashcardCountLimitCard
 
                     Button {
-                        startFlashcardsFromSetup()
+                        startFlashcardsFromSetup(autoplayPrompt: true)
                     } label: {
                         Text("Los geht's!")
                             .frame(maxWidth: .infinity)

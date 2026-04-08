@@ -12,6 +12,7 @@ extension QuizView {
     }
 
     func startQuiz() {
+        print("🧩 [Quiz] startQuiz called, candidates=\(session.cachedCandidates.count), prepared=\(session.preparedQuestions.count)")
         session.syncSelectedLists(availableLists: availableQuizLists)
         session.startQuiz(direction: selectedAppDirection)
         awardedHearts = 0

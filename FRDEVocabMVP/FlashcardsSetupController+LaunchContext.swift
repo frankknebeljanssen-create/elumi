@@ -41,6 +41,7 @@ extension FlashcardsSetupController {
         }
 
         preferredLaunchItemIDs = Set(launchContext.preferredItemIDs ?? [])
+        selectedCardCount = 0
         isUsingAllCardCount = true
         customCardCountText = ""
         shouldAutoStartFromLaunch = launchContext.shouldAutoStart

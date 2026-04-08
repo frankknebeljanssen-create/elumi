@@ -12,8 +12,8 @@ extension TrainingView {
                     Text(currentCard.prompt)
                         .font(sessionPromptFont)
                         .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .lineLimit(3)
-                        .minimumScaleFactor(0.62)
+                        .lineLimit(5)
+                        .minimumScaleFactor(0.5)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
@@ -44,11 +44,6 @@ extension TrainingView {
                     .font(AppTheme.Typography.screenTitle)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .center)
-            } else if showsRetryOnlyMessage {
-                Text("Falsch, bitte nochmal. 🙃")
-                    .font(AppTheme.Typography.screenTitle)
-                    .foregroundStyle(AppTheme.Colors.error)
-                    .frame(maxWidth: .infinity, alignment: .center)
             } else if showsSolutionMessage, let currentCard {
                 Text("Lösung")
                     .font(AppTheme.Typography.cardTitle)
@@ -76,8 +71,8 @@ extension TrainingView {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .font(AppTheme.Typography.body)
                     .foregroundStyle((speechController?.transcript ?? "").isEmpty ? AppTheme.Colors.textSecondary : AppTheme.Colors.textPrimary)
-                    .lineLimit(3)
-                    .minimumScaleFactor(0.7)
+                    .lineLimit(5)
+                    .minimumScaleFactor(0.55)
             }
 
             if let error = speechController?.recordError {
@@ -103,7 +98,7 @@ extension TrainingView {
                         Text("Richtig 🙂")
                             .font(.system(size: 26, weight: .bold, design: .rounded))
                     } else if showsRetryOnlyMessage {
-                        Text("Falsch")
+                        Text("Falsch 😕")
                             .font(.system(size: 26, weight: .bold, design: .rounded))
                     } else {
                         Image(systemName: recordingSymbolName)

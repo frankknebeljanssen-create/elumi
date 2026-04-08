@@ -13,7 +13,7 @@ extension FlashcardsSetupController {
             from: selectedLists,
             language: selectedAppDirection.sourceLanguage,
             preferredCardType: selectedSetupContent.preferredCardType,
-            maxCardCount: isUsingAllCardCount ? nil : requestedCustomCardCount
+            maxCardCount: isUsingAllCards ? nil : selectedCardCount
         )
         guard let customDeck = sessionStore.customDeck else { return false }
 

@@ -2,31 +2,6 @@ import SwiftUI
 import UIKit
 
 extension FlashcardsView {
-    func confirmCardCountEntry() {
-        setup.confirmCardCountEntry()
-        isCardCountFieldFocused = false
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-    }
-
-    @ViewBuilder
-    var flashcardKeyboardConfirmBar: some View {
-        HStack {
-            Spacer()
-            Button("OK") {
-                confirmCardCountEntry()
-            }
-            .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-        }
-        .padding(.horizontal, AppLayout.screenPadding)
-        .padding(.top, AppTheme.Spacing.xs)
-        .padding(.bottom, AppTheme.Spacing.sm)
-        .background(
-            Rectangle()
-                .fill(AppTheme.Colors.background.opacity(0.94))
-                .ignoresSafeArea(edges: .bottom)
-        )
-    }
-
     func flashcardFace(text: String, isAnswerSide: Bool, languageCode: String) -> some View {
         RoundedRectangle(cornerRadius: 22, style: .continuous)
             .fill(isAnswerSide ? AppTheme.Colors.secondarySurface : AppTheme.Colors.surface)

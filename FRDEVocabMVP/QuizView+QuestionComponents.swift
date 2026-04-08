@@ -114,7 +114,7 @@ extension QuizView {
                                 .scaleEffect(draggingPromptID == pair.id ? 1.035 : 1)
                                 .offset(draggingPromptID == pair.id ? dragOffset : .zero)
                                 .opacity(matchedPairIDs.contains(pair.id) ? 0.7 : 1)
-                                .zIndex(draggingPromptID == pair.id ? 10 : 0)
+                                .zIndex(draggingPromptID == pair.id ? 100 : 0)
                                 .background(
                                     GeometryReader { geo in
                                         Color.clear.preference(
@@ -137,6 +137,7 @@ extension QuizView {
                                 )
                         }
                     }
+                    .zIndex(draggingPromptID != nil ? 10 : 0)
 
                     VStack(spacing: AppTheme.Spacing.xs) {
                         ForEach(question.shuffledAnswers) { pair in
