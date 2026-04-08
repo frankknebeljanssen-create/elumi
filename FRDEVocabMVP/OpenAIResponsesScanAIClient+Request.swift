@@ -24,6 +24,7 @@ Copy the visible source and target text as faithfully as possible.
 Never replace concrete names or filled-in words with placeholders like "+ Name", "Name", "nom" or similar templates.
 Preserve visible terminal punctuation exactly, especially ?, ! and .
 If one side is clearly a question, exclamation or full sentence, keep the corresponding punctuation on the paired translation as well.
+Never deduplicate: if the same term appears with different translations or punctuation, list each as a separate entry.
 """
                         ]
                     ]

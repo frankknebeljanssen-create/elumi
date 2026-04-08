@@ -59,7 +59,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "OPENAI_SCAN_MODEL"
-            value = "gpt-5-mini"
+            value = "gpt-4o-mini"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

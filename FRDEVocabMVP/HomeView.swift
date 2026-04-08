@@ -40,7 +40,7 @@ struct HomeView: View {
 
     private var homeLearningTrainColor: Color { AppTheme.Colors.elumiPinkDeep }
     private var homeLearningFlashcardsColor: Color { AppTheme.Colors.elumiRoseDeep }
-    private var homeLearningQuizColor: Color { Color(hex: "#E0648D") }
+    private var homeLearningQuizColor: Color { Color(hex: "#8B5CF6") }
 
     private var homeKnowledgeScanColor: Color { AppTheme.Colors.success }
     private var homeKnowledgeLexiconColor: Color { AppTheme.Colors.warning }

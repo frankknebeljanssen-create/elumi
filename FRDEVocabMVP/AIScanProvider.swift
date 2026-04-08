@@ -3,8 +3,8 @@ import UIKit
 
 struct AIScanProvider: ScanProvider {
     let client: ScanAIClient
-    let maxUploadLongEdge: CGFloat = 640
-    let retryUploadLongEdge: CGFloat = 480
+    let maxUploadLongEdge: CGFloat = 768
+    let retryUploadLongEdge: CGFloat = 560
 
     func analyze(request: ScanRequest, context: ScanProviderContext?) async -> ScanProviderResult {
         let start = CFAbsoluteTimeGetCurrent()
@@ -17,7 +17,7 @@ struct AIScanProvider: ScanProvider {
             from: request,
             context: context,
             maxLongEdge: maxUploadLongEdge,
-            compressionQuality: 0.55,
+            compressionQuality: 0.65,
             compactContext: false
         ) else {
             logDebug("ai_invalid_payload")
@@ -39,7 +39,7 @@ struct AIScanProvider: ScanProvider {
                     from: request,
                     context: context,
                     maxLongEdge: retryUploadLongEdge,
-                    compressionQuality: 0.45,
+                    compressionQuality: 0.65,
                     compactContext: true
                ) {
                 let retryStart = CFAbsoluteTimeGetCurrent()
