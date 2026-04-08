@@ -47,7 +47,9 @@ extension TrainingSessionController {
                 selectedAppDirection: selectedAppDirection,
                 updateAppDirectionRaw: updateAppDirectionRaw
             )
-            resetTrainingSessionState()
+            if isShowingSetup {
+                resetTrainingSessionState()
+            }
         }
     }
 

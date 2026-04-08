@@ -78,7 +78,6 @@ struct FlashcardStackComposerSheet: View {
                         }
                     }
 
-                    // Section: Wortschatz nach Niveau
                     if !levelLists.isEmpty {
                         sectionHeader("📚 Wortschatz nach Niveau")
                         ForEach(levelLists) { list in
@@ -94,14 +93,10 @@ struct FlashcardStackComposerSheet: View {
                         }
                     }
 
-                    // Section: Wörterbuch (abgesetzt, am Ende)
-                    if !dictionaryLists.isEmpty {
-                        Spacer().frame(height: 10)
-                        sectionHeader("📖 Wörterbuch")
-                        ForEach(dictionaryLists) { list in
-                            listRow(list)
-                        }
-                    }
+                    // Komplettes Wörterbuch ganz unten
+                    Spacer().frame(height: 12)
+                    sectionHeader("📖 Komplettes Wörterbuch")
+                    listRow(StandardVocabularyLoader.allInOneList)
                 }
             }
 
@@ -139,9 +134,6 @@ struct FlashcardStackComposerSheet: View {
         }
     }
 
-    private var dictionaryLists: [VocabularyList] {
-        displayedLists.filter { $0.id == VocabularyListStore.dictionaryListID }
-    }
 
     private var levelLists: [VocabularyList] {
         displayedLists.filter { $0.collectionPreset == .standardLevel }

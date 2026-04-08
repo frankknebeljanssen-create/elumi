@@ -32,45 +32,31 @@ var quizSetupScreen: some View {
                 systemImage: "lightbulb.fill"
             )
 
-            AppSurfaceCard(tint: sectionStyle.accent) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Listen")
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-
-                    ForEach(availableQuizLists) { list in
-                        Button {
-                            toggleListSelection(list.id)
-                        } label: {
-                            HStack(spacing: 10) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(list.name)
-                                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.8)
-                                    Text("\(list.items.count) Einträge")
-                                        .font(.system(size: 12, weight: .medium, design: .rounded))
-                                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                                }
-
-                                Spacer(minLength: 0)
-
-                                Image(systemName: session.selectedListIDs.contains(list.id) ? "checkmark.circle.fill" : "circle")
-                                    .font(.system(size: 20, weight: .bold))
-                                    .foregroundStyle(session.selectedListIDs.contains(list.id) ? sectionStyle.accent : AppTheme.Colors.textDisabled)
-                            }
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 8)
-                            .appCardBackground(
-                                sectionStyle,
-                                intensity: session.selectedListIDs.contains(list.id) ? 0.13 : 0.06
-                            )
-                        }
-                        .buttonStyle(.plain)
+            Button {
+                showingQuizListPicker = true
+            } label: {
+                HStack(spacing: 14) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Ausgewählte Listen")
+                            .font(AppTheme.Typography.caption)
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                        Text(quizListSummary)
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
                     }
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.down.circle.fill")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundStyle(sectionStyle.accent)
                 }
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 72)
+                .padding(.horizontal, 18)
+                .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: 22)
             }
+            .buttonStyle(.plain)
             .padding(.horizontal, quizSetupCardInset)
 
             AppSurfaceCard(tint: sectionStyle.accent) {

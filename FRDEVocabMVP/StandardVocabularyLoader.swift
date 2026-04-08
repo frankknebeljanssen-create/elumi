@@ -83,6 +83,16 @@ enum StandardVocabularyLoader {
         verbSet.contains(frenchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines))
     }
 
+    /// Fast lookup set of French nouns (lowercase)
+    static let nounSet: Set<String> = {
+        Set(allEntries.filter { $0.wordClass == "noun" }.map { $0.sourceDisplay.lowercased() })
+    }()
+
+    /// Fast lookup: is this French word a noun?
+    static func isNoun(_ frenchText: String) -> Bool {
+        nounSet.contains(frenchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
     // MARK: - Pre-built VocabularyLists for the list picker
 
     private static let levelNames: [String: String] = [
@@ -93,6 +103,15 @@ enum StandardVocabularyLoader {
         "C1": "C1 Fortgeschritten",
         "C2": "C2 Experte"
     ]
+
+    static let allInOneList: VocabularyList = VocabularyList(
+        id: UUID(uuidString: "F1E1EEE1-A000-4000-A000-000000000000")!,
+        name: "Komplettes Wörterbuch",
+        items: vocabularyItems,
+        isBuiltIn: true,
+        collectionPreset: .standardLevel,
+        isAggregateVocabulary: true
+    )
 
     static let levelLists: [VocabularyList] = {
         var lists: [VocabularyList] = []

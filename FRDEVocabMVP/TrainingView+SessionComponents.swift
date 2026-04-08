@@ -3,13 +3,37 @@ import SwiftUI
 extension TrainingView {
     var sessionCard: some View {
         Group {
-            if let currentCard, session.hasStartedTraining {
-                VStack(alignment: .center, spacing: 8) {
-                    Text(isArticleMode ? "ARTIKEL" : currentCard.category.uppercased())
-                        .font(AppTheme.Typography.caption)
+            if session.isSpeedRound, session.speedRoundTimeRemaining <= 0, session.hasStartedTraining {
+                VStack(alignment: .center, spacing: 12) {
+                    Text("Zeit abgelaufen!")
+                        .font(.system(size: 22, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.warning)
+                    Text("\(session.speedRoundScore)")
+                        .font(.system(size: 48, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.success)
+                    Text("richtig")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                    Text(isArticleMode ? (articlePromptText ?? currentCard.prompt) : currentCard.prompt)
+                }
+                .frame(maxWidth: .infinity, minHeight: sessionCardMinHeight, alignment: .center)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .appCardBackground(sectionStyle, intensity: 0.12)
+            } else if let currentCard, session.hasStartedTraining {
+                VStack(alignment: .center, spacing: 8) {
+                    if isVerbMode, let selected = verbMCSelected {
+                        let isCorrect = selected.lowercased() == verbCorrectAnswer.lowercased()
+                        Text(isCorrect ? "Richtig 🙂" : "Falsch 😕")
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .foregroundStyle(isCorrect ? AppTheme.Colors.success : Color(red: 0.9, green: 0.3, blue: 0.15))
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    } else {
+                        Text(isArticleMode ? "ARTIKEL" : (isVerbMode ? "VERBEN" : currentCard.category.uppercased()))
+                            .font(AppTheme.Typography.caption)
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                    Text(isArticleMode ? (articlePromptText ?? currentCard.prompt) : (isVerbMode ? (session.currentTrainingItem?.french ?? currentCard.prompt) : currentCard.prompt))
                         .font(isArticleMode ? .system(size: 32, weight: .black, design: .rounded) : sessionPromptFont)
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .lineLimit(5)
@@ -20,7 +44,7 @@ extension TrainingView {
                 .frame(maxWidth: .infinity, minHeight: sessionCardMinHeight, alignment: .center)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
-                .appCardBackground(sectionStyle, intensity: 0.07)
+                .appCardBackground(sectionStyle, intensity: isVerbMode && verbMCSelected != nil ? 0.14 : 0.07)
             } else {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Keine Karten")
@@ -83,7 +107,7 @@ extension TrainingView {
                     .minimumScaleFactor(0.8)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 88, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
         .padding(14)
         .appCardBackground(sectionStyle, intensity: 0.09)
     }
@@ -126,25 +150,27 @@ extension TrainingView {
                 }
             }
 
-            // Translation hint button — always show German translation
-            if let item = session.currentTrainingItem, !showsSuccessOnlyMessage, !showsRetryOnlyMessage {
+            Spacer(minLength: AppTheme.Spacing.sm)
+
+            // Translation hint button — always visible
+            if let item = session.currentTrainingItem {
                 Button {
                     showingArticleTranslation.toggle()
                 } label: {
                     if showingArticleTranslation {
                         Text(item.german)
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
                             .foregroundStyle(AppTheme.Colors.textPrimary)
                             .frame(maxWidth: .infinity)
-                            .frame(minHeight: 44)
+                            .frame(minHeight: 52)
                             .background(AppTheme.Colors.secondarySurface)
                             .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
                     } else {
                         Label("Übersetzung", systemImage: "eye")
-                            .font(.system(size: 15, weight: .semibold, design: .rounded))
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
                             .foregroundStyle(AppTheme.Colors.textSecondary)
                             .frame(maxWidth: .infinity)
-                            .frame(minHeight: 44)
+                            .frame(minHeight: 52)
                             .background(AppTheme.Colors.secondarySurface)
                             .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
                     }
@@ -156,17 +182,6 @@ extension TrainingView {
 
     var verbMCCard: some View {
         VStack(spacing: 8) {
-            if let selected = verbMCSelected, let currentCard {
-                let isCorrect = normalized(selected) == normalized(currentCard.answer)
-                Text(isCorrect ? "Richtig 🙂" : "Falsch 😕 → \(currentCard.answer)")
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: 44)
-                    .background(isCorrect ? AppTheme.Colors.success : Color(red: 0.9, green: 0.3, blue: 0.15))
-                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
-            }
-
             let columns = [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)]
             LazyVGrid(columns: columns, spacing: 8) {
                 ForEach(verbMCOptions, id: \.self) { option in
@@ -191,23 +206,23 @@ extension TrainingView {
     }
 
     func verbMCButtonForeground(_ option: String) -> Color {
-        guard let selected = verbMCSelected, let currentCard else {
-            return .white
-        }
-        let correct = normalized(currentCard.answer)
-        if normalized(option) == correct { return .white }
-        if normalized(option) == normalized(selected) { return .white }
-        return AppTheme.Colors.textPrimary.opacity(0.5)
+        guard let selected = verbMCSelected else { return .white }
+        let correct = verbCorrectAnswer.lowercased()
+        let isCorrectPick = selected.lowercased() == correct
+        if isCorrectPick && option.lowercased() == correct { return .white }
+        if !isCorrectPick && option.lowercased() == selected.lowercased() { return .white }
+        if verbMCLocked { return AppTheme.Colors.textPrimary.opacity(0.5) }
+        return .white
     }
 
     func verbMCButtonBackground(_ option: String) -> Color {
-        guard let selected = verbMCSelected, let currentCard else {
-            return trainingActionTint
-        }
-        let correct = normalized(currentCard.answer)
-        if normalized(option) == correct { return AppTheme.Colors.success }
-        if normalized(option) == normalized(selected) { return Color(red: 0.9, green: 0.3, blue: 0.15) }
-        return AppTheme.Colors.secondarySurface
+        guard let selected = verbMCSelected else { return trainingActionTint }
+        let correct = verbCorrectAnswer.lowercased()
+        let isCorrectPick = selected.lowercased() == correct
+        if isCorrectPick && option.lowercased() == correct { return AppTheme.Colors.success }
+        if !isCorrectPick && option.lowercased() == selected.lowercased() { return Color(red: 0.9, green: 0.3, blue: 0.15) }
+        if verbMCLocked { return AppTheme.Colors.secondarySurface }
+        return trainingActionTint
     }
 
 

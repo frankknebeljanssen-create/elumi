@@ -84,6 +84,12 @@ struct TrainingView: View {
         session.trainingMode == .verbs
     }
 
+    var verbCorrectAnswer: String {
+        guard let item = session.currentTrainingItem else { return "" }
+        let isFRtoDe = selectedAppDirection == .frenchToGerman || selectedAppDirection == .englishToGerman
+        return isFRtoDe ? item.german : item.french
+    }
+
     var dictionaryTrainingList: VocabularyList? {
         session.dictionaryTrainingList()
     }

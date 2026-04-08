@@ -2,8 +2,8 @@ import SwiftUI
 
 extension TrainingView {
     func speakCurrentPrompt() {
+        guard !isArticleMode, !isVerbMode else { return }
         guard let currentCard else {
-            print("🔊 [Speak] ❌ no currentCard")
             return
         }
         stopListeningForTyping()
@@ -48,16 +48,16 @@ extension TrainingView {
     }
 
     func submitVerbMC(_ option: String) {
-        guard !verbMCLocked, let currentCard else { return }
+        guard !verbMCLocked, session.currentTrainingItem != nil else { return }
+        let isSpeed = session.isSpeedRound && session.speedRoundTimeRemaining > 0
         verbMCLocked = true
         verbMCSelected = option
-        let gotNorm = option.lowercased().folding(options: .diacriticInsensitive, locale: .current)
-        let expectedNorm = currentCard.answer.lowercased().folding(options: .diacriticInsensitive, locale: .current)
-        let isCorrect = gotNorm == expectedNorm
+        let isCorrect = option.lowercased() == verbCorrectAnswer.lowercased()
 
         if isCorrect {
             feedbackPlayer.playStudySuccess()
-            scheduleFeedbackTask(after: 0.8) {
+            if isSpeed { session.speedRoundScore += 1 }
+            scheduleFeedbackTask(after: isSpeed ? 0.3 : 1.2) {
                 verbMCSelected = nil
                 verbMCLocked = false
                 loadNextTrainingCard()
@@ -66,28 +66,31 @@ extension TrainingView {
         } else {
             feedbackPlayer.playStudyError()
             session.incrementFailedAttempts()
-            scheduleFeedbackTask(after: 1.5) {
+            scheduleFeedbackTask(after: isSpeed ? 0.3 : 1.0) {
                 verbMCSelected = nil
                 verbMCLocked = false
+                if isSpeed {
+                    loadNextTrainingCard()
+                    prepareVerbMCOptions()
+                }
             }
         }
     }
 
     func prepareVerbMCOptions() {
-        guard let currentCard else {
+        guard let item = session.currentTrainingItem else {
             verbMCOptions = []
             return
         }
-        let correctAnswer = currentCard.answer
-        let correctLower = correctAnswer.lowercased()
+        let isFRtoDe = selectedAppDirection == .frenchToGerman || selectedAppDirection == .englishToGerman
+        let correctAnswer = (isFRtoDe ? item.german : item.french).lowercased()
 
-        // Pick distractors from same language as the answer
-        let isAnswerGerman = currentCard.answerLanguageCode == "de-DE"
+        let isAnswerGerman = isFRtoDe
         let allVerbOptions = StandardVocabularyLoader.allEntries
             .filter { $0.wordClass == "verb" && !$0.target.isEmpty && !$0.sourceDisplay.isEmpty }
-            .map { isAnswerGerman ? $0.target : $0.sourceDisplay }
+            .map { (isAnswerGerman ? $0.target : $0.sourceDisplay).lowercased() }
 
-        let pool = Array(Set(allVerbOptions.filter { $0.lowercased() != correctLower }))
+        let pool = Array(Set(allVerbOptions.filter { $0 != correctAnswer }))
         let shuffled = pool.shuffled()
         let distractors = Array(shuffled.prefix(7))
 
@@ -98,13 +101,15 @@ extension TrainingView {
 
     func submitArticle(_ article: String) {
         guard !articleLocked, let correctArticle else { return }
+        let isSpeed = session.isSpeedRound && session.speedRoundTimeRemaining > 0
         articleLocked = true
         let isCorrect = article.lowercased() == correctArticle.lowercased()
 
         if isCorrect {
             feedbackPlayer.playStudySuccess()
+            if isSpeed { session.speedRoundScore += 1 }
             lastResult = ScoreResult(label: "Richtig 🙂", detail: "\(correctArticle) \(articlePromptText ?? "")")
-            scheduleFeedbackTask(after: 0.8) {
+            scheduleFeedbackTask(after: isSpeed ? 0.25 : 0.8) {
                 articleAnswer = nil
                 articleLocked = false
                 lastResult = nil
@@ -115,10 +120,13 @@ extension TrainingView {
             feedbackPlayer.playStudyError()
             session.incrementFailedAttempts()
             lastResult = ScoreResult(label: "Falsch 😕", detail: "\(correctArticle) \(articlePromptText ?? "")")
-            scheduleFeedbackTask(after: 1.2) {
+            scheduleFeedbackTask(after: isSpeed ? 0.25 : 1.2) {
                 articleLocked = false
                 lastResult = nil
                 showingArticleTranslation = false
+                if isSpeed {
+                    loadNextTrainingCard()
+                }
             }
         }
     }
@@ -138,6 +146,9 @@ extension TrainingView {
     }
 
     func beginAutomaticListeningIfNeeded() {
+        // Don't auto-listen in article or verb mode
+        guard !isArticleMode, !isVerbMode else { return }
+
         let started = session.hasStartedTraining
         let hasCard = currentCard != nil
         let audioOn = isAudioModeEnabled

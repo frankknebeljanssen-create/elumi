@@ -1,4 +1,5 @@
 import SwiftUI
+import AudioToolbox
 
 extension TrainingView {
     func dismissToHome() {
@@ -46,6 +47,8 @@ extension TrainingView {
     }
 
     func resetTrainingSession() {
+        let trace = Thread.callStackSymbols.prefix(8).joined(separator: "\n")
+        print("🏋️ [Training] ⚠️ resetTrainingSession called from:\n\(trace)")
         cancelPendingFeedback()
         shouldEvaluateAfterStop = false
         session.resetTrainingSessionState()
@@ -64,6 +67,32 @@ extension TrainingView {
         verbMCOptions = []
         verbMCSelected = nil
         verbMCLocked = false
+        stopSpeedRoundTimer()
+    }
+
+    func startSpeedRoundTimer() {
+        session.speedRoundScore = 0
+        session.speedRoundTimeRemaining = 45
+        session.speedRoundTimer?.invalidate()
+        session.speedRoundTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak session] _ in
+            Task { @MainActor in
+                guard let session else { return }
+                session.speedRoundTimeRemaining -= 1
+                if session.speedRoundTimeRemaining <= 5, session.speedRoundTimeRemaining > 0 {
+                    AudioServicesPlaySystemSound(1057) // Tock sound
+                }
+                if session.speedRoundTimeRemaining <= 0 {
+                    AudioServicesPlaySystemSound(1005) // Final buzzer
+                    session.speedRoundTimer?.invalidate()
+                    session.speedRoundTimer = nil
+                }
+            }
+        }
+    }
+
+    func stopSpeedRoundTimer() {
+        session.speedRoundTimer?.invalidate()
+        session.speedRoundTimer = nil
     }
 
     func startTraining() {
@@ -80,6 +109,9 @@ extension TrainingView {
         }
         showingTypedAnswerInput = false
         typedAnswerFieldFocused = false
+        if session.isSpeedRound {
+            startSpeedRoundTimer()
+        }
         if isArticleMode {
             return
         }

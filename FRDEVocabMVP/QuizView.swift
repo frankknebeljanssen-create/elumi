@@ -42,18 +42,32 @@ struct QuizView: View {
     @State var typingInput = ""
     @State var typingLocked = false
     @State var typingShowCorrectAnswer: String?
+    @State var showingQuizListPicker = false
     @FocusState var isTypingFieldFocused: Bool
 
     var selectedAppDirection: Direction {
         (Direction(rawValue: selectedAppDirectionRaw) ?? .frenchToGerman).sanitizedForFrenchOnly
     }
 
+    var quizListSummary: String {
+        let ids = session.selectedListIDs
+        if ids.isEmpty { return "Listen wählen" }
+        let selected = availableQuizLists.filter { ids.contains($0.id) }
+        if selected.count == 1, let first = selected.first {
+            return "\(first.name) · \(first.items.count) Einträge"
+        }
+        let total = selected.reduce(0) { $0 + $1.items.count }
+        return "\(selected.count) Listen · \(total) Einträge"
+    }
+
     var availableQuizLists: [VocabularyList] {
-        var lists: [VocabularyList] = [listStore.builtInList]
+        var lists: [VocabularyList] = []
         if let aggregateList = listStore.allCustomVocabularyList {
             lists.append(aggregateList)
         }
         lists.append(contentsOf: listStore.sortedCustomLists)
+        lists.append(contentsOf: StandardVocabularyLoader.levelLists)
+        lists.append(contentsOf: StandardVocabularyLoader.topicLists)
         return lists
     }
 

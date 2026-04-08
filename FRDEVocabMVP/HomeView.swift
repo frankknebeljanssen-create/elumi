@@ -123,7 +123,7 @@ struct HomeView: View {
                     homeNavigationButton(
                         screen: .train(nil),
                         title: "Trainieren",
-                        systemImage: "mic.circle.fill",
+                        systemImage: "graduationcap.circle.fill",
                         accentColor: homeLearningTrainColor,
                         cardColor: homeLearningTrainColor.opacity(0.12)
                     )

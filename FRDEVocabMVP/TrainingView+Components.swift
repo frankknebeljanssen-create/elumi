@@ -49,6 +49,90 @@ extension TrainingView {
         .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
+    var speedRoundToggle: some View {
+        Button {
+            session.isSpeedRound.toggle()
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: session.isSpeedRound ? "bolt.circle.fill" : "bolt.circle")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(session.isSpeedRound ? AppTheme.Colors.warning : AppTheme.Colors.textSecondary)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Speed Round")
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                    Text("45 Sekunden, so viele wie möglich!")
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                }
+
+                Spacer()
+
+                Image(systemName: session.isSpeedRound ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(session.isSpeedRound ? AppTheme.Colors.warning : AppTheme.Colors.textDisabled)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .appCardBackground(sectionStyle, intensity: session.isSpeedRound ? 0.18 : 0.07, cornerRadius: AppLayout.largeCardCornerRadius)
+        }
+        .buttonStyle(.plain)
+    }
+
+    var speedRoundTimerBar: some View {
+        let isUrgent = session.speedRoundTimeRemaining <= 10
+
+        return VStack(spacing: 8) {
+            HStack(alignment: .firstTextBaseline) {
+                Image(systemName: "bolt.fill")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(isUrgent ? AppTheme.Colors.error : AppTheme.Colors.warning)
+
+                Text("\(session.speedRoundScore)")
+                    .font(.system(size: 28, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.success)
+                Text("richtig")
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+
+                Spacer()
+
+                Text("\(session.speedRoundTimeRemaining)")
+                    .font(.system(size: 36, weight: .black, design: .rounded))
+                    .foregroundStyle(isUrgent ? AppTheme.Colors.error : AppTheme.Colors.warning)
+                    .monospacedDigit()
+                    .scaleEffect(isUrgent ? 1.1 : 1.0)
+                    .animation(.easeInOut(duration: 0.3), value: session.speedRoundTimeRemaining)
+                Text("s")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+
+            GeometryReader { geo in
+                let progress = CGFloat(session.speedRoundTimeRemaining) / 45.0
+                ZStack(alignment: .leading) {
+                    Capsule().fill(AppTheme.Colors.textSecondary.opacity(0.2))
+                    Capsule()
+                        .fill(isUrgent ? AppTheme.Colors.error : AppTheme.Colors.warning)
+                        .frame(width: max(0, geo.size.width * progress))
+                        .animation(.linear(duration: 1.0), value: session.speedRoundTimeRemaining)
+                }
+            }
+            .frame(height: 10)
+            .clipShape(Capsule())
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .appCardBackground(sectionStyle, intensity: isUrgent ? 0.15 : 0.09)
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                .stroke(isUrgent ? AppTheme.Colors.error.opacity(session.speedRoundTimeRemaining % 2 == 0 ? 0.8 : 0.3) : Color.clear, lineWidth: isUrgent ? 2 : 0)
+        )
+        .opacity(isUrgent ? (session.speedRoundTimeRemaining % 2 == 0 ? 1.0 : 0.7) : 1.0)
+        .animation(.easeInOut(duration: 0.4), value: session.speedRoundTimeRemaining)
+    }
+
     var dictionaryTrainingLevelCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Lernniveau")

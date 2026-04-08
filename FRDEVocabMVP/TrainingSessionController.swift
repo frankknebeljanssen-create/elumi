@@ -8,6 +8,10 @@ final class TrainingSessionController: ObservableObject {
     @Published var direction: Direction = .frenchToGerman
     @Published var cardType: CardType = .words
     @Published var trainingMode: TrainingMode = .vocabulary
+    @Published var isSpeedRound = false
+    @Published var speedRoundScore = 0
+    @Published var speedRoundTimeRemaining: Int = 60
+    var speedRoundTimer: Timer?
     @Published var currentTrainingItem: VocabularyItem?
     @Published var hasStartedTraining = false
     @Published var failedAttemptsOnCurrentCard = 0

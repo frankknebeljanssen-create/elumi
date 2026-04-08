@@ -34,12 +34,6 @@ extension TrainingSessionController {
             + StandardVocabularyLoader.levelLists
             + StandardVocabularyLoader.topicLists
 
-        // Wörterbuch ans Ende, abgesetzt
-        if shouldPrepareDictionaryTrainingList(launchContext: launchContext),
-           let dictionaryList = dictionaryTrainingList() ?? loadedDictionaryTrainingList {
-            lists.append(dictionaryList)
-        }
-
         return lists
     }
 
@@ -83,7 +77,8 @@ extension TrainingSessionController {
             case .vocabulary:
                 return item.cardType == cardType
             case .articles:
-                return item.cardType == .words
+                guard item.cardType == .words else { return false }
+                return StandardVocabularyLoader.isNoun(item.french) || Self.hasFrenchArticle(item.french)
             case .verbs:
                 return item.cardType == .words && StandardVocabularyLoader.isVerb(item.french)
             }

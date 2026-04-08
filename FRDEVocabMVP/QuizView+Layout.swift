@@ -50,6 +50,17 @@ extension QuizView {
             .onChange(of: session.isShowingResult) { _, isShowingResult in
                 handleQuizResultVisibilityChange(isShowingResult)
             }
+            .sheet(isPresented: $showingQuizListPicker) {
+                FlashcardStackComposerSheet(
+                    style: sectionStyle,
+                    lists: availableQuizLists,
+                    selectedListIDs: session.selectedListIDs,
+                    language: selectedAppDirection.sourceLanguage,
+                    cardTypeFilter: nil
+                ) { updatedSelection in
+                    session.selectedListIDs = updatedSelection
+                }
+            }
             .onDisappear {
                 handleQuizDisappear()
             }

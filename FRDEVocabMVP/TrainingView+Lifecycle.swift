@@ -7,24 +7,33 @@ extension TrainingView {
         refreshDictionaryTrainingListIfNeeded()
         ensureTrainingSelectionValidity()
         ensureDirectionValidity()
-        resetTrainingSession()
+        // Only reset if not currently in a training session
+        if !session.hasStartedTraining {
+            resetTrainingSession()
+        }
     }
 
     func handleTrainingDirectionChange() {
-        resetTrainingSession()
+        // Only reset if still in setup (not during active training)
+        if session.isShowingSetup {
+            resetTrainingSession()
+        }
     }
 
     func handleTrainingCardTypeChange() {
+        guard session.isShowingSetup else { return }
         resetTrainingSession()
     }
 
     func handleTrainingListChange() {
+        guard session.isShowingSetup else { return }
         refreshDictionaryTrainingListIfNeeded()
         ensureDirectionValidity()
         resetTrainingSession()
     }
 
     func handleDictionaryLearningLevelChange() {
+        guard session.isShowingSetup else { return }
         refreshDictionaryTrainingListIfNeeded()
         ensureTrainingSelectionValidity()
         ensureDirectionValidity()
@@ -32,12 +41,14 @@ extension TrainingView {
     }
 
     func handleTrainingAppDirectionChange() {
+        guard session.isShowingSetup else { return }
         refreshDictionaryTrainingListIfNeeded()
         ensureDirectionValidity()
         resetTrainingSession()
     }
 
     func handleTrainingCustomListsChange() {
+        guard session.isShowingSetup else { return }
         ensureTrainingSelectionValidity()
         ensureDirectionValidity()
         resetTrainingSession()

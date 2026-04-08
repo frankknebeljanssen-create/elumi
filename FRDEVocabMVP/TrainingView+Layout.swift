@@ -42,6 +42,12 @@ extension TrainingView {
             }
             .buttonStyle(AppSecondaryButtonStyle(tint: trainingActionTint))
             .padding(.horizontal, trainingSessionCardInset)
+            .padding(.bottom, AppTheme.Spacing.xs)
+
+            if session.isSpeedRound, session.hasStartedTraining {
+                speedRoundTimerBar
+                    .padding(.horizontal, trainingSessionCardInset)
+            }
 
             sessionCard
                 .padding(.horizontal, trainingSessionCardInset)
@@ -49,7 +55,7 @@ extension TrainingView {
                 articleButtons
                     .padding(.horizontal, trainingSessionCardInset)
             } else if isVerbMode {
-                Spacer().frame(height: AppTheme.Spacing.md)
+                Spacer().frame(height: AppTheme.Spacing.xs)
                 verbMCCard
                     .padding(.horizontal, trainingSessionCardInset)
             } else {
@@ -96,6 +102,10 @@ extension TrainingView {
 
             if session.trainingMode == .vocabulary {
                 largeTrainingTypeCard
+            }
+
+            if session.trainingMode == .articles || session.trainingMode == .verbs {
+                speedRoundToggle
             }
 
             Button {

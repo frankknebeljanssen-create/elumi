@@ -2,6 +2,7 @@ import Foundation
 
 extension TrainingSessionController {
     func resetTrainingSessionState() {
+        print("🏋️ [Session] resetTrainingSessionState called, was hasStarted=\(hasStartedTraining)")
         hasStartedTraining = false
         failedAttemptsOnCurrentCard = 0
         currentTrainingItem = nil
@@ -44,9 +45,11 @@ extension TrainingSessionController {
                 from: preparedTrainingItems,
                 avoiding: previousItem
             )
+            print("🏋️ [Training] reshuffled: prepared=\(preparedTrainingItems.count) → remaining=\(remainingTrainingItems.count)")
         }
 
         guard !remainingTrainingItems.isEmpty else {
+            print("🏋️ [Training] ❌ no cards left! prepared=\(preparedTrainingItems.count) remaining=\(remainingTrainingItems.count)")
             hasStartedTraining = false
             currentTrainingItem = nil
             return

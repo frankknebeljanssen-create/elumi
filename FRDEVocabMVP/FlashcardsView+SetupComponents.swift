@@ -196,9 +196,9 @@ extension FlashcardsView {
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
                 Text(primaryValue)
-                    .font(AppTheme.Typography.screenTitle)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .lineLimit(title.isEmpty ? 2 : 1)
+                    .lineLimit(1)
                     .minimumScaleFactor(0.8)
 
                 if !secondaryValue.isEmpty {
