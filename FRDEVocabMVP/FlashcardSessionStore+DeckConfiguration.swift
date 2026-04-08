@@ -21,7 +21,15 @@ extension FlashcardSessionStore {
     }
 
     var masteredCount: Int {
-        totalCount - (session?.remainingCardIDs.count ?? totalCount)
+        session?.masteredCardCount ?? 0
+    }
+
+    var almostMasteredCount: Int {
+        session?.almostMasteredCardCount ?? 0
+    }
+
+    var openCount: Int {
+        totalCount - masteredCount - almostMasteredCount
     }
 
     var remainingCount: Int {

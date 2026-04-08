@@ -82,12 +82,12 @@ extension TrainingSessionController {
 
     private static let frenchArticles: Set<String> = ["le", "la", "l'", "les", "un", "une", "des", "du"]
 
-    static func hasFrenchArticle(_ text: String) -> Bool {
+    nonisolated static func hasFrenchArticle(_ text: String) -> Bool {
         let lower = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         return frenchArticles.contains(where: { lower.hasPrefix($0 + " ") || lower.hasPrefix($0 + "'") })
     }
 
-    static func determineFrenchArticle(_ item: VocabularyItem) -> String {
+    nonisolated static func determineFrenchArticle(_ item: VocabularyItem) -> String {
         // 1. Try extracting from French text (e.g., "le chien")
         if let article = extractFrenchArticle(from: item.french) {
             return article
@@ -127,7 +127,7 @@ extension TrainingSessionController {
         return "le"
     }
 
-    static func extractFrenchArticle(from text: String) -> String? {
+    nonisolated static func extractFrenchArticle(from text: String) -> String? {
         let lower = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         // Check l' first (before le/la)
         if lower.hasPrefix("l'") || lower.hasPrefix("l'") { return "l'" }
@@ -137,7 +137,7 @@ extension TrainingSessionController {
         return nil
     }
 
-    static func strippingFrenchArticle(from text: String) -> String {
+    nonisolated static func strippingFrenchArticle(from text: String) -> String {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         let lower = trimmed.lowercased()
         if lower.hasPrefix("l'") || lower.hasPrefix("l'") {
@@ -167,7 +167,7 @@ extension TrainingSessionController {
         "s'appeler", "se promener", "s'asseoir", "se souvenir"
     ]
 
-    static func looksLikeFrenchVerb(_ text: String) -> Bool {
+    nonisolated static func looksLikeFrenchVerb(_ text: String) -> Bool {
         let lower = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let words = lower.split(separator: " ")
         guard let firstWord = words.first else { return false }

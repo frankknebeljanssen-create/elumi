@@ -98,10 +98,11 @@ Regeln:
 - Französische Nomen: gib auch den frz. Artikel an, z.B. "le chien" → "der Hund"
 
 Antworte NUR als JSON-Array mit Objekten:
-{{"fr": "le chien", "de": "der Hund", "gender": "m"}}
+{{"fr": "le chien", "de": "der Hund", "gender": "m", "topic": "Tiere & Natur"}}
 
 gender: "m" für maskulin, "f" für feminin, "" wenn kein Nomen.
 fr: das französische Wort MIT Artikel bei Nomen.
+topic: eines von: Begrüßung & Höflichkeit, Familie & Freunde, Schule & Bildung, Essen & Trinken, Wohnen & Haus, Körper & Gesundheit, Kleidung & Mode, Tiere & Natur, Stadt & Verkehr, Reisen & Urlaub, Freizeit & Hobbys, Sport, Medien & Technik, Arbeit & Beruf, Einkaufen & Geld, Wetter & Jahreszeiten, Zeit & Datum, Farben & Formen, Zahlen & Mengen, Gefühle & Charakter, Kommunikation, Grammatik & Struktur, Allgemein
 
 Wörter:
 {word_list}"""
@@ -195,6 +196,7 @@ def main():
                     "level": entry["level"],
                     "word_class": entry["word_class"],
                     "gender": trans.get("gender", ""),
+                    "topic": trans.get("topic", "Allgemein"),
                     "flelex_word": entry["word"],
                     "freq_total": entry["freq_total"],
                 }
@@ -236,12 +238,13 @@ def main():
 
     with open(OUTPUT_PATH, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f, delimiter="\t")
-        writer.writerow(["source_display", "target", "card_type", "level", "word_class", "gender", "flelex_word", "freq_total"])
+        writer.writerow(["source_display", "target", "card_type", "level", "word_class", "gender", "topic", "flelex_word", "freq_total"])
         for r in results:
             if r.get("target"):
                 writer.writerow([
                     r["source_display"], r["target"], r["card_type"],
                     r["level"], r["word_class"], r["gender"],
+                    r.get("topic", "Allgemein"),
                     r["flelex_word"], f"{r.get('freq_total', 0):.2f}"
                 ])
 

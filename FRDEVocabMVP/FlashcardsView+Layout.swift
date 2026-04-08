@@ -139,13 +139,13 @@ extension FlashcardsView {
                 .padding(.horizontal, flashcardSessionCardInset)
 
                 // Prompt Card
-                Spacer().frame(height: AppTheme.Spacing.sm)
+                Spacer().frame(height: AppTheme.Spacing.lg)
 
                 flashcardPromptCard
                     .padding(.horizontal, flashcardSessionCardInset)
 
                 // Action Buttons
-                Spacer().frame(height: AppTheme.Spacing.md)
+                Spacer().frame(height: AppTheme.Spacing.lg)
 
                 flashcardActionButtons
                     .padding(.horizontal, flashcardSessionCardInset)
@@ -188,6 +188,8 @@ extension FlashcardsView {
                     if isDictionarySelectedInStack {
                         flashcardDictionaryLevelCard
                     }
+
+                    flashcardDirectionCard
 
                     flashcardCountLimitCard
 

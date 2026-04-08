@@ -14,7 +14,7 @@ extension FlashcardsView {
                     } label: {
                         Text(option.title)
                             .frame(maxWidth: .infinity)
-                            .frame(minHeight: 44)
+                            .frame(minHeight: 50)
                             .font(AppTheme.Typography.button)
                             .foregroundStyle(setup.selectedStackDictionaryLearningLevel == option ? .white : AppTheme.Colors.textPrimary)
                             .background(setup.selectedStackDictionaryLearningLevel == option ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
@@ -82,6 +82,58 @@ extension FlashcardsView {
         .frame(minHeight: 108)
         .padding(.horizontal, 18)
         .padding(.vertical, 4)
+        .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+    }
+
+    var flashcardDirectionCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Abfragerichtung")
+                .font(AppTheme.Typography.caption)
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+
+            HStack(spacing: 10) {
+                Button {
+                    selectedAppDirectionRaw = Direction.frenchToGerman.rawValue
+                } label: {
+                    HStack(spacing: 8) {
+                        Text("🇫🇷")
+                            .font(.system(size: 28))
+                        Text("→")
+                            .font(.system(size: 20, weight: .black))
+                        Text("🇩🇪")
+                            .font(.system(size: 28))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 50)
+                    .foregroundStyle(selectedAppDirection == .frenchToGerman ? .white : AppTheme.Colors.textPrimary)
+                    .background(selectedAppDirection == .frenchToGerman ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    selectedAppDirectionRaw = Direction.germanToFrench.rawValue
+                } label: {
+                    HStack(spacing: 6) {
+                        Text("🇩🇪")
+                            .font(.system(size: 20))
+                        Text("→")
+                            .font(.system(size: 14, weight: .bold))
+                        Text("🇫🇷")
+                            .font(.system(size: 20))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 50)
+                    .foregroundStyle(selectedAppDirection == .germanToFrench ? .white : AppTheme.Colors.textPrimary)
+                    .background(selectedAppDirection == .germanToFrench ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 12)
         .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 

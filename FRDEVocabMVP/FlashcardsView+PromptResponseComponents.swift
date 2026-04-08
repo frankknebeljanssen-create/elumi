@@ -10,7 +10,12 @@ extension FlashcardsView {
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .center)
 
-                    ZStack(alignment: .bottomTrailing) {
+                    masteryProgressBar
+                        .frame(height: 8)
+                        .clipShape(Capsule())
+                }
+
+                ZStack(alignment: .bottomTrailing) {
                         ZStack {
                             flashcardFace(
                                 text: currentFlashCard.prompt,
@@ -57,7 +62,6 @@ extension FlashcardsView {
                             )
                         }
                     }
-                }
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.vertical, 4)
                 .offset(x: interaction.cardFlyOutOffset)
@@ -131,5 +135,30 @@ extension FlashcardsView {
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
         .appCardBackground(sectionStyle, intensity: 0.09)
+    }
+
+    var masteryProgressBar: some View {
+        GeometryReader { geo in
+            let total = max(sessionStore.totalCount, 1)
+            let mastered = CGFloat(sessionStore.masteredCount) / CGFloat(total)
+            let almost = CGFloat(sessionStore.almostMasteredCount) / CGFloat(total)
+            let width = geo.size.width
+
+            ZStack(alignment: .leading) {
+                // Background (open)
+                Capsule()
+                    .fill(AppTheme.Colors.textSecondary.opacity(0.2))
+
+                // Almost mastered (yellow)
+                Capsule()
+                    .fill(AppTheme.Colors.warning.opacity(0.7))
+                    .frame(width: max(0, width * (mastered + almost)))
+
+                // Mastered (green)
+                Capsule()
+                    .fill(AppTheme.Colors.success)
+                    .frame(width: max(0, width * mastered))
+            }
+        }
     }
 }

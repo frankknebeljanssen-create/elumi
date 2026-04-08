@@ -14,8 +14,20 @@ struct FlashcardDeckCard: Identifiable, Codable, Equatable {
     }
 
     func card(for direction: Direction) -> FlashCard {
+        var displayFrench = french
+        // Ensure French nouns always have an article for consistency
+        if sourceLanguage == .french,
+           !TrainingSessionController.hasFrenchArticle(displayFrench) {
+            let article = TrainingSessionController.determineFrenchArticle(
+                VocabularyItem(french: french, german: german, cardType: .words, sourceLanguage: sourceLanguage)
+            )
+            if !article.isEmpty {
+                displayFrench = article.hasSuffix("'") ? "\(article)\(french)" : "\(article) \(french)"
+            }
+        }
+
         let studyFrench = frenchStudyCardDisplayText(
-            french,
+            displayFrench,
             matchingGerman: german,
             cardType: .words,
             sourceLanguage: sourceLanguage
@@ -76,6 +88,46 @@ struct FlashcardDeck: Identifiable, Equatable {
     let cards: [FlashcardDeckCard]
 }
 
+enum MasteryLevel: String, Codable {
+    case open
+    case almostMastered
+    case mastered
+
+    var label: String {
+        switch self {
+        case .open: return "Offen"
+        case .almostMastered: return "Fast sicher"
+        case .mastered: return "Sicher"
+        }
+    }
+
+    var color: String {
+        switch self {
+        case .open: return "red"
+        case .almostMastered: return "yellow"
+        case .mastered: return "green"
+        }
+    }
+}
+
+struct CardMastery: Codable, Equatable {
+    var consecutiveCorrect: Int = 0
+
+    var level: MasteryLevel {
+        if consecutiveCorrect >= 2 { return .mastered }
+        if consecutiveCorrect == 1 { return .almostMastered }
+        return .open
+    }
+
+    mutating func markCorrect() {
+        consecutiveCorrect += 1
+    }
+
+    mutating func markWrong() {
+        consecutiveCorrect = 0
+    }
+}
+
 struct FlashcardSessionState: Codable, Equatable {
     var deckID: String
     var direction: Direction
@@ -84,4 +136,19 @@ struct FlashcardSessionState: Codable, Equatable {
     var correctCount: Int
     var wrongCount: Int
     var isCompleted: Bool
+    var cardMastery: [String: CardMastery] = [:]
+
+    var masteredCardCount: Int {
+        cardMastery.values.filter { $0.level == .mastered }.count
+    }
+
+    var almostMasteredCardCount: Int {
+        cardMastery.values.filter { $0.level == .almostMastered }.count
+    }
+
+    var openCardCount: Int {
+        let totalTracked = cardMastery.count
+        let allCardCount = remainingCardIDs.count + masteredCardCount
+        return allCardCount - masteredCardCount - almostMasteredCardCount
+    }
 }

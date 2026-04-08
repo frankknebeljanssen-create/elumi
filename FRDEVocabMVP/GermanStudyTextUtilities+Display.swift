@@ -100,12 +100,9 @@ func bootstrappedGermanText(_ text: String, cardType: CardType, sourceHint: Stri
         return uppercasingFirstGermanLetter(in: cleaned)
     }
 
-    let shouldCapitalizeLeadingWord =
-        hasFrenchNounHint(sourceHint ?? "", cardType: cardType) ||
-        startsWithGermanArticle(cleaned)
     return normalizedGermanWordSegment(
         cleaned,
-        forceLeadingWordCapitalization: shouldCapitalizeLeadingWord
+        forceLeadingWordCapitalization: true
     )
 }
 

@@ -58,7 +58,17 @@ struct FlashcardsView: View {
     }
 
     var progressText: String {
-        "\(sessionStore.masteredCount)/\(sessionStore.totalCount) · \(sessionStore.wrongCount) falsch"
+        let mastered = sessionStore.masteredCount
+        let almost = sessionStore.almostMasteredCount
+        let open = sessionStore.openCount
+        if mastered == 0 && almost == 0 {
+            return "\(sessionStore.totalCount) Karten · Los geht's!"
+        }
+        var parts: [String] = []
+        if mastered > 0 { parts.append("\(mastered) sicher") }
+        if almost > 0 { parts.append("\(almost) fast") }
+        if open > 0 { parts.append("\(open) offen") }
+        return parts.joined(separator: " · ")
     }
 
     var selectedAppDirection: Direction {

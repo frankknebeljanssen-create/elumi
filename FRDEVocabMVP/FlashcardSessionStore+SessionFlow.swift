@@ -45,8 +45,17 @@ extension FlashcardSessionStore {
 
     func markCorrect() {
         guard var session, let currentCardID = session.currentCardID else { return }
-        session.remainingCardIDs.removeAll { $0 == currentCardID }
+
+        // Update mastery
+        var mastery = session.cardMastery[currentCardID] ?? CardMastery()
+        mastery.markCorrect()
+        session.cardMastery[currentCardID] = mastery
         session.correctCount += 1
+
+        // Only remove from remaining if mastered (2+ consecutive correct)
+        if mastery.level == .mastered {
+            session.remainingCardIDs.removeAll { $0 == currentCardID }
+        }
 
         if session.remainingCardIDs.isEmpty {
             session.currentCardID = nil
@@ -60,10 +69,16 @@ extension FlashcardSessionStore {
     }
 
     func markWrong() {
-        guard var session else { return }
+        guard var session, let currentCardID = session.currentCardID else { return }
+
+        // Reset mastery to open
+        var mastery = session.cardMastery[currentCardID] ?? CardMastery()
+        mastery.markWrong()
+        session.cardMastery[currentCardID] = mastery
         session.wrongCount += 1
+
         self.session = session
-        chooseNextCard(avoiding: session.currentCardID)
+        chooseNextCard(avoiding: currentCardID)
     }
 
     func chooseNextCard(avoiding currentID: String?) {
