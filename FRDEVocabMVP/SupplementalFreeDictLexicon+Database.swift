@@ -62,4 +62,16 @@ extension SupplementalFreeDictLexicon {
         guard let rawText = sqlite3_column_text(statement, index) else { return "" }
         return String(cString: rawText)
     }
+
+    static func sourceOnlyGender(for sourceTerm: String) -> String? {
+        let lookupKey = normalizedLookupText(sourceTerm)
+        guard !lookupKey.isEmpty else { return nil }
+        return withReadOnlyDatabase { database in
+            queryFirstString(
+                in: database,
+                sql: "SELECT source_gender FROM lexicon_entries WHERE source_lookup_key = ? AND source_gender != '' LIMIT 1;",
+                parameter: lookupKey
+            )
+        }
+    }
 }

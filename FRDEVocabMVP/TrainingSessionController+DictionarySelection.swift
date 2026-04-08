@@ -92,37 +92,43 @@ extension TrainingSessionController {
         if let article = extractFrenchArticle(from: item.french) {
             return article
         }
-        // 2. Query supplemental lexicon database for exact gender
+
+        // Helper: check if word starts with vowel or mute h → needs l'
+        let french = item.french.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let needsElision: Bool = {
+            let vowels: Set<Character> = ["a", "e", "i", "o", "u", "â", "ê", "î", "ô", "û", "é", "è", "ë", "ï", "ü", "à", "ù", "h"]
+            return french.first.map { vowels.contains($0) } ?? false
+        }()
+
+        // Helper: convert gender to article with elision check
+        func articleForGender(_ gender: String) -> String {
+            if needsElision { return "l'" }
+            if gender == "feminine" { return "la" }
+            return "le"
+        }
+
+        // 2. Query supplemental lexicon database for gender (source-only, most reliable)
+        if let genderStr = SupplementalFreeDictLexicon.sourceOnlyGender(for: item.french) {
+            return articleForGender(genderStr)
+        }
+        // 2b. Try exact pair match as fallback
         if let genderPair = SupplementalFreeDictLexicon.exactGenderInfo(
             sourceTerm: item.french, targetTerm: item.german
         ), let frenchGender = genderPair.french {
-            switch frenchGender.gender {
-            case .feminine: return "la"
-            case .masculine: return "le"
-            case .plural: return "les"
-            case .neuter: return "le"
-            }
+            if frenchGender.gender == .plural { return "les" }
+            return articleForGender(frenchGender.gender == .feminine ? "feminine" : "masculine")
         }
         // 3. Use lexicon gender inference (suffix rules, head overrides)
         if let genderInfo = frenchGenderInfo(for: item.french, cardType: .words) {
-            switch genderInfo.gender {
-            case .feminine: return "la"
-            case .masculine: return "le"
-            case .plural: return "les"
-            case .neuter: return "le"
-            }
+            if genderInfo.gender == .plural { return "les" }
+            return articleForGender(genderInfo.gender == .feminine ? "feminine" : "masculine")
         }
-        // 3. Derive from German article (der→le, die→la, das→le)
+        // 4. Derive from German article (der→le, die→la, das→le)
         let german = item.german.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if needsElision { return "l'" }
         if german.hasPrefix("der ") { return "le" }
         if german.hasPrefix("die ") { return "la" }
         if german.hasPrefix("das ") { return "le" }
-        // 4. Check for vowel/h start in French → l'
-        let french = item.french.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        let vowels: Set<Character> = ["a", "e", "i", "o", "u", "â", "ê", "î", "ô", "û", "é", "è", "ë", "ï", "ü", "à", "ù", "h"]
-        if let first = french.first, vowels.contains(first) {
-            return "l'"
-        }
         // 5. Default: le
         return "le"
     }

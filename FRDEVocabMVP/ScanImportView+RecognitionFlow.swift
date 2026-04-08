@@ -69,7 +69,7 @@ extension ScanImportView {
     func recognizeText(from image: UIImage) {
         isRecognizingImage = true
         startScanProgressFeedback()
-        scanRuntimeStage = (scanModeOverride ?? .list) == .list ? .aiPrimary : .ocrPreflight
+        scanRuntimeStage = .ocrPreflight
         importMessage = "Text wird erkannt..."
         let appendToExistingPreview = shouldAppendNextScan
         let aiConfiguredForScan = OpenAIResponsesScanAIClient.fromEnvironment() != nil

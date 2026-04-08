@@ -8,6 +8,7 @@ enum ScanInputMethod {
 enum ScanRuntimeStage: Equatable {
     case idle
     case ocrPreflight
+    case aiConnecting
     case aiPrimary
     case ocrFallback
 }

@@ -15,8 +15,10 @@ struct FlashcardDeckCard: Identifiable, Codable, Equatable {
 
     func card(for direction: Direction) -> FlashCard {
         var displayFrench = french
-        // Ensure French nouns always have an article for consistency
+        // Add French article only for single nouns (1-2 words), not phrases
+        let wordCount = french.trimmingCharacters(in: .whitespacesAndNewlines).split(separator: " ").count
         if sourceLanguage == .french,
+           wordCount <= 2,
            !TrainingSessionController.hasFrenchArticle(displayFrench) {
             let article = TrainingSessionController.determineFrenchArticle(
                 VocabularyItem(french: french, german: german, cardType: .words, sourceLanguage: sourceLanguage)

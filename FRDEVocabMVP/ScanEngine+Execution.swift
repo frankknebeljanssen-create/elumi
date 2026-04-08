@@ -44,8 +44,9 @@ extension ScanAnalysisEngine {
         }
 
         let primaryContext = preflightResult.map { ScanProviderContext(primaryResult: $0) }
-        await progressHandler?(.aiPrimary)
+        await progressHandler?(.aiConnecting)
         let primaryStart = CFAbsoluteTimeGetCurrent()
+        await progressHandler?(.aiPrimary)
         let primaryResult = await primaryProvider.analyze(request: request, context: primaryContext)
         logTiming("engine_primary", start: primaryStart)
 

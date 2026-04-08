@@ -319,8 +319,10 @@ struct ScanImportView: View {
         switch scanRuntimeStage {
         case .idle, .ocrPreflight:
             return "OCR lokal"
+        case .aiConnecting:
+            return "GPT wird kontaktiert"
         case .aiPrimary:
-            return "GPT läuft"
+            return "GPT analysiert"
         case .ocrFallback:
             return "OCR-Fallback"
         }
@@ -330,6 +332,8 @@ struct ScanImportView: View {
         switch scanRuntimeStage {
         case .idle, .ocrPreflight:
             return AppTheme.Colors.textSecondary
+        case .aiConnecting:
+            return AppTheme.Colors.warning
         case .aiPrimary:
             return AppTheme.Colors.primary
         case .ocrFallback:
@@ -341,6 +345,8 @@ struct ScanImportView: View {
         switch scanRuntimeStage {
         case .idle, .ocrPreflight:
             return "doc.text.viewfinder"
+        case .aiConnecting:
+            return "antenna.radiowaves.left.and.right"
         case .aiPrimary:
             return "sparkles"
         case .ocrFallback:
@@ -2025,7 +2031,7 @@ struct ScanImportView: View {
     private func recognizeText(from image: UIImage) {
         isRecognizingImage = true
         startScanProgressFeedback()
-        scanRuntimeStage = (scanModeOverride ?? .list) == .list ? .aiPrimary : .ocrPreflight
+        scanRuntimeStage = .ocrPreflight
         importMessage = "Text wird erkannt..."
         let appendToExistingPreview = shouldAppendNextScan
         let aiConfiguredForScan = OpenAIResponsesScanAIClient.fromEnvironment() != nil

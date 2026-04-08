@@ -21,13 +21,7 @@ func germanDisplayText(_ text: String, cardType: CardType, sourceHint: String? =
         return preserved
     }
 
-    let normalized = normalizedLookupText(cleaned)
-    let wordCount = normalized.split(separator: " ").count
-    let shouldCapitalizeLeadingWord =
-        hasFrenchNounHint(sourceHint ?? "", cardType: cardType) ||
-        startsWithGermanArticle(cleaned) ||
-        germanGenderInfo(for: cleaned, cardType: cardType) != nil ||
-        (wordCount == 1 && DataStore.likelyGermanNounSet.contains(normalized))
+    let shouldCapitalizeLeadingWord = true
 
     let separators = CharacterSet(charactersIn: "/|;")
     let segments = cleaned.components(separatedBy: separators)

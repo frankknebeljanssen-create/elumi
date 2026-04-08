@@ -35,8 +35,10 @@ extension ScanImportView {
         switch scanRuntimeStage {
         case .idle, .ocrPreflight:
             return "OCR lokal"
+        case .aiConnecting:
+            return "GPT wird kontaktiert"
         case .aiPrimary:
-            return "GPT läuft"
+            return "GPT analysiert"
         case .ocrFallback:
             return "OCR-Fallback"
         }
@@ -46,6 +48,8 @@ extension ScanImportView {
         switch scanRuntimeStage {
         case .idle, .ocrPreflight:
             return AppTheme.Colors.textSecondary
+        case .aiConnecting:
+            return AppTheme.Colors.warning
         case .aiPrimary:
             return AppTheme.Colors.primary
         case .ocrFallback:
@@ -57,6 +61,8 @@ extension ScanImportView {
         switch scanRuntimeStage {
         case .idle, .ocrPreflight:
             return "doc.text.viewfinder"
+        case .aiConnecting:
+            return "antenna.radiowaves.left.and.right"
         case .aiPrimary:
             return "sparkles"
         case .ocrFallback:

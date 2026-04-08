@@ -67,12 +67,24 @@ extension FlashcardsSessionController {
 
         feedbackPlayer.playFlashcardError()
         lastResult = ScoreResult(label: "Falsch 😕", detail: "")
-        showingSolution = false
-        isFlashcardFlipped = false
+
+        // Show solution for 1.5 seconds before moving on
+        showingSolution = true
+        isFlashcardFlipped = true
         pushCurrentFlashcardToHistory(revealingSolution: true, sessionStore: sessionStore)
-        sessionStore.markWrong()
-        syncDisplayedCard(with: sessionStore)
-        scheduleNextPrompt(after: 0.55, sessionStore: sessionStore, speechController: speechController, speaker: speaker, areSoundsEnabled: true)
+        // DON'T markWrong yet — it changes the card! Wait until after showing solution.
+
+        cancelPendingFeedback()
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            sessionStore.markWrong()
+            self.isFlashcardFlipped = false
+            self.showingSolution = false
+            self.syncDisplayedCard(with: sessionStore)
+            self.scheduleNextPrompt(after: 0.3, sessionStore: sessionStore, speechController: speechController, speaker: speaker, areSoundsEnabled: true)
+        }
+        pendingFeedbackTask = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: workItem)
     }
 
     func animateCorrectCardRemoval(

@@ -13,6 +13,7 @@ extension FlashcardsView {
                     masteryProgressBar
                         .frame(height: 8)
                         .clipShape(Capsule())
+                        .padding(.bottom, AppTheme.Spacing.sm)
                 }
 
                 ZStack(alignment: .bottomTrailing) {
