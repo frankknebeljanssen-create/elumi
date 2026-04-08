@@ -20,7 +20,16 @@ extension FlashcardsSessionController {
             return false
         }
 
-        let expectedVariants = answerVariants(for: expected, answerLanguageCode: card.answerLanguageCode)
+        var expectedVariants = answerVariants(for: expected, answerLanguageCode: card.answerLanguageCode)
+
+        // Add synonym translations from supplemental lexicon
+        if card.promptLanguageCode == "fr-FR" {
+            let translations = SupplementalFreeDictLexicon.exactTranslations(for: card.prompt)
+            for translation in translations {
+                expectedVariants.formUnion(answerVariants(for: normalized(translation), answerLanguageCode: card.answerLanguageCode))
+            }
+        }
+
         let gotVariants = answerVariants(for: got, answerLanguageCode: card.answerLanguageCode)
 
         for gotVariant in gotVariants {
@@ -34,6 +43,13 @@ extension FlashcardsSessionController {
 
     func isApproximateMatch(got: String, expected: String) -> Bool {
         if got == expected {
+            return true
+        }
+
+        // Word-order independent: same words in any order
+        let gotWords = Set(got.split(separator: " ").map(String.init))
+        let expectedWords = Set(expected.split(separator: " ").map(String.init))
+        if gotWords.count >= 2, gotWords == expectedWords {
             return true
         }
 
