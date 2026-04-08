@@ -157,6 +157,30 @@ enum Direction: String, CaseIterable, Identifiable, Codable {
     }
 }
 
+enum TrainingMode: String, CaseIterable, Identifiable, Hashable {
+    case vocabulary = "Vokabeln"
+    case articles = "Artikel"
+    case verbs = "Verben"
+
+    var id: String { rawValue }
+
+    var systemImage: String {
+        switch self {
+        case .vocabulary: return "book.fill"
+        case .articles: return "textformat"
+        case .verbs: return "arrow.triangle.branch"
+        }
+    }
+
+    var iconLabel: String {
+        switch self {
+        case .vocabulary: return "📖"
+        case .articles: return "le, la"
+        case .verbs: return "🔄"
+        }
+    }
+}
+
 enum CardType: String, CaseIterable, Identifiable, Codable {
     case words = "Wörter"
     case phrases = "Phrasen"

@@ -66,10 +66,113 @@ extension TrainingSessionController {
             from: listStore,
             selectedAppDirection: selectedAppDirection,
             launchContext: launchContext
-        )?.items.filter {
-            $0.sourceLanguage == selectedAppDirection.sourceLanguage &&
-            $0.cardType == cardType
+        )?.items.filter { item in
+            guard item.sourceLanguage == selectedAppDirection.sourceLanguage else { return false }
+
+            switch trainingMode {
+            case .vocabulary:
+                return item.cardType == cardType
+            case .articles:
+                return item.cardType == .words
+            case .verbs:
+                return item.cardType == .words && Self.looksLikeFrenchVerb(item.french)
+            }
         } ?? []
+    }
+
+    private static let frenchArticles: Set<String> = ["le", "la", "l'", "les", "un", "une", "des", "du"]
+
+    static func hasFrenchArticle(_ text: String) -> Bool {
+        let lower = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return frenchArticles.contains(where: { lower.hasPrefix($0 + " ") || lower.hasPrefix($0 + "'") })
+    }
+
+    static func determineFrenchArticle(_ item: VocabularyItem) -> String {
+        // 1. Try extracting from French text (e.g., "le chien")
+        if let article = extractFrenchArticle(from: item.french) {
+            return article
+        }
+        // 2. Query supplemental lexicon database for exact gender
+        if let genderPair = SupplementalFreeDictLexicon.exactGenderInfo(
+            sourceTerm: item.french, targetTerm: item.german
+        ), let frenchGender = genderPair.french {
+            switch frenchGender.gender {
+            case .feminine: return "la"
+            case .masculine: return "le"
+            case .plural: return "les"
+            case .neuter: return "le"
+            }
+        }
+        // 3. Use lexicon gender inference (suffix rules, head overrides)
+        if let genderInfo = frenchGenderInfo(for: item.french, cardType: .words) {
+            switch genderInfo.gender {
+            case .feminine: return "la"
+            case .masculine: return "le"
+            case .plural: return "les"
+            case .neuter: return "le"
+            }
+        }
+        // 3. Derive from German article (der→le, die→la, das→le)
+        let german = item.german.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if german.hasPrefix("der ") { return "le" }
+        if german.hasPrefix("die ") { return "la" }
+        if german.hasPrefix("das ") { return "le" }
+        // 4. Check for vowel/h start in French → l'
+        let french = item.french.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let vowels: Set<Character> = ["a", "e", "i", "o", "u", "â", "ê", "î", "ô", "û", "é", "è", "ë", "ï", "ü", "à", "ù", "h"]
+        if let first = french.first, vowels.contains(first) {
+            return "l'"
+        }
+        // 5. Default: le
+        return "le"
+    }
+
+    static func extractFrenchArticle(from text: String) -> String? {
+        let lower = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        // Check l' first (before le/la)
+        if lower.hasPrefix("l'") || lower.hasPrefix("l'") { return "l'" }
+        for article in ["le", "la", "les", "un", "une", "des", "du"] {
+            if lower.hasPrefix(article + " ") { return article }
+        }
+        return nil
+    }
+
+    static func strippingFrenchArticle(from text: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let lower = trimmed.lowercased()
+        if lower.hasPrefix("l'") || lower.hasPrefix("l'") {
+            return String(trimmed.dropFirst(2)).trimmingCharacters(in: .whitespaces)
+        }
+        for article in ["le", "la", "les", "un", "une", "des", "du"] {
+            if lower.hasPrefix(article + " ") {
+                return String(trimmed.dropFirst(article.count + 1)).trimmingCharacters(in: .whitespaces)
+            }
+        }
+        return trimmed
+    }
+
+    private static let knownFrenchVerbs: Set<String> = [
+        "aller", "avoir", "être", "faire", "dire", "pouvoir", "vouloir", "devoir",
+        "savoir", "voir", "venir", "prendre", "mettre", "parler", "manger", "boire",
+        "dormir", "écrire", "lire", "ouvrir", "fermer", "acheter", "chercher", "trouver",
+        "donner", "jouer", "aimer", "détester", "préférer", "habiter", "travailler",
+        "étudier", "apprendre", "comprendre", "répondre", "demander", "commencer",
+        "finir", "choisir", "partir", "sortir", "entrer", "arriver", "rester",
+        "tomber", "monter", "descendre", "courir", "marcher", "nager", "danser",
+        "chanter", "écouter", "regarder", "attendre", "croire", "connaître",
+        "penser", "espérer", "essayer", "payer", "envoyer", "recevoir",
+        "perdre", "gagner", "tenir", "sentir", "vivre", "mourir", "naître",
+        "appeler", "rappeler", "conduire", "construire", "produire", "traduire",
+        "cuire", "suivre", "rire", "sourire", "plaire", "se lever", "se coucher",
+        "s'appeler", "se promener", "s'asseoir", "se souvenir"
+    ]
+
+    static func looksLikeFrenchVerb(_ text: String) -> Bool {
+        let lower = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let words = lower.split(separator: " ")
+        guard let firstWord = words.first else { return false }
+        let verb = String(firstWord)
+        return knownFrenchVerbs.contains(lower) || knownFrenchVerbs.contains(verb)
     }
 
     func selectedTrainingListLanguages(

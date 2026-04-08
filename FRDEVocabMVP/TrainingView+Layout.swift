@@ -17,11 +17,19 @@ extension TrainingView {
         }
     }
 
+    private var sessionHeaderTitle: String {
+        switch session.trainingMode {
+        case .vocabulary: return "Trainieren"
+        case .articles: return "Trainieren — Artikel"
+        case .verbs: return "Trainieren — Verben"
+        }
+    }
+
     var trainingSessionScreen: some View {
         VStack(spacing: 8) {
             ScreenHeaderCard(
                 style: sectionStyle,
-                title: "Trainieren",
+                title: sessionHeaderTitle,
                 subtitle: "",
                 systemImage: "waveform.circle.fill"
             )
@@ -37,10 +45,15 @@ extension TrainingView {
 
             sessionCard
                 .padding(.horizontal, trainingSessionCardInset)
-            actionButtons
-                .padding(.horizontal, trainingSessionCardInset)
-            responseCard
-                .padding(.horizontal, trainingSessionCardInset)
+            if isArticleMode {
+                articleButtons
+                    .padding(.horizontal, trainingSessionCardInset)
+            } else {
+                actionButtons
+                    .padding(.horizontal, trainingSessionCardInset)
+                responseCard
+                    .padding(.horizontal, trainingSessionCardInset)
+            }
 
             Spacer(minLength: 0)
         }
@@ -59,6 +72,8 @@ extension TrainingView {
                 systemImage: "waveform.circle.fill"
             )
 
+            trainingModeCard
+
             Button {
                 session.showingTrainingListPicker = true
             } label: {
@@ -73,7 +88,9 @@ extension TrainingView {
                 dictionaryTrainingLevelCard
             }
 
-            largeTrainingTypeCard
+            if session.trainingMode == .vocabulary {
+                largeTrainingTypeCard
+            }
 
             Button {
                 startTraining()

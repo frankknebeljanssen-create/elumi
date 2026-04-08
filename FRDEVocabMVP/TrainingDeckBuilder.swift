@@ -2,7 +2,7 @@ import Foundation
 
 enum TrainingDeckBuilder {
     static func buildDeck(from items: [VocabularyItem]) -> [VocabularyItem] {
-        items
+        items.shuffled()
     }
 
     static func shuffledRound(

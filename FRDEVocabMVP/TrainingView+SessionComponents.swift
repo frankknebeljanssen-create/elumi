@@ -5,12 +5,12 @@ extension TrainingView {
         Group {
             if let currentCard, session.hasStartedTraining {
                 VStack(alignment: .center, spacing: 8) {
-                    Text(currentCard.category.uppercased())
+                    Text(isArticleMode ? "ARTIKEL" : currentCard.category.uppercased())
                         .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .center)
-                    Text(currentCard.prompt)
-                        .font(sessionPromptFont)
+                    Text(isArticleMode ? (articlePromptText ?? currentCard.prompt) : currentCard.prompt)
+                        .font(isArticleMode ? .system(size: 32, weight: .black, design: .rounded) : sessionPromptFont)
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .lineLimit(5)
                         .minimumScaleFactor(0.5)
@@ -86,6 +86,46 @@ extension TrainingView {
         .frame(maxWidth: .infinity, minHeight: 88, alignment: .leading)
         .padding(14)
         .appCardBackground(sectionStyle, intensity: 0.09)
+    }
+
+    var articleButtons: some View {
+        VStack(spacing: 10) {
+            if showsSuccessOnlyMessage {
+                Text("Richtig 🙂")
+                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: actionButtonHeight)
+                    .foregroundStyle(.white)
+                    .background(AppTheme.Colors.success)
+                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
+            } else if showsRetryOnlyMessage {
+                Text("Falsch 😕")
+                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: actionButtonHeight)
+                    .foregroundStyle(.white)
+                    .background(Color(red: 0.9, green: 0.3, blue: 0.15))
+                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
+            } else {
+                HStack(spacing: 10) {
+                    ForEach(["le", "la", "l'"], id: \.self) { article in
+                        Button {
+                            submitArticle(article)
+                        } label: {
+                            Text(article)
+                                .font(.system(size: 22, weight: .bold, design: .rounded))
+                                .frame(maxWidth: .infinity)
+                                .frame(minHeight: actionButtonHeight)
+                                .foregroundStyle(.white)
+                                .background(trainingActionTint)
+                                .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(articleLocked)
+                    }
+                }
+            }
+        }
     }
 
     var actionButtons: some View {

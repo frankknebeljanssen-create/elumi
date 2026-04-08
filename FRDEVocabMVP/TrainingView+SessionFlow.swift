@@ -58,20 +58,28 @@ extension TrainingView {
         showingTypedAnswerInput = !isAudioModeEnabled
         typedAnswerFieldFocused = false
         isMicPulseVisible = false
+        articleAnswer = nil
+        articleLocked = false
     }
 
     func startTraining() {
+        print("🏋️ [Training] startTraining mode=\(session.trainingMode) activeItems=\(activeItems.count)")
         ensureTrainingSelectionValidity()
         guard session.startTraining(
             listStore: listStore,
             launchContext: launchContext,
             selectedAppDirection: selectedAppDirection
         ) else {
+            print("🏋️ [Training] ❌ startTraining failed")
             resetTrainingSession()
             return
         }
         showingTypedAnswerInput = false
         typedAnswerFieldFocused = false
+        if isArticleMode {
+            // Artikel-Modus: kein Sprechen, nur Card zeigen
+            return
+        }
         speakCurrentPromptAfterScreenUpdate(initialDelay: 0.12)
     }
 

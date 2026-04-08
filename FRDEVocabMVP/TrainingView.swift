@@ -26,6 +26,8 @@ struct TrainingView: View {
     @State var isPreparingAudioDependencies = false
     @State var wasSpeakerSpeaking = false
     @State var wasRecording = false
+    @State var articleAnswer: String?
+    @State var articleLocked = false
     @FocusState var typedAnswerFieldFocused: Bool
 
     var speechController: SpeechController? {
@@ -46,6 +48,24 @@ struct TrainingView: View {
 
     var currentCard: FlashCard? {
         session.currentTrainingItem?.card(for: session.direction)
+    }
+
+    var isArticleMode: Bool {
+        session.trainingMode == .articles
+    }
+
+    var articlePromptText: String? {
+        guard isArticleMode, let item = session.currentTrainingItem else { return nil }
+        return TrainingSessionController.strippingFrenchArticle(from: item.french)
+    }
+
+    var correctArticle: String? {
+        guard isArticleMode, let item = session.currentTrainingItem else { return nil }
+        return TrainingSessionController.determineFrenchArticle(item)
+    }
+
+    var isVerbMode: Bool {
+        session.trainingMode == .verbs
     }
 
     var dictionaryTrainingList: VocabularyList? {

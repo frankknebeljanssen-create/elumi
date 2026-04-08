@@ -47,6 +47,32 @@ extension TrainingView {
         }
     }
 
+    func submitArticle(_ article: String) {
+        guard !articleLocked, let correctArticle else { return }
+        articleLocked = true
+        let isCorrect = article.lowercased() == correctArticle.lowercased()
+
+        if isCorrect {
+            feedbackPlayer.playStudySuccess()
+            lastResult = ScoreResult(label: "Richtig 🙂", detail: "\(correctArticle) \(articlePromptText ?? "")")
+            scheduleFeedbackTask(after: 0.8) {
+                articleAnswer = nil
+                articleLocked = false
+                lastResult = nil
+                loadNextTrainingCard()
+            }
+        } else {
+            feedbackPlayer.playStudyError()
+            session.incrementFailedAttempts()
+            lastResult = ScoreResult(label: "Falsch 😕", detail: "\(correctArticle) \(articlePromptText ?? "")")
+            scheduleFeedbackTask(after: 1.2) {
+                articleLocked = false
+                lastResult = nil
+                // Stay on same card — user must get it right
+            }
+        }
+    }
+
     func evaluateTranscript() {
         evaluateResponse(speechController?.transcript ?? "")
     }

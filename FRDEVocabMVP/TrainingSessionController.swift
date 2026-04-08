@@ -6,6 +6,7 @@ final class TrainingSessionController: ObservableObject {
     @Published var selectedTrainingListID: UUID?
     @Published var direction: Direction = .frenchToGerman
     @Published var cardType: CardType = .words
+    @Published var trainingMode: TrainingMode = .vocabulary
     @Published var currentTrainingItem: VocabularyItem?
     @Published var hasStartedTraining = false
     @Published var failedAttemptsOnCurrentCard = 0

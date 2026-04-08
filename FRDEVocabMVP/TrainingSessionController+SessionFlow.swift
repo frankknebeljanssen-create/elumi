@@ -64,12 +64,12 @@ extension TrainingSessionController {
         launchContext: TrainingLaunchContext?,
         selectedAppDirection: Direction
     ) -> [VocabularyItem] {
-        TrainingDeckBuilder.buildDeck(
-            from: activeItems(
-                from: listStore,
-                selectedAppDirection: selectedAppDirection,
-                launchContext: launchContext
-            )
+        let items = activeItems(
+            from: listStore,
+            selectedAppDirection: selectedAppDirection,
+            launchContext: launchContext
         )
+        print("🏋️ [Training] buildDeck: mode=\(trainingMode) cardType=\(cardType) items=\(items.count)")
+        return TrainingDeckBuilder.buildDeck(from: items)
     }
 }

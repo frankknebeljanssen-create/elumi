@@ -14,8 +14,10 @@ extension TrainingView {
                     } label: {
                         Text(option.title)
                             .frame(maxWidth: .infinity)
-                            .frame(minHeight: 44)
-                            .font(AppTheme.Typography.button)
+                            .frame(minHeight: 38)
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
                             .foregroundStyle(session.selectedDictionaryLearningLevel == option ? .white : AppTheme.Colors.textPrimary)
                             .background(session.selectedDictionaryLearningLevel == option ? trainingActionTint : AppTheme.Colors.secondarySurface)
                             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
@@ -54,6 +56,38 @@ extension TrainingView {
         .frame(maxWidth: .infinity)
         .frame(minHeight: title.isEmpty ? 72 : AppLayout.largeSelectionHeight)
         .padding(.horizontal, AppTheme.Spacing.md)
+        .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+    }
+
+    var trainingModeCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Was willst du trainieren?")
+                .font(AppTheme.Typography.caption)
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+            HStack(spacing: 8) {
+                ForEach(TrainingMode.allCases) { mode in
+                    Button {
+                        session.trainingMode = mode
+                    } label: {
+                        VStack(spacing: 6) {
+                            Text(mode.iconLabel)
+                                .font(.system(size: 15, weight: .bold, design: .rounded))
+                            Text(mode.rawValue)
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 68)
+                        .foregroundStyle(session.trainingMode == mode ? .white : AppTheme.Colors.textPrimary)
+                        .background(session.trainingMode == mode ? trainingActionTint : AppTheme.Colors.secondarySurface)
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
         .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
