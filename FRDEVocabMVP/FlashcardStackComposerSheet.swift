@@ -93,6 +93,15 @@ struct FlashcardStackComposerSheet: View {
                             listRow(list)
                         }
                     }
+
+                    // Section: Wörterbuch (abgesetzt, am Ende)
+                    if !dictionaryLists.isEmpty {
+                        Spacer().frame(height: 10)
+                        sectionHeader("📖 Wörterbuch")
+                        ForEach(dictionaryLists) { list in
+                            listRow(list)
+                        }
+                    }
                 }
             }
 
@@ -124,7 +133,14 @@ struct FlashcardStackComposerSheet: View {
     }
 
     private var ownLists: [VocabularyList] {
-        displayedLists.filter { !$0.isBuiltIn || $0.isAggregateVocabulary }
+        displayedLists.filter {
+            (!$0.isBuiltIn || $0.isAggregateVocabulary)
+            && $0.id != VocabularyListStore.dictionaryListID
+        }
+    }
+
+    private var dictionaryLists: [VocabularyList] {
+        displayedLists.filter { $0.id == VocabularyListStore.dictionaryListID }
     }
 
     private var levelLists: [VocabularyList] {

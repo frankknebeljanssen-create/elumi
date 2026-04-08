@@ -60,10 +60,14 @@ extension TrainingView {
         isMicPulseVisible = false
         articleAnswer = nil
         articleLocked = false
+        showingArticleTranslation = false
+        verbMCOptions = []
+        verbMCSelected = nil
+        verbMCLocked = false
     }
 
     func startTraining() {
-        print("🏋️ [Training] startTraining mode=\(session.trainingMode) activeItems=\(activeItems.count)")
+        print("🏋️ [Training] startTraining mode=\(session.trainingMode) activeItems=\(activeItems.count) selectedIDs=\(session.selectedTrainingListIDs.count) verbSetSize=\(StandardVocabularyLoader.verbSet.count)")
         ensureTrainingSelectionValidity()
         guard session.startTraining(
             listStore: listStore,
@@ -77,7 +81,10 @@ extension TrainingView {
         showingTypedAnswerInput = false
         typedAnswerFieldFocused = false
         if isArticleMode {
-            // Artikel-Modus: kein Sprechen, nur Card zeigen
+            return
+        }
+        if isVerbMode {
+            prepareVerbMCOptions()
             return
         }
         speakCurrentPromptAfterScreenUpdate(initialDelay: 0.12)

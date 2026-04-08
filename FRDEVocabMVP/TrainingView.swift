@@ -28,6 +28,10 @@ struct TrainingView: View {
     @State var wasRecording = false
     @State var articleAnswer: String?
     @State var articleLocked = false
+    @State var showingArticleTranslation = false
+    @State var verbMCOptions: [String] = []
+    @State var verbMCSelected: String?
+    @State var verbMCLocked = false
     @FocusState var typedAnswerFieldFocused: Bool
 
     var speechController: SpeechController? {

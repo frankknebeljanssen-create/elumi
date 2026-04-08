@@ -48,6 +48,10 @@ extension TrainingView {
             if isArticleMode {
                 articleButtons
                     .padding(.horizontal, trainingSessionCardInset)
+            } else if isVerbMode {
+                Spacer().frame(height: AppTheme.Spacing.md)
+                verbMCCard
+                    .padding(.horizontal, trainingSessionCardInset)
             } else {
                 actionButtons
                     .padding(.horizontal, trainingSessionCardInset)

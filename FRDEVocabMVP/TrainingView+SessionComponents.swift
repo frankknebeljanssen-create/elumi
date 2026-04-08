@@ -125,8 +125,91 @@ extension TrainingView {
                     }
                 }
             }
+
+            // Translation hint button — always show German translation
+            if let item = session.currentTrainingItem, !showsSuccessOnlyMessage, !showsRetryOnlyMessage {
+                Button {
+                    showingArticleTranslation.toggle()
+                } label: {
+                    if showingArticleTranslation {
+                        Text(item.german)
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: 44)
+                            .background(AppTheme.Colors.secondarySurface)
+                            .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
+                    } else {
+                        Label("Übersetzung", systemImage: "eye")
+                            .font(.system(size: 15, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: 44)
+                            .background(AppTheme.Colors.secondarySurface)
+                            .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
+                    }
+                }
+                .buttonStyle(.plain)
+            }
         }
     }
+
+    var verbMCCard: some View {
+        VStack(spacing: 8) {
+            if let selected = verbMCSelected, let currentCard {
+                let isCorrect = normalized(selected) == normalized(currentCard.answer)
+                Text(isCorrect ? "Richtig 🙂" : "Falsch 😕 → \(currentCard.answer)")
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 44)
+                    .background(isCorrect ? AppTheme.Colors.success : Color(red: 0.9, green: 0.3, blue: 0.15))
+                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
+            }
+
+            let columns = [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)]
+            LazyVGrid(columns: columns, spacing: 8) {
+                ForEach(verbMCOptions, id: \.self) { option in
+                    Button {
+                        submitVerbMC(option)
+                    } label: {
+                        Text(option)
+                            .font(.system(size: 15, weight: .semibold, design: .rounded))
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.7)
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: 48)
+                            .foregroundStyle(verbMCButtonForeground(option))
+                            .background(verbMCButtonBackground(option))
+                            .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(verbMCLocked)
+                }
+            }
+        }
+    }
+
+    func verbMCButtonForeground(_ option: String) -> Color {
+        guard let selected = verbMCSelected, let currentCard else {
+            return .white
+        }
+        let correct = normalized(currentCard.answer)
+        if normalized(option) == correct { return .white }
+        if normalized(option) == normalized(selected) { return .white }
+        return AppTheme.Colors.textPrimary.opacity(0.5)
+    }
+
+    func verbMCButtonBackground(_ option: String) -> Color {
+        guard let selected = verbMCSelected, let currentCard else {
+            return trainingActionTint
+        }
+        let correct = normalized(currentCard.answer)
+        if normalized(option) == correct { return AppTheme.Colors.success }
+        if normalized(option) == normalized(selected) { return Color(red: 0.9, green: 0.3, blue: 0.15) }
+        return AppTheme.Colors.secondarySurface
+    }
+
 
     var actionButtons: some View {
         VStack(spacing: 10) {

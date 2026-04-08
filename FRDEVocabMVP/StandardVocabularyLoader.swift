@@ -73,6 +73,16 @@ enum StandardVocabularyLoader {
         ["A1", "A2", "B1", "B2", "C1", "C2"]
     }
 
+    /// Fast lookup set of French verb forms (lowercase)
+    static let verbSet: Set<String> = {
+        Set(allEntries.filter { $0.wordClass == "verb" }.map { $0.sourceDisplay.lowercased() })
+    }()
+
+    /// Fast lookup: is this French word a verb?
+    static func isVerb(_ frenchText: String) -> Bool {
+        verbSet.contains(frenchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
     // MARK: - Pre-built VocabularyLists for the list picker
 
     private static let levelNames: [String: String] = [

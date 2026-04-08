@@ -30,17 +30,17 @@ extension TrainingSessionController {
         selectedAppDirection: Direction,
         launchContext: TrainingLaunchContext?
     ) -> [VocabularyList] {
-        let dictionaryLists: [VocabularyList]
-        if shouldPrepareDictionaryTrainingList(launchContext: launchContext) {
-            dictionaryLists = [dictionaryTrainingList() ?? placeholderDictionaryTrainingList]
-        } else {
-            dictionaryLists = []
-        }
-
-        return dictionaryLists
-            + listStore.practiceLists
+        var lists = listStore.practiceLists
             + StandardVocabularyLoader.levelLists
             + StandardVocabularyLoader.topicLists
+
+        // Wörterbuch ans Ende, abgesetzt
+        if shouldPrepareDictionaryTrainingList(launchContext: launchContext),
+           let dictionaryList = dictionaryTrainingList() ?? loadedDictionaryTrainingList {
+            lists.append(dictionaryList)
+        }
+
+        return lists
     }
 
     func selectedTrainingList(
@@ -85,12 +85,12 @@ extension TrainingSessionController {
             case .articles:
                 return item.cardType == .words
             case .verbs:
-                return item.cardType == .words && Self.looksLikeFrenchVerb(item.french)
+                return item.cardType == .words && StandardVocabularyLoader.isVerb(item.french)
             }
         } ?? []
     }
 
-    private static let frenchArticles: Set<String> = ["le", "la", "l'", "les", "un", "une", "des", "du"]
+    nonisolated private static let frenchArticles: Set<String> = ["le", "la", "l'", "les", "un", "une", "des", "du"]
 
     nonisolated static func hasFrenchArticle(_ text: String) -> Bool {
         let lower = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -167,7 +167,7 @@ extension TrainingSessionController {
         return trimmed
     }
 
-    private static let knownFrenchVerbs: Set<String> = [
+    nonisolated private static let knownFrenchVerbs: Set<String> = [
         "aller", "avoir", "être", "faire", "dire", "pouvoir", "vouloir", "devoir",
         "savoir", "voir", "venir", "prendre", "mettre", "parler", "manger", "boire",
         "dormir", "écrire", "lire", "ouvrir", "fermer", "acheter", "chercher", "trouver",

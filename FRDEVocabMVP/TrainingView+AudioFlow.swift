@@ -47,6 +47,55 @@ extension TrainingView {
         }
     }
 
+    func submitVerbMC(_ option: String) {
+        guard !verbMCLocked, let currentCard else { return }
+        verbMCLocked = true
+        verbMCSelected = option
+        let gotNorm = option.lowercased().folding(options: .diacriticInsensitive, locale: .current)
+        let expectedNorm = currentCard.answer.lowercased().folding(options: .diacriticInsensitive, locale: .current)
+        let isCorrect = gotNorm == expectedNorm
+
+        if isCorrect {
+            feedbackPlayer.playStudySuccess()
+            scheduleFeedbackTask(after: 0.8) {
+                verbMCSelected = nil
+                verbMCLocked = false
+                loadNextTrainingCard()
+                prepareVerbMCOptions()
+            }
+        } else {
+            feedbackPlayer.playStudyError()
+            session.incrementFailedAttempts()
+            scheduleFeedbackTask(after: 1.5) {
+                verbMCSelected = nil
+                verbMCLocked = false
+            }
+        }
+    }
+
+    func prepareVerbMCOptions() {
+        guard let currentCard else {
+            verbMCOptions = []
+            return
+        }
+        let correctAnswer = currentCard.answer
+        let correctLower = correctAnswer.lowercased()
+
+        // Pick distractors from same language as the answer
+        let isAnswerGerman = currentCard.answerLanguageCode == "de-DE"
+        let allVerbOptions = StandardVocabularyLoader.allEntries
+            .filter { $0.wordClass == "verb" && !$0.target.isEmpty && !$0.sourceDisplay.isEmpty }
+            .map { isAnswerGerman ? $0.target : $0.sourceDisplay }
+
+        let pool = Array(Set(allVerbOptions.filter { $0.lowercased() != correctLower }))
+        let shuffled = pool.shuffled()
+        let distractors = Array(shuffled.prefix(7))
+
+        var options = [correctAnswer] + distractors
+        options.shuffle()
+        verbMCOptions = options
+    }
+
     func submitArticle(_ article: String) {
         guard !articleLocked, let correctArticle else { return }
         articleLocked = true
@@ -59,6 +108,7 @@ extension TrainingView {
                 articleAnswer = nil
                 articleLocked = false
                 lastResult = nil
+                showingArticleTranslation = false
                 loadNextTrainingCard()
             }
         } else {
@@ -68,7 +118,7 @@ extension TrainingView {
             scheduleFeedbackTask(after: 1.2) {
                 articleLocked = false
                 lastResult = nil
-                // Stay on same card — user must get it right
+                showingArticleTranslation = false
             }
         }
     }
