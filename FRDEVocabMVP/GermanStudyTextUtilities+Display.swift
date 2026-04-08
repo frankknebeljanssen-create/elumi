@@ -5,10 +5,15 @@ func germanDisplayText(_ text: String, cardType: CardType, sourceHint: String? =
     let cleaned = cleanedQuizDisplayText(text)
     guard !cleaned.isEmpty else { return cleaned }
 
-    if cardType == .phrases {
+    // Always capitalize German nouns in multi-word text
+    let wordCount = cleaned.split(separator: " ").count
+    let isPhrase = cardType == .phrases || wordCount >= 3
+
+    if isPhrase {
+        let capitalized = capitalizingGermanNounsInPhrase(cleaned)
         let preserved = preservingTerminalSentencePunctuation(
             from: text,
-            in: capitalizingGermanNounsInPhrase(cleaned),
+            in: capitalized,
             style: .neutral,
             cardType: cardType
         )
@@ -115,9 +120,10 @@ func capitalizingGermanNounsInPhrase(_ text: String) -> String {
         }
 
         let previousNormalized = index > 0 ? normalizedLookupText(tokens[index - 1]) : ""
-        let shouldCapitalize =
-            (germanNounTriggerWords.contains(previousNormalized) || germanHabenForms.contains(previousNormalized)) &&
-            DataStore.likelyGermanNounSet.contains(normalizedToken)
+        let afterTrigger = germanNounTriggerWords.contains(previousNormalized) || germanHabenForms.contains(previousNormalized)
+        let isKnownNoun = DataStore.likelyGermanNounSet.contains(normalizedToken)
+        // Capitalize after articles/triggers (always) or if it's a known noun
+        let shouldCapitalize = afterTrigger || isKnownNoun
 
         rebuilt.append(shouldCapitalize ? uppercasingFirstGermanLetter(in: token) : token)
     }

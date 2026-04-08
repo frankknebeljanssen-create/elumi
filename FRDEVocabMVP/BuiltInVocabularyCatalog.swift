@@ -1,18 +1,7 @@
 import Foundation
 
 enum BuiltInVocabularyCatalog {
-    static let builtInVocabularyItems: [VocabularyItem] =
-        beginnerWords
-        + beginnerPhrases
-        + intermediateWords
-        + intermediatePhrases
-        + advancedWords
-        + advancedPhrases
-        + additionalFrenchBeginnerWords
-        + additionalFrenchBeginnerPhrases
-        + additionalFrenchIntermediateWords
-        + additionalFrenchIntermediatePhrases
-        + additionalFrenchAdvancedWords
+    static let builtInVocabularyItems: [VocabularyItem] = StandardVocabularyLoader.vocabularyItems
 
     static let defaultItems: [VocabularyItem] = builtInVocabularyItems
 
