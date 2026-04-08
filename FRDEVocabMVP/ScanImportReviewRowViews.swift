@@ -19,22 +19,15 @@ struct ScanEditablePreviewRowView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .top, spacing: 8) {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 8) {
-                        Text(sourceLanguageLabel)
-                            .font(AppTheme.Typography.caption)
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
-
-                        ScanModeBadgeView(title: pair.cardType.rawValue, tint: cardTypeTint)
-
-                        if let category, let categoryTint {
-                            ScanModeBadgeView(title: category.title, tint: categoryTint)
-                        }
-                    }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(sourceLanguageLabel)
+                        .font(AppTheme.Typography.caption)
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
 
                     TextField(sourceLanguageLabel, text: sourceText, axis: .vertical)
                         .textFieldStyle(.roundedBorder)
-                        .lineLimit(2...4)
+                        .lineLimit(1...2)
+                        .font(.system(size: 14, design: .rounded))
                         .id(sourceFieldID)
                         .focused($focusedReviewField, equals: .source(pair.id))
 
@@ -44,7 +37,8 @@ struct ScanEditablePreviewRowView: View {
 
                     TextField("Deutsch", text: targetText, axis: .vertical)
                         .textFieldStyle(.roundedBorder)
-                        .lineLimit(2...4)
+                        .lineLimit(1...2)
+                        .font(.system(size: 14, design: .rounded))
                         .id(targetFieldID)
                         .focused($focusedReviewField, equals: .target(pair.id))
                 }

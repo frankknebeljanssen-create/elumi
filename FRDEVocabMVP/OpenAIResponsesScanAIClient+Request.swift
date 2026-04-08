@@ -1,6 +1,49 @@
 import Foundation
 
 extension OpenAIResponsesScanAIClient {
+    func makeTextOnlyRequestBody(from payload: ScanAIRequestPayload) -> [String: Any] {
+        let prompt = makePrompt(from: payload)
+
+        return [
+            "model": model,
+            "input": [
+                [
+                    "role": "system",
+                    "content": [
+                        [
+                            "type": "input_text",
+                            "text": """
+Extract ALL French-German vocabulary pairs from the OCR text below.
+Return strict JSON matching the provided schema.
+COMPLETENESS is critical: extract EVERY pair. Include even very short entries like single words.
+Strip phonetic transcriptions in brackets like [saly] or [twa].
+Preserve terminal punctuation exactly: ?, ! and . matter for meaning.
+Never deduplicate: if the same term appears with different translations or punctuation, list each as a separate entry.
+"""
+                        ]
+                    ]
+                ],
+                [
+                    "role": "user",
+                    "content": [
+                        [
+                            "type": "input_text",
+                            "text": prompt
+                        ]
+                    ]
+                ]
+            ],
+            "text": [
+                "format": [
+                    "type": "json_schema",
+                    "name": "elumi_scan_result",
+                    "strict": true,
+                    "schema": Self.responseSchema
+                ]
+            ]
+        ]
+    }
+
     func makeRequestBody(from payload: ScanAIRequestPayload) -> [String: Any] {
         let base64Image = payload.imageJPEGData.base64EncodedString()
         let imageURL = "data:image/jpeg;base64,\(base64Image)"
@@ -15,16 +58,16 @@ extension OpenAIResponsesScanAIClient {
                         [
                             "type": "input_text",
                             "text": """
-Extract French learning content from photographed pages for a German learner.
-Return only strict JSON matching the provided schema.
-Prefer correct French-German pairs over quantity.
-Ignore decorative elements, page numbers, and example-dialog columns unless they are the main learnable content.
-If the page is a vocabulary table with examples in a third column, pair only the French source term with the German translation.
-Copy the visible source and target text as faithfully as possible.
-Never replace concrete names or filled-in words with placeholders like "+ Name", "Name", "nom" or similar templates.
-Preserve visible terminal punctuation exactly, especially ?, ! and .
-If one side is clearly a question, exclamation or full sentence, keep the corresponding punctuation on the paired translation as well.
-Never deduplicate: if the same term appears with different translations or punctuation, list each as a separate entry.
+Extract ALL French-German vocabulary pairs from photographed textbook pages.
+Return strict JSON matching the provided schema.
+COMPLETENESS is critical: extract EVERY pair from EVERY section on the page. Pages often have multiple sections — process ALL of them.
+Include even very short entries like single words (et, toi, ah, bof, oui, non).
+Ignore decorative images, page numbers, and example-dialog columns in the third column.
+If a vocabulary table has examples in a third column, pair only the French source (column 1) with the German translation (column 2).
+Copy visible source and target text faithfully. Strip phonetic transcriptions in brackets like [saly] or [twa].
+Never replace filled-in words with placeholders like "+ Name" or "nom".
+Preserve terminal punctuation exactly: ?, ! and . matter for meaning.
+Never deduplicate: "Et toi?" = "Und du?" and "Et toi?" = "Und dir?" are TWO entries. "Ça va?" (question) and "Ça va." (statement) are TWO entries.
 """
                         ]
                     ]

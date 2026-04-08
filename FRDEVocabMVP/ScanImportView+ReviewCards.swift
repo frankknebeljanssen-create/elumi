@@ -36,31 +36,6 @@ extension ScanImportView {
                     .font(AppTheme.Typography.cardTitle)
                     .foregroundStyle(AppTheme.Colors.textPrimary)
 
-                if canRescanCurrentSelection {
-                    Button {
-                        restartCurrentScan()
-                    } label: {
-                        Label("Erneut scannen", systemImage: "arrow.clockwise")
-                            .font(.system(size: 11, weight: .bold, design: .rounded))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.82)
-                            .padding(.horizontal, 10)
-                            .frame(minHeight: 28)
-                            .foregroundStyle(sectionStyle.accent)
-                            .background(
-                                Capsule(style: .continuous)
-                                    .fill(sectionStyle.accent.opacity(0.10))
-                            )
-                            .overlay(
-                                Capsule(style: .continuous)
-                                    .stroke(sectionStyle.accent.opacity(0.18), lineWidth: 1)
-                            )
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(isRecognizingImage)
-                    .opacity(isRecognizingImage ? 0.55 : 1)
-                }
-
                 Spacer()
 
                 Text(previewCounterLabel)
@@ -69,12 +44,17 @@ extension ScanImportView {
                     .lineLimit(1)
             }
 
-            Text(reviewSummary)
-                .font(isCompactReviewSummary ? .system(size: 11, weight: .medium, design: .rounded) : AppTheme.Typography.body)
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-                .lineLimit(isCompactReviewSummary ? 1 : nil)
-                .minimumScaleFactor(isCompactReviewSummary ? 0.68 : 1)
-                .fixedSize(horizontal: false, vertical: !isCompactReviewSummary)
+            if canRescanCurrentSelection {
+                Button {
+                    restartCurrentScan()
+                } label: {
+                    Label("Erneut scannen", systemImage: "arrow.clockwise")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))
+                .disabled(isRecognizingImage)
+                .opacity(isRecognizingImage ? 0.55 : 1)
+            }
 
             HStack(spacing: 8) {
                 if !previewPairs.isEmpty {

@@ -20,27 +20,35 @@ struct OpenAIResponsesScanAIClient: ScanAIClient {
     }
 
     func analyze(_ payload: ScanAIRequestPayload) async throws -> ScanAIResponsePayload {
+        try await sendRequest(makeRequestBody(from: payload), mode: "image+text")
+    }
+
+    func analyzeTextOnly(_ payload: ScanAIRequestPayload) async throws -> ScanAIResponsePayload {
+        try await sendRequest(makeTextOnlyRequestBody(from: payload), mode: "text-only")
+    }
+
+    private func sendRequest(_ requestBody: [String: Any], mode: String) async throws -> ScanAIResponsePayload {
         guard let url = URL(string: "https://api.openai.com/v1/responses") else {
             throw ScanAIProviderError.invalidEndpoint
         }
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.timeoutInterval = 60
+        request.timeoutInterval = mode == "text-only" ? 30 : 60
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-        let body = try JSONSerialization.data(withJSONObject: makeRequestBody(from: payload))
+        let body = try JSONSerialization.data(withJSONObject: requestBody)
         request.httpBody = body
         let bodyKB = body.count / 1024
-        print("📡 [Scan] API request: model=\(model) payload=\(bodyKB)KB timeout=\(Int(request.timeoutInterval))s")
+        print("📡 [Scan] API request [\(mode)]: model=\(model) payload=\(bodyKB)KB timeout=\(Int(request.timeoutInterval))s")
         let apiStart = CFAbsoluteTimeGetCurrent()
 
         let (data, response): (Data, URLResponse)
         do {
             (data, response) = try await session.data(for: request)
-            print("📡 [Scan] API response: \(Int((CFAbsoluteTimeGetCurrent() - apiStart) * 1000))ms")
+            print("📡 [Scan] API response [\(mode)]: \(Int((CFAbsoluteTimeGetCurrent() - apiStart) * 1000))ms")
         } catch let urlError as URLError where urlError.code == .timedOut {
-            print("📡 [Scan] ❌ TIMEOUT after \(Int((CFAbsoluteTimeGetCurrent() - apiStart) * 1000))ms")
+            print("📡 [Scan] ❌ TIMEOUT [\(mode)] after \(Int((CFAbsoluteTimeGetCurrent() - apiStart) * 1000))ms")
             throw ScanAIProviderError.timedOut
         }
         guard let httpResponse = response as? HTTPURLResponse else {

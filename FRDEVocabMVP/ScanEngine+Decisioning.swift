@@ -16,14 +16,8 @@ extension ScanAnalysisEngine {
     }
 
     func shouldRunPrimaryFirstWithPreflightFallback(for request: ScanRequest) -> Bool {
-        guard preflightProvider != nil else { return false }
-
-        switch request.preferredMode ?? .list {
-        case .list:
-            return true
-        case .text:
-            return false
-        }
+        // Always run OCR first so text-only GPT path can be used (much faster)
+        return false
     }
 
     func shouldRunPrimaryAndPreflightConcurrently(for request: ScanRequest) -> Bool {

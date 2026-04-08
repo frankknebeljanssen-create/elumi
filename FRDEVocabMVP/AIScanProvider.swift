@@ -3,8 +3,8 @@ import UIKit
 
 struct AIScanProvider: ScanProvider {
     let client: ScanAIClient
-    let maxUploadLongEdge: CGFloat = 768
-    let retryUploadLongEdge: CGFloat = 560
+    let maxUploadLongEdge: CGFloat = 680
+    let retryUploadLongEdge: CGFloat = 512
 
     func analyze(request: ScanRequest, context: ScanProviderContext?) async -> ScanProviderResult {
         let start = CFAbsoluteTimeGetCurrent()
@@ -13,11 +13,41 @@ struct AIScanProvider: ScanProvider {
             return unavailableResult(for: request, context: context)
         }
 
+        // Phase 1: Try text-only if OCR context has enough lines (much faster, no image upload)
+        let ocrBoxCount = context?.primaryResult?.recognizedBoxes.count ?? 0
+        let isTextOnlyClient = client is OpenAIResponsesScanAIClient
+        print("📡 [Scan] text-only check: ocrBoxes=\(ocrBoxCount) isCorrectClient=\(isTextOnlyClient) context=\(context != nil)")
+        if ocrBoxCount >= 4,
+           let textOnlyClient = client as? OpenAIResponsesScanAIClient {
+            let textOnlyPayload = makePayload(
+                from: request,
+                context: context,
+                maxLongEdge: maxUploadLongEdge,
+                compressionQuality: 0.58,
+                compactContext: false
+            )
+            if let textOnlyPayload {
+                do {
+                    let response = try await textOnlyClient.analyzeTextOnly(textOnlyPayload)
+                    logTiming("ai_text_only", start: start)
+                    let result = mapResponse(response, context: context)
+                    if result.entries.filter({ $0.reviewMetadata.isImportable }).count >= max(3, ocrBoxCount / 4) {
+                        print("📡 [Scan] ✅ text-only sufficient: \(result.entries.count) entries")
+                        return result
+                    }
+                    print("📡 [Scan] ⚠️ text-only insufficient (\(result.entries.count) entries), falling back to image")
+                } catch {
+                    print("📡 [Scan] ⚠️ text-only failed: \(error.localizedDescription), falling back to image")
+                }
+            }
+        }
+
+        // Phase 2: Full image+text request (fallback or primary when no OCR context)
         guard let payload = makePayload(
             from: request,
             context: context,
             maxLongEdge: maxUploadLongEdge,
-            compressionQuality: 0.65,
+            compressionQuality: 0.58,
             compactContext: false
         ) else {
             logDebug("ai_invalid_payload")
