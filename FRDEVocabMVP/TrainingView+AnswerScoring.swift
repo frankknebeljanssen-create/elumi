@@ -44,6 +44,7 @@ extension TrainingView {
 
     func handleCorrectAnswer() {
         feedbackPlayer.playStudySuccess()
+        trainingCorrectCount += 1
         lastResult = ScoreResult(label: "Richtig 🙂", detail: "")
         scheduleNextCard()
     }

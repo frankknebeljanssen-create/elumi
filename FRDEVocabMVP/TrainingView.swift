@@ -18,6 +18,7 @@ struct TrainingView: View {
 
     @StateObject var session = TrainingSessionController()
     @State var lastResult: ScoreResult?
+    @State var trainingCorrectCount = 0
     @State var shouldEvaluateAfterStop = false
     @State var pendingFeedbackTask: DispatchWorkItem?
     @State var typedAnswer = ""

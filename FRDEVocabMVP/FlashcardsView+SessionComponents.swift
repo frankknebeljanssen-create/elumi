@@ -29,19 +29,32 @@ extension FlashcardsView {
                 )
             }
 
+            let earnedXP = sessionStore.masteredCount * 5
             let credits = ArcadeCreditSystem.flashcardCredits(
                 masteredCount: sessionStore.masteredCount,
                 totalCount: sessionStore.totalCount,
                 wrongCount: sessionStore.wrongCount
             )
-            if credits > 0 {
-                Text("+\(credits) Arcade Credit\(credits > 1 ? "s" : "")")
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.warning)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 4)
-                    .background(AppTheme.Colors.warning.opacity(0.15))
-                    .clipShape(Capsule())
+
+            HStack(spacing: 10) {
+                if earnedXP > 0 {
+                    Text("+\(earnedXP) XP")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.success)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(AppTheme.Colors.success.opacity(0.15))
+                        .clipShape(Capsule())
+                }
+                if credits > 0 {
+                    Text("+\(credits) Credit\(credits > 1 ? "s" : "")")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.warning)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(AppTheme.Colors.warning.opacity(0.15))
+                        .clipShape(Capsule())
+                }
             }
         }
         .frame(maxWidth: .infinity)
@@ -49,6 +62,18 @@ extension FlashcardsView {
         .padding(.vertical, 22)
         .appCardBackground(sectionStyle, intensity: 0.12, cornerRadius: AppLayout.largeCardCornerRadius)
         .onAppear {
+            // XP: 5 per mastered card
+            let earnedXP = sessionStore.masteredCount * 5
+            if earnedXP > 0 {
+                let previousXP = UserDefaults.standard.integer(forKey: appElumiXPKey)
+                let newXP = previousXP + earnedXP
+                UserDefaults.standard.set(newXP, forKey: appElumiXPKey)
+                let xpBonusCredits = ArcadeCreditSystem.bonusCreditsFromXP(previousXP: previousXP, newXP: newXP)
+                if xpBonusCredits > 0 {
+                    arcadeCredits += xpBonusCredits
+                }
+            }
+            // Arcade credits
             let credits = ArcadeCreditSystem.flashcardCredits(
                 masteredCount: sessionStore.masteredCount,
                 totalCount: sessionStore.totalCount,

@@ -8,6 +8,18 @@ extension TrainingView {
     }
 
     func returnToTrainingSetup() {
+        // Award XP for training session (5 XP per correct answer, not speed round)
+        if !session.isSpeedRound, trainingCorrectCount > 0 {
+            let earnedXP = trainingCorrectCount * 5
+            let previousXP = UserDefaults.standard.integer(forKey: appElumiXPKey)
+            let newXP = previousXP + earnedXP
+            UserDefaults.standard.set(newXP, forKey: appElumiXPKey)
+            let xpBonusCredits = ArcadeCreditSystem.bonusCreditsFromXP(previousXP: previousXP, newXP: newXP)
+            if xpBonusCredits > 0 {
+                arcadeCredits += xpBonusCredits
+            }
+        }
+        trainingCorrectCount = 0
         resetTrainingSession()
         session.returnToSetup()
     }

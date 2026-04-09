@@ -57,6 +57,7 @@ extension TrainingView {
         if isCorrect {
             feedbackPlayer.playStudySuccess()
             if isSpeed { session.speedRoundScore += 1 }
+            trainingCorrectCount += 1
             scheduleFeedbackTask(after: isSpeed ? 0.3 : 1.2) {
                 verbMCSelected = nil
                 verbMCLocked = false
@@ -108,6 +109,7 @@ extension TrainingView {
         if isCorrect {
             feedbackPlayer.playStudySuccess()
             if isSpeed { session.speedRoundScore += 1 }
+            trainingCorrectCount += 1
             lastResult = ScoreResult(label: "Richtig 🙂", detail: "\(correctArticle) \(articlePromptText ?? "")")
             scheduleFeedbackTask(after: isSpeed ? 0.25 : 0.8) {
                 articleAnswer = nil
