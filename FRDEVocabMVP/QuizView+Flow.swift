@@ -190,7 +190,7 @@ extension QuizView {
     func prepareQuizRewards() {
         let rewardOutcome = computeElumiRewardOutcome(
             baseWorms: correctCount,
-            baseXP: correctCount * 10,
+            baseXP: correctCount * 5,
             isPerfectLesson: isPerfectQuiz,
             currentXP: collectedXP,
             currentStreak: currentStreak,
@@ -212,7 +212,7 @@ extension QuizView {
         guard !didPersistHearts else { return }
         let rewardOutcome = computeElumiRewardOutcome(
             baseWorms: correctCount,
-            baseXP: correctCount * 10,
+            baseXP: correctCount * 5,
             isPerfectLesson: isPerfectQuiz,
             currentXP: collectedXP,
             currentStreak: currentStreak,

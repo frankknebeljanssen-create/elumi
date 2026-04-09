@@ -29,7 +29,7 @@ extension FlashcardsView {
                 )
             }
 
-            let earnedXP = sessionStore.masteredCount * 5
+            let earnedXP = sessionStore.masteredCount * 2
             let credits = ArcadeCreditSystem.flashcardCredits(
                 masteredCount: sessionStore.masteredCount,
                 totalCount: sessionStore.totalCount,
@@ -63,7 +63,7 @@ extension FlashcardsView {
         .appCardBackground(sectionStyle, intensity: 0.12, cornerRadius: AppLayout.largeCardCornerRadius)
         .onAppear {
             // XP: 5 per mastered card
-            let earnedXP = sessionStore.masteredCount * 5
+            let earnedXP = sessionStore.masteredCount * 2
             if earnedXP > 0 {
                 let previousXP = UserDefaults.standard.integer(forKey: appElumiXPKey)
                 let newXP = previousXP + earnedXP

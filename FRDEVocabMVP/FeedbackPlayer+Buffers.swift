@@ -130,4 +130,23 @@ extension FeedbackPlayer {
             ]
         )
     }
+
+    func makeSuctionWhirBuffer() -> AVAudioPCMBuffer? {
+        // Whirring suction sound: higher frequencies for phone speaker, heavy noise
+        Self.makeArcadeBuffer(
+            format: arcadeFormat,
+            sampleRate: sampleRate,
+            segments: [
+                // Startup whir — ramps up
+                FeedbackArcadeSegment(startFrequency: 400, endFrequency: 800, duration: 0.25, amplitude: 0.25, waveform: .square, noiseMix: 0.6),
+                // Steady suction whir — mostly noise with tonal drone
+                FeedbackArcadeSegment(startFrequency: 800, endFrequency: 900, duration: 0.8, amplitude: 0.30, waveform: .square, noiseMix: 0.7),
+                FeedbackArcadeSegment(startFrequency: 900, endFrequency: 800, duration: 0.8, amplitude: 0.28, waveform: .square, noiseMix: 0.7),
+                FeedbackArcadeSegment(startFrequency: 800, endFrequency: 850, duration: 0.8, amplitude: 0.30, waveform: .square, noiseMix: 0.65),
+                FeedbackArcadeSegment(startFrequency: 850, endFrequency: 800, duration: 0.8, amplitude: 0.28, waveform: .square, noiseMix: 0.65),
+                // Wind down
+                FeedbackArcadeSegment(startFrequency: 800, endFrequency: 300, duration: 0.4, amplitude: 0.20, waveform: .square, noiseMix: 0.5),
+            ]
+        )
+    }
 }

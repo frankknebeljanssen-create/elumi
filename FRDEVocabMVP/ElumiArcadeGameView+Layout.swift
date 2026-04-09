@@ -133,68 +133,91 @@ extension ElumiArcadeGameView {
     }
 
     private var headerBar: some View {
-        HStack(spacing: 12) {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 16, weight: .bold))
-                    .frame(width: 36, height: 36)
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .background(AppTheme.Colors.surface.opacity(0.92))
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            }
-            .buttonStyle(.plain)
+        VStack(spacing: 8) {
+            // Top row: close button, score, lives
+            HStack(spacing: 0) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .frame(width: 32, height: 32)
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .background(AppTheme.Colors.surface.opacity(0.92))
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+                .buttonStyle(.plain)
 
-            Spacer(minLength: 0)
+                Spacer(minLength: 0)
 
-            VStack(spacing: 4) {
+                // Score - big and central
                 Text("\(score)")
-                    .font(.system(size: 36, weight: .black, design: .rounded))
+                    .font(.system(size: 42, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.warning)
                     .shadow(color: AppTheme.Colors.warning.opacity(0.3), radius: 8, x: 0, y: 2)
                     .contentTransition(.numericText())
                     .animation(.spring(response: 0.25, dampingFraction: 0.7), value: score)
-                Text("Runde \(round)")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                arcadeSnackPointsHUD
-                HStack(spacing: 6) {
-                    if hasActiveSuction() {
-                        arcadeStatusChip(
-                            icon: "sparkles",
-                            label: "Saugstrahl \(suctionSecondsRemaining())s",
-                            tint: AppTheme.Colors.primary
-                        )
-                    }
-                    if hasActiveBonusPoints() {
-                        arcadeStatusChip(
-                            icon: "star.fill",
-                            label: "x2 Punkte \(bonusPointsSecondsRemaining())s",
-                            tint: AppTheme.Colors.warning
-                        )
-                    }
-                    if comboCount >= 3 && !isGameOver {
-                        arcadeStatusChip(
-                            icon: "flame.fill",
-                            label: "Combo x\(comboCount)",
-                            tint: AppTheme.Colors.success
-                        )
+
+                Spacer(minLength: 0)
+
+                // Lives
+                HStack(spacing: 5) {
+                    ForEach(0..<maxMisses, id: \.self) { index in
+                        Image(systemName: index < maxMisses - misses ? "heart.fill" : "heart")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(index < maxMisses - misses ? AppTheme.Colors.error : AppTheme.Colors.error.opacity(0.25))
                     }
                 }
             }
 
-            Spacer(minLength: 0)
+            // Stats row: Round, Caught, Missed
+            HStack(spacing: 0) {
+                arcadeStatPill(icon: "flag.fill", label: "Runde \(round)", tint: AppTheme.Colors.primary)
+                Spacer(minLength: 0)
+                arcadeStatPill(icon: "checkmark.circle.fill", label: "\(totalCaught)", tint: AppTheme.Colors.success)
+                Spacer(minLength: 0)
+                arcadeStatPill(icon: "xmark.circle.fill", label: "\(misses)", tint: AppTheme.Colors.error)
+            }
 
+            // Power-up chips
             HStack(spacing: 6) {
-                ForEach(0..<maxMisses, id: \.self) { index in
-                    Circle()
-                        .fill(index < maxMisses - misses ? AppTheme.Colors.success : AppTheme.Colors.error.opacity(0.35))
-                        .frame(width: 12, height: 12)
+                if hasActiveSuction() {
+                    arcadeStatusChip(
+                        icon: "sparkles",
+                        label: "Saugstrahl \(suctionSecondsRemaining())s",
+                        tint: AppTheme.Colors.primary
+                    )
+                }
+                if hasActiveBonusPoints() {
+                    arcadeStatusChip(
+                        icon: "star.fill",
+                        label: "x2 \(bonusPointsSecondsRemaining())s",
+                        tint: AppTheme.Colors.warning
+                    )
+                }
+                if comboCount >= 3 && !isGameOver {
+                    arcadeStatusChip(
+                        icon: "flame.fill",
+                        label: "x\(comboCount)",
+                        tint: AppTheme.Colors.success
+                    )
                 }
             }
-            .frame(width: 44, alignment: .trailing)
         }
+    }
+
+    private func arcadeStatPill(icon: String, label: String, tint: Color) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 11, weight: .bold))
+            Text(label)
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+        }
+        .foregroundStyle(tint)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(AppTheme.Colors.surface.opacity(0.85))
+        .clipShape(Capsule())
     }
 
     @ViewBuilder

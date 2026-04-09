@@ -47,11 +47,43 @@ struct InfoView: View {
                 )
 
                 infoCard(
+                    title: "Quiz",
+                    lines: [
+                        "Verschiedene Fragetypen: Multiple Choice, Paare finden, Tippen, Ausdrücke verbinden.",
+                        "Wähle 5 bis 30 Fragen pro Runde.",
+                        "Am Ende siehst du dein Ergebnis und kannst die falschen Antworten nochmal anschauen."
+                    ]
+                )
+
+                infoCard(
                     title: "Beim Lernen",
                     lines: [
                         "Du kannst sprechen oder tippen.",
                         "Bei Karteikarten bleiben falsche Karten im Stapel.",
                         "Mit Home kommst du jederzeit zurück ins Hauptmenü."
+                    ]
+                )
+
+                infoCard(
+                    title: "XP & Fortschritt",
+                    lines: [
+                        "Jede richtige Antwort bringt dir XP.",
+                        "Quiz: 5 XP pro richtige Antwort.",
+                        "Training & Karteikarten: 2 XP pro richtige Antwort.",
+                        "Speed Round: 2 XP pro richtige Antwort.",
+                        "Alle 20 XP bekommst du 1 Arcade Credit."
+                    ]
+                )
+
+                infoCard(
+                    title: "Elumi Arcade",
+                    lines: [
+                        "Verdiene Arcade Credits durch Lernen.",
+                        "1 Credit = 1 Spiel.",
+                        "Zieh Elumi zum Futter und sammle Punkte.",
+                        "3 Leben — verpasstes Futter kostet 1 Leben.",
+                        "Falschen Elumi erwischt = sofort Game Over.",
+                        "Runden werden immer schneller!"
                     ]
                 )
             }

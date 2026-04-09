@@ -52,6 +52,26 @@ extension FeedbackPlayer {
         play(gameOverBuffer)
     }
 
+    func playSuctionWhir() {
+        guard areSoundsEnabled, let buffer = suctionWhirBuffer else { return }
+
+        do {
+            try audioSession.setCategory(.ambient, mode: .default, options: [.mixWithOthers])
+            try audioSession.setActive(true)
+        } catch {}
+
+        configureEngineIfNeeded(for: buffer.format)
+        guard let loopPlayerNode else { return }
+        startEngineIfNeeded()
+        loopPlayerNode.stop()
+        loopPlayerNode.scheduleBuffer(buffer, at: nil, options: .interrupts)
+        loopPlayerNode.play()
+    }
+
+    func stopSuctionWhir() {
+        loopPlayerNode?.stop()
+    }
+
     func playFlashcardSuccess() {
         guard areSoundsEnabled else { return }
         play(flashcardSuccessBuffer)
@@ -116,11 +136,15 @@ extension FeedbackPlayer {
         guard !isConfigured else { return }
         let engine = AVAudioEngine()
         let playerNode = AVAudioPlayerNode()
+        let loopNode = AVAudioPlayerNode()
         engine.attach(playerNode)
+        engine.attach(loopNode)
         engine.connect(playerNode, to: engine.mainMixerNode, format: format)
+        engine.connect(loopNode, to: engine.mainMixerNode, format: format)
         engine.prepare()
         self.engine = engine
         self.playerNode = playerNode
+        self.loopPlayerNode = loopNode
         isConfigured = true
     }
 

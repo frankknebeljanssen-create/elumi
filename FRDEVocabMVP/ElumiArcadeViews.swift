@@ -73,10 +73,11 @@ struct ElumiArcadeGameView: View {
     @State var bonusPointsEndsAt: Date?
     @State var slowMotionEndsAt: Date?
     @State var screenShakeOffset: CGFloat = 0
-    @State var gameOverTitle = "Elumi ist satt"
-    @State var gameOverSubtitle = "Ein starker Lauf."
+    @State var gameOverTitle = "Game Over"
+    @State var gameOverSubtitle = ""
     @State var round = 1
     @State var roundCatchCount = 0
+    @State var roundSuctionSpawned = false
     @State var showingRoundBanner = false
     @State var roundBannerPhase = 0  // 0=geschafft, 1=ready blink, 2=done
     @State var readyBlinkVisible = true

@@ -21,6 +21,7 @@ final class FeedbackPlayer: ObservableObject {
     @Published var soundToggleToast: SoundToggleToast?
     var engine: AVAudioEngine?
     var playerNode: AVAudioPlayerNode?
+    var loopPlayerNode: AVAudioPlayerNode?
     let audioSession = AVAudioSession.sharedInstance()
     let sampleRate: Double = 44_100
     lazy var launchBuffer: AVAudioPCMBuffer? = makeLaunchBuffer()
@@ -33,6 +34,7 @@ final class FeedbackPlayer: ObservableObject {
     lazy var quizCoinBuffer: AVAudioPCMBuffer? = makeQuizCoinBuffer()
     lazy var arcadeComboBuffer: AVAudioPCMBuffer? = makeArcadeComboBuffer()
     lazy var gameOverBuffer: AVAudioPCMBuffer? = makeGameOverBuffer()
+    lazy var suctionWhirBuffer: AVAudioPCMBuffer? = makeSuctionWhirBuffer()
     var isConfigured = false
     var soundToastDismissWorkItem: DispatchWorkItem?
 

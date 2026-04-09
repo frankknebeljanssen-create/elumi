@@ -25,24 +25,33 @@ extension ElumiArcadeGameView {
             falseElumiChance = round >= 5 ? 0.16 : min(0.12, 0.04 + (Double(round - 1) * 0.02))
         }
 
+        // Guarantee at least 1 suction per round (halfway through)
+        let halfwayCount = snacksForRound(round) / 2
+        let forceSuction = !roundSuctionSpawned && roundCatchCount >= halfwayCount
+
         let kind: ElumiArcadeDropKind
-        if roll < bonusChance {
+        if forceSuction {
+            kind = .saugglocke
+            roundSuctionSpawned = true
+        } else if roll < bonusChance {
             kind = .bonusblase
         } else if roll < bonusChance + suctionChance {
             kind = .saugglocke
+            roundSuctionSpawned = true
         } else if roll < bonusChance + suctionChance + falseElumiChance {
             kind = .falseElumi
         } else {
             kind = [.wuermchen, .wasserfloh, .algenkugel].randomElement() ?? .wuermchen
         }
 
-        // Round 2+: Querschläger — wider wobble
-        let isQuerschlaeger = round >= 2 && kind.isSnack && Double.random(in: 0...1) < (round == 2 ? 0.35 : 0.2)
+        // Round 2+: Querschläger — aggressive zigzag across the screen
+        let querschlaegerChance: Double = round == 2 ? 0.35 : (round >= 3 ? 0.25 : 0)
+        let isQuerschlaeger = kind.isSnack && Double.random(in: 0...1) < querschlaegerChance
         let wobbleAmp = isQuerschlaeger
-            ? CGFloat.random(in: 0.08...0.14)
+            ? CGFloat.random(in: 0.15...0.25)
             : CGFloat.random(in: 0.01...0.05)
         let wobbleFreq = isQuerschlaeger
-            ? Double.random(in: 2.8...4.5)
+            ? Double.random(in: 4.0...6.5)
             : Double.random(in: 1.4...3.1)
 
         activeSnacks.append(
@@ -139,7 +148,7 @@ extension ElumiArcadeGameView {
         activateSlowMotion(at: date)
         suctionEndsAt = date.addingTimeInterval(suctionDuration)
         showComboBanner("Saugstrahl aktiviert")
-        feedbackPlayer.playAchievement()
+        feedbackPlayer.playSuctionWhir()
 
         // Humming sound during suction (system vibration pattern)
         startSuctionHumming()
@@ -147,8 +156,12 @@ extension ElumiArcadeGameView {
 
     func startSuctionHumming() {
         suctionHummingTimer?.invalidate()
-        suctionHummingTimer = Timer.scheduledTimer(withTimeInterval: 0.6, repeats: true) { _ in
-            AudioServicesPlaySystemSound(1519)
+        // Fast whirring: alternating haptic patterns for suction feel
+        var tick = 0
+        suctionHummingTimer = Timer.scheduledTimer(withTimeInterval: 0.18, repeats: true) { _ in
+            // Alternate between two haptic intensities for whirring effect
+            AudioServicesPlaySystemSound(tick % 3 == 0 ? 1519 : 1520)
+            tick += 1
         }
         let duration = suctionDuration
         DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
@@ -257,6 +270,7 @@ extension ElumiArcadeGameView {
             // Phase 1: "Ready?" + "Runde X+1" mit Blinken
             round += 1
             roundCatchCount = 0
+            roundSuctionSpawned = false
             roundBannerPhase = 1
 
             for _ in 0..<3 {
@@ -357,6 +371,7 @@ extension ElumiArcadeGameView {
             if progress >= 1.04 {
                 misses += 1
                 missedAnySnack = true
+                AudioServicesPlaySystemSound(1053) // Short "miss" sound
                 continue
             }
 
@@ -394,6 +409,8 @@ extension ElumiArcadeGameView {
         }
 
         if misses >= maxMisses {
+            gameOverTitle = "Game Over"
+            gameOverSubtitle = "Alle Leben verbraucht."
             feedbackPlayer.playGameOver()
             isGameOver = true
             isPlaying = false
@@ -420,14 +437,15 @@ extension ElumiArcadeGameView {
         bonusPointsEndsAt = nil
         slowMotionEndsAt = nil
         screenShakeOffset = 0
-        gameOverTitle = "Elumi ist satt"
-        gameOverSubtitle = "Ein starker Lauf."
+        gameOverTitle = "Game Over"
+        gameOverSubtitle = ""
         mouthOpen = false
         characterScale = 1
         characterRotation = 0
         sparkleBurst = false
         round = 1
         roundCatchCount = 0
+        roundSuctionSpawned = false
         showingRoundBanner = false
         roundBannerPhase = 0
         readyBlinkVisible = true

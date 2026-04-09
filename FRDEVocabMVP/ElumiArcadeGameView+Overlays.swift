@@ -96,13 +96,18 @@ extension ElumiArcadeGameView {
                     .font(.system(size: 30, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
 
-                VStack(spacing: 8) {
-                    arcadeLegendRow(icon: { ElumiSnackIcon(.wuermchen, size: 28) }, label: "Würmchen", detail: "+10")
-                    arcadeLegendRow(icon: { ElumiSnackIcon(.wasserfloh, size: 26) }, label: "Wasserfloh", detail: "+14")
-                    arcadeLegendRow(icon: { ElumiSnackIcon(.algenkugel, size: 24) }, label: "Algenkugel", detail: "+18")
-                    arcadeLegendRow(icon: { bonusBubbleIcon(size: 24, at: Date()) }, label: "Bonusblase", detail: "x2 Punkte")
-                    arcadeLegendRow(icon: { suctionCupIcon(size: 24, at: Date()) }, label: "Saugglocke", detail: "Saugstrahl")
-                    arcadeLegendRow(icon: { hazardElumiIcon(size: 26, at: Date()) }, label: "Falscher Elumi", detail: "Game Over!", tint: AppTheme.Colors.error)
+                VStack(alignment: .leading, spacing: 8) {
+                    arcadeRuleRow(icon: "hand.draw.fill", text: "Zieh Elumi zum Futter")
+                    arcadeRuleRow(icon: "heart.fill", text: "3 Leben — verpasstes Futter = -1")
+                    arcadeRuleRow(icon: "xmark.octagon.fill", text: "Falscher Elumi = Game Over", tint: AppTheme.Colors.error)
+                    arcadeRuleRow(icon: "bolt.fill", text: "Runden werden schneller")
+                }
+                .padding(.horizontal, 4)
+
+                HStack(spacing: 16) {
+                    ElumiSnackIcon(.wuermchen, size: 24)
+                    ElumiSnackIcon(.wasserfloh, size: 22)
+                    ElumiSnackIcon(.algenkugel, size: 20)
                 }
 
                 HStack(spacing: 6) {
@@ -202,10 +207,11 @@ extension ElumiArcadeGameView {
                     .foregroundStyle(AppTheme.Colors.warning)
                     .shadow(color: AppTheme.Colors.warning.opacity(0.3), radius: 8, x: 0, y: 2)
 
-                HStack(spacing: 10) {
+                HStack(spacing: 8) {
                     gameOverStat(title: "Runde", value: "\(round)")
+                    gameOverStat(title: "Gefangen", value: "\(totalCaught)")
+                    gameOverStat(title: "Verpasst", value: "\(misses)")
                     gameOverStat(title: "Highscore", value: "\(max(highScore, score))")
-                    gameOverStat(title: "Combo", value: "x\(max(bestCombo, comboCount))")
                 }
 
                 if arcadeCredits >= ArcadeCreditSystem.gamesCost {
@@ -373,6 +379,19 @@ extension ElumiArcadeGameView {
         .padding(.vertical, 6)
         .background(AppTheme.Colors.secondarySurface.opacity(0.7))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    func arcadeRuleRow(icon: String, text: String, tint: Color? = nil) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(tint ?? AppTheme.Colors.textSecondary)
+                .frame(width: 22)
+
+            Text(text)
+                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .foregroundStyle(tint ?? AppTheme.Colors.textPrimary)
+        }
     }
 }
 

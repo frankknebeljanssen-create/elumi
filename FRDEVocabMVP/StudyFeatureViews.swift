@@ -3026,7 +3026,7 @@ struct QuizView: View {
     private func prepareQuizRewards() {
         let rewardOutcome = computeElumiRewardOutcome(
             baseWorms: correctCount,
-            baseXP: correctCount * 10,
+            baseXP: correctCount * 5,
             isPerfectLesson: isPerfectQuiz,
             currentXP: collectedXP,
             currentStreak: currentStreak,
@@ -3048,7 +3048,7 @@ struct QuizView: View {
         guard !didPersistHearts else { return }
         let rewardOutcome = computeElumiRewardOutcome(
             baseWorms: correctCount,
-            baseXP: correctCount * 10,
+            baseXP: correctCount * 5,
             isPerfectLesson: isPerfectQuiz,
             currentXP: collectedXP,
             currentStreak: currentStreak,
