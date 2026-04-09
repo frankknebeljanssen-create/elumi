@@ -177,6 +177,28 @@ func quizGermanWordCasing(_ text: String, sourceHint: String?) -> String {
     let hint = sourceHint ?? ""
     let stripped = strippingLeadingFrenchArticle(from: hint)
 
+    // If German text already has an article → definitely a noun, capitalize
+    if startsWithGermanArticle(text) {
+        let parts = text.components(separatedBy: "/")
+        return parts.map { part in
+            part.split(separator: " ").map { token in
+                let lower = String(token).lowercased()
+                if germanArticleHints.contains(lower) { return lower }
+                return uppercasingFirstGermanLetter(in: String(token))
+            }.joined(separator: " ")
+        }.joined(separator: " / ")
+    }
+
+    // If French text has an article → also a noun
+    if TrainingSessionController.hasFrenchArticle(hint) {
+        return uppercasingFirstGermanLetter(in: text)
+    }
+
+    // Also check nounSet explicitly (in case it's in both)
+    if StandardVocabularyLoader.isNoun(stripped) || StandardVocabularyLoader.isNoun(hint) {
+        return uppercasingFirstGermanLetter(in: text)
+    }
+
     // Explicitly non-noun (verb, adjective, adverb): always lowercase
     if StandardVocabularyLoader.isNonNoun(stripped) || StandardVocabularyLoader.isNonNoun(hint) {
         return text.lowercased()

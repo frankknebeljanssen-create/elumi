@@ -371,20 +371,15 @@ private var wrongAnswersSheet: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 12) {
                 ForEach(Array(wrongQuestionPairs.enumerated()), id: \.offset) { _, pair in
-                    HStack(alignment: .top, spacing: 12) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(pair.prompt)
-                                .font(.system(size: 15, weight: .bold, design: .rounded))
-                                .foregroundStyle(AppTheme.Colors.textPrimary)
-                            Text(pair.correctAnswer)
-                                .font(.system(size: 15, weight: .bold, design: .rounded))
-                                .foregroundStyle(AppTheme.Colors.success)
-                        }
-                        Spacer()
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(AppTheme.Colors.error.opacity(0.5))
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(pair.prompt)
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                        Text(pair.correctAnswer)
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.success)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
                     .background(AppTheme.Colors.secondarySurface)
