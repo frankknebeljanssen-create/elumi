@@ -32,6 +32,7 @@ struct TrainingView: View {
     @State var verbMCOptions: [String] = []
     @State var verbMCSelected: String?
     @State var verbMCLocked = false
+    @State var speedCountdown: Int? = nil
     @FocusState var typedAnswerFieldFocused: Bool
 
     var speechController: SpeechController? {

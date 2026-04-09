@@ -3,63 +3,80 @@ import SwiftUI
 extension ElumiArcadeGameView {
     func suctionBeam(at date: Date, in size: CGSize) -> some View {
         let pulse = 0.94 + (0.08 * CGFloat(sin(date.timeIntervalSinceReferenceDate * 9)))
-        let beamWidth = suctionBeamHalfWidth * 2.55 * pulse
+        let topWidth = suctionBeamHalfWidth * 2.55 * pulse
+        let bottomWidth = topWidth * 0.25
         let beamHeight = max(140, size.height - 146)
         let stripeShift = CGFloat(sin(date.timeIntervalSinceReferenceDate * 12)) * 10
 
         return ZStack {
-            RoundedRectangle(cornerRadius: 26, style: .continuous)
+            // Trapezoid shape: narrow at bottom (Elumi), wide at top
+            TrapezoidShape(topWidth: topWidth, bottomWidth: bottomWidth)
                 .fill(
                     LinearGradient(
                         colors: [
-                            AppTheme.Colors.primary.opacity(0.0),
-                            AppTheme.Colors.primary.opacity(0.12),
+                            AppTheme.Colors.primary.opacity(0.14),
                             AppTheme.Colors.warning.opacity(0.22),
-                            AppTheme.Colors.primary.opacity(0.08)
+                            AppTheme.Colors.primary.opacity(0.08),
+                            AppTheme.Colors.warning.opacity(0.04)
                         ],
                         startPoint: .top,
                         endPoint: .bottom
                     )
                 )
-                .blur(radius: 4.4)
+                .blur(radius: 3)
 
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
+            TrapezoidShape(topWidth: topWidth * 0.85, bottomWidth: bottomWidth * 0.7)
                 .fill(
                     LinearGradient(
                         colors: [
-                            AppTheme.Colors.warning.opacity(0.0),
-                            AppTheme.Colors.warning.opacity(0.18),
-                            Color.white.opacity(0.18),
-                            AppTheme.Colors.primary.opacity(0.12),
-                            AppTheme.Colors.warning.opacity(0.0)
+                            Color.white.opacity(0.16),
+                            AppTheme.Colors.warning.opacity(0.12),
+                            Color.white.opacity(0.06)
                         ],
                         startPoint: .top,
                         endPoint: .bottom
                     )
                 )
-                .blur(radius: 1.8)
 
             VStack(spacing: 14) {
                 ForEach(0..<10, id: \.self) { index in
+                    let rowProgress = CGFloat(index) / 9.0
+                    let rowWidth = topWidth * (1.0 - rowProgress * 0.7)
                     Capsule()
-                        .fill(Color.white.opacity(index.isMultiple(of: 2) ? 0.18 : 0.1))
-                        .frame(width: beamWidth * (0.34 + (CGFloat(index % 3) * 0.08)), height: 3)
+                        .fill(Color.white.opacity(index.isMultiple(of: 2) ? 0.16 : 0.08))
+                        .frame(width: rowWidth * (0.34 + (CGFloat(index % 3) * 0.08)), height: 2.5)
                         .offset(x: stripeShift * (index.isMultiple(of: 2) ? 1 : -1))
                 }
             }
 
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(AppTheme.Colors.warning.opacity(0.42), lineWidth: 2.2)
-
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
-                .stroke(Color.white.opacity(0.14), lineWidth: 1.2)
+            TrapezoidShape(topWidth: topWidth, bottomWidth: bottomWidth)
+                .stroke(AppTheme.Colors.warning.opacity(0.35), lineWidth: 1.8)
         }
-        .frame(width: beamWidth, height: beamHeight)
+        .frame(width: topWidth, height: beamHeight)
         .position(x: elumiPositionX(in: size.width), y: beamHeight / 2)
         .blendMode(.screen)
         .allowsHitTesting(false)
     }
 
+}
+
+private struct TrapezoidShape: Shape {
+    let topWidth: CGFloat
+    let bottomWidth: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        let centerX = rect.midX
+        var path = Path()
+        path.move(to: CGPoint(x: centerX - topWidth / 2, y: 0))
+        path.addLine(to: CGPoint(x: centerX + topWidth / 2, y: 0))
+        path.addLine(to: CGPoint(x: centerX + bottomWidth / 2, y: rect.maxY))
+        path.addLine(to: CGPoint(x: centerX - bottomWidth / 2, y: rect.maxY))
+        path.closeSubpath()
+        return path
+    }
+}
+
+extension ElumiArcadeGameView {
     var startOverlay: some View {
         ZStack {
             Color.black.opacity(0.28)

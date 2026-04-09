@@ -154,45 +154,35 @@ extension ElumiArcadeGameView {
         let pulse = 0.92 + (0.09 * CGFloat(sin(date.timeIntervalSinceReferenceDate * 8.5)))
 
         return ZStack {
+            // Subtle reddish glow — looks like Elumi but "off"
             Circle()
-                .fill(AppTheme.Colors.error.opacity(0.16))
-                .frame(width: size * 1.16, height: size * 1.16)
-                .blur(radius: 5)
+                .fill(Color(red: 0.8, green: 0.3, blue: 0.5).opacity(0.14))
+                .frame(width: size * 1.1, height: size * 1.1)
+                .blur(radius: 4)
                 .scaleEffect(pulse)
 
-            Circle()
-                .stroke(AppTheme.Colors.error.opacity(0.86), lineWidth: 3)
-                .frame(width: size * 0.98, height: size * 0.98)
-                .overlay(
-                    Circle()
-                        .stroke(AppTheme.Colors.error.opacity(0.32), lineWidth: 2)
-                        .scaleEffect(1.12 + (0.06 * pulse))
-                )
-
+            // Elumi image — slightly purple/pink tinted, slightly desaturated
             Image("SplashCharacter")
                 .resizable()
                 .interpolation(.high)
                 .scaledToFit()
-                .frame(width: size * 0.9, height: size * 0.9)
-                .saturation(0.72)
-                .overlay(
-                    Circle()
-                        .stroke(AppTheme.Colors.error.opacity(0.35), lineWidth: 2)
-                        .padding(size * 0.1)
-                )
+                .frame(width: size * 0.92, height: size * 0.92)
+                .saturation(0.55)
+                .hueRotation(.degrees(-30))
+                .brightness(-0.05)
+                .clipShape(Circle())
 
-            VStack(spacing: 2) {
-                Image(systemName: "exclamationmark")
-                    .font(.system(size: size * 0.18, weight: .black))
-                Image(systemName: "exclamationmark")
-                    .font(.system(size: size * 0.18, weight: .black))
-            }
-            .foregroundStyle(Color.white)
-            .padding(size * 0.08)
-            .background(AppTheme.Colors.error.opacity(0.94))
-            .clipShape(Capsule())
-            .offset(x: size * 0.24, y: -size * 0.22)
+            // Small warning dot — subtle, not a huge badge
+            Circle()
+                .fill(AppTheme.Colors.error)
+                .frame(width: size * 0.22, height: size * 0.22)
+                .overlay(
+                    Image(systemName: "xmark")
+                        .font(.system(size: size * 0.12, weight: .black))
+                        .foregroundStyle(.white)
+                )
+                .offset(x: size * 0.3, y: -size * 0.3)
         }
-        .shadow(color: AppTheme.Colors.error.opacity(0.34), radius: 14, x: 0, y: 6)
+        .shadow(color: Color(red: 0.8, green: 0.3, blue: 0.5).opacity(0.25), radius: 10, x: 0, y: 4)
     }
 }

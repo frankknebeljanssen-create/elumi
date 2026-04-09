@@ -44,25 +44,34 @@ extension TrainingView {
             .padding(.horizontal, trainingSessionCardInset)
             .padding(.bottom, AppTheme.Spacing.xs)
 
-            if session.isSpeedRound, session.hasStartedTraining {
-                speedRoundTimerBar
-                    .padding(.horizontal, trainingSessionCardInset)
-            }
-
-            sessionCard
-                .padding(.horizontal, trainingSessionCardInset)
-            if isArticleMode {
-                articleButtons
-                    .padding(.horizontal, trainingSessionCardInset)
-            } else if isVerbMode {
-                Spacer().frame(height: AppTheme.Spacing.xs)
-                verbMCCard
-                    .padding(.horizontal, trainingSessionCardInset)
+            if let countdown = speedCountdown {
+                // 3-2-1 Countdown overlay
+                Text("\(countdown)")
+                    .font(.system(size: 72, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.warning)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .transition(.scale.combined(with: .opacity))
             } else {
-                actionButtons
+                if session.isSpeedRound, session.hasStartedTraining {
+                    speedRoundTimerBar
+                        .padding(.horizontal, trainingSessionCardInset)
+                }
+
+                sessionCard
                     .padding(.horizontal, trainingSessionCardInset)
-                responseCard
-                    .padding(.horizontal, trainingSessionCardInset)
+                if isArticleMode {
+                    articleButtons
+                        .padding(.horizontal, trainingSessionCardInset)
+                } else if isVerbMode {
+                    Spacer().frame(height: AppTheme.Spacing.xs)
+                    verbMCCard
+                        .padding(.horizontal, trainingSessionCardInset)
+                } else {
+                    actionButtons
+                        .padding(.horizontal, trainingSessionCardInset)
+                    responseCard
+                        .padding(.horizontal, trainingSessionCardInset)
+                }
             }
 
             Spacer(minLength: 0)

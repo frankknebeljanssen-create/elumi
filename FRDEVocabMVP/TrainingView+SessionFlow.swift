@@ -67,6 +67,7 @@ extension TrainingView {
         verbMCOptions = []
         verbMCSelected = nil
         verbMCLocked = false
+        speedCountdown = nil
         stopSpeedRoundTimer()
     }
 
@@ -110,7 +111,24 @@ extension TrainingView {
         showingTypedAnswerInput = false
         typedAnswerFieldFocused = false
         if session.isSpeedRound {
-            startSpeedRoundTimer()
+            // 3-2-1 countdown before starting
+            speedCountdown = 3
+            AudioServicesPlaySystemSound(1057)
+            scheduleFeedbackTask(after: 1.0) {
+                speedCountdown = 2
+                AudioServicesPlaySystemSound(1057)
+                scheduleFeedbackTask(after: 1.0) {
+                    speedCountdown = 1
+                    AudioServicesPlaySystemSound(1057)
+                    scheduleFeedbackTask(after: 1.0) {
+                        speedCountdown = nil
+                        AudioServicesPlaySystemSound(1005)
+                        startSpeedRoundTimer()
+                        if isVerbMode { prepareVerbMCOptions() }
+                    }
+                }
+            }
+            return
         }
         if isArticleMode {
             return

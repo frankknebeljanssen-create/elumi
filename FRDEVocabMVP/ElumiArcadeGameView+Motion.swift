@@ -11,7 +11,7 @@ extension ElumiArcadeGameView {
         case .algenkugel:
             baseSize = 26
         case .bonusblase:
-            baseSize = 32
+            baseSize = 22
         case .saugglocke:
             baseSize = 38
         case .falseElumi:
