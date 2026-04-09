@@ -100,7 +100,18 @@ enum StandardVocabularyLoader {
 
     /// Fast lookup: is this French word explicitly NOT a noun (verb, adjective, adverb, etc.)?
     static func isNonNoun(_ frenchText: String) -> Bool {
-        nonNounSet.contains(frenchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines))
+        let lower = frenchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        if nonNounSet.contains(lower) { return true }
+        // Also check without article (in case "le super" was passed)
+        let stripped = strippedArticle(lower)
+        return stripped != lower && nonNounSet.contains(stripped)
+    }
+
+    private static func strippedArticle(_ text: String) -> String {
+        for art in ["le ", "la ", "l'", "l\u{2019}", "les ", "un ", "une ", "des ", "du "] {
+            if text.hasPrefix(art) { return String(text.dropFirst(art.count)).trimmingCharacters(in: .whitespaces) }
+        }
+        return text
     }
 
     // MARK: - Pre-built VocabularyLists for the list picker
