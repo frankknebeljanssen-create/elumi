@@ -167,6 +167,7 @@ struct LexiconDetailSheetView: View {
         if StandardVocabularyLoader.isNoun(stripped) { return isFrench ? "Nom" : "Nomen" }
         if let marker = wordClassMarker {
             switch marker {
+            case .noun: return isFrench ? "Nom" : "Nomen"
             case .adjective: return isFrench ? "Adjectif" : "Adjektiv"
             case .verb: return isFrench ? "Verbe" : "Verb"
             }

@@ -36,6 +36,7 @@ private extension Array where Element: Hashable {
 }
 
 enum LexiconWordClassMarker: String {
+    case noun = "[nom]"
     case adjective = "[adj]"
     case verb = "[verb]"
 }

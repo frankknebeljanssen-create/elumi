@@ -4,19 +4,21 @@ extension LexiconViewModel {
     func lexiconWordClassMarker(for entry: PreparedLexiconEntry) -> LexiconWordClassMarker? {
         guard entry.displayCardType == .words else { return nil }
 
-        let relevantEntries = entry.entries.filter { resolvedLexiconCardType(for: $0) == .words }
-        guard !relevantEntries.isEmpty else { return nil }
-        guard !relevantEntries.contains(where: isLikelyNounLexiconEntry(_:)) else { return nil }
+        // Use isGermanNoun flag from DB — reliable for grouped entries
+        let hasNoun = entry.entries.contains(where: { $0.isGermanNoun })
+        let hasNonNoun = entry.entries.contains(where: { !$0.isGermanNoun })
 
-        if relevantEntries.contains(where: isLikelyVerbLexiconEntry(_:)) {
-            return .verb
-        }
-
-        if relevantEntries.contains(where: isLikelyAdjectiveLexiconEntry(_:)) {
+        if hasNoun && !hasNonNoun { return .noun }
+        if hasNonNoun && !hasNoun {
+            // Check if verb or adjective
+            let relevantEntries = entry.entries.filter { resolvedLexiconCardType(for: $0) == .words }
+            if relevantEntries.contains(where: isLikelyVerbLexiconEntry(_:)) {
+                return .verb
+            }
             return .adjective
         }
 
-        return nil
+        return nil // Mixed — shouldn't happen with grouping
     }
 
     func isLikelyNounLexiconEntry(_ entry: LexiconEntry) -> Bool {

@@ -142,8 +142,10 @@ extension LexiconViewModel {
                     .map(normalizedLookupText(_:))
                     .joined(separator: " ")
 
+                let isNounGroup = sortedGroup.first?.entry.isGermanNoun ?? false
+                let wordClassSuffix = isNounGroup ? "|n" : "|a"
                 return PreparedLexiconEntry(
-                    id: "\(first.displayCountryCode)|\(groupDisplayCardType.rawValue)|\(first.sourceSearchKey)",
+                    id: "\(first.displayCountryCode)|\(groupDisplayCardType.rawValue)|\(first.sourceSearchKey)\(wordClassSuffix)",
                     entries: sortedGroup.map(\.entry),
                     displayCardType: groupDisplayCardType,
                     displayCountryCode: first.displayCountryCode,
