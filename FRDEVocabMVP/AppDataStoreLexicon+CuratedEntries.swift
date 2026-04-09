@@ -168,7 +168,8 @@ extension DataStoreLexiconSupport {
                     sourceLanguage: item.sourceLanguage,
                     cardType: item.cardType,
                     frenchGender: item.sourceLanguage == .french ? frenchGenderInfo(for: sourceTerm, cardType: item.cardType) : nil,
-                    germanGender: germanGenderInfo(for: targetTerm, cardType: item.cardType)
+                    germanGender: germanGenderInfo(for: targetTerm, cardType: item.cardType),
+                    isGermanNoun: startsWithGermanArticle(targetTerm) || germanGenderInfo(for: targetTerm, cardType: item.cardType) != nil
                 )
             )
         }

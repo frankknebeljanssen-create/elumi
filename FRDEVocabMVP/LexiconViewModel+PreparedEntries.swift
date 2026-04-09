@@ -26,8 +26,15 @@ extension LexiconViewModel {
             let candidates: [AggregationCandidate] = entries.flatMap { entry in
                 let displayCardType = resolvedLexiconCardType(for: entry)
                 let frenchText = sourceDisplayText(entry.sourceTerm, sourceLanguage: .french)
-                // targetTerm is already correctly cased based on isGermanNoun
-                let germanText = entry.targetTerm
+                // targetTerm is already correctly cased based on isGermanNoun in makeLexiconEntry
+                // Only add article for nouns if not already present
+                let germanText: String
+                if entry.isGermanNoun, !startsWithGermanArticle(entry.targetTerm),
+                   let article = entry.germanGender?.article, !article.isEmpty {
+                    germanText = "\(article) \(entry.targetTerm)"
+                } else {
+                    germanText = entry.targetTerm
+                }
                 let frenchLookupKey = normalizedLookupText(frenchText)
                 let germanLookupKey = normalizedLookupText(germanText)
                 let frenchCompactKey = compactLookupKey(frenchText)
@@ -92,6 +99,10 @@ extension LexiconViewModel {
                 return result.filter {
                     selectedDirection == .germanToFrench ? $0.displayCountryCode == "DE" : true
                 }
+            }
+
+            for c in candidates where c.sourceSearchKey.contains("arm") && c.sourceSearchKey.count <= 4 {
+                print("🔍 arm: cc=\(c.displayCountryCode) src='\(c.sourceText)' tgt='\(c.targetText)' noun=\(c.entry.isGermanNoun) entryTarget='\(c.entry.targetTerm)' entrySrc='\(c.entry.sourceTerm)'")
             }
 
             let grouped = Dictionary(grouping: candidates) { candidate in

@@ -114,7 +114,8 @@ extension DataStoreLexiconSupport {
                 germanGender: preferredLexiconGenderInfo(
                     entry.germanGender,
                     germanGenderByTargetKey[targetKey]
-                )
+                ),
+                isGermanNoun: entry.isGermanNoun
             )
         }
     }
