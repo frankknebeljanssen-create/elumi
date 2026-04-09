@@ -18,7 +18,7 @@ extension OpenAIResponsesScanAIClient {
             environment["OPENAI_SCAN_MODEL"],
             fallback: bundledInfo?["OPENAI_SCAN_MODEL"] as? String,
             extraFallback: bundledConfig?["OPENAI_SCAN_MODEL"] as? String
-        ) ?? "gpt-5-mini"
+        ) ?? "gpt-4o-mini"
 
         return OpenAIResponsesScanAIClient(apiKey: key, model: model)
     }

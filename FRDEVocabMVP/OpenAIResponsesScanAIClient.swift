@@ -7,7 +7,7 @@ struct OpenAIResponsesScanAIClient: ScanAIClient {
 
     init(
         apiKey: String,
-        model: String = "gpt-5-mini",
+        model: String = "gpt-4o-mini",
         session: URLSession = .shared
     ) {
         self.apiKey = apiKey
@@ -34,7 +34,7 @@ struct OpenAIResponsesScanAIClient: ScanAIClient {
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.timeoutInterval = mode == "text-only" ? 35 : 55
+        request.timeoutInterval = mode == "text-only" ? 50 : 70
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         let body = try JSONSerialization.data(withJSONObject: requestBody)
