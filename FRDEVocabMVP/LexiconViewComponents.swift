@@ -251,34 +251,21 @@ struct LexiconDetailSheetView: View {
                     .padding(18)
                     .appCardBackground(sectionStyle, intensity: 0.10)
 
-                    // Target language section — grouped by word class
-                    let nouns = entry.nounTranslations
-                    let nonNouns = entry.nonNounTranslations
+                    // Target language section — use targetTexts which respect direction
+                    let badgeText: String? = {
+                        guard let marker = wordClassMarker else { return nil }
+                        switch marker {
+                        case .noun: return targetCountryCode == "FR" ? "Nom" : "Nomen"
+                        case .adjective: return targetCountryCode == "FR" ? "Adj" : "Adj"
+                        case .verb: return targetCountryCode == "FR" ? "Verbe" : "Verb"
+                        }
+                    }()
 
-                    if !nouns.isEmpty {
-                        translationGroupCard(
-                            countryCode: targetCountryCode,
-                            badge: targetCountryCode == "FR" ? "Nom" : "Nomen",
-                            translations: nouns
-                        )
-                    }
-
-                    if !nonNouns.isEmpty {
-                        translationGroupCard(
-                            countryCode: nouns.isEmpty ? targetCountryCode : nil,
-                            badge: targetCountryCode == "FR" ? "Adj / Adv" : "Adj / Adv",
-                            translations: nonNouns
-                        )
-                    }
-
-                    // Fallback if no grouping data
-                    if nouns.isEmpty && nonNouns.isEmpty {
-                        translationGroupCard(
-                            countryCode: targetCountryCode,
-                            badge: nil,
-                            translations: targetTexts
-                        )
-                    }
+                    translationGroupCard(
+                        countryCode: targetCountryCode,
+                        badge: badgeText,
+                        translations: targetTexts
+                    )
                 }
                 .padding(AppLayout.screenPadding)
                 .frame(maxWidth: .infinity)

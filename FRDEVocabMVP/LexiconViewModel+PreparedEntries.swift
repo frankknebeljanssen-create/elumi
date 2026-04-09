@@ -102,10 +102,6 @@ extension LexiconViewModel {
                 }
             }
 
-            for c in candidates where c.sourceSearchKey.contains("arm") && c.sourceSearchKey.count <= 4 {
-                print("🔍 arm: cc=\(c.displayCountryCode) src='\(c.sourceText)' tgt='\(c.targetText)' noun=\(c.entry.isGermanNoun) entryTarget='\(c.entry.targetTerm)' entrySrc='\(c.entry.sourceTerm)'")
-            }
-
             let grouped = Dictionary(grouping: candidates) { candidate in
                 let nounSuffix = candidate.entry.isGermanNoun ? "|n" : "|a"
                 return "\(candidate.displayCountryCode)|\(candidate.sourceSearchKey)\(nounSuffix)"
