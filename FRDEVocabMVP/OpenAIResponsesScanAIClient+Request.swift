@@ -18,7 +18,8 @@ Return strict JSON matching the provided schema.
 COMPLETENESS is critical: extract EVERY pair. Include even very short entries like single words.
 Strip phonetic transcriptions in brackets like [saly] or [twa].
 Preserve terminal punctuation exactly: ?, ! and . matter for meaning.
-Never deduplicate: if the same term appears with different translations or punctuation, list each as a separate entry.
+If the same source term appears multiple times with different translations, combine into ONE entry (translations separated by " / ").
+Different punctuation (? vs .) means different entries.
 """
                         ]
                     ]
@@ -67,7 +68,8 @@ If a vocabulary table has examples in a third column, pair only the French sourc
 Copy visible source and target text faithfully. Strip phonetic transcriptions in brackets like [saly] or [twa].
 Never replace filled-in words with placeholders like "+ Name" or "nom".
 Preserve terminal punctuation exactly: ?, ! and . matter for meaning.
-Never deduplicate: "Et toi?" = "Und du?" and "Et toi?" = "Und dir?" are TWO entries. "Ça va?" (question) and "Ça va." (statement) are TWO entries.
+If the same source term appears multiple times with different translations, combine them into ONE entry with translations separated by " / " (e.g. "Et toi?" → "Und du? / Und dir?").
+"Ça va?" (question) and "Ça va." (statement) are separate entries because punctuation differs.
 """
                         ]
                     ]
