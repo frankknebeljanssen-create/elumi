@@ -64,6 +64,7 @@ extension SupplementalFreeDictLexicon {
         let targetGender = lexiconGender(from: sqliteTextColumn(statement, index: 6))
         let sourceArticle = optionalTrimmed(sqliteTextColumn(statement, index: 7))
         let targetArticle = optionalTrimmed(sqliteTextColumn(statement, index: 8))
+        let isGermanNoun = sqlite3_column_int(statement, 9) != 0
         let id = [
             StudyLanguage.french.rawValue,
             cardType.rawValue,
@@ -84,7 +85,8 @@ extension SupplementalFreeDictLexicon {
             germanGender: preferredLexiconGenderInfo(
                 exactGermanGenderInfo(gender: targetGender, article: targetArticle),
                 germanGenderInfo(for: targetTerm, cardType: cardType)
-            )
+            ),
+            isGermanNoun: isGermanNoun
         )
     }
 
@@ -100,7 +102,8 @@ extension SupplementalFreeDictLexicon {
             COALESCE(source_gender, ''),
             COALESCE(target_gender, ''),
             COALESCE(source_article, ''),
-            COALESCE(target_leading_article, '')
+            COALESCE(target_leading_article, ''),
+            is_german_noun
         FROM lexicon_entries
         WHERE target_term != ''
         ORDER BY source_lookup_key ASC, target_lookup_key ASC\(limitClause);
@@ -138,7 +141,8 @@ extension SupplementalFreeDictLexicon {
             COALESCE(source_gender, ''),
             COALESCE(target_gender, ''),
             COALESCE(source_article, ''),
-            COALESCE(target_leading_article, '')
+            COALESCE(target_leading_article, ''),
+            is_german_noun
         FROM lexicon_entries
         WHERE target_term != ''
           AND (

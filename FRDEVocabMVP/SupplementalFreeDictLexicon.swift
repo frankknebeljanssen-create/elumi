@@ -171,7 +171,8 @@ enum SupplementalFreeDictLexicon {
                 sourceLanguage: entry.sourceLanguage,
                 cardType: entry.cardType,
                 frenchGender: preferredLexiconGenderInfo(entry.frenchGender, exactPair.french),
-                germanGender: preferredLexiconGenderInfo(entry.germanGender, exactPair.german)
+                germanGender: preferredLexiconGenderInfo(entry.germanGender, exactPair.german),
+                isGermanNoun: entry.isGermanNoun
             )
         }
     }

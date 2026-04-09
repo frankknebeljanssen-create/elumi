@@ -9,6 +9,7 @@ struct LexiconEntry: Identifiable {
     let cardType: CardType
     let frenchGender: LexiconGenderInfo?
     let germanGender: LexiconGenderInfo?
+    let isGermanNoun: Bool
     let sourceSortKey: String
     let targetSortKey: String
 
@@ -19,7 +20,8 @@ struct LexiconEntry: Identifiable {
         sourceLanguage: StudyLanguage,
         cardType: CardType,
         frenchGender: LexiconGenderInfo? = nil,
-        germanGender: LexiconGenderInfo? = nil
+        germanGender: LexiconGenderInfo? = nil,
+        isGermanNoun: Bool? = nil
     ) {
         self.id = id
         self.sourceTerm = sourceTerm
@@ -28,6 +30,7 @@ struct LexiconEntry: Identifiable {
         self.cardType = cardType
         self.frenchGender = frenchGender
         self.germanGender = germanGender
+        self.isGermanNoun = isGermanNoun ?? (germanGender != nil)
         self.sourceSortKey = sourceTerm.folding(options: .diacriticInsensitive, locale: .current).lowercased()
         self.targetSortKey = targetTerm.lowercased()
     }
@@ -46,7 +49,8 @@ extension LexiconEntry: Hashable {
         lhs.sourceLanguage == rhs.sourceLanguage &&
         lhs.cardType == rhs.cardType &&
         lhs.frenchGender == rhs.frenchGender &&
-        lhs.germanGender == rhs.germanGender
+        lhs.germanGender == rhs.germanGender &&
+        lhs.isGermanNoun == rhs.isGermanNoun
     }
 
     func hash(into hasher: inout Hasher) {

@@ -13,6 +13,26 @@ struct PreparedLexiconEntry: Identifiable {
     let targetVariants: [String]
     let sourceSearchKey: String
     let targetSearchKey: String
+
+    /// Grouped translations by word class
+    var nounTranslations: [String] {
+        entries.filter { $0.isGermanNoun }.map(\.targetTerm).uniqued()
+    }
+
+    var nonNounTranslations: [String] {
+        entries.filter { !$0.isGermanNoun }.map(\.targetTerm).uniqued()
+    }
+
+    var hasMultipleWordClasses: Bool {
+        !nounTranslations.isEmpty && !nonNounTranslations.isEmpty
+    }
+}
+
+private extension Array where Element: Hashable {
+    func uniqued() -> [Element] {
+        var seen = Set<Element>()
+        return filter { seen.insert($0).inserted }
+    }
 }
 
 enum LexiconWordClassMarker: String {

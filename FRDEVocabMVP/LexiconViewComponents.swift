@@ -177,6 +177,51 @@ struct LexiconDetailSheetView: View {
         return isFrench ? "Nom" : "Nomen"
     }
 
+    private func translationGroupCard(countryCode: String?, badge: String?, translations: [String]) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                if let cc = countryCode {
+                    LexiconFlagBadge(countryCode: cc, compact: false)
+                }
+                Spacer()
+                if let badge {
+                    Text(badge)
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(sectionStyle.accent)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(sectionStyle.accent.opacity(0.14))
+                        .clipShape(Capsule())
+                }
+            }
+
+            if translations.count == 1 {
+                Text(translations[0])
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundStyle(sectionStyle.accent)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(Array(translations.enumerated()), id: \.offset) { _, text in
+                        HStack(alignment: .top, spacing: 8) {
+                            Text("•")
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
+                                .foregroundStyle(sectionStyle.accent)
+                            Text(text)
+                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                                .foregroundStyle(sectionStyle.accent)
+                            Spacer(minLength: 0)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(18)
+        .appCardBackground(sectionStyle, intensity: 0.10)
+    }
+
     private func wordClassBadge(isFrench: Bool) -> some View {
         Text(wordClassLabel(isFrench: isFrench))
             .font(.system(size: 12, weight: .bold, design: .rounded))
@@ -193,11 +238,7 @@ struct LexiconDetailSheetView: View {
                 VStack(spacing: 20) {
                     // Source language section
                     VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            LexiconFlagBadge(countryCode: sourceCountryCode, compact: false)
-                            Spacer()
-                            wordClassBadge(isFrench: sourceCountryCode == "FR")
-                        }
+                        LexiconFlagBadge(countryCode: sourceCountryCode, compact: false)
 
                         Text(sourceText)
                             .font(.system(size: 22, weight: .black, design: .rounded))
@@ -209,39 +250,34 @@ struct LexiconDetailSheetView: View {
                     .padding(18)
                     .appCardBackground(sectionStyle, intensity: 0.10)
 
-                    // Target language section
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            LexiconFlagBadge(countryCode: targetCountryCode, compact: false)
-                            Spacer()
-                            wordClassBadge(isFrench: targetCountryCode == "FR")
-                        }
+                    // Target language section — grouped by word class
+                    let nouns = entry.nounTranslations
+                    let nonNouns = entry.nonNounTranslations
 
-                        if targetTexts.count <= 1 {
-                            Text(targetTexts.first ?? "")
-                                .font(.system(size: 22, weight: .bold, design: .rounded))
-                                .foregroundStyle(sectionStyle.accent)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        } else {
-                            VStack(alignment: .leading, spacing: 8) {
-                                ForEach(Array(targetTexts.enumerated()), id: \.offset) { _, target in
-                                    HStack(alignment: .top, spacing: 8) {
-                                        Text("•")
-                                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                                            .foregroundStyle(sectionStyle.accent)
-                                        Text(target)
-                                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                                            .foregroundStyle(sectionStyle.accent)
-                                        Spacer(minLength: 0)
-                                    }
-                                }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        }
+                    if !nouns.isEmpty {
+                        translationGroupCard(
+                            countryCode: targetCountryCode,
+                            badge: targetCountryCode == "FR" ? "Nom" : "Nomen",
+                            translations: nouns
+                        )
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(18)
-                    .appCardBackground(sectionStyle, intensity: 0.10)
+
+                    if !nonNouns.isEmpty {
+                        translationGroupCard(
+                            countryCode: nouns.isEmpty ? targetCountryCode : nil,
+                            badge: targetCountryCode == "FR" ? "Adj / Adv" : "Adj / Adv",
+                            translations: nonNouns
+                        )
+                    }
+
+                    // Fallback if no grouping data
+                    if nouns.isEmpty && nonNouns.isEmpty {
+                        translationGroupCard(
+                            countryCode: targetCountryCode,
+                            badge: nil,
+                            translations: targetTexts
+                        )
+                    }
                 }
                 .padding(AppLayout.screenPadding)
                 .frame(maxWidth: .infinity)
