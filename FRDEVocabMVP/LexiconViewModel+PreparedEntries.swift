@@ -95,7 +95,9 @@ extension LexiconViewModel {
             }
 
             let grouped = Dictionary(grouping: candidates) { candidate in
-                "\(candidate.displayCountryCode)|\(candidate.sourceSearchKey)"
+                // Group by source + country + word class to separate noun/adjective entries
+                let nounSuffix = candidate.entry.isGermanNoun ? "|n" : "|a"
+                return "\(candidate.displayCountryCode)|\(candidate.sourceSearchKey)\(nounSuffix)"
             }
 
             return grouped.values.compactMap { group in
