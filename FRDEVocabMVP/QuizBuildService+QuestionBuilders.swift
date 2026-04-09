@@ -190,34 +190,39 @@ extension QuizBuildService {
         var candidates: [QuizCandidate] = []
 
         for item in items {
-            let card = item.card(for: direction)
-            let frenchHint = cleanedQuizDisplayText(item.french)
-            let prompt = quizVisibleText(
-                card.prompt,
-                languageCode: card.promptLanguageCode,
-                category: card.category,
-                sourceHint: frenchHint
-            )
-            let rawAnswer = card.answerLanguageCode == "de-DE"
-                ? canonicalGermanQuizText(
-                    prompt: card.prompt,
-                    promptLanguageCode: card.promptLanguageCode,
-                    answer: card.answer,
-                    category: card.category,
-                    sourceHint: frenchHint
-                )
-                : card.answer
-            let answer = quizVisibleText(
-                rawAnswer,
-                languageCode: card.answerLanguageCode,
-                category: card.category,
-                sourceHint: frenchHint
-            )
+            let frenchRaw = item.french.trimmingCharacters(in: .whitespacesAndNewlines)
+            let germanRaw = item.german.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !frenchRaw.isEmpty, !germanRaw.isEmpty else { continue }
+
+            let isFrToDE = direction == .frenchToGerman
+            let promptRaw = isFrToDE ? frenchRaw : germanRaw
+            let answerRaw = isFrToDE ? germanRaw : frenchRaw
+            let promptLang = isFrToDE ? "fr-FR" : "de-DE"
+            let answerLang = isFrToDE ? "de-DE" : "fr-FR"
+            let category = item.cardType.categoryName
+
+            // Lightweight text processing (skip expensive card(for:) pipeline)
+            let frenchHint = frenchRaw
+            let prompt: String
+            let answer: String
+
+            if promptLang == "fr-FR" {
+                prompt = frenchRaw.lowercased()
+            } else {
+                prompt = quizGermanWordCasing(germanRaw, sourceHint: frenchHint)
+            }
+
+            if answerLang == "fr-FR" {
+                answer = frenchRaw.lowercased()
+            } else {
+                answer = quizGermanWordCasing(germanRaw, sourceHint: frenchHint)
+            }
+
             let promptKey = fastQuizKey(prompt)
             let answerKey = fastQuizKey(answer)
 
             guard !promptKey.isEmpty, !answerKey.isEmpty else { continue }
-            let uniqueKey = [promptKey, answerKey, card.category].joined(separator: "|")
+            let uniqueKey = [promptKey, answerKey, category].joined(separator: "|")
             guard seen.insert(uniqueKey).inserted else { continue }
 
             let hasArticle = startsWithGermanArticle(answer)
@@ -226,9 +231,9 @@ extension QuizBuildService {
                     id: uniqueKey,
                     prompt: prompt,
                     answer: answer,
-                    category: card.category,
-                    promptLanguageCode: card.promptLanguageCode,
-                    answerLanguageCode: card.answerLanguageCode,
+                    category: category,
+                    promptLanguageCode: promptLang,
+                    answerLanguageCode: answerLang,
                     promptKey: promptKey,
                     answerKey: answerKey,
                     promptWordCount: prompt.split(separator: " ").count,
@@ -237,7 +242,7 @@ extension QuizBuildService {
                     answerHasArticle: hasArticle,
                     answerLeadingArticle: leadingGermanArticle(in: answer),
                     answerInitial: answerKey.split(separator: " ").dropFirst(hasArticle ? 1 : 0).first.map { String($0.prefix(1)) } ?? String(answerKey.prefix(1)),
-                    isPhrase: card.category == CardType.phrases.categoryName
+                    isPhrase: category == CardType.phrases.categoryName
                 )
             )
         }

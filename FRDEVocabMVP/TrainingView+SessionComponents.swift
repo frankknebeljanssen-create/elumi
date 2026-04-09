@@ -4,25 +4,39 @@ extension TrainingView {
     var sessionCard: some View {
         Group {
             if session.isSpeedRound, session.speedRoundTimeRemaining <= 0, session.hasStartedTraining {
-                let earnedCredits = ArcadeCreditSystem.speedRoundCredits(score: session.speedRoundScore)
+                let score = session.speedRoundScore
+                let earnedCredits = ArcadeCreditSystem.speedRoundCredits(score: score)
+                let earnedXP = score * 2  // 2 XP per correct answer in speed round
                 VStack(alignment: .center, spacing: 12) {
                     Text("Zeit abgelaufen!")
                         .font(.system(size: 22, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.warning)
-                    Text("\(session.speedRoundScore)")
+                    Text("\(score)")
                         .font(.system(size: 48, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.success)
                     Text("richtig")
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
-                    if earnedCredits > 0 {
-                        Text("+\(earnedCredits) Arcade Credit\(earnedCredits > 1 ? "s" : "")")
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.warning)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 4)
-                            .background(AppTheme.Colors.warning.opacity(0.15))
-                            .clipShape(Capsule())
+
+                    HStack(spacing: 12) {
+                        if earnedXP > 0 {
+                            Text("+\(earnedXP) XP")
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.success)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 4)
+                                .background(AppTheme.Colors.success.opacity(0.15))
+                                .clipShape(Capsule())
+                        }
+                        if earnedCredits > 0 {
+                            Text("+\(earnedCredits) Credit\(earnedCredits > 1 ? "s" : "")")
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.warning)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 4)
+                                .background(AppTheme.Colors.warning.opacity(0.15))
+                                .clipShape(Capsule())
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, minHeight: sessionCardMinHeight, alignment: .center)
@@ -32,6 +46,16 @@ extension TrainingView {
                 .onAppear {
                     if earnedCredits > 0 {
                         arcadeCredits += earnedCredits
+                    }
+                    // XP + bonus credits from XP milestones
+                    if earnedXP > 0 {
+                        let previousXP = UserDefaults.standard.integer(forKey: appElumiXPKey)
+                        let newXP = previousXP + earnedXP
+                        UserDefaults.standard.set(newXP, forKey: appElumiXPKey)
+                        let xpBonusCredits = ArcadeCreditSystem.bonusCreditsFromXP(previousXP: previousXP, newXP: newXP)
+                        if xpBonusCredits > 0 {
+                            arcadeCredits += xpBonusCredits
+                        }
                     }
                 }
             } else if let currentCard, session.hasStartedTraining {

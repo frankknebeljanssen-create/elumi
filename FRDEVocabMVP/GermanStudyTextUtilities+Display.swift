@@ -173,26 +173,26 @@ func quizVisibleText(
 }
 
 /// German quiz casing: only nouns uppercase, everything else lowercase
-private func quizGermanWordCasing(_ text: String, sourceHint: String?) -> String {
+func quizGermanWordCasing(_ text: String, sourceHint: String?) -> String {
     let hint = sourceHint ?? ""
-    let isNoun = StandardVocabularyLoader.isNoun(hint) || TrainingSessionController.hasFrenchArticle(hint) || startsWithGermanArticle(text)
+    let stripped = strippingLeadingFrenchArticle(from: hint)
 
-    if isNoun {
-        // Noun: article lowercase, noun uppercase
-        let parts = text.components(separatedBy: "/")
-        return parts.map { part in
-            part.split(separator: " ").map { token in
-                let lower = String(token).lowercased()
-                if germanArticleHints.contains(lower) {
-                    return lower
-                }
-                return uppercasingFirstGermanLetter(in: String(token))
-            }.joined(separator: " ")
-        }.joined(separator: " / ")
+    // Explicitly non-noun (verb, adjective, adverb): always lowercase
+    if StandardVocabularyLoader.isNonNoun(stripped) || StandardVocabularyLoader.isNonNoun(hint) {
+        return text.lowercased()
     }
 
-    // Everything else (verbs, adjectives, etc.): all lowercase
-    return text.lowercased()
+    // Everything else (nouns + unknown): article lowercase, word uppercase
+    let parts = text.components(separatedBy: "/")
+    return parts.map { part in
+        part.split(separator: " ").map { token in
+            let lower = String(token).lowercased()
+            if germanArticleHints.contains(lower) {
+                return lower
+            }
+            return uppercasingFirstGermanLetter(in: String(token))
+        }.joined(separator: " ")
+    }.joined(separator: " / ")
 }
 
 func visibleQuizPromptText(_ text: String, category: String) -> String {

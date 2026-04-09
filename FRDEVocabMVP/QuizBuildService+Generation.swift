@@ -215,13 +215,17 @@ extension QuizBuildService {
     static func plannedQuizQuestionKinds(for candidates: [QuizCandidate], requestedCount: Int) -> [QuizQuestionKind] {
         let actualCount = min(requestedCount, max(1, candidates.count))
         let canDoMatching = candidates.count >= 4
-        let rotation: [QuizQuestionKind] = canDoMatching
+        let pool: [QuizQuestionKind] = canDoMatching
             ? [.multipleChoice, .matching, .typing]
             : [.multipleChoice, .typing]
 
         var kinds: [QuizQuestionKind] = []
-        for i in 0..<actualCount {
-            kinds.append(rotation[i % rotation.count])
+        for _ in 0..<actualCount {
+            // Pick a random type that's different from the last one
+            let lastKind = kinds.last
+            let available = pool.filter { $0 != lastKind }
+            let picked = (available.isEmpty ? pool : available).randomElement() ?? .multipleChoice
+            kinds.append(picked)
         }
 
         return kinds

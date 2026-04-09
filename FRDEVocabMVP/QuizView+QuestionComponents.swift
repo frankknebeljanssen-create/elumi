@@ -258,7 +258,7 @@ extension QuizView {
                         .font(.system(size: 11, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
 
-                    HStack(spacing: 8) {
+                    HStack(spacing: 6) {
                         ForEach(question.pairs) { pair in
                             Button {
                                 guard !comboMatchedIDs.contains(pair.id) else { return }
@@ -267,10 +267,13 @@ extension QuizView {
                                 }
                             } label: {
                                 Text(pair.prompt)
-                                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                                    .lineLimit(2)
+                                    .multilineTextAlignment(.center)
+                                    .minimumScaleFactor(0.75)
                                     .foregroundStyle(comboVerbTextColor(pair.id))
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 10)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(minHeight: 52)
                                     .background(comboVerbBackground(pair.id))
                                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                                     .overlay(
@@ -299,17 +302,20 @@ extension QuizView {
                         .font(.system(size: 11, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
 
-                    HStack(spacing: 8) {
+                    HStack(spacing: 6) {
                         ForEach(question.shuffledAnswers) { pair in
                             Button {
                                 guard comboSelectedVerbID != nil, !comboMatchedIDs.contains(pair.id) else { return }
                                 evaluateComboSelection(verbID: comboSelectedVerbID!, nounPair: pair, in: question)
                             } label: {
                                 Text(pair.answer)
-                                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                                    .lineLimit(2)
+                                    .multilineTextAlignment(.center)
+                                    .minimumScaleFactor(0.75)
                                     .foregroundStyle(comboNounTextColor(pair.id))
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 10)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(minHeight: 52)
                                     .background(comboNounBackground(pair.id))
                                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                                     .overlay(
@@ -335,8 +341,7 @@ extension QuizView {
                 comboMatchedIDs.insert(verbID)
                 comboSelectedVerbID = nil
             }
-            if comboMatchedIDs.count + 1 >= question.pairs.count {
-                // Need +1 because we just inserted
+            if comboMatchedIDs.count >= question.pairs.count {
                 scheduleAdvance(after: 0.6) {
                     completeCurrentQuestion(correct: !comboHadMistake)
                 }

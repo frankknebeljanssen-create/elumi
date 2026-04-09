@@ -223,11 +223,18 @@ extension QuizView {
         collectedWorms += rewardOutcome.worms
         collectedWaterfloh += rewardOutcome.waterfloh
         collectedAlgenkugel += rewardOutcome.algenkugel
+        let previousXP = collectedXP
         collectedXP += rewardOutcome.xp
         currentStreak = rewardOutcome.currentStreak
         bestStreak = rewardOutcome.bestStreak
         lastRewardDayIndex = rewardOutcome.lastRewardDayIndex
         didPersistHearts = true
+
+        // XP milestone bonus credits
+        let xpBonusCredits = ArcadeCreditSystem.bonusCreditsFromXP(previousXP: previousXP, newXP: collectedXP)
+        if xpBonusCredits > 0 {
+            arcadeCredits += xpBonusCredits
+        }
 
         // Arcade credits
         let credits = ArcadeCreditSystem.creditsEarned(

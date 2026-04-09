@@ -65,4 +65,14 @@ enum ArcadeCreditSystem {
 
     /// Cost to play one arcade game
     static let gamesCost = 1
+
+    /// XP threshold for earning a bonus credit
+    static let xpPerCredit = 20
+
+    /// Check if XP milestone crossed, return bonus credits earned
+    static func bonusCreditsFromXP(previousXP: Int, newXP: Int) -> Int {
+        let previousMilestones = previousXP / xpPerCredit
+        let newMilestones = newXP / xpPerCredit
+        return max(0, newMilestones - previousMilestones)
+    }
 }

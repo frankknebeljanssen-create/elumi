@@ -71,15 +71,15 @@ var quizSetupScreen: some View {
                         .foregroundStyle(AppTheme.Colors.textSecondary)
 
                     let options = QuizQuestionCountOption.allCases
+                    let rows = stride(from: 0, to: options.count, by: 2).map {
+                        Array(options[($0)..<min($0 + 2, options.count)])
+                    }
                     VStack(spacing: 8) {
-                        HStack(spacing: 8) {
-                            ForEach(options.prefix(2)) { option in
-                                quizCountButton(option)
-                            }
-                        }
-                        HStack(spacing: 8) {
-                            ForEach(options.suffix(2)) { option in
-                                quizCountButton(option)
+                        ForEach(rows, id: \.first) { row in
+                            HStack(spacing: 8) {
+                                ForEach(row) { option in
+                                    quizCountButton(option)
+                                }
                             }
                         }
                     }
@@ -321,6 +321,20 @@ var quizResultScreen: some View {
             .padding(.vertical, AppTheme.Spacing.md)
         }
 
+        if wrongCount > 0 {
+            Button {
+                showingWrongAnswers = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 16, weight: .bold))
+                    Text("Falsche anzeigen (\(wrongCount))")
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(AppSecondaryButtonStyle(tint: AppTheme.Colors.error))
+        }
+
         Button {
             resetQuizToSetup()
         } label: {
@@ -347,5 +361,70 @@ var quizResultScreen: some View {
     .onAppear {
         persistHeartsIfNeeded()
     }
+    .sheet(isPresented: $showingWrongAnswers) {
+        wrongAnswersSheet
+    }
+}
+
+private var wrongAnswersSheet: some View {
+    NavigationStack {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(Array(wrongQuestionPairs.enumerated()), id: \.offset) { _, pair in
+                    HStack(alignment: .top, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(pair.prompt)
+                                .font(.system(size: 15, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.textPrimary)
+                            Text(pair.correctAnswer)
+                                .font(.system(size: 15, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.success)
+                        }
+                        Spacer()
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(AppTheme.Colors.error.opacity(0.5))
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(AppTheme.Colors.secondarySurface)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                }
+            }
+            .padding(AppLayout.screenPadding)
+        }
+        .appScreenBackground(.quiz)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Fertig") {
+                    showingWrongAnswers = false
+                }
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+            }
+        }
+        .navigationTitle("Falsche Antworten")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+    .presentationDetents([.large])
+    .presentationDragIndicator(.visible)
+}
+
+private var wrongQuestionPairs: [(prompt: String, correctAnswer: String)] {
+    var pairs: [(String, String)] = []
+    for (index, result) in session.answeredResults.enumerated() {
+        guard !result, index < session.questions.count else { continue }
+        let question = session.questions[index]
+        switch question {
+        case .multipleChoice(let q):
+            pairs.append((q.prompt, q.correctAnswer))
+        case .matching(let q):
+            for pair in q.pairs {
+                pairs.append((pair.prompt, pair.answer))
+            }
+        case .typing(let q):
+            pairs.append((q.prompt, q.correctAnswer))
+        }
+    }
+    return pairs
 }
 }
