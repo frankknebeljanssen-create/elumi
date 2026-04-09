@@ -43,7 +43,7 @@ extension OCRScanProvider {
                     )
                 }
 
-                let primaryStart = CFAbsoluteTimeGetCurrent()
+                var primaryStart = CFAbsoluteTimeGetCurrent()
                 let primaryBoxes = autoreleasepool {
                     extractLineBoxes(
                         primaryPass.image,
@@ -55,7 +55,9 @@ extension OCRScanProvider {
                     )
                 }
                 logTiming("ocr_primary", start: primaryStart)
+                primaryStart = CFAbsoluteTimeGetCurrent()
                 let acceptedPrimary = consider(primaryPass, lineBoxes: primaryBoxes)
+                logTiming("ocr_primary_analyze", start: primaryStart)
                 let primaryResult = bestResult
                 let primaryScore = bestScore
 

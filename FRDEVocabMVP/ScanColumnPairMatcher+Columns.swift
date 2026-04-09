@@ -24,7 +24,7 @@ extension ScanColumnPairMatcher {
     func columnGroups(for boxes: [OCRLineBox]) -> [[OCRLineBox]] {
         let sortedBoxes = boxes.sorted { $0.midX < $1.midX }
         let averageWidth = sortedBoxes.map(\.width).reduce(0, +) / CGFloat(sortedBoxes.count)
-        let threshold = max(averageWidth * 1.15, 0.10)
+        let threshold = max(averageWidth * 1.35, 0.14)
 
         var groups: [[OCRLineBox]] = []
 
