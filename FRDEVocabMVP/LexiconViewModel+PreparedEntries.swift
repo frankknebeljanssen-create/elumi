@@ -26,13 +26,8 @@ extension LexiconViewModel {
             let candidates: [AggregationCandidate] = entries.flatMap { entry in
                 let displayCardType = resolvedLexiconCardType(for: entry)
                 let frenchText = sourceDisplayText(entry.sourceTerm, sourceLanguage: .french)
-                let germanText = formattedGermanLexiconDisplayText(
-                    entry.targetTerm,
-                    cardType: displayCardType,
-                    germanGender: entry.germanGender,
-                    frenchGender: entry.frenchGender,
-                    sourceHint: entry.sourceTerm
-                )
+                // targetTerm is already correctly cased based on isGermanNoun
+                let germanText = entry.targetTerm
                 let frenchLookupKey = normalizedLookupText(frenchText)
                 let germanLookupKey = normalizedLookupText(germanText)
                 let frenchCompactKey = compactLookupKey(frenchText)
@@ -51,13 +46,7 @@ extension LexiconViewModel {
                             displayCardType: displayCardType,
                             displayCountryCode: "FR",
                             sourceText: selectedDirection == .germanToFrench && !entry.targetTerm.isEmpty
-                                ? formattedGermanLexiconDisplayText(
-                                    entry.targetTerm,
-                                    cardType: displayCardType,
-                                    germanGender: entry.germanGender,
-                                    frenchGender: entry.frenchGender,
-                                    sourceHint: entry.sourceTerm
-                                )
+                                ? entry.targetTerm
                                 : frenchText,
                             targetText: selectedDirection == .germanToFrench
                                 ? frenchText

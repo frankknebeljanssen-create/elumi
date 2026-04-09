@@ -46,15 +46,19 @@ extension SupplementalFreeDictLexicon {
     static func makeLexiconEntry(from statement: OpaquePointer?) -> LexiconEntry? {
         let cardTypeRaw = sqliteTextColumn(statement, index: 2)
         let cardType: CardType = cardTypeRaw == CardType.phrases.rawValue ? .phrases : .words
+        let isGermanNoun = sqlite3_column_int(statement, 9) != 0
         let sourceTerm = sourceDisplayText(
             sqliteTextColumn(statement, index: 0),
             sourceLanguage: .french
         )
-        let targetTerm = germanDisplayText(
-            sqliteTextColumn(statement, index: 1),
-            cardType: cardType,
-            sourceHint: sourceTerm
-        )
+        // Casing based on actual word class of THIS entry, not sourceHint
+        let rawTarget = sqliteTextColumn(statement, index: 1)
+        let targetTerm: String
+        if isGermanNoun {
+            targetTerm = germanDisplayText(rawTarget, cardType: cardType, sourceHint: nil)
+        } else {
+            targetTerm = rawTarget.lowercased()
+        }
 
         guard !sourceTerm.isEmpty, !targetTerm.isEmpty else { return nil }
 
@@ -64,7 +68,6 @@ extension SupplementalFreeDictLexicon {
         let targetGender = lexiconGender(from: sqliteTextColumn(statement, index: 6))
         let sourceArticle = optionalTrimmed(sqliteTextColumn(statement, index: 7))
         let targetArticle = optionalTrimmed(sqliteTextColumn(statement, index: 8))
-        let isGermanNoun = sqlite3_column_int(statement, 9) != 0
         let id = [
             StudyLanguage.french.rawValue,
             cardType.rawValue,

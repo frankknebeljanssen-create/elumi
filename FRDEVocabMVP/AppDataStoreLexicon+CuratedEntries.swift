@@ -71,10 +71,17 @@ extension DataStoreLexiconSupport {
             explicitFrenchGender: LexiconNounGender? = nil,
             explicitGermanGender: LexiconNounGender? = nil,
             explicitFrenchArticle: String? = nil,
-            explicitGermanArticle: String? = nil
+            explicitGermanArticle: String? = nil,
+            isGermanNoun: Bool? = nil
         ) {
             let cleanedSource = sourceDisplayText(sourceTerm, sourceLanguage: sourceLanguage)
-            let cleanedTarget = germanDisplayText(targetTerm, cardType: cardType, sourceHint: cleanedSource)
+            let nounFlag = isGermanNoun ?? (explicitGermanGender != nil || explicitGermanArticle != nil)
+            let cleanedTarget: String
+            if nounFlag {
+                cleanedTarget = germanDisplayText(targetTerm, cardType: cardType, sourceHint: nil)
+            } else {
+                cleanedTarget = targetTerm.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+            }
             guard !cleanedSource.isEmpty else { return }
 
             let key = [
@@ -107,7 +114,8 @@ extension DataStoreLexiconSupport {
                             article: explicitGermanArticle
                         ),
                         germanGenderInfo(for: cleanedTarget, cardType: cardType)
-                    )
+                    ),
+                    isGermanNoun: nounFlag
                 )
             )
         }
@@ -121,7 +129,8 @@ extension DataStoreLexiconSupport {
                 explicitFrenchGender: item.sourceGender,
                 explicitGermanGender: item.targetGender,
                 explicitFrenchArticle: item.sourceArticle,
-                explicitGermanArticle: item.targetLeadingArticle
+                explicitGermanArticle: item.targetLeadingArticle,
+                isGermanNoun: item.isGermanNoun
             )
         }
 
