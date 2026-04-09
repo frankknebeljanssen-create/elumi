@@ -24,14 +24,8 @@ extension View {
 
     func appAmbientWormBackground(_ style: AppSectionStyle, enabled: Bool = true) -> some View {
         background {
-            ZStack {
-                AppTheme.Colors.surface
-                    .ignoresSafeArea()
-
-                if enabled {
-                    AmbientScreenWormLayer(style: style)
-                }
-            }
+            AppTheme.Colors.surface
+                .ignoresSafeArea()
         }
     }
 

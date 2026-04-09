@@ -15,28 +15,15 @@ struct FlashcardDeckCard: Identifiable, Codable, Equatable {
 
     func card(for direction: Direction) -> FlashCard {
         var displayFrench = french
-        // Add French article only for nouns (1-2 words), not phrases or verbs
+        // Add French article only for nouns (1-2 words), not for verbs/adjectives/adverbs
         let trimmedFrench = french.trimmingCharacters(in: .whitespacesAndNewlines)
         let frenchWords = trimmedFrench.split(separator: " ")
         let wordCount = frenchWords.count
-        let looksLikeVerb: Bool = {
-            let lower = trimmedFrench.lowercased()
-            // Reflexive verbs: se/s' + verb
-            if lower.hasPrefix("se ") || lower.hasPrefix("s'") || lower.hasPrefix("s'") { return true }
-            // Single word ending in verb suffixes
-            if wordCount == 1 {
-                return lower.hasSuffix("er") || lower.hasSuffix("ir") || lower.hasSuffix("re")
-                    || lower.hasSuffix("oir") || lower.hasSuffix("dre") || lower.hasSuffix("tre")
-            }
-            // Multi-word with verb infinitive (e.g., "neu zusammensetzen" → check German side)
-            let germanLower = german.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-            if germanLower.hasSuffix("en") || germanLower.hasSuffix("ern") || germanLower.hasSuffix("eln") { return true }
-            return false
-        }()
+        let isNonNoun = StandardVocabularyLoader.isNonNoun(trimmedFrench)
 
         if sourceLanguage == .french,
            wordCount <= 2,
-           !looksLikeVerb,
+           !isNonNoun,
            !TrainingSessionController.hasFrenchArticle(displayFrench) {
             let article = TrainingSessionController.determineFrenchArticle(
                 VocabularyItem(rawFrench: french, rawGerman: german, cardType: .words, sourceLanguage: sourceLanguage)

@@ -64,7 +64,6 @@ enum QuizQuestion: Identifiable, Hashable {
     case multipleChoice(QuizMultipleChoiceQuestion)
     case matching(QuizMatchingQuestion)
     case typing(QuizTypingQuestion)
-
     var id: UUID {
         switch self {
         case .multipleChoice(let q): return q.id

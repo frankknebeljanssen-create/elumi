@@ -92,6 +92,13 @@ final class AppRuntimeContainer: ObservableObject {
             )
             print("⏱ [Warmup:Flashcard] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
         }
+
+        // Prewarm lexicon in background so dictionary opens instantly
+        Task.detached(priority: .utility) {
+            let start = CFAbsoluteTimeGetCurrent()
+            DataStoreLexiconSupport.prewarmCuratedLexiconEntries()
+            print("⏱ [Warmup:Lexikon] prewarm: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
+        }
     }
 
     func ensureDependenciesReady(markFlashcardsOpenTiming: ((String) -> Void)? = nil) async {

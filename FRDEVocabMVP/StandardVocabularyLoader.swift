@@ -93,6 +93,16 @@ enum StandardVocabularyLoader {
         nounSet.contains(frenchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines))
     }
 
+    /// Fast lookup set of non-noun French words (verbs, adjectives, adverbs, etc.)
+    static let nonNounSet: Set<String> = {
+        Set(allEntries.filter { $0.wordClass != "noun" && !$0.wordClass.isEmpty }.map { $0.sourceDisplay.lowercased() })
+    }()
+
+    /// Fast lookup: is this French word explicitly NOT a noun (verb, adjective, adverb, etc.)?
+    static func isNonNoun(_ frenchText: String) -> Bool {
+        nonNounSet.contains(frenchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
     // MARK: - Pre-built VocabularyLists for the list picker
 
     private static let levelNames: [String: String] = [

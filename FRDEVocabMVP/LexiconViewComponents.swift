@@ -161,68 +161,88 @@ struct LexiconDetailSheetView: View {
     let sectionStyle: AppSectionStyle
     let onDone: () -> Void
 
+    private func wordClassLabel(isFrench: Bool) -> String {
+        let stripped = strippingLeadingFrenchArticle(from: sourceText)
+        if StandardVocabularyLoader.isVerb(stripped) { return isFrench ? "Verbe" : "Verb" }
+        if StandardVocabularyLoader.isNoun(stripped) { return isFrench ? "Nom" : "Nomen" }
+        if let marker = wordClassMarker {
+            switch marker {
+            case .adjective: return isFrench ? "Adjectif" : "Adjektiv"
+            case .verb: return isFrench ? "Verbe" : "Verb"
+            }
+        }
+        if StandardVocabularyLoader.isNonNoun(stripped) {
+            return isFrench ? "Adjectif / Adverbe" : "Adjektiv / Adverb"
+        }
+        return isFrench ? "Nom" : "Nomen"
+    }
+
+    private func wordClassBadge(isFrench: Bool) -> some View {
+        Text(wordClassLabel(isFrench: isFrench))
+            .font(.system(size: 12, weight: .bold, design: .rounded))
+            .foregroundStyle(sectionStyle.accent)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(sectionStyle.accent.opacity(0.14))
+            .clipShape(Capsule())
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 14) {
-                    VStack(spacing: 6) {
-                        HStack(alignment: .top, spacing: 8) {
-                            LexiconFlagBadge(countryCode: sourceCountryCode, compact: true)
-                                .padding(.top, 3)
-
-                            Text(sourceText)
-                                .font(.system(size: 20, weight: .black, design: .rounded))
-                                .multilineTextAlignment(.leading)
-                                .lineLimit(nil)
-                                .minimumScaleFactor(0.72)
-                                .fixedSize(horizontal: false, vertical: true)
-
-                            Spacer(minLength: 0)
+                VStack(spacing: 20) {
+                    // Source language section
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            LexiconFlagBadge(countryCode: sourceCountryCode, compact: false)
+                            Spacer()
+                            wordClassBadge(isFrench: sourceCountryCode == "FR")
                         }
 
-                        HStack(alignment: .top, spacing: 10) {
-                            LexiconFlagBadge(countryCode: targetCountryCode, compact: true)
-                                .padding(.top, 4)
+                        Text(sourceText)
+                            .font(.system(size: 22, weight: .black, design: .rounded))
+                            .multilineTextAlignment(.leading)
+                            .minimumScaleFactor(0.78)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(18)
+                    .appCardBackground(sectionStyle, intensity: 0.10)
 
-                            if targetTexts.count <= 1 {
-                                Text(targetTexts.first ?? "")
-                                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                                    .foregroundStyle(sectionStyle.accent)
-                                    .multilineTextAlignment(.leading)
-                                    .lineLimit(nil)
-                                    .minimumScaleFactor(0.72)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                            } else {
-                                VStack(alignment: .leading, spacing: 10) {
-                                    ForEach(Array(targetTexts.enumerated()), id: \.offset) { _, target in
-                                        HStack(alignment: .top, spacing: 8) {
-                                            Text("•")
-                                                .font(.system(size: 18, weight: .bold, design: .rounded))
-                                                .foregroundStyle(sectionStyle.accent)
-                                            Text(target)
-                                                .font(.system(size: 20, weight: .bold, design: .rounded))
-                                                .foregroundStyle(sectionStyle.accent)
-                                                .fixedSize(horizontal: false, vertical: true)
-                                            Spacer(minLength: 0)
-                                        }
+                    // Target language section
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            LexiconFlagBadge(countryCode: targetCountryCode, compact: false)
+                            Spacer()
+                            wordClassBadge(isFrench: targetCountryCode == "FR")
+                        }
+
+                        if targetTexts.count <= 1 {
+                            Text(targetTexts.first ?? "")
+                                .font(.system(size: 22, weight: .bold, design: .rounded))
+                                .foregroundStyle(sectionStyle.accent)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        } else {
+                            VStack(alignment: .leading, spacing: 8) {
+                                ForEach(Array(targetTexts.enumerated()), id: \.offset) { _, target in
+                                    HStack(alignment: .top, spacing: 8) {
+                                        Text("•")
+                                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                                            .foregroundStyle(sectionStyle.accent)
+                                        Text(target)
+                                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                                            .foregroundStyle(sectionStyle.accent)
+                                        Spacer(minLength: 0)
                                     }
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
                             }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                        if let wordClassMarker {
-                            Text(wordClassMarker.rawValue)
-                                .font(.system(size: 13, weight: .bold, design: .rounded))
-                                .foregroundStyle(sectionStyle.accent)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(18)
+                    .appCardBackground(sectionStyle, intensity: 0.10)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(24)
-                .appCardBackground(sectionStyle, intensity: 0.10)
                 .padding(AppLayout.screenPadding)
                 .frame(maxWidth: .infinity)
             }

@@ -92,7 +92,7 @@ struct ContentView: View {
                     UnderwaterRevealOverlay(progress: navigation.shouldShowSplashOverlay ? 1 : 0)
                 }
                 .animation(
-                    navigation.shouldAnimateSplashDismissal ? .easeOut(duration: 1.05) : nil,
+                    navigation.shouldAnimateSplashDismissal ? .easeOut(duration: 0.45) : nil,
                     value: navigation.shouldShowSplashOverlay
                 )
                 .overlay(alignment: .bottom) {
@@ -129,7 +129,7 @@ struct ContentView: View {
                 .transition(.opacity)
             }
         }
-        .task {
+        .onAppear {
             runtime.bootstrapDependenciesIfNeeded()
         }
     }

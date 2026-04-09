@@ -5,6 +5,11 @@ func germanDisplayText(_ text: String, cardType: CardType, sourceHint: String? =
     let cleaned = cleanedQuizDisplayText(text)
     guard !cleaned.isEmpty else { return cleaned }
 
+    // Non-nouns (verbs, adjectives, adverbs, etc.): always lowercase
+    if cardType == .words, let hint = sourceHint, StandardVocabularyLoader.isNonNoun(hint) {
+        return cleaned.lowercased()
+    }
+
     // Always capitalize German nouns in multi-word text
     let wordCount = cleaned.split(separator: " ").count
     let isPhrase = cardType == .phrases || wordCount >= 3
@@ -26,7 +31,8 @@ func germanDisplayText(_ text: String, cardType: CardType, sourceHint: String? =
         return preserved
     }
 
-    let shouldCapitalizeLeadingWord = true
+    let isNonNoun = sourceHint.map { StandardVocabularyLoader.isNonNoun($0) } ?? false
+    let shouldCapitalizeLeadingWord = !isNonNoun
 
     let separators = CharacterSet(charactersIn: "/|;")
     let segments = cleaned.components(separatedBy: separators)
@@ -64,6 +70,11 @@ func formattedGermanLexiconDisplayText(
 ) -> String {
     let displayed = germanDisplayText(text, cardType: cardType, sourceHint: sourceHint)
     guard cardType == .words else { return displayed }
+
+    // Non-nouns stay lowercase — germanDisplayText already handled this
+    if let hint = sourceHint, StandardVocabularyLoader.isNonNoun(hint) {
+        return displayed
+    }
 
     let normalized = normalizedLookupText(displayed)
     guard !normalized.isEmpty else { return displayed }

@@ -43,12 +43,19 @@ enum DataStoreLexiconSupport {
 
         var start = CFAbsoluteTimeGetCurrent()
         let curatedMatches = curatedEntries.filter { entry in
-            entry.sourceSortKey.hasPrefix(normalizedQuery) ||
-                entry.targetSortKey.hasPrefix(normalizedQuery) ||
-                (!compactQuery.isEmpty && (
-                    entry.sourceSortKey.replacingOccurrences(of: " ", with: "").hasPrefix(compactQuery) ||
-                    entry.targetSortKey.replacingOccurrences(of: " ", with: "").hasPrefix(compactQuery)
-                ))
+            if entry.sourceSortKey.hasPrefix(normalizedQuery) || entry.targetSortKey.hasPrefix(normalizedQuery) {
+                return true
+            }
+            if strippingLeadingFrenchArticle(from: entry.sourceSortKey).hasPrefix(normalizedQuery) ||
+               strippingLeadingGermanArticle(from: entry.targetSortKey).hasPrefix(normalizedQuery) {
+                return true
+            }
+            if !compactQuery.isEmpty,
+               entry.sourceSortKey.replacingOccurrences(of: " ", with: "").hasPrefix(compactQuery) ||
+               entry.targetSortKey.replacingOccurrences(of: " ", with: "").hasPrefix(compactQuery) {
+                return true
+            }
+            return false
         }
         print("⏱ [Search] curatedFilter (\(curatedEntries.count)→\(curatedMatches.count)): \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
 

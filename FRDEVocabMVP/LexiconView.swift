@@ -119,15 +119,6 @@ struct LexiconView: View {
                             )
                         }
                     }
-                } else {
-                    LexiconInfoCard(
-                        systemImage: "text.magnifyingglass",
-                        title: "Suche direkt nach einem Wort",
-                        subtitle: "Französisch oder Deutsch eingeben, dann erscheinen die Treffer sofort.",
-                        tint: lexiconAccentColor,
-                        secondaryTextColor: lexiconSecondaryTextColor,
-                        sectionStyle: sectionStyle
-                    )
                 }
             }
             .padding(.top, AppTheme.Spacing.xxs)
@@ -136,7 +127,6 @@ struct LexiconView: View {
         }
         .safeAreaInset(edge: .top, spacing: 0) {
             stickyLexiconHeader
-                .padding(.horizontal, AppLayout.screenPadding)
                 .padding(.top, AppLayout.contentTopPadding)
                 .padding(.bottom, AppTheme.Spacing.sm)
                 .background(AppTheme.Colors.surface.opacity(0.98))
@@ -193,12 +183,14 @@ struct LexiconView: View {
                     selectedDirection: selectedLexiconDirection,
                     showLoadingState: true
                 )
+                // reloadEntries already calls performSearch internally
+            } else {
+                await model.performSearch(
+                    for: model.searchText,
+                    customLists: listStore.customLists,
+                    selectedDirection: selectedLexiconDirection
+                )
             }
-            await model.performSearch(
-                for: model.searchText,
-                customLists: listStore.customLists,
-                selectedDirection: selectedLexiconDirection
-            )
         }
         .onChange(of: selectedLexiconDirection) { _, _ in
             model.mergedEntries = []
@@ -206,7 +198,7 @@ struct LexiconView: View {
     }
 
     private var stickyLexiconHeader: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 10) {
             ScreenHeaderCard(
                 style: sectionStyle,
                 title: "Wörterbuch",
@@ -221,10 +213,54 @@ struct LexiconView: View {
                 sectionStyle: sectionStyle,
                 searchFocus: $isSearchFieldFocused
             )
+
+            lexiconDirectionCard
         }
         .frame(maxWidth: .infinity, alignment: .top)
         .padding(.bottom, 2)
         .background(AppTheme.Colors.surface)
+    }
+
+    private var lexiconDirectionCard: some View {
+        HStack(spacing: 10) {
+            Button {
+                selectedAppDirectionRaw = Direction.frenchToGerman.rawValue
+            } label: {
+                HStack(spacing: 10) {
+                    StraightFlagBadge(countryCode: "FR", width: 34, height: 23, labelFontSize: 11)
+                    Text("→")
+                        .font(.system(size: 18, weight: .black))
+                    StraightFlagBadge(countryCode: "DE", width: 34, height: 23, labelFontSize: 11)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 50)
+                .foregroundStyle(selectedLexiconDirection == .frenchToGerman ? .white : AppTheme.Colors.textPrimary)
+                .background(selectedLexiconDirection == .frenchToGerman ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                selectedAppDirectionRaw = Direction.germanToFrench.rawValue
+            } label: {
+                HStack(spacing: 10) {
+                    StraightFlagBadge(countryCode: "DE", width: 34, height: 23, labelFontSize: 11)
+                    Text("→")
+                        .font(.system(size: 18, weight: .black))
+                    StraightFlagBadge(countryCode: "FR", width: 34, height: 23, labelFontSize: 11)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 50)
+                .foregroundStyle(selectedLexiconDirection == .germanToFrench ? .white : AppTheme.Colors.textPrimary)
+                .background(selectedLexiconDirection == .germanToFrench ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+            .buttonStyle(.plain)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 4)
+        .padding(.vertical, 8)
+        .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
     private var searchResultSummaryCard: some View {

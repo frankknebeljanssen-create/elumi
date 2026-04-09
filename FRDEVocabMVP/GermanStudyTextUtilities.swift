@@ -7,7 +7,11 @@ func shouldDisplayStudyArticles(
 ) -> Bool {
     guard cardType == .words else { return false }
 
-    let frenchWordCount = normalizedLookupWords(strippingLeadingFrenchArticle(from: french)).count
+    // Non-nouns (verbs, adjectives, adverbs) never get articles
+    let strippedFrench = strippingLeadingFrenchArticle(from: french)
+    if StandardVocabularyLoader.isNonNoun(strippedFrench) { return false }
+
+    let frenchWordCount = normalizedLookupWords(strippedFrench).count
     let germanWordCount = normalizedLookupWords(strippingLeadingGermanArticle(from: german)).count
     guard frenchWordCount == 1, germanWordCount == 1 else { return false }
 
@@ -55,6 +59,8 @@ func frenchStudyCardDisplayText(
 ) -> String {
     let displayed = sourceDisplayText(text, sourceLanguage: sourceLanguage)
     guard sourceLanguage == .french else { return displayed }
+    // Non-nouns never get articles
+    if StandardVocabularyLoader.isNonNoun(displayed) { return displayed }
     guard shouldDisplayStudyArticles(french: displayed, german: german, cardType: cardType) else { return displayed }
     let exactGender = exactKnowledgePoolGenderInfo(french: displayed, german: german, cardType: cardType)?.french
     guard leadingFrenchArticle(in: displayed) == nil,

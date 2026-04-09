@@ -131,7 +131,7 @@ struct SplashView: View {
                 completeSplash(immediate: false)
             }
             finishWorkItem = workItem
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: workItem)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8, execute: workItem)
         }
         .onDisappear {
             finishWorkItem?.cancel()
