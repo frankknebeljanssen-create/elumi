@@ -11,7 +11,7 @@ extension ElumiArcadeGameView {
         case .algenkugel:
             baseSize = 26
         case .bonusblase:
-            baseSize = 22
+            baseSize = 28
         case .saugglocke:
             baseSize = 38
         case .falseElumi:
@@ -56,11 +56,11 @@ extension ElumiArcadeGameView {
     }
 
     func currentSpawnDelay() -> Double {
-        max(0.38, 1.05 - (Double(level - 1) * 0.08))
+        max(0.38, 1.05 - (Double(round - 1) * 0.13))
     }
 
     func currentFallDuration() -> Double {
-        max(1.45, 4.2 - (Double(level - 1) * 0.2))
+        max(1.45, 4.2 - (Double(round - 1) * 0.4))
     }
 
     func elumiPositionX(in width: CGFloat) -> CGFloat {
@@ -87,7 +87,7 @@ extension ElumiArcadeGameView {
         let elapsed = date.timeIntervalSince(snack.spawnedAt)
         let wobble = sin(elapsed * snack.wobbleFrequency) * snack.wobbleAmplitude * size.width
         let topY: CGFloat = -28
-        let bottomY = size.height - 108
+        let bottomY = size.height - 144
         let baseY = topY + ((bottomY - topY) * progress)
         let motionOffset = arcadeMotionOffset(for: snack, at: date, in: size)
 

@@ -122,7 +122,7 @@ extension TrainingView {
                     AudioServicesPlaySystemSound(1057)
                     scheduleFeedbackTask(after: 1.0) {
                         speedCountdown = nil
-                        AudioServicesPlaySystemSound(1005)
+                        AudioServicesPlaySystemSound(1114)
                         startSpeedRoundTimer()
                         if isVerbMode { prepareVerbMCOptions() }
                     }

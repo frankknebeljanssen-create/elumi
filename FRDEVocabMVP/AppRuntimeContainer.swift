@@ -18,6 +18,9 @@ final class AppRuntimeContainer: ObservableObject {
 
     init() {
         feedbackPlayer = FeedbackPlayer()
+
+        // Always reset to 3 starter credits (testing)
+        UserDefaults.standard.set(3, forKey: appArcadeCreditsKey)
     }
 
     var isHomeShellReady: Bool {
@@ -34,6 +37,7 @@ final class AppRuntimeContainer: ObservableObject {
         guard !didBootstrapDependencies else { return }
         didBootstrapDependencies = true
         ensureHomeShellDependenciesReady()
+
         let vocabularyListRepository = self.vocabularyListRepository
         let flashcardSessionRepository = self.flashcardSessionRepository
 

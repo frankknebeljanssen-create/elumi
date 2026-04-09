@@ -132,6 +132,7 @@ extension ElumiArcadeGameView {
                         endRadius: size * 0.54
                     )
                 )
+                .frame(width: size, height: size)
                 .overlay(
                     Circle()
                         .stroke(Color.white.opacity(0.34), lineWidth: 1.2)
@@ -146,6 +147,7 @@ extension ElumiArcadeGameView {
                 .frame(width: size * 0.24, height: size * 0.24)
                 .offset(x: -size * 0.18, y: -size * 0.2)
         }
+        .frame(width: size, height: size)
         .scaleEffect(pulse)
         .shadow(color: AppTheme.Colors.warning.opacity(0.34), radius: 12, x: 0, y: 4)
     }

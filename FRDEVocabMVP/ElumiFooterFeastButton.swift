@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ElumiFooterFeastButton: View {
     @ObservedObject var feedbackPlayer: FeedbackPlayer
+    @AppStorage(appArcadeCreditsKey) private var arcadeCredits = 0
     @State private var showingArcadeGame = false
     @State private var activeSnackKind: ElumiSnackKind?
     @State private var snackFlightProgress: CGFloat = 0
@@ -55,6 +56,17 @@ struct ElumiFooterFeastButton: View {
                     }
             }
             .frame(width: 48, height: 38)
+            .overlay(alignment: .topTrailing) {
+                Text("\(arcadeCredits)")
+                    .font(.system(size: 12, weight: .black, design: .rounded))
+                    .foregroundStyle(.white)
+                    .frame(minWidth: 20)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 2)
+                    .background(arcadeCredits > 0 ? AppTheme.Colors.warning : AppTheme.Colors.textSecondary.opacity(0.5))
+                    .clipShape(Capsule())
+                    .offset(x: 8, y: -6)
+            }
             .contentShape(Rectangle())
             .accessibilityLabel(Text("Elumi"))
         }

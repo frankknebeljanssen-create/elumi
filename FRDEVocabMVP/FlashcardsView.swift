@@ -4,6 +4,7 @@ struct FlashcardsView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.appUsesGlobalChrome) var usesGlobalChrome
     @AppStorage(appDirectionKey) var selectedAppDirectionRaw = Direction.frenchToGerman.rawValue
+    @AppStorage(appArcadeCreditsKey) var arcadeCredits = 0
     @ObservedObject var sessionStore: FlashcardSessionStore
     @ObservedObject var listStore: VocabularyListStore
     @ObservedObject var speechController: SpeechController

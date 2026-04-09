@@ -4,6 +4,7 @@ struct TrainingView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.appUsesGlobalChrome) var usesGlobalChrome
     @AppStorage(appDirectionKey) var selectedAppDirectionRaw = Direction.frenchToGerman.rawValue
+    @AppStorage(appArcadeCreditsKey) var arcadeCredits = 0
     @ObservedObject var listStore: VocabularyListStore
     let runtimeSpeechController: SpeechController?
     let runtimeSpeaker: Speaker?
@@ -48,11 +49,27 @@ struct TrainingView: View {
         if ids.isEmpty { return "Listen wählen" }
         let allAvailable = availableTrainingLists
         let selected = allAvailable.filter { ids.contains($0.id) }
-        if selected.count == 1, let first = selected.first {
-            return "\(first.name) · \(first.items.count) Einträge"
+
+        let countLabel: String
+        if isVerbMode {
+            let verbCount = selected.flatMap(\.items).filter {
+                $0.cardType == .words && StandardVocabularyLoader.isVerb($0.french)
+            }.count
+            countLabel = "\(verbCount) Verben"
+        } else if isArticleMode {
+            let nounCount = selected.flatMap(\.items).filter {
+                $0.cardType == .words && (StandardVocabularyLoader.isNoun($0.french) || TrainingSessionController.hasFrenchArticle($0.french))
+            }.count
+            countLabel = "\(nounCount) Nomen"
+        } else {
+            let totalItems = selected.reduce(0) { $0 + $1.items.count }
+            countLabel = "\(totalItems) Einträge"
         }
-        let totalItems = selected.reduce(0) { $0 + $1.items.count }
-        return "\(selected.count) Listen · \(totalItems) Einträge"
+
+        if selected.count == 1, let first = selected.first {
+            return "\(first.name) · \(countLabel)"
+        }
+        return "\(selected.count) Listen · \(countLabel)"
     }
 
     var activeItems: [VocabularyItem] {
@@ -180,15 +197,15 @@ struct TrainingView: View {
             return Color(red: 0.9, green: 0.3, blue: 0.15)
         }
 
-        return AppTheme.Colors.warning
+        return trainingActionTint
     }
 
     var listeningButtonColor: Color {
-        AppTheme.Colors.warning
+        trainingActionTint
     }
 
     var trainingActionTint: Color {
-        AppTheme.Colors.warning
+        sectionStyle.accent
     }
 
     var isAudioModeEnabled: Bool {

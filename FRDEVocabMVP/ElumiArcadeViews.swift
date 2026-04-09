@@ -44,6 +44,7 @@ struct ElumiArcadeGameView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var feedbackPlayer: FeedbackPlayer
     @AppStorage(appElumiArcadeHighScoreKey) var highScore = 0
+    @AppStorage(appArcadeCreditsKey) var arcadeCredits = 0
 
     @State var gameSeed = UUID()
     @State var gameSize: CGSize = .zero
@@ -67,11 +68,19 @@ struct ElumiArcadeGameView: View {
     @State var comboBannerText: String?
     @State var didBeatHighScore = false
     @State var suctionEndsAt: Date?
+    @State var suctionDockScale: CGFloat = 1.0
+    @State var suctionHummingTimer: Timer?
     @State var bonusPointsEndsAt: Date?
     @State var slowMotionEndsAt: Date?
     @State var screenShakeOffset: CGFloat = 0
     @State var gameOverTitle = "Elumi ist satt"
     @State var gameOverSubtitle = "Ein starker Lauf."
+    @State var round = 1
+    @State var roundCatchCount = 0
+    @State var showingRoundBanner = false
+    @State var roundBannerPhase = 0  // 0=geschafft, 1=ready blink, 2=done
+    @State var readyBlinkVisible = true
+    @State var elumiVisible = false
 
     let maxMisses = 3
     let suctionDuration: TimeInterval = 4.6
@@ -79,12 +88,28 @@ struct ElumiArcadeGameView: View {
     let slowMotionDuration: TimeInterval = 0.55
     let suctionBeamHalfWidth: CGFloat = 92
 
-    var level: Int {
-        max(1, 1 + score / 80)
+    var headerTitle: String {
+        if isGameOver { return "Spiel vorbei" }
+        if showingStartOverlay { return "Elumi Arcade" }
+        return "Runde \(round)"
     }
 
-    var headerTitle: String {
-        isGameOver ? "Spiel vorbei" : "Elumi Arcade"
+    func snacksForRound(_ r: Int) -> Int {
+        switch r {
+        case 1: return 12
+        case 2: return 15
+        default: return 18
+        }
+    }
+
+    var roundSubtitle: String {
+        switch round {
+        case 1: return "Los geht's!"
+        case 2: return "Querschläger!"
+        case 3: return "Bonus-Regen!"
+        case 4: return "Doppelgänger!"
+        default: return "Chaos!"
+        }
     }
 
 }

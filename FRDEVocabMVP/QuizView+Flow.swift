@@ -228,6 +228,17 @@ extension QuizView {
         bestStreak = rewardOutcome.bestStreak
         lastRewardDayIndex = rewardOutcome.lastRewardDayIndex
         didPersistHearts = true
+
+        // Arcade credits
+        let credits = ArcadeCreditSystem.creditsEarned(
+            totalQuestions: session.questions.count,
+            correctAnswers: correctCount,
+            wrongAnswers: wrongCount,
+            isPerfect: isPerfectQuiz
+        )
+        if credits > 0 {
+            arcadeCredits += credits
+        }
     }
 
     func resetPerQuestionState() {

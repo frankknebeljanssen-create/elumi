@@ -28,11 +28,36 @@ extension FlashcardsView {
                     color: AppTheme.Colors.warning
                 )
             }
+
+            let credits = ArcadeCreditSystem.flashcardCredits(
+                masteredCount: sessionStore.masteredCount,
+                totalCount: sessionStore.totalCount,
+                wrongCount: sessionStore.wrongCount
+            )
+            if credits > 0 {
+                Text("+\(credits) Arcade Credit\(credits > 1 ? "s" : "")")
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.warning)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 4)
+                    .background(AppTheme.Colors.warning.opacity(0.15))
+                    .clipShape(Capsule())
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 18)
         .padding(.vertical, 22)
         .appCardBackground(sectionStyle, intensity: 0.12, cornerRadius: AppLayout.largeCardCornerRadius)
+        .onAppear {
+            let credits = ArcadeCreditSystem.flashcardCredits(
+                masteredCount: sessionStore.masteredCount,
+                totalCount: sessionStore.totalCount,
+                wrongCount: sessionStore.wrongCount
+            )
+            if credits > 0 {
+                arcadeCredits += credits
+            }
+        }
     }
 
     func flashcardCompletionStat(title: String, value: String, color: Color) -> some View {

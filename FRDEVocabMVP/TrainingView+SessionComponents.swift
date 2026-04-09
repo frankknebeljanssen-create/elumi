@@ -4,6 +4,7 @@ extension TrainingView {
     var sessionCard: some View {
         Group {
             if session.isSpeedRound, session.speedRoundTimeRemaining <= 0, session.hasStartedTraining {
+                let earnedCredits = ArcadeCreditSystem.speedRoundCredits(score: session.speedRoundScore)
                 VStack(alignment: .center, spacing: 12) {
                     Text("Zeit abgelaufen!")
                         .font(.system(size: 22, weight: .black, design: .rounded))
@@ -14,11 +15,25 @@ extension TrainingView {
                     Text("richtig")
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
+                    if earnedCredits > 0 {
+                        Text("+\(earnedCredits) Arcade Credit\(earnedCredits > 1 ? "s" : "")")
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.warning)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 4)
+                            .background(AppTheme.Colors.warning.opacity(0.15))
+                            .clipShape(Capsule())
+                    }
                 }
                 .frame(maxWidth: .infinity, minHeight: sessionCardMinHeight, alignment: .center)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
                 .appCardBackground(sectionStyle, intensity: 0.12)
+                .onAppear {
+                    if earnedCredits > 0 {
+                        arcadeCredits += earnedCredits
+                    }
+                }
             } else if let currentCard, session.hasStartedTraining {
                 VStack(alignment: .center, spacing: 8) {
                     if isVerbMode, let selected = verbMCSelected {

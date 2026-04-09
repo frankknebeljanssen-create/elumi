@@ -31,7 +31,9 @@ extension ElumiArcadeGameView {
                             rotation: characterRotation,
                             sparkleBurst: sparkleBurst
                         )
-                        .position(x: elumiPositionX(in: geometry.size.width), y: geometry.size.height - 82)
+                        .scaleEffect(elumiVisible ? suctionDockScale : 0.4)
+                        .opacity(elumiVisible ? 1 : 0)
+                        .position(x: elumiPositionX(in: geometry.size.width), y: geometry.size.height - 118)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
@@ -55,7 +57,13 @@ extension ElumiArcadeGameView {
                     startOverlay
                 }
 
-                if let comboBannerText, !comboBannerText.isEmpty, !isGameOver, !showingStartOverlay {
+                if showingRoundBanner && !isGameOver {
+                    roundCompleteBanner
+                        .transition(.scale.combined(with: .opacity))
+                        .zIndex(4)
+                }
+
+                if let comboBannerText, !comboBannerText.isEmpty, !isGameOver, !showingStartOverlay, !showingRoundBanner {
                     comboBanner(text: comboBannerText)
                         .padding(.top, 102)
                         .transition(.move(edge: .top).combined(with: .opacity))
@@ -140,12 +148,15 @@ extension ElumiArcadeGameView {
 
             Spacer(minLength: 0)
 
-            VStack(spacing: 3) {
-                Text(headerTitle)
-                    .font(.system(size: 22, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                Text("Score \(score) · Level \(level)")
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+            VStack(spacing: 4) {
+                Text("\(score)")
+                    .font(.system(size: 36, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.warning)
+                    .shadow(color: AppTheme.Colors.warning.opacity(0.3), radius: 8, x: 0, y: 2)
+                    .contentTransition(.numericText())
+                    .animation(.spring(response: 0.25, dampingFraction: 0.7), value: score)
+                Text("Runde \(round)")
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                 arcadeSnackPointsHUD
                 HStack(spacing: 6) {
@@ -163,7 +174,7 @@ extension ElumiArcadeGameView {
                             tint: AppTheme.Colors.warning
                         )
                     }
-                    if comboCount >= 2 && !isGameOver {
+                    if comboCount >= 3 && !isGameOver {
                         arcadeStatusChip(
                             icon: "flame.fill",
                             label: "Combo x\(comboCount)",
@@ -179,10 +190,10 @@ extension ElumiArcadeGameView {
                 ForEach(0..<maxMisses, id: \.self) { index in
                     Circle()
                         .fill(index < maxMisses - misses ? AppTheme.Colors.success : AppTheme.Colors.error.opacity(0.35))
-                        .frame(width: 10, height: 10)
+                        .frame(width: 12, height: 12)
                 }
             }
-            .frame(width: 36, alignment: .trailing)
+            .frame(width: 44, alignment: .trailing)
         }
     }
 

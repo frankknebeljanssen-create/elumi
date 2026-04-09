@@ -56,7 +56,7 @@ extension TrainingView {
             HStack(spacing: 12) {
                 Image(systemName: session.isSpeedRound ? "bolt.circle.fill" : "bolt.circle")
                     .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(session.isSpeedRound ? AppTheme.Colors.warning : AppTheme.Colors.textSecondary)
+                    .foregroundStyle(session.isSpeedRound ? trainingActionTint : AppTheme.Colors.textSecondary)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Speed Round")
@@ -71,7 +71,7 @@ extension TrainingView {
 
                 Image(systemName: session.isSpeedRound ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(session.isSpeedRound ? AppTheme.Colors.warning : AppTheme.Colors.textDisabled)
+                    .foregroundStyle(session.isSpeedRound ? trainingActionTint : AppTheme.Colors.textDisabled)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
@@ -223,23 +223,55 @@ extension TrainingView {
         .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
-    var largeTrainingTypeCard: some View {
+    var trainingBottomOptionCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
-                ForEach(CardType.allCases) { item in
-                    Button {
-                        session.cardType = item
-                    } label: {
-                        Text(item.rawValue)
-                            .frame(maxWidth: .infinity)
-                            .frame(minHeight: 44)
-                            .font(.system(size: 18, weight: .semibold, design: .rounded))
-                            .foregroundStyle(session.cardType == item ? .white : AppTheme.Colors.textPrimary)
-                            .background(session.cardType == item ? trainingActionTint : AppTheme.Colors.secondarySurface)
-                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            if session.trainingMode == .vocabulary {
+                HStack(spacing: 10) {
+                    ForEach(CardType.allCases) { item in
+                        Button {
+                            session.cardType = item
+                        } label: {
+                            Text(item.rawValue)
+                                .frame(maxWidth: .infinity)
+                                .frame(minHeight: 44)
+                                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                                .foregroundStyle(session.cardType == item ? .white : AppTheme.Colors.textPrimary)
+                                .background(session.cardType == item ? trainingActionTint : AppTheme.Colors.secondarySurface)
+                                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
+            } else {
+                Button {
+                    session.isSpeedRound.toggle()
+                } label: {
+                    HStack(spacing: 14) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "flag.checkered")
+                                .font(.system(size: 28, weight: .bold))
+                            Image(systemName: "stopwatch.fill")
+                                .font(.system(size: 28, weight: .bold))
+                        }
+                        .foregroundStyle(session.isSpeedRound ? trainingActionTint : AppTheme.Colors.textSecondary)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Speed Round")
+                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.textPrimary)
+                            Text("45 Sek. Contest")
+                                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.textSecondary)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: session.isSpeedRound ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundStyle(session.isSpeedRound ? trainingActionTint : AppTheme.Colors.textDisabled)
+                    }
+                }
+                .buttonStyle(.plain)
             }
         }
         .frame(maxWidth: .infinity)

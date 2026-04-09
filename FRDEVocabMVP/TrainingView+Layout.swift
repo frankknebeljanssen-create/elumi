@@ -109,22 +109,20 @@ extension TrainingView {
 
             trainingDirectionCard
 
-            if session.trainingMode == .vocabulary {
-                largeTrainingTypeCard
-            }
+            trainingBottomOptionCard
 
-            if session.trainingMode == .articles || session.trainingMode == .verbs {
-                speedRoundToggle
-            }
-
-            Button {
-                startTraining()
-            } label: {
-                Text("Los geht's!")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(AppPrimaryButtonStyle(color: canStartTraining ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled))
-            .disabled(!canStartTraining)
+            Text("Los geht's!")
+                .font(AppTheme.Typography.button)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: AppTheme.Layout.buttonHeight)
+                .background(AppTheme.Colors.cta)
+                .cornerRadius(AppTheme.Radius.md)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    guard canStartTraining else { return }
+                    startTraining()
+                }
 
             if !canStartTraining {
                 Text(startHintText)
@@ -154,7 +152,6 @@ extension TrainingView {
 
     var body: some View {
         trainingRootContent
-            .tint(trainingActionTint)
             .appScreenBackground(sectionStyle)
             .dismissKeyboardOnTap()
             .toolbar(.hidden, for: .navigationBar)

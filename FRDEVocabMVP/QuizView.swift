@@ -11,6 +11,7 @@ struct QuizView: View {
     @AppStorage(appElumiCurrentStreakKey) var currentStreak = 0
     @AppStorage(appElumiBestStreakKey) var bestStreak = 0
     @AppStorage(appElumiLastRewardDayIndexKey) var lastRewardDayIndex = 0
+    @AppStorage(appArcadeCreditsKey) var arcadeCredits = 0
     @ObservedObject var listStore: VocabularyListStore
     @ObservedObject var feedbackPlayer: FeedbackPlayer
     let goHome: () -> Void

@@ -1,11 +1,29 @@
 import SwiftUI
+import AudioToolbox
 
 extension ElumiArcadeGameView {
     func spawnSnack() {
         let roll = Double.random(in: 0...1)
-        let bonusChance = 0.055
-        let falseElumiChance = min(0.12, 0.04 + (Double(level - 1) * 0.01))
-        let suctionChance = 0.07
+
+        // Round-specific spawn rates
+        let bonusChance: Double
+        let falseElumiChance: Double
+        let suctionChance: Double
+
+        switch round {
+        case 3: // Bonus-Regen: more power-ups
+            bonusChance = 0.14
+            suctionChance = 0.12
+            falseElumiChance = min(0.10, 0.04 + (Double(round - 1) * 0.02))
+        case 4: // Doppelgänger: many false Elumis
+            bonusChance = 0.055
+            suctionChance = 0.07
+            falseElumiChance = 0.20
+        default: // Round 1, 2, 5+
+            bonusChance = round >= 5 ? 0.10 : 0.055
+            suctionChance = round >= 5 ? 0.10 : 0.07
+            falseElumiChance = round >= 5 ? 0.16 : min(0.12, 0.04 + (Double(round - 1) * 0.02))
+        }
 
         let kind: ElumiArcadeDropKind
         if roll < bonusChance {
@@ -18,13 +36,22 @@ extension ElumiArcadeGameView {
             kind = [.wuermchen, .wasserfloh, .algenkugel].randomElement() ?? .wuermchen
         }
 
+        // Round 2+: Querschläger — wider wobble
+        let isQuerschlaeger = round >= 2 && kind.isSnack && Double.random(in: 0...1) < (round == 2 ? 0.35 : 0.2)
+        let wobbleAmp = isQuerschlaeger
+            ? CGFloat.random(in: 0.08...0.14)
+            : CGFloat.random(in: 0.01...0.05)
+        let wobbleFreq = isQuerschlaeger
+            ? Double.random(in: 2.8...4.5)
+            : Double.random(in: 1.4...3.1)
+
         activeSnacks.append(
             ElumiArcadeSnackState(
                 kind: kind,
                 spawnedAt: gameClock,
                 laneX: CGFloat.random(in: 0.12...0.88),
-                wobbleAmplitude: CGFloat.random(in: 0.01...0.05),
-                wobbleFrequency: Double.random(in: 1.4...3.1),
+                wobbleAmplitude: wobbleAmp,
+                wobbleFrequency: wobbleFreq,
                 fallDuration: currentFallDuration(),
                 rotationDrift: Double.random(in: -18...18),
                 renderScale: spawnRenderScale(for: kind),
@@ -38,11 +65,15 @@ extension ElumiArcadeGameView {
         guard showingStartOverlay else { return }
         feedbackPlayer.playLaunch()
         showingStartOverlay = false
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.65)) {
+            elumiVisible = true
+        }
         gameSeed = UUID()
     }
 
     func restartGame() {
         showingStartOverlay = false
+        elumiVisible = true
         gameSeed = UUID()
     }
 
@@ -95,10 +126,35 @@ extension ElumiArcadeGameView {
     }
 
     func activateSuction(at date: Date) {
+        // Dock-in animation: scale Elumi up briefly
+        withAnimation(.spring(response: 0.2, dampingFraction: 0.5)) {
+            suctionDockScale = 1.25
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                suctionDockScale = 1.0
+            }
+        }
+
         activateSlowMotion(at: date)
         suctionEndsAt = date.addingTimeInterval(suctionDuration)
         showComboBanner("Saugstrahl aktiviert")
         feedbackPlayer.playAchievement()
+
+        // Humming sound during suction (system vibration pattern)
+        startSuctionHumming()
+    }
+
+    func startSuctionHumming() {
+        suctionHummingTimer?.invalidate()
+        suctionHummingTimer = Timer.scheduledTimer(withTimeInterval: 0.6, repeats: true) { _ in
+            AudioServicesPlaySystemSound(1519)
+        }
+        let duration = suctionDuration
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+            self.suctionHummingTimer?.invalidate()
+            self.suctionHummingTimer = nil
+        }
     }
 
     func activateBonusPoints(at date: Date) {
@@ -156,8 +212,8 @@ extension ElumiArcadeGameView {
         lastCatchDate = date
         totalCaught += 1
 
-        let comboBonus = comboCount >= 2 ? min(24, (comboCount - 1) * 3) : 0
-        if comboCount >= 2 {
+        let comboBonus = comboCount >= 3 ? min(12, (comboCount - 2) * 2) : 0
+        if comboCount >= 3 {
             let multiplierLabel = hasActiveBonusPoints(at: date) ? " · x2" : ""
             let prefix = comboCount >= 5 ? "Mega-Combo" : "Combo"
             showComboBanner("\(prefix) x\(comboCount) · +\(comboBonus)\(multiplierLabel)")
@@ -186,6 +242,36 @@ extension ElumiArcadeGameView {
         lastCatchDate = nil
     }
 
+    func triggerRoundComplete() {
+        showingRoundBanner = true
+        roundBannerPhase = 0
+        readyBlinkVisible = true
+        activeSnacks = []
+        feedbackPlayer.playAchievement()
+
+        Task { @MainActor in
+            // Phase 0: "Runde X geschafft!" für 2s
+            try? await Task.sleep(for: .seconds(2))
+            guard showingRoundBanner else { return }
+
+            // Phase 1: "Ready?" + "Runde X+1" mit Blinken
+            round += 1
+            roundCatchCount = 0
+            roundBannerPhase = 1
+
+            for _ in 0..<3 {
+                withAnimation(.easeInOut(duration: 0.25)) { readyBlinkVisible = false }
+                try? await Task.sleep(for: .milliseconds(300))
+                withAnimation(.easeInOut(duration: 0.25)) { readyBlinkVisible = true }
+                try? await Task.sleep(for: .milliseconds(300))
+            }
+
+            try? await Task.sleep(for: .milliseconds(200))
+            guard showingRoundBanner else { return }
+            showingRoundBanner = false
+        }
+    }
+
     func updateGame(now: Date) {
         guard gameSize != .zero else { return }
         if let suctionEndsAt, suctionEndsAt <= now {
@@ -210,7 +296,7 @@ extension ElumiArcadeGameView {
         for snack in activeSnacks {
             let progress = snackProgress(for: snack, at: motionNow)
             let position = snackPosition(for: snack, at: motionNow, in: gameSize)
-            let catchLineY = gameSize.height - 126
+            let catchLineY = gameSize.height - 158
             let isCatchable = position.y >= catchLineY
             let horizontalDistance = abs(position.x - elumiXPosition)
             let isInSuctionBeam = suctionActive &&
@@ -281,7 +367,7 @@ extension ElumiArcadeGameView {
 
         if caughtSnackCount > 0 {
             triggerCatchAnimation()
-            if comboCount >= 2 || caughtSnackCount >= 2 {
+            if comboCount >= 3 || caughtSnackCount >= 2 {
                 feedbackPlayer.playArcadeCombo()
             } else {
                 feedbackPlayer.playSuccess()
@@ -293,6 +379,13 @@ extension ElumiArcadeGameView {
             if score > highScore {
                 didBeatHighScore = true
                 highScore = score
+            }
+        }
+
+        if caughtSnackCount > 0 {
+            roundCatchCount += caughtSnackCount
+            if roundCatchCount >= snacksForRound(round) && !showingRoundBanner {
+                triggerRoundComplete()
             }
         }
 
@@ -333,6 +426,11 @@ extension ElumiArcadeGameView {
         characterScale = 1
         characterRotation = 0
         sparkleBurst = false
+        round = 1
+        roundCatchCount = 0
+        showingRoundBanner = false
+        roundBannerPhase = 0
+        readyBlinkVisible = true
     }
 
     func runGameLoops() async {
@@ -340,7 +438,21 @@ extension ElumiArcadeGameView {
 
         await MainActor.run {
             resetGameState()
+            // Show "Runde 1 / Ready?" at game start
+            showingRoundBanner = true
+            roundBannerPhase = 1
+            readyBlinkVisible = true
         }
+
+        // Ready blink sequence
+        for _ in 0..<3 {
+            await MainActor.run { withAnimation(.easeInOut(duration: 0.25)) { readyBlinkVisible = false } }
+            try? await Task.sleep(for: .milliseconds(300))
+            await MainActor.run { withAnimation(.easeInOut(duration: 0.25)) { readyBlinkVisible = true } }
+            try? await Task.sleep(for: .milliseconds(300))
+        }
+        try? await Task.sleep(for: .milliseconds(200))
+        await MainActor.run { showingRoundBanner = false }
 
         await withTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -348,6 +460,8 @@ extension ElumiArcadeGameView {
                     let delay = await MainActor.run { currentSpawnDelay() }
                     try? await Task.sleep(for: .seconds(delay))
                     guard await MainActor.run(body: { self.isPlaying && !self.isGameOver }) else { break }
+                    let isBannerUp = await MainActor.run { self.showingRoundBanner }
+                    guard !isBannerUp else { continue }
                     await MainActor.run {
                         spawnSnack()
                     }
