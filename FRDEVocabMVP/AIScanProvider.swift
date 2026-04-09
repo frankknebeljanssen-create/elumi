@@ -32,11 +32,12 @@ struct AIScanProvider: ScanProvider {
                     logTiming("ai_text_only", start: start)
                     let result = mapResponse(response, context: context)
                     let importableCount = result.entries.filter({ $0.reviewMetadata.isImportable }).count
-                    if importableCount >= 5 || importableCount >= max(2, ocrBoxCount / 5) {
-                        print("📡 [Scan] ✅ text-only sufficient: \(result.entries.count) entries")
+                    print("📡 [Scan] text-only result: \(result.entries.count) total, \(importableCount) importable")
+                    if importableCount >= 3 {
+                        print("📡 [Scan] ✅ text-only accepted")
                         return result
                     }
-                    print("📡 [Scan] ⚠️ text-only insufficient (\(result.entries.count) entries), falling back to image")
+                    print("📡 [Scan] ⚠️ text-only insufficient, falling back to image")
                 } catch {
                     print("📡 [Scan] ⚠️ text-only failed: \(error.localizedDescription), falling back to image")
                 }

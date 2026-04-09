@@ -94,7 +94,8 @@ extension OCRScanProvider {
         guard !acceptedPrimary else { return false }
         guard primaryBoxesCount > 0 || primaryResult == nil else { return false }
 
-        guard primaryBoxesCount < 10 || score < 18 else { return false }
+        // Skip fallback if primary OCR found enough content
+        guard primaryBoxesCount < 10 && score < 18 else { return false }
 
         guard let primaryResult else {
             return primaryBoxesCount < 6 || score < 10

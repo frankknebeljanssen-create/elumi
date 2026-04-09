@@ -65,6 +65,7 @@ extension OCRScanProvider {
                     score: primaryScore,
                     acceptedPrimary: acceptedPrimary
                 )
+                print("⏱ [Scan] ocr_primary_boxes=\(primaryBoxes.count) score=\(String(format: "%.1f", primaryScore)) accepted=\(acceptedPrimary) fallback=\(shouldRunFallback)")
 
                 if shouldRunFallback {
                     let prepStart = CFAbsoluteTimeGetCurrent()
