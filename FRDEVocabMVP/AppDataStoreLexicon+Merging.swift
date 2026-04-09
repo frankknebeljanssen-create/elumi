@@ -15,7 +15,8 @@ extension DataStoreLexiconSupport {
                     sourceLanguage: existing.sourceLanguage,
                     cardType: existing.cardType,
                     frenchGender: preferredLexiconGenderInfo(existing.frenchGender, entry.frenchGender),
-                    germanGender: preferredLexiconGenderInfo(existing.germanGender, entry.germanGender)
+                    germanGender: preferredLexiconGenderInfo(existing.germanGender, entry.germanGender),
+                    isGermanNoun: existing.isGermanNoun || entry.isGermanNoun
                 )
             } else {
                 mergedByID[entry.id] = entry

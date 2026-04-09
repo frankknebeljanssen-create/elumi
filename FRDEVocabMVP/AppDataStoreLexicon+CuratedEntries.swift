@@ -75,7 +75,7 @@ extension DataStoreLexiconSupport {
             isGermanNoun: Bool? = nil
         ) {
             let cleanedSource = sourceDisplayText(sourceTerm, sourceLanguage: sourceLanguage)
-            let nounFlag = isGermanNoun ?? (explicitGermanGender != nil || explicitGermanArticle != nil)
+            let nounFlag = isGermanNoun ?? (explicitGermanGender != nil || explicitGermanArticle != nil || startsWithGermanArticle(targetTerm))
             let cleanedTarget: String
             if nounFlag {
                 cleanedTarget = germanDisplayText(targetTerm, cardType: cardType, sourceHint: nil)

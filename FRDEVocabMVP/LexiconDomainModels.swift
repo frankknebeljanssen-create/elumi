@@ -30,7 +30,7 @@ struct LexiconEntry: Identifiable {
         self.cardType = cardType
         self.frenchGender = frenchGender
         self.germanGender = germanGender
-        self.isGermanNoun = isGermanNoun ?? (germanGender != nil)
+        self.isGermanNoun = isGermanNoun ?? false
         self.sourceSortKey = sourceTerm.folding(options: .diacriticInsensitive, locale: .current).lowercased()
         self.targetSortKey = targetTerm.lowercased()
     }
