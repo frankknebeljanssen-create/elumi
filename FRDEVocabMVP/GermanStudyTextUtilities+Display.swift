@@ -148,52 +148,51 @@ func quizVisibleText(
     sourceHint: String? = nil
 ) -> String {
     let cleaned = cleanedQuizDisplayText(text)
-    guard languageCode == "de-DE" else { return cleaned }
 
-    let shouldTreatAsGermanNoun =
-        category == CardType.words.categoryName ||
-        hasFrenchNounHint(sourceHint ?? "", cardType: category == CardType.words.categoryName ? .words : .phrases) ||
-        looksLikeGermanNounList(cleaned)
+    // French: always lowercase
+    guard languageCode == "de-DE" else { return cleaned.lowercased() }
 
-    if shouldTreatAsGermanNoun {
-        return stronglyCapitalizedGermanQuizWordText(cleaned)
-    }
-
+    // German phrases: capitalize first letter only
     if category == CardType.phrases.categoryName {
         return uppercasingFirstGermanLetter(in: cleaned)
     }
 
-    return stronglyCapitalizedGermanQuizWordText(cleaned)
+    // German words: apply noun/verb/article casing rules
+    return quizGermanWordCasing(cleaned, sourceHint: sourceHint)
+}
+
+/// German quiz casing: only nouns uppercase, everything else lowercase
+private func quizGermanWordCasing(_ text: String, sourceHint: String?) -> String {
+    let hint = sourceHint ?? ""
+    let isNoun = StandardVocabularyLoader.isNoun(hint) || TrainingSessionController.hasFrenchArticle(hint) || startsWithGermanArticle(text)
+
+    if isNoun {
+        // Noun: article lowercase, noun uppercase
+        let parts = text.components(separatedBy: "/")
+        return parts.map { part in
+            part.split(separator: " ").map { token in
+                let lower = String(token).lowercased()
+                if germanArticleHints.contains(lower) {
+                    return lower
+                }
+                return uppercasingFirstGermanLetter(in: String(token))
+            }.joined(separator: " ")
+        }.joined(separator: " / ")
+    }
+
+    // Everything else (verbs, adjectives, etc.): all lowercase
+    return text.lowercased()
 }
 
 func visibleQuizPromptText(_ text: String, category: String) -> String {
-    let cleaned = cleanedQuizDisplayText(text)
-    guard !cleaned.isEmpty else { return cleaned }
-
-    if category == CardType.words.categoryName || looksLikeGermanNounList(cleaned) {
-        return stronglyCapitalizedGermanQuizWordText(cleaned)
-    }
-
-    if looksLikeGermanDisplayText(cleaned) {
-        return capitalizingGermanNounsInPhrase(cleaned)
-    }
-
-    return cleaned
+    // Casing is already applied during candidate creation in quizVisibleText()
+    // Just clean display artifacts, don't re-capitalize
+    return cleanedQuizDisplayText(text)
 }
 
 func visibleQuizAnswerText(_ text: String, category: String) -> String {
-    let cleaned = cleanedQuizDisplayText(text)
-    guard !cleaned.isEmpty else { return cleaned }
-
-    if category == CardType.words.categoryName || looksLikeGermanNounList(cleaned) {
-        return stronglyCapitalizedGermanQuizWordText(cleaned)
-    }
-
-    if looksLikeGermanDisplayText(cleaned) {
-        return capitalizingGermanNounsInPhrase(cleaned)
-    }
-
-    return cleaned
+    // Casing is already applied during candidate creation in quizVisibleText()
+    return cleanedQuizDisplayText(text)
 }
 
 func canonicalGermanQuizText(

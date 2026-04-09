@@ -184,42 +184,29 @@ extension FlashcardsView {
 
 
     func largeFlashcardToggleCard(title: String, value: String) -> some View {
-        let valueParts = value.components(separatedBy: "·").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-        let primaryValue = valueParts.first ?? value
-        let secondaryValue = valueParts.count > 1 ? valueParts.dropFirst().joined(separator: " · ") : ""
-
-        return HStack(spacing: 14) {
-            VStack(alignment: .leading, spacing: 8) {
+        HStack(spacing: 14) {
+            VStack(alignment: .leading, spacing: title.isEmpty ? 0 : 8) {
                 if !title.isEmpty {
                     Text(title)
                         .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
-                Text(primaryValue)
+                Text(value)
                     .font(.system(size: 16, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .lineLimit(1)
+                    .lineLimit(2)
                     .minimumScaleFactor(0.8)
-
-                if !secondaryValue.isEmpty {
-                    Text(secondaryValue)
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.8)
-                }
             }
 
             Spacer(minLength: 0)
 
-            Image(systemName: "arrow.left.arrow.right.circle.fill")
+            Image(systemName: "chevron.down.circle.fill")
                 .font(.system(size: 24, weight: .bold))
                 .foregroundStyle(sectionStyle.accent)
         }
         .frame(maxWidth: .infinity)
-        .frame(minHeight: 96)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 4)
+        .frame(minHeight: title.isEmpty ? 72 : AppLayout.largeSelectionHeight)
+        .padding(.horizontal, AppTheme.Spacing.md)
         .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 }

@@ -91,8 +91,6 @@ extension TrainingView {
                 systemImage: "waveform.circle.fill"
             )
 
-            trainingModeCard
-
             Button {
                 session.showingTrainingListPicker = true
             } label: {
@@ -102,14 +100,26 @@ extension TrainingView {
                 )
             }
             .buttonStyle(.plain)
+            .padding(.bottom, AppTheme.Spacing.sm)
+
+            trainingDirectionCard
+                .padding(.bottom, AppTheme.Spacing.sm)
+
+            trainingModeCard
 
             if isDictionaryTrainingSelected {
                 dictionaryTrainingLevelCard
             }
 
-            trainingDirectionCard
-
             trainingBottomOptionCard
+
+            Spacer(minLength: 0)
+
+            if !canStartTraining {
+                Text(startHintText)
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
 
             Text("Los geht's!")
                 .font(AppTheme.Typography.button)
@@ -123,17 +133,9 @@ extension TrainingView {
                     guard canStartTraining else { return }
                     startTraining()
                 }
-
-            if !canStartTraining {
-                Text(startHintText)
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-            }
-
-            Spacer(minLength: 0)
         }
         .padding(.horizontal, AppLayout.screenPadding)
-        .padding(.bottom, AppLayout.screenPadding)
+        .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 32)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .sheet(isPresented: $session.showingTrainingListPicker) {

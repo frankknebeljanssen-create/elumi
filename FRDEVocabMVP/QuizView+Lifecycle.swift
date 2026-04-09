@@ -2,6 +2,9 @@ import SwiftUI
 
 extension QuizView {
     func handleQuizAppear() {
+        if session.selectedListIDs.isEmpty {
+            session.restoreSelectedListIDs()
+        }
         print("🧩 [Quiz] handleQuizAppear, availableLists=\(availableQuizLists.count), selectedIDs=\(session.selectedListIDs)")
         session.syncSelectedLists(availableLists: availableQuizLists)
         session.refreshMergedItemsIfNeeded(

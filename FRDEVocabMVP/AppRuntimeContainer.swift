@@ -5,7 +5,7 @@ import SwiftUI
 final class AppRuntimeContainer: ObservableObject {
     @Published private(set) var speechController: SpeechController?
     @Published private(set) var speaker: Speaker?
-    @Published private(set) var feedbackPlayer: FeedbackPlayer?
+    @Published private(set) var feedbackPlayer: FeedbackPlayer? = FeedbackPlayer()
     @Published private(set) var listStore: VocabularyListStore?
     @Published private(set) var flashcardSessionStore: FlashcardSessionStore?
 

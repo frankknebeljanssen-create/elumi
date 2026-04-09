@@ -4,6 +4,9 @@ extension TrainingView {
     func handleTrainingAppear() {
         triggerTrainingAudioPreparationIfNeeded()
         applyLaunchContextIfNeeded()
+        if session.selectedTrainingListIDs.isEmpty {
+            session.restoreSelectedListIDs()
+        }
         refreshDictionaryTrainingListIfNeeded()
         ensureTrainingSelectionValidity()
         ensureDirectionValidity()

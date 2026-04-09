@@ -43,21 +43,26 @@ var quizSetupScreen: some View {
                         Text(quizListSummary)
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                             .foregroundStyle(AppTheme.Colors.textPrimary)
-                            .lineLimit(1)
+                            .lineLimit(2)
                             .minimumScaleFactor(0.8)
                     }
                     Spacer(minLength: 0)
                     Image(systemName: "chevron.down.circle.fill")
-                        .font(.system(size: 28, weight: .bold))
+                        .font(.system(size: 24, weight: .bold))
                         .foregroundStyle(sectionStyle.accent)
                 }
                 .frame(maxWidth: .infinity)
-                .frame(minHeight: 72)
-                .padding(.horizontal, 18)
-                .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: 22)
+                .frame(minHeight: AppLayout.largeSelectionHeight)
+                .padding(.horizontal, AppTheme.Spacing.md)
+                .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
             }
             .buttonStyle(.plain)
             .padding(.horizontal, quizSetupCardInset)
+            .padding(.bottom, AppTheme.Spacing.sm)
+
+            quizDirectionCard
+                .padding(.horizontal, quizSetupCardInset)
+                .padding(.bottom, AppTheme.Spacing.sm)
 
             AppSurfaceCard(tint: sectionStyle.accent) {
                 VStack(alignment: .leading, spacing: 8) {
@@ -65,22 +70,17 @@ var quizSetupScreen: some View {
                         .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.textSecondary)
 
-                    HStack(spacing: 8) {
-                        ForEach(QuizQuestionCountOption.allCases) { option in
-                            Button {
-                                withAnimation(.easeInOut(duration: 0.12)) {
-                                    session.questionCountOption = option
-                                }
-                            } label: {
-                                Text(option.title)
-                                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                                    .foregroundStyle(session.questionCountOption == option ? .white : AppTheme.Colors.textPrimary)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(minHeight: 34)
-                                    .background(session.questionCountOption == option ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
-                                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
+                    let options = QuizQuestionCountOption.allCases
+                    VStack(spacing: 8) {
+                        HStack(spacing: 8) {
+                            ForEach(options.prefix(2)) { option in
+                                quizCountButton(option)
                             }
-                            .buttonStyle(.plain)
+                        }
+                        HStack(spacing: 8) {
+                            ForEach(options.suffix(2)) { option in
+                                quizCountButton(option)
+                            }
                         }
                     }
                 }
@@ -93,26 +93,93 @@ var quizSetupScreen: some View {
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .padding(.horizontal, quizSetupCardInset)
             }
-
-            Button {
-                startQuiz()
-            } label: {
-                Text(session.isPreparingQuiz ? "Quiz wird gestartet..." : "Quiz starten")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-            .disabled(!canStartQuiz || session.isPreparingQuiz)
-            .opacity(canStartQuiz && !session.isPreparingQuiz ? 1 : 0.55)
-            .padding(.horizontal, quizSetupCardInset)
         }
         .frame(maxWidth: .infinity, alignment: .top)
         .padding(.bottom, AppTheme.Spacing.sm)
+    }
+    .safeAreaInset(edge: .bottom) {
+        Button {
+            startQuiz()
+        } label: {
+            Text(session.isPreparingQuiz ? "Quiz wird gestartet..." : "Quiz starten")
+                .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+        .disabled(!canStartQuiz || session.isPreparingQuiz)
+        .opacity(canStartQuiz && !session.isPreparingQuiz ? 1 : 0.55)
+        .padding(.horizontal, quizSetupCardInset)
+        .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 16)
     }
     .padding(.horizontal, AppLayout.screenPadding)
     .padding(.top, AppLayout.contentTopPadding)
     .padding(.bottom, AppLayout.screenPadding)
     .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+}
+
+var quizDirectionCard: some View {
+    VStack(alignment: .leading, spacing: 10) {
+        Text("Abfragerichtung")
+            .font(AppTheme.Typography.caption)
+            .foregroundStyle(AppTheme.Colors.textSecondary)
+
+        HStack(spacing: 10) {
+            Button {
+                selectedAppDirectionRaw = Direction.frenchToGerman.rawValue
+            } label: {
+                HStack(spacing: 10) {
+                    StraightFlagBadge(countryCode: "FR", width: 34, height: 23, labelFontSize: 11)
+                    Text("→")
+                        .font(.system(size: 18, weight: .black))
+                    StraightFlagBadge(countryCode: "DE", width: 34, height: 23, labelFontSize: 11)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 50)
+                .foregroundStyle(selectedAppDirection == .frenchToGerman ? .white : AppTheme.Colors.textPrimary)
+                .background(selectedAppDirection == .frenchToGerman ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                selectedAppDirectionRaw = Direction.germanToFrench.rawValue
+            } label: {
+                HStack(spacing: 10) {
+                    StraightFlagBadge(countryCode: "DE", width: 34, height: 23, labelFontSize: 11)
+                    Text("→")
+                        .font(.system(size: 18, weight: .black))
+                    StraightFlagBadge(countryCode: "FR", width: 34, height: 23, labelFontSize: 11)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 50)
+                .foregroundStyle(selectedAppDirection == .germanToFrench ? .white : AppTheme.Colors.textPrimary)
+                .background(selectedAppDirection == .germanToFrench ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+    .frame(maxWidth: .infinity)
+    .padding(.horizontal, 18)
+    .padding(.vertical, 12)
+    .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+}
+
+func quizCountButton(_ option: QuizQuestionCountOption) -> some View {
+    Button {
+        withAnimation(.easeInOut(duration: 0.12)) {
+            session.questionCountOption = option
+        }
+    } label: {
+        Text(option.title)
+            .font(.system(size: 18, weight: .bold, design: .rounded))
+            .foregroundStyle(session.questionCountOption == option ? .white : AppTheme.Colors.textPrimary)
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 44)
+            .background(session.questionCountOption == option ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
+    }
+    .buttonStyle(.plain)
 }
 
 var quizSessionScreen: some View {

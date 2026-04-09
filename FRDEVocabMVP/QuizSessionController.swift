@@ -3,7 +3,9 @@ import SwiftUI
 
 @MainActor
 final class QuizSessionController: ObservableObject {
-    @Published var selectedListIDs: Set<UUID> = []
+    @Published var selectedListIDs: Set<UUID> = [] {
+        didSet { persistSelectedListIDs() }
+    }
     @Published var questionCountOption: QuizQuestionCountOption = .five
     @Published var questions: [QuizQuestion] = []
     @Published var cachedMergedItems: [VocabularyItem] = []
@@ -25,5 +27,17 @@ final class QuizSessionController: ObservableObject {
     struct MergeRequest: Equatable {
         let listIDs: [UUID]
         let direction: Direction
+    }
+
+    func restoreSelectedListIDs() {
+        guard let data = UserDefaults.standard.data(forKey: appQuizSelectedListIDsKey),
+              let ids = try? JSONDecoder().decode(Set<UUID>.self, from: data),
+              !ids.isEmpty else { return }
+        selectedListIDs = ids
+    }
+
+    private func persistSelectedListIDs() {
+        guard let data = try? JSONEncoder().encode(selectedListIDs) else { return }
+        UserDefaults.standard.set(data, forKey: appQuizSelectedListIDsKey)
     }
 }

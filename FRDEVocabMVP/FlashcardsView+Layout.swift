@@ -184,25 +184,16 @@ extension FlashcardsView {
                         )
                     }
                     .buttonStyle(.plain)
+                    .padding(.bottom, AppTheme.Spacing.sm)
+
+                    flashcardDirectionCard
+                        .padding(.bottom, AppTheme.Spacing.sm)
 
                     if isDictionarySelectedInStack {
                         flashcardDictionaryLevelCard
                     }
 
-                    flashcardDirectionCard
-
                     flashcardCountLimitCard
-
-                    Spacer().frame(height: AppTheme.Spacing.sm)
-
-                    Button {
-                        startFlashcardsFromSetup(autoplayPrompt: true)
-                    } label: {
-                        Text("Los geht's!")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(AppPrimaryButtonStyle(color: canStartSetup ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled))
-                    .disabled(!canStartSetup)
 
                     Spacer(minLength: 0)
                 }
@@ -210,6 +201,17 @@ extension FlashcardsView {
                 .padding(.bottom, isCardCountFieldFocused ? 140 : AppTheme.Spacing.lg)
             }
             .scrollDismissesKeyboard(.interactively)
+            .safeAreaInset(edge: .bottom) {
+                Button {
+                    startFlashcardsFromSetup(autoplayPrompt: true)
+                } label: {
+                    Text("Los geht's!")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(AppPrimaryButtonStyle(color: canStartSetup ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled))
+                .disabled(!canStartSetup)
+                .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 16)
+            }
             .onChange(of: isCardCountFieldFocused) { _, isFocused in
                 guard isFocused else { return }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
