@@ -14,6 +14,11 @@ struct LexiconView: View {
 
     @StateObject private var model = LexiconViewModel()
     @FocusState private var isSearchFieldFocused: Bool
+    @State private var lexiconFilterMode: LexiconFilterMode = .both
+
+    enum LexiconFilterMode: String, CaseIterable {
+        case both, frenchToGerman, germanToFrench
+    }
 
     private var selectedLexiconDirection: Direction {
         (Direction(rawValue: selectedAppDirectionRaw) ?? .frenchToGerman).sanitizedForFrenchOnly
@@ -52,7 +57,15 @@ struct LexiconView: View {
     }
 
     private var allEntries: [PreparedLexiconEntry] {
-        model.allEntries
+        let entries = model.allEntries
+        switch lexiconFilterMode {
+        case .both:
+            return entries
+        case .frenchToGerman:
+            return entries.filter { $0.displayCountryCode == "FR" }
+        case .germanToFrench:
+            return entries.filter { $0.displayCountryCode == "DE" }
+        }
     }
 
     private var trimmedSearchText: String {
@@ -222,45 +235,50 @@ struct LexiconView: View {
     }
 
     private var lexiconDirectionCard: some View {
-        HStack(spacing: 10) {
-            Button {
-                selectedAppDirectionRaw = Direction.frenchToGerman.rawValue
-            } label: {
-                HStack(spacing: 10) {
-                    StraightFlagBadge(countryCode: "FR", width: 34, height: 23, labelFontSize: 11)
-                    Text("→")
-                        .font(.system(size: 18, weight: .black))
-                    StraightFlagBadge(countryCode: "DE", width: 34, height: 23, labelFontSize: 11)
+        HStack(spacing: 8) {
+            lexiconFilterButton(.both) {
+                HStack(spacing: 6) {
+                    StraightFlagBadge(countryCode: "FR", width: 24, height: 16, labelFontSize: 8)
+                    StraightFlagBadge(countryCode: "DE", width: 24, height: 16, labelFontSize: 8)
                 }
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: 50)
-                .foregroundStyle(selectedLexiconDirection == .frenchToGerman ? .white : AppTheme.Colors.textPrimary)
-                .background(selectedLexiconDirection == .frenchToGerman ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
-            .buttonStyle(.plain)
 
-            Button {
-                selectedAppDirectionRaw = Direction.germanToFrench.rawValue
-            } label: {
-                HStack(spacing: 10) {
-                    StraightFlagBadge(countryCode: "DE", width: 34, height: 23, labelFontSize: 11)
+            lexiconFilterButton(.frenchToGerman) {
+                HStack(spacing: 6) {
+                    StraightFlagBadge(countryCode: "FR", width: 28, height: 19, labelFontSize: 9)
                     Text("→")
-                        .font(.system(size: 18, weight: .black))
-                    StraightFlagBadge(countryCode: "FR", width: 34, height: 23, labelFontSize: 11)
+                        .font(.system(size: 14, weight: .black))
+                    StraightFlagBadge(countryCode: "DE", width: 28, height: 19, labelFontSize: 9)
                 }
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: 50)
-                .foregroundStyle(selectedLexiconDirection == .germanToFrench ? .white : AppTheme.Colors.textPrimary)
-                .background(selectedLexiconDirection == .germanToFrench ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
-            .buttonStyle(.plain)
+
+            lexiconFilterButton(.germanToFrench) {
+                HStack(spacing: 6) {
+                    StraightFlagBadge(countryCode: "DE", width: 28, height: 19, labelFontSize: 9)
+                    Text("→")
+                        .font(.system(size: 14, weight: .black))
+                    StraightFlagBadge(countryCode: "FR", width: 28, height: 19, labelFontSize: 9)
+                }
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 4)
         .padding(.vertical, 8)
         .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+    }
+
+    private func lexiconFilterButton<Content: View>(_ mode: LexiconFilterMode, @ViewBuilder content: () -> Content) -> some View {
+        Button {
+            lexiconFilterMode = mode
+        } label: {
+            content()
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 44)
+                .foregroundStyle(lexiconFilterMode == mode ? .white : AppTheme.Colors.textPrimary)
+                .background(lexiconFilterMode == mode ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        }
+        .buttonStyle(.plain)
     }
 
     private var searchResultSummaryCard: some View {
