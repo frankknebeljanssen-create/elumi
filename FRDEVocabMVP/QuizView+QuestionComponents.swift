@@ -285,49 +285,47 @@ extension QuizView {
 
     private func fillBlanksSentenceView(_ question: QuizFillBlanksQuestion) -> some View {
         let parts = question.sentenceWithBlank.components(separatedBy: "_____")
-        return HStack(spacing: 0) {
-            Spacer(minLength: 0)
-            Group {
-                if let first = parts.first {
-                    Text(first)
-                        .font(.system(size: 18, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                }
+        let before = parts.first ?? ""
+        let after = parts.count >= 2 ? parts[1] : ""
 
-                if fillBlanksLocked, fillBlanksSelected == question.correctAnswer {
-                    Text(question.correctAnswer)
-                        .font(.system(size: 18, weight: .black, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.success)
-                } else {
-                    Text("  _____  ")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundStyle(sectionStyle.accent)
-                        .padding(.horizontal, 2)
-                        .padding(.vertical, 2)
-                        .background(
-                            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .stroke(sectionStyle.accent.opacity(0.4), style: StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
-                        )
-                }
+        let isCorrect = fillBlanksLocked && fillBlanksSelected == question.correctAnswer
+        let blankDisplay = isCorrect ? question.correctAnswer : "______"
 
-                if parts.count >= 2 {
-                    Text(parts[1])
-                        .font(.system(size: 18, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                }
-            }
-            Spacer(minLength: 0)
-        }
+        let blankColor: Color = isCorrect ? AppTheme.Colors.success : sectionStyle.accent
+        let blankWeight: Font.Weight = isCorrect ? .black : .bold
+
+        return Text(buildFillBlanksAttributedText(
+            before: before,
+            blank: blankDisplay,
+            after: after,
+            blankColor: blankColor,
+            blankWeight: blankWeight
+        ))
+        .font(.system(size: 18, weight: .semibold, design: .rounded))
         .multilineTextAlignment(.center)
         .frame(maxWidth: .infinity)
-        .padding(.vertical, AppTheme.Spacing.sm)
+        .frame(minHeight: 60)
+        .padding(.vertical, AppTheme.Spacing.xs)
+    }
+
+    private func buildFillBlanksAttributedText(before: String, blank: String, after: String, blankColor: Color, blankWeight: Font.Weight) -> AttributedString {
+        var result = AttributedString(before)
+        var blankPart = AttributedString(blank)
+        blankPart.foregroundColor = blankColor
+        blankPart.font = .system(size: 18, weight: blankWeight, design: .rounded)
+        result += blankPart
+        result += AttributedString(after)
+        return result
     }
 
     private func fillBlanksChipColor(_ option: String, correct: String) -> (text: Color, bg: Color) {
-        if fillBlanksLocked, fillBlanksSelected == option {
-            return option == correct
-                ? (.white, AppTheme.Colors.success)
-                : (.white, AppTheme.Colors.error)
+        // Correct answer locked in
+        if fillBlanksLocked, fillBlanksSelected == option, option == correct {
+            return (.white, AppTheme.Colors.success)
+        }
+        // Flash the wrong chip that was just tapped
+        if fillBlanksFlashWrong == option {
+            return (.white, AppTheme.Colors.error)
         }
         return (AppTheme.Colors.textPrimary, AppTheme.Colors.secondarySurface)
     }

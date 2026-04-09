@@ -260,6 +260,7 @@ extension QuizView {
         fillBlanksLocked = false
         fillBlanksHadMistake = false
         fillBlanksWrongOptions = []
+        fillBlanksFlashWrong = nil
         comboSelectedVerbID = nil
         comboMatchedIDs = []
         comboHadMistake = false
@@ -292,7 +293,11 @@ extension QuizView {
             feedbackPlayer.playStudyError()
             fillBlanksHadMistake = true
             fillBlanksWrongOptions.insert(selected)
+            fillBlanksFlashWrong = selected
             fillBlanksSelected = nil
+            scheduleAdvance(after: 0.6) {
+                fillBlanksFlashWrong = nil
+            }
         }
     }
 

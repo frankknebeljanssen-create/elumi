@@ -38,6 +38,7 @@ struct QuizView: View {
     @State var fillBlanksLocked = false
     @State var fillBlanksHadMistake = false
     @State var fillBlanksWrongOptions: Set<String> = []
+    @State var fillBlanksFlashWrong: String?
     @State var comboSelectedVerbID: UUID?
     @State var comboMatchedIDs: Set<UUID> = []
     @State var comboHadMistake = false

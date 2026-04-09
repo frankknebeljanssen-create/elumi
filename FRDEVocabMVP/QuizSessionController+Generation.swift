@@ -37,13 +37,18 @@ extension QuizSessionController {
                     generatedQuestions.insert(combo, at: idx)
                 }
 
-                // Fill-in-Blank at position ~3
-                if let fillBlank = QuizBuildService.nextFillBlanksQuestion(
-                    items: items,
-                    usedSignatures: &comboSignatures
-                ) {
-                    let idx = min(2, generatedQuestions.count)
-                    generatedQuestions.insert(fillBlank, at: idx)
+                // Fill-in-Blank: insert every ~4 questions
+                let fillBlankInterval = 4
+                var insertedFillBlanks = 0
+                for pos in stride(from: 2, to: generatedQuestions.count, by: fillBlankInterval) {
+                    if let fillBlank = QuizBuildService.nextFillBlanksQuestion(
+                        items: items,
+                        usedSignatures: &comboSignatures
+                    ) {
+                        let idx = min(pos + insertedFillBlanks, generatedQuestions.count)
+                        generatedQuestions.insert(fillBlank, at: idx)
+                        insertedFillBlanks += 1
+                    }
                 }
             }
 

@@ -220,10 +220,13 @@ extension QuizBuildService {
             : [.multipleChoice, .typing]
 
         var kinds: [QuizQuestionKind] = []
-        for _ in 0..<actualCount {
-            // Pick a random type that's different from the last one
+        for i in 0..<actualCount {
             let lastKind = kinds.last
-            let available = pool.filter { $0 != lastKind }
+            // First question: never typing
+            var available = pool.filter { $0 != lastKind }
+            if i == 0 {
+                available = available.filter { $0 != .typing }
+            }
             let picked = (available.isEmpty ? pool : available).randomElement() ?? .multipleChoice
             kinds.append(picked)
         }
