@@ -6,14 +6,9 @@ func germanDisplayText(_ text: String, cardType: CardType, sourceHint: String? =
     guard !cleaned.isEmpty else { return cleaned }
 
     // Non-nouns (verbs, adjectives, adverbs, etc.): always lowercase
-    if cardType == .words {
-        if let hint = sourceHint, StandardVocabularyLoader.isNonNoun(hint) {
-            return cleaned.lowercased()
-        }
-        // Also check the German text itself (e.g. "super" is same in FR+DE)
-        if StandardVocabularyLoader.isNonNoun(cleaned) {
-            return cleaned.lowercased()
-        }
+    // Only check sourceHint (French), NOT the German text (a word can be both noun+adjective)
+    if cardType == .words, let hint = sourceHint, StandardVocabularyLoader.isNonNoun(hint) {
+        return cleaned.lowercased()
     }
 
     // Always capitalize German nouns in multi-word text
@@ -78,10 +73,8 @@ func formattedGermanLexiconDisplayText(
     guard cardType == .words else { return displayed }
 
     // Non-nouns stay lowercase — germanDisplayText already handled this
+    // Only check sourceHint (French), NOT displayed (German) — word can be both noun+adjective
     if let hint = sourceHint, StandardVocabularyLoader.isNonNoun(hint) {
-        return displayed
-    }
-    if StandardVocabularyLoader.isNonNoun(displayed) {
         return displayed
     }
 
