@@ -15,7 +15,8 @@ extension OpenAIResponsesScanAIClient {
                             "text": """
 Extract ALL French-German vocabulary pairs from the OCR text below.
 Return strict JSON matching the provided schema.
-COMPLETENESS is critical: extract EVERY pair. Include even very short entries like single words.
+COMPLETENESS is critical: extract EVERY pair, no matter how short. Even single-word entries like "toi" = "du" or "et" = "und" MUST be included.
+Also include questions like "Tu t'appelles comment?" = "Wie heißt du?" — do NOT skip any line.
 Strip phonetic transcriptions in brackets like [saly] or [twa].
 Preserve terminal punctuation exactly: ?, ! and . matter for meaning.
 If the same source term appears multiple times with different translations, combine into ONE entry (translations separated by " / ").
@@ -62,7 +63,8 @@ Different punctuation (? vs .) means different entries.
 Extract ALL French-German vocabulary pairs from photographed textbook pages.
 Return strict JSON matching the provided schema.
 COMPLETENESS is critical: extract EVERY pair from EVERY section on the page. Pages often have multiple sections — process ALL of them.
-Include even very short entries like single words (et, toi, ah, bof, oui, non).
+Include even very short entries like single words (et, toi, ah, bof, oui, non). Do NOT skip any entry.
+Also include questions like "Tu t'appelles comment?" = "Wie heißt du?" — every visible pair must be extracted.
 Ignore decorative images, page numbers, and example-dialog columns in the third column.
 If a vocabulary table has examples in a third column, pair only the French source (column 1) with the German translation (column 2).
 Copy visible source and target text faithfully. Strip phonetic transcriptions in brackets like [saly] or [twa].
