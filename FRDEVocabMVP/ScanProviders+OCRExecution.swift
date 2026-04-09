@@ -55,9 +55,35 @@ extension OCRScanProvider {
                     )
                 }
                 logTiming("ocr_primary", start: primaryStart)
-                primaryStart = CFAbsoluteTimeGetCurrent()
-                let acceptedPrimary = consider(primaryPass, lineBoxes: primaryBoxes)
-                logTiming("ocr_primary_analyze", start: primaryStart)
+
+                // Skip expensive pair analysis if we have enough boxes (AI will handle it)
+                let acceptedPrimary: Bool
+                if primaryBoxes.count >= 15 {
+                    // Enough content — skip column pairing, let AI do the heavy lifting
+                    let lightResult = ScanProviderResult(
+                        documentType: .vocabularyList,
+                        path: .ocrOnly,
+                        mode: request.preferredMode ?? .list,
+                        sourceLanguage: request.sourceLanguage,
+                        entries: [],
+                        blocks: [],
+                        warnings: [],
+                        summary: "",
+                        importMessage: "",
+                        confidence: 0.5,
+                        usedColumnPairing: false,
+                        recognizedLineCount: primaryBoxes.count,
+                        recognizedBoxes: primaryBoxes
+                    )
+                    bestResult = lightResult
+                    bestScore = Double(primaryBoxes.count)
+                    acceptedPrimary = true
+                    print("⏱ [Scan] ocr_primary_analyze: skipped (fast path, \(primaryBoxes.count) boxes)")
+                } else {
+                    primaryStart = CFAbsoluteTimeGetCurrent()
+                    acceptedPrimary = consider(primaryPass, lineBoxes: primaryBoxes)
+                    logTiming("ocr_primary_analyze", start: primaryStart)
+                }
                 let primaryResult = bestResult
                 let primaryScore = bestScore
 
