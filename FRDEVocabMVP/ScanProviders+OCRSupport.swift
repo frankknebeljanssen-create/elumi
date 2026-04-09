@@ -127,9 +127,7 @@ extension OCRScanProvider {
     }
 
     func logTiming(_ label: String, start: CFAbsoluteTime) {
-        #if DEBUG
         let elapsedMS = Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded())
-        NSLog("[ScanTiming] %@: %dms", label, elapsedMS)
-        #endif
+        print("⏱ [Scan] \(label): \(elapsedMS)ms")
     }
 }

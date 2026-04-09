@@ -31,7 +31,8 @@ struct AIScanProvider: ScanProvider {
                     let response = try await textOnlyClient.analyzeTextOnly(textOnlyPayload)
                     logTiming("ai_text_only", start: start)
                     let result = mapResponse(response, context: context)
-                    if result.entries.filter({ $0.reviewMetadata.isImportable }).count >= max(2, ocrBoxCount / 3) {
+                    let importableCount = result.entries.filter({ $0.reviewMetadata.isImportable }).count
+                    if importableCount >= 5 || importableCount >= max(2, ocrBoxCount / 5) {
                         print("📡 [Scan] ✅ text-only sufficient: \(result.entries.count) entries")
                         return result
                     }

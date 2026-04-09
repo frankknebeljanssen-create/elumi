@@ -67,11 +67,13 @@ extension OCRScanProvider {
                 )
 
                 if shouldRunFallback {
+                    let prepStart = CFAbsoluteTimeGetCurrent()
                     let fallbackBase = primaryImage
                     let fallbackImage =
                         prepareFallbackImage(fallbackBase, maxFallbackLongEdge) ??
                         downscaleImageForOCR(fallbackBase, maxFallbackLongEdge) ??
                         fallbackBase
+                    logTiming("ocr_fallback_prep", start: prepStart)
                     let fallbackPass = OCRPassSpec(
                         id: "fallback-enhanced-fast",
                         image: fallbackImage,
