@@ -726,7 +726,7 @@ fumer	rauchen	words	A1	verb		Allgemein	fumer	73.55
 réunir	versammeln	words	A1	verb		Allgemein	réunir	73.50
 le salon	das Wohnzimmer	words	A1	noun	m	Allgemein	salon	73.39
 remplacer	ersetzen	words	A1	verb		Allgemein	remplacer	73.37
-dîner	zu Abend essen	words	A1	verb		Allgemein	dîner	73.28
+dîner	zu abend essen	words	A1	verb		Allgemein	dîner	73.28
 la différence	der Unterschied	words	A1	noun	f	Allgemein	différence	73.13
 le bateau	das Boot	words	A1	noun	m	Allgemein	bateau	73.10
 le pont	die Brücke	words	A1	noun	m	Allgemein	pont	72.94
@@ -857,7 +857,7 @@ la grand-mère	die Großmutter	words	A1	noun	f	Allgemein	grand-mère	50.97
 l'ombre	der Schatten	words	A1	noun	f	Allgemein	ombre	50.93
 jaune	gelb	words	A1	adjective		Allgemein	jaune	50.83
 rouler	rollen	words	A1	verb		Allgemein	rouler	50.71
-FAUX	falsch	words	A1	adjective		Allgemein	FAUX	50.56
+faux	falsch	words	A1	adjective		Allgemein	FAUX	50.56
 regretter	bedauern	words	A1	verb		Allgemein	regretter	50.50
 le dessin	die Zeichnung	words	A1	noun	m	Allgemein	dessin	50.47
 sinon	sonst	words	A1	conjunction		Allgemein	sinon	50.33
@@ -935,7 +935,7 @@ courageux	mutig	words	A1	adjective		Allgemein	courageux	37.62
 la jeunesse	die Jugend	words	A1	noun	f	Allgemein	jeunesse	37.26
 l'arme	die Waffe	words	A1	noun	f	Allgemein	arme	37.18
 le métro	die U-Bahn	words	A1	noun	m	Allgemein	métro	37.04
-heureusement	zum Glück	words	A1	adverb		Allgemein	heureusement	36.72
+heureusement	zum glück	words	A1	adverb		Allgemein	heureusement	36.72
 la collection	die Sammlung	words	A1	noun	f	Allgemein	collection	36.69
 informer	informieren	words	A1	verb		Allgemein	informer	36.24
 le document	das Dokument	words	A1	noun	m	Allgemein	document	36.17
@@ -969,7 +969,7 @@ l'étoile	der Stern	words	A1	noun	f	Allgemein	étoile	32.79
 la boule	die Kugel	words	A1	noun	f	Allgemein	boule	32.67
 idéal	ideal	words	A1	adjective		Allgemein	idéal	32.62
 l'usine	die Fabrik	words	A1	noun	f	Allgemein	usine	32.55
-allô	Hallo	words	A1	interjection		Allgemein	allô	32.00
+allô	hallo	words	A1	interjection		Allgemein	allô	32.00
 l'assurance	die Versicherung	words	A1	noun	f	Allgemein	assurance	31.97
 échanger	tauschen	words	A1	verb		Allgemein	échanger	31.96
 l'œuf	das Ei	words	A1	noun	m	Allgemein	oeuf	31.76
@@ -1099,7 +1099,7 @@ le pull	der Pullover	words	A1	noun	m	Allgemein	pull	14.67
 le plateau	das Tablett	words	A1	noun	m	Allgemein	plateau	14.67
 le jus	der Saft	words	A1	noun	m	Allgemein	jus	14.49
 le cimetière	der Friedhof	words	A1	noun	m	Allgemein	cimetière	14.45
-bravo	Bravo	words	A1	interjection		Allgemein	bravo	14.40
+bravo	bravo	words	A1	interjection		Allgemein	bravo	14.40
 la confiture	die Marmelade	words	A1	noun	f	Allgemein	confiture	14.33
 la bicyclette	das Fahrrad	words	A1	noun	f	Allgemein	bicyclette	14.26
 délicieux	köstlich	words	A1	adjective		Allgemein	délicieux	13.89
@@ -1526,7 +1526,7 @@ mélanger	mischen	words	A2	verb		Allgemein	mélanger	16.45
 la libération	die Befreiung	words	A2	noun	f	Allgemein	libération	16.24
 russe	russisch	words	A2	adjective		Allgemein	russe	16.21
 la baguette	das Baguette	words	A2	noun	f	Allgemein	baguette	16.20
-le poète	der Dichter	words	A2	adjective	m	Allgemein	poète	16.15
+le poète	der dichter	words	A2	adjective	m	Allgemein	poète	16.15
 le gardien	der Wächter	words	A2	noun	m	Allgemein	gardien	16.13
 le bouquet	der Blumenstrauß	words	A2	noun	m	Allgemein	bouquet	16.13
 perdu	verloren	words	A2	adjective		Allgemein	perdu	15.94
@@ -2223,7 +2223,7 @@ aborder	ansprechen	words	B1	verb		Allgemein	aborder	26.18
 réagir	reagieren	words	B1	verb		Allgemein	réagir	26.06
 médical	medizinisch	words	B1	adjective		Allgemein	médical	26.03
 la poitrine	die Brust	words	B1	noun	f	Allgemein	poitrine	25.99
-contrairement	im Gegensatz	words	B1	adverb		Allgemein	contrairement	25.94
+contrairement	im gegensatz	words	B1	adverb		Allgemein	contrairement	25.94
 figurer	figuriert	words	B1	verb		Allgemein	figurer	25.94
 brillant	brillant	words	B1	adjective		Allgemein	brillant	25.93
 examiner	untersuchen	words	B1	verb		Allgemein	examiner	25.89
@@ -2758,7 +2758,7 @@ taper	tippen	words	B1	verb		Allgemein	taper	9.61
 tragique	tragisch	words	B1	adjective		Allgemein	tragique	9.61
 l'obscurité	die Dunkelheit	words	B1	noun	f	Allgemein	obscurité	9.60
 le mérite	der Verdienst	words	B1	noun	m	Allgemein	mérite	9.60
-routier	Straßen-	words	B1	adjective		Allgemein	routier	9.57
+routier	straßen-	words	B1	adjective		Allgemein	routier	9.57
 la barque	das Boot	words	B1	noun	f	Allgemein	barque	9.56
 le brevet	das Patent	words	B1	noun	m	Allgemein	brevet	9.55
 la clientèle	die Kundschaft	words	B1	noun	f	Allgemein	clientèle	9.54
@@ -3126,7 +3126,7 @@ différemment	anders	words	B1	adverb		Allgemein	différemment	4.29
 pêcher	fischen	words	B1	verb		Allgemein	pêcher	4.27
 l'aiguille	die Nadel	words	B1	noun	f	Allgemein	aiguille	4.26
 la permission	die Erlaubnis	words	B1	noun	f	Allgemein	permission	4.26
-vôtre	Ihr	words	B1	pronoun		Allgemein	vôtre	4.25
+vôtre	ihr	words	B1	pronoun		Allgemein	vôtre	4.25
 la science-fiction	die Science-Fiction	words	B1	noun	f	Allgemein	science-fiction	4.24
 soigneusement	sorgfältig	words	B1	adverb		Allgemein	soigneusement	4.23
 décerné	verleihen	words	B1	verb		Allgemein	décerner	4.19
@@ -3489,7 +3489,7 @@ l'unité	die Einheit	words	B2	noun	f	Allgemein	unité	24.88
 extrême	extrem	words	B2	adjective		Allgemein	extrême	24.78
 le parti	die Partei	words	B2	noun	m	Allgemein	parti	24.62
 le défaut	der Fehler	words	B2	noun	m	Allgemein	défaut	24.33
-envisager	in Betracht ziehen	words	B2	verb		Allgemein	envisager	24.32
+envisager	in betracht ziehen	words	B2	verb		Allgemein	envisager	24.32
 climatique	klimatisch	words	B2	adjective		Allgemein	climatique	23.99
 l'analyse	die Analyse	words	B2	noun	f	Allgemein	analyse	23.70
 la chute	der Fall	words	B2	noun	f	Allgemein	chute	23.27
@@ -3665,7 +3665,7 @@ l'humanité	die Menschheit	words	B2	noun	f	Allgemein	humanité	12.96
 l'horizon	der Horizont	words	B2	noun	m	Allgemein	horizon	12.91
 l'issue	der Ausgang	words	B2	noun	f	Allgemein	issue	12.90
 la volaille	das Geflügel	words	B2	noun	f	Allgemein	volaille	12.87
-aérien	Luft-	words	B2	adjective		Allgemein	aérien	12.85
+aérien	luft-	words	B2	adjective		Allgemein	aérien	12.85
 la tension	die Spannung	words	B2	noun	f	Allgemein	tension	12.77
 lâcher	loslassen	words	B2	verb		Allgemein	lâcher	12.77
 l'amende	die Geldstrafe	words	B2	noun	f	Allgemein	amende	12.68
@@ -6149,7 +6149,7 @@ exceptionnellement	außergewöhnlich	words	B2	adverb		Allgemein	exceptionnelleme
 le môme	das Kind	words	B2	noun	m	Familie & Freunde	môme	1.37
 nager	schwimmen	words	B2	verb		Sport	nager	1.37
 le reptile	das Reptil	words	B2	noun	m	Tiere & Natur	reptile	1.37
-entre-temps	in der Zwischenzeit	words	B2	adverb		Allgemein	entre-temps	1.36
+entre-temps	in der zwischenzeit	words	B2	adverb		Allgemein	entre-temps	1.36
 désespéré	verzweifelt	words	B2	adjective		Gefühle & Charakter	désespéré	1.36
 inhabituel	ungewöhnlich	words	B2	adjective		Allgemein	inhabituel	1.36
 la cassette	die Kassette	words	B2	noun	f	Allgemein	cassette	1.36
@@ -6240,7 +6240,7 @@ rigoler	lachen	words	B2	verb		Freizeit & Hobbys	rigoler	1.29
 alpin	alpin	words	B2	adjective		Sport	alpin	1.29
 déterminé	entschlossen	words	B2	adjective		Allgemein	déterminé	1.28
 malhonnête	unehrlich	words	B2	adjective		Allgemein	malhonnête	1.28
-l'infidèle	der Untreue	words	B2	adjective	m	Allgemein	infidèle	1.28
+l'infidèle	der untreue	words	B2	adjective	m	Allgemein	infidèle	1.28
 la fraternité	die Brüderlichkeit	words	B2	noun	f	Allgemein	fraternité	1.28
 le recruteur	der Recruiter	words	B2	noun	m	Arbeit & Beruf	recruteur	1.28
 le compatriote	der Landsmann	words	B2	noun	m	Allgemein	compatriote	1.28
@@ -6618,7 +6618,7 @@ la galette	der Pfannkuchen	words	B2	noun	f	Essen & Trinken	galette	0.92
 le palace	der Palast	words	B2	noun	m	Allgemein	palace	0.92
 nantais	nantes	words	B2	adjective		Allgemein	nantais	0.92
 ultra	extrem	words	B2	adjective		Allgemein	ultra	0.92
-accaparer	in Anspruch nehmen	words	B2	verb		Allgemein	accaparer	0.91
+accaparer	in anspruch nehmen	words	B2	verb		Allgemein	accaparer	0.91
 le fair-play	der Fairplay	words	B2	noun	m	Sport	fair-play	0.91
 la main-d'oeuvre	die Arbeitskraft	words	B2	noun	f	Arbeit & Beruf	main-d'oeuvre	0.91
 la sonorité	der Klang	words	B2	noun	f	Allgemein	sonorité	0.91
@@ -7280,7 +7280,7 @@ unifier	vereinigen	words	B2	verb		Allgemein	unifier	0.69
 la verrière	das Glasdach	words	B2	noun	f	Allgemein	verrière	0.69
 habillé	bekleidet	words	B2	adjective		Allgemein	habillé	0.69
 l'assèchement	die Austrocknung	words	B2	noun	m	Allgemein	assèchement	0.69
-boursier	Stipendiat	words	B2	adjective		Allgemein	boursier	0.69
+boursier	stipendiat	words	B2	adjective		Allgemein	boursier	0.69
 le marais	der Sumpf	words	B2	noun	m	Tiere & Natur	marais	0.69
 la nébuleuse	die Nebel	words	B2	noun	f	Allgemein	nébuleuse	0.69
 le podium	das Podium	words	B2	noun	n	Allgemein	podium	0.69
@@ -7849,7 +7849,7 @@ la physiologie	die Physiologie	words	B2	noun	f	Körper & Gesundheit	physiologie	
 égrener	abtrennen	words	B2	verb		Essen & Trinken	égrener	0.63
 l'électrode	die Elektrode	words	B2	noun	f	Medien & Technik	électrode	0.63
 l'alternance	die Abwechslung	words	B2	noun	f	Allgemein	alternance	0.62
-le dia	der Dia	words	B2	interjection	m	Medien & Technik	dia	0.62
+le dia	der dia	words	B2	interjection	m	Medien & Technik	dia	0.62
 l'arrachement	die Abtrennung	words	B2	noun	m	Allgemein	arrachement	0.62
 le cadet	der Jüngere	words	B2	noun	m	Familie & Freunde	cadet	0.62
 dingue	verrückt	words	B2	adjective		Gefühle & Charakter	dingue	0.62
@@ -8010,7 +8010,7 @@ la banderole	das Banner	words	B2	noun	f	Allgemein	banderole	0.58
 la béquille	die Krücke	words	B2	noun	f	Körper & Gesundheit	béquille	0.58
 le diktat	das Diktat	words	B2	noun	m	Schule & Bildung	diktat	0.58
 dupe	naiv	words	B2	adjective		Allgemein	dupe	0.58
-favorite	Lieblings-	words	B2	adjective		Allgemein	favorite	0.58
+favorite	lieblings-	words	B2	adjective		Allgemein	favorite	0.58
 l'intensification	die Intensivierung	words	B2	noun	f	Allgemein	intensification	0.58
 l'interaction	die Interaktion	words	B2	noun	f	Allgemein	interaction	0.58
 narcissique	narcistisch	words	B2	adjective		Allgemein	narcissique	0.58
@@ -8076,7 +8076,7 @@ la saute	der Sprung	words	B2	noun	f	Allgemein	saute	0.56
 le microscope	das Mikroskop	words	B2	noun	m	Allgemein	microscope	0.56
 reconnaissable	wiedererkennbar	words	B2	adjective	m	Allgemein	reconnaissable	0.56
 le coquillage	die Muschel	words	B2	noun	m	Tiere & Natur	coquillage	0.55
-le mage	der Magier	words	B2	adjective	m	Allgemein	mage	0.55
+le mage	der magier	words	B2	adjective	m	Allgemein	mage	0.55
 la lamentation	die Klage	words	B2	noun	f	Allgemein	lamentation	0.55
 le fourneau	der Ofen	words	B2	noun	m	Essen & Trinken	fourneau	0.55
 merder	verdammen	words	B2	verb		Allgemein	merder	0.55
@@ -8152,7 +8152,7 @@ l'embrassade	die Umarmung	words	B2	noun	f	Familie & Freunde	embrassade	0.50
 le wolof	der Wolof	words	B2	noun	m	Allgemein	wolof	0.50
 la piastre	die Piastre	words	B2	noun	f	Einkaufen & Geld	piastre	0.50
 argenté	silbern	words	B2	adjective		Allgemein	argenté	0.50
-terminal	Terminal	words	B2	adjective		Allgemein	terminal	0.50
+terminal	terminal	words	B2	adjective		Allgemein	terminal	0.50
 décollé	abgehoben	words	B2	adjective		Allgemein	décollé	0.50
 communier	kommunizieren	words	B2	verb		Allgemein	communier	0.50
 immergé	eingetaucht	words	B2	adjective		Allgemein	immergé	0.50
@@ -8373,9 +8373,9 @@ la parabole	die Parabel	words	C1	noun	f	Allgemein	parabole	0.29
 la perfusion	die Infusion	words	C1	noun	f	Körper & Gesundheit	perfusion	0.29
 la perpétuité	die Ewigkeit	words	C1	noun	f	Allgemein	perpétuité	0.29
 le pistachier	der Pistazienbaum	words	C1	noun	m	Tiere & Natur	pistachier	0.29
-a posteriori	im Nachhinein	words	C1	adverb		Allgemein	posteriori	0.29
+a posteriori	im nachhinein	words	C1	adverb		Allgemein	posteriori	0.29
 le pétale	der Blütenblatt	words	C1	noun	m	Tiere & Natur	pétale	0.29
-le quid	das Ding	words	C1	pronoun	n	Allgemein	quid	0.29
+le quid	das ding	words	C1	pronoun	n	Allgemein	quid	0.29
 le ras-le-bol	die Schnauze voll	words	C1	noun	m	Allgemein	ras-le-bol	0.29
 rétribuer	vergüten	words	C1	verb		Arbeit & Beruf	rétribuer	0.29
 le scanner	der Scanner	words	C1	noun	m	Medien & Technik	scanner	0.29
@@ -8744,7 +8744,7 @@ imprescriptible	unverjährbar	words	C1	adjective		Allgemein	imprescriptible	0.14
 imprévisible	unvorhersehbar	words	C1	adjective		Allgemein	imprévisible	0.14
 inassouvi	unerfüllt	words	C1	adjective		Allgemein	inassouvi	0.14
 incendiaire	brandstiftend	words	C1	adjective		Allgemein	incendiaire	0.14
-l'incitatif	der Anreiz	words	C1	adjective	m	Allgemein	incitatif	0.14
+l'incitatif	der anreiz	words	C1	adjective	m	Allgemein	incitatif	0.14
 incliné	geneigt	words	C1	adjective		Allgemein	incliné	0.14
 incontrôlable	unkontrollierbar	words	C1	adjective		Allgemein	incontrôlable	0.14
 l'individuation	die Individuation	words	C1	noun	f	Allgemein	individuation	0.14
@@ -8785,7 +8785,7 @@ lisible	lesbar	words	C1	adjective		Allgemein	lisible	0.14
 littératurer	literaturisieren	words	C1	verb		Allgemein	littératurer	0.14
 la localisation	die Lokalisierung	words	C1	noun	f	Allgemein	localisation	0.14
 locomotif	lokomotiv	words	C1	adjective		Allgemein	locomotif	0.14
-long-courrier	Langstrecken-	words	C1	adjective		Reisen & Urlaub	long-courrier	0.14
+long-courrier	langstrecken-	words	C1	adjective		Reisen & Urlaub	long-courrier	0.14
 la lotion	die Lotion	words	C1	noun	f	Körper & Gesundheit	lotion	0.14
 le lubrifiant	das Schmiermittel	words	C1	noun	m	Körper & Gesundheit	lubrifiant	0.14
 le lycra	das Lycra	words	C1	noun	m	Kleidung & Mode	lycra	0.14
@@ -9017,7 +9017,7 @@ l'élasticité	die Elastizität	words	C1	noun	f	Allgemein	élasticité	0.14
 l'épicentre	das Epizentrum	words	C1	noun	m	Allgemein	épicentre	0.14
 épidémique	epidemisch	words	C1	adjective		Allgemein	épidémique	0.14
 épinière	wirbelartig	words	C1	adjective		Allgemein	épinière	0.14
-époxy	Epoxid	words	C1	adjective		Allgemein	époxy	0.14
+époxy	epoxid	words	C1	adjective		Allgemein	époxy	0.14
 l'érotisme	der Erotismus	words	C1	noun	m	Allgemein	érotisme	0.14
 l'éthanol	der Ethanol	words	C1	noun	m	Allgemein	éthanol	0.14
 étourdissant	betörend	words	C1	adjective		Allgemein	étourdissant	0.14
@@ -9147,7 +9147,7 @@ le rouget	der Rotbarben	words	C1	noun	m	Essen & Trinken	rouget	0.10
 la royauté	die Monarchie	words	C1	noun	f	Allgemein	royauté	0.10
 rétamer	retamieren	words	C1	verb		Allgemein	rétamer	0.10
 la scie	die Säge	words	C1	noun	f	Allgemein	scie	0.10
-texto	SMS	words	C1	adverb		Kommunikation	texto	0.10
+texto	sms	words	C1	adverb		Kommunikation	texto	0.10
 la tringle	die Gardinenstange	words	C1	noun	f	Wohnen & Haus	tringle	0.10
 désabusé	desillusioniert	words	C1	adjective		Gefühle & Charakter	désabusé	0.10
 le sous-préfet	der Unterpräfekt	words	C1	noun	m	Allgemein	sous-préfet	0.10
@@ -9280,7 +9280,7 @@ l'idiosyncrasie	die Idiosynkrasie	words	C1	noun	f	Allgemein	idiosyncrasie	0.10
 l'idylle	die Idylle	words	C1	noun	f	Allgemein	idylle	0.10
 illico	sofort	words	C1	adverb		Allgemein	illico	0.10
 imaginable	vorstellbar	words	C1	adjective		Allgemein	imaginable	0.10
-immigrant	Einwanderer	words	C1	adjective	m	Allgemein	immigrant	0.10
+immigrant	einwanderer	words	C1	adjective	m	Allgemein	immigrant	0.10
 inabordable	unerschwinglich	words	C1	adjective		Allgemein	inabordable	0.10
 inapte	ungeeignet	words	C1	adjective		Allgemein	inapte	0.10
 incongru	unpassend	words	C1	adjective		Allgemein	incongru	0.10
@@ -9393,7 +9393,7 @@ le sexologue	der Sexualwissenschaftler	words	C1	noun	m	Körper & Gesundheit	sexo
 signaliser	signalisieren	words	C1	verb		Allgemein	signaliser	0.10
 la sinécure	die Sinécure	words	C1	noun	f	Allgemein	sinécure	0.10
 le soubresaut	der Sprung	words	C1	noun	m	Allgemein	soubresaut	0.10
-sourciller	die Augenbraue heben	words	C1	verb		Allgemein	sourciller	0.10
+sourciller	die augenbraue heben	words	C1	verb		Allgemein	sourciller	0.10
 la sous-représentation	die Unterrepräsentation	words	C1	noun	f	Allgemein	sous-représentation	0.10
 la sous-utilisation	die Unterauslastung	words	C1	noun	f	Allgemein	sous-utilisation	0.10
 le spécimen	das Exemplar	words	C1	noun	m	Allgemein	spécimen	0.10
@@ -9563,7 +9563,7 @@ le vidéaste	der Videofilmer	words	C1	noun	m	Medien & Technik	vidéaste	0.07
 le baobab	der Baobab	words	C1	noun	m	Tiere & Natur	baobab	0.07
 le déclic	der Klick	words	C1	noun	m	Allgemein	déclic	0.07
 majoritaire	mehrheitlich	words	C1	adjective		Allgemein	majoritaire	0.07
-pédestre	zu Fuß	words	C1	adjective		Stadt & Verkehr	pédestre	0.07
+pédestre	zu fuß	words	C1	adjective		Stadt & Verkehr	pédestre	0.07
 électriser	elektrisieren	words	C1	verb		Allgemein	électriser	0.07
 la farandole	die Farandole	words	C1	noun	f	Freizeit & Hobbys	farandole	0.07
 abyssal	abgründig	words	C1	adjective		Allgemein	abyssal	0.07
@@ -9729,7 +9729,7 @@ indu	induzierend	words	C1	adjective		Allgemein	indu	0.07
 l'inexécution	die Nichterfüllung	words	C1	noun	f	Allgemein	inexécution	0.07
 infructueux	erfolglos	words	C1	adjective		Allgemein	infructueux	0.07
 inhospitalier	unfreundlich	words	C1	adjective		Allgemein	inhospitalier	0.07
-inox	Edelstahl	words	C1	adjective		Allgemein	inox	0.07
+inox	edelstahl	words	C1	adjective		Allgemein	inox	0.07
 l'insomniaque	der Schlaflose	words	C1	noun	m	Körper & Gesundheit	insomniaque	0.07
 instrumentaliser	instrumentalisieren	words	C1	verb		Allgemein	instrumentaliser	0.07
 l'intempérie	die Unwetter	words	C1	noun	f	Wetter & Jahreszeiten	intempérie	0.07
@@ -9868,7 +9868,7 @@ spatio-temporel	raum-zeitlich	words	C1	adjective		Allgemein	spatio-temporel	0.07
 le spectromètre	das Spektrometer	words	C1	noun	m	Allgemein	spectromètre	0.07
 le standardiste	der Telefonist	words	C1	noun	m	Arbeit & Beruf	standardiste	0.07
 la stupidité	die Dummheit	words	C1	noun	f	Allgemein	stupidité	0.07
-subjonctif	Konjunktiv	words	C1	adjective		Grammatik & Struktur	subjonctif	0.07
+subjonctif	konjunktiv	words	C1	adjective		Grammatik & Struktur	subjonctif	0.07
 la surenchère	die Überbietung	words	C1	noun	f	Allgemein	surenchère	0.07
 sénégalais	senegalesisch	words	C1	adjective		Allgemein	sénégalais	0.07
 tabler	tischten	words	C1	verb		Allgemein	tabler	0.07
@@ -10220,7 +10220,7 @@ underground	unterirdisch	words	C1	adjective		Allgemein	underground	0.07
 le vernis	der Lack	words	C1	noun	m	Allgemein	vernis	0.07
 le vocable	das Wort	words	C1	noun	m	Allgemein	vocable	0.07
 la voilette	das Schleierchen	words	C1	noun	f	Kleidung & Mode	voilette	0.07
-ès	in Bezug auf	words	C1	preposition		Allgemein	ès	0.07
+ès	in bezug auf	words	C1	preposition		Allgemein	ès	0.07
 échauffer	erwärmen	words	C1	verb		Allgemein	échauffer	0.07
 l'éclectisme	der Eklektizismus	words	C1	noun	m	Allgemein	éclectisme	0.07
 l'élévation	die Erhebung	words	C1	noun	f	Allgemein	élévation	0.07
@@ -10276,7 +10276,7 @@ le contre-don	das Gegengeschenk	words	C1	noun	m	Allgemein	contre-don	0.06
 convenu	vereinbart	words	C1	adjective		Allgemein	convenu	0.06
 le copeau	der Span	words	C1	noun	m	Allgemein	copeau	0.06
 couchant	untergehend	words	C1	adjective		Wetter & Jahreszeiten	couchant	0.06
-couche-tôt	früh ins Bett gehen	words	C1	adjective		Allgemein	couche-tôt	0.06
+couche-tôt	früh ins bett gehen	words	C1	adjective		Allgemein	couche-tôt	0.06
 cribler	sieben	words	C1	verb		Allgemein	cribler	0.06
 cuber	würfeln	words	C1	verb		Allgemein	cuber	0.06
 le devin	der Wahrsager	words	C1	noun	m	Allgemein	devin	0.06
@@ -10397,7 +10397,7 @@ narquois	hinterhältig	words	C1	adjective		Gefühle & Charakter	narquois	0.06
 la néologie	die Neologismus	words	C1	noun	f	Allgemein	néologie	0.06
 obstiner	bestehen	words	C1	verb		Allgemein	obstiner	0.06
 l'ocre	die Ocker	words	C1	noun	m	Farben & Formen	ocre	0.06
-ocrer	mit Ocker färben	words	C1	verb		Allgemein	ocrer	0.06
+ocrer	mit ocker färben	words	C1	verb		Allgemein	ocrer	0.06
 l'olympisme	der Olympismus	words	C1	noun	m	Allgemein	olympisme	0.06
 l'ombrage	der Schatten	words	C1	noun	m	Tiere & Natur	ombrage	0.06
 l'omission	die Auslassung	words	C1	noun	f	Allgemein	omission	0.06
@@ -10422,7 +10422,7 @@ le porcelet	das Ferkel	words	C1	noun	m	Tiere & Natur	porcelet	0.06
 la porosité	die Porosität	words	C1	noun	f	Allgemein	porosité	0.06
 le portant	der Träger	words	C1	noun	m	Allgemein	portant	0.06
 le portefaix	der Lastenträger	words	C1	noun	m	Arbeit & Beruf	portefaix	0.06
-pouponner	sich um ein Baby kümmern	words	C1	verb		Familie & Freunde	pouponner	0.06
+pouponner	sich um ein baby kümmern	words	C1	verb		Familie & Freunde	pouponner	0.06
 la poussette	der Kinderwagen	words	C1	noun	f	Familie & Freunde	poussette	0.06
 profaner	entweihen	words	C1	verb		Allgemein	profaner	0.06
 professoral	professoral	words	C1	adjective		Allgemein	professoral	0.06
@@ -10664,7 +10664,7 @@ la solennité	die Feierlichkeit	words	C1	noun	f	Allgemein	solennité	0.06
 le sommelier	der Sommelier	words	C1	noun	m	Essen & Trinken	sommelier	0.06
 songeur	nachdenklich	words	C1	adjective		Gefühle & Charakter	songeur	0.06
 soupçonneux	misstrauisch	words	C1	adjective		Gefühle & Charakter	soupçonneux	0.06
-sous-marinier	U-Boot-	words	C1	adjective		Allgemein	sous-marinier	0.06
+sous-marinier	u-boot-	words	C1	adjective		Allgemein	sous-marinier	0.06
 soûlard	Säufer	words	C1	noun	m	Allgemein	soûlard	0.06
 la spiritualité	die Spiritualität	words	C1	noun	f	Allgemein	spiritualité	0.06
 spécifier	spezifizieren	words	C1	verb		Allgemein	spécifier	0.06
@@ -10754,7 +10754,7 @@ le poseur	der Poser	words	C1	noun	m	Allgemein	poseur	0.06
 la pouliche	das Fohlen	words	C1	noun	f	Tiere & Natur	pouliche	0.06
 le pénitent	der Büßer	words	C1	noun	m	Allgemein	pénitent	0.06
 le rami	das Rami	words	C1	noun	m	Freizeit & Hobbys	rami	0.06
-recoucher	wieder ins Bett gehen	words	C1	verb		Körper & Gesundheit	recoucher	0.06
+recoucher	wieder ins bett gehen	words	C1	verb		Körper & Gesundheit	recoucher	0.06
 la renverse	die Umkehr	words	C1	noun	f	Allgemein	renverse	0.06
 la repousse	das Nachwachsen	words	C1	noun	f	Allgemein	repousse	0.06
 la rémission	die Remission	words	C1	noun	f	Körper & Gesundheit	rémission	0.06
@@ -10835,7 +10835,7 @@ désemplir	leeren	words	C1	verb		Allgemein	désemplir	0.05
 le déserteur	der Deserteur	words	C1	noun	m	Allgemein	déserteur	0.05
 la désertification	die Wüstenbildung	words	C1	noun	f	Allgemein	désertification	0.05
 le désoeuvrement	die Untätigkeit	words	C1	noun	m	Allgemein	désoeuvrement	0.05
-déséquilibrer	aus dem Gleichgewicht bringen	words	C1	verb		Allgemein	déséquilibrer	0.05
+déséquilibrer	aus dem gleichgewicht bringen	words	C1	verb		Allgemein	déséquilibrer	0.05
 empiler	stapeln	words	C1	verb		Allgemein	empiler	0.05
 endiguer	dämmen	words	C1	verb		Allgemein	endiguer	0.05
 envi	neidisch	words	C1	adverb		Gefühle & Charakter	envi	0.05
@@ -10881,7 +10881,7 @@ momifier	mumifizieren	words	C1	verb		Allgemein	momifier	0.05
 la mongolie	die Mongolei	words	C1	noun	f	Reisen & Urlaub	mongolie	0.05
 multilatéral	multilateral	words	C1	adjective		Allgemein	multilatéral	0.05
 mutuellement	gegenseitig	words	C1	adverb		Allgemein	mutuellement	0.05
-mélomane	Musikliebhaber	words	C1	adjective	m	Freizeit & Hobbys	mélomane	0.05
+mélomane	musikliebhaber	words	C1	adjective	m	Freizeit & Hobbys	mélomane	0.05
 na	na	words	C1	interjection		Allgemein	na	0.05
 naturaliser	naturalizieren	words	C1	verb		Allgemein	naturaliser	0.05
 neigeux	schneereich	words	C1	adjective		Wetter & Jahreszeiten	neigeux	0.05
@@ -10910,7 +10910,7 @@ le pneumologue	der Pneumologe	words	C1	noun	m	Körper & Gesundheit	pneumologue	0
 pocher	pochieren	words	C1	verb		Essen & Trinken	pocher	0.05
 pomponner	aufpeppen	words	C1	verb		Allgemein	pomponner	0.05
 pur-sang	Vollblut	words	C1	noun		Tiere & Natur	pur-sang	0.05
-rabat-joie	Spielverderber	words	C1	adjective	m	Allgemein	rabat-joie	0.05
+rabat-joie	spielverderber	words	C1	adjective	m	Allgemein	rabat-joie	0.05
 rager	wüten	words	C1	verb		Gefühle & Charakter	rager	0.05
 la raideur	die Steifheit	words	C1	noun	f	Körper & Gesundheit	raideur	0.05
 le rameur	der Ruderer	words	C1	noun	m	Sport	rameur	0.05
@@ -10962,7 +10962,7 @@ le bat	der Schläger	words	C1	noun	m	Sport	bat	0.05
 le coupeur	der Schneider	words	C1	noun	m	Allgemein	coupeur	0.05
 démocrate	demokratisch	words	C1	adjective		Allgemein	démocrate	0.05
 le déterminisme	der Determinismus	words	C1	noun	m	Allgemein	déterminisme	0.05
-empierrer	mit Steinen belegen	words	C1	verb		Allgemein	empierrer	0.05
+empierrer	mit steinen belegen	words	C1	verb		Allgemein	empierrer	0.05
 fenêtrer	verglasen	words	C1	verb		Allgemein	fenêtrer	0.05
 jaunir	gelb werden	words	C1	verb		Allgemein	jaunir	0.05
 marchant	gehend	words	C1	adjective		Allgemein	marchant	0.05
@@ -10975,7 +10975,7 @@ le roule	der Roll	words	C1	noun	m	Allgemein	roule	0.05
 tendu	gespannt	words	C1	adjective		Allgemein	tendu	0.05
 troisièmement	drittens	words	C1	adverb		Allgemein	troisièmement	0.05
 trouer	löchern	words	C1	verb		Allgemein	trouer	0.05
-voiturier	Fahrzeugführer	words	C1	adjective		Allgemein	voiturier	0.05
+voiturier	fahrzeugführer	words	C1	adjective		Allgemein	voiturier	0.05
 l'affectivité	die Affektivität	words	C1	noun	f	Gefühle & Charakter	affectivité	0.05
 antarctique	antarktisch	words	C1	adjective		Allgemein	antarctique	0.05
 l'anxiété	die Angst	words	C1	noun	f	Körper & Gesundheit	anxiété	0.05
@@ -11115,7 +11115,7 @@ la trombe	der Wasserstrahl	words	C1	noun	f	Allgemein	trombe	0.05
 le tronçon	der Abschnitt	words	C1	noun	m	Allgemein	tronçon	0.05
 le tutoiement	das Duzen	words	C1	noun	m	Kommunikation	tutoiement	0.05
 l'unanimisme	der Unanimismus	words	C1	noun		Allgemein	unanimisme	0.05
-ustensile	das Utensil	words	C1	adjective		Allgemein	ustensile	0.05
+ustensile	das utensil	words	C1	adjective		Allgemein	ustensile	0.05
 l'usurier	der Wucherer	words	C1	noun	m	Allgemein	usurier	0.05
 utopiste	utopisch	words	C1	adjective		Allgemein	utopiste	0.05
 v'là	da ist	words	C1	adverb		Allgemein	v'là	0.05
@@ -11300,7 +11300,7 @@ le marquage	die Markierung	words	C2	noun	m	Allgemein	marquage	0.14
 le masochisme	der Masochismus	words	C2	noun	m	Allgemein	masochisme	0.14
 monopolistique	monopolistisch	words	C2	adjective		Allgemein	monopolistique	0.14
 le museau	die Schnauze	words	C2	noun	m	Tiere & Natur	museau	0.14
-le médiateur	der Mediator	words	C2	adjective	m	Allgemein	médiateur	0.14
+le médiateur	der mediator	words	C2	adjective	m	Allgemein	médiateur	0.14
 la métamorphose	die Metamorphose	words	C2	noun	f	Allgemein	métamorphose	0.14
 narratif	narrativ	words	C2	adjective		Allgemein	narratif	0.14
 nasal	nasal	words	C2	adjective		Körper & Gesundheit	nasal	0.14
@@ -11514,7 +11514,7 @@ l'élitisme	der Elitismus	words	C2	noun	m	Allgemein	élitisme	0.10
 l'érudit	der Gelehrte	words	C2	noun	m	Allgemein	érudit	0.10
 l'éviction	die Ausweisung	words	C2	noun	f	Allgemein	éviction	0.10
 évincer	ausgrenzen	words	C2	verb		Allgemein	évincer	0.10
-aldéhydé	Aldehyd	words	C2	adjective		Allgemein	aldéhydé	0.07
+aldéhydé	aldehyd	words	C2	adjective		Allgemein	aldéhydé	0.07
 annuellement	jährlich	words	C2	adverb		Zeit & Datum	annuellement	0.07
 l'anophèle	die Anophelesmücke	words	C2	noun	f	Tiere & Natur	anophèle	0.07
 assertif	durchsetzungsfähig	words	C2	adjective		Allgemein	assertif	0.07
@@ -11593,12 +11593,12 @@ le rôti	der Braten	words	C2	noun	m	Essen & Trinken	rôti	0.05
 tranquillisant	beruhigend	words	C2	adjective		Körper & Gesundheit	tranquillisant	0.05
 l'entrait	der Querbalken	words	C2	noun	m	Allgemein	entrait	0.05
 le fief	das Lehen	words	C2	noun	m	Allgemein	fief	0.05
-le fleuriste	der Florist	words	C2	adjective	m	Einkaufen & Geld	fleuriste	0.05
-grand-peine	mit großer Mühe	words	C2	adverb		Allgemein	grand-peine	0.05
+le fleuriste	der florist	words	C2	adjective	m	Einkaufen & Geld	fleuriste	0.05
+grand-peine	mit großer mühe	words	C2	adverb		Allgemein	grand-peine	0.05
 joseph	der Joseph	words	C2	noun	m	Allgemein	joseph	0.05
 lavé	gewaschen	words	C2	adjective		Allgemein	lavé	0.05
 liser	lesen	words	C2	verb		Allgemein	liser	0.05
-mi-jambe	halbweg bis zum Knie	words	C2	adverb		Allgemein	mi-jambe	0.05
+mi-jambe	halbweg bis zum knie	words	C2	adverb		Allgemein	mi-jambe	0.05
 peigné	gekämmt	words	C2	adjective		Körper & Gesundheit	peigné	0.05
 recoudre	wieder nähen	words	C2	verb		Allgemein	recoudre	0.05
 replié	gefaltet	words	C2	adjective		Allgemein	replié	0.05
@@ -11675,7 +11675,7 @@ le marécage	der Sumpf	words	C2	noun	m	Tiere & Natur	marécage	0.05
 le massacre	das Massaker	words	C2	noun	m	Allgemein	massacre	0.05
 la masure	die Bruchbude	words	C2	noun	f	Wohnen & Haus	masure	0.05
 la meute	die Meute	words	C2	noun	f	Tiere & Natur	meute	0.05
-monorail	Monorail	words	C2	adjective		Stadt & Verkehr	monorail	0.05
+monorail	monorail	words	C2	adjective		Stadt & Verkehr	monorail	0.05
 le monoski	der Monoski	words	C2	noun	m	Sport	monoski	0.05
 morphologique	morphologisch	words	C2	adjective		Allgemein	morphologique	0.05
 le mouflon	das Mufflon	words	C2	noun	n	Tiere & Natur	mouflon	0.05
@@ -11976,7 +11976,7 @@ annexe	anhängend	words	C2	adjective		Allgemein	annexe	0.04
 antédiluvien	uralt	words	C2	adjective		Allgemein	antédiluvien	0.04
 apaiser	beruhigen	words	C2	verb		Allgemein	apaiser	0.04
 l'aperçu	der Überblick	words	C2	noun	m	Allgemein	aperçu	0.04
-après-vente	nach dem Verkauf	words	C2	adjective		Allgemein	après-vente	0.04
+après-vente	nach dem verkauf	words	C2	adjective		Allgemein	après-vente	0.04
 l'arrosage	die Bewässerung	words	C2	noun	m	Allgemein	arrosage	0.04
 l'assainissement	die Sanierung	words	C2	noun	n	Allgemein	assainissement	0.04
 l'astuce	der Trick	words	C2	noun	f	Allgemein	astuce	0.04
@@ -12193,7 +12193,7 @@ napolitain	neapolitanisch	words	C2	adjective		Allgemein	napolitain	0.04
 la naïveté	die Naivität	words	C2	noun	f	Allgemein	naïveté	0.04
 nonchalamment	lässig	words	C2	adverb		Allgemein	nonchalamment	0.04
 orageux	stürmisch	words	C2	adjective		Wetter & Jahreszeiten	orageux	0.04
-pardieu	bei Gott	words	C2	interjection		Allgemein	pardieu	0.04
+pardieu	bei gott	words	C2	interjection		Allgemein	pardieu	0.04
 pensif	nachdenklich	words	C2	adjective		Gefühle & Charakter	pensif	0.04
 la perdrix	die Rebhuhn	words	C2	noun	f	Tiere & Natur	perdrix	0.04
 la perfidie	die Hinterlist	words	C2	noun	f	Allgemein	perfidie	0.04
@@ -12205,7 +12205,7 @@ le puni	der Bestrafte	words	C2	noun	m	Allgemein	puni	0.04
 rabaisser	herabsetzen	words	C2	verb		Allgemein	rabaisser	0.04
 la rade	die Bucht	words	C2	noun	f	Allgemein	rade	0.04
 rebondissant	springend	words	C2	adjective		Allgemein	rebondissant	0.04
-redresseur	der Richtigmacher	words	C2	adjective	m	Allgemein	redresseur	0.04
+redresseur	der richtigmacher	words	C2	adjective	m	Allgemein	redresseur	0.04
 le revenant	der Rückkehrer	words	C2	noun	m	Allgemein	revenant	0.04
 la régence	die Regentschaft	words	C2	noun	f	Allgemein	régence	0.04
 réprimander	tadeln	words	C2	verb		Allgemein	réprimander	0.04
