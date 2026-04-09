@@ -46,7 +46,11 @@ struct ScanOCRAnalyzer {
             from: dependencies.listModePreviewPairs(boxesForImport, detectedSourceLanguage)
         )
         let structuredLines = structuredOCRLines(from: boxesForImport)
-        let mode = preferredMode ?? autoDetectedScanMode(from: structuredLines, listEntries: listEntries)
+        let mode = preferredMode ?? autoDetectedScanMode(
+            from: structuredLines,
+            listEntries: listEntries,
+            hasColumnPairs: !initialPairedLines.isEmpty
+        )
 
         let analyzedEntries: [ScanReviewEntry]
         switch mode {
@@ -119,7 +123,8 @@ struct ScanOCRAnalyzer {
 
     private func autoDetectedScanMode(
         from lines: [String],
-        listEntries: [ScanReviewEntry]
+        listEntries: [ScanReviewEntry],
+        hasColumnPairs: Bool = false
     ) -> ScanMode {
         guard !lines.isEmpty else { return .list }
 
@@ -138,6 +143,11 @@ struct ScanOCRAnalyzer {
         } / Double(max(lineLengths.count, 1))
         let pairDensity = Double(listEntries.count) / Double(max(lines.count, 1))
 
+        // Column pairs detected via spatial clustering → strong list signal
+        if hasColumnPairs && listEntries.count >= 2 {
+            return .list
+        }
+
         if listEntries.count >= 3 && (pairDensity >= 0.34 || separatorRatio >= 0.14 || shortLineRatio >= 0.55) {
             return .list
         }
@@ -146,7 +156,7 @@ struct ScanOCRAnalyzer {
             return .text
         }
 
-        if separatorRatio >= 0.2 || shortLineRatio >= 0.7 {
+        if separatorRatio >= 0.2 || shortLineRatio >= 0.7 || hasColumnPairs {
             return .list
         }
 
