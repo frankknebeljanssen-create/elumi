@@ -36,7 +36,8 @@ extension LexiconViewModel {
                     germanText = entry.targetTerm
                 }
                 let frenchLookupKey = normalizedLookupText(frenchText)
-                let germanLookupKey = normalizedLookupText(germanText)
+                // Use raw targetTerm for lookup (without added article prefix)
+                let germanLookupKey = normalizedLookupText(entry.targetTerm)
                 let frenchCompactKey = compactLookupKey(frenchText)
                 let germanCompactKey = compactLookupKey(germanText)
                 var result: [AggregationCandidate] = []
