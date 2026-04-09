@@ -17,13 +17,13 @@ struct AIScanProvider: ScanProvider {
         let ocrBoxCount = context?.primaryResult?.recognizedBoxes.count ?? 0
         let isTextOnlyClient = client is OpenAIResponsesScanAIClient
         print("📡 [Scan] text-only check: ocrBoxes=\(ocrBoxCount) isCorrectClient=\(isTextOnlyClient) context=\(context != nil)")
-        if ocrBoxCount >= 4,
+        if ocrBoxCount >= 3,
            let textOnlyClient = client as? OpenAIResponsesScanAIClient {
             let textOnlyPayload = makePayload(
                 from: request,
                 context: context,
                 maxLongEdge: maxUploadLongEdge,
-                compressionQuality: 0.58,
+                compressionQuality: 0.45,
                 compactContext: false
             )
             if let textOnlyPayload {
@@ -31,7 +31,7 @@ struct AIScanProvider: ScanProvider {
                     let response = try await textOnlyClient.analyzeTextOnly(textOnlyPayload)
                     logTiming("ai_text_only", start: start)
                     let result = mapResponse(response, context: context)
-                    if result.entries.filter({ $0.reviewMetadata.isImportable }).count >= max(3, ocrBoxCount / 4) {
+                    if result.entries.filter({ $0.reviewMetadata.isImportable }).count >= max(2, ocrBoxCount / 3) {
                         print("📡 [Scan] ✅ text-only sufficient: \(result.entries.count) entries")
                         return result
                     }
@@ -47,7 +47,7 @@ struct AIScanProvider: ScanProvider {
             from: request,
             context: context,
             maxLongEdge: maxUploadLongEdge,
-            compressionQuality: 0.58,
+            compressionQuality: 0.45,
             compactContext: false
         ) else {
             logDebug("ai_invalid_payload")
@@ -69,7 +69,7 @@ struct AIScanProvider: ScanProvider {
                     from: request,
                     context: context,
                     maxLongEdge: retryUploadLongEdge,
-                    compressionQuality: 0.65,
+                    compressionQuality: 0.50,
                     compactContext: true
                ) {
                 let retryStart = CFAbsoluteTimeGetCurrent()

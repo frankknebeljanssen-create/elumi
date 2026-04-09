@@ -185,6 +185,49 @@ extension QuizBuildService {
         return wrappedQuestion
     }
 
+    // MARK: - Fill-in-the-Blanks (from pre-generated sentences)
+
+    static func nextFillBlanksQuestion(
+        items: [VocabularyItem],
+        usedSignatures: inout Set<String>
+    ) -> QuizQuestion? {
+        let matching = FillBlankSentenceLoader.matchingSentences(for: items)
+        guard !matching.isEmpty else { return nil }
+
+        // Pick a random sentence that hasn't been used
+        for sentence in matching.shuffled() {
+            let blankWord = sentence.blankWord
+            let sentenceWithBlank = sentence.sentenceFr.replacingOccurrences(
+                of: blankWord,
+                with: "_____",
+                options: [.caseInsensitive],
+                range: sentence.sentenceFr.range(of: blankWord, options: .caseInsensitive)
+            )
+
+            // Skip if blank replacement didn't work
+            guard sentenceWithBlank.contains("_____") else { continue }
+
+            var options = [blankWord] + sentence.distractors.prefix(3)
+            options.shuffle()
+
+            let question = QuizFillBlanksQuestion(
+                sentenceWithBlank: sentenceWithBlank,
+                fullSentence: sentence.sentenceFr,
+                translationHint: sentence.sentenceDe,
+                correctAnswer: blankWord,
+                options: options,
+                category: "Lückentext"
+            )
+
+            let wrapped = QuizQuestion.fillBlanks(question)
+            let sig = signature(wrapped)
+            guard usedSignatures.insert(sig).inserted else { continue }
+            return wrapped
+        }
+
+        return nil
+    }
+
     static func makeQuizCandidates(from items: [VocabularyItem], direction: Direction) -> [QuizCandidate] {
         var seen = Set<String>()
         var candidates: [QuizCandidate] = []

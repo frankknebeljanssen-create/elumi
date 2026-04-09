@@ -34,7 +34,7 @@ struct OpenAIResponsesScanAIClient: ScanAIClient {
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.timeoutInterval = mode == "text-only" ? 55 : 70
+        request.timeoutInterval = mode == "text-only" ? 35 : 55
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         let body = try JSONSerialization.data(withJSONObject: requestBody)

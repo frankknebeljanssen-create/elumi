@@ -18,12 +18,13 @@ extension QuizSessionController {
                 )
             }.value
 
-            // Insert Word Combo question if possible
+            // Insert special question types if possible
             if requestedCount >= 5, !generatedQuestions.isEmpty {
                 var comboPromptKeys: [String: Int] = [:]
                 var comboCandidateIDs = Set<String>()
                 var comboSignatures = Set(generatedQuestions.map(QuizBuildService.signature))
 
+                // Word Combo at position ~5
                 if let combo = QuizBuildService.nextWordComboQuestion(
                     from: candidates,
                     items: items,
@@ -34,7 +35,15 @@ extension QuizSessionController {
                 ) {
                     let idx = min(4, generatedQuestions.count)
                     generatedQuestions.insert(combo, at: idx)
-                    print("🧩 [WordCombo] ✅ inserted at index \(idx) in prepared questions")
+                }
+
+                // Fill-in-Blank at position ~3
+                if let fillBlank = QuizBuildService.nextFillBlanksQuestion(
+                    items: items,
+                    usedSignatures: &comboSignatures
+                ) {
+                    let idx = min(2, generatedQuestions.count)
+                    generatedQuestions.insert(fillBlank, at: idx)
                 }
             }
 

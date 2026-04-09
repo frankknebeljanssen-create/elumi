@@ -239,6 +239,99 @@ extension QuizView {
         }
     }
 
+    // MARK: - Fill-in-the-Blanks Card
+
+    func fillBlanksCard(_ question: QuizFillBlanksQuestion) -> some View {
+        AppSurfaceCard(tint: sectionStyle.accent) {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                Text("Ergänze das fehlende Wort")
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+
+                // Sentence with blank
+                fillBlanksSentenceView(question)
+
+                // Translation hint
+                Text(question.translationHint)
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+
+                // Options 2×2
+                let columns = [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)]
+                LazyVGrid(columns: columns, spacing: 10) {
+                    ForEach(question.options, id: \.self) { option in
+                        Button {
+                            guard !fillBlanksLocked, !fillBlanksWrongOptions.contains(option) else { return }
+                            fillBlanksSelected = option
+                            submitFillBlanks(for: question)
+                        } label: {
+                            Text(option)
+                                .font(.system(size: 17, weight: .bold, design: .rounded))
+                                .foregroundStyle(fillBlanksChipColor(option, correct: question.correctAnswer).text)
+                                .frame(maxWidth: .infinity)
+                                .frame(minHeight: 48)
+                                .background(fillBlanksChipColor(option, correct: question.correctAnswer).bg)
+                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        }
+                        .buttonStyle(.plain)
+                        .opacity(fillBlanksWrongOptions.contains(option) ? 0.3 : 1)
+                        .disabled(fillBlanksLocked || fillBlanksWrongOptions.contains(option))
+                    }
+                }
+            }
+        }
+    }
+
+    private func fillBlanksSentenceView(_ question: QuizFillBlanksQuestion) -> some View {
+        let parts = question.sentenceWithBlank.components(separatedBy: "_____")
+        return HStack(spacing: 0) {
+            Spacer(minLength: 0)
+            Group {
+                if let first = parts.first {
+                    Text(first)
+                        .font(.system(size: 18, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                }
+
+                if fillBlanksLocked, fillBlanksSelected == question.correctAnswer {
+                    Text(question.correctAnswer)
+                        .font(.system(size: 18, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.success)
+                } else {
+                    Text("  _____  ")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(sectionStyle.accent)
+                        .padding(.horizontal, 2)
+                        .padding(.vertical, 2)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .stroke(sectionStyle.accent.opacity(0.4), style: StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
+                        )
+                }
+
+                if parts.count >= 2 {
+                    Text(parts[1])
+                        .font(.system(size: 18, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .multilineTextAlignment(.center)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, AppTheme.Spacing.sm)
+    }
+
+    private func fillBlanksChipColor(_ option: String, correct: String) -> (text: Color, bg: Color) {
+        if fillBlanksLocked, fillBlanksSelected == option {
+            return option == correct
+                ? (.white, AppTheme.Colors.success)
+                : (.white, AppTheme.Colors.error)
+        }
+        return (AppTheme.Colors.textPrimary, AppTheme.Colors.secondarySurface)
+    }
+
     // MARK: - Word Combo Card
 
     func wordComboCard(_ question: QuizMatchingQuestion) -> some View {

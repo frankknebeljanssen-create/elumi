@@ -227,6 +227,8 @@ var quizSessionScreen: some View {
                 }
             case .typing(let question):
                 typingCard(question)
+            case .fillBlanks(let question):
+                fillBlanksCard(question)
             }
         } else if session.isLoadingRemainingQuestions {
             AppSurfaceCard(tint: sectionStyle.accent) {
@@ -418,6 +420,8 @@ private var wrongQuestionPairs: [(prompt: String, correctAnswer: String)] {
             }
         case .typing(let q):
             pairs.append((q.prompt, q.correctAnswer))
+        case .fillBlanks(let q):
+            pairs.append((q.sentenceWithBlank, q.correctAnswer))
         }
     }
     return pairs

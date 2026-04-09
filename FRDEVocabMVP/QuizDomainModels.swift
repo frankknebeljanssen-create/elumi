@@ -54,6 +54,16 @@ struct QuizMatchingQuestion: Identifiable, Hashable {
     }
 }
 
+struct QuizFillBlanksQuestion: Identifiable, Hashable {
+    let id = UUID()
+    let sentenceWithBlank: String
+    let fullSentence: String
+    let translationHint: String
+    let correctAnswer: String
+    let options: [String]
+    let category: String
+}
+
 struct QuizPromptFramePreferenceKey: PreferenceKey {
     static var defaultValue: [UUID: CGRect] = [:]
 
@@ -74,11 +84,14 @@ enum QuizQuestion: Identifiable, Hashable {
     case multipleChoice(QuizMultipleChoiceQuestion)
     case matching(QuizMatchingQuestion)
     case typing(QuizTypingQuestion)
+    case fillBlanks(QuizFillBlanksQuestion)
+
     var id: UUID {
         switch self {
         case .multipleChoice(let q): return q.id
         case .matching(let q): return q.id
         case .typing(let q): return q.id
+        case .fillBlanks(let q): return q.id
         }
     }
 
@@ -87,6 +100,7 @@ enum QuizQuestion: Identifiable, Hashable {
         case .multipleChoice(let q): return q.category
         case .matching(let q): return q.category
         case .typing(let q): return q.category
+        case .fillBlanks(let q): return q.category
         }
     }
 }

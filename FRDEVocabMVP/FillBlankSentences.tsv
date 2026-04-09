@@ -1,0 +1,1166 @@
+sentence_fr	sentence_de	blank_word	distractors	verb_fr	noun_fr
+Je vais endosser le costume.	Ich werde den Anzug anziehen.	le	un,la,du	endosser	le costume
+Je vais écraser le fruit.	Ich werde die Frucht zerdrücken.	le	un,la,de	écraser	le fruit
+Elle se déguise en costume.	Sie verkleidet sich im Anzug.	en	à,le,du	déguiser	le costume
+Il manipule la machine.	Er manipuliert die Maschine.	la	une,le,de	manipuler	la machine
+L'objet glisse sur la table.	Der Gegenstand gleitet über den Tisch.	sur	dans,à,avec	glisser	l'objet
+Les abeilles butinent le nectar.	Die Bienen sammeln den Nektar.	le	un,la,de	butiner	le nectar
+Je tape le numéro.	Ich tippe die Nummer.	le	un,la,de	taper	le numéro
+Le papier brûle dans le feu.	Das Papier brennt im Feuer.	dans	sur,à,avec	brûler	le papier
+Il déclare la guerre.	Er erklärt den Krieg.	la	une,le,de	déclarer	la guerre
+Elle assèche la plante.	Sie trocknet die Pflanze aus.	la	une,le,de	assécher	la plante
+Il borne le territoire.	Er begrenzt das Gebiet.	le	un,la,de	borner	le territoire
+Je vais allumer la lampe.	Ich werde die Lampe anzünden.	la	une,le,de	allumer	la lampe
+Je retiens l'information.	Ich behalte die Information.	l'	la,une,de	retenir	l'information
+Ils internationalisent l'entreprise.	Sie internationalisieren die Firma.	l'	une,la,de	internationaliser	l'entreprise
+Nous scandons le chant.	Wir skandieren den Gesang.	le	un,la,de	scander	le chant
+Ils sensibilisent le public.	Sie sensibilisieren das Publikum.	le	un,la,de	sensibiliser	le public
+Il tasse la terre.	Er presst die Erde.	la	une,le,de	tasser	la terre
+J'ouvre la fenêtre.	Ich öffne das Fenster.	la	une,le,de	ouvrir	la fenêtre
+La tempête sévit en mer.	Der Sturm wütet auf dem Meer.	en	à,sur,avec	sévir	la tempête
+Il débourse le montant.	Er gibt den Betrag aus.	le	un,la,de	débourser	le montant
+Je bois le vin.	Ich trinke den Wein.	le	un,la,de	boire	le vin
+Nous équilibrons le budget.	Wir gleichen das Budget aus.	le	un,la,de	équilibrer	le budget
+Je cuisine l'ingrédient.	Ich koche den Bestandteil.	l'	une,la,de	cuisiner	l'ingrédient
+Elle écrit la lettre.	Sie schreibt den Brief.	la	une,le,de	écrire	la lettre
+Il parle la langue.	Er spricht die Sprache.	la	une,le,de	parler	la langue
+Ils affranchissent le pays.	Sie befreien das Land.	le	un,la,de	affranchir	le pays
+Je félicite la personne.	Ich gratuliere der Person.	la	une,le,de	féliciter	la personne
+Elle décline une proposition.	Sie lehnt einen Vorschlag ab.	une	la,le,de	décliner	une proposition
+Il publie l'article.	Er veröffentlicht den Artikel.	l'	une,la,de	publier	l'article
+Nous reconstruisons la maison.	Wir bauen das Haus wieder auf.	la	une,le,de	reconstruire	la maison
+Je vais réparer la voiture.	Ich werde das Auto reparieren.	la	une,de,du	réparer	la voiture
+Il choisit le vêtement.	Er wählt das Kleidungsstück.	le	un,la,de	choisir	le vêtement
+Elle facilite le travail.	Sie erleichtert die Arbeit.	le	un,la,de	faciliter	le travail
+Nous rencontrons le collègue.	Wir treffen den Kollegen.	le	un,la,de	rencontrer	le collègue
+Le conflit explose.	Der Konflikt explodiert.	le	un,la,de	exploser	le conflit
+Je vais réparer l'appareil.	Ich werde das Gerät reparieren.	l'	une,la,de	réparer	l'appareil
+Ils revendiquent le droit.	Sie beanspruchen das Recht.	le	un,la,de	revendiquer	le droit
+Elle exaspère la personne.	Sie ärgert die Person.	la	une,de,du	exaspérer	la personne
+Je remets le document.	Ich gebe das Dokument zurück.	le	un,la,de	remettre	le document
+Ils fondent une famille.	Sie gründen eine Familie.	une	la,de,du	fonder	la famille
+Il tatoue la peau.	Er tätowiert die Haut.	la	une,de,du	tatouer	la peau
+Elle hoche la tête.	Sie nickt mit dem Kopf.	la	une,de,du	hocher	la tête
+Il s'adonne à l'énergie.	Er widmet sich der Energie.	à	de,sur,avec	adonner	l'énergie
+Nous rallumons le feu.	Wir zünden das Feuer wieder an.	le	un,la,de	rallumer	le feu
+Je vends la voiture.	Ich verkaufe das Auto.	la	une,de,du	vendre	la voiture
+Il colle l'étiquette.	Er klebt das Etikett.	l'	une,la,de	coller	l'étiquette
+Elle est absente à l'événement.	Sie fehlt bei dem Ereignis.	à	de,sur,avec	absenter	l'événement
+Il filtre l'huile.	Er filtert das Öl.	l'	une,la,de	filtrer	l'huile
+Nous raccordons le câble.	Wir schließen das Kabel an.	le	un,la,de	raccorder	le câble
+Je cachette la lettre.	Ich versiegle den Brief.	la	une,de,du	cacheter	la lettre
+Ils marginalisent le groupe.	Sie marginalisieren die Gruppe.	le	un,la,de	marginaliser	le groupe
+Elle apprend la langue.	Sie lernt die Sprache.	la	une,de,du	apprendre	la langue
+Il dévisse l'objet.	Er schraubt den Gegenstand ab.	l'	une,la,de	dévisser	l'objet
+Elle essuie la table.	Sie wischt den Tisch ab.	la	une,de,du	essuyer	la table
+Il estampille le document.	Er stempelt das Dokument.	le	un,la,de	estampiller	le document
+Nous filons au train.	Wir gehen schnell zum Zug.	au	à,de,sur	filer	le train
+Il stupéfie l'audience.	Er verblüfft das Publikum.	l'	une,la,de	stupéfaire	l'audience
+Elle pend le vêtement.	Sie hängt das Kleidungsstück auf.	le	un,la,de	pendre	le vêtement
+Il perfectionne le produit.	Er verbessert das Produkt.	le	un,la,de	perfectionner	le produit
+Nous cherchons la solution.	Wir suchen die Lösung.	la	une,de,du	chercher	la solution
+J'accole l'image sur le mur.	Ich klebe das Bild an die Wand.	sur	à,dans,avec	accoler	l'image
+Je replie le papier en deux.	Ich falte das Papier in zwei.	en	à,sur,avec	replier	le papier
+Il offense la personne ici.	Er beleidigt die Person hier.	la	une,de,et	offenser	la personne
+Nous raffinons le produit pour vous.	Wir verfeinern das Produkt für Sie.	le	un,de,dans	raffiner	le produit
+Elle confirme l'information au patron.	Sie bestätigt die Information beim Chef.	l'	une,de,sur	confirmer	l'information
+Je urine dans la toilette.	Ich uriniere in die Toilette.	dans	à,sur,avec	uriner	la toilette
+Ils réglementent la norme pour tous.	Sie regeln die Norm für alle.	la	une,de,et	réglementer	la norme
+Nous dénommons le lieu ici.	Wir benennen den Ort hier.	le	un,de,et	dénommer	le lieu
+Vous bénéficiez du service aujourd'hui.	Sie profitieren heute von dem Dienst.	du	de,le,à	bénéficier	le service
+Ils dégradent la qualité du produit.	Sie verschlechtern die Qualität des Produkts.	la	une,de,et	dégrader	la qualité
+Je forme le groupe pour le projet.	Ich forme die Gruppe für das Projekt.	le	un,de,et	former	le groupe
+Nous renouvelons le permis chaque année.	Wir erneuern die Erlaubnis jedes Jahr.	le	un,de,et	renouveler	le permis
+Il cartonne le produit pour la vente.	Er verpackt das Produkt für den Verkauf.	le	un,de,et	cartonner	le produit
+Elle ironise sur la situation actuelle.	Sie ironisiert über die aktuelle Situation.	sur	à,de,avec	ironiser	la situation
+Je avoue le secret à mon ami.	Ich gebe das Geheimnis meinem Freund zu.	le	un,de,et	avouer	le secret
+Il presse le tissu pour le repasser.	Er drückt den Stoff zum Bügeln.	le	un,de,et	presser	le tissu
+Je prête le livre à ma sœur.	Ich leihe das Buch meiner Schwester.	à	de,dans,sur	prêter	le livre
+Elle réprimande l'élève en classe.	Sie tadelt den Schüler in der Klasse.	l'	une,de,et	réprimander	l'élève
+Ils épuisent l'énergie du moteur.	Sie erschöpfen die Energie des Motors.	l'	une,de,et	épuiser	l'énergie
+Il corrompt le fonctionnaire avec de l'argent.	Er besticht den Beamten mit Geld.	le	un,de,et	corrompre	le fonctionnaire
+Je sous-loue la chambre à un étudiant.	Ich untervermiete das Zimmer an einen Studenten.	à	de,dans,sur	sous-louer	la chambre
+Vous bénéficiez de l'aide gratuite.	Sie profitieren von der kostenlosen Hilfe.	de	du,le,à	bénéficier	l'aide
+Je nourris l'enfant avec du lait.	Ich ernähre das Kind mit Milch.	l'	un,de,et	nourrir	l'enfant
+Il coupe le papier en morceaux.	Er schneidet das Papier in Stücke.	le	un,de,et	couper	le papier
+Nous discutons du problème ensemble.	Wir diskutieren das Problem zusammen.	du	de,le,à	discuter	le problème
+Elle reçoit le message par email.	Sie erhält die Nachricht per E-Mail.	le	un,de,et	recevoir	le message
+Je vais à la maison maintenant.	Ich gehe jetzt nach Hause.	à	de,dans,sur	aller	la maison
+L'animal sautille dans le jardin.	Das Tier hüpft im Garten.	dans	à,sur,avec	sautiller	l'animal
+L'eau inonde la chambre maintenant.	Das Wasser überflutet jetzt das Zimmer.	la	une,de,et	inonder	la chambre
+Je parrains l'association pour les enfants.	Ich patroniere die Vereinigung für die Kinder.	l'	une,de,et	parrainer	l'association
+J'engage l'équipe pour le match.	Ich engagiere die Mannschaft für das Spiel.	pour	à,de,avec	engager	l'équipe
+Je raconte l'histoire à mes amis.	Ich erzähle die Geschichte meinen Freunden.	à	de,sur,pour	raconter	l'histoire
+La partie consiste en un jeu.	Der Teil besteht aus einem Spiel.	en	à,de,sur	consister	la partie
+Il endette la personne avec ses choix.	Er verschuldet die Person mit seinen Entscheidungen.	avec	à,de,pour	endetter	la personne
+Elle évaser la base du vase.	Sie verbreitert die Basis der Vase.	du	à,de,sur	évaser	la base
+Nous impliquons la personne dans le projet.	Wir beziehen die Person in das Projekt ein.	dans	à,de,pour	impliquer	la personne
+Je jure la loi devant le juge.	Ich schwöre das Gesetz vor dem Richter.	devant	à,de,sur	jurer	la loi
+Cela coûte le prix de la vie.	Das kostet den Preis des Lebens.	de	à,sur,pour	coûter	le prix
+Elle affame la personne dans la rue.	Sie verhungert die Person auf der Straße.	dans	à,de,pour	affamer	la personne
+Le cheval hennit à la monture.	Das Pferd wiehert zur Fassung.	à	de,sur,avec	hennir	la monture
+Nous encastrons l'élément dans le mur.	Wir bauen das Element in die Wand ein.	dans	à,de,sur	encastrer	l'élément
+Il tasse le sable dans le seau.	Er presst den Sand in den Eimer.	dans	à,de,sur	tasser	le sable
+Elle entrouvre la porte doucement.	Sie lehnt die Tür sanft an.	la	à,de,sur	entrouvrir	la porte
+Nous profitons de l'offre spéciale.	Wir profitieren vom speziellen Angebot.	de	à,sur,pour	profiter	l'offre
+Il adjure le soutien de ses amis.	Er bittet dringend um die Unterstützung seiner Freunde.	de	à,sur,pour	adjurer	le soutien
+Elle nantit la propriété avec des meubles.	Sie stattet das Eigentum mit Möbeln aus.	avec	à,de,pour	nantir	la propriété
+Ils bombardent la cible avec précision.	Sie bombardieren das Ziel mit Präzision.	avec	à,de,sur	bombarder	la cible
+Il double l'effort pour réussir.	Er verdoppelt den Aufwand, um erfolgreich zu sein.	pour	à,de,avec	doubler	l'effort
+Elle bute contre le mur en courant.	Sie stößt beim Laufen gegen die Wand.	contre	à,de,sur	buter	le mur
+Nous ventilons l'espace pour aérer.	Wir belüften den Raum, um frische Luft zu bekommen.	pour	à,de,avec	ventiler	l'espace
+Il répare le dommage sur la voiture.	Er repariert den Schaden am Auto.	sur	à,de,pour	réparer	le dommage
+Je rame sur la rivière calme.	Ich rudere auf dem ruhigen Fluss.	sur	à,de,dans	ramer	la rivière
+Elle emplit la bouteille d'eau.	Sie füllt die Flasche mit Wasser.	d'	à,de,sur	emplir	la bouteille
+Elle s'évanouit devant la femme.	Sie wird ohnmächtig vor der Frau.	devant	à,de,sur	évanouir	la femme
+Ils industrialisent le processus lentement.	Sie industrialisieren den Prozess langsam.	le	à,de,sur	industrialiser	le processus
+Elle harmonise la musique avec soin.	Sie harmonisiert die Musik sorgfältig.	avec	à,de,pour	harmoniser	la musique
+Il boude la situation actuelle.	Er schmollt über die aktuelle Situation.	la	à,de,sur	bouder	la situation
+Elle délier le contrat avec soin.	Sie löst den Vertrag sorgfältig.	le	à,de,sur	délier	le contrat
+Nous nettoyons la maison chaque semaine.	Wir reinigen das Haus jede Woche.	la	à,de,sur	nettoyer	la maison
+Je vais impréciser l'information.	Ich werde die Information unbestimmen.	l'	de,une,le	impréciser	l'information
+Nous allons construire le mur.	Wir werden die Wand bauen.	le	un,dans,sur	construire	le mur
+Elle veut venger le tort.	Sie will das Unrecht rächen.	le	un,de,avec	venger	le tort
+Ils vont parfaire le travail.	Sie werden die Arbeit vollenden.	le	une,de,dans	parfaire	le travail
+Je veux enhardir la personne.	Ich möchte die Person ermutigen.	la	une,de,sur	enhardir	la personne
+Nous devons fidéliser le partenaire.	Wir müssen den Partner bindend machen.	le	un,de,la	fidéliser	le partenaire
+Ils veulent rallier le partisan.	Sie wollen den Anhänger vereinen.	le	un,de,la	rallier	le partisan
+Je vais vendre la maison.	Ich werde das Haus verkaufen.	la	une,de,le	vendre	la maison
+Il ne faut pas entacher la réputation.	Man darf den Ruf nicht beschmutzen.	la	un,de,le	entacher	la réputation
+Elle veut friser la mèche.	Sie möchte den Docht locken.	la	un,de,le	friser	la mèche
+Nous allons inventer l'idée.	Wir werden die Idee erfinden.	l'	une,de,le	inventer	l'idée
+Je vais aller au magasin.	Ich werde zum Laden gehen.	au	à,dans,sur	aller	le magasin
+Ils veulent recruter le candidat.	Sie wollen den Kandidaten rekrutieren.	le	un,de,la	recruter	le candidat
+Nous devons envisager la possibilité.	Wir müssen die Möglichkeit in Betracht ziehen.	la	une,de,le	envisager	la possibilité
+Je vais actualiser l'information.	Ich werde die Information aktualisieren.	l'	une,de,le	actualiser	l'information
+Il faut motoriser la machine.	Man muss die Maschine motorisieren.	la	une,de,le	motoriser	la machine
+Je vais refiler l'information.	Ich werde die Information weitergeben.	l'	une,de,le	refiler	l'information
+Il faut estimer le temps.	Man muss die Zeit schätzen.	le	un,de,la	estimer	temps
+Elle veut persuader le client.	Sie möchte den Kunden überzeugen.	le	un,de,la	persuader	le client
+Il ne faut pas vexer le commentaire.	Man darf den Kommentar nicht ärgern.	le	un,de,la	vexer	le commentaire
+L'enfant va naître bientôt.	Das Kind wird bald geboren.	l'	un,de,la	naître	l'enfant
+Je vais trimer jour et nuit.	Ich werde Tag und Nacht schuften.	et	ou,de,sur	trimer	jour
+Nous devons légaliser la substance.	Wir müssen die Substanz legalisieren.	la	une,de,le	légaliser	la substance
+Je vais numériser le document.	Ich werde das Dokument digitalisieren.	le	un,de,la	numériser	le document
+Il faut cuivrer l'objet.	Man muss den Gegenstand kupfern.	l'	un,de,la	cuivrer	l'objet
+Le chien va aboyer.	Der Hund wird bellen.	le	un,de,la	aboyer	l'animal
+Il veut proférer la phrase.	Er möchte den Satz aussprechen.	la	une,de,le	proférer	la phrase
+Je vais aviser le collègue.	Ich werde den Kollegen benachrichtigen.	le	un,de,la	aviser	le collègue
+Nous devons guetter l'occasion.	Wir müssen die Gelegenheit lauern.	l'	une,de,le	guetter	l'occasion
+Elle veut parfumer la peau.	Sie möchte die Haut parfümieren.	la	une,de,le	parfumer	la peau
+Je flûte la mélodie.	Ich flöte die Melodie.	la	une,de,du	flûter	la mélodie
+Je épongé la table.	Ich trockne den Tisch ab.	la	une,de,du	éponger	la table
+Nous triomphons de la victoire.	Wir triumphieren über den Sieg.	de	à,sur,pour	triompher	la victoire
+Il a accidenté la voiture.	Er hat das Auto beschädigt.	la	une,de,du	accidenter	la voiture
+Nous longeons la plage.	Wir gehen entlang des Strandes.	la	une,de,du	longer	la plage
+Il façonne l'objet.	Er formt den Gegenstand.	l'	un,la,le	façonner	l'objet
+Elle terrifie l'enfant.	Sie erschreckt das Kind.	l'	un,la,le	terrifier	l'enfant
+Il lèse l'intérêt.	Er verletzt das Interesse.	l'	un,la,le	léser	l'intérêt
+Nous bornons l'espace.	Wir begrenzen den Raum.	l'	un,la,le	borner	l'espace
+Il amorce la discussion.	Er leitet die Diskussion ein.	la	une,de,du	amorcer	la discussion
+Nous figeons la nourriture.	Wir frieren die Nahrung ein.	la	une,de,du	figer	la nourriture
+L'enfant boude.	Das Kind schmollt.	l'	un,la,le	bouder	l'enfant
+Je dissous le sucre.	Ich löse den Zucker auf.	le	un,la,les	dissoudre	le sucre
+Il paie l'achat.	Er bezahlt den Kauf.	l'	un,la,les	payer	l'achat
+Elle chine le vêtement.	Sie stöbert im Kleidungsstück.	le	un,la,les	chiner	le vêtement
+Je arrose la fleur.	Ich gieße die Blume.	la	une,de,du	arroser	la fleur
+Nous fuyons le danger.	Wir fliehen vor der Gefahr.	le	un,la,les	fuir	le danger
+Je mange le pain.	Ich esse das Brot.	le	un,la,les	manger	le pain
+Il transpose l'information.	Er transponiert die Information.	l'	un,la,le	transposer	l'information
+Elle vend le produit.	Sie verkauft das Produkt.	le	un,la,les	vendre	le produit
+Il décroche le prix.	Er nimmt den Preis ab.	le	un,la,les	décrocher	le prix
+Nous contrôlons le processus.	Wir kontrollieren den Prozess.	le	un,la,les	contrôler	le processus
+Elle équipe le bureau.	Sie stattet das Büro aus.	le	un,la,les	équiper	le bureau
+Cela aboutit à la situation.	Das führt zu der Situation.	à	de,sur,pour	aboutir	la situation
+Je freine le vélo.	Ich bremse das Fahrrad.	le	un,la,les	freiner	le vélo
+Il contraint la situation.	Er zwingt die Situation.	la	une,de,du	contraindre	la situation
+Elle littératurise l'écriture.	Sie literaturisiert das Schreiben.	l'	un,la,le	littératurer	l'écriture
+Je console l'enfant.	Ich tröste das Kind.	l'	un,la,le	consoler	l'enfant
+Il permet un changement.	Er erlaubt eine Veränderung.	un	le,la,les	permettre	un changement
+Il défonce le coffre.	Er bricht die Truhe auf.	le	un,la,les	défoncer	le coffre
+Je raccorde l'appareil.	Ich schließe das Gerät an.	l'	le,un,la	raccorder	l'appareil
+Elle esquisse le dessin.	Sie skizziert die Zeichnung.	le	un,la,de	esquisser	le dessin
+Nous votons pour le candidat.	Wir wählen den Kandidaten.	pour	à,de,sur	voter	le candidat
+Il exclame la phrase.	Er ruft den Satz aus.	la	le,une,de	exclamer	la phrase
+Ils martyrisent la personne.	Sie quälen die Person.	la	une,de,le	martyriser	la personne
+Je veux aider la personne.	Ich möchte der Person helfen.	la	une,de,le	aider	la personne
+Nous amollissons la matière.	Wir erweichen das Material.	la	une,de,le	amollir	la matière
+Elle évade la prison.	Sie entkommt aus dem Gefängnis.	la	une,de,le	évader	la prison
+Je rentre dans la maison.	Ich kehre ins Haus zurück.	dans	à,sur,de	rentrer	la maison
+Il parle avec la personne.	Er spricht mit der Person.	avec	à,de,pour	parler	la personne
+La plante languit dans le pot.	Die Pflanze verwelkt im Topf.	dans	à,sur,de	languir	la plante
+Le spectacle émerveille les enfants.	Das Schauspiel verzaubert die Kinder.	les	des,un,de	émerveiller	le spectacle
+Il enfle le poumon.	Er schwillt die Lunge an.	le	un,la,de	enfler	le poumon
+Je reconnais la chanson.	Ich erkenne das Lied.	la	un,de,le	reconnaître	la chanson
+Ils harcèlent la personne.	Sie belästigen die Person.	la	une,de,le	harceler	la personne
+Elle décompresse la tension.	Sie entspannt die Spannung.	la	une,de,le	décompresser	la tension
+Il bougonne à la personne.	Er murrt über die Person.	à	de,sur,avec	bougonner	la personne
+Nous régalons le client.	Wir verwöhnen den Kunden.	le	un,la,de	régaler	le client
+Je prends un bus.	Ich nehme einen Bus.	un	le,la,de	prendre	un bus
+Elle excite la situation.	Sie regt die Situation auf.	la	une,de,le	exciter	la situation
+Il répond à la demande.	Er antwortet auf die Anfrage.	à	de,sur,pour	répondre	la demande
+Nous retraitons l'offre.	Wir ziehen das Angebot zurück.	l'	le,une,de	retraiter	l'offre
+Il pulvérise la matière.	Er zersäuft das Material.	la	une,de,le	pulvériser	la matière
+L'air est contaminé.	Die Luft ist kontaminiert.	l'	le,une,de	contaminer	l'air
+Je feuillette le journal.	Ich blättere in der Zeitung.	le	un,la,de	feuilleter	le journal
+La pluie inonde le champ.	Der Regen überflutet das Feld.	le	un,la,de	inonder	le champ
+Nous perpétuons la tradition.	Wir bewahren die Tradition.	la	une,de,le	perpétuer	la tradition
+Il braise la viande.	Er schmort das Fleisch.	la	une,de,le	braiser	la viande
+Il circonstancie le contexte.	Er umschreibt den Kontext.	le	un,la,de	circonstancier	le contexte
+Je emporte la nourriture.	Ich nehme die Nahrung mit.	la	une,de,le	emporter	la nourriture
+Je déroule le tapis.	Ich rolle den Teppich ab.	le	un,la,du	dérouler	le tapis
+Je transforme l'espace.	Ich verwandle den Raum.	l'	un,le,de	transformer	l'espace
+Je vends le produit.	Ich verkaufe das Produkt.	le	un,la,de	vendre	le produit
+Je réalise l'idée.	Ich realisiere die Idee.	l'	une,le,de	réaliser	l'idée
+Je fédère le groupe.	Ich vereine die Gruppe.	le	un,la,de	fédérer	le groupe
+Je lâche l'objet.	Ich lasse den Gegenstand los.	l'	un,le,de	lâcher	l'objet
+J'assèche la rivière.	Ich trockne den Fluss aus.	la	une,le,de	assécher	la rivière
+J'engouffre l'objet.	Ich stürze den Gegenstand hinein.	l'	un,le,de	engouffrer	l'objet
+Je proviens de l'origine.	Ich stamme von dem Ursprung.	de	à,du,le	provenir	l'origine
+Je dessers le plat.	Ich serviere das Gericht ab.	le	un,la,de	desservir	le plat
+Je suis l'enfant.	Ich bin das Kind.	l'	un,le,de	être	l'enfant
+J'exècre la situation.	Ich verabscheue die Situation.	la	une,le,de	exécrer	la situation
+Je parie sur l'événement.	Ich wette auf das Ereignis.	sur	à,de,le	parier	l'événement
+Je repose le moment.	Ich ruhe den Moment aus.	le	un,la,de	reposer	le moment
+J'espère la réussite.	Ich hoffe auf den Erfolg.	la	une,le,de	espérer	la réussite
+Je convaincs l'auditoire.	Ich überzeuge das Publikum.	l'	un,le,de	convaincre	l'auditoire
+Je réprime le comportement.	Ich unterdrücke das Verhalten.	le	un,la,de	réprimer	le comportement
+Je refais le projet.	Ich mache das Projekt wieder.	le	un,la,de	refaire	le projet
+Je distingue la caractéristique.	Ich unterscheide das Merkmal.	la	une,le,de	distinguer	la caractéristique
+Je drache le vêtement.	Ich ziehe das Kleidungsstück herunter.	le	un,la,de	dracher	le vêtement
+J'évite le conflit.	Ich vermeide den Konflikt.	le	un,la,de	éviter	le conflit
+Je change l'idée.	Ich ändere die Idee.	l'	une,le,de	changer	l'idée
+Je tapote le papier.	Ich tippe auf das Papier.	le	un,la,de	tapoter	le papier
+J'écoute la conversation.	Ich höre das Gespräch zu.	la	une,le,de	écouter	la conversation
+Je renais le projet.	Ich werde das Projekt wiedergeboren.	le	un,la,de	renaître	le projet
+Je suspends l'objet.	Ich hänge den Gegenstand auf.	l'	un,le,de	suspendre	l'objet
+Je flanque l'objet.	Ich platziere den Gegenstand.	l'	un,le,de	flanquer	l'objet
+Je prouve le fait.	Ich beweise die Tatsache.	le	un,la,de	prouver	le fait
+J'importune le travail.	Ich störe die Arbeit.	le	un,la,de	importuner	le travail
+Je blanchis le linge.	Ich bleiche die Wäsche.	le	un,la,de	blanchir	le linge
+Je tasse le matériau.	Ich presse das Material.	le	un,du,la	tasser	le matériau
+Je suppose l'hypothèse.	Ich nehme die Hypothese an.	l'	une,la,de	supposer	l'hypothèse
+Il généralise la situation.	Er verallgemeinert die Situation.	la	une,de,le	généraliser	la situation
+Elle perforé l'objet.	Sie durchbohrt den Gegenstand.	l'	un,le,de	perforer	l'objet
+Nous proposons la solution.	Wir schlagen die Lösung vor.	la	une,le,de	proposer	la solution
+Il suscite l'émotion.	Er löst die Emotion aus.	l'	une,la,de	susciter	l'émotion
+L'étoile gravite autour du soleil.	Der Stern gravitiert um die Sonne.	du	de,le,la	graviter	l'étoile
+Je réécris l'histoire.	Ich schreibe die Geschichte neu.	l'	une,la,de	réécrire	l'histoire
+Le palais trône sur la colline.	Der Palast thront auf dem Hügel.	sur	dans,à,avec	trôner	le palais
+Nous pallions le problème.	Wir mildern das Problem ab.	le	un,la,de	pallier	le problème
+Je teste l'échantillon.	Ich teste die Probe.	l'	une,la,de	tester	l'échantillon
+Je revois l'ami.	Ich sehe den Freund wieder.	l'	un,le,de	revoir	l'ami
+Il concocte le plan.	Er brütet den Plan aus.	le	un,la,de	concocter	le plan
+Nous dénouons le problème.	Wir entwirren das Problem.	le	un,la,de	dénouer	le problème
+Il statue sur le cas.	Er entscheidet über den Fall.	sur	dans,à,avec	statuer	le cas
+Elle contribue au projet.	Sie trägt zum Projekt bei.	au	à,le,de	contribuer	le projet
+Je ouvre le cadeau.	Ich öffne das Geschenk.	le	un,la,de	ouvrir	le cadeau
+Nous parlons du sujet.	Wir sprechen über das Thema.	du	de,le,la	parler	le sujet
+Il caractérise la personnalité.	Er charakterisiert die Persönlichkeit.	la	une,de,le	caractériser	la personnalité
+Elle flatte la personne.	Sie schmeichelt der Person.	la	une,de,le	flatter	la personne
+Je laisse le choix.	Ich lasse die Wahl.	le	un,la,de	laisser	le choix
+Nous naviguons sur le bateau.	Wir navigieren mit dem Boot.	sur	à,dans,avec	naviguer	le bateau
+L'image transparaît dans le miroir.	Das Bild scheint im Spiegel durch.	dans	à,sur,avec	transparaître	l'image
+J'étudie le sujet.	Ich studiere das Thema.	le	un,la,de	étudier	le sujet
+Je goûte l'eau.	Ich koste das Wasser.	l'	une,la,de	gouter	l'eau
+Je récupère l'objet.	Ich bekomme den Gegenstand zurück.	l'	un,le,de	récupérer	l'objet
+J'estime le coût.	Ich schätze die Kosten.	le	un,la,de	estimer	le coût
+Il reconquiert le marché.	Er gewinnt den Markt zurück.	le	un,la,de	reconquérir	le marché
+Elle accable la personne.	Sie überwältigt die Person.	la	une,de,le	accabler	la personne
+Je monte au cheval.	Ich steige auf das Pferd.	au	à,sur,dans	monter	le cheval
+Je déjoue la stratégie.	Ich vereitle die Strategie.	la	de,une,le	déjouer	la stratégie
+Je saturerai la couleur.	Ich sättige die Farbe.	la	une,de,le	saturer	la couleur
+J'emplis le sac.	Ich fülle die Tasche.	le	une,de,la	emplir	le sac
+J'encense le travail.	Ich lobe die Arbeit.	le	une,de,la	encenser	le travail
+J'envisage un changement.	Ich ziehe eine Veränderung in Betracht.	un	le,la,de	envisager	un changement
+Je mémorise le texte.	Ich merke den Text.	le	une,de,la	mémoriser	le texte
+Je jeûne pendant le temps.	Ich faste während der Zeit.	le	un,de,la	jeûner	temps
+Je subordonne le sujet.	Ich ordne das Thema unter.	le	une,de,la	subordonner	le sujet
+Je recommande le livre.	Ich empfehle das Buch.	le	une,de,la	recommander	le livre
+Je planifie la réunion.	Ich plane das Treffen.	la	une,de,le	planifier	la réunion
+J'épicé la nourriture.	Ich würze die Nahrung.	la	une,de,le	épicer	la nourriture
+La neige retombe.	Der Schnee fällt wieder.	la	une,de,le	retomber	la neige
+Je regagne le territoire.	Ich gewinne das Gebiet zurück.	le	une,de,la	regagner	le territoire
+Je pense à l'idée.	Ich denke an die Idee.	à	de,sur,pour	penser	l'idée
+Je cuis la viande.	Ich koche das Fleisch.	la	une,de,le	cuire	la viande
+Je contracte la dette.	Ich vertrag die Schuld.	la	une,de,le	contracter	la dette
+Je pomponne l'événement.	Ich peppe das Ereignis auf.	l'	le,une,de	pomponner	l'événement
+Je flambe le feu.	Ich flammt das Feuer.	le	une,de,la	flamber	le feu
+J'alloue du temps.	Ich teile Zeit zu.	du	le,une,de	allouer	temps
+Je gagne le jeu.	Ich gewinne das Spiel.	le	une,de,la	gagner	le jeu
+J'arpente le chemin.	Ich stecke den Weg ab.	le	une,de,la	arpenter	le chemin
+Je place l'équipement.	Ich platziere die Ausrüstung.	l'	le,une,de	placer	l'équipement
+Je prends la décision.	Ich treffe die Entscheidung.	la	une,de,le	prendre	la décision
+Je sursaute au bruit.	Ich zucke beim Lärm zusammen.	au	le,de,une	sursauter	le bruit
+Je chôme l'emploi.	Ich bin arbeitslos bei der Anstellung.	l'	le,une,de	chômer	l'emploi
+Je rêvasse le moment.	Ich träume den Moment.	le	une,de,la	rêvasser	le moment
+Je gonfle le ballon.	Ich blase den Ball auf.	le	une,de,la	gonfler	le ballon
+Je pétris l'argile.	Ich knete den Ton.	l'	le,une,de	pétrir	l'argile
+Je discipline l'enfant.	Ich diszipliniere das Kind.	l'	le,une,de	discipliner	l'enfant
+J'opère la chirurgie.	Ich operiere die Chirurgie.	la	une,de,le	opérer	la chirurgie
+Je vais applaudir l'artiste.	Ich werde den Künstler applaudieren.	l'	de,le,une	applaudir	l'artiste
+J'utilise l'appareil.	Ich benutze das Gerät.	l'	un,le,de	utiliser	l'appareil
+Je laminer le produit.	Ich laminieren das Produkt.	le	un,la,de	laminer	le produit
+Je jogge avec l'équipement.	Ich jogge mit der Ausrüstung.	avec	dans,sur,au	jogger	l'équipement
+Je fais le sport.	Ich mache den Sport.	le	un,la,de	faire	le sport
+Je teins le tissu en orange.	Ich färbe den Stoff orange.	le	un,la,de	teindre	le tissu
+Je reviens à la maison.	Ich komme nach Hause.	à	de,dans,sur	revenir	la maison
+Je partage l'expérience.	Ich teile die Erfahrung.	l'	un,la,de	partager	l'expérience
+Le tapis est couché sur le sol.	Der Teppich liegt auf dem Boden.	sur	dans,avec,au	coucher	le tapis
+Nous maintenons l'ordre.	Wir behalten die Ordnung.	l'	un,la,de	maintenir	l'ordre
+Ils civilisent la communauté.	Sie zivilisieren die Gemeinschaft.	la	l',un,de	civiliser	la communauté
+Je bloque le système.	Ich blockiere das System.	le	un,la,de	bloquer	le système
+Elle épanouit la personnalité.	Sie entfaltet die Persönlichkeit.	la	un,l',de	épanouir	la personnalité
+Nous meubler la chambre.	Wir möblieren das Zimmer.	la	un,l',de	meubler	la chambre
+Je mange une pomme.	Ich esse einen Apfel.	une	la,l',de	manger	une pomme
+Nous travaillons en équipe.	Wir arbeiten im Team.	en	à,avec,sur	travailler	l'équipe
+Il combat l'idée.	Er kämpft gegen die Idee.	l'	la,un,de	combattre	l'idée
+Je vois la personne.	Ich sehe die Person.	la	l',un,de	voir	la personne
+Je présume l'hypothèse.	Ich nehme die Hypothese an.	l'	la,un,de	présumer	l'hypothèse
+Je donne le cadeau.	Ich gebe das Geschenk.	le	un,la,de	donner	le cadeau
+Elle achève le travail.	Sie vollendet die Arbeit.	le	un,la,de	achever	le travail
+Ils délibèrent le groupe.	Sie beraten die Gruppe.	le	un,la,de	délibérer	le groupe
+Nous étrennons l'objet.	Wir weihen den Gegenstand ein.	l'	un,la,de	étrenner	l'objet
+Je frémis de peur.	Ich zittere vor Angst.	de	la,un,l'	frémir	la peur
+Il excuse le comportement.	Er entschuldigt das Verhalten.	le	un,la,de	excuser	le comportement
+Elle embellit la photo.	Sie verschönert das Foto.	la	un,l',de	embellir	la photo
+Nous peuplons le pays.	Wir bevölkern das Land.	le	un,la,de	peupler	le pays
+Cela comporte l'élément.	Das beinhaltet das Element.	l'	la,un,de	comporter	l'élément
+Nous affiliés à l'organisation.	Wir schließen uns der Organisation an.	à	de,sur,avec	affilier	l'organisation
+Je rachète l'action.	Ich kaufe die Handlung zurück.	l'	la,un,de	rachat	l'action
+Je trouve l'objet sur la table.	Ich finde den Gegenstand auf dem Tisch.	sur	à,dans,avec	trouver	l'objet
+Il désordonne la chambre tous les jours.	Er macht das Zimmer jeden Tag unordentlich.	la	un,de,dans	désordonner	la chambre
+Je dévisse le boulon facilement.	Ich schraube den Bolzen leicht ab.	le	un,de,dans	dévisser	le boulon
+Elle inhale l'air frais.	Sie atmet die frische Luft ein.	l'air	de l'air,un air,dans l'air	inhaler	l'air
+Nous codons le programme ensemble.	Wir codieren das Programm zusammen.	le	un,de,dans	coder	le programme
+Il butine le pollen des fleurs.	Er sammelt den Pollen von den Blumen.	le	un,de,dans	butiner	le pollen
+Cette image ressemble à un tableau.	Dieses Bild ähnelt einem Gemälde.	à	de,dans,sur	ressembler	l'image
+Il absorbe l'information rapidement.	Er absorbiert die Information schnell.	l'information	de l'information,une information,dans l'information	absorber	l'information
+Je démonte l'objet avec soin.	Ich demontiere den Gegenstand sorgfältig.	l'objet	un objet,de l'objet,dans l'objet	démonter	l'objet
+Elle revend l'article en ligne.	Sie verkauft den Artikel online.	l'article	un article,de l'article,dans l'article	revendre	l'article
+Nous argumentons l'idée avec passion.	Wir argumentieren die Idee leidenschaftlich.	l'idée	une idée,de l'idée,dans l'idée	argumenter	l'idée
+Ils ornent la maison pour Noël.	Sie schmücken das Haus für Weihnachten.	la	un,de,dans	orner	la maison
+Il squatte le terrain depuis longtemps.	Er besetzt das Gelände seit langem.	le	un,de,dans	squatter	le terrain
+Elle désoriente la personne facilement.	Sie desorientiert die Person leicht.	la	une,de,dans	désorienter	la personne
+Je rattrape la personne en courant.	Ich hole die Person beim Laufen ein.	la	une,de,dans	rattraper	la personne
+Il inquiète la situation actuelle.	Er beunruhigt die aktuelle Situation.	la	une,de,dans	inquiéter	la situation
+Elle interpelle le passant poliment.	Sie spricht den Passanten höflich an.	le	un,de,dans	interpeller	le passant
+Je tâtonne le mur dans le noir.	Ich taste die Wand im Dunkeln ab.	le	un,de,dans	tâtonner	le mur
+Il éclaire le concept avec des exemples.	Er erklärt das Konzept mit Beispielen.	le	un,de,dans	éclairer	le concept
+Le cheval rue dans le pré.	Das Pferd stürmt auf der Wiese.	dans	à,sur,avec	ruer	le cheval
+Elle écorche la viande pour le dîner.	Sie zieht das Fleisch für das Abendessen ab.	la	un,de,dans	écorcher	la viande
+Il hypertrophie l'organe par entraînement.	Er hypertrophiert das Organ durch Training.	l'organe	un organe,de l'organe,dans l'organe	hypertrophier	l'organe
+Nous députons le groupe pour l'événement.	Wir deputieren die Gruppe für das Ereignis.	le	un,de,dans	députer	le groupe
+Je arrose le jardin chaque jour.	Ich gieße den Garten jeden Tag.	le	un,de,dans	arroser	le jardin
+Il transite le pays en voiture.	Er durchreist das Land mit dem Auto.	le	un,de,dans	transiter	le pays
+Elle inhale le médicament avec soin.	Sie atmet das Medikament sorgfältig ein.	le	un,de,dans	inhaler	le médicament
+Je appelle l'ami au téléphone.	Ich rufe den Freund am Telefon an.	l'ami	un ami,de l'ami,dans l'ami	appeler	l'ami
+Nous applaudissons le spectacle ensemble.	Wir applaudieren dem Schauspiel zusammen.	le	un,de,dans	applaudir	le spectacle
+Il préfère le choix facile.	Er bevorzugt die einfache Wahl.	le	un,de,dans	préférer	le choix
+Elle repeigne la barbe de son père.	Sie kämmt den Bart ihres Vaters.	la	un,de,dans	repeigner	la barbe
+Je contrebalance la force.	Ich gleichen die Kraft aus.	la	de,une,le	contrebalancer	la force
+Il augmente le volume.	Er erhöht das Volumen.	le	un,de,la	augmenter	le volume
+Elle intéresse la personne.	Sie interessiert die Person.	la	une,de,le	intéresser	la personne
+Je réveille l'enfant.	Ich wecke das Kind.	l'	un,la,de	réveiller	l'enfant
+Nous retournons à l'endroit.	Wir kehren an den Ort zurück.	à	de,sur,dans	retourner	l'endroit
+Ils organisent la fête.	Sie organisieren das Fest.	la	une,de,le	organiser	la fête
+On sanctionne le comportement.	Man bestraft das Verhalten.	le	une,de,la	sanctionner	le comportement
+Je lis le journal.	Ich lese die Zeitung.	le	un,la,de	lire	le journal
+Elle tousse la toux.	Sie hustet den Husten.	la	de,une,le	tousser	la toux
+Je balade l'ami.	Ich spaziere mit dem Freund.	l'	un,la,de	balader	l'ami
+Ils violentent la situation.	Sie behandeln die Situation gewaltsam.	la	une,de,le	violenter	la situation
+Nous concluons le contrat.	Wir schließen den Vertrag ab.	le	un,de,la	conclure	le contrat
+Je chauffe la maison.	Ich heize das Haus.	la	une,de,le	chauffer	la maison
+Elle attend la réponse.	Sie wartet auf die Antwort.	la	une,de,le	attendre	la réponse
+Il oppose l'idée.	Er setzt die Idee entgegen.	l'	une,de,le	opposer	l'idée
+Nous contractons l'accord.	Wir vertragen die Vereinbarung.	l'	un,de,la	contracter	l'accord
+Il faut l'effort.	Es muss der Aufwand sein.	l'	un,de,la	falloir	l'effort
+Elle dévaste la ville.	Sie verwüstet die Stadt.	la	une,de,le	dévaster	la ville
+Ils surtaxent le produit.	Sie besteuern das Produkt.	le	un,de,la	surtaxer	le produit
+Je bouge l'objet.	Ich bewege den Gegenstand.	l'	un,de,la	bouger	l'objet
+Nous isolons la zone.	Wir isolieren die Zone.	la	une,de,le	isoler	la zone
+Il excite l'enfant.	Er regt das Kind auf.	l'	un,de,la	exciter	l'enfant
+Elle comble le besoin.	Sie füllt das Bedürfnis.	le	un,de,la	combler	le besoin
+Il rétorque la réponse.	Er entgegnet die Antwort.	la	une,de,le	rétorquer	la réponse
+Nous vaquons au temps.	Wir verbringen die Zeit.	au	à,de,sur	vaquer	temps
+Cela découle de la situation.	Das resultiert aus der Situation.	de	à,sur,en	découler	la situation
+Je bute sur l'objet.	Ich stoße auf den Gegenstand.	l'	un,de,la	buter	l'objet
+Nous dégustons le dessert.	Wir kosten den Nachtisch.	le	un,de,la	déguster	le dessert
+L'animal hennit.	Das Tier wiehert.	l'	un,de,la	hennir	l'animal
+La voix résonne.	Die Stimme erklingt.	la	une,de,le	résonner	la voix
+Je cligne de l'œil.	Ich blinzle mit dem Auge.	de	à,sur,avec	cligner	l'œil
+Je ocre la toile.	Ich färbe die Leinwand mit Ocker.	la	une,de,sur	ocrer	la toile
+L'enfant rit avec moi.	Das Kind lacht mit mir.	avec	de,à,sur	rire	l'enfant
+Je terrer le trésor.	Ich vergrabe den Schatz.	le	un,de,dans	terrer	le trésor
+J'opte pour l'option.	Ich wähle die Option.	pour	à,de,sur	opter	l'option
+Je frôle le mur.	Ich streife die Wand.	le	un,de,dans	frôler	le mur
+J'artistique l'œuvre.	Ich gestalte das Werk künstlerisch.	l'	la,le,une	artistiquer	l'œuvre
+Je prime le vote.	Ich primen die Abstimmung.	le	un,de,dans	primer	le vote
+Je jouis du moment.	Ich genieße den Moment.	du	de,à,sur	jouir	le moment
+Je porte le sac.	Ich trage die Tasche.	le	un,de,dans	portraire	le sac
+Je proscris le comportement.	Ich verbanne das Verhalten.	le	un,de,dans	proscrire	le comportement
+Le bruit crisse fort.	Der Lärm kreischt laut.	fort	dans,de,sur	crisser	le bruit
+Le soleil éblouit.	Die Sonne blendet.	éblouit	brille,luit,l'éclat	éblouir	le soleil
+Je témoigne de l'événement.	Ich zeuge von dem Ereignis.	de	à,sur,avec	témoigner	l'événement
+J'appréhende le danger.	Ich fürchte die Gefahr.	le	un,de,dans	appréhender	le danger
+Je conseille le client.	Ich berate den Kunden.	le	un,de,dans	conseiller	le client
+J'autorise l'action.	Ich erlaube die Handlung.	l'	la,le,une	autoriser	l'action
+Je tirailler la corde.	Ich zerrre am Seil.	la	une,de,dans	tirailler	la corde
+Je relate le fait.	Ich berichte über die Tatsache.	le	un,de,dans	relater	le fait
+Je obstruer le passage.	Ich verstopfe den Durchgang.	le	un,de,dans	obstruer	le passage
+J'achète le produit.	Ich kaufe das Produkt.	le	un,de,dans	acheter	le produit
+Je mange le gâteau.	Ich esse den Kuchen.	le	un,de,dans	manger	le gâteau
+Je fixe l'objectif.	Ich lege das Ziel fest.	l'	la,le,une	fixer	l'objectif
+Je courbe la branche.	Ich biege den Zweig.	la	une,de,dans	courber	la branche
+J'attarde la décision.	Ich verzögere die Entscheidung.	la	une,de,dans	attarder	la décision
+Je blinde l'écran.	Ich blende den Bildschirm.	l'	la,le,une	blinder	l'écran
+J'aborde le sujet.	Ich spreche das Thema an.	le	un,de,dans	aborder	le sujet
+Je gagne le prix.	Ich gewinne den Preis.	le	un,de,dans	gagner	le prix
+Je vais à l'école.	Ich gehe in die Schule.	à	de,sur,avec	aller	l'école
+Je tempère la réaction.	Ich milde die Reaktion.	la	une,de,dans	tempérer	la réaction
+Je ficèle l'objet.	Ich binde den Gegenstand.	l'	de,un,le	ficeler	l'objet
+J'apprécie le moment.	Ich schätze den Moment.	le	un,de,la	apprécier	le moment
+Je prépare le repas.	Ich bereite die Mahlzeit vor.	le	un,de,la	préparer	le repas
+Je bois le jus.	Ich trinke den Saft.	le	un,de,la	boire	le jus
+Je glace l'eau.	Ich friere das Wasser ein.	l'	de,un,la	glacer	l'eau
+Je pronostique l'économie.	Ich prognostiziere die Wirtschaft.	l'	de,un,la	pronostiquer	l'économie
+Je restructure l'entreprise.	Ich restructure die Firma.	l'	de,un,la	restructurer	l'entreprise
+Le bâtiment s'écroule.	Das Gebäude stürzt ein.	le	un,de,la	écrouler	le bâtiment
+Je simule l'événement.	Ich simuliere das Ereignis.	l'	de,un,la	simuler	l'événement
+J'appauvris la population.	Ich verarme die Bevölkerung.	la	une,de,le	appauvrir	la population
+Je supporte la personne.	Ich unterstütze die Person.	la	une,de,le	supporter	la personne
+Je paie le compte.	Ich bezahle das Konto.	le	un,de,la	payer	le compte
+Je gémis le soupir.	Ich stöhne den Seufzer.	le	un,de,la	gémir	le soupir
+J'insulte l'ami.	Ich beleidige den Freund.	l'	de,un,la	insulter	l'ami
+J'exècre la chose.	Ich verabscheue die Sache.	la	une,de,le	exécrer	la chose
+Je pourfends l'obstacle.	Ich zerschlage das Hindernis.	l'	de,un,la	pourfendre	l'obstacle
+Je projette l'idée.	Ich projiziere die Idee.	l'	de,un,la	projeter	l'idée
+J'amène la personne.	Ich bringe die Person.	la	une,de,le	amener	la personne
+Je momifie l'animal.	Ich mumifiziere das Tier.	l'	de,un,la	momifier	l'animal
+Je cèle l'information.	Ich verberge die Information.	l'	de,un,la	celer	l'information
+Je lacère le papier.	Ich zerreiße das Papier.	le	un,de,la	lacérer	le papier
+Je gratte la surface.	Ich kratzen die Oberfläche.	la	une,de,le	gratter	la surface
+Je restreins la liberté.	Ich schränke die Freiheit ein.	la	une,de,le	restreindre	la liberté
+Je sophistique le produit.	Ich verfeinere das Produkt.	le	un,de,la	sophistiquer	le produit
+Je vénère la tradition.	Ich verehre die Tradition.	la	une,de,le	vénérer	la tradition
+Je resserre le contrôle.	Ich straffe die Kontrolle.	le	un,de,la	resserrer	le contrôle
+Je découvre le talent.	Ich entdecke das Talent.	le	un,de,la	découvrir	le talent
+J'interviewe la personne.	Ich interviewe die Person.	la	une,de,le	interviewer	la personne
+J'aliène le groupe.	Ich entfremde die Gruppe.	le	un,de,la	aliéner	le groupe
+J'habite la ville.	Ich wohne in der Stadt.	la	une,de,le	habiter	la ville
+J'approuve le projet.	Ich genehmige das Projekt.	le	un,de,du	approuver	le projet
+Nous devisons le thème.	Wir reden über das Thema.	le	un,de,dans	deviser	le thème
+Il mène l'équipe.	Er führt die Mannschaft.	l'	une,la,de	mener	l'équipe
+Elle prévient le danger.	Sie warnt vor der Gefahr.	le	un,de,la	prévenir	le danger
+Je reproduis le texte.	Ich wiederhole den Text.	le	un,de,la	reproduire	le texte
+Il venge l'honneur.	Er rächt die Ehre.	l'	une,de,la	venger	l'honneur
+Nous logeons l'invité.	Wir bringen den Gast unter.	l'	un,de,la	loger	l'invité
+Je repêche l'examen.	Ich wiederhole die Prüfung.	l'	une,de,la	repêcher	l'examen
+Ils collaborent avec l'équipe.	Sie arbeiten mit der Mannschaft zusammen.	avec	sur,dans,pour	collaborer	l'équipe
+Elle réhabitue l'enfant.	Sie gewöhnt das Kind wieder an.	l'	une,de,la	réhabituer	l'enfant
+Je donne l'aide.	Ich gebe die Hilfe.	l'	une,de,la	donner	l'aide
+Il acquiert la compétence.	Er erwirbt die Kompetenz.	la	une,de,le	acquérir	la compétence
+Elle pleure l'homme.	Sie weint um den Mann.	l'	un,de,le	pleurer	l'homme
+Nous supportons la cause.	Wir unterstützen die Ursache.	la	une,de,le	supporter	la cause
+Il ridiculise la personne.	Er macht die Person lächerlich.	la	une,de,le	ridiculiser	la personne
+Elle dépeint la scène.	Sie stellt die Szene dar.	la	une,de,le	dépeindre	la scène
+Il agréé l'avis.	Er stimmt der Meinung zu.	l'	une,de,le	agréer	l'avis
+Je envoie la lettre.	Ich sende den Brief.	la	une,de,le	envoyer	la lettre
+Nous réchauffons l'eau.	Wir wärmen das Wasser.	l'	une,de,le	réchauffer	l'eau
+Il flambe le bois.	Es flammen das Holz.	le	un,de,la	flamber	le bois
+Elle enroule le ruban.	Sie wickelt das Band.	le	un,de,la	enrouler	le ruban
+Je commande l'article.	Ich bestelle den Artikel.	l'	une,de,le	commander	l'article
+Ils tâchent l'objectif.	Sie versuchen das Ziel.	l'	une,de,le	tâcher	l'objectif
+Elle satisfait la demande.	Sie befriedigt die Anfrage.	la	une,de,le	satisfaire	la demande
+Il minimise le risque.	Er minimiert das Risiko.	le	un,de,la	minimiser	le risque
+Nous encerclons la cible.	Wir umkreisen das Ziel.	la	une,de,le	encercler	la cible
+Ils désertent l'armée.	Sie desertieren aus der Armee.	l'	une,de,le	déserter	l'armée
+Elle revêt le vêtement.	Sie zieht das Kleidungsstück an.	le	un,de,la	revêtir	le vêtement
+Il sous-titre le dialogue.	Er untertitelt den Dialog.	le	un,de,la	sous-titrer	le dialogue
+Un changement advient.	Eine Veränderung geschieht.	Un	le,la,de	advenir	un changement
+Je provoque le problème.	Ich verursache das Problem.	le	un,de,la	provoquer	le problème
+Il rétorque l'objection.	Er entgegnet dem Einwand.	l'	une,de,le	rétorquer	l'objection
+Nous approuvons la décision.	Wir genehmigen die Entscheidung.	la	une,de,le	approuver	la décision
+Elle disparaît la personne.	Sie verschwindet die Person.	la	une,de,le	disparaître	la personne
+Ils redécouvrent le lieu.	Sie entdecken den Ort wieder.	le	un,de,la	redécouvrir	le lieu
+Je façonne l'idée.	Ich forme die Idee.	l'	une,de,le	façonner	l'idée
+Nous voulons la chose.	Wir wollen die Sache.	la	une,de,le	vouloir	la chose
+Ils saccagent la ville.	Sie verwüsten die Stadt.	la	une,de,le	saccager	la ville
+Il innerve l'organe.	Er beeinflusst das Organ.	l'	un,de,le	innerver	l'organe
+Elle raille l'idée.	Sie verspottet die Idee.	l'	une,de,le	railler	l'idée
+Il insinue le sous-entendu.	Er deutet das Unterlassen an.	le	un,de,la	insinuer	le sous-entendu
+Nous tannerons le cuir.	Wir gerben das Leder.	le	un,de,la	tanner	le cuir
+Elle pervertit la valeur.	Sie verdirbt den Wert.	la	une,de,le	pervertir	la valeur
+Il rétrécit l'espace.	Er verkleinert den Raum.	l'	un,de,le	rétrécir	l'espace
+Nous entreprenons le travail.	Wir unternehmen die Arbeit.	le	un,de,la	entreprendre	le travail
+Ils cosignent le contrat.	Sie mitunterzeichnen den Vertrag.	le	un,de,la	cosigner	le contrat
+Elle administre l'entreprise.	Sie verwaltet die Firma.	l'	une,de,le	administrer	l'entreprise
+Il barbèle l'esprit.	Er verwirrt den Geist.	l'	un,de,le	barbeler	l'esprit
+Nous utilisons un outil.	Wir benutzen ein Werkzeug.	un	le,de,la	utiliser	un outil
+Il extrait l'échantillon.	Er entnimmt die Probe.	l'	un,de,le	extraire	l'échantillon
+Elle gagne la compétition.	Sie gewinnt den Wettbewerb.	la	une,de,le	gagner	la compétition
+Il tache le mur.	Er fleckt die Wand.	le	un,de,la	tacheter	le mur
+Je suis un homme.	Ich bin ein Mann.	un	le,de,la	être	homme
+Nous préservons l'environnement.	Wir bewahren die Umwelt.	l'	une,de,le	préserver	l'environnement
+Il solidifie le matériau.	Er verfestigt das Material.	le	un,de,la	solidifier	le matériau
+Elle force la porte.	Sie zwingt die Tür.	la	une,de,le	forcer	la porte
+Il veloute l'objet.	Er verhüllt den Gegenstand.	l'	un,de,le	velouter	l'objet
+Elle ressemble à la personne.	Sie ähnelt der Person.	à	de,sur,avec	ressembler	la personne
+Il enlaidit le lieu.	Er verunstaltet den Ort.	le	un,de,la	enlaidir	le lieu
+Nous délimitons l'espace.	Wir grenzen den Raum ab.	l'	un,de,le	délimiter	l'espace
+Je retransmets le signal.	Ich übertrage das Signal.	le	un,de,dans	retransmettre	le signal
+J'immatricule l'étudiant.	Ich immatrikuliere den Studenten.	l'	un,le,de	immatriculer	l'étudiant
+Je précipite l'événement.	Ich beschleunige das Ereignis.	l'	un,de,sur	précipiter	l'événement
+Je bois l'eau.	Ich trinke das Wasser.	l'	une,de,sur	boire	l'eau
+J'engendre le problème.	Ich verursache das Problem.	le	un,de,dans	engendrer	le problème
+Je braise le légume.	Ich schmoren das Gemüse.	le	un,de,dans	braiser	le légume
+Je millésime la réserve.	Ich jahrgangsbestimme die Reserve.	la	une,de,dans	millésimer	la réserve
+Je dispute le conflit.	Ich streite über den Konflikt.	le	un,de,dans	disputer	le conflit
+J'achète le vêtement.	Ich kaufe das Kleidungsstück.	le	un,de,dans	acheter	le vêtement
+Je restaure l'objet.	Ich restauriere den Gegenstand.	l'	un,de,dans	restaurer	l'objet
+Je cadre la photo.	Ich rahme das Foto.	la	une,de,dans	cadrer	la photo
+Je colore le vêtement.	Ich färbe das Kleidungsstück.	le	un,de,dans	colorer	le vêtement
+J'excepte la personne.	Ich nehme die Person aus.	la	une,de,dans	excepter	la personne
+Je fonctionne l'appareil.	Ich funktioniere das Gerät.	l'	un,de,dans	fonctionner	l'appareil
+Je trace la ligne.	Ich zeichne die Linie.	la	une,de,dans	tracer	la ligne
+Je dilue la solution.	Ich verdünne die Lösung.	la	une,de,dans	diluer	la solution
+J'abroge le règlement.	Ich hebe die Regelung auf.	le	un,de,dans	abroger	le règlement
+Je juge la situation.	Ich urteile über die Situation.	la	une,de,dans	juger	la situation
+Je ferme la porte.	Ich schließe die Tür.	la	une,de,dans	fermer	la porte
+Je personnalise le service.	Ich personalisiere den Dienst.	le	un,de,dans	personnaliser	le service
+J'étire la corde.	Ich dehne das Seil.	la	une,de,dans	étirer	la corde
+Je dote le projet.	Ich statte das Projekt aus.	le	un,de,dans	doter	le projet
+Je prouve la thèse.	Ich beweise die These.	la	une,de,dans	prouver	la thèse
+Je gravis la montagne.	Ich besteige den Berg.	la	une,de,dans	gravir	la montagne
+Je mutile le corps.	Ich verstümmle den Körper.	le	un,de,dans	mutiler	le corps
+Je plume la volaille.	Ich rupfe das Geflügel.	la	une,de,dans	plumer	la volaille
+Je jaunis le papier.	Ich werde das Papier gelb.	le	un,de,dans	jaunir	le papier
+Je tache le vêtement.	Ich flecke das Kleidungsstück.	le	un,de,dans	tacheter	le vêtement
+Je tiens l'objet.	Ich halte den Gegenstand.	l'	un,de,dans	tenir	l'objet
+Je fâche l'enfant.	Ich ärgere das Kind.	l'	un,de,dans	fâcher	l'enfant
+Je décris l'idée.	Ich beschreibe die Idee.	l'	de,une,la	décrire	l'idée
+Ils militent pour la cause.	Sie kämpfen für die Ursache.	pour	avec,de,sur	militer	la cause
+Je congèle la nourriture.	Ich friere die Nahrung ein.	la	une,de,dans	congeler	la nourriture
+Nous traînons avec l'ami.	Wir hängen mit dem Freund herum.	avec	à,de,sur	traîner	l'ami
+Je garde l'objet.	Ich behalte den Gegenstand.	l'	un,la,de	garder	l'objet
+Elle avise la personne.	Sie benachrichtigt die Person.	la	une,de,sur	aviser	la personne
+Il fulmine de colère.	Er explodiert vor Wut.	de	la,sur,avec	fulminer	la colère
+Elle infecte la bactérie.	Sie infiziert die Bakterie.	la	une,de,sur	infecter	la bactérie
+Je sers le client.	Ich bediene den Kunden.	le	un,la,de	servir	le client
+Elle affectionne la chose.	Sie liebt die Sache.	la	une,de,sur	affectionner	la chose
+Il serre la ceinture.	Er drückt den Gürtel.	la	une,de,sur	serrer	la ceinture
+Ils banalisent l'événement.	Sie banalisieren das Ereignis.	l'	de,une,sur	banaliser	l'événement
+Elle agresse la situation.	Sie greift die Situation an.	la	une,de,sur	agresser	la situation
+Nous devisons de la conversation.	Wir reden über das Gespräch.	de	à,sur,avec	deviser	la conversation
+Il surcharge le système.	Er überlastet das System.	le	un,la,de	surcharger	le système
+Je dicte l'instruction.	Ich diktiere die Anweisung.	l'	une,de,sur	dicter	l'instruction
+Ils démantèlent la machine.	Sie demontieren die Maschine.	la	une,de,sur	démanteler	la machine
+Elle méconnaît le lieu.	Sie erkennt den Ort nicht.	le	un,la,de	méconnaître	le lieu
+Il base la théorie.	Er basiert die Theorie.	la	une,de,sur	baser	la théorie
+Je étreins l'ami.	Ich umarme den Freund.	l'	un,la,de	êtreindre	l'ami
+Le chat miaule.	Die Katze miaut.	le	un,la,de	miauler	le chat
+Je jardine le légume.	Ich gärtnern das Gemüse.	le	un,la,de	jardiner	le légume
+Il évide le matériau.	Er höhlt das Material aus.	le	un,la,de	évider	le matériau
+Elle enfère la personne.	Sie verhaftet die Person.	la	une,de,sur	enferrer	la personne
+Il fausse le résultat.	Er verfälscht das Ergebnis.	le	un,la,de	fausser	le résultat
+Elle commet le crime.	Sie begeht das Verbrechen.	le	un,la,de	commettre	le crime
+La balance oscille.	Die Waage schwingt.	la	un,de,sur	osciller	la balance
+Ils confisquent la marchandise.	Sie konfiszieren die Ware.	la	une,de,sur	confisquer	la marchandise
+Il convoque le passager.	Er transportiert den Passagier.	le	un,la,de	convoyer	le passager
+Elle interfère dans le système.	Sie interferiert im System.	dans	de,sur,avec	interférer	le système
+Je vais amadouer l'animal.	Ich werde das Tier beschwichtigen.	l'	de,un,le	amadouer	l'animal
+Je recommande le restaurant.	Ich empfehle das Restaurant.	le	un,de,la	recommander	le restaurant
+Il a endommagé la voiture.	Er hat das Auto beschädigt.	la	une,de,le	endommager	la voiture
+L'eau rejaillit dans le jardin.	Das Wasser sprudelt im Garten.	dans	sur,à,avec	rejaillir	l'eau
+Nous valorisons le produit.	Wir werten das Produkt auf.	le	un,de,la	valoriser	le produit
+Ils sacrifient l'objet.	Sie heiligen den Gegenstand.	l'	de,un,le	sacrifier	l'objet
+Je ressens une émotion.	Ich fühle eine Emotion.	une	la,le,de	ressentir	l'émotion
+Elle ficèle le cadeau.	Sie bindet das Geschenk.	le	un,de,la	ficeler	le cadeau
+Il modère le débat.	Er mäßigt die Debatte.	le	un,de,la	modérer	le débat
+Nous nettoyons la table.	Wir reinigen den Tisch.	la	le,une,de	nettoyer	la table
+Il brave l'obstacle.	Er trotzt dem Hindernis.	l'	de,un,le	braver	l'obstacle
+Elle échauffe l'eau.	Sie erwärmt das Wasser.	l'	de,une,le	échauffer	l'eau
+Il insiste sur la demande.	Er besteht auf der Anfrage.	sur	à,de,avec	insister	la demande
+Nous régulons le système.	Wir regulieren das System.	le	un,de,la	réguler	le système
+Ils réhabilitent le bâtiment.	Sie rehabilitieren das Gebäude.	le	un,de,la	réhabiliter	le bâtiment
+Je déploie la tente.	Ich entfalten das Zelt.	la	un,de,le	déployer	la tente
+Il interférera avec la communication.	Er wird mit der Kommunikation interferieren.	avec	sur,de,à	interférer	la communication
+Elle décrie le système.	Sie setzt das System herab.	le	un,de,la	décrier	le système
+Il inclut la personne.	Er schließt die Person ein.	la	un,de,le	inclure	la personne
+Elle rajoute le détail.	Sie fügt das Detail hinzu.	le	un,de,la	rajouter	le détail
+Il sature la solution.	Er sättigt die Lösung.	la	un,de,le	saturer	la solution
+Elle convainc la personne.	Sie überzeugt die Person.	la	un,de,le	convaincre	la personne
+Il rétame la boîte.	Er retamiert die Box.	la	un,de,le	rétamer	la boîte
+Elle verbalise l'idée.	Sie verbalisiert die Idee.	l'	de,une,le	verbaliser	l'idée
+Je répète l'exercice.	Ich wiederhole die Übung.	l'	de,une,le	répéter	l'exercice
+Nous redistribuons la richesse.	Wir verteilen den Reichtum um.	la	un,de,le	redistribuer	la richesse
+Ils suspectent la situation.	Sie verdächtigen die Situation.	la	un,de,le	suspecter	la situation
+Elle affine le membre.	Sie schließt das Mitglied an.	le	un,de,la	affilier	le membre
+Il endort le patient.	Er schläfert den Patienten ein.	le	un,de,la	endormir	le patient
+Le chien mord le facteur.	Der Hund beißt den Briefträger.	le	un,de,la	mordre	le chien
+Il polit ___ meuble.	Er poliert das Möbel.	le	une,de,la	polir	le meuble
+Je brode le motif.	Ich sticke das Motiv.	le	un,la,du	broder	le motif
+Il agresse la personne.	Er greift die Person an.	la	une,de,le	agresser	la personne
+Ils adorent l'idole.	Sie vergöttern das Idol.	l'	un,la,le	aduler	l'idole
+Je argue le point.	Ich argumentiere den Punkt.	le	un,de,la	arguer	le point
+Nous commentons l'article.	Wir kommentieren den Artikel.	l'	un,la,le	commenter	l'article
+Je rate le train.	Ich verpasse den Zug.	le	un,la,de	rater	le train
+Ils plafonnent le budget.	Sie deckeln das Budget.	le	un,la,de	plafonner	le budget
+L'animal grogne.	Das Tier grunzt.	L'	un,la,le	grogner	l'animal
+Les chemins convergent.	Die Wege konvergieren.	Les	Un,Au,De	converger	le chemin
+Je réinscris l'étudiant.	Ich schreibe den Studenten wieder ein.	l'	un,la,le	réinscrire	l'étudiant
+Nous habitons le quartier.	Wir wohnen im Viertel.	le	un,la,de	habiter	le quartier
+Elle met le vêtement.	Sie zieht das Kleidungsstück an.	le	un,la,de	mettre	le vêtement
+Il empêche l'accident.	Er verhindert den Unfall.	l'	un,la,le	empêcher	l'accident
+Elle remariera l'épouse.	Sie wird die Ehefrau wieder heiraten.	l'	un,la,le	remarier	l'épouse
+Je cuisine le repas.	Ich koche die Mahlzeit.	le	un,la,de	cuisiner	le repas
+Il ouvre la porte.	Er öffnet die Tür.	la	une,de,le	ouvrir	la porte
+Saisis la chance.	Ergreife die Chance.	la	une,de,le	saisir	la chance
+Nous décalons la réunion.	Wir verschieben das Treffen.	la	une,de,le	décaler	la réunion
+Ils combattent l'ennemi.	Sie kämpfen gegen den Feind.	l'	un,la,le	combattre	l'ennemi
+L'espoir renaît.	Die Hoffnung wird wiedergeboren.	L'	un,la,le	renaître	l'espoir
+Je joue la musique.	Ich spiele die Musik.	la	une,de,le	jouer	la musique
+Le moment dure.	Der Moment dauert.	Le	Un,Au,De	durer	le moment
+J'ai la voiture.	Ich habe das Auto.	la	une,de,le	avoir	la voiture
+Il désordonne l'espace.	Er unordnen den Raum.	l'	un,la,le	désordonner	l'espace
+Elle éveille une conscience.	Sie weckt ein Bewusstsein.	une	la,le,de	éveiller	une conscience
+Il singularise le produit.	Er macht das Produkt einzigartig.	le	un,la,de	singulariser	le produit
+Je déconnecte le câble.	Ich trenne das Kabel.	le	un,la,de	déconnecter	le câble
+Nous abaissons le prix.	Wir senken den Preis.	le	un,la,de	abaisser	le prix
+Je verse la sauce.	Ich gieße die Soße.	la	une,de,le	verser	la sauce
+Il survit à l'accident.	Er überlebt den Unfall.	à	de,sur,avec	survivre	l'accident
+Le pneu crisse sur la route.	Der Reifen kreischt auf der Straße.	sur	à,dans,avec	crisser	le pneu
+Il confesse le secret à sa mère.	Er beichtet das Geheimnis seiner Mutter.	à	de,sur,avec	confesser	le secret
+Elle espionne la cible dans le parc.	Sie spioniert das Ziel im Park.	dans	à,sur,avec	espionner	la cible
+Je redonne le cadeau à mon ami.	Ich gebe das Geschenk meinem Freund zurück.	à	de,sur,avec	redonner	le cadeau
+Il rabat le toit sur la voiture.	Er klappt das Dach auf das Auto um.	sur	à,dans,avec	rabattre	le toit
+Nous débutons l'activité à midi.	Wir beginnen die Aktivität um Mittag.	à	de,sur,avec	débuter	l'activité
+Je cuit la viande dans la casserole.	Ich koche das Fleisch im Topf.	dans	à,sur,avec	cuiter	la viande
+Il obéit à la règle toujours.	Er gehorcht immer der Regel.	à	de,sur,avec	obéir	la règle
+Elle affaiblit la santé de son père.	Sie schwächt die Gesundheit ihres Vaters.	de	à,sur,avec	affaiblir	la santé
+Il détourne le regard de la vérité.	Er lenkt den Blick von der Wahrheit ab.	de	à,sur,avec	détourner	le regard
+Je lève la main en classe.	Ich hebe die Hand im Unterricht.	en	à,sur,avec	lever	la main
+Nous diversifions l'offre pour les clients.	Wir diversifizieren das Angebot für die Kunden.	pour	à,sur,avec	diversifier	l'offre
+Il perce le mur avec un marteau.	Er durchdringt die Wand mit einem Hammer.	avec	à,sur,dans	percer	le mur
+Elle faufile la personne dans la foule.	Sie schlüpft mit der Person in die Menge.	dans	à,sur,avec	faufiler	la personne
+Il engloutit le livre en une nuit.	Er verschlingt das Buch in einer Nacht.	en	à,sur,avec	engloutir	le livre
+Je lave la voiture chaque dimanche.	Ich wasche das Auto jeden Sonntag.	la	le,une,des	laver	la voiture
+L'eau rejaillit de la source.	Das Wasser sprudelt aus der Quelle.	de	à,sur,avec	rejaillir	la source
+Je lis le livre tous les jours.	Ich lese das Buch jeden Tag.	le	la,un,des	lire	le livre
+Il pourfend l'ennemi avec courage.	Er zerschlägt den Feind mit Mut.	avec	à,sur,dans	pourfendre	l'ennemi
+L'animal agonise dans le jardin.	Das Tier agonie im Garten.	dans	à,sur,avec	agoniser	l'animal
+Il renverse le véhicule sur la route.	Er kippt das Fahrzeug auf der Straße um.	sur	à,dans,avec	renverser	le véhicule
+Nous plébiscitons la candidature à l'élection.	Wir stimmen für die Bewerbung bei der Wahl ab.	à	de,sur,avec	plébisciter	la candidature
+Ils confèrent le prix à l'artiste.	Sie verleihen den Preis an den Künstler.	à	de,sur,avec	conférer	le prix
+L'image miroite dans l'eau.	Das Bild spiegelt sich im Wasser.	dans	à,sur,avec	miroiter	l'image
+Elle imite la voix de son père.	Sie imitiert die Stimme ihres Vaters.	la	le,une,des	imiter	la voix
+Je consacre du temps à mes amis.	Ich widme Zeit meinen Freunden.	à	de,sur,avec	consacrer	temps
+J'abonne le magazine à ma sœur.	Ich abonniere das Magazin für meine Schwester.	à	de,sur,avec	abonner	le magazine
+Il guide l'enfant dans le parc.	Er führt das Kind im Park.	dans	à,sur,avec	guider	l'enfant
+Elle rapetisse le vêtement pour moi.	Sie verkleinert das Kleidungsstück für mich.	pour	à,sur,avec	rapetisser	le vêtement
+Ils construisent la maison en bois.	Sie bauen das Haus aus Holz.	en	à,sur,avec	construire	la maison
+J'essaie le vêtement.	Ich versuche das Kleidungsstück.	le	un,de,la	essayer	le vêtement
+Il empêtre le tissu.	Er verwickelt den Stoff.	le	un,de,la	empêtrer	le tissu
+Nous cherchons l'objet.	Wir suchen den Gegenstand.	l'	un,le,de	chercher	l'objet
+Ils peuplent la région.	Sie bevölkern die Region.	la	une,de,le	peupler	la région
+Elle muscle le corps.	Sie muskelt den Körper.	le	un,de,la	muscler	le corps
+Je finis le travail.	Ich beende die Arbeit.	le	un,de,la	finir	le travail
+Nous composons la chanson.	Wir komponieren das Lied.	la	une,de,le	composer	la chanson
+Le bois crépite.	Das Holz knistert.	le	un,de,la	crépiter	le bois
+Ils établissent la relation.	Sie richten die Beziehung ein.	la	une,de,le	établir	la relation
+Elle traite le cas.	Sie behandelt den Fall.	le	un,de,la	traiter	le cas
+Il désespère l'espoir.	Er verzweifelt an der Hoffnung.	l'	un,de,la	désespérer	l'espoir
+Elle éperd la personne.	Sie verwirrt die Person.	la	une,de,le	éperdre	la personne
+Il proclame la déclaration.	Er proklamiert die Erklärung.	la	une,de,le	proclamer	la déclaration
+Nous normons la règle.	Wir normieren die Regel.	la	une,de,le	normer	la règle
+Ils percent le mystère.	Sie durchdringen das Geheimnis.	le	un,de,la	percer	le mystère
+Je révise le texte.	Ich überarbeite den Text.	le	un,de,la	réviser	le texte
+Nous regardons le spectacle.	Wir sehen das Schauspiel.	le	un,de,la	regarder	le spectacle
+Il décorne l'animal.	Er bricht das Tier ab.	l'	un,de,la	décorner	l'animal
+Elle aromatise le plat.	Sie aromatisiert das Gericht.	le	un,de,la	aromatiser	le plat
+Nous envoyons le paquet.	Wir senden das Paket.	le	un,de,la	envoyer	le paquet
+Je présente la personne.	Ich stelle die Person vor.	la	une,de,le	présenter	la personne
+Il aveugle la lumière.	Er blendet das Licht.	la	une,de,le	aveugler	la lumière
+Nous soumettons le rapport.	Wir unterwerfen den Bericht.	le	un,de,la	soumettre	le rapport
+Elle entrevoit la possibilité.	Sie ahnt die Möglichkeit.	la	une,de,le	entrevoir	la possibilité
+Il acquitte le cas.	Er spricht den Fall frei.	le	un,de,la	acquitter	le cas
+Je trouve l'ami.	Ich finde den Freund.	l'	un,de,la	trouver	l'ami
+La situation subsiste.	Die Situation besteht.	la	une,de,le	subsister	la situation
+Il basane le cuir.	Er gerbt das Leder.	le	un,de,la	basaner	le cuir
+Elle parfait la compétence.	Sie vollendet die Kompetenz.	la	une,de,le	parfaire	la compétence
+Nous épinglons le document.	Wir heften das Dokument an.	le	un,de,la	épingler	le document
+Je percerai le secret.	Ich werde das Geheimnis durchdringen.	le	un,la,de	percer	le secret
+Il raccroche l'appel.	Er legt den Anruf auf.	l'	un,le,de	raccrocher	l'appel
+Elle embarrasse l'enfant.	Sie macht das Kind verlegen.	l'	un,le,de	embarrasser	l'enfant
+Nous recevons la lettre.	Wir erhalten den Brief.	la	le,une,de	recevoir	la lettre
+Ils désertent la mission.	Sie desertieren die Mission.	la	une,de,le	déserter	la mission
+Je réserve le billet.	Ich reserviere das Ticket.	le	un,la,de	réserver	le billet
+La lumière éblouit.	Das Licht blendet.	la	une,le,de	éblouir	la lumière
+Il excuse le retard.	Er entschuldigt die Verspätung.	le	un,la,de	excuser	le retard
+Nous merdons le projet.	Wir verdammen das Projekt.	le	un,la,de	merder	le projet
+Ils institutionnalisent le processus.	Sie institutionalisieren den Prozess.	le	un,la,de	institutionnaliser	le processus
+Je improvise la musique.	Ich improvisiere die Musik.	la	un,le,de	improviser	la musique
+Il enclore la propriété.	Er schließt das Eigentum ein.	la	un,le,de	enclore	la propriété
+Nous verrouillons le coffre.	Wir verriegeln die Truhe.	le	un,la,de	verrouiller	le coffre
+Elle tend le muscle.	Sie dehnt den Muskel.	le	un,la,de	tendre	le muscle
+Ils faillissent la mission.	Sie versagen bei der Mission.	la	un,le,de	faillir	la mission
+Je recouds la couture.	Ich nähe die Schneiderei wieder.	la	un,le,de	recoudre	la couture
+Je médite le sujet.	Ich meditiere über das Thema.	le	un,la,de	méditer	le sujet
+Ils régissent la situation.	Sie regeln die Situation.	la	un,le,de	régir	la situation
+La voiture trépide.	Das Auto zittert.	la	un,le,de	trépider	la voiture
+Il cisèle la pierre.	Er meißelt den Stein.	la	un,le,de	ciseler	la pierre
+Elle se plaint du problème.	Sie beklagt das Problem.	du	de,le,la	plaindre	le problème
+Je regarde le film.	Ich sehe den Film.	le	un,la,de	regarder	le film
+Ils tubent la culture.	Sie tubieren die Kultur.	la	un,le,de	tuber	la culture
+Nous concluons la discussion.	Wir schließen die Diskussion ab.	la	un,le,de	conclure	la discussion
+Il émet le signal.	Er strahlt das Signal aus.	le	un,la,de	émettre	le signal
+Elle doue le musicien.	Sie begabt den Musiker.	le	un,la,de	douer	le musicien
+Nous hissons le filet.	Wir hissen das Netz.	le	un,la,de	hisser	le filet
+Je gomme le crayon.	Ich radiere den Bleistift.	le	un,la,de	gommer	le crayon
+Ils encensent la réalisation.	Sie loben die Umsetzung.	la	un,le,de	encenser	la réalisation
+Il correspond à l'attente.	Er entspricht der Erwartung.	à	de,pour,sur	correspondre	l'attente
+Elle abrutit la personne.	Sie verblödet die Person.	la	une,de,dans	abrutir	la personne
+Je crible la farine.	Ich siebe das Mehl.	la	une,de,dans	cribler	la farine
+Nous rassemblons le groupe.	Wir versammeln die Gruppe.	le	un,de,dans	rassembler	le groupe
+Il consigne l'information.	Er zeichnet die Information auf.	l'	de,la,une	consigner	l'information
+J'aime la personne.	Ich liebe die Person.	la	une,de,dans	aimer	la personne
+Il gueule à la personne.	Er schreit die Person an.	à	de,sur,avec	gueuler	la personne
+Elle décrète la loi.	Sie dekretieren das Gesetz.	la	une,de,dans	décréter	la loi
+Il étonne la personne.	Er überrascht die Person.	la	une,de,dans	étonner	la personne
+Nous répercutons l'impact.	Wir widerhallen den Einfluss.	l'	de,le,une	répercuter	l'impact
+Il omet l'information.	Er lässt die Information aus.	l'	de,la,une	omettre	l'information
+Nous plaisantons sur la situation.	Wir spaßen über die Situation.	sur	à,de,avec	plaisanter	la situation
+Il discrédite l'information.	Er diskreditiert die Information.	l'	de,la,une	discréditer	l'information
+Je vois le film.	Ich sehe den Film.	le	un,de,la	voir	le film
+Il s'arroge le droit.	Er maßt sich das Recht an.	le	un,de,la	arroger	le droit
+Nous reprenons l'activité.	Wir nehmen die Aktivität wieder auf.	l'	une,de,la	reprendre	l'activité
+Elle dévore la nourriture.	Sie verschlingt die Nahrung.	la	une,de,dans	dévorer	la nourriture
+Il contrevient à la norme.	Er verstößt gegen die Norm.	à	de,sur,avec	contrevenir	la norme
+Nous mitigons le risque.	Wir mildern das Risiko.	le	un,de,la	mitiger	le risque
+Il détache la pièce.	Er löst das Stück.	la	une,de,dans	détacher	la pièce
+Nous semons la culture.	Wir säen die Kultur.	la	une,de,dans	semer	la culture
+Il revisite l'endroit.	Er besucht den Ort neu.	l'	un,de,la	revisiter	l'endroit
+Elle manie le style.	Sie maniert den Stil.	le	un,de,la	maniérer	le style
+Un problème émerge.	Ein Problem taucht auf.	Un	le,la,de	émerger	le problème
+Nous couplons le dispositif.	Wir koppeln das Gerät.	le	un,de,la	coupler	le dispositif
+Il ravage le territoire.	Er verwüstet das Gebiet.	le	un,de,la	ravager	le territoire
+Elle métamorphose le personnage.	Sie verwandelt die Figur.	le	un,de,la	métamorphoser	le personnage
+Le virus infeste l'ordinateur.	Der Virus befällt den Computer.	l'	un,de,la	infester	le virus
+Je mets le livre.	Ich setze das Buch.	le	un,de,la	mettre	le livre
+Nous internationalisons le marché.	Wir internationalisieren den Markt.	le	un,de,la	internationaliser	le marché
+Il est une femme.	Er ist eine Frau.	une	la,le,des	être	femme
+Je charge la valise.	Ich lade den Koffer.	la	une,du,de	charger	la valise
+Il froisse le vêtement.	Er knittern das Kleidungsstück.	le	un,la,des	froisser	vêtement
+La plante fleurit au printemps.	Die Pflanze blüht im Frühling.	au	en,dans,sur	fleurir	plante
+Je fréquente un ami.	Ich besuche einen Freund.	un	le,la,des	fréquenter	ami
+Il conforme la règle.	Er passt die Regel an.	la	une,des,du	conformer	règle
+Nous bâclons le projet.	Wir machen das Projekt schlampig.	le	un,la,des	bâcler	projet
+Elle houspille l'enfant.	Sie schimpft mit dem Kind.	l'	le,un,la	houspiller	enfant
+Il flemmarde sur le canapé.	Er faulenzt auf dem Sofa.	sur	dans,avec,pour	flemmarder	canapé
+Nous pérennisons la situation.	Wir machen die Situation dauerhaft.	la	une,des,du	pérenniser	situation
+Je fendille le papier.	Ich ritze das Papier.	le	un,la,des	fendiller	papier
+Il figure dans la liste.	Er figuriert in der Liste.	dans	sur,au,avec	figurer	liste
+Je dois du temps.	Ich muss Zeit haben.	du	le,un,la	devoir	temps
+Elle dirige l'équipe.	Sie leitet die Mannschaft.	l'	la,une,des	diriger	équipe
+Ils couronnent le roi.	Sie krönen den König.	le	un,la,des	couronner	roi
+Nous sortons du cinéma.	Wir gehen aus dem Kino.	du	le,la,un	sortir	cinéma
+Il correspond au besoin.	Er entspricht dem Bedürfnis.	au	à,dans,pour	correspondre	besoin
+Elle claque le doigt.	Sie knallt mit dem Finger.	le	un,la,des	claquer	doigt
+Il agace l'enfant.	Er ärgert das Kind.	l'	le,un,la	agacer	enfant
+Nous ciblons le marché.	Wir zielen auf den Markt.	le	un,la,des	cibler	marché
+Il courtise une femme.	Er umwirbt eine Frau.	une	la,le,des	courtiser	femme
+Elle houspille la personne.	Sie schimpft mit der Person.	la	une,des,le	houspiller	personne
+Le jour poindra bientôt.	Der Tag wird bald aufkommen.	bientôt	tôt,tard,jamais	poindre	jour
+Je décore la table.	Ich dekoriere den Tisch.	la	une,des,le	décorer	table
+Il jure la promesse.	Er schwört das Versprechen.	la	une,des,le	jurer	promesse
+Nous stationnons la place.	Wir parken den Platz.	la	une,des,le	stationner	place
+Je ride le cheval.	Ich reite das Pferd.	le	un,la,des	rider	cheval
+L'écho retentit dans la vallée.	Das Echo hallt im Tal.	dans	sur,au,avec	retentir	écho
+Il enivre le vin.	Er betrinkt den Wein.	le	un,la,des	enivrer	vin
+Elle frustre la situation.	Sie frustriert die Situation.	la	une,des,le	frustrer	situation
+Je suppose l'idée.	Ich nehme die Idee an.	l'	de,une,la	supposer	l'idée
+Il manie un outil.	Er handhabt ein Werkzeug.	un	le,la,de	manier	un outil
+Elle pointe la direction.	Sie zeigt die Richtung.	la	une,de,à	pointer	la direction
+Nous revitalisons la communauté.	Wir revitalisieren die Gemeinschaft.	la	une,de,dans	revitaliser	la communauté
+Je écoute la musique.	Ich höre die Musik.	la	une,de,à	écouter	la musique
+Il valide la décision.	Er bestätigt die Entscheidung.	la	une,de,à	valider	la décision
+Nous encadrons la photo.	Wir rahmen das Foto.	la	une,de,à	encadrer	la photo
+Je partage l'idée.	Ich teile die Idee.	l'	une,de,la	partager	l'idée
+Elle entête la pensée.	Sie verwirrt den Gedanken.	la	une,de,à	entêter	la pensée
+Nous arrêtons la voiture.	Wir halten das Auto an.	la	une,de,à	arrêter	la voiture
+Il manie la situation.	Er handhabt die Situation.	la	une,de,à	manier	la situation
+Nous télévisons le film.	Wir sehen den Film.	le	la,une,de	téléviser	le film
+Ils parrainent le projet.	Sie patronieren das Projekt.	le	la,une,de	parrainer	le projet
+Je grillage le légume.	Ich grille das Gemüse.	le	la,une,de	grillager	le légume
+Nous concevons le produit.	Wir entwerfen das Produkt.	le	la,une,de	concevoir	le produit
+Je sens la chaleur.	Ich fühle die Wärme.	la	une,de,à	sentir	la chaleur
+Il affecte la personne.	Er beeinflusst die Person.	la	une,de,à	affecter	la personne
+Nous scrutons la situation.	Wir untersuchen die Situation genau.	la	une,de,à	scruter	la situation
+Elle étire le muscle.	Sie dehnt den Muskel.	le	la,une,de	étirer	le muscle
+Ils contrebalancent l'impact.	Sie gleichen den Einfluss aus.	l'	la,une,de	contrebalancer	l'impact
+Nous validons l'information.	Wir bestätigen die Information.	l'	une,de,la	valider	l'information
+Il confronte la personne.	Er konfrontiert die Person.	la	une,de,à	confronter	la personne
+Nous préparons l'événement.	Wir bereiten das Ereignis vor.	l'	une,de,la	préparer	l'événement
+Nous régulons le processus.	Wir regulieren den Prozess.	le	la,une,de	réguler	le processus
+Il motorise l'équipement.	Er motorisiert die Ausrüstung.	l'	la,une,de	motoriser	l'équipement
+Elle rejette une proposition.	Sie lehnt einen Vorschlag ab.	une	la,de,à	rejeter	une proposition
+Il pénètre dans le marché.	Er dringt in den Markt ein.	dans	à,sur,avec	pénétrer	le marché
+Elle paie la facture.	Sie bezahlt die Rechnung.	la	une,de,le	payer	la facture
+Il écrit le texte.	Er schreibt den Text.	le	un,la,de	écrire	le texte
+Elle surprend la nouvelle.	Sie überrascht die Nachricht.	la	une,de,le	surprendre	la nouvelle
+Il modifie le document.	Er ändert das Dokument.	le	un,la,de	modifier	le document
+L'animal mugit dans le pré.	Das Tier muht auf der Wiese.	dans	à,sur,avec	mugir	l'animal
+Il cantonne dans le quartier.	Er quartiert im Viertel ein.	dans	à,sur,le	cantonner	le quartier
+Ils polluent la terre.	Sie verschmutzen die Erde.	la	une,de,le	polluer	la terre
+Elle renouvelle l'abonnement.	Sie erneuert das Abonnement.	l'	un,la,le	renouveler	l'abonnement
+Il intercède pour la situation.	Er interveniert für die Situation.	pour	dans,à,avec	intercéder	la situation
+Ils protègent l'environnement.	Sie schützen die Umwelt.	l'	la,le,une	protéger	l'environnement
+Je veux obtenir la réponse.	Ich möchte die Antwort erhalten.	la	une,de,le	obtenir	la réponse
+Il faut recorriger le texte.	Man muss den Text korrigieren.	le	un,la,de	recorriger	le texte
+Elle veut regagner du temps.	Sie will Zeit zurückgewinnen.	du	le,la,un	regagner	temps
+Il broie le grain.	Er zerkleinert das Korn.	le	un,la,de	broyer	le grain
+Elle commet une erreur.	Sie begeht einen Fehler.	une	la,le,de	commettre	l'erreur
+Il photographie la personne.	Er fotografiert die Person.	la	une,de,le	photographier	la personne
+Elle saigne du nez.	Sie blutet aus der Nase.	du	le,la,de	saigner	le nez
+Il apaise la tension.	Er beruhigt die Spannung.	la	une,de,le	apaiser	la tension
+Elle essuie la main.	Sie wischt die Hand ab.	la	une,de,le	essuyer	la main
+Il appelle le nom.	Er ruft den Namen.	le	un,la,de	appeler	le nom
+Elle positionne la marque.	Sie positioniert die Marke.	la	une,de,le	positionner	la marque
+Il excepte la situation.	Er nimmt die Situation aus.	la	une,de,le	excepter	la situation
+Elle traduit la phrase.	Sie übersetzt den Satz.	la	une,de,le	traduire	la phrase
+Il éclaircit le doute.	Er klärt den Zweifel auf.	le	un,la,de	éclaircir	le doute
+Elle entache l'image.	Sie beschmutzt das Bild.	l'	une,de,le	entacher	l'image
+Il fonde une entreprise.	Er gründet eine Firma.	une	la,le,de	fonder	l'entreprise
+Elle signifie le signe.	Sie bedeutet das Zeichen.	le	un,la,de	signifier	le signe
+Il rebutte l'idée.	Er stößt die Idee ab.	l'	une,de,le	rebuter	l'idée
+Elle ceinture l'objet.	Sie umgürtet den Gegenstand.	l'	un,de,le	ceinturer	l'objet
+Je cherche la réponse.	Ich suche die Antwort.	la	une,de,le	chercher	la réponse
+Ils exultent de la victoire.	Sie jubeln über den Sieg.	de	à,sur,avec	exulter	la victoire
+Elle accable la situation.	Sie überwältigt die Situation.	la	une,de,le	accabler	la situation
+Nous vendons le service.	Wir verkaufen den Dienst.	le	un,la,de	vendre	le service
+Il spécifie le détail.	Er spezifiziert das Detail.	le	un,la,de	spécifier	le détail
+Je reçois un cadeau.	Ich erhalte ein Geschenk.	un	la,de,le	recevoir	le cadeau
+Tu aides l'ami.	Du hilfst dem Freund.	l'	un,le,la	aider	l'ami
+Ils merdent dans la relation.	Sie verdammen die Beziehung.	dans	avec,sur,de	merder	la relation
+Je perds la clé.	Ich verliere den Schlüssel.	la	une,de,le	perdre	la clé
+Nous abstrait le concept.	Wir abstrahieren das Konzept.	le	un,la,de	abstraire	le concept
+Ils célèbrent l'événement.	Sie feiern das Ereignis.	l'	un,la,de	célébrer	l'événement
+Elle facilite la communication.	Sie erleichtert die Kommunikation.	la	une,de,le	faciliter	la communication
+Nous débattons sur le sujet.	Wir debattieren über das Thema.	sur	de,avec,à	débattre	le sujet
+Il ânonne la réponse.	Er stammelt die Antwort.	la	une,de,le	ânonner	la réponse
+Ils colonisent la population.	Sie kolonisieren die Bevölkerung.	la	une,de,le	coloniser	la population
+Je m'accoude à la table.	Ich lehne mich an den Tisch.	à	de,sur,avec	accouder	la table
+Il rythme l'activité.	Er rhythmisiert die Aktivität.	l'	une,de,le	rythmer	l'activité
+Nous palions l'effet.	Wir mildern den Effekt.	l'	un,la,de	pallier	l'effet
+Je fais la cuisine.	Ich mache die Küche.	la	une,de,le	faire	la cuisine
+Il place l'objet.	Er platziert den Gegenstand.	l'	un,la,de	placer	l'objet
+Elle avertit du risque.	Sie warnt vor dem Risiko.	du	de,le,la	avertir	le risque
+Il lasse l'esprit.	Er ermüdet den Geist.	l'	un,la,de	lasser	l'esprit
+Je sucre le café.	Ich zucke den Kaffee.	le	un,la,de	sucrer	le café
+Ils polymérisent le plastique.	Sie polymerisieren den Kunststoff.	le	un,la,de	polymériser	le plastique
+Elle maltraite l'animal.	Sie misshandelt das Tier.	l'	un,la,de	maltraiter	l'animal
+Le pain moisit.	Das Brot schimmelt.	le	un,la,de	moisir	le pain
+Je salue l'ami.	Ich grüße den Freund.	l'	un,la,de	saluer	l'ami
+Nous vérifions la facture.	Wir überprüfen die Rechnung.	la	une,de,le	vérifier	la facture
+Il confie la responsabilité.	Er vertraut die Verantwortung an.	la	une,de,le	confier	la responsabilité
+Elle fige la glace.	Sie friert das Eis ein.	la	une,de,le	figer	la glace
+Je rappelle l'information.	Ich erinnere an die Information.	l'	de,la,une	rappeler	l'information
+J'ôte l'objet.	Ich entferne den Gegenstand.	l'	du,de,un	ôter	l'objet
+J'ai le chien.	Ich habe den Hund.	le	un,la,de	avoir	le chien
+Il déroute le voyageur.	Er verwirrt den Reisenden.	le	du,un,la	dérouter	le voyageur
+Nous pérennisons la relation.	Wir machen die Beziehung dauerhaft.	la	une,de,le	pérenniser	la relation
+Elle exécute la tâche.	Sie führt die Aufgabe aus.	la	une,de,le	exécuter	la tâche
+Je doute de la situation.	Ich zweifle an der Situation.	de	à,la,le	douter	la situation
+Il rassure la personne.	Er beruhigt die Person.	la	une,de,le	rassurer	la personne
+Ils corrompent la personne.	Sie bestechen die Person.	la	une,de,le	corrompre	la personne
+Je vois le paysage.	Ich sehe die Landschaft.	le	un,la,de	voir	le paysage
+Nous dépassionnons le sujet.	Wir entkräften das Thema.	le	un,la,de	dépassionner	le sujet
+Il gonfle le poumon.	Er bläst die Lunge auf.	le	un,la,de	gonfler	le poumon
+Nous réunissons le groupe.	Wir versammeln die Gruppe.	le	un,la,de	réunir	le groupe
+J'ai la maison.	Ich habe das Haus.	la	une,de,le	avoir	la maison
+Elle souffre de la douleur.	Sie leidet unter dem Schmerz.	de	à,la,le	souffrir	la douleur
+Je reconduis l'ami.	Ich bringe den Freund zurück.	l'	un,la,de	reconduire	l'ami
+Il malmène le collègue.	Er schikaniert den Kollegen.	le	un,la,de	malmener	le collègue
+Elle insulte la personne.	Sie beleidigt die Person.	la	une,de,le	insulter	la personne
+Je reste dans l'endroit.	Ich bleibe an dem Ort.	dans	à,le,de	rester	l'endroit
+Il surmène la personne.	Er überanstrengt die Person.	la	une,de,le	surmener	la personne
+Nous recommençons le projet.	Wir fangen das Projekt wieder an.	le	un,la,de	recommencer	le projet
+Il renverse la situation.	Er kippt die Situation um.	la	une,de,le	renverser	la situation
+Elle écarquille le visage.	Sie öffnet das Gesicht weit.	le	un,la,de	écarquiller	le visage
+Je baigne le chien.	Ich bade den Hund.	le	un,la,de	baigner	le chien
+Il vise la cible.	Er zielt auf das Ziel.	la	une,de,le	viser	la cible
+Nous éclaircissons le problème.	Wir klären das Problem auf.	le	un,la,de	éclaircir	le problème
+Je perds le match.	Ich verliere das Spiel.	le	un,la,de	perdre	le match
+Nous poursuivons l'objectif.	Wir verfolgen das Ziel.	l'	un,la,de	poursuivre	l'objectif
+Je chante le texte.	Ich singe den Text.	le	un,la,de	chanter	le texte
+Nous débrouillons la situation.	Wir kommen mit der Situation zurecht.	la	une,de,le	débrouiller	la situation
+Je zone le territoire.	Ich zone das Gebiet.	le	un,la,du	zoner	le territoire
+Elle embrasse l'enfant.	Sie umarmt das Kind.	l'	un,le,la	embrasser	l'enfant
+Nous réaffirmons l'engagement.	Wir bekräftigen das Engagement.	l'	un,le,la	réaffirmer	l'engagement
+Il déculpabilise le sentiment.	Er entlastet das Gefühl.	le	un,la,de	déculpabiliser	le sentiment
+Je repêche l'objet.	Ich hole den Gegenstand wieder.	l'	un,le,la	repêcher	l'objet
+Ils auréolent la réputation.	Sie umkränzen den Ruf.	la	le,un,de	auréoler	la réputation
+Elle ride le poney.	Sie reitet das Pony.	le	un,la,de	rider	le poney
+Je me souviens de l'événement.	Ich erinnere mich an das Ereignis.	de	à,le,un	se souvenir	l'événement
+Il désenchante l'enfant.	Er enttäuscht das Kind.	l'	un,le,la	désenchanter	l'enfant
+Nous institutionnalisons la pratique.	Wir institutionalisieren die Praxis.	la	le,un,de	institutionnaliser	la pratique
+Je travaille dans l'entreprise.	Ich arbeite in der Firma.	dans	à,le,un	travailler	l'entreprise
+Il irrigue le champ.	Er bewässert das Feld.	le	un,la,de	irriguer	le champ
+L'événement advient demain.	Das Ereignis geschieht morgen.	demain	hier,aujourd'hui,la	advenir	l'événement
+Nous survolons le territoire.	Wir überfliegen das Gebiet.	le	un,la,de	survoler	le territoire
+Ils papotent de la conversation.	Sie plaudern über das Gespräch.	de	à,le,un	papoter	la conversation
+Elle oppose l'argument.	Sie setzt das Argument entgegen.	l'	un,le,la	opposer	l'argument
+Je supprime le message.	Ich lösche die Nachricht.	le	un,la,de	supprimer	le message
+Il arrête le mouvement.	Er hält die Bewegung an.	le	un,la,de	arrêter	le mouvement
+Elle rompt la relation.	Sie bricht die Beziehung.	la	le,un,de	rompre	la relation
+Il aiguillera le flux.	Er leitet den Fluss.	le	un,la,de	aiguiller	le flux
+Nous fructifions le travail.	Wir machen die Arbeit fruchtbar.	le	un,la,de	fructifier	le travail
+Elle réveille la personne.	Sie weckt die Person.	la	le,un,de	réveiller	la personne
+Il cogne la main.	Er haut die Hand.	la	le,un,de	cogner	la main
+Nous pavons la place.	Wir pflastern den Platz.	la	le,un,de	paver	la place
+Je conduis la moto.	Ich fahre das Motorrad.	la	le,un,de	conduire	la moto
+Il tente la chance.	Er versucht das Glück.	la	le,un,de	tenter	la chance
+Nous intégrons le système.	Wir integrieren das System.	le	un,la,de	intégrer	le système
+Ils couronnent le champion.	Sie krönen den Champion.	le	un,la,de	couronner	le champion
+Cela occasionne le retard.	Das verursacht die Verspätung.	le	un,la,de	occasionner	le retard
+Il sacralise le rituel.	Er heilt das Ritual.	le	un,la,de	sacraliser	le rituel
+Je lave la vaisselle.	Ich wasche das Geschirr.	la	de,une,le	laver	la vaisselle
+J'arrose la plante.	Ich gieße die Pflanze.	la	une,de,le	arroser	la plante
+Il affaiblit la force.	Er schwächt die Kraft.	la	de,une,le	affaiblir	la force
+Elle recale l'élève.	Sie lässt den Schüler durchfallen.	l'	un,le,de	recaler	l'élève
+Il fume la pipe.	Er raucht die Pfeife.	la	une,de,le	fumer	la pipe
+Je feuillette le livre.	Ich blättere im Buch.	le	un,de,la	feuilleter	le livre
+Ils dispersent le groupe.	Sie streuen die Gruppe.	le	une,de,la	disperser	le groupe
+Elle dilue la peinture.	Sie verdünnt die Malerei.	la	une,de,le	diluer	la peinture
+Il incarne le personnage.	Er verkörpert die Figur.	le	une,de,la	incarner	le personnage
+Elle épouse l'amour.	Sie heiratet die Liebe.	l'	une,de,le	épouser	l'amour
+Je crois la vérité.	Ich glaube der Wahrheit.	la	une,de,le	croire	la vérité
+L'écho répercute la voix.	Das Echo widerhallt die Stimme.	la	une,de,le	répercuter	l'écho
+Je ramène l'ami.	Ich bringe den Freund zurück.	l'	un,le,de	ramener	l'ami
+Il écarquille le regard.	Er öffnet die Augen weit.	le	une,de,l'	écarquiller	le regard
+La troupe rue la rue.	Die Truppe stürmt die Straße.	la	une,de,le	ruer	la troupe
+Je cuisine le plat.	Ich koche das Gericht.	le	une,de,la	cuiter	le plat
+Il défigure l'œuvre.	Er entstellt das Werk.	l'	une,de,le	défigurer	l'œuvre
+Elle vit la vie.	Sie lebt das Leben.	la	une,de,le	vivre	la vie
+Nous festoyons le mariage.	Wir feiern die Ehe.	le	une,de,la	festoyer	le mariage
+Il suture le tissu.	Er näht den Stoff.	le	une,de,la	suturer	le tissu
+Le travail stresse l'élève.	Die Arbeit stresst den Schüler.	l'	une,de,le	stresser	le travail
+Je comprends la situation.	Ich verstehe die Situation.	la	une,de,le	comprendre	la situation
+Je mets l'objet sur la table.	Ich setze den Gegenstand auf den Tisch.	l'	un,de,la	mettre	l'objet
+Il tolère l'avis.	Er toleriert die Meinung.	l'	une,de,le	tolérer	l'avis
+Nous visitons la ville.	Wir besuchen die Stadt.	la	une,de,le	visiter	la ville
+Elle étend la main.	Sie streckt die Hand aus.	la	une,de,le	étendre	la main
+Je côtoie le voisin.	Ich lebe nebenbei mit dem Nachbarn.	le	une,de,la	côtoyer	le voisin
+Nous cohabitons l'appartement.	Wir leben in der Wohnung zusammen.	l'	un,de,la	cohabiter	l'appartement
+Il vicie l'air.	Er verunreinigt die Luft.	l'	une,de,le	vicier	l'air
+Elle cerclera la zone.	Sie umkreist die Zone.	la	une,de,le	cercler	la zone
+Je redonne l'argent à Marie.	Ich gebe das Geld an Marie zurück.	à	de,sur,pour	redonner	l'argent
+Il dévoie la personne avec charme.	Er verführt die Person mit Charme.	avec	à,de,sur	dévoyer	la personne
+Nous configurons le réseau en ligne.	Wir konfigurieren das Netzwerk online.	en	à,sur,pour	configurer	le réseau
+Je remplace l'objet par un nouveau.	Ich ersetze den Gegenstand durch einen neuen.	par	à,de,dans	replacer	l'objet
+Il force la main de son ami.	Er zwingt die Hand seines Freundes.	de	à,sur,avec	forcer	la main
+Elle tisse le réseau avec patience.	Sie webt das Netzwerk mit Geduld.	avec	à,de,sur	tisser	le réseau
+Je venge l'ami de ma sœur.	Ich räche den Freund meiner Schwester.	de	à,sur,avec	venger	l'ami
+Une odeur émane du jardin.	Ein Geruch strömt aus dem Garten.	du	à,de,sur	émaner	une odeur
+Je coupe le légume en morceaux.	Ich schneide das Gemüse in Stücke.	en	à,de,sur	couper	le légume
+Il zèbre le mur avec de la peinture.	Er streift die Wand mit Farbe.	avec	à,de,sur	zébrer	le mur
+Nous démontons la machine pour réparer.	Wir demontieren die Maschine zur Reparatur.	pour	à,de,avec	démonter	la machine
+Il débride l'énergie de la voiture.	Er gibt die Energie des Autos frei.	de	à,sur,avec	débrider	l'énergie
+Elle abrite l'objet dans le tiroir.	Sie unterbringt den Gegenstand in der Schublade.	dans	à,de,sur	abriter	l'objet
+Nous accomplissons la tâche ensemble.	Wir machen die Aufgabe zusammen.	ensemble	à,de,sur	accomplir	la tâche
+Il surveille la situation de près.	Er überwacht die Situation genau.	de	à,sur,avec	surveiller	la situation
+Elle clarifie l'explication pour tous.	Sie klärt die Erklärung für alle.	pour	à,de,avec	clarifier	l'explication
+Nous acclamons l'équipe à la fin.	Wir applaudieren der Mannschaft am Ende.	à	de,sur,avec	acclamer	l'équipe
+Je choisis le repas pour ce soir.	Ich wähle die Mahlzeit für heute Abend.	pour	à,de,sur	choisir	le repas
+Il triche au jeu avec son ami.	Er schummelt im Spiel mit seinem Freund.	au	à,de,sur	tricher	le jeu
+Elle ose l'idée de partir.	Sie wagt die Idee zu gehen.	de	à,sur,avec	oser	l'idée
+Il romance la relation avec douceur.	Er romantisiert die Beziehung sanft.	avec	à,de,sur	romancer	la relation
+Je hais la personne qui ment.	Ich hasse die Person, die lügt.	la	de,à,sur	haïr	la personne
+Nous louons la maison pour l'été.	Wir mieten das Haus für den Sommer.	pour	à,de,sur	louer	la maison
+L'objet chute au sol rapidement.	Der Gegenstand fällt schnell zu Boden.	au	à,de,sur	chuter	l'objet
+Je touille le mélange dans le bol.	Ich rühre die Mischung in der Schüssel um.	dans	à,de,sur	touiller	le mélange
+Il ravit l'enfant avec un cadeau.	Er entzückt das Kind mit einem Geschenk.	avec	à,de,sur	ravir	l'enfant
+Je dis la vérité à mes amis.	Ich sage die Wahrheit meinen Freunden.	à	de,sur,avec	dire	la vérité
+Elle authentifie la signature de l'artiste.	Sie authentifiziert die Unterschrift des Künstlers.	de	à,sur,avec	authentifier	la signature
+Il noircit la surface avec de la peinture.	Er schwärzt die Oberfläche mit Farbe.	avec	à,de,sur	noircir	la surface
+Je prie la prière avant de dormir.	Ich bete das Gebet vor dem Schlafen.	la	de,à,sur	prier	la prière
+Il ampute le bras.	Er amputiert den Arm.	le	un,la,du	amputer	le bras
+Elle bande la blessure.	Sie bindet die Verletzung.	la	une,le,des	bander	la blessure
+Nous résorbons le problème.	Wir lösen das Problem auf.	le	un,la,des	résorber	le problème
+Je nettoie la fenêtre.	Ich reinige das Fenster.	la	une,le,des	nettoyer	la fenêtre
+Ils prohibent le produit.	Sie verbieten das Produkt.	le	un,la,des	prohiber	le produit
+Tu fermes la fenêtre.	Du schließt das Fenster.	la	une,le,des	fermer	la fenêtre
+Il assassine la personne.	Er ermordet die Person.	la	une,le,des	assassiner	la personne
+Nous versons l'énergie.	Wir widmen die Energie.	l'	la,une,le	vouer	l'énergie
+Je conduis un bus.	Ich fahre einen Bus.	un	le,la,des	conduire	un bus
+Ils logent la famille.	Sie bringen die Familie unter.	la	une,le,des	loger	la famille
+Elle pavane le succès.	Sie prahlt mit dem Erfolg.	le	un,la,des	pavaner	le succès
+Je remplis le formulaire.	Ich fülle das Formular aus.	le	un,la,des	remplir	le formulaire
+Nous utilisons la ressource.	Wir benutzen die Ressource.	la	une,le,des	utiliser	la ressource
+Il dissuade la personne.	Er wendet die Person ab.	la	une,le,des	dissuader	la personne
+Je rallume la lampe.	Ich zünde die Lampe wieder an.	la	une,le,des	rallumer	la lampe
+Elle poignarde la blessure.	Sie erstecht die Verletzung.	la	une,le,des	poignarder	la blessure
+Il conduit la voiture.	Er fährt das Auto.	la	une,le,des	conduire	la voiture
+Nous habitons la maison.	Wir wohnen im Haus.	la	une,le,des	habiter	la maison
+Je comprends le problème.	Ich verstehe das Problem.	le	un,la,des	comprendre	le problème
+Il vexe la situation.	Er ärgert die Situation.	la	une,le,des	vexer	la situation
+Nous actionnons le mécanisme.	Wir betätigen den Mechanismus.	le	un,la,des	actionner	le mécanisme
+Je scie la branche.	Ich säge den Zweig.	la	une,le,des	scier	la branche
+Il nuit à la santé.	Er schadet der Gesundheit.	à	de,sur,avec	nuire	la santé
+L'économie croît.	Die Wirtschaft wächst.	l'	la,une,le	croître	l'économie
+Elle rougit la peau.	Sie errötet die Haut.	la	une,le,des	rougir	la peau
+Il profère l'avis.	Er spricht die Meinung aus.	l'	la,une,le	proférer	l'avis
+Nous cubons le volume.	Wir würfeln das Volumen.	le	un,la,des	cuber	le volume
+Elle fascine l'enfant.	Sie fasziniert das Kind.	l'	la,une,le	fasciner	l'enfant
+L'effet résulte.	Der Effekt resultiert.	l'	la,une,le	résulter	l'effet
+Il étoile le ciel.	Er sternen den Himmel.	le	un,la,des	étoiler	le ciel
+Je vais effiler le légume.	Ich werde das Gemüse ausdünnen.	le	un,de,la	effiler	le légume
+Nous regardons la télévision.	Wir sehen das Fernsehen.	la	le,une,les	regarder	la télévision
+Il transpose la musique.	Er transponiert die Musik.	la	le,une,des	transposer	la musique
+Elle envoie le message.	Sie sendet die Nachricht.	le	un,la,des	envoyer	le message
+Ils rétablissent la situation.	Sie stellen die Situation wieder her.	la	une,le,des	rétablir	la situation
+Il prêche la valeur.	Er predigt den Wert.	la	le,une,des	prêcher	la valeur
+Je localise la personne.	Ich lokalisiere die Person.	la	une,le,des	localiser	la personne
+Nous substituons le membre.	Wir ersetzen das Mitglied.	le	un,la,des	substituer	le membre
+Il fixe le prix.	Er legt den Preis fest.	le	un,la,des	fixer	le prix
+Elle élabore le projet.	Sie arbeitet das Projekt aus.	le	un,la,des	élaborer	le projet
+L'individu se suicide.	Das Individuum bringt sich um.	se	le,la,un	se suicider	l'individu
+Je imperméabilise le tissu.	Ich mache den Stoff wasserfest.	le	un,la,des	imperméabiliser	le tissu
+Nous radioguiderons le groupe.	Wir radioguiden die Gruppe.	le	un,la,des	radioguider	le groupe
+Il secoue la bouteille.	Er schüttelt die Flasche.	la	le,une,des	secouer	la bouteille
+Elle outrage la personne.	Sie beleidigt die Person.	la	le,une,des	outrager	la personne
+Il relate l'événement.	Er berichtet über das Ereignis.	l'	le,une,des	relater	l'événement
+Elle vole l'objet.	Sie stiehlt den Gegenstand.	l'	le,une,des	voler	l'objet
+Nous délimitons le territoire.	Wir grenzen das Gebiet ab.	le	un,la,des	délimiter	le territoire
+Il patiente un temps.	Er wartet eine Zeit.	un	le,la,des	patienter	temps
+Elle frotte la surface.	Sie reibt die Oberfläche.	la	le,une,des	frotter	la surface
+Ils adulent l'artiste.	Sie vergöttern den Künstler.	l'	le,une,des	aduler	l'artiste
+Elle théorise l'idée.	Sie theoretisiert die Idee.	l'	le,une,des	théoriser	l'idée
+Il ampute la jambe.	Er amputiert das Bein.	la	le,une,des	amputer	la jambe
+Elle refroidit la soupe.	Sie kühlt die Suppe ab.	la	le,une,des	refroidir	la soupe
+Je choisis l'option.	Ich wähle die Option.	l'	le,une,des	choisir	l'option
+Il dérobe l'argent.	Er stiehlt das Geld.	l'	le,une,des	dérober	l'argent
+Elle atteste le document.	Sie attestiert das Dokument.	le	un,la,des	attester	le document
+Il préside l'assemblée.	Er sitzt der Versammlung vor.	l'	le,une,des	présider	l'assemblée
+Elle conditionne le produit.	Sie bedingt das Produkt.	le	un,la,des	conditionner	le produit
+Il esquisse le plan.	Er skizziert den Plan.	le	un,la,des	esquisser	le plan
+Je repère la personne.	Ich lokalisiere die Person.	la	une,de,du	repérer	la personne
+Je réédite le livre.	Ich gebe das Buch neu heraus.	le	un,la,de	rééditer	le livre
+Je range le placard.	Ich räume den Schrank auf.	le	la,un,dans	ranger	le placard
+Je redire la chose.	Ich sage die Sache wieder.	la	une,de,le	redire	la chose
+Le diamant brille au soleil.	Der Diamant leuchtet in der Sonne.	au	dans,sur,de	briller	le diamant
+Je reviens au jour.	Ich komme am Tag zurück.	au	dans,sur,de	revenir	jour
+Je renseigne la personne.	Ich informiere die Person.	la	une,de,du	renseigner	la personne
+Il triomphe du succès.	Er triumphiert über den Erfolg.	du	le,la,un	triompher	le succès
+Elle orchestre le concert.	Sie orchestriert das Konzert.	le	un,la,de	orchestrer	le concert
+Ce projet requiert du temps.	Dieses Projekt erfordert Zeit.	du	le,la,un	requérir	la ressource
+Je côtoie l'ami.	Ich lebe nebenbei mit dem Freund.	l'	le,la,un	côtoyer	l'ami
+Nous relogeons le locataire.	Wir umquartieren den Mieter.	le	la,un,de	reloger	le locataire
+Il me manque l'ami.	Mir fehlt der Freund.	l'	le,la,un	manquer	l'ami
+Je éprouve un sentiment.	Ich erfahre ein Gefühl.	un	le,la,de	éprouver	le sentiment
+Nous établissons la règle.	Wir richten die Regel ein.	la	un,de,le	établir	la règle
+Il mitige l'effet.	Er mildert den Effekt.	l'	le,la,un	mitiger	l'effet
+Elle sophistique l'idée.	Sie verfeinert die Idee.	l'	la,un,de	sophistiquer	l'idée
+Ils enferment la personne.	Sie sperren die Person ein.	la	une,de,du	enfermer	la personne
+Il cambre le corps.	Er krümmt den Körper.	le	la,un,de	cambrer	le corps
+Je imagine la scène.	Ich stelle die Szene vor.	la	une,de,le	imaginer	la scène
+Il démissionne du poste.	Er kündigt den Posten.	du	le,la,un	démissionner	le poste
+Je m'efforce du travail.	Ich bemühe mich um die Arbeit.	du	le,la,un	efforcer	le travail
+Je ramasse le déchet.	Ich hebe den Abfall auf.	le	la,un,de	ramasser	le déchet
+Je devine la situation.	Ich errate die Situation.	la	une,de,le	deviner	la situation
+Je corrige l'erreur.	Ich korrigiere den Fehler.	l'	le,la,un	corriger	l'erreur
+Ils contrecarrent le projet.	Sie durchkreuzen das Projekt.	le	un,la,de	contrecarrer	le projet
+Je contribue à la discussion.	Ich trage zur Diskussion bei.	à	de,sur,avec	contribuer	la discussion
+Ils divorcent de la relation.	Sie scheiden sich von der Beziehung.	de	à,du,le	divorcer	la relation
+Ils bataillent pour la bataille.	Sie kämpfen um die Schlacht.	pour	de,du,le	batailler	la bataille
+Nous commémorons le jour.	Wir gedenken des Tages.	le	un,la,de	commémorer	jour
+Je simule la situation.	Ich simuliere die Situation.	la	une,de,du	simuler	la situation
+Il tambourine le rythme.	Er trommelt den Rhythmus.	le	un,de,la	tambouriner	le rythme
+Elle dessine l'image.	Sie zeichnet das Bild.	l'	une,la,de	dessiner	l'image
+Ils tiraillent le tissu.	Sie zerren am Stoff.	le	un,de,la	tirailler	le tissu
+Nous sanctionnons l'infraction.	Wir bestrafen den Verstoß.	l'	une,la,de	sanctionner	l'infraction
+Il profane le lieu.	Er entweiht den Ort.	le	un,de,la	profaner	le lieu
+Je millésime la bouteille.	Ich jahrgangsbestimme die Flasche.	la	une,de,du	millésimer	la bouteille
+Ils soupçonnent l'activité.	Sie verdächtigen die Aktivität.	l'	une,la,de	soupçonner	l'activité
+Elle chamboule le plan.	Sie wirft den Plan um.	le	un,de,la	chambouler	le plan
+La fontaine rejaillit.	Der Brunnen sprudelt wieder.	la	une,de,du	rejaillir	la fontaine
+La cloche sonne.	Die Glocke läutet.	la	une,de,du	sonner	la cloche
+J'écoute la radio.	Ich höre das Radio.	la	une,de,du	écouter	la radio
+Il prime le choix.	Er primt die Wahl.	le	un,de,la	primer	le choix
+Elle accroît l'histoire.	Sie glaubt der Geschichte.	l'	une,la,de	accroire	l'histoire
+Ils frustrent l'attente.	Sie frustrieren die Erwartung.	l'	une,la,de	frustrer	l'attente
+Il penche l'arbre.	Er neigt den Baum.	l'	un,de,la	pencher	l'arbre
+Elle musèle la personne.	Sie macht die Person mundtot.	la	une,de,du	museler	la personne
+Nous évangélisons la communauté.	Wir evangelisieren die Gemeinschaft.	la	une,de,du	évangéliser	la communauté
+J'invite la personne.	Ich lade die Person ein.	la	une,de,du	inviter	la personne
+Il obère le budget.	Er belastet das Budget.	le	un,de,la	obérer	le budget
+Nous privilégions l'option.	Wir bevorzugen die Option.	l'	une,la,de	privilégier	l'option
+Il faufile l'objet.	Er schlüpft mit dem Gegenstand.	l'	un,de,la	faufiler	l'objet
+Elle encourage l'initiative.	Sie ermutigt die Initiative.	l'	une,la,de	encourager	l'initiative
+Je lis le livre.	Ich lese das Buch.	le	un,de,la	lire	le livre
+Nous attendons un bus.	Wir warten auf einen Bus.	un	le,la,de	attendre	un bus
+Ils bâtissent l'école.	Sie bauen die Schule.	l'	une,de,du	bâtir	l'école
+Il débride le moteur.	Er gibt den Motor frei.	le	un,de,la	débrider	le moteur
+Elle impute le coût.	Sie rechnet die Kosten zu.	le	un,de,la	imputer	le coût
+Il menace la sécurité.	Er bedroht die Sicherheit.	la	une,de,du	menacer	la sécurité
+Je pars de la maison.	Ich gehe aus dem Haus.	de	à,du,la	partir	la maison
+Je ferme le livre.	Ich schließe das Buch.	le	un,la,les	fermer	le livre
+Ils jouent au jeu.	Sie spielen das Spiel.	au	à,dans,pour	jouer	le jeu
+Elle redevient la situation.	Sie wird die Situation wieder.	la	une,de,le	redevenir	la situation
+Je touche la personne.	Ich berühre die Person.	la	une,de,le	toucher	la personne
+Nous excluons le groupe.	Wir schließen die Gruppe aus.	le	un,la,les	exclure	le groupe
+Il succombe à la maladie.	Er erliegt der Krankheit.	à	de,dans,sur	succomber	la maladie
+Elle croque une carotte.	Sie knabbert an einer Karotte.	une	la,le,des	croquer	la carotte
+Il désempare la situation.	Er verwirrt die Situation.	la	une,de,le	désemparer	la situation
+Je aiguiser un outil.	Ich schärfe ein Werkzeug.	un	le,la,des	aiguiser	un outil
+Nous collons le papier.	Wir kleben das Papier.	le	un,la,les	coller	le papier
+L'individu se rebelle.	Das Individuum rebelliert.	l'	un,la,le	rebeller	l'individu
+Ils débattent de l'idée.	Sie debattieren über die Idee.	de	à,sur,pour	débattre	l'idée
+Elle atténue la douleur.	Sie mildert den Schmerz.	la	une,de,le	atténuer	la douleur
+Nous inaugurons le bâtiment.	Wir weihen das Gebäude ein.	le	un,la,les	inaugurer	le bâtiment
+Ils exploitent le marché.	Sie beuten den Markt aus.	le	un,la,des	exploiter	le marché
+Elle transforme l'objet.	Sie verwandelt den Gegenstand.	l'	un,la,le	transformer	l'objet
+Je lis l'article.	Ich lese den Artikel.	l'	un,la,le	lire	l'article
+Il s'absente à la réunion.	Er fehlt bei der Sitzung.	à	de,sur,avec	absenter	la réunion
+Elle propage l'information.	Sie verbreitet die Information.	l'	une,de,le	propager	l'information
+Je souhaite la réussite.	Ich wünsche den Erfolg.	la	une,de,le	souhaiter	la réussite
+Il enorgueillit la personne.	Er macht die Person stolz.	la	une,de,le	enorgueillir	la personne
+Nous globalisons le marché.	Wir globalisieren den Markt.	le	un,la,les	globaliser	le marché
+Ils trouvent la solution.	Sie finden die Lösung.	la	une,de,le	trouver	la solution
+Elle reverse la tendance.	Sie kehrt den Trend um.	la	une,de,le	reverser	la tendance
+Il succède à la fonction.	Er folgt der Funktion nach.	à	de,dans,sur	succéder	la fonction
+Nous diffusons l'information.	Wir verbreiten die Information.	l'	une,de,le	diffuser	l'information
+L'heure tinte.	Die Stunde läutet.	l'	une,de,le	tinter	heure
+Il rétablit l'ordre.	Er stellt die Ordnung wieder her.	l'	une,de,le	rétablir	l'ordre
+Elle détend le muscle.	Sie entspannt den Muskel.	le	un,la,les	détendre	le muscle
+Je interpelle l'enfant.	Ich spreche das Kind an.	l'	un,la,le	interpeller	l'enfant
+Il offensera le commentaire demain.	Er wird den Kommentar beleidigen.	le	un,la,de	offenser	le commentaire
+Nous construisons un pont ici.	Wir bauen hier eine Brücke.	un	le,la,dans	construire	le pont
+Elle propage l'idée à tous.	Sie verbreitet die Idee an alle.	à	de,sur,avec	propager	l'idée
+Je devine l'énigme facilement.	Ich errate das Rätsel leicht.	l'	un,la,le	deviner	l'énigme
+Il porte le sac lourd.	Er trägt die schwere Tasche.	le	un,la,de	porter	le sac
+La musique résonne dans la salle.	Die Musik erklingt im Raum.	dans	sur,avec,à	résonner	la musique
+Il somme la musique doucement.	Er summt die Musik leise.	la	le,une,de	somme	la musique
+Elle incarne la valeur de l'honnêteté.	Sie verkörpert den Wert der Ehrlichkeit.	la	un,de,le	incarner	la valeur
+Ils dérobent l'objet précieux.	Sie stehlen den wertvollen Gegenstand.	l'	un,le,une	dérober	l'objet
+Nous transportons l'objet fragile.	Wir transportieren den zerbrechlichen Gegenstand.	l'	un,le,la	transporter	l'objet
+Il déchire la lettre par accident.	Er reißt den Brief aus Versehen.	la	le,un,de	déchirer	la lettre
+Elle rouvre la porte doucement.	Sie öffnet die Tür leise wieder.	la	le,une,de	rouvrir	la porte
+Je résume l'article rapidement.	Ich fasse den Artikel schnell zusammen.	l'	un,le,la	résumer	l'article
+Il voue l'attention à son ami.	Er widmet die Aufmerksamkeit seinem Freund.	l'	une,le,de	vouer	l'attention
+Nous entrons dans la salle.	Wir treten in den Raum ein.	dans	sur,avec,à	entrer	la salle
+Elle termine le travail maintenant.	Sie beendet die Arbeit jetzt.	le	un,la,de	terminer	le travail
+Ils jouent au sport ensemble.	Sie spielen gemeinsam Sport.	au	à,le,un	jouer	le sport
+La flamme oscille dans le vent.	Die Flamme schwingt im Wind.	dans	sur,avec,à	osciller	la flamme
+Il familiarise la personne avec le sujet.	Er macht die Person mit dem Thema vertraut.	la	une,le,de	familiariser	la personne
+Nous attablons la table pour le dîner.	Wir decken den Tisch für das Abendessen.	la	le,un,de	attabler	la table
+Il hisse la voile rapidement.	Er hisst die Segel schnell.	la	le,un,de	hisser	la voile
+Elle grimpe à la montagne.	Sie klettert auf den Berg.	à	dans,sur,avec	grimper	la montagne
+Je donne la réponse maintenant.	Ich gebe die Antwort jetzt.	la	le,un,de	donner	la réponse
+Il hoche l'approbation lentement.	Er nickt der Genehmigung langsam zu.	l'	un,le,une	hocher	l'approbation
+Elle légalise la situation rapidement.	Sie legalisiert die Situation schnell.	la	le,un,de	légaliser	la situation
+Nous naviguons sur la mer.	Wir navigieren auf dem Meer.	sur	à,dans,avec	naviguer	la mer
+Il tape le document rapidement.	Er tippt das Dokument schnell.	le	un,la,de	typer	le document
+L'entreprise prospère dans le marché.	Die Firma gedeiht auf dem Markt.	dans	à,sur,avec	prospérer	l'entreprise
+Elle revitalise l'économie locale.	Sie revitalisiert die lokale Wirtschaft.	l'	un,le,la	revitaliser	l'économie
+Il féminise la langue française.	Er feminisiert die französische Sprache.	la	le,un,de	féminiser	la langue

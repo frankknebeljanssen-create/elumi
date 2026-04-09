@@ -103,6 +103,8 @@ enum QuizBuildService {
             let answerKey = QuizBuildService.fastKey(typing.correctAnswer)
             let categoryKey = QuizBuildService.fastKey(typing.category)
             return [[promptKey, answerKey, categoryKey].joined(separator: "|")]
+        case .fillBlanks(let fill):
+            return [[QuizBuildService.fastKey(fill.fullSentence), QuizBuildService.fastKey(fill.correctAnswer)].joined(separator: "|")]
         }
     }
 
@@ -136,6 +138,12 @@ enum QuizBuildService {
                 QuizBuildService.fastKey(typing.prompt),
                 QuizBuildService.fastKey(typing.correctAnswer),
                 QuizBuildService.fastKey(typing.category)
+            ].joined(separator: "|")
+        case .fillBlanks(let fill):
+            return [
+                "fill",
+                QuizBuildService.fastKey(fill.fullSentence),
+                QuizBuildService.fastKey(fill.correctAnswer)
             ].joined(separator: "|")
         }
     }

@@ -349,6 +349,8 @@
 		F43B1C062F86A79C0094BA73 /* StandardpaketGPT.tsv in Resources */ = {isa = PBXBuildFile; fileRef = F43B1C052F86A79C0094BA73 /* StandardpaketGPT.tsv */; };
 		F43B1C0A2F877A000094BA73 /* VerbNounPairs.tsv in Resources */ = {isa = PBXBuildFile; fileRef = F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */; };
 		F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C0B2F877A100094BA73 /* VerbNounPairLoader.swift */; };
+		F43B1C0E2F878B000094BA73 /* FillBlankSentences.tsv in Resources */ = {isa = PBXBuildFile; fileRef = F43B1C0D2F878B000094BA73 /* FillBlankSentences.tsv */; };
+		F43B1C102F878B100094BA73 /* FillBlankSentenceLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C0F2F878B100094BA73 /* FillBlankSentenceLoader.swift */; };
 		F43B1C082F86A7BA0094BA73 /* StandardVocabularyLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C072F86A7BA0094BA73 /* StandardVocabularyLoader.swift */; };
 		F458EED02F8770F9009A2683 /* ArcadeCreditSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F458EECF2F8770F9009A2683 /* ArcadeCreditSystem.swift */; };
 /* End PBXBuildFile section */
@@ -699,6 +701,8 @@
 		F43B1C052F86A79C0094BA73 /* StandardpaketGPT.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; name = StandardpaketGPT.tsv; path = FRDEVocabMVP/StandardpaketGPT.tsv; sourceTree = "<group>"; };
 		F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; name = VerbNounPairs.tsv; path = FRDEVocabMVP/VerbNounPairs.tsv; sourceTree = "<group>"; };
 		F43B1C0B2F877A100094BA73 /* VerbNounPairLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VerbNounPairLoader.swift; path = FRDEVocabMVP/VerbNounPairLoader.swift; sourceTree = "<group>"; };
+		F43B1C0D2F878B000094BA73 /* FillBlankSentences.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; name = FillBlankSentences.tsv; path = FRDEVocabMVP/FillBlankSentences.tsv; sourceTree = "<group>"; };
+		F43B1C0F2F878B100094BA73 /* FillBlankSentenceLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FillBlankSentenceLoader.swift; path = FRDEVocabMVP/FillBlankSentenceLoader.swift; sourceTree = "<group>"; };
 		F43B1C072F86A7BA0094BA73 /* StandardVocabularyLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StandardVocabularyLoader.swift; path = FRDEVocabMVP/StandardVocabularyLoader.swift; sourceTree = "<group>"; };
 		F458EECF2F8770F9009A2683 /* ArcadeCreditSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArcadeCreditSystem.swift; path = FRDEVocabMVP/ArcadeCreditSystem.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -722,6 +726,8 @@
 				F43B1C052F86A79C0094BA73 /* StandardpaketGPT.tsv */,
 				F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */,
 				F43B1C0B2F877A100094BA73 /* VerbNounPairLoader.swift */,
+				F43B1C0D2F878B000094BA73 /* FillBlankSentences.tsv */,
+				F43B1C0F2F878B100094BA73 /* FillBlankSentenceLoader.swift */,
 				A00000000000000000000031 /* FRDEVocabMVP */,
 				A00000000000000000000032 /* Products */,
 				A00000000000000000000033 /* README.md */,
@@ -1151,6 +1157,7 @@
 				A00000000000000000000094 /* FRDEFreeDictSupplement.sqlite in Resources */,
 				F43B1C062F86A79C0094BA73 /* StandardpaketGPT.tsv in Resources */,
 				F43B1C0A2F877A000094BA73 /* VerbNounPairs.tsv in Resources */,
+				F43B1C0E2F878B000094BA73 /* FillBlankSentences.tsv in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1162,6 +1169,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */,
+				F43B1C102F878B100094BA73 /* FillBlankSentenceLoader.swift in Sources */,
 				A00000000000000000000001 /* FRDEVocabMVPApp.swift in Sources */,
 				A00000000000000000000002 /* ContentView.swift in Sources */,
 				A00000000000000000000370 /* LexiconGenderUtilities.swift in Sources */,

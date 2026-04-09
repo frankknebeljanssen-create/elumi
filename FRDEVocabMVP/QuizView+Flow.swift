@@ -256,6 +256,10 @@ extension QuizView {
         selectedAnswerID = nil
         matchedPairIDs = []
         matchingHadMistake = false
+        fillBlanksSelected = nil
+        fillBlanksLocked = false
+        fillBlanksHadMistake = false
+        fillBlanksWrongOptions = []
         comboSelectedVerbID = nil
         comboMatchedIDs = []
         comboHadMistake = false
@@ -272,6 +276,24 @@ extension QuizView {
         typingLocked = false
         typingShowCorrectAnswer = nil
         isTypingFieldFocused = false
+    }
+
+    func submitFillBlanks(for question: QuizFillBlanksQuestion) {
+        guard let selected = fillBlanksSelected, !fillBlanksLocked else { return }
+        let isCorrect = selected.lowercased() == question.correctAnswer.lowercased()
+
+        if isCorrect {
+            fillBlanksLocked = true
+            feedbackPlayer.playStudySuccess()
+            scheduleAdvance(after: 0.8) {
+                completeCurrentQuestion(correct: !fillBlanksHadMistake)
+            }
+        } else {
+            feedbackPlayer.playStudyError()
+            fillBlanksHadMistake = true
+            fillBlanksWrongOptions.insert(selected)
+            fillBlanksSelected = nil
+        }
     }
 
     func matchingSnapOffset(for promptID: UUID, answerID: UUID) -> CGSize {
