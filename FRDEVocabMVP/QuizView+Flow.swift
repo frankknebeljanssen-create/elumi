@@ -249,6 +249,11 @@ extension QuizView {
         selectedAnswerID = nil
         matchedPairIDs = []
         matchingHadMistake = false
+        comboSelectedVerbID = nil
+        comboMatchedIDs = []
+        comboHadMistake = false
+        comboFlashVerbID = nil
+        comboFlashNounID = nil
         flashingPromptID = nil
         flashingAnswerID = nil
         draggingPromptID = nil

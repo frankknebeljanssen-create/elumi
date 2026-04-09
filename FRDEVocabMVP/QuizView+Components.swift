@@ -220,7 +220,11 @@ var quizSessionScreen: some View {
             case .multipleChoice(let question):
                 multipleChoiceCard(question)
             case .matching(let question):
-                matchingCard(question)
+                if question.isWordCombo {
+                    wordComboCard(question)
+                } else {
+                    matchingCard(question)
+                }
             case .typing(let question):
                 typingCard(question)
             }

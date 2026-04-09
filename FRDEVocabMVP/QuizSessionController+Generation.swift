@@ -8,14 +8,35 @@ extension QuizSessionController {
         let generation = questionPrebuildGeneration + 1
         questionPrebuildGeneration = generation
         let requestedCount = questionCountOption.rawValue
+        let items = cachedMergedItems
 
         Task {
-            let generatedQuestions = await Task.detached(priority: .utility) {
+            var generatedQuestions = await Task.detached(priority: .utility) {
                 QuizBuildService.generateQuestions(
                     from: candidates,
                     count: requestedCount
                 )
             }.value
+
+            // Insert Word Combo question if possible
+            if requestedCount >= 5, !generatedQuestions.isEmpty {
+                var comboPromptKeys: [String: Int] = [:]
+                var comboCandidateIDs = Set<String>()
+                var comboSignatures = Set(generatedQuestions.map(QuizBuildService.signature))
+
+                if let combo = QuizBuildService.nextWordComboQuestion(
+                    from: candidates,
+                    items: items,
+                    direction: (Direction(rawValue: UserDefaults.standard.string(forKey: appDirectionKey) ?? "") ?? .frenchToGerman).sanitizedForFrenchOnly,
+                    usedPromptKeys: &comboPromptKeys,
+                    usedCandidateIDs: &comboCandidateIDs,
+                    usedQuestionSignatures: &comboSignatures
+                ) {
+                    let idx = min(4, generatedQuestions.count)
+                    generatedQuestions.insert(combo, at: idx)
+                    print("🧩 [WordCombo] ✅ inserted at index \(idx) in prepared questions")
+                }
+            }
 
             guard generation == questionPrebuildGeneration else { return }
             guard !isPreparingQuiz else { return }
@@ -94,7 +115,30 @@ extension QuizSessionController {
                 return
             }
 
-            appendPreparedQuizQuestions(generatedQuestions)
+            // Try to insert a Word Combo question
+            let allItems = self.cachedMergedItems
+            let allCandidates = self.cachedCandidates
+            var comboPromptKeys: [String: Int] = [:]
+            var comboCandidateIDs = Set<String>()
+            var comboSignatures = Set((initialQuestions + generatedQuestions).map(QuizBuildService.signature))
+
+            if let combo = QuizBuildService.nextWordComboQuestion(
+                from: allCandidates,
+                items: allItems,
+                direction: direction,
+                usedPromptKeys: &comboPromptKeys,
+                usedCandidateIDs: &comboCandidateIDs,
+                usedQuestionSignatures: &comboSignatures
+            ) {
+                var combined = generatedQuestions
+                let insertIdx = min(1, combined.count)
+                combined.insert(combo, at: insertIdx)
+                appendPreparedQuizQuestions(combined)
+                print("🧩 [WordCombo] ✅ inserted into quiz")
+            } else {
+                appendPreparedQuizQuestions(generatedQuestions)
+                print("🧩 [WordCombo] ❌ no matching pairs for user's vocabulary")
+            }
         }
     }
 

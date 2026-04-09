@@ -42,6 +42,14 @@ struct QuizMatchingQuestion: Identifiable, Hashable {
     let pairs: [QuizMatchingPair]
     let shuffledAnswers: [QuizMatchingPair]
     let category: String
+    let isWordCombo: Bool
+
+    init(pairs: [QuizMatchingPair], shuffledAnswers: [QuizMatchingPair], category: String, isWordCombo: Bool = false) {
+        self.pairs = pairs
+        self.shuffledAnswers = shuffledAnswers
+        self.category = category
+        self.isWordCombo = isWordCombo
+    }
 }
 
 struct QuizPromptFramePreferenceKey: PreferenceKey {

@@ -132,6 +132,59 @@ extension QuizBuildService {
         )
     }
 
+    // MARK: - Word Combo (Verb + Noun matching)
+
+    static func nextWordComboQuestion(
+        from candidates: [QuizCandidate],
+        items: [VocabularyItem],
+        direction: Direction,
+        usedPromptKeys: inout [String: Int],
+        usedCandidateIDs: inout Set<String>,
+        usedQuestionSignatures: inout Set<String>
+    ) -> QuizQuestion? {
+        let matchingPairs = VerbNounPairLoader.matchingPairs(for: items)
+        guard matchingPairs.count >= 3 else { return nil }
+
+        // Pick 3-4 unique pairs
+        let targetCount = min(4, matchingPairs.count)
+        var selected: [VerbNounPairLoader.VerbNounPair] = []
+        var usedVerbs = Set<String>()
+        var usedNouns = Set<String>()
+
+        for pair in matchingPairs.shuffled() {
+            let verbKey = pair.verbFr.lowercased()
+            let nounKey = pair.nounFr.lowercased()
+            guard !usedVerbs.contains(verbKey), !usedNouns.contains(nounKey) else { continue }
+            selected.append(pair)
+            usedVerbs.insert(verbKey)
+            usedNouns.insert(nounKey)
+            if selected.count >= targetCount { break }
+        }
+
+        guard selected.count >= 3 else { return nil }
+
+        // Build matching pairs: verb = prompt, noun = answer
+        let isFrenchSide = direction == .frenchToGerman
+        let quizPairs = selected.map { pair in
+            QuizMatchingPair(
+                prompt: isFrenchSide ? pair.verbFr : pair.verbDe,
+                answer: isFrenchSide ? pair.nounFr : pair.nounDe
+            )
+        }
+
+        let question = QuizMatchingQuestion(
+            pairs: quizPairs,
+            shuffledAnswers: quizPairs.shuffled(),
+            category: "Ausdruck",
+            isWordCombo: true
+        )
+
+        let wrappedQuestion = QuizQuestion.matching(question)
+        let signature = signature(wrappedQuestion)
+        guard usedQuestionSignatures.insert(signature).inserted else { return nil }
+        return wrappedQuestion
+    }
+
     static func makeQuizCandidates(from items: [VocabularyItem], direction: Direction) -> [QuizCandidate] {
         var seen = Set<String>()
         var candidates: [QuizCandidate] = []

@@ -33,6 +33,11 @@ struct QuizView: View {
     @State var hoveredAnswerID: UUID?
     @State var answerFrames: [UUID: CGRect] = [:]
     @State var promptFrames: [UUID: CGRect] = [:]
+    @State var comboSelectedVerbID: UUID?
+    @State var comboMatchedIDs: Set<UUID> = []
+    @State var comboHadMistake = false
+    @State var comboFlashVerbID: UUID?
+    @State var comboFlashNounID: UUID?
     @State var awardedHearts = 0
     @State var awardedWaterfloh = 0
     @State var awardedAlgenkugel = 0

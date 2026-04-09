@@ -239,6 +239,159 @@ extension QuizView {
         }
     }
 
+    // MARK: - Word Combo Card
+
+    func wordComboCard(_ question: QuizMatchingQuestion) -> some View {
+        AppSurfaceCard(tint: AppTheme.Colors.warning) {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                Text("Verbinde den Ausdruck")
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+
+                Text(comboSelectedVerbID == nil ? "Tippe zuerst auf ein Verb, dann auf das passende Nomen." : "Jetzt das passende Nomen tippen.")
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(comboSelectedVerbID == nil ? AppTheme.Colors.textSecondary : AppTheme.Colors.warning)
+
+                // Verbs row
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Verb")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+
+                    HStack(spacing: 8) {
+                        ForEach(question.pairs) { pair in
+                            Button {
+                                guard !comboMatchedIDs.contains(pair.id) else { return }
+                                withAnimation(.easeInOut(duration: 0.15)) {
+                                    comboSelectedVerbID = pair.id
+                                }
+                            } label: {
+                                Text(pair.prompt)
+                                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                                    .foregroundStyle(comboVerbTextColor(pair.id))
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 10)
+                                    .background(comboVerbBackground(pair.id))
+                                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                            .stroke(comboVerbBorder(pair.id), lineWidth: comboSelectedVerbID == pair.id ? 2 : 1)
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                            .opacity(comboMatchedIDs.contains(pair.id) ? 0.4 : 1)
+                        }
+                    }
+                }
+
+                // Divider
+                HStack {
+                    Spacer()
+                    Image(systemName: "arrow.down")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.5))
+                    Spacer()
+                }
+
+                // Nouns row (shuffled)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Nomen")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+
+                    HStack(spacing: 8) {
+                        ForEach(question.shuffledAnswers) { pair in
+                            Button {
+                                guard comboSelectedVerbID != nil, !comboMatchedIDs.contains(pair.id) else { return }
+                                evaluateComboSelection(verbID: comboSelectedVerbID!, nounPair: pair, in: question)
+                            } label: {
+                                Text(pair.answer)
+                                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                                    .foregroundStyle(comboNounTextColor(pair.id))
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 10)
+                                    .background(comboNounBackground(pair.id))
+                                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                            .stroke(comboNounBorder(pair.id), lineWidth: 1)
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                            .opacity(comboMatchedIDs.contains(pair.id) ? 0.4 : 1)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func evaluateComboSelection(verbID: UUID, nounPair: QuizMatchingPair, in question: QuizMatchingQuestion) {
+        // The correct noun for this verb has the same ID as the verb (pairs share IDs)
+        if verbID == nounPair.id {
+            // Correct match
+            feedbackPlayer.playStudySuccess()
+            withAnimation(.easeInOut(duration: 0.2)) {
+                comboMatchedIDs.insert(verbID)
+                comboSelectedVerbID = nil
+            }
+            if comboMatchedIDs.count + 1 >= question.pairs.count {
+                // Need +1 because we just inserted
+                scheduleAdvance(after: 0.6) {
+                    completeCurrentQuestion(correct: !comboHadMistake)
+                }
+            }
+        } else {
+            // Wrong match
+            feedbackPlayer.playStudyError()
+            comboHadMistake = true
+            comboFlashVerbID = verbID
+            comboFlashNounID = nounPair.id
+            scheduleAdvance(after: 0.5) {
+                comboFlashVerbID = nil
+                comboFlashNounID = nil
+                comboSelectedVerbID = nil
+            }
+        }
+    }
+
+    private func comboVerbTextColor(_ id: UUID) -> Color {
+        if comboMatchedIDs.contains(id) { return AppTheme.Colors.success }
+        if comboFlashVerbID == id { return .white }
+        if comboSelectedVerbID == id { return .white }
+        return AppTheme.Colors.textPrimary
+    }
+
+    private func comboVerbBackground(_ id: UUID) -> Color {
+        if comboMatchedIDs.contains(id) { return AppTheme.Colors.success.opacity(0.15) }
+        if comboFlashVerbID == id { return AppTheme.Colors.error }
+        if comboSelectedVerbID == id { return AppTheme.Colors.warning }
+        return AppTheme.Colors.secondarySurface
+    }
+
+    private func comboVerbBorder(_ id: UUID) -> Color {
+        if comboSelectedVerbID == id { return AppTheme.Colors.warning }
+        if comboMatchedIDs.contains(id) { return AppTheme.Colors.success.opacity(0.3) }
+        return AppTheme.Colors.borderStrong.opacity(0.2)
+    }
+
+    private func comboNounTextColor(_ id: UUID) -> Color {
+        if comboMatchedIDs.contains(id) { return AppTheme.Colors.success }
+        if comboFlashNounID == id { return .white }
+        return AppTheme.Colors.textPrimary
+    }
+
+    private func comboNounBackground(_ id: UUID) -> Color {
+        if comboMatchedIDs.contains(id) { return AppTheme.Colors.success.opacity(0.15) }
+        if comboFlashNounID == id { return AppTheme.Colors.error }
+        return AppTheme.Colors.secondarySurface
+    }
+
+    private func comboNounBorder(_ id: UUID) -> Color {
+        if comboMatchedIDs.contains(id) { return AppTheme.Colors.success.opacity(0.3) }
+        return AppTheme.Colors.borderStrong.opacity(0.2)
+    }
+
     var quizProgressBar: some View {
         HStack(spacing: 6) {
             ForEach(Array((0..<displayedQuestionCount).enumerated()), id: \.offset) { index, _ in
