@@ -45,7 +45,7 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
                         ],
                         [
                             "type": "text",
-                            "text": scanPrompt
+                            "text": buildPrompt(ocrContext: payload.ocrContext)
                         ]
                     ]
                 ]
@@ -111,6 +111,19 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
     func analyzeTextOnly(_ payload: ScanAIRequestPayload) async throws -> ScanAIResponsePayload {
         // Haiku Vision doesn't need a text-only path — always use the image
         try await analyze(payload)
+    }
+
+    private func buildPrompt(ocrContext: ScanAIContextSnapshot?) -> String {
+        var prompt = scanPrompt
+        if let context = ocrContext, !context.recognizedLines.isEmpty {
+            let lines = context.recognizedLines.prefix(60).joined(separator: "\n")
+            prompt += """
+
+            \n\nOCR hat folgende Zeilen erkannt (als Referenz — jede Zeile die ein Vokabelpaar enthält MUSS im Ergebnis vorkommen):
+            \(lines)
+            """
+        }
+        return prompt
     }
 
     private var scanPrompt: String {
