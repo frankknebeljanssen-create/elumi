@@ -103,6 +103,13 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
             jsonText = jsonText.replacingOccurrences(of: "\"\(wrong)\"", with: "\"\(correct)\"")
         }
 
+        // Debug: check if jaune appears anywhere in raw response
+        if jsonText.lowercased().contains("jaune") {
+            print("📡 [Scan] ✅ 'jaune' FOUND in raw Haiku output")
+        } else {
+            print("📡 [Scan] ❌ 'jaune' NOT in raw Haiku output — Haiku didn't see it")
+        }
+
         do {
             let scanResult = try JSONDecoder().decode(OpenAIScanSchemaResponse.self, from: Data(jsonText.utf8))
             return scanResult.toPayload()

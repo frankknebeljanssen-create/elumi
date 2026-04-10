@@ -3,7 +3,7 @@ import UIKit
 
 struct AIScanProvider: ScanProvider {
     let client: ScanAIClient
-    let maxUploadLongEdge: CGFloat = 1200
+    let maxUploadLongEdge: CGFloat = 1568
     let retryUploadLongEdge: CGFloat = 800
 
     func analyze(request: ScanRequest, context: ScanProviderContext?) async -> ScanProviderResult {
