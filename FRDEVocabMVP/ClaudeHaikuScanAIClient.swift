@@ -213,10 +213,13 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         "Bienvenue!" → "Willkommen!" ist ein Vokabelpaar (klare FR→DE Struktur) → extrahieren.
         "la Tour Eiffel" in einem Beschreibungsblock ohne eigene Tabellenzeile → ignorieren.
 
-        REGEL 8 – Farben sind Vokabeleinträge:
-        Farben mit Artikel sind normale Vokabeln und MÜSSEN extrahiert werden:
-        le jaune (Gelb), le rouge (Rot), le bleu (Blau), le vert (Grün), le noir (Schwarz), le blanc (Weiß) etc.
-        Überspringe keine Farbe, auch wenn sie zwischen anderen Einträgen steht.
+        REGEL 8 – Symbole neben Text ignorieren:
+        Farbpunkte, Symbole oder kleine Illustrationen NEBEN einer Textzeile bedeuten
+        NICHT dass die Zeile kein Vokabeleintrag ist. Extrahiere den Text der Zeile
+        unabhängig davon ob daneben ein Symbol, Farbpunkt oder Bild steht.
+        Besonders betroffen: Farb-Vokabeln stehen oft neben einem Farbpunkt:
+        le jaune (Gelb), le rouge (Rot), le bleu (Blau), le vert (Grün),
+        le noir (Schwarz), le blanc (Weiß) — ALLE extrahieren, Farbpunkt ignorieren.
 
         REGEL 9 – NIEMALS halluzinieren:
         Extrahiere NUR Vokabeln die SICHTBAR auf dem Bild stehen.
