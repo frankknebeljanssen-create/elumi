@@ -139,19 +139,23 @@ struct ScanPreviewPairParser {
         _ pair: ImportPreviewPair,
         sourceLanguage: StudyLanguage
     ) -> ImportPreviewPair {
+        let isTracked = pair.french.lowercased().contains("jaune") || pair.german.lowercased().contains("gelb")
         let normalizedFrench = dependencies.normalizedSourceImportTerm(pair.french, sourceLanguage)
+        if isTracked { print("📡 [Preview] IN: '\(pair.french) → \(pair.german)' normalizedFR='\(normalizedFrench)'") }
         let normalizedGerman = dependencies.canonicalizedGermanTargetIfNeeded(
             pair.german,
             normalizedFrench.isEmpty ? pair.french : normalizedFrench,
             pair.cardType,
             sourceLanguage
         )
+        if isTracked { print("📡 [Preview] OUT: '\(normalizedFrench) → \(normalizedGerman)'") }
         let synchronizedPair = dependencies.synchronizedPairTerminalSentencePunctuation(
             normalizedFrench,
             normalizedGerman,
             sourceLanguage,
             pair.cardType
         )
+        if isTracked { print("📡 [Preview] FINAL: '\(synchronizedPair.0) → \(synchronizedPair.1)'") }
         return ImportPreviewPair(
             id: pair.id,
             french: synchronizedPair.0,

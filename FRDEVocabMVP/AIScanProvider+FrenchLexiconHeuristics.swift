@@ -95,6 +95,13 @@ extension AIScanProvider {
             return false
         }
 
+        // Short German targets (≤5 chars) are too prone to false fuzzy matches (Gelb↔Geld, Rot↔Rat)
+        // Require exact reverse match for short words
+        let targetLength = aiNormalizedLookupText(entry.target).count
+        if targetLength <= 5 && reverseMatch.distance > 0.05 {
+            return false
+        }
+
         if targetMatchesSuggestions(entry.target, suggestions: [reverseMatch.targetTerm]) {
             return false
         }

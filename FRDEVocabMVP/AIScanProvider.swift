@@ -3,6 +3,7 @@ import UIKit
 
 struct AIScanProvider: ScanProvider {
     let client: ScanAIClient
+    let fallbackClient: ScanAIClient?
     let maxUploadLongEdge: CGFloat = 1568
     let retryUploadLongEdge: CGFloat = 800
 
@@ -66,7 +67,34 @@ struct AIScanProvider: ScanProvider {
         do {
             let response = try await client.analyze(payload)
             logTiming("ai_primary", start: start)
-            return mapResponse(response, context: context)
+            let result = mapResponse(response, context: context)
+
+            // ── Sonnet fallback bei zu wenigen Haiku-Ergebnissen ──
+            let ocrBoxCount = context?.primaryResult?.recognizedBoxes.count ?? 0
+            let aiEntryCount = result.entries.filter({ $0.reviewMetadata.isImportable }).count
+            let haikuLineCount = result.recognizedLineCount
+            // Trigger: (a) deutlich weniger als OCR-Boxen, ODER (b) OCR versagt UND Haiku meldet viel mehr Zeilen als Einträge
+            let shouldFallback = (aiEntryCount < ocrBoxCount - 8 && ocrBoxCount >= 15)
+                || (ocrBoxCount < 5 && haikuLineCount >= 20 && aiEntryCount < haikuLineCount / 2)
+            if shouldFallback, let fallbackClient {
+                print("📡 [Scan] ⚠️ Haiku insufficient (\(aiEntryCount) entries vs \(ocrBoxCount) OCR boxes, \(haikuLineCount) lines), trying Sonnet...")
+                let fallbackStart = CFAbsoluteTimeGetCurrent()
+                do {
+                    let fallbackResponse = try await fallbackClient.analyze(payload)
+                    logTiming("ai_sonnet_fallback", start: fallbackStart)
+                    let fallbackResult = mapResponse(fallbackResponse, context: context)
+                    let fallbackImportable = fallbackResult.entries.filter({ $0.reviewMetadata.isImportable }).count
+                    if fallbackImportable > aiEntryCount {
+                        print("📡 [Scan] ✅ Sonnet accepted (\(fallbackImportable) vs \(aiEntryCount))")
+                        return fallbackResult
+                    }
+                    print("📡 [Scan] ℹ️ Sonnet same/fewer (\(fallbackImportable)), keeping Haiku")
+                } catch {
+                    print("📡 [Scan] ⚠️ Sonnet fallback failed: \(error.localizedDescription)")
+                }
+            }
+
+            return result
         } catch {
             if shouldRetry(after: error),
                let retryPayload = makePayload(

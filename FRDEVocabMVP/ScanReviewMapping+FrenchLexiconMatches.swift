@@ -154,6 +154,13 @@ extension ScanReviewMapper {
             return false
         }
 
+        // Short German targets (≤5 chars) are too prone to false fuzzy matches (Gelb↔Geld, Rot↔Rat)
+        // Require exact reverse match for short words
+        let targetLength = mapperNormalizedLookupText(targetText).count
+        if targetLength <= 5 && reverseMatch.distance > 0.05 {
+            return false
+        }
+
         if targetMatchesSuggestions(targetText, suggestions: [reverseMatch.targetTerm]) {
             return false
         }

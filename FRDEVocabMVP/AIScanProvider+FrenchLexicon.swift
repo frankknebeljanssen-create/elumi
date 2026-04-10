@@ -30,6 +30,7 @@ extension AIScanProvider {
                 sourceMatch: trimmedSourceMatch,
                 sourceWasTrimmed: true
            ) {
+            print("📡 [Lexicon] REPLACE (trimmed) '\(entry.source) → \(entry.target)' WITH '\(trimmedSourceMatch.sourceTerm) → \(trimmedSourceMatch.suggestions[0])' dist=\(trimmedSourceMatch.distance)")
             return replacing(
                 entry,
                 source: trimmedSourceMatch.sourceTerm,
@@ -43,6 +44,7 @@ extension AIScanProvider {
                 sourceMatch: sourceMatch,
                 sourceWasTrimmed: false
            ) {
+            print("📡 [Lexicon] REPLACE (source) '\(entry.source) → \(entry.target)' WITH '\(sourceMatch.sourceTerm) → \(sourceMatch.suggestions[0])' dist=\(sourceMatch.distance)")
             return replacing(
                 entry,
                 source: sourceMatch.sourceTerm,
@@ -54,6 +56,7 @@ extension AIScanProvider {
             forGermanTarget: entry.target,
             cardType: entry.cardType
         ), shouldForceReverseFrenchLexiconReplacement(entry, reverseMatch: reverseMatch) {
+            print("📡 [Lexicon] REPLACE (reverse) '\(entry.source) → \(entry.target)' WITH '\(reverseMatch.sourceTerm) → \(reverseMatch.targetTerm)' dist=\(reverseMatch.distance)")
             return replacing(
                 entry,
                 source: reverseMatch.sourceTerm,

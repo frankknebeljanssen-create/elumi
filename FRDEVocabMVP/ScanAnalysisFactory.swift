@@ -48,7 +48,11 @@ struct ScanAnalysisFactory {
     }
 
     private func makeAIProvider() -> ScanProvider {
-        AIScanProvider(client: aiClientProvider())
+        let primary = aiClientProvider()
+        let fallback: ScanAIClient? = (primary as? ClaudeHaikuScanAIClient).map {
+            ClaudeHaikuScanAIClient(apiKey: $0.apiKey, model: "claude-sonnet-4-5-20251001")
+        }
+        return AIScanProvider(client: primary, fallbackClient: fallback)
     }
 
     private func makeOCRProvider(

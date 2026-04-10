@@ -112,6 +112,10 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
 
         do {
             let scanResult = try JSONDecoder().decode(OpenAIScanSchemaResponse.self, from: Data(jsonText.utf8))
+            print("📡 [Scan] Haiku entries (\(scanResult.entries.count)):")
+            for (i, e) in scanResult.entries.enumerated() {
+                print("   \(i+1). \(e.source) → \(e.target)")
+            }
             return scanResult.toPayload()
         } catch {
             print("📡 [Scan] ❌ JSON decode failed: \(error)")
@@ -163,16 +167,17 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         Beispiel: "C'est parti! [separti] fam." steht in einer Tabellenzeile mit "Los geht's!" in Spalte 2 → EXTRAHIEREN.
         ***
 
+        *** ARTIKEL-REGEL ***
+        Wenn im Buch ein Artikel vor dem Wort steht (le, la, l', les), übernimm ihn EXAKT so in den source-Eintrag.
+        Ergänze KEINEN Artikel wenn keiner sichtbar ist.
+        Entferne KEINEN Artikel der sichtbar ist.
+        ***
+
         REGEL 1 – Was eine Vokabelzeile ist:
         Eine Vokabelzeile hat die Struktur: französischer Begriff [Lautschrift] Grammatikangabe → deutsche Übersetzung.
         Extrahiere NUR Zeilen die dieses Muster haben. Die 3. Spalte (Beispielsätze/Dialoge) vollständig ignorieren.
         Auch sehr kurze Einträge zählen: "ah" → "ach, ach so", "et" → "und", "toi" → "du"
-        ARTIKEL IMMER miterfassen — genau so wie im Bild:
-        - "le chocolat" → "die Schokolade" (NICHT "chocolat" ohne Artikel)
-        - "la pizza" → "die Pizza"
-        - "les chats" → "die Katzen" (NICHT "chats" — "les" ist Pflicht!)
-        - "les jeux vidéo" → "die Videospiele"
-        Den Artikel EXAKT vom Bild ablesen (le/la/l'/les/un/une/des).
+        Artikel: siehe ARTIKEL-REGEL oben.
 
         REGEL 2 – Überschriften die auch Vokabeln sind:
         Wenn ein Begriff als Abschnittsüberschrift vorkommt UND gleichzeitig in einer Tabellenzeile darunter mit deutscher Übersetzung steht, ist er ein Vokabeleintrag → extrahieren.
@@ -220,6 +225,9 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         Besonders betroffen: Farb-Vokabeln stehen oft neben einem Farbpunkt:
         le jaune (Gelb), le rouge (Rot), le bleu (Blau), le vert (Grün),
         le noir (Schwarz), le blanc (Weiß) — ALLE extrahieren, Farbpunkt ignorieren.
+        Prüfe das Bild EXPLIZIT auf diese Farben — sie stehen oft als Reihe untereinander
+        zwischen "la salade" und "les chats". Wenn du einen Farbpunkt siehst, steht LINKS
+        davon immer ein Text wie "le jaune [ləʒon]" mit einer deutschen Übersetzung.
 
         REGEL 9 – NIEMALS halluzinieren:
         Extrahiere NUR Vokabeln die SICHTBAR auf dem Bild stehen.
