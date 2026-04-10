@@ -147,6 +147,12 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         Eine Vokabelzeile hat die Struktur: französischer Begriff [Lautschrift] Grammatikangabe → deutsche Übersetzung.
         Extrahiere NUR Zeilen die dieses Muster haben. Die 3. Spalte (Beispielsätze/Dialoge) vollständig ignorieren.
         Auch sehr kurze Einträge zählen: "ah" → "ach, ach so", "et" → "und", "toi" → "du"
+        ARTIKEL IMMER miterfassen — genau so wie im Bild:
+        - "le chocolat" → "die Schokolade" (NICHT "chocolat" ohne Artikel)
+        - "la pizza" → "die Pizza"
+        - "les chats" → "die Katzen" (NICHT "chats" — "les" ist Pflicht!)
+        - "les jeux vidéo" → "die Videospiele"
+        Den Artikel EXAKT vom Bild ablesen (le/la/l'/les/un/une/des).
 
         REGEL 2 – Überschriften die auch Vokabeln sind:
         Wenn ein Begriff als Abschnittsüberschrift vorkommt UND gleichzeitig in einer Tabellenzeile darunter mit deutscher Übersetzung steht, ist er ein Vokabeleintrag → extrahieren.
