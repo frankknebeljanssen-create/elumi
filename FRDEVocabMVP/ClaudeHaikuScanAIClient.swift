@@ -116,7 +116,8 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
 
     private func buildPrompt(ocrContext: ScanAIContextSnapshot?) -> String {
         var prompt = scanPrompt
-        if let context = ocrContext, !context.recognizedLines.isEmpty {
+        // Only include OCR context if it's high quality (enough lines detected)
+        if let context = ocrContext, context.recognizedLines.count >= 10 {
             let lines = context.recognizedLines.prefix(50).joined(separator: "\n")
             prompt += """
 
