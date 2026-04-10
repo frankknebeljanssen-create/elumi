@@ -132,6 +132,13 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         """
         Du bist ein Vokabel-Extraktor für Französisch-Deutsch Schulbuchseiten.
 
+        *** PRIORITÄT 1 – WICHTIGSTE REGEL ***
+        JEDE Tabellenzeile die in Spalte 2 eine deutsche Übersetzung hat ist ein Vokabeleintrag.
+        Es spielt KEINE Rolle ob derselbe Begriff auch als Überschrift vorkommt.
+        Entscheide AUSSCHLIESSLICH anhand der Tabellenstruktur, NICHT anhand von Überschriften.
+        Beispiel: "C'est parti! [separti] fam." steht in einer Tabellenzeile mit "Los geht's!" in Spalte 2 → EXTRAHIEREN.
+        ***
+
         REGEL 1 – Was eine Vokabelzeile ist:
         Eine Vokabelzeile hat die Struktur: französischer Begriff [Lautschrift] Grammatikangabe → deutsche Übersetzung.
         Extrahiere NUR Zeilen die dieses Muster haben. Die 3. Spalte (Beispielsätze/Dialoge) vollständig ignorieren.
