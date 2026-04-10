@@ -8,7 +8,7 @@ extension ScanSessionController {
     }
 
     func releaseWorkingImages() {
-        originalScanImage = nil
+        // Keep originalScanImage for rescan — only release the prepared cache
         preparedScanImage = nil
         usePreparedScanImage = true
     }
