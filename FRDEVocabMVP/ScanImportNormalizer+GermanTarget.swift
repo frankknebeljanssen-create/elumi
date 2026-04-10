@@ -24,6 +24,12 @@ extension ScanImportNormalizer {
               !localMatch.suggestions.isEmpty else {
             return formattedTarget
         }
+
+        // Skip vocabulary override if match was approximate (punctuation was stripped)
+        // This prevents "Ça va?" (Frage) from getting "Es geht mir gut" (Aussage)
+        if localMatch.matchDistance > 0.3 {
+            return formattedTarget
+        }
         let prioritizedSuggestions = prioritizedGermanSuggestions(
             localMatch.suggestions,
             forSource: canonicalSource,
