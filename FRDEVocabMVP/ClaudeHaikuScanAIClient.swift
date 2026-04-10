@@ -120,9 +120,12 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
             let lines = context.recognizedLines.prefix(50).joined(separator: "\n")
             prompt += """
 
-            \n\nOCR-Referenz (erkannte Zeilen). Nutze dies um sicherzustellen dass du keine Vokabelzeile übersiehst.
+            \n\nOCR-Referenz (erkannte Zeilen). Nutze dies NUR als Checkliste — nicht als Textquelle.
+            WICHTIG: Vertraue bei Konflikten DEINER eigenen Bilderkennung, NICHT dem OCR-Text.
+            OCR kann Buchstaben falsch lesen (z.B. "mais" als "mah", "ou" als etwas anderes).
+            Lies die Wörter IMMER selbst vom Bild ab.
             ACHTUNG: Nicht alle Zeilen sind Vokabeln! Ignoriere Beispielsätze, Dialoge, Grammatik-Erklärungen und Überschriften.
-            Extrahiere NUR echte Vokabelpaare (Quellwort ↔ Übersetzung):
+            Extrahiere NUR echte Vokabelpaare die SICHTBAR auf dem Bild stehen — NIEMALS Wörter erfinden:
             \(lines)
             """
         }
@@ -183,6 +186,11 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         REGEL 7 – Kulturpaare die Vokabeln sind:
         "Bienvenue!" → "Willkommen!" ist ein Vokabelpaar (klare FR→DE Struktur) → extrahieren.
         "la Tour Eiffel" in einem Beschreibungsblock ohne eigene Tabellenzeile → ignorieren.
+
+        REGEL 8 – NIEMALS halluzinieren:
+        Extrahiere NUR Vokabeln die SICHTBAR auf dem Bild stehen.
+        Erfinde KEINE Wörter, Übersetzungen oder Einträge die nicht im Bild sind.
+        Im Zweifel lieber einen Eintrag weglassen als einen falschen erfinden.
 
         Antworte AUSSCHLIESSLICH mit validem JSON (kein Markdown, keine Codeblöcke):
 
