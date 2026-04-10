@@ -31,6 +31,7 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         let requestBody: [String: Any] = [
             "model": model,
             "max_tokens": 4096,
+            "temperature": 0,
             "messages": [
                 [
                     "role": "user",
