@@ -115,27 +115,21 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
 
     private var scanPrompt: String {
         """
-        Du bist ein präziser Vokabel-Extraktor für Deutsch-Französisch Lernmaterial.
+        Du bist ein Vokabel-Extraktor. Extrahiere JEDES Französisch-Deutsch Vokabelpaar aus diesem Bild.
 
-        Analysiere dieses Bild einer Schulbuchseite oder eines Vokabelhefts.
-        EXTRAHIERE ALLE echte Vokabelpaare (Französisch ↔ Deutsch).
-
-        COMPLETENESS ist kritisch: Extrahiere JEDES Paar, egal wie kurz.
-        Auch einzelne Wörter wie "toi" = "du" oder "et" = "und" MÜSSEN enthalten sein.
-        Auch Fragen wie "Tu t'appelles comment?" = "Wie heißt du?" extrahieren.
-
-        IGNORIERE:
-        - Seitenzahlen, Überschriften, Kapitelbezeichnungen
-        - Lautschrift in eckigen Klammern [ʃ], [ɔ̃]
-        - Grammatikregeln als Fließtext
-        - Zeichnungen, Symbole
-
-        BEACHTE:
-        - Bei Nomen: Artikel miterfassen (fr: "la maison", de: "das Haus")
-        - Bei Verben: Infinitiv erfassen
-        - Satzzeichen bewahren: ? ! . sind bedeutungsrelevant
-        - Jede Zeile auf dem Bild = ein Eintrag. Wenn dasselbe Wort 2x vorkommt mit verschiedenen Übersetzungen, sind das 2 separate Einträge.
-        - "Ça va?" (Frage) und "Ça va." (Aussage) sind SEPARATE Einträge
+        REGELN:
+        1. JEDE Zeile mit einem Paar = ein Eintrag. Überspringe KEINE Zeile.
+        2. Auch sehr kurze Einträge: "ah" = "ah", "et" = "und", "toi" = "du"
+        3. Auch Interjektionen und Ausrufe: "Ah!", "Bof!", "Super!"
+        4. Gleiche Quelle mit verschiedenen Übersetzungen = SEPARATE Einträge:
+           "Et toi?" → "Und du?" ist Eintrag 1
+           "Et toi?" → "Und dir?" ist Eintrag 2 (eigener Eintrag!)
+        5. Unterscheide Fragen und Aussagen:
+           "Ça va?" (Frage) und "Ça va." (Aussage) = 2 verschiedene Einträge
+        6. Nomen mit Artikel: "la maison" → "das Haus"
+        7. Satzzeichen bewahren: ? ! . gehören zum Eintrag
+        8. Lautschrift [ʃ] etc. weglassen
+        9. Seitenzahlen, Überschriften, Kapitel ignorieren
 
         Antworte AUSSCHLIESSLICH mit validem JSON (kein Markdown, keine Codeblöcke):
 
