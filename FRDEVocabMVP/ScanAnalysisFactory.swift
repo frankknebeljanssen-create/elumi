@@ -12,7 +12,12 @@ struct ScanAnalysisFactory {
 
     init(
         aiClientProvider: @escaping AIClientProvider = {
-            OpenAIResponsesScanAIClient.fromEnvironment() ?? UnavailableScanAIClient()
+            // Prefer Claude Haiku Vision (faster, single-step)
+            if let claude = ClaudeHaikuScanAIClient.fromEnvironment() {
+                return claude
+            }
+            // Fallback to OpenAI if no Anthropic key
+            return OpenAIResponsesScanAIClient.fromEnvironment() ?? UnavailableScanAIClient()
         }
     ) {
         self.aiClientProvider = aiClientProvider

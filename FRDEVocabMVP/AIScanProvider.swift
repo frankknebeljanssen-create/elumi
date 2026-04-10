@@ -3,8 +3,8 @@ import UIKit
 
 struct AIScanProvider: ScanProvider {
     let client: ScanAIClient
-    let maxUploadLongEdge: CGFloat = 680
-    let retryUploadLongEdge: CGFloat = 512
+    let maxUploadLongEdge: CGFloat = 1200
+    let retryUploadLongEdge: CGFloat = 800
 
     func analyze(request: ScanRequest, context: ScanProviderContext?) async -> ScanProviderResult {
         let start = CFAbsoluteTimeGetCurrent()
@@ -13,43 +13,45 @@ struct AIScanProvider: ScanProvider {
             return unavailableResult(for: request, context: context)
         }
 
-        // Phase 1: Try text-only if OCR context has enough lines (much faster, no image upload)
-        let ocrBoxCount = context?.primaryResult?.recognizedBoxes.count ?? 0
-        let isTextOnlyClient = client is OpenAIResponsesScanAIClient
-        print("📡 [Scan] text-only check: ocrBoxes=\(ocrBoxCount) isCorrectClient=\(isTextOnlyClient) context=\(context != nil)")
-        if ocrBoxCount >= 3,
-           let textOnlyClient = client as? OpenAIResponsesScanAIClient {
-            let textOnlyPayload = makePayload(
-                from: request,
-                context: context,
-                maxLongEdge: maxUploadLongEdge,
-                compressionQuality: 0.45,
-                compactContext: false
-            )
-            if let textOnlyPayload {
-                do {
-                    let response = try await textOnlyClient.analyzeTextOnly(textOnlyPayload)
-                    logTiming("ai_text_only", start: start)
-                    let result = mapResponse(response, context: context)
-                    let importableCount = result.entries.filter({ $0.reviewMetadata.isImportable }).count
-                    print("📡 [Scan] text-only result: \(result.entries.count) total, \(importableCount) importable")
-                    if importableCount >= 3 {
-                        print("📡 [Scan] ✅ text-only accepted")
-                        return result
+        let isClaudeVision = client is ClaudeHaikuScanAIClient
+        let compressionQuality: CGFloat = isClaudeVision ? 0.80 : 0.45
+
+        // Claude Haiku: Skip text-only, go straight to vision
+        // OpenAI: Try text-only first for speed
+        if !isClaudeVision {
+            let ocrBoxCount = context?.primaryResult?.recognizedBoxes.count ?? 0
+            if ocrBoxCount >= 3,
+               let textOnlyClient = client as? OpenAIResponsesScanAIClient {
+                let textOnlyPayload = makePayload(
+                    from: request,
+                    context: context,
+                    maxLongEdge: maxUploadLongEdge,
+                    compressionQuality: compressionQuality,
+                    compactContext: false
+                )
+                if let textOnlyPayload {
+                    do {
+                        let response = try await textOnlyClient.analyzeTextOnly(textOnlyPayload)
+                        logTiming("ai_text_only", start: start)
+                        let result = mapResponse(response, context: context)
+                        let importableCount = result.entries.filter({ $0.reviewMetadata.isImportable }).count
+                        if importableCount >= 3 {
+                            print("📡 [Scan] ✅ text-only accepted (\(importableCount) importable)")
+                            return result
+                        }
+                    } catch {
+                        print("📡 [Scan] ⚠️ text-only failed: \(error.localizedDescription)")
                     }
-                    print("📡 [Scan] ⚠️ text-only insufficient, falling back to image")
-                } catch {
-                    print("📡 [Scan] ⚠️ text-only failed: \(error.localizedDescription), falling back to image")
                 }
             }
         }
 
-        // Phase 2: Full image+text request (fallback or primary when no OCR context)
+        // Full vision request (Claude Haiku: primary, OpenAI: fallback after text-only)
         guard let payload = makePayload(
             from: request,
             context: context,
             maxLongEdge: maxUploadLongEdge,
-            compressionQuality: 0.45,
+            compressionQuality: compressionQuality,
             compactContext: false
         ) else {
             logDebug("ai_invalid_payload")
