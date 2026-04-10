@@ -36,9 +36,9 @@ extension ScanImportView {
         case .idle, .ocrPreflight:
             return "OCR lokal"
         case .aiConnecting:
-            return "GPT wird kontaktiert"
+            return "KI wird kontaktiert"
         case .aiPrimary:
-            return "GPT analysiert"
+            return "KI analysiert"
         case .ocrFallback:
             return "OCR-Fallback"
         }

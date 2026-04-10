@@ -97,8 +97,14 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
             .replacingOccurrences(of: "```", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        let scanResult = try JSONDecoder().decode(OpenAIScanSchemaResponse.self, from: Data(jsonText.utf8))
-        return scanResult.toPayload()
+        do {
+            let scanResult = try JSONDecoder().decode(OpenAIScanSchemaResponse.self, from: Data(jsonText.utf8))
+            return scanResult.toPayload()
+        } catch {
+            print("📡 [Scan] ❌ JSON decode failed: \(error)")
+            print("📡 [Scan] Raw response (first 500 chars): \(String(jsonText.prefix(500)))")
+            throw ScanAIProviderError.invalidResponse
+        }
     }
 
     // Also support text-only for compatibility (just pass through)

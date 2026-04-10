@@ -59,11 +59,11 @@ extension ScanImportView {
         } else if aiWarnings.contains("ai_http_429") {
             headline = "GPT-Limit erreicht. Bitte später nochmal versuchen."
         } else if aiWarnings.contains("ai_timeout") {
-            headline = "GPT hat diesmal zu lange gebraucht. Bitte nochmal versuchen."
+            headline = "Die Analyse hat zu lange gedauert. Bitte nochmal versuchen."
         } else if aiWarnings.contains("ai_invalid_response") || aiWarnings.contains("ai_analysis_failed") {
-            headline = "GPT hat diesmal nicht sauber geantwortet. Bitte nochmal versuchen."
+            headline = "Die KI-Analyse war diesmal nicht erfolgreich. Bitte nochmal versuchen."
         } else {
-            headline = "GPT konnte diesmal nicht genutzt werden. Bitte nochmal versuchen."
+            headline = "Die KI-Analyse konnte nicht gestartet werden. Bitte nochmal versuchen."
         }
 
         var detailLines: [String] = []

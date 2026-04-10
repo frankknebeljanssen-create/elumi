@@ -320,9 +320,9 @@ struct ScanImportView: View {
         case .idle, .ocrPreflight:
             return "OCR lokal"
         case .aiConnecting:
-            return "GPT wird kontaktiert"
+            return "KI wird kontaktiert"
         case .aiPrimary:
-            return "GPT analysiert"
+            return "KI analysiert"
         case .ocrFallback:
             return "OCR-Fallback"
         }
@@ -384,9 +384,9 @@ struct ScanImportView: View {
         case .ocrOnly:
             return "OCR"
         case .aiAssisted:
-            return "GPT"
+            return "KI"
         case .hybrid:
-            return "OCR + GPT"
+            return "OCR + KI"
         }
     }
 
@@ -2901,18 +2901,18 @@ struct ScanImportView: View {
         let headline: String
         if aiWarnings.contains("ai_provider_unavailable") {
             headline = aiConfigured
-                ? "GPT war diesmal nicht verfügbar. Bitte nochmal versuchen."
-                : "GPT ist in diesem Build nicht konfiguriert. Bitte API-Key prüfen."
+                ? "Die KI war diesmal nicht verfügbar. Bitte nochmal versuchen."
+                : "Die KI ist nicht konfiguriert. Bitte API-Key prüfen."
         } else if aiWarnings.contains("ai_http_401") {
-            headline = "GPT konnte nicht genutzt werden. Bitte den API-Key prüfen."
+            headline = "Ungültiger API-Key. Bitte den Key prüfen."
         } else if aiWarnings.contains("ai_http_429") {
-            headline = "GPT-Limit erreicht. Bitte später nochmal versuchen."
+            headline = "API-Limit erreicht. Bitte später nochmal versuchen."
         } else if aiWarnings.contains("ai_timeout") {
-            headline = "GPT hat diesmal zu lange gebraucht. Bitte nochmal versuchen."
+            headline = "Die Analyse hat zu lange gedauert. Bitte nochmal versuchen."
         } else if aiWarnings.contains("ai_invalid_response") || aiWarnings.contains("ai_analysis_failed") {
-            headline = "GPT hat diesmal nicht sauber geantwortet. Bitte nochmal versuchen."
+            headline = "Die KI-Analyse war diesmal nicht erfolgreich. Bitte nochmal versuchen."
         } else {
-            headline = "GPT konnte diesmal nicht genutzt werden. Bitte nochmal versuchen."
+            headline = "Die KI-Analyse konnte nicht gestartet werden. Bitte nochmal versuchen."
         }
 
         var detailLines: [String] = []
