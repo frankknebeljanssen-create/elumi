@@ -93,10 +93,15 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         }
 
         // Claude might wrap JSON in ```json ... ``` — strip it
-        let jsonText = outputText
+        var jsonText = outputText
             .replacingOccurrences(of: "```json", with: "")
             .replacingOccurrences(of: "```", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Fix known OCR/vision misreads in the raw JSON
+        for (wrong, correct) in Self.knownVisionCorrections {
+            jsonText = jsonText.replacingOccurrences(of: "\"\(wrong)\"", with: "\"\(correct)\"")
+        }
 
         do {
             let scanResult = try JSONDecoder().decode(OpenAIScanSchemaResponse.self, from: Data(jsonText.utf8))
@@ -107,6 +112,13 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
             throw ScanAIProviderError.invalidResponse
         }
     }
+
+    /// Known vision/OCR misreads — corrected in raw JSON before decode
+    private static let knownVisionCorrections: [(wrong: String, correct: String)] = [
+        ("mah", "mais"),
+        ("paa", "pas"),
+        ("moi5", "mois"),
+    ]
 
     // Also support text-only for compatibility (just pass through)
     func analyzeTextOnly(_ payload: ScanAIRequestPayload) async throws -> ScanAIResponsePayload {
@@ -194,7 +206,12 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         "Bienvenue!" → "Willkommen!" ist ein Vokabelpaar (klare FR→DE Struktur) → extrahieren.
         "la Tour Eiffel" in einem Beschreibungsblock ohne eigene Tabellenzeile → ignorieren.
 
-        REGEL 8 – NIEMALS halluzinieren:
+        REGEL 8 – Farben sind Vokabeleinträge:
+        Farben mit Artikel sind normale Vokabeln und MÜSSEN extrahiert werden:
+        le jaune (Gelb), le rouge (Rot), le bleu (Blau), le vert (Grün), le noir (Schwarz), le blanc (Weiß) etc.
+        Überspringe keine Farbe, auch wenn sie zwischen anderen Einträgen steht.
+
+        REGEL 9 – NIEMALS halluzinieren:
         Extrahiere NUR Vokabeln die SICHTBAR auf dem Bild stehen.
         Erfinde KEINE Wörter, Übersetzungen oder Einträge die nicht im Bild sind.
         Im Zweifel lieber einen Eintrag weglassen als einen falschen erfinden.
