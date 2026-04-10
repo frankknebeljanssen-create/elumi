@@ -97,6 +97,13 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
             .replacingOccurrences(of: "```", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
+        // Debug: log raw entries for Ça va to check if Haiku or post-processing causes the mismatch
+        if jsonText.contains("va") {
+            let lines = jsonText.components(separatedBy: "\n")
+            let caVaLines = lines.enumerated().filter { $0.element.contains("va") }.map { "  L\($0.offset): \($0.element)" }
+            print("📡 [Scan] Raw Ça va entries from Haiku:\n\(caVaLines.joined(separator: "\n"))")
+        }
+
         do {
             let scanResult = try JSONDecoder().decode(OpenAIScanSchemaResponse.self, from: Data(jsonText.utf8))
             return scanResult.toPayload()
@@ -157,6 +164,10 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         - Kulturinfo-Blöcke mit beschreibendem Fließtext → ignorieren
         - Grammatiknotizen am Seitenende → ignorieren
         - Zeichnungen, Bilder, Symbole → ignorieren
+        - Die DRITTE SPALTE (Beispielsätze/Dialoge) wird KOMPLETT ignoriert.
+          Erkennungszeichen: Fettgedruckte französische Wörter mitten im Satz,
+          oder mehrere französische Wörter hintereinander ohne deutsche Übersetzung daneben.
+          Niemals einen Eintrag aus der dritten Spalte extrahieren.
 
         REGEL 4 – Satzzeichen sind bedeutungstragend:
         "Ça va?" (Frage) und "Ça va." (Aussage) = 2 VERSCHIEDENE Einträge.
@@ -167,7 +178,10 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         m./f. → Nomen, adj. → Adjektiv, adv. → Adverb, fam. → Ausdruck. Ohne Angabe → aus Kontext ableiten.
 
         REGEL 6 – Mehrfachübersetzungen:
-        Mehrere deutsche Bedeutungen in einer Zeile getrennt durch / oder , (z.B. "Na ja. / Es geht so.") als EINE Übersetzung komplett übernehmen — NICHT als zwei Einträge splitten.
+        Wenn in einer Zeile mehrere deutsche Übersetzungen durch / oder , stehen:
+        - Feste Wendung (z.B. "Na ja. / Es geht so.") → komplett übernehmen
+        - Varianten (z.B. "ich heiße / mein Name ist") → NUR die ERSTE Übersetzung nehmen
+        NIEMALS selbst Übersetzungen ergänzen die nicht in der Zeile stehen.
 
         REGEL 7 – Kulturpaare die Vokabeln sind:
         "Bienvenue!" → "Willkommen!" ist ein Vokabelpaar (klare FR→DE Struktur) → extrahieren.

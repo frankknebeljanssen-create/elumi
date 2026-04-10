@@ -5,6 +5,20 @@ extension ScanVocabularyPairRepair {
         for source: String,
         sourceLanguage: StudyLanguage
     ) -> (sourceTerm: String, suggestions: [String], matchDistance: Double)? {
+        // First: try exact key preserving punctuation (Ça va? ≠ Ça va.)
+        let exactKey = source.folding(options: .diacriticInsensitive, locale: .current)
+            .lowercased().trimmingCharacters(in: .whitespaces)
+        if !exactKey.isEmpty,
+           let exactDirect = DataStore.localTranslationLookup[sourceLanguage]?[exactKey],
+           !exactDirect.isEmpty {
+            return (
+                canonicalSourceTerm(for: exactKey, sourceLanguage: sourceLanguage) ?? source,
+                exactDirect,
+                0
+            )
+        }
+
+        // Fallback: normalized lookup (strips punctuation — only if no exact match)
         let lookupKey = dependencies.normalizedLookupText(source)
         guard !lookupKey.isEmpty else { return nil }
 
