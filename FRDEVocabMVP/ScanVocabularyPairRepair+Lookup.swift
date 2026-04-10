@@ -19,6 +19,7 @@ extension ScanVocabularyPairRepair {
         }
 
         // Fallback: normalized lookup (strips punctuation — only if no exact match)
+        // Higher matchDistance (0.5) signals "approximate" — Haiku's answer should be preferred
         let lookupKey = dependencies.normalizedLookupText(source)
         guard !lookupKey.isEmpty else { return nil }
 
@@ -26,7 +27,7 @@ extension ScanVocabularyPairRepair {
             return (
                 canonicalSourceTerm(for: lookupKey, sourceLanguage: sourceLanguage) ?? source,
                 direct,
-                0
+                0.5
             )
         }
 

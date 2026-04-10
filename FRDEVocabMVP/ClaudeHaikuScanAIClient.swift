@@ -64,7 +64,8 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         request.httpBody = body
 
         let bodyKB = body.count / 1024
-        print("📡 [Scan] API request [haiku-vision]: model=\(model) payload=\(bodyKB)KB timeout=30s")
+        let hasTemp = (requestBody["temperature"] as? Int) == 0 || (requestBody["temperature"] as? Double) == 0
+        print("📡 [Scan] API request [haiku-vision]: model=\(model) payload=\(bodyKB)KB timeout=30s temperature=\(hasTemp ? "0" : "MISSING!")")
         let apiStart = CFAbsoluteTimeGetCurrent()
 
         let (data, response): (Data, URLResponse)
@@ -98,11 +99,13 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
             .replacingOccurrences(of: "```", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        // Debug: log raw entries for Ça va to check if Haiku or post-processing causes the mismatch
-        if jsonText.contains("va") {
-            let lines = jsonText.components(separatedBy: "\n")
-            let caVaLines = lines.enumerated().filter { $0.element.contains("va") }.map { "  L\($0.offset): \($0.element)" }
-            print("📡 [Scan] Raw Ça va entries from Haiku:\n\(caVaLines.joined(separator: "\n"))")
+        // Debug: log key entries from Haiku raw output
+        let debugLines = jsonText.components(separatedBy: "\n")
+        let keyEntries = debugLines.enumerated()
+            .filter { $0.element.contains("toi") || $0.element.contains("va") || $0.element.contains("parti") }
+            .map { "  L\($0.offset): \($0.element.trimmingCharacters(in: .whitespaces))" }
+        if !keyEntries.isEmpty {
+            print("📡 [Scan] Raw key entries from Haiku:\n\(keyEntries.joined(separator: "\n"))")
         }
 
         do {
@@ -173,7 +176,9 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         REGEL 4 – Satzzeichen sind bedeutungstragend:
         "Ça va?" (Frage) und "Ça va." (Aussage) = 2 VERSCHIEDENE Einträge.
         "Et toi?" → "Und du?" und "Et toi?" → "Und dir?" = 2 VERSCHIEDENE Einträge.
+        Wenn dasselbe französische Wort in verschiedenen Sektionen mit verschiedenen Übersetzungen vorkommt, BEIDE extrahieren.
         Niemals auf Basis gleicher Quellform zusammenfassen oder weglassen.
+        Das Präfix "hier:" im Buch bedeutet "in diesem Kontext" — nur den Teil NACH "hier:" als Übersetzung nehmen.
 
         REGEL 5 – Grammatikinfo als Typ:
         m./f. → Nomen, adj. → Adjektiv, adv. → Adverb, fam. → Ausdruck. Ohne Angabe → aus Kontext ableiten.
