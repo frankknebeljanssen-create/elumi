@@ -134,7 +134,7 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         - Bei Nomen: Artikel miterfassen (fr: "la maison", de: "das Haus")
         - Bei Verben: Infinitiv erfassen
         - Satzzeichen bewahren: ? ! . sind bedeutungsrelevant
-        - Gleiches Quellwort mit verschiedenen Übersetzungen: EINE Zeile mit " / " getrennt
+        - Jede Zeile auf dem Bild = ein Eintrag. Wenn dasselbe Wort 2x vorkommt mit verschiedenen Übersetzungen, sind das 2 separate Einträge.
         - "Ça va?" (Frage) und "Ça va." (Aussage) sind SEPARATE Einträge
 
         Antworte AUSSCHLIESSLICH mit validem JSON (kein Markdown, keine Codeblöcke):
