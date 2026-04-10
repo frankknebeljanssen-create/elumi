@@ -174,7 +174,8 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
           Niemals einen Eintrag aus der dritten Spalte extrahieren.
 
         REGEL 4 – Satzzeichen sind bedeutungstragend:
-        "Ça va?" (Frage) und "Ça va." (Aussage) = 2 VERSCHIEDENE Einträge.
+        "Ça va?" = "Wie geht's?" / "Geht's dir gut?" (FRAGE – NIEMALS "Es geht mir gut")
+        "Ça va." = "Es geht mir gut." (AUSSAGE – NIEMALS "Wie geht's?")
         "Et toi?" → "Und du?" und "Et toi?" → "Und dir?" = 2 VERSCHIEDENE Einträge.
         Wenn dasselbe französische Wort in verschiedenen Sektionen mit verschiedenen Übersetzungen vorkommt, BEIDE extrahieren.
         Niemals auf Basis gleicher Quellform zusammenfassen oder weglassen.

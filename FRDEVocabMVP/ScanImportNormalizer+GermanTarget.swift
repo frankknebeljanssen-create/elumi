@@ -29,7 +29,9 @@ extension ScanImportNormalizer {
         // The vocabulary lookup strips punctuation → "Ça va?" and "Ça va." match the same entry
         // but have completely different meanings. Trust Haiku's translation instead.
         let trimmedSource = source.trimmingCharacters(in: .whitespacesAndNewlines)
+        print("🔍 [VocabOverride] source='\(source)' trimmed='\(trimmedSource)' target='\(target)' formatted='\(formattedTarget)' suggestions=\(localMatch.suggestions.prefix(3))")
         if trimmedSource.hasSuffix("?") || trimmedSource.hasSuffix(".") || trimmedSource.hasSuffix("!") {
+            print("🔍 [VocabOverride] ⏭ SKIPPED — source has terminal punctuation")
             return formattedTarget
         }
         let prioritizedSuggestions = prioritizedGermanSuggestions(
