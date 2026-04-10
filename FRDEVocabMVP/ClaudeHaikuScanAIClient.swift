@@ -139,7 +139,8 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         REGELN:
         1. JEDE Tabellenzeile mit einem Paar = ein Eintrag. Überspringe KEINE Zeile.
         2. Auch sehr kurze Einträge: "ah" = "ach, ach so", "et" = "und", "toi" = "du"
-        3. Auch Interjektionen und Ausrufe: "C'est parti!" = "Los geht's!", "À plus!" = "Bis später!"
+        3. Auch Interjektionen und Ausrufe: "À plus!" = "Bis später!", "Ça sonne!" = "Es klingelt!"
+        ACHTUNG: Wenn ein Ausdruck sowohl als Überschrift ALS AUCH in der Tabelle mit Übersetzung steht, extrahiere die Tabellenzeile!
         4. Gleiche Quelle mit verschiedenen Übersetzungen = SEPARATE Einträge:
            "Et toi?" → "Und du?" ist Eintrag 1
            "Et toi?" → "Und dir?" ist Eintrag 2 (eigener Eintrag!)
