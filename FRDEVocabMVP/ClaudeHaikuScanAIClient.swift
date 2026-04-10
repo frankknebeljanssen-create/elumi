@@ -116,10 +116,12 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
     private func buildPrompt(ocrContext: ScanAIContextSnapshot?) -> String {
         var prompt = scanPrompt
         if let context = ocrContext, !context.recognizedLines.isEmpty {
-            let lines = context.recognizedLines.prefix(60).joined(separator: "\n")
+            let lines = context.recognizedLines.prefix(50).joined(separator: "\n")
             prompt += """
 
-            \n\nOCR hat folgende Zeilen erkannt (als Referenz — jede Zeile die ein Vokabelpaar enthält MUSS im Ergebnis vorkommen):
+            \n\nOCR-Referenz (erkannte Zeilen). Nutze dies um sicherzustellen dass du keine Vokabelzeile übersiehst.
+            ACHTUNG: Nicht alle Zeilen sind Vokabeln! Ignoriere Beispielsätze, Dialoge, Grammatik-Erklärungen und Überschriften.
+            Extrahiere NUR echte Vokabelpaare (Quellwort ↔ Übersetzung):
             \(lines)
             """
         }
