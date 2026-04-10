@@ -64,8 +64,7 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         request.httpBody = body
 
         let bodyKB = body.count / 1024
-        let hasTemp = (requestBody["temperature"] as? Int) == 0 || (requestBody["temperature"] as? Double) == 0
-        print("📡 [Scan] API request [haiku-vision]: model=\(model) payload=\(bodyKB)KB timeout=30s temperature=\(hasTemp ? "0" : "MISSING!")")
+        print("📡 [Scan] API request [haiku-vision]: model=\(model) payload=\(bodyKB)KB timeout=30s")
         let apiStart = CFAbsoluteTimeGetCurrent()
 
         let (data, response): (Data, URLResponse)
@@ -98,15 +97,6 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
             .replacingOccurrences(of: "```json", with: "")
             .replacingOccurrences(of: "```", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        // Debug: log key entries from Haiku raw output
-        let debugLines = jsonText.components(separatedBy: "\n")
-        let keyEntries = debugLines.enumerated()
-            .filter { $0.element.contains("toi") || $0.element.contains("va") || $0.element.contains("parti") }
-            .map { "  L\($0.offset): \($0.element.trimmingCharacters(in: .whitespaces))" }
-        if !keyEntries.isEmpty {
-            print("📡 [Scan] Raw key entries from Haiku:\n\(keyEntries.joined(separator: "\n"))")
-        }
 
         do {
             let scanResult = try JSONDecoder().decode(OpenAIScanSchemaResponse.self, from: Data(jsonText.utf8))
