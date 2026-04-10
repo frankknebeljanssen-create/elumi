@@ -130,28 +130,41 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
 
     private var scanPrompt: String {
         """
-        Du bist ein Vokabel-Extraktor. Extrahiere JEDES Französisch-Deutsch Vokabelpaar aus diesem Bild.
+        Du bist ein Vokabel-Extraktor für Französisch-Deutsch Schulbuchseiten.
 
-        WICHTIG: Das Bild kann oben Erklärungen/Symbole/Abkürzungen haben — das sind KEINE Vokabeln.
-        Die echten Vokabelpaare stehen in TABELLEN mit 2-3 Spalten (Französisch | Deutsch | evtl. Beispiel).
-        Extrahiere NUR aus diesen Tabellen, JEDE Zeile.
+        REGEL 1 – Was eine Vokabelzeile ist:
+        Eine Vokabelzeile hat die Struktur: französischer Begriff [Lautschrift] Grammatikangabe → deutsche Übersetzung.
+        Extrahiere NUR Zeilen die dieses Muster haben. Die 3. Spalte (Beispielsätze/Dialoge) vollständig ignorieren.
+        Auch sehr kurze Einträge zählen: "ah" → "ach, ach so", "et" → "und", "toi" → "du"
 
-        REGELN:
-        1. JEDE Tabellenzeile mit einem Paar = ein Eintrag. Überspringe KEINE Zeile.
-        2. Auch sehr kurze Einträge: "ah" = "ach, ach so", "et" = "und", "toi" = "du"
-        3. Auch Interjektionen und Ausrufe: "C'est parti!" = "Los geht's!", "À plus!" = "Bis später!"
-        4. ÜBERSCHRIFTEN: Ein Wort das als Abschnittsüberschrift vorkommt kann AUCH ein Vokabeleintrag sein.
-           Wenn es in der ersten Tabellenzeile darunter mit Übersetzung steht → als Vokabel extrahieren.
-           Nur ignorieren wenn es AUSSCHLIESSLICH als Titel ohne Übersetzung vorkommt.
-        5. Gleiche Quelle mit verschiedenen Übersetzungen = SEPARATE Einträge:
-           "Et toi?" → "Und du?" ist Eintrag 1
-           "Et toi?" → "Und dir?" ist Eintrag 2 (eigener Eintrag!)
-        6. SATZZEICHEN sind bedeutungstragend — ? ! . unterscheiden verschiedene Einträge:
-           "Ça va?" (Frage) und "Ça va." (Aussage) = 2 VERSCHIEDENE Einträge, beide extrahieren!
-        7. Nomen mit Artikel: "la maison" → "das Haus"
-        8. Lautschrift [ʃ] etc. und Markierungen wie "fam." weglassen
-        9. Seitenzahlen, Kapitel, Abkürzungstabellen ignorieren
-        10. Die 3. Spalte (Beispiele/Dialoge) NICHT als eigene Vokabelpaare extrahieren
+        REGEL 2 – Überschriften die auch Vokabeln sind:
+        Wenn ein Begriff als Abschnittsüberschrift vorkommt UND gleichzeitig in einer Tabellenzeile darunter mit deutscher Übersetzung steht, ist er ein Vokabeleintrag → extrahieren.
+        Beispiel: "C'est parti!" steht als Überschrift UND als erste Tabellenzeile mit "Los geht's!" → extrahieren.
+        Die Überschrift selbst ignorieren, den Tabelleneintrag extrahieren.
+
+        REGEL 3 – Was ignoriert wird:
+        - Lautschrift in eckigen Klammern: [sava], [twa] → NICHT übernehmen
+        - Grammatikabkürzungen: m., f., pl., adj., adv., fam., inv., inf. → NICHT übernehmen
+        - Legendenseiten / Symbole-und-Abkürzungen-Blöcke → vollständig ignorieren
+        - Seitenzahlen und Seitenbezeichnungen ("cent-soixante-seize") → ignorieren
+        - Kulturinfo-Blöcke mit beschreibendem Fließtext → ignorieren
+        - Grammatiknotizen am Seitenende → ignorieren
+        - Zeichnungen, Bilder, Symbole → ignorieren
+
+        REGEL 4 – Satzzeichen sind bedeutungstragend:
+        "Ça va?" (Frage) und "Ça va." (Aussage) = 2 VERSCHIEDENE Einträge.
+        "Et toi?" → "Und du?" und "Et toi?" → "Und dir?" = 2 VERSCHIEDENE Einträge.
+        Niemals auf Basis gleicher Quellform zusammenfassen oder weglassen.
+
+        REGEL 5 – Grammatikinfo als Typ:
+        m./f. → Nomen, adj. → Adjektiv, adv. → Adverb, fam. → Ausdruck. Ohne Angabe → aus Kontext ableiten.
+
+        REGEL 6 – Mehrfachübersetzungen:
+        Mehrere deutsche Bedeutungen in einer Zeile getrennt durch / oder , (z.B. "Na ja. / Es geht so.") als EINE Übersetzung komplett übernehmen — NICHT als zwei Einträge splitten.
+
+        REGEL 7 – Kulturpaare die Vokabeln sind:
+        "Bienvenue!" → "Willkommen!" ist ein Vokabelpaar (klare FR→DE Struktur) → extrahieren.
+        "la Tour Eiffel" in einem Beschreibungsblock ohne eigene Tabellenzeile → ignorieren.
 
         Antworte AUSSCHLIESSLICH mit validem JSON (kein Markdown, keine Codeblöcke):
 
