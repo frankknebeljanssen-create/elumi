@@ -18,6 +18,8 @@ extension ElumiArcadeGameView {
             bonusBubbleIcon(size: renderSize, at: date)
         case .saugglocke:
             suctionCupIcon(size: renderSize, at: date)
+        case .slowMotionPotion:
+            slowMotionPotionIcon(size: renderSize, at: date)
         case .falseElumi:
             hazardElumiIcon(size: renderSize, at: date)
         }
@@ -113,6 +115,42 @@ extension ElumiArcadeGameView {
                 .offset(x: size * 0.18, y: -size * 0.16)
         }
         .shadow(color: AppTheme.Colors.warning.opacity(0.28), radius: 12, x: 0, y: 5)
+    }
+
+    func slowMotionPotionIcon(size: CGFloat, at date: Date) -> some View {
+        let pulse = 0.90 + (0.10 * CGFloat(sin(date.timeIntervalSinceReferenceDate * 5.0)))
+
+        return ZStack {
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            Color.white.opacity(0.9),
+                            Color.blue.opacity(0.85),
+                            Color.blue.opacity(0.5)
+                        ],
+                        center: .topLeading,
+                        startRadius: 2,
+                        endRadius: size * 0.54
+                    )
+                )
+                .frame(width: size, height: size)
+                .overlay(
+                    Circle()
+                        .stroke(Color.cyan.opacity(0.5), lineWidth: 1.5)
+                )
+
+            Text("🧪")
+                .font(.system(size: size * 0.48))
+
+            Circle()
+                .fill(Color.white.opacity(0.25))
+                .frame(width: size * 0.2, height: size * 0.2)
+                .offset(x: -size * 0.16, y: -size * 0.18)
+        }
+        .frame(width: size, height: size)
+        .scaleEffect(pulse)
+        .shadow(color: Color.blue.opacity(0.4), radius: 14, x: 0, y: 4)
     }
 
     func bonusBubbleIcon(size: CGFloat, at date: Date) -> some View {

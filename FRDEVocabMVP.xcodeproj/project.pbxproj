@@ -1347,6 +1347,7 @@
 				A00000000000000000000386 /* FeedbackPlayer.swift in Sources */,
 				A00000000000000000000706 /* FeedbackPlayer+Playback.swift in Sources */,
 				A00000000000000000000708 /* FeedbackPlayer+Buffers.swift in Sources */,
+				B44AC0E115594918B192C1D1 /* FeedbackPlayer+BGM.swift in Sources */,
 				A00000000000000000000710 /* FeedbackPlayer+Waveform.swift in Sources */,
 				A00000000000000000000150 /* AppStores.swift in Sources */,
 				A00000000000000000000334 /* StudyStoreSupport.swift in Sources */,

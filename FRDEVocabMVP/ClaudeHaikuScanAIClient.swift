@@ -103,11 +103,13 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
             jsonText = jsonText.replacingOccurrences(of: "\"\(wrong)\"", with: "\"\(correct)\"")
         }
 
-        // Debug: check if jaune appears anywhere in raw response
-        if jsonText.lowercased().contains("jaune") {
-            print("📡 [Scan] ✅ 'jaune' FOUND in raw Haiku output")
+        // Debug: check if "ou" appears as a standalone source entry in raw response
+        if jsonText.range(of: #""source"\s*:\s*"ou""#, options: .regularExpression) != nil {
+            print("📡 [Scan] ✅ 'ou' FOUND as entry in raw Haiku output")
+        } else if jsonText.range(of: #""source"\s*:\s*"où""#, options: .regularExpression) != nil {
+            print("📡 [Scan] ✅ 'où' FOUND as entry in raw Haiku output")
         } else {
-            print("📡 [Scan] ❌ 'jaune' NOT in raw Haiku output — Haiku didn't see it")
+            print("📡 [Scan] ❌ 'ou/où' NOT found as entry — Haiku didn't extract it")
         }
 
         do {

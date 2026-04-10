@@ -54,6 +54,7 @@ extension FlashcardsView {
                     .contentShape(Rectangle())
                     .onTapGesture {
                         guard isSessionReady else { return }
+                        feedbackPlayer.playCardFlip()
                         if interaction.showingSolution {
                             interaction.flipBackToFront(dismissTypedAnswerFocus: { dismissTypedAnswerFocus() })
                         } else {

@@ -2,6 +2,46 @@ import SwiftUI
 import AVFoundation
 
 extension FeedbackPlayer {
+    func playCardFlip() {
+        guard areSoundsEnabled else { return }
+        play(cardFlipBuffer)
+    }
+
+    func playScanStart() {
+        guard areSoundsEnabled else { return }
+        play(scanStartBuffer)
+    }
+
+    func playScanDone() {
+        guard areSoundsEnabled else { return }
+        play(scanDoneBuffer)
+    }
+
+    func playAppStart() {
+        guard areSoundsEnabled else { return }
+        play(appStartBuffer)
+    }
+
+    func playToggle() {
+        guard areSoundsEnabled else { return }
+        play(toggleBuffer)
+    }
+
+    func playTabSwitch() {
+        guard areSoundsEnabled else { return }
+        play(tabSwitchBuffer)
+    }
+
+    func playListAction() {
+        guard areSoundsEnabled else { return }
+        play(listActionBuffer)
+    }
+
+    func playFavStar() {
+        guard areSoundsEnabled else { return }
+        play(favStarBuffer)
+    }
+
     func playSuccess() {
         guard areSoundsEnabled else { return }
         play(successBuffer)
@@ -52,8 +92,54 @@ extension FeedbackPlayer {
         play(gameOverBuffer)
     }
 
+    func playSlowMotionActivate() {
+        guard areSoundsEnabled else { return }
+        play(slowMotionActivateBuffer)
+    }
+
+    func playSlowMotionEnd() {
+        guard areSoundsEnabled else { return }
+        play(slowMotionEndBuffer)
+    }
+
+    func playSnackMiss() {
+        guard areSoundsEnabled else { return }
+        play(snackMissBuffer)
+    }
+
+    func playRoundClear() {
+        guard areSoundsEnabled else { return }
+        play(roundClearBuffer)
+    }
+
+    func playHighScore() {
+        guard areSoundsEnabled else { return }
+        play(highScoreBuffer)
+    }
+
+    func playPowerUpSpawn() {
+        guard areSoundsEnabled else { return }
+        play(powerUpSpawnBuffer)
+    }
+
+    func playShieldActivate() {
+        guard areSoundsEnabled else { return }
+        play(shieldActivateBuffer)
+    }
+
+    func playShieldAbsorb() {
+        guard areSoundsEnabled else { return }
+        play(shieldAbsorbBuffer)
+    }
+
     func playSuctionWhir() {
-        guard areSoundsEnabled, let buffer = suctionWhirBuffer else { return }
+        // saugstart: one-shot on playerNode (not loopPlayerNode!)
+        guard areSoundsEnabled else { return }
+        play(suctionWhirBuffer)
+    }
+
+    func playSuctionLoop() {
+        guard areSoundsEnabled, let buffer = suctionLoopBuffer else { return }
 
         do {
             try audioSession.setCategory(.ambient, mode: .default, options: [.mixWithOthers])
@@ -63,13 +149,16 @@ extension FeedbackPlayer {
         configureEngineIfNeeded(for: buffer.format)
         guard let loopPlayerNode else { return }
         startEngineIfNeeded()
+        guard engine?.isRunning == true else { return }
         loopPlayerNode.stop()
-        loopPlayerNode.scheduleBuffer(buffer, at: nil, options: .interrupts)
+        loopPlayerNode.scheduleBuffer(buffer, at: nil, options: .loops)
         loopPlayerNode.play()
     }
 
-    func stopSuctionWhir() {
+    func stopSuctionLoop() {
         loopPlayerNode?.stop()
+        // Play wind-down pitch drop on the regular player node
+        play(suctionWindDownBuffer)
     }
 
     func playFlashcardSuccess() {
@@ -90,10 +179,33 @@ extension FeedbackPlayer {
     func toggleSoundsFromQuickAction() {
         let newValue = !areSoundsEnabled
         areSoundsEnabled = newValue
+        if newValue { playToggle() }
         showSoundToggleToast(
             message: newValue ? "Ton an" : "Ton aus",
             systemImage: newValue ? "speaker.wave.2.fill" : "speaker.slash.fill"
         )
+    }
+
+    func startBGM() {
+        guard areSoundsEnabled, let buffer = bgmBuffer else { return }
+
+        do {
+            try audioSession.setCategory(.ambient, mode: .default, options: [.mixWithOthers])
+            try audioSession.setActive(true)
+        } catch {}
+
+        configureEngineIfNeeded(for: buffer.format)
+        guard let bgmPlayerNode else { return }
+        startEngineIfNeeded()
+        guard engine?.isRunning == true else { return }
+        bgmPlayerNode.stop()
+        bgmPlayerNode.volume = 0.15
+        bgmPlayerNode.scheduleBuffer(buffer, at: nil, options: .loops)
+        bgmPlayerNode.play()
+    }
+
+    func stopBGM() {
+        bgmPlayerNode?.stop()
     }
 
     func stopAllFeedback() {
@@ -120,13 +232,13 @@ extension FeedbackPlayer {
         do {
             try audioSession.setCategory(.ambient, mode: .default, options: [.mixWithOthers])
             try audioSession.setActive(true)
-        } catch {
-            // If audio session setup fails, skip reconfiguration and still attempt playback.
-        }
+        } catch {}
 
         configureEngineIfNeeded(for: buffer.format)
         guard let playerNode else { return }
         startEngineIfNeeded()
+        guard engine?.isRunning == true else { return }
+
         playerNode.stop()
         playerNode.scheduleBuffer(buffer, at: nil, options: .interrupts)
         playerNode.play()
@@ -137,14 +249,18 @@ extension FeedbackPlayer {
         let engine = AVAudioEngine()
         let playerNode = AVAudioPlayerNode()
         let loopNode = AVAudioPlayerNode()
+        let bgmNode = AVAudioPlayerNode()
         engine.attach(playerNode)
         engine.attach(loopNode)
+        engine.attach(bgmNode)
         engine.connect(playerNode, to: engine.mainMixerNode, format: format)
         engine.connect(loopNode, to: engine.mainMixerNode, format: format)
+        engine.connect(bgmNode, to: engine.mainMixerNode, format: format)
         engine.prepare()
         self.engine = engine
         self.playerNode = playerNode
         self.loopPlayerNode = loopNode
+        self.bgmPlayerNode = bgmNode
         isConfigured = true
     }
 

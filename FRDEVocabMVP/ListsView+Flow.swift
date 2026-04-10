@@ -54,6 +54,7 @@ extension ListsView {
         }
 
         listStore.createList(named: trimmedName, collectionPreset: newListCollectionPreset)
+        feedbackPlayer.playListAction()
         let createdName = listStore.selectedList.name
         newListName = ""
         newListCollectionPreset = .schoolbook

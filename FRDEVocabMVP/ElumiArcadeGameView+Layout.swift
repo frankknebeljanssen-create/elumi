@@ -45,7 +45,7 @@ extension ElumiArcadeGameView {
                     footerHint
                 }
                 .padding(.horizontal, 18)
-                .padding(.top, 18)
+                .padding(.top, 58)
                 .padding(.bottom, 28)
                 .zIndex(showingStartOverlay ? 3 : 1)
 
@@ -193,6 +193,13 @@ extension ElumiArcadeGameView {
                         icon: "star.fill",
                         label: "x2 \(bonusPointsSecondsRemaining())s",
                         tint: AppTheme.Colors.warning
+                    )
+                }
+                if hasActiveSlowMotion() && slowMotionSecondsRemaining() > 0 {
+                    arcadeStatusChip(
+                        icon: "tortoise.fill",
+                        label: "Zeitlupe \(slowMotionSecondsRemaining())s",
+                        tint: .blue
                     )
                 }
                 if comboCount >= 3 && !isGameOver {

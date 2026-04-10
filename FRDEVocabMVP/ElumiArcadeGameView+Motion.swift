@@ -14,6 +14,8 @@ extension ElumiArcadeGameView {
             baseSize = 28
         case .saugglocke:
             baseSize = 38
+        case .slowMotionPotion:
+            baseSize = 34
         case .falseElumi:
             baseSize = 46
         }
@@ -33,6 +35,8 @@ extension ElumiArcadeGameView {
             return 1.0
         case .saugglocke:
             return 1.0
+        case .slowMotionPotion:
+            return 1.0
         case .falseElumi:
             return 1.0
         }
@@ -50,13 +54,16 @@ extension ElumiArcadeGameView {
             return 0
         case .saugglocke:
             return 0
+        case .slowMotionPotion:
+            return 0
         case .falseElumi:
             return 0
         }
     }
 
     func currentSpawnDelay() -> Double {
-        max(0.38, 1.05 - (Double(round - 1) * 0.13))
+        let base = max(0.38, 1.05 - (Double(round - 1) * 0.13))
+        return hasActiveSlowMotion() ? base * 1.8 : base
     }
 
     func currentFallDuration() -> Double {

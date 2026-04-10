@@ -1,5 +1,4 @@
 import SwiftUI
-import AudioToolbox
 
 extension ElumiArcadeGameView {
     func spawnSnack() {
@@ -11,19 +10,22 @@ extension ElumiArcadeGameView {
         let suctionChance: Double
 
         switch round {
-        case 3: // Bonus-Regen: more power-ups
+        case 4: // Bonus-Regen: more power-ups
             bonusChance = 0.14
             suctionChance = 0.12
             falseElumiChance = min(0.10, 0.04 + (Double(round - 1) * 0.02))
-        case 4: // Doppelgänger: many false Elumis
+        case 5: // Doppelgänger: many false Elumis
             bonusChance = 0.055
             suctionChance = 0.07
             falseElumiChance = 0.20
-        default: // Round 1, 2, 5+
-            bonusChance = round >= 5 ? 0.10 : 0.055
-            suctionChance = round >= 5 ? 0.10 : 0.07
-            falseElumiChance = round >= 5 ? 0.16 : min(0.12, 0.04 + (Double(round - 1) * 0.02))
+        default: // Round 1, 2, 3, 6+
+            bonusChance = round >= 6 ? 0.10 : 0.055
+            suctionChance = round >= 6 ? 0.10 : 0.07
+            falseElumiChance = round >= 6 ? 0.16 : min(0.12, 0.04 + (Double(round - 1) * 0.02))
         }
+
+        // Slow-motion potion: rare spawn, ~1x per 2-3 rounds
+        let slowMotionPotionChance: Double = round >= 2 ? 0.04 : 0.0
 
         // Guarantee at least 1 suction per round (halfway through)
         let halfwayCount = snacksForRound(round) / 2
@@ -33,19 +35,21 @@ extension ElumiArcadeGameView {
         if forceSuction {
             kind = .saugglocke
             roundSuctionSpawned = true
-        } else if roll < bonusChance {
+        } else if roll < slowMotionPotionChance {
+            kind = .slowMotionPotion
+        } else if roll < slowMotionPotionChance + bonusChance {
             kind = .bonusblase
-        } else if roll < bonusChance + suctionChance {
+        } else if roll < slowMotionPotionChance + bonusChance + suctionChance {
             kind = .saugglocke
             roundSuctionSpawned = true
-        } else if roll < bonusChance + suctionChance + falseElumiChance {
+        } else if roll < slowMotionPotionChance + bonusChance + suctionChance + falseElumiChance {
             kind = .falseElumi
         } else {
             kind = [.wuermchen, .wasserfloh, .algenkugel].randomElement() ?? .wuermchen
         }
 
-        // Round 2+: Querschläger — aggressive zigzag across the screen
-        let querschlaegerChance: Double = round == 2 ? 0.35 : (round >= 3 ? 0.25 : 0)
+        // Round 3+: Querschläger — aggressive zigzag across the screen
+        let querschlaegerChance: Double = round == 3 ? 0.35 : (round >= 4 ? 0.25 : 0)
         let isQuerschlaeger = kind.isSnack && Double.random(in: 0...1) < querschlaegerChance
         let wobbleAmp = isQuerschlaeger
             ? CGFloat.random(in: 0.15...0.25)
@@ -54,6 +58,11 @@ extension ElumiArcadeGameView {
             ? Double.random(in: 4.0...6.5)
             : Double.random(in: 1.4...3.1)
 
+        // Power-ups fall slower (easier to catch)
+        let fallDuration = kind == .slowMotionPotion
+            ? currentFallDuration() * 1.3
+            : currentFallDuration()
+
         activeSnacks.append(
             ElumiArcadeSnackState(
                 kind: kind,
@@ -61,13 +70,18 @@ extension ElumiArcadeGameView {
                 laneX: CGFloat.random(in: 0.12...0.88),
                 wobbleAmplitude: wobbleAmp,
                 wobbleFrequency: wobbleFreq,
-                fallDuration: currentFallDuration(),
+                fallDuration: fallDuration,
                 rotationDrift: Double.random(in: -18...18),
                 renderScale: spawnRenderScale(for: kind),
                 motionPhase: Double.random(in: 0...(Double.pi * 2)),
                 points: snackPoints(for: kind)
             )
         )
+
+        // Shimmer sound when a power-up spawns
+        if kind == .slowMotionPotion || kind == .bonusblase || kind == .saugglocke {
+            feedbackPlayer.playPowerUpSpawn()
+        }
     }
 
     func startGame() {
@@ -134,6 +148,11 @@ extension ElumiArcadeGameView {
         return max(0, Int(ceil(bonusPointsEndsAt.timeIntervalSince(date))))
     }
 
+    func slowMotionSecondsRemaining(at date: Date = Date()) -> Int {
+        guard let slowMotionEndsAt else { return 0 }
+        return max(0, Int(ceil(slowMotionEndsAt.timeIntervalSince(date))))
+    }
+
     func activateSuction(at date: Date) {
         // Dock-in animation: scale Elumi up briefly
         withAnimation(.spring(response: 0.2, dampingFraction: 0.5)) {
@@ -148,25 +167,15 @@ extension ElumiArcadeGameView {
         activateSlowMotion(at: date)
         suctionEndsAt = date.addingTimeInterval(suctionDuration)
         showComboBanner("Saugstrahl aktiviert")
+        // Activation whir, then seamless transition to loop
         feedbackPlayer.playSuctionWhir()
-
-        // Humming sound during suction (system vibration pattern)
-        startSuctionHumming()
-    }
-
-    func startSuctionHumming() {
-        suctionHummingTimer?.invalidate()
-        // Fast whirring: alternating haptic patterns for suction feel
-        var tick = 0
-        suctionHummingTimer = Timer.scheduledTimer(withTimeInterval: 0.18, repeats: true) { _ in
-            // Alternate between two haptic intensities for whirring effect
-            AudioServicesPlaySystemSound(tick % 3 == 0 ? 1519 : 1520)
-            tick += 1
-        }
+        let loopDelay: TimeInterval = 0.7 // after whir fades
         let duration = suctionDuration
+        DispatchQueue.main.asyncAfter(deadline: .now() + loopDelay) {
+            self.feedbackPlayer.playSuctionLoop()
+        }
         DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
-            self.suctionHummingTimer?.invalidate()
-            self.suctionHummingTimer = nil
+            self.feedbackPlayer.stopSuctionLoop()
         }
     }
 
@@ -182,6 +191,7 @@ extension ElumiArcadeGameView {
         gameOverSubtitle = "Den musst du vorbeischwimmen lassen."
         isGameOver = true
         isPlaying = false
+        feedbackPlayer.stopBGM()
         feedbackPlayer.playGameOver()
     }
 
@@ -189,12 +199,18 @@ extension ElumiArcadeGameView {
         slowMotionEndsAt = date.addingTimeInterval(slowMotionDuration)
     }
 
+    func activateSlowMotionPotion(at date: Date) {
+        slowMotionEndsAt = date.addingTimeInterval(slowMotionPotionDuration)
+        showComboBanner("Zeitlupe aktiviert")
+        feedbackPlayer.playSlowMotionActivate()
+    }
+
     func advanceGameClock(now: Date) -> Date {
         let previousFrameDate = lastFrameDate ?? now
         let delta = max(0, now.timeIntervalSince(previousFrameDate))
         lastFrameDate = now
 
-        let motionScale = hasActiveSlowMotion(at: now) ? 0.28 : 1.0
+        let motionScale = hasActiveSlowMotion(at: now) ? 0.4 : 1.0
         gameClock = gameClock.addingTimeInterval(delta * motionScale)
         return gameClock
     }
@@ -260,7 +276,7 @@ extension ElumiArcadeGameView {
         roundBannerPhase = 0
         readyBlinkVisible = true
         activeSnacks = []
-        feedbackPlayer.playAchievement()
+        feedbackPlayer.playRoundClear()
 
         Task { @MainActor in
             // Phase 0: "Runde X geschafft!" für 2s
@@ -296,6 +312,7 @@ extension ElumiArcadeGameView {
         }
         if let slowMotionEndsAt, slowMotionEndsAt <= now {
             self.slowMotionEndsAt = nil
+            feedbackPlayer.playSlowMotionEnd()
         }
 
         let motionNow = advanceGameClock(now: now)
@@ -362,6 +379,21 @@ extension ElumiArcadeGameView {
                 continue
             }
 
+            if snack.kind == .slowMotionPotion {
+                if isCatchable && horizontalDistance <= 34 {
+                    activateSlowMotionPotion(at: now)
+                    triggerCatchAnimation()
+                    continue
+                }
+
+                if progress >= 1.04 {
+                    continue
+                }
+
+                survivors.append(snack)
+                continue
+            }
+
             if isInSuctionBeam || (isCatchable && horizontalDistance <= 34) {
                 earnedPoints += pointsForCaughtSnack(snack, at: now)
                 caughtSnackCount += 1
@@ -371,7 +403,7 @@ extension ElumiArcadeGameView {
             if progress >= 1.04 {
                 misses += 1
                 missedAnySnack = true
-                AudioServicesPlaySystemSound(1053) // Short "miss" sound
+                feedbackPlayer.playSnackMiss()
                 continue
             }
 
@@ -392,6 +424,9 @@ extension ElumiArcadeGameView {
         if earnedPoints > 0 {
             score += earnedPoints
             if score > highScore {
+                if !didBeatHighScore {
+                    feedbackPlayer.playHighScore()
+                }
                 didBeatHighScore = true
                 highScore = score
             }
@@ -411,6 +446,7 @@ extension ElumiArcadeGameView {
         if misses >= maxMisses {
             gameOverTitle = "Game Over"
             gameOverSubtitle = "Alle Leben verbraucht."
+            feedbackPlayer.stopBGM()
             feedbackPlayer.playGameOver()
             isGameOver = true
             isPlaying = false
@@ -425,6 +461,7 @@ extension ElumiArcadeGameView {
         elumiX = 0.5
         isPlaying = true
         isGameOver = false
+        feedbackPlayer.startBGM()
         comboCount = 0
         totalCaught = 0
         bestCombo = 0

@@ -31,6 +31,7 @@ extension ListsView {
                     showingListPicker = false
                 } onDelete: { deletedList in
                     listStore.deleteCustomList(id: deletedList.id)
+                    feedbackPlayer.playListAction()
                     editableListName = listStore.selectedList.name
                     cancelEditing()
                     showToast("„\(deletedList.name)“ wurde gelöscht.")
@@ -87,6 +88,7 @@ extension ListsView {
                         } else {
                             listStore.deleteCustomList(id: listPendingDeletion.id)
                         }
+                        feedbackPlayer.playListAction()
                         cancelEditing()
                         self.listPendingDeletion = nil
                         showToast("„\(deletedName)“ wurde gelöscht.")

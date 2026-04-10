@@ -68,6 +68,7 @@ extension ScanImportView {
 
     func recognizeText(from image: UIImage) {
         isRecognizingImage = true
+        feedbackPlayer.playScanStart()
         startScanProgressFeedback()
         scanRuntimeStage = .ocrPreflight
         importMessage = "Text wird erkannt..."
@@ -93,6 +94,7 @@ extension ScanImportView {
 
             await MainActor.run {
                 isRecognizingImage = false
+                feedbackPlayer.playScanDone()
                 session.stopProgressFeedback()
                 session.updateEvalReport(for: providerResult)
                 session.updateProviderDebugInfo(

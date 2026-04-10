@@ -30,14 +30,17 @@ struct ContentView: View {
     }
 
     private func openSettingsScreen() {
+        runtime.feedbackPlayer?.playTabSwitch()
         navigation.openSettingsScreen()
     }
 
     private func openScanScreen() {
+        runtime.feedbackPlayer?.playTabSwitch()
         navigation.openScanScreen()
     }
 
     private func openHeartsScreen() {
+        runtime.feedbackPlayer?.playTabSwitch()
         navigation.openHeartsScreen()
     }
 
@@ -99,7 +102,7 @@ struct ContentView: View {
                     if navigation.shouldShowGlobalChrome {
                         AppBottomBar(
                             feedbackPlayer: feedbackPlayer,
-                            onHome: { navigation.goHome() },
+                            onHome: { runtime.feedbackPlayer?.playTabSwitch(); navigation.goHome() },
                             onFavorite: isHeartsScreenActive ? nil : { openHeartsScreen() },
                             onScan: isScanScreenActive ? nil : { openScanScreen() },
                             onSettings: isSettingsScreenActive ? nil : { openSettingsScreen() },
@@ -139,6 +142,7 @@ struct ContentView: View {
         runtime.ensureHomeShellDependenciesReady()
         runtime.bootstrapDependenciesIfNeeded()
         navigation.completeSplashAndEnsureMenuReady(immediate: immediate)
+        runtime.feedbackPlayer?.playAppStart()
     }
 
     @MainActor

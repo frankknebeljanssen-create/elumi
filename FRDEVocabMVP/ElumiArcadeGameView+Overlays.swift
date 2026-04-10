@@ -8,6 +8,18 @@ extension ElumiArcadeGameView {
         let beamHeight = max(140, size.height - 146)
         let stripeShift = CGFloat(sin(date.timeIntervalSinceReferenceDate * 12)) * 10
 
+        // Build up from Elumi, collapse back at end
+        let rampDuration: TimeInterval = 0.4
+        let beamProgress: CGFloat = {
+            guard let suctionEndsAt else { return 0 }
+            let startedAt = suctionEndsAt.addingTimeInterval(-suctionDuration)
+            let elapsed = date.timeIntervalSince(startedAt)
+            let remaining = suctionEndsAt.timeIntervalSince(date)
+            let rampUp = min(elapsed / rampDuration, 1.0)
+            let rampDown = min(remaining / rampDuration, 1.0)
+            return CGFloat(max(0, min(rampUp, rampDown)))
+        }()
+
         return ZStack {
             // Trapezoid shape: narrow at bottom (Elumi), wide at top
             TrapezoidShape(topWidth: topWidth, bottomWidth: bottomWidth)
@@ -53,6 +65,8 @@ extension ElumiArcadeGameView {
                 .stroke(AppTheme.Colors.warning.opacity(0.35), lineWidth: 1.8)
         }
         .frame(width: topWidth, height: beamHeight)
+        .scaleEffect(x: 1, y: beamProgress, anchor: .bottom)
+        .opacity(Double(beamProgress))
         .position(x: elumiPositionX(in: size.width), y: beamHeight / 2)
         .blendMode(.screen)
         .allowsHitTesting(false)

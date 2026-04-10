@@ -6,6 +6,7 @@ enum ElumiArcadeDropKind: Equatable {
     case algenkugel
     case bonusblase
     case saugglocke
+    case slowMotionPotion
     case falseElumi
 
     var snackKind: ElumiSnackKind? {
@@ -16,7 +17,7 @@ enum ElumiArcadeDropKind: Equatable {
             return .wasserfloh
         case .algenkugel:
             return .algenkugel
-        case .bonusblase, .saugglocke, .falseElumi:
+        case .bonusblase, .saugglocke, .slowMotionPotion, .falseElumi:
             return nil
         }
     }
@@ -69,7 +70,6 @@ struct ElumiArcadeGameView: View {
     @State var didBeatHighScore = false
     @State var suctionEndsAt: Date?
     @State var suctionDockScale: CGFloat = 1.0
-    @State var suctionHummingTimer: Timer?
     @State var bonusPointsEndsAt: Date?
     @State var slowMotionEndsAt: Date?
     @State var screenShakeOffset: CGFloat = 0
@@ -87,6 +87,7 @@ struct ElumiArcadeGameView: View {
     let suctionDuration: TimeInterval = 4.6
     let bonusPointsDuration: TimeInterval = 5.0
     let slowMotionDuration: TimeInterval = 0.55
+    let slowMotionPotionDuration: TimeInterval = 5.0
     let suctionBeamHalfWidth: CGFloat = 92
 
     var headerTitle: String {
@@ -106,9 +107,10 @@ struct ElumiArcadeGameView: View {
     var roundSubtitle: String {
         switch round {
         case 1: return "Los geht's!"
-        case 2: return "Querschläger!"
-        case 3: return "Bonus-Regen!"
-        case 4: return "Doppelgänger!"
+        case 2: return "🧪 Zeitlupe-Trank!"
+        case 3: return "Querschläger!"
+        case 4: return "Bonus-Regen!"
+        case 5: return "Doppelgänger!"
         default: return "Chaos!"
         }
     }
