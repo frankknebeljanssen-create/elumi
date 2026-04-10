@@ -74,7 +74,12 @@ struct OpenAIScanSchemaResponse: Decodable {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             source = try container.decode(String.self, forKey: .source)
             target = try container.decode(String.self, forKey: .target)
-            cardType = try container.decode(CardType.self, forKey: .cardType)
+            let cardTypeRaw = try container.decode(String.self, forKey: .cardType)
+            switch cardTypeRaw {
+            case "words", "Wörter": cardType = .words
+            case "phrases", "Phrasen": cardType = .phrases
+            default: cardType = cardTypeRaw.split(separator: " ").count >= 3 ? .phrases : .words
+            }
             sourcePhonetic = try container.decode(String.self, forKey: .sourcePhonetic)
             targetPhonetic = try container.decode(String.self, forKey: .targetPhonetic)
             confidence = try container.decode(Double.self, forKey: .confidence)
