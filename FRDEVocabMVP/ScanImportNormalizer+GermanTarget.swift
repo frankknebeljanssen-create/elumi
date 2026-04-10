@@ -25,9 +25,11 @@ extension ScanImportNormalizer {
             return formattedTarget
         }
 
-        // Skip vocabulary override if match was approximate (punctuation was stripped)
-        // This prevents "Ça va?" (Frage) from getting "Es geht mir gut" (Aussage)
-        if localMatch.matchDistance > 0.3 {
+        // Skip vocabulary override if source has terminal punctuation (? . !)
+        // The vocabulary lookup strips punctuation → "Ça va?" and "Ça va." match the same entry
+        // but have completely different meanings. Trust Haiku's translation instead.
+        let trimmedSource = source.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedSource.hasSuffix("?") || trimmedSource.hasSuffix(".") || trimmedSource.hasSuffix("!") {
             return formattedTarget
         }
         let prioritizedSuggestions = prioritizedGermanSuggestions(
