@@ -132,10 +132,14 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         """
         Du bist ein Vokabel-Extraktor. Extrahiere JEDES Französisch-Deutsch Vokabelpaar aus diesem Bild.
 
+        WICHTIG: Das Bild kann oben Erklärungen/Symbole/Abkürzungen haben — das sind KEINE Vokabeln.
+        Die echten Vokabelpaare stehen in TABELLEN mit 2-3 Spalten (Französisch | Deutsch | evtl. Beispiel).
+        Extrahiere NUR aus diesen Tabellen, JEDE Zeile.
+
         REGELN:
-        1. JEDE Zeile mit einem Paar = ein Eintrag. Überspringe KEINE Zeile.
-        2. Auch sehr kurze Einträge: "ah" = "ah", "et" = "und", "toi" = "du"
-        3. Auch Interjektionen und Ausrufe: "Ah!", "Bof!", "Super!"
+        1. JEDE Tabellenzeile mit einem Paar = ein Eintrag. Überspringe KEINE Zeile.
+        2. Auch sehr kurze Einträge: "ah" = "ach, ach so", "et" = "und", "toi" = "du"
+        3. Auch Interjektionen und Ausrufe: "C'est parti!" = "Los geht's!", "À plus!" = "Bis später!"
         4. Gleiche Quelle mit verschiedenen Übersetzungen = SEPARATE Einträge:
            "Et toi?" → "Und du?" ist Eintrag 1
            "Et toi?" → "Und dir?" ist Eintrag 2 (eigener Eintrag!)
@@ -143,8 +147,9 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
            "Ça va?" (Frage) und "Ça va." (Aussage) = 2 verschiedene Einträge
         6. Nomen mit Artikel: "la maison" → "das Haus"
         7. Satzzeichen bewahren: ? ! . gehören zum Eintrag
-        8. Lautschrift [ʃ] etc. weglassen
-        9. Seitenzahlen, Überschriften, Kapitel ignorieren
+        8. Lautschrift [ʃ] etc. und Markierungen wie "fam." weglassen
+        9. Seitenzahlen, Überschriften, Kapitel, Abkürzungstabellen ignorieren
+        10. Die 3. Spalte (Beispiele/Dialoge) NICHT als eigene Vokabelpaare extrahieren
 
         Antworte AUSSCHLIESSLICH mit validem JSON (kein Markdown, keine Codeblöcke):
 
