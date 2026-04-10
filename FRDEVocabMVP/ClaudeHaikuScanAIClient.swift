@@ -140,15 +140,17 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         1. JEDE Tabellenzeile mit einem Paar = ein Eintrag. Überspringe KEINE Zeile.
         2. Auch sehr kurze Einträge: "ah" = "ach, ach so", "et" = "und", "toi" = "du"
         3. Auch Interjektionen und Ausrufe: "C'est parti!" = "Los geht's!", "À plus!" = "Bis später!"
-        4. Gleiche Quelle mit verschiedenen Übersetzungen = SEPARATE Einträge:
+        4. ÜBERSCHRIFTEN: Ein Wort das als Abschnittsüberschrift vorkommt kann AUCH ein Vokabeleintrag sein.
+           Wenn es in der ersten Tabellenzeile darunter mit Übersetzung steht → als Vokabel extrahieren.
+           Nur ignorieren wenn es AUSSCHLIESSLICH als Titel ohne Übersetzung vorkommt.
+        5. Gleiche Quelle mit verschiedenen Übersetzungen = SEPARATE Einträge:
            "Et toi?" → "Und du?" ist Eintrag 1
            "Et toi?" → "Und dir?" ist Eintrag 2 (eigener Eintrag!)
-        5. Unterscheide Fragen und Aussagen:
-           "Ça va?" (Frage) und "Ça va." (Aussage) = 2 verschiedene Einträge
-        6. Nomen mit Artikel: "la maison" → "das Haus"
-        7. Satzzeichen bewahren: ? ! . gehören zum Eintrag
+        6. SATZZEICHEN sind bedeutungstragend — ? ! . unterscheiden verschiedene Einträge:
+           "Ça va?" (Frage) und "Ça va." (Aussage) = 2 VERSCHIEDENE Einträge, beide extrahieren!
+        7. Nomen mit Artikel: "la maison" → "das Haus"
         8. Lautschrift [ʃ] etc. und Markierungen wie "fam." weglassen
-        9. Seitenzahlen, Überschriften, Kapitel, Abkürzungstabellen ignorieren
+        9. Seitenzahlen, Kapitel, Abkürzungstabellen ignorieren
         10. Die 3. Spalte (Beispiele/Dialoge) NICHT als eigene Vokabelpaare extrahieren
 
         Antworte AUSSCHLIESSLICH mit validem JSON (kein Markdown, keine Codeblöcke):

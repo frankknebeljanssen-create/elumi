@@ -70,12 +70,12 @@ enum ScanReviewMapper {
                 )
             )
 
-            let normalizedFrench = normalizedLookupText(normalizedPair.french)
-            let normalizedGerman = normalizedLookupText(normalizedPair.german)
-            guard !normalizedFrench.isEmpty || !normalizedGerman.isEmpty else { return nil }
+            // Use EXACT text for dedup key — punctuation is meaningful (Ça va? ≠ Ça va.)
+            let exactFrench = normalizedPair.french.trimmingCharacters(in: .whitespaces)
+            let exactGerman = normalizedPair.german.trimmingCharacters(in: .whitespaces)
+            guard !exactFrench.isEmpty || !exactGerman.isEmpty else { return nil }
 
-            let categoryKey = normalizedPair.learningCategory?.rawValue ?? "default"
-            let key = "\(normalizedFrench)|\(normalizedGerman)|\(normalizedPair.cardType.rawValue)|\(categoryKey)|\(normalizedPair.isImportable)"
+            let key = "\(exactFrench)|\(exactGerman)"
             guard seen.insert(key).inserted else { return nil }
             return normalizedPair
         }
