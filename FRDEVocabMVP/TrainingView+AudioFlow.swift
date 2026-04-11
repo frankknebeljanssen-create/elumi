@@ -67,10 +67,12 @@ extension TrainingView {
         } else {
             feedbackPlayer.playStudyError()
             session.incrementFailedAttempts()
+            let maxAttempts = isSpeed ? 3 : 999
+            let shouldSkip = session.failedAttemptsOnCurrentCard >= maxAttempts
             scheduleFeedbackTask(after: isSpeed ? 0.3 : 1.0) {
                 verbMCSelected = nil
                 verbMCLocked = false
-                if isSpeed {
+                if shouldSkip {
                     loadNextTrainingCard()
                     prepareVerbMCOptions()
                 }
@@ -121,12 +123,14 @@ extension TrainingView {
         } else {
             feedbackPlayer.playStudyError()
             session.incrementFailedAttempts()
-            lastResult = ScoreResult(label: "Falsch 😕", detail: "\(correctArticle) \(articlePromptText ?? "")")
-            scheduleFeedbackTask(after: isSpeed ? 0.25 : 1.2) {
+            let maxAttempts = isSpeed ? 3 : 999
+            let shouldSkip = session.failedAttemptsOnCurrentCard >= maxAttempts
+            lastResult = ScoreResult(label: "Falsch 😕", detail: shouldSkip ? "\(correctArticle) \(articlePromptText ?? "")" : "Nochmal!")
+            scheduleFeedbackTask(after: isSpeed ? 0.35 : 1.2) {
                 articleLocked = false
                 lastResult = nil
                 showingArticleTranslation = false
-                if isSpeed {
+                if shouldSkip {
                     loadNextTrainingCard()
                 }
             }

@@ -125,7 +125,7 @@ func flashcardListDisplayName(_ list: VocabularyList) -> String {
     }
 
     if list.isAggregateVocabulary {
-        return "Eigener Wortschatz"
+        return list.isBuiltIn ? "Komplettes Wörterbuch" : "Eigener Wortschatz"
     }
 
     return list.name

@@ -104,8 +104,8 @@ extension ScanImportView {
                 }
             }
             .sheet(isPresented: showingPhotoLibraryBinding) {
-                ImagePicker(sourceType: .photoLibrary) { image, sourcePath in
-                    handleSelectedImage(image, sourcePath: sourcePath)
+                PhotoLibraryPicker { images in
+                    handleSelectedImages(images)
                 }
             }
             .sheet(isPresented: showingImagePreviewBinding) {

@@ -241,6 +241,7 @@ extension TrainingView {
                     .disabled(verbMCLocked)
                 }
             }
+
         }
     }
 

@@ -57,6 +57,7 @@ extension ScanSessionController {
         selectedScanInputMethod = preservedInputMethod
         selectedImageSourcePath = nil
         shouldAppendNextScan = false
+        cancelBatch()
         showingAdditionalScanOptions = false
         showingScanPreparation = false
         showingImagePreview = false
@@ -92,6 +93,7 @@ extension ScanSessionController {
         listName = state.listName
         clearScanDiagnostics()
         hasPendingPreviewEdits = false
+        cancelBatch()
     }
 
     func resetInputAfterSuccessfulImport(
@@ -106,6 +108,12 @@ extension ScanSessionController {
         )
         applyResetState(resetState)
         selectedScanInputMethod = nil
+    }
+
+    func cancelBatch() {
+        pendingBatchImages = []
+        batchTotalCount = 0
+        batchCurrentIndex = 0
     }
 
     func returnToSetup() {

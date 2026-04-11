@@ -40,6 +40,7 @@ struct TrainingView: View {
     @State var verbMCOptions: [String] = []
     @State var verbMCSelected: String?
     @State var verbMCLocked = false
+    @State var showingVerbTranslation = false
     @State var listPickerCategory: ListPickerCategory?
 
     enum ListPickerCategory: Identifiable {

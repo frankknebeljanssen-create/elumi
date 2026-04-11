@@ -28,7 +28,11 @@ extension ScanImportView {
     }
 
     var scanProgressText: String {
-        "Analysiere" + String(repeating: ".", count: scanProgressStep + 1)
+        let dots = String(repeating: ".", count: scanProgressStep + 1)
+        if session.batchTotalCount > 1 {
+            return "Seite \(session.batchCurrentIndex)/\(session.batchTotalCount)\(dots)"
+        }
+        return "Analysiere\(dots)"
     }
 
     var scanProgressRuntimeLabel: String {

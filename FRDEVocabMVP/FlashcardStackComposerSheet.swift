@@ -159,7 +159,7 @@ struct FlashcardStackComposerSheet: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(flashcardListDisplayName(list))
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
@@ -174,12 +174,12 @@ struct FlashcardStackComposerSheet: View {
 
                 Spacer(minLength: 0)
 
-                Image(systemName: localSelection.contains(list.id) ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(localSelection.contains(list.id) ? style.accent : .secondary)
+                Image(systemName: localSelection.contains(list.id) ? "checkmark.circle.fill" : "plus.circle")
+                    .font(.system(size: 26, weight: .bold))
+                    .foregroundStyle(localSelection.contains(list.id) ? style.accent : AppTheme.Colors.textSecondary.opacity(0.5))
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 11)
+            .padding(.vertical, 16)
             .appCardBackground(style, intensity: localSelection.contains(list.id) ? 0.22 : 0.05, cornerRadius: 18)
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)

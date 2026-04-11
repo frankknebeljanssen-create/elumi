@@ -66,6 +66,37 @@ extension TrainingView {
                     Spacer().frame(height: AppTheme.Spacing.xs)
                     verbMCCard
                         .padding(.horizontal, trainingSessionCardInset)
+
+                    Spacer(minLength: AppTheme.Spacing.sm)
+
+                    // Translation hint — pinned above footer like in article mode
+                    if let item = session.currentTrainingItem {
+                        let isFRtoDe = selectedAppDirection == .frenchToGerman || selectedAppDirection == .englishToGerman
+                        let translationText = isFRtoDe ? item.french : item.german
+                        Button {
+                            showingVerbTranslation.toggle()
+                        } label: {
+                            if showingVerbTranslation {
+                                Text(translationText)
+                                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(minHeight: 52)
+                                    .background(AppTheme.Colors.secondarySurface)
+                                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
+                            } else {
+                                Label("Übersetzung", systemImage: "eye")
+                                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(minHeight: 52)
+                                    .background(AppTheme.Colors.secondarySurface)
+                                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, trainingSessionCardInset)
+                    }
                 } else {
                     actionButtons
                         .padding(.horizontal, trainingSessionCardInset)

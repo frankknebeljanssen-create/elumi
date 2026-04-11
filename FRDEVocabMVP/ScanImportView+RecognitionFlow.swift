@@ -31,6 +31,54 @@ extension ScanImportView {
         applyRecognizedScanAnalysis(analysis, appending: false)
     }
 
+    func handleSelectedImages(_ images: [UIImage]) {
+        guard !images.isEmpty else {
+            shouldAppendNextScan = false
+            return
+        }
+
+        if images.count == 1 {
+            handleSelectedImage(images[0])
+            return
+        }
+
+        // Multi-select: queue batch, process first image normally
+        session.pendingBatchImages = Array(images.dropFirst())
+        session.batchTotalCount = images.count
+        session.batchCurrentIndex = 1
+        handleSelectedImage(images[0])
+    }
+
+    func processNextBatchImage() {
+        guard !session.pendingBatchImages.isEmpty else {
+            session.batchTotalCount = 0
+            session.batchCurrentIndex = 0
+            return
+        }
+
+        let nextImage = session.pendingBatchImages.removeFirst()
+        session.batchCurrentIndex = session.batchTotalCount - session.pendingBatchImages.count
+
+        shouldAppendNextScan = true
+
+        let selectionState = ScanImageLifecycle.makeSelectedImageState(
+            from: nextImage,
+            sourcePath: nil,
+            maxAnalysisLongEdge: Self.maxOCRLongEdge,
+            maxPreviewLongEdge: Self.maxPreviewLongEdge,
+            normalizeForProcessing: { image, maxLongEdge in
+                normalizedImageForProcessing(image, maxLongEdge: maxLongEdge)
+            },
+            downscaledForDisplay: { image, maxLongEdge in
+                downscaledImageForDisplay(image, maxLongEdge: maxLongEdge)
+            }
+        )
+        session.applySelectedImageState(selectionState)
+
+        // Skip preparation sheet — auto-analyze
+        recognizeText(from: selectionState.analysisImage)
+    }
+
     func handleSelectedImage(_ image: UIImage?, sourcePath: String? = nil) {
         guard let image else {
             shouldAppendNextScan = false
@@ -41,7 +89,7 @@ extension ScanImportView {
             session.discardDraftForReplacement(
                 activeScanMode: activeScanMode,
                 currentListName: listName,
-                fallbackListName: listStore?.suggestedListName(from: "Scan") ?? "Scan"
+                fallbackListName: listStore?.suggestedListName(from: scanDateBaseName) ?? scanDateBaseName
             )
         }
 
@@ -113,7 +161,12 @@ extension ScanImportView {
                         : providerResult.importMessage
                     lastRecognizedBoxes = []
                     shouldAppendNextScan = false
-                    if let gptFallbackInfoMessage {
+
+                    // Continue batch even if one page fails
+                    if !session.pendingBatchImages.isEmpty {
+                        session.showToast("Seite \(session.batchCurrentIndex) konnte nicht erkannt werden")
+                        processNextBatchImage()
+                    } else if let gptFallbackInfoMessage {
                         session.presentScanAIInfo(gptFallbackInfoMessage)
                     }
                     return
@@ -127,6 +180,11 @@ extension ScanImportView {
                 shouldAppendNextScan = false
                 if let gptFallbackInfoMessage {
                     session.presentScanAIInfo(gptFallbackInfoMessage)
+                }
+
+                // Continue batch if more images queued
+                if !session.pendingBatchImages.isEmpty {
+                    processNextBatchImage()
                 }
             }
         }

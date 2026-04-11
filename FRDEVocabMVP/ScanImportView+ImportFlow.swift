@@ -17,13 +17,13 @@ extension ScanImportView {
         let importedItemIDs = items.map(\.id)
         let trimmedListName = listName.trimmingCharacters(in: .whitespacesAndNewlines)
         let targetListID = activeListStore.ensureCustomList(
-            named: trimmedListName.isEmpty ? activeListStore.suggestedListName(from: "Scan") : trimmedListName,
+            named: trimmedListName.isEmpty ? activeListStore.suggestedListName(from: scanDateBaseName) : trimmedListName,
             collectionPreset: selectedCollectionPreset
         )
         let importedCount = activeListStore.importItems(
             items,
             preferredListID: targetListID,
-            suggestedListName: trimmedListName.isEmpty ? "Scan" : trimmedListName,
+            suggestedListName: trimmedListName.isEmpty ? scanDateBaseName : trimmedListName,
             collectionPreset: selectedCollectionPreset
         )
 
@@ -61,7 +61,7 @@ extension ScanImportView {
     func resetScanInputAfterSuccessfulImport(keepingListName: Bool) {
         session.resetInputAfterSuccessfulImport(
             keepingListName: keepingListName,
-            fallbackListName: listStore?.suggestedListName(from: "Scan") ?? "Scan"
+            fallbackListName: listStore?.suggestedListName(from: scanDateBaseName) ?? scanDateBaseName
         )
     }
 

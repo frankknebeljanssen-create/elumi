@@ -58,9 +58,15 @@ extension ScanImportView {
             .safeAreaInsets.bottom ?? 0
     }
 
+    var scanDateBaseName: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return "Scan \(formatter.string(from: Date()))"
+    }
+
     func ensureSuggestedListName() {
         session.ensureSuggestedListName(
-            fallbackListName: listStore?.suggestedListName(from: "Scan") ?? "Scan"
+            fallbackListName: listStore?.suggestedListName(from: scanDateBaseName) ?? scanDateBaseName
         )
     }
 

@@ -1,6 +1,7 @@
 import SwiftUI
 import VisionKit
 import UIKit
+import PhotosUI
 
 extension CGImagePropertyOrientation {
     init(_ orientation: UIImage.Orientation) {
@@ -62,6 +63,48 @@ struct ImagePicker: UIViewControllerRepresentable {
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             picker.dismiss(animated: true)
             onImagePicked(nil, nil)
+        }
+    }
+}
+
+struct PhotoLibraryPicker: UIViewControllerRepresentable {
+    let onImagesPicked: ([UIImage]) -> Void
+
+    func makeUIViewController(context: Context) -> PHPickerViewController {
+        var config = PHPickerConfiguration()
+        config.selectionLimit = 10
+        config.filter = .images
+        let picker = PHPickerViewController(configuration: config)
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator { Coordinator(onImagesPicked: onImagesPicked) }
+
+    class Coordinator: NSObject, PHPickerViewControllerDelegate {
+        let onImagesPicked: ([UIImage]) -> Void
+        init(onImagesPicked: @escaping ([UIImage]) -> Void) { self.onImagesPicked = onImagesPicked }
+
+        func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+            picker.dismiss(animated: true)
+            guard !results.isEmpty else { onImagesPicked([]); return }
+
+            var images: [UIImage?] = Array(repeating: nil, count: results.count)
+            let group = DispatchGroup()
+
+            for (index, result) in results.enumerated() {
+                group.enter()
+                result.itemProvider.loadObject(ofClass: UIImage.self) { object, _ in
+                    images[index] = object as? UIImage
+                    group.leave()
+                }
+            }
+
+            group.notify(queue: .main) { [weak self] in
+                self?.onImagesPicked(images.compactMap { $0 })
+            }
         }
     }
 }

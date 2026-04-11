@@ -79,6 +79,7 @@ extension TrainingView {
         verbMCOptions = []
         verbMCSelected = nil
         verbMCLocked = false
+        showingVerbTranslation = false
         speedCountdown = nil
         stopSpeedRoundTimer()
     }
