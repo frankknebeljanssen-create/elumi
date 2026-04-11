@@ -28,9 +28,9 @@ extension ElumiArcadeGameView {
         case .wuermchen:
             return CGFloat.random(in: 1.0...1.45)
         case .wasserfloh:
-            return CGFloat.random(in: 1.0...1.5)
+            return CGFloat.random(in: 1.0...2.0)
         case .algenkugel:
-            return 1.0
+            return CGFloat.random(in: 1.0...2.0)
         case .bonusblase:
             return 1.0
         case .saugglocke:

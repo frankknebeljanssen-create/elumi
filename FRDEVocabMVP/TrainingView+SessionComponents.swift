@@ -72,7 +72,7 @@ extension TrainingView {
                             .foregroundStyle(AppTheme.Colors.textSecondary)
                             .frame(maxWidth: .infinity, alignment: .center)
                     }
-                    Text(isArticleMode ? (articlePromptText ?? currentCard.prompt) : (isVerbMode ? (session.currentTrainingItem?.french ?? currentCard.prompt) : currentCard.prompt))
+                    Text(isArticleMode ? (articlePromptText ?? currentCard.prompt) : (isVerbMode ? verbPromptText : currentCard.prompt))
                         .font(isArticleMode ? .system(size: 32, weight: .black, design: .rounded) : sessionPromptFont)
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .lineLimit(5)
@@ -171,7 +171,7 @@ extension TrainingView {
                     .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
             } else {
                 HStack(spacing: 10) {
-                    ForEach(["le", "la", "l'"], id: \.self) { article in
+                    ForEach(["le", "la", "l'", "les"], id: \.self) { article in
                         Button {
                             submitArticle(article)
                         } label: {

@@ -234,9 +234,11 @@ extension ElumiArcadeGameView {
         let elapsed = date.timeIntervalSince(fish.spawnedAt)
         let wobble = sin(elapsed * 4.0 + fish.wobblePhase) * 5
 
+        let size = 28 * fish.renderScale
+
         return Text("🐟")
-            .font(.system(size: 32))
-            .scaleEffect(x: fish.fromLeft ? 1 : -1, y: 1) // Flip if going right→left
+            .font(.system(size: size))
+            .scaleEffect(x: fish.fromLeft ? 1 : -1, y: 1)
             .rotationEffect(.degrees(wobble))
             .shadow(color: .cyan.opacity(0.4), radius: 6, x: 0, y: 2)
     }

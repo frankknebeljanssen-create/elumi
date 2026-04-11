@@ -30,10 +30,11 @@ enum ElumiArcadeDropKind: Equatable {
 struct BonusFishState: Identifiable, Equatable {
     let id = UUID()
     let spawnedAt: Date
-    let fromLeft: Bool           // true = links→rechts, false = rechts→links
-    let normalizedY: CGFloat     // 0.2-0.8
-    let speed: Double            // 3-5s Durchflugzeit
+    let fromLeft: Bool
+    let normalizedY: CGFloat
+    let speed: Double
     let wobblePhase: Double
+    let renderScale: CGFloat     // 1.0-3.0
     var isCaught: Bool = false
 }
 
@@ -100,10 +101,12 @@ struct ElumiArcadeGameView: View {
     @State var activeFish: [BonusFishState] = []
     @State var elumiY: CGFloat = 0.5
     @State var bonusRoundStartedAt: Date?
+    @State var bonusRoundResultText: String?
+    @State var bonusRoundWaitingForTap = false
     let bonusFishTotal = 15
     let bonusRoundDuration: TimeInterval = 12.0
 
-    let maxMisses = 3
+    let maxMisses = 4
     let suctionDuration: TimeInterval = 4.6
     let bonusPointsDuration: TimeInterval = 5.0
     let slowMotionDuration: TimeInterval = 0.55

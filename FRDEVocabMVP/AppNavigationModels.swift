@@ -48,6 +48,21 @@ struct TrainingLaunchContext: Hashable {
     let preferredLanguage: StudyLanguage?
     let preferredDirection: Direction?
     let preferredCardType: CardType?
+    let preferredMode: TrainingMode?
+
+    init(
+        preferredListID: UUID? = nil,
+        preferredLanguage: StudyLanguage? = nil,
+        preferredDirection: Direction? = nil,
+        preferredCardType: CardType? = nil,
+        preferredMode: TrainingMode? = nil
+    ) {
+        self.preferredListID = preferredListID
+        self.preferredLanguage = preferredLanguage
+        self.preferredDirection = preferredDirection
+        self.preferredCardType = preferredCardType
+        self.preferredMode = preferredMode
+    }
 }
 
 struct FlashcardLaunchContext: Hashable {

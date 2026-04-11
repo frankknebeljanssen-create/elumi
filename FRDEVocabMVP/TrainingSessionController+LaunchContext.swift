@@ -8,6 +8,10 @@ extension TrainingSessionController {
     ) {
         guard let launchContext else { return }
 
+        if let preferredMode = launchContext.preferredMode {
+            trainingMode = preferredMode
+        }
+
         if let preferredListID = launchContext.preferredListID {
             if preferredListID == VocabularyListStore.dictionaryListID {
                 selectedTrainingListID = preferredListID

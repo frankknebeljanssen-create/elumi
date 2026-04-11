@@ -112,7 +112,7 @@ extension FeedbackPlayer {
             systemImage: newValue ? "speaker.wave.2.fill" : "speaker.slash.fill"
         )
     }
-
+    
     func showSoundToggleToast(message: String, systemImage: String) {
         soundToastDismissWorkItem?.cancel()
         soundToggleToast = SoundToggleToast(message: message, systemImage: systemImage)

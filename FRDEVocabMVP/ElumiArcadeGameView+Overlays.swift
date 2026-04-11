@@ -112,7 +112,7 @@ extension ElumiArcadeGameView {
 
                 VStack(alignment: .leading, spacing: 8) {
                     arcadeRuleRow(icon: "hand.draw.fill", text: "Zieh Elumi zum Futter", iconSize: 20)
-                    arcadeRuleRow(icon: "heart.fill", text: "3 Leben — verpasstes Futter = -1", iconSize: 20)
+                    arcadeRuleRow(icon: "heart.fill", text: "4 Leben — verpasstes Futter = -1", iconSize: 20)
                     HStack(spacing: 10) {
                         Image("SplashCharacter")
                             .resizable()
@@ -122,10 +122,11 @@ extension ElumiArcadeGameView {
                             .hueRotation(.degrees(-80))
                             .brightness(0.05)
                             .clipShape(Circle())
-                        Text("Elumi-Freunde vorbeischwimmen lassen!")
+                        Text("Elumi-Freunde nicht fressen — sonst Game Over!")
                             .font(.system(size: 14, weight: .semibold, design: .rounded))
                             .foregroundStyle(.cyan)
                     }
+                    arcadeRuleRow(icon: "fish.fill", text: "Alle 3 Runden: Fische fangen = Extra-Leben!", tint: .cyan, iconSize: 20)
                     arcadeRuleRow(icon: "bolt.fill", text: "Runden werden schneller", iconSize: 20)
                 }
                 .padding(.horizontal, 4)
@@ -223,15 +224,22 @@ extension ElumiArcadeGameView {
                             .clipShape(Capsule())
                     }
 
-                    Text(gameOverSubtitle)
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                    if !gameOverSubtitle.isEmpty {
+                        Text(gameOverSubtitle)
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                    }
                 }
 
-                Text("\(score)")
-                    .font(.system(size: 42, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.warning)
-                    .shadow(color: AppTheme.Colors.warning.opacity(0.3), radius: 8, x: 0, y: 2)
+                VStack(spacing: 2) {
+                    Text("Punkte")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                    Text("\(score)")
+                        .font(.system(size: 42, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.warning)
+                        .shadow(color: AppTheme.Colors.warning.opacity(0.3), radius: 8, x: 0, y: 2)
+                }
 
                 HStack(spacing: 8) {
                     gameOverStat(title: "Runde", value: "\(round)")
@@ -325,6 +333,41 @@ extension ElumiArcadeGameView {
             }
             .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.7))
             .padding(.top, 4)
+
+            Text("Tippen zum Starten")
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.6))
+                .padding(.top, 8)
+        }
+        .padding(.horizontal, 28)
+        .padding(.vertical, 24)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(AppTheme.Colors.secondarySurface.opacity(0.95))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .stroke(Color.cyan.opacity(0.3), lineWidth: 1.5)
+                )
+        )
+        .shadow(color: .cyan.opacity(0.2), radius: 20, x: 0, y: 8)
+    }
+
+    var bonusRoundResult: some View {
+        VStack(spacing: 14) {
+            if let result = bonusRoundResultText {
+                Text(result.contains("+1") ? "🎉" : "🐟")
+                    .font(.system(size: 48))
+
+                Text(result)
+                    .font(.system(size: 20, weight: .black, design: .rounded))
+                    .foregroundStyle(result.contains("+1") ? .cyan : .white)
+                    .multilineTextAlignment(.center)
+            }
+
+            Text("Tippen zum Weiterspielen")
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.6))
+                .padding(.top, 8)
         }
         .padding(.horizontal, 28)
         .padding(.vertical, 24)

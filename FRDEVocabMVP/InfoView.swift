@@ -18,74 +18,118 @@ struct InfoView: View {
                     systemImage: "info.circle.fill"
                 )
 
-                infoCard(
-                    title: "So startest du",
+                colorInfoCard(
+                    title: "Vokabeln trainieren",
+                    icon: "character.book.closed.fill",
+                    tint: AppTheme.Colors.elumiPinkDeep,
                     lines: [
-                        "Wähle zuerst, was du machen möchtest.",
-                        "Trainieren fragt direkt ab.",
-                        "Karteikarten üben arbeitet einen Stapel ab."
+                        "Alle Vokabeln aus deinen Listen üben.",
+                        "Sprechen oder Tippen — du entscheidest.",
+                        "Speed Round: 45 Sekunden Countdown!"
                     ]
                 )
 
-                infoCard(
-                    title: "Scan",
+                colorInfoCard(
+                    title: "Artikel trainieren",
+                    icon: "text.badge.star",
+                    tint: Color(hex: "#F59E0B"),
                     lines: [
-                        "Wähle zuerst Vokabelliste oder freien Text.",
-                        "Fotografiere dann die Vorlage oder wähle ein Bild.",
-                        "Prüfe kurz die erkannten Paare.",
-                        "Importiere sie in eine Liste und lerne direkt weiter."
+                        "le, la, l', les — den richtigen Artikel üben.",
+                        "Nur Nomen werden abgefragt.",
+                        "Perfekt für Genus-Training!"
                     ]
                 )
 
-                infoCard(
-                    title: "Listen verwalten",
+                colorInfoCard(
+                    title: "Verben trainieren",
+                    icon: "arrow.triangle.branch",
+                    tint: Color(hex: "#10B981"),
                     lines: [
-                        "Lege eigene Listen an.",
-                        "Benenne Listen um oder lösche sie.",
-                        "Öffne eine Liste, um Einträge zu bearbeiten."
+                        "Französische Verben und ihre Übersetzungen.",
+                        "Fokus auf die wichtigsten Verben.",
+                        "Konjugation kommt bald!"
                     ]
                 )
 
-                infoCard(
+                colorInfoCard(
+                    title: "Karteikarten",
+                    icon: "square.stack.3d.up.fill",
+                    tint: Color(hex: "#EC4899"),
+                    lines: [
+                        "Arbeite einen Stapel Karte für Karte ab.",
+                        "Falsche Karten bleiben im Stapel.",
+                        "Tippe auf die Karte um die Lösung zu sehen."
+                    ]
+                )
+
+                colorInfoCard(
                     title: "Quiz",
+                    icon: "lightbulb.fill",
+                    tint: Color(hex: "#8B5CF6"),
                     lines: [
-                        "Verschiedene Fragetypen: Multiple Choice, Paare finden, Tippen, Ausdrücke verbinden.",
+                        "Multiple Choice, Paare finden, Tippen, Lückentext.",
                         "Wähle 5 bis 30 Fragen pro Runde.",
-                        "Am Ende siehst du dein Ergebnis und kannst die falschen Antworten nochmal anschauen."
+                        "Ergebnis am Ende mit Auswertung."
                     ]
                 )
 
-                infoCard(
-                    title: "Beim Lernen",
+                colorInfoCard(
+                    title: "Scan",
+                    icon: "camera.viewfinder",
+                    tint: AppTheme.Colors.success,
                     lines: [
-                        "Du kannst sprechen oder tippen.",
-                        "Bei Karteikarten bleiben falsche Karten im Stapel.",
-                        "Mit Home kommst du jederzeit zurück ins Hauptmenü."
+                        "Fotografiere eine Schulbuch-Seite.",
+                        "KI erkennt Vokabelpaare automatisch.",
+                        "Prüfen, importieren, direkt loslegen."
                     ]
                 )
 
-                infoCard(
+                colorInfoCard(
+                    title: "Listen & Wörterbuch",
+                    icon: "list.bullet.rectangle.fill",
+                    tint: Color(hex: "#57B8C9"),
+                    lines: [
+                        "Eigene Listen anlegen und verwalten.",
+                        "Wörterbuch zeigt alle gelernten Vokabeln.",
+                        "Einträge bearbeiten und löschen."
+                    ]
+                )
+
+                colorInfoCard(
                     title: "XP & Fortschritt",
+                    icon: "star.fill",
+                    tint: AppTheme.Colors.warning,
                     lines: [
-                        "Jede richtige Antwort bringt dir XP.",
-                        "Quiz: 5 XP pro richtige Antwort.",
-                        "Training & Karteikarten: 2 XP pro richtige Antwort.",
-                        "Speed Round: 2 XP pro richtige Antwort.",
-                        "Alle 20 XP bekommst du 1 Arcade Credit."
+                        "Quiz: 5 XP, Training & Karteikarten: 2 XP.",
+                        "Alle 20 XP = 1 Arcade Credit.",
+                        "Lerne regelmäßig für mehr Credits!"
                     ]
                 )
 
-                infoCard(
+                colorInfoCard(
                     title: "Elumi Arcade",
+                    icon: "gamecontroller.fill",
+                    tint: AppTheme.Colors.primary,
                     lines: [
-                        "Verdiene Arcade Credits durch Lernen.",
-                        "1 Credit = 1 Spiel.",
-                        "Zieh Elumi zum Futter und sammle Punkte.",
-                        "3 Leben — verpasstes Futter kostet 1 Leben.",
-                        "Falschen Elumi erwischt = sofort Game Over.",
+                        "1 Credit = 1 Spiel. Zieh Elumi zum Futter.",
+                        "4 Leben — Elumi-Freunde nicht fressen!",
+                        "Alle 3 Runden: Fische fangen = Extra-Leben!",
                         "Runden werden immer schneller!"
                     ]
                 )
+
+                // Credits
+                VStack(spacing: 4) {
+                    Text("\u{00A9} Frank Knebel-Janssen 2026")
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    let v = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+                    let b = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
+                    Text("Version \(v) (\(b))")
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(14)
             }
             .padding(.horizontal, AppLayout.screenPadding)
             .padding(.top, AppLayout.contentTopPadding)
@@ -110,20 +154,37 @@ struct InfoView: View {
         }
     }
 
-    private func infoCard(title: String, lines: [String]) -> some View {
+    private func colorInfoCard(title: String, icon: String, tint: Color, lines: [String]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(title)
-                .font(.system(size: 22, weight: .bold, design: .rounded))
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(tint)
+                Text(title)
+                    .font(.system(size: 20, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+            }
 
             ForEach(lines, id: \.self) { line in
                 Text(line)
-                    .font(.system(size: 17, weight: .medium, design: .rounded))
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(18)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(AppTheme.Colors.surface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(tint.opacity(0.08))
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(tint.opacity(0.2), lineWidth: 1)
+        )
     }
 }

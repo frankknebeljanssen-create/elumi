@@ -75,10 +75,17 @@ extension ElumiArcadeGameView {
                         .zIndex(4)
                 }
 
-                if isBonusRound && bonusFishSpawned == 0 {
-                    bonusRoundAnnouncement
-                        .transition(.scale.combined(with: .opacity))
-                        .zIndex(5)
+                if bonusRoundWaitingForTap {
+                    Group {
+                        if bonusRoundResultText != nil {
+                            bonusRoundResult
+                        } else {
+                            bonusRoundAnnouncement
+                        }
+                    }
+                    .onTapGesture { handleBonusRoundTap() }
+                    .transition(.scale.combined(with: .opacity))
+                    .zIndex(5)
                 }
 
                 if let comboBannerText, !comboBannerText.isEmpty, !isGameOver, !showingStartOverlay, !showingRoundBanner {
@@ -173,9 +180,14 @@ extension ElumiArcadeGameView {
                 Spacer(minLength: 0)
 
                 // Score
-                Text("\(score)")
-                    .font(.system(size: 32, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.warning)
+                VStack(spacing: 0) {
+                    Text("Punkte")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                    Text("\(score)")
+                        .font(.system(size: 32, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.warning)
+                }
                     .shadow(color: AppTheme.Colors.warning.opacity(0.3), radius: 8, x: 0, y: 2)
                     .contentTransition(.numericText())
                     .animation(.spring(response: 0.25, dampingFraction: 0.7), value: score)

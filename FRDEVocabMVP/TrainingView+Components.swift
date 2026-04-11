@@ -1,6 +1,45 @@
 import SwiftUI
 
 extension TrainingView {
+    func listCategoryButton(title: String, count: Int, category: ListPickerCategory) -> some View {
+        let hasSelected = !session.selectedTrainingListIDs.isEmpty && {
+            let filtered = filteredLists(for: category)
+            return filtered.contains { session.selectedTrainingListIDs.contains($0.id) }
+        }()
+
+        return Button {
+            feedbackPlayer.playTabSwitch()
+            listPickerCategory = category
+        } label: {
+            HStack(spacing: 8) {
+                Text(title)
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                Spacer(minLength: 0)
+                Text("\(count)")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(AppTheme.Colors.surface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(hasSelected ? trainingActionTint.opacity(0.12) : trainingActionTint.opacity(0.04))
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(hasSelected ? trainingActionTint.opacity(0.4) : AppTheme.Colors.border, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
     var trainingDirectionCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Abfragerichtung")
@@ -164,19 +203,24 @@ extension TrainingView {
         .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
-    func largeTrainingSelectionCard(title: String, value: String) -> some View {
+    func largeTrainingSelectionCard(title: String, value: String, detail: String = "") -> some View {
         HStack(spacing: 14) {
-            VStack(alignment: .leading, spacing: title.isEmpty ? 0 : 8) {
-                if !title.isEmpty {
-                    Text(title)
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+
                 Text(value)
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .lineLimit(2)
+                    .lineLimit(1)
                     .minimumScaleFactor(0.8)
+
+                if !detail.isEmpty {
+                    Text(detail)
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(trainingActionTint)
+                }
             }
 
             Spacer(minLength: 0)
@@ -186,7 +230,7 @@ extension TrainingView {
                 .foregroundStyle(trainingActionTint)
         }
         .frame(maxWidth: .infinity)
-        .frame(minHeight: title.isEmpty ? 72 : AppLayout.largeSelectionHeight)
+        .frame(minHeight: 100)
         .padding(.horizontal, AppTheme.Spacing.md)
         .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
     }
@@ -247,17 +291,13 @@ extension TrainingView {
                     session.isSpeedRound.toggle()
                 } label: {
                     HStack(spacing: 14) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "flag.checkered")
-                                .font(.system(size: 28, weight: .bold))
-                            Image(systemName: "stopwatch.fill")
-                                .font(.system(size: 28, weight: .bold))
-                        }
-                        .foregroundStyle(session.isSpeedRound ? trainingActionTint : AppTheme.Colors.textSecondary)
+                        Image(systemName: "flag.checkered")
+                            .font(.system(size: 30, weight: .bold))
+                            .foregroundStyle(session.isSpeedRound ? trainingActionTint : AppTheme.Colors.textSecondary)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Speed Round")
-                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                                .font(.system(size: 21, weight: .bold, design: .rounded))
                                 .foregroundStyle(AppTheme.Colors.textPrimary)
                             Text("45 Sek. Contest")
                                 .font(.system(size: 12, weight: .semibold, design: .rounded))

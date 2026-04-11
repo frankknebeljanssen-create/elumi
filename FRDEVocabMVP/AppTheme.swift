@@ -59,10 +59,10 @@ enum AppTheme {
         static let cta = elumiAmberDeep
         static let warning = elumiAmberDeep
 
-        static let modulePractice = elumiPinkDeep
-        static let moduleSpecial = elumiAmberDeep
-        static let moduleFlashcards = elumiRoseDeep
-        static let moduleQuiz = elumiMint
+        static let modulePractice = elumiPinkDeep          // Vokabeln
+        static let moduleSpecial = Color(hex: "#57B8C9")  // Listen — Teal
+        static let moduleFlashcards = Color(hex: "#3B82F6") // Karteikarten — Blue
+        static let moduleQuiz = Color(hex: "#10B981")       // Quiz — Green
 
         static let border = elumiCream.opacity(0.12)
         static let borderStrong = elumiBlush.opacity(0.22)
@@ -122,7 +122,7 @@ enum AppTheme {
         static let footerHeight: CGFloat = 50
         static let inputHeight: CGFloat = 52
         static let buttonHeight: CGFloat = 54
-        static let homeCardHeight: CGFloat = 92
+        static let homeCardHeight: CGFloat = 107
         static let wideCardHeight: CGFloat = 82
         static let selectionHeight: CGFloat = 76
         static let maxContentWidth: CGFloat = 720

@@ -115,7 +115,18 @@ struct SplashView: View {
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
-                        .padding(.bottom, max(geometry.safeAreaInsets.bottom, 18) + 40)
+                        .padding(.bottom, 8)
+
+                        VStack(spacing: 2) {
+                            Text("\u{00A9} Frank Knebel-Janssen 2026")
+                                .font(.system(size: 10, weight: .medium, design: .rounded))
+                            let v = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+                            let b = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
+                            Text("Version \(v) (\(b))")
+                                .font(.system(size: 10, weight: .medium, design: .rounded))
+                        }
+                        .foregroundStyle(Color.white.opacity(0.3))
+                        .padding(.bottom, max(geometry.safeAreaInsets.bottom, 12) + 8)
                     }
                 }
             }

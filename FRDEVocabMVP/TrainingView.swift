@@ -14,7 +14,13 @@ struct TrainingView: View {
     let openSettings: () -> Void
     let openInfo: () -> Void
     let ensureAudioDependenciesReady: () async -> Void
-    let sectionStyle: AppSectionStyle = .train
+    var sectionStyle: AppSectionStyle {
+        switch session.trainingMode {
+        case .vocabulary: return .train
+        case .articles: return .trainArticles
+        case .verbs: return .trainVerbs
+        }
+    }
 
     @StateObject var session = TrainingSessionController()
     @State var lastResult: ScoreResult?
@@ -34,6 +40,19 @@ struct TrainingView: View {
     @State var verbMCOptions: [String] = []
     @State var verbMCSelected: String?
     @State var verbMCLocked = false
+    @State var listPickerCategory: ListPickerCategory?
+
+    enum ListPickerCategory: Identifiable {
+        case own, level, topic, all
+        var id: String {
+            switch self {
+            case .own: return "own"
+            case .level: return "level"
+            case .topic: return "topic"
+            case .all: return "all"
+            }
+        }
+    }
     @State var speedCountdown: Int? = nil
     @FocusState var typedAnswerFieldFocused: Bool
 
@@ -46,31 +65,40 @@ struct TrainingView: View {
     }
 
     var trainingListSummary: String {
+        "\(trainingListName)\n\(trainingListCount)"
+    }
+
+    var trainingListName: String {
         let ids = session.selectedTrainingListIDs
         if ids.isEmpty { return "Listen wählen" }
         let allAvailable = availableTrainingLists
         let selected = allAvailable.filter { ids.contains($0.id) }
+        if selected.count == 1, let first = selected.first {
+            return first.name
+        }
+        return "\(selected.count) Listen"
+    }
 
-        let countLabel: String
+    var trainingListCount: String {
+        let ids = session.selectedTrainingListIDs
+        if ids.isEmpty { return "" }
+        let allAvailable = availableTrainingLists
+        let selected = allAvailable.filter { ids.contains($0.id) }
+
         if isVerbMode {
             let verbCount = selected.flatMap(\.items).filter {
                 $0.cardType == .words && StandardVocabularyLoader.isVerb($0.french)
             }.count
-            countLabel = "\(verbCount) Verben"
+            return "\(verbCount) Verben"
         } else if isArticleMode {
             let nounCount = selected.flatMap(\.items).filter {
                 $0.cardType == .words && (StandardVocabularyLoader.isNoun($0.french) || TrainingSessionController.hasFrenchArticle($0.french))
             }.count
-            countLabel = "\(nounCount) Nomen"
+            return "\(nounCount) Nomen"
         } else {
             let totalItems = selected.reduce(0) { $0 + $1.items.count }
-            countLabel = "\(totalItems) Einträge"
+            return "\(totalItems) Einträge"
         }
-
-        if selected.count == 1, let first = selected.first {
-            return "\(first.name) · \(countLabel)"
-        }
-        return "\(selected.count) Listen · \(countLabel)"
     }
 
     var activeItems: [VocabularyItem] {
@@ -101,6 +129,36 @@ struct TrainingView: View {
 
     var isVerbMode: Bool {
         session.trainingMode == .verbs
+    }
+
+    var ownListCount: Int {
+        availableTrainingLists.filter { !$0.isBuiltIn || $0.isAggregateVocabulary }.count
+    }
+    var levelListCount: Int {
+        availableTrainingLists.filter { $0.collectionPreset == .standardLevel }.count
+    }
+    var topicListCount: Int {
+        availableTrainingLists.filter { $0.collectionPreset == .standardTopic }.count
+    }
+    var allInOneCount: Int { 1 }
+
+    func filteredLists(for category: ListPickerCategory) -> [VocabularyList] {
+        switch category {
+        case .own:
+            return availableTrainingLists.filter { !$0.isBuiltIn || $0.isAggregateVocabulary }
+        case .level:
+            return availableTrainingLists.filter { $0.collectionPreset == .standardLevel }
+        case .topic:
+            return availableTrainingLists.filter { $0.collectionPreset == .standardTopic }
+        case .all:
+            return [StandardVocabularyLoader.allInOneList]
+        }
+    }
+
+    var verbPromptText: String {
+        guard let item = session.currentTrainingItem else { return "" }
+        let isFRtoDe = selectedAppDirection == .frenchToGerman || selectedAppDirection == .englishToGerman
+        return isFRtoDe ? item.french : item.german
     }
 
     var verbCorrectAnswer: String {

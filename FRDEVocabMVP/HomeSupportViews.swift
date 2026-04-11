@@ -38,32 +38,22 @@ struct HomeActionButton: View {
     let cardColor: Color
 
     var body: some View {
-        VStack(spacing: AppTheme.Spacing.xs) {
-            VStack(spacing: AppTheme.Spacing.xxs) {
-                Text(title)
-                    .font(AppTheme.Typography.body)
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.8)
-                    .multilineTextAlignment(.center)
-                if !subtitle.isEmpty {
-                    Text(subtitle)
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.center)
-                }
-            }
-            .frame(maxWidth: .infinity)
-
+        VStack(spacing: 6) {
             Image(systemName: systemImage)
-                .font(.system(size: 34, weight: .bold))
+                .font(.system(size: 28, weight: .bold))
                 .foregroundStyle(accentColor)
+                .frame(height: 32)
 
-            Spacer(minLength: 0)
+            Text(title)
+                .font(.system(size: 19, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+                .lineLimit(2)
+                .minimumScaleFactor(0.7)
+                .multilineTextAlignment(.center)
         }
+        .frame(maxWidth: .infinity)
         .padding(AppTheme.Spacing.sm)
-        .frame(maxWidth: .infinity, minHeight: AppLayout.homeCardHeight, alignment: .top)
+        .frame(maxWidth: .infinity, minHeight: AppLayout.homeCardHeight)
         .background {
             RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
                 .fill(AppTheme.Colors.surface)

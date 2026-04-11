@@ -27,22 +27,23 @@ extension ElumiArcadeGameView {
         // Slow-motion potion: rare spawn, ~1x per 2-3 rounds
         let slowMotionPotionChance: Double = round >= 2 ? 0.04 : 0.0
 
-        // Never spawn a suction while one is already on screen
-        let suctionAlreadyOnScreen = activeSnacks.contains { $0.kind == .saugglocke }
+        // Never spawn power-ups while one of the same type is on screen or active
+        let suctionBlocked = activeSnacks.contains { $0.kind == .saugglocke } || hasActiveSuction()
+        let potionBlocked = activeSnacks.contains { $0.kind == .slowMotionPotion } || hasActiveSlowMotion()
 
         // Guarantee at least 1 suction per round (after 1/3 of snacks caught)
         let thirdCount = snacksForRound(round) / 3
-        let forceSuction = !roundSuctionSpawned && roundCatchCount >= thirdCount && !suctionAlreadyOnScreen
+        let forceSuction = !roundSuctionSpawned && roundCatchCount >= thirdCount && !suctionBlocked
 
         let kind: ElumiArcadeDropKind
         if forceSuction {
             kind = .saugglocke
             roundSuctionSpawned = true
-        } else if roll < slowMotionPotionChance {
+        } else if roll < slowMotionPotionChance, !potionBlocked {
             kind = .slowMotionPotion
         } else if roll < slowMotionPotionChance + bonusChance {
             kind = .bonusblase
-        } else if roll < slowMotionPotionChance + bonusChance + suctionChance, !suctionAlreadyOnScreen {
+        } else if roll < slowMotionPotionChance + bonusChance + suctionChance, !suctionBlocked {
             kind = .saugglocke
             roundSuctionSpawned = true
         } else if roll < slowMotionPotionChance + bonusChance + suctionChance + falseElumiChance {
@@ -344,17 +345,33 @@ extension ElumiArcadeGameView {
         activeFish = []
         elumiY = 0.5
         bonusRoundStartedAt = Date()
+        bonusRoundWaitingForTap = true
         feedbackPlayer.stopBGM()
-        feedbackPlayer.sp.loop("bgm_fischfang")
         feedbackPlayer.playPowerUpSpawn()
-        showComboBanner("🐟 Bonus-Runde!", duration: 2500)
+    }
 
-        // Spawn fish loop + timer
+    func handleBonusRoundTap() {
+        guard bonusRoundWaitingForTap else { return }
+
+        if bonusFishSpawned == 0 && bonusRoundResultText == nil {
+            // Tap to START fishing
+            beginBonusFishSpawning()
+        } else if bonusRoundResultText != nil {
+            // Tap to CONTINUE after result
+            bonusRoundWaitingForTap = false
+            bonusRoundResultText = nil
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                elumiY = 0.5
+            }
+            advanceToNextRound()
+        }
+    }
+
+    func beginBonusFishSpawning() {
+        bonusRoundWaitingForTap = false
+        feedbackPlayer.sp.loop("bgm_fischfang")
+
         Task { @MainActor in
-            try? await Task.sleep(for: .seconds(1.5)) // Wait for banner
-            guard isBonusRound else { return }
-
-            // Spawn 15 fish over ~12s (one every 0.8s)
             for i in 0..<bonusFishTotal {
                 guard isBonusRound, !isGameOver else { break }
                 spawnBonusFish()
@@ -362,8 +379,7 @@ extension ElumiArcadeGameView {
                 try? await Task.sleep(for: .milliseconds(800))
             }
 
-            // Wait for last fish to cross screen
-            try? await Task.sleep(for: .seconds(2.5))
+            try? await Task.sleep(for: .seconds(2.0))
             guard isBonusRound else { return }
             endBonusRound()
         }
@@ -375,8 +391,9 @@ extension ElumiArcadeGameView {
             spawnedAt: Date(),
             fromLeft: fromLeft,
             normalizedY: CGFloat.random(in: 0.15...0.75),
-            speed: Double.random(in: 0.9...2.0),
-            wobblePhase: Double.random(in: 0...(Double.pi * 2))
+            speed: Double.random(in: 0.7...1.6),
+            wobblePhase: Double.random(in: 0...(Double.pi * 2)),
+            renderScale: CGFloat.random(in: 1.0...3.0)
         ))
     }
 
@@ -431,21 +448,17 @@ extension ElumiArcadeGameView {
 
         if success {
             misses = max(0, misses - 1)
-            showComboBanner("🎉 +1 Leben!")
             feedbackPlayer.playHighScore()
         } else {
-            showComboBanner("🐟 \(bonusFishCaught)/\(bonusFishTotal) gefangen")
             feedbackPlayer.playRoundClear()
         }
 
-        // Return Elumi to bottom and advance to next round
-        Task { @MainActor in
-            try? await Task.sleep(for: .seconds(2))
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                elumiY = 0.5
-            }
-            advanceToNextRound()
-        }
+        // Show bonus result — tap to continue
+        comboBannerText = nil
+        bonusRoundResultText = success
+            ? "🎉 +1 Leben! (\(bonusFishCaught)/\(bonusFishTotal) Fische)"
+            : "🐟 \(bonusFishCaught)/\(bonusFishTotal) Fische gefangen"
+        bonusRoundWaitingForTap = true
     }
 
     func updateGame(now: Date) {
@@ -598,7 +611,7 @@ extension ElumiArcadeGameView {
 
         if misses >= maxMisses {
             gameOverTitle = "Game Over"
-            gameOverSubtitle = "Alle Leben verbraucht."
+            gameOverSubtitle = ""
             endGame()
         }
     }
@@ -640,6 +653,8 @@ extension ElumiArcadeGameView {
         bonusFishSpawned = 0
         elumiY = 0.5
         bonusRoundStartedAt = nil
+        bonusRoundResultText = nil
+        bonusRoundWaitingForTap = false
         roundBannerPhase = 0
         readyBlinkVisible = true
     }

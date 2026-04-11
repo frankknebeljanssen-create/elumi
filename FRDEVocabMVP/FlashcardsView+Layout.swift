@@ -186,8 +186,7 @@ extension FlashcardsView {
                     .buttonStyle(.plain)
                     .padding(.bottom, AppTheme.Spacing.sm)
 
-                    flashcardDirectionCard
-                        .padding(.bottom, AppTheme.Spacing.sm)
+                    // Direction is set on Home screen
 
                     if isDictionarySelectedInStack {
                         flashcardDictionaryLevelCard

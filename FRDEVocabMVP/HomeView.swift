@@ -10,6 +10,7 @@ struct HomeView: View {
     let openAccount: () -> Void
     let replaySplash: () -> Void
     @AppStorage(appFirstNameKey) private var firstName = "Frank"
+    @AppStorage(appDirectionKey) private var selectedDirectionRaw = Direction.frenchToGerman.rawValue
     private let sectionStyle: AppSectionStyle = .home
     @State private var pressedHomeScreen: AppScreen?
     @State private var isHomeNavigationLocked = false
@@ -32,19 +33,70 @@ struct HomeView: View {
         return trimmed.isEmpty ? "Frank" : trimmed
     }
 
+    private var selectedDirection: Direction {
+        Direction(rawValue: selectedDirectionRaw) ?? .frenchToGerman
+    }
+
+    private var directionToggle: some View {
+        HStack(spacing: 8) {
+            directionButton(
+                direction: .frenchToGerman,
+                leftFlag: "FR",
+                rightFlag: "DE"
+            )
+            directionButton(
+                direction: .germanToFrench,
+                leftFlag: "DE",
+                rightFlag: "FR"
+            )
+        }
+    }
+
+    private func directionButton(direction: Direction, leftFlag: String, rightFlag: String) -> some View {
+        let isSelected = selectedDirection == direction
+        return Button {
+            feedbackPlayer.playToggle()
+            selectedDirectionRaw = direction.rawValue
+        } label: {
+            HStack(spacing: 10) {
+                StraightFlagBadge(countryCode: leftFlag, width: 36, height: 24, labelFontSize: 10)
+                Image(systemName: "arrowtriangle.right.fill")
+                    .font(.system(size: 14, weight: .black))
+                    .foregroundStyle(isSelected ? AppTheme.Colors.textPrimary : AppTheme.Colors.textSecondary)
+                StraightFlagBadge(countryCode: rightFlag, width: 36, height: 24, labelFontSize: 10)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(AppTheme.Colors.surface)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(isSelected ? AppTheme.Colors.primary.opacity(0.10) : Color.clear)
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(isSelected ? AppTheme.Colors.primary.opacity(0.5) : AppTheme.Colors.border, lineWidth: isSelected ? 2 : 1)
+                )
+                .opacity(isSelected ? 1 : 0.18)
+        }
+        .buttonStyle(.plain)
+    }
+
     private var homeFooterClearance: CGFloat {
         usesGlobalChrome
             ? AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.sm
             : AppTheme.Spacing.lg
     }
 
-    private var homeLearningTrainColor: Color { AppTheme.Colors.elumiPinkDeep }
-    private var homeLearningFlashcardsColor: Color { AppTheme.Colors.elumiRoseDeep }
-    private var homeLearningQuizColor: Color { Color(hex: "#8B5CF6") }
-
-    private var homeKnowledgeScanColor: Color { AppTheme.Colors.success }
-    private var homeKnowledgeLexiconColor: Color { AppTheme.Colors.warning }
-    private var homeKnowledgeListsColor: Color { Color(hex: "#57B8C9") }
+    private var homeVocabularyColor: Color { AppTheme.Colors.elumiPinkDeep }
+    private var homeArticlesColor: Color { Color(hex: "#F59E0B") }
+    private var homeVerbsColor: Color { Color(hex: "#8B5CF6") } // Purple
+    private var homeFlashcardsColor: Color { Color(hex: "#3B82F6") } // Blue
+    private var homeQuizColor: Color { Color(hex: "#10B981") } // Green (matches quiz mode)
+    private var homeLexiconColor: Color { Color(hex: "#E879F9") } // Fuchsia
+    private var homeListsColor: Color { Color(hex: "#57B8C9") } // Teal
 
     private var homeCreditsView: some View {
         Button {
@@ -80,6 +132,94 @@ struct HomeView: View {
     }
 
     @ViewBuilder
+    private func homeArticleButton(
+        screen: AppScreen,
+        accentColor: Color,
+        cardColor: Color
+    ) -> some View {
+        Button {
+            openHomeScreen(screen)
+        } label: {
+            VStack(spacing: 6) {
+                HStack(spacing: 2) {
+                    Text("le")
+                        .font(.system(size: 17, weight: .black, design: .serif))
+                    Text("la")
+                        .font(.system(size: 17, weight: .black, design: .serif))
+                }
+                .foregroundStyle(accentColor)
+                .frame(height: 32)
+
+                Text("Artikel")
+                    .font(.system(size: 19, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(AppTheme.Spacing.sm)
+            .frame(maxWidth: .infinity, minHeight: AppLayout.homeCardHeight)
+            .background {
+                RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
+                    .fill(AppTheme.Colors.surface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
+                            .fill(cardColor)
+                    )
+            }
+            .overlay(
+                RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
+                    .stroke(AppTheme.Colors.border, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous))
+            .shadow(color: AppTheme.Shadow.card.color, radius: AppTheme.Shadow.card.radius, x: 0, y: 6)
+            .opacity(pressedHomeScreen == screen ? 0.8 : 1)
+            .scaleEffect(pressedHomeScreen == screen ? 0.965 : 1)
+            .animation(.easeOut(duration: 0.12), value: pressedHomeScreen == screen)
+        }
+        .buttonStyle(.plain)
+        .disabled(isHomeNavigationLocked)
+    }
+
+    @ViewBuilder
+    private func homeSecondaryButton(
+        screen: AppScreen,
+        title: String,
+        systemImage: String,
+        accentColor: Color
+    ) -> some View {
+        Button {
+            openHomeScreen(screen)
+        } label: {
+            VStack(spacing: 4) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(accentColor)
+                Text(title)
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
+                    .fill(AppTheme.Colors.surface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
+                            .fill(accentColor.opacity(0.06))
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
+                    .stroke(AppTheme.Colors.border, lineWidth: 1)
+            )
+            .opacity(pressedHomeScreen == screen ? 0.8 : 1)
+            .scaleEffect(pressedHomeScreen == screen ? 0.97 : 1)
+            .animation(.easeOut(duration: 0.12), value: pressedHomeScreen == screen)
+        }
+        .buttonStyle(.plain)
+        .disabled(isHomeNavigationLocked)
+    }
+
+    @ViewBuilder
     private func homeNavigationButton(
         screen: AppScreen,
         title: String,
@@ -106,78 +246,94 @@ struct HomeView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: AppTheme.Spacing.xs)
+        ZStack(alignment: .top) {
+            // Greeting — fixed at top
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
+                Text("Salut \(displayName) !")
+                    .font(.system(size: 34, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                Text("Was möchtest du heute machen?")
+                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 28)
 
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
-                    Text("Salut \(displayName) !")
-                        .font(.system(size: 34, weight: .black, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                    Text("Was möchtest du heute machen?")
-                        .font(.system(size: 17, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                }
-                .padding(.bottom, AppTheme.Spacing.sm)
+            // Hero cards — fixed position
+            VStack(spacing: 10) {
+                // Karteikarten — full width hero
+                homeNavigationButton(
+                    screen: .flashcards(nil),
+                    title: "Karteikarten",
+                    systemImage: "square.stack.3d.up.fill",
+                    accentColor: homeFlashcardsColor,
+                    cardColor: homeFlashcardsColor.opacity(0.12)
+                )
 
-                LazyVGrid(columns: homeColumns, spacing: AppTheme.Spacing.sm) {
-                    homeNavigationButton(
-                        screen: .train(nil),
-                        title: "Trainieren",
-                        systemImage: "graduationcap.circle.fill",
-                        accentColor: homeLearningTrainColor,
-                        cardColor: homeLearningTrainColor.opacity(0.12)
+                // Artikel + Verben
+                HStack(spacing: 8) {
+                    homeArticleButton(
+                        screen: .train(TrainingLaunchContext(preferredMode: .articles)),
+                        accentColor: homeArticlesColor,
+                        cardColor: homeArticlesColor.opacity(0.12)
                     )
 
                     homeNavigationButton(
-                        screen: .flashcards(nil),
-                        title: "Karteikarten",
-                        systemImage: "square.stack.3d.up.fill",
-                        accentColor: homeLearningFlashcardsColor,
-                        cardColor: homeLearningFlashcardsColor.opacity(0.12)
+                        screen: .train(TrainingLaunchContext(preferredMode: .verbs)),
+                        title: "Verben",
+                        systemImage: "arrow.triangle.branch",
+                        accentColor: homeVerbsColor,
+                        cardColor: homeVerbsColor.opacity(0.12)
+                    )
+                }
+
+                // Vokabeln + Quiz
+                HStack(spacing: 8) {
+                    homeNavigationButton(
+                        screen: .train(TrainingLaunchContext(preferredMode: .vocabulary)),
+                        title: "Vokabeln",
+                        systemImage: "character.book.closed.fill",
+                        accentColor: homeVocabularyColor,
+                        cardColor: homeVocabularyColor.opacity(0.12)
                     )
 
                     homeNavigationButton(
                         screen: .quiz,
                         title: "Quiz",
                         systemImage: "lightbulb.fill",
-                        accentColor: homeLearningQuizColor,
-                        cardColor: homeLearningQuizColor.opacity(0.12)
-                    )
-
-                    homeNavigationButton(
-                        screen: .scan,
-                        title: "Scan",
-                        systemImage: "text.viewfinder",
-                        accentColor: homeKnowledgeScanColor,
-                        cardColor: homeKnowledgeScanColor.opacity(0.12)
-                    )
-
-                    homeNavigationButton(
-                        screen: .lexicon,
-                        title: "Wörterbuch",
-                        systemImage: "book.closed.fill",
-                        accentColor: homeKnowledgeLexiconColor,
-                        cardColor: homeKnowledgeLexiconColor.opacity(0.12)
-                    )
-
-                    homeNavigationButton(
-                        screen: .lists(nil),
-                        title: "Listen",
-                        systemImage: "list.bullet.rectangle.fill",
-                        accentColor: homeKnowledgeListsColor,
-                        cardColor: homeKnowledgeListsColor.opacity(0.12)
+                        accentColor: homeQuizColor,
+                        cardColor: homeQuizColor.opacity(0.12)
                     )
                 }
             }
+            .padding(.top, 105)
 
-            Spacer(minLength: AppTheme.Spacing.md)
+            // Bottom section — pinned to bottom
+            VStack(spacing: 10) {
+                directionToggle
 
-            homeCreditsView
+                HStack(spacing: 10) {
+                homeSecondaryButton(
+                    screen: .lexicon,
+                    title: "Wörterbuch",
+                    systemImage: "book.closed.fill",
+                    accentColor: homeLexiconColor
+                )
+
+                    homeSecondaryButton(
+                        screen: .lists(nil),
+                        title: "Listen",
+                        systemImage: "list.bullet.rectangle.fill",
+                        accentColor: homeListsColor
+                    )
+                }
+            }
+            .frame(maxHeight: .infinity, alignment: .bottom)
+            .padding(.bottom, 10)
         }
         .padding(.horizontal, AppLayout.screenPadding)
         .padding(.top, AppLayout.contentTopPadding)
-        .padding(.bottom, AppTheme.Spacing.xs)
+        .padding(.bottom, homeFooterClearance)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .center)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .tint(sectionStyle.accent)

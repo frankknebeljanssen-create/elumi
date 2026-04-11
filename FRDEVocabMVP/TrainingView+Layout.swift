@@ -19,9 +19,9 @@ extension TrainingView {
 
     private var sessionHeaderTitle: String {
         switch session.trainingMode {
-        case .vocabulary: return "Trainieren"
-        case .articles: return "Trainieren — Artikel"
-        case .verbs: return "Trainieren — Verben"
+        case .vocabulary: return "Vokabeln"
+        case .articles: return "Artikel"
+        case .verbs: return "Verben"
         }
     }
 
@@ -86,26 +86,59 @@ extension TrainingView {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             ScreenHeaderCard(
                 style: sectionStyle,
-                title: "Trainieren",
+                title: sessionHeaderTitle,
                 subtitle: "",
                 systemImage: "waveform.circle.fill"
             )
 
-            Button {
-                session.showingTrainingListPicker = true
-            } label: {
-                largeTrainingSelectionCard(
-                    title: "Ausgewählte Listen",
-                    value: trainingListSummary
-                )
+            // List category buttons
+            VStack(spacing: 8) {
+                Text("Listen auswählen")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                HStack(spacing: 8) {
+                    listCategoryButton(
+                        title: "📝 Meine Listen",
+                        count: ownListCount,
+                        category: .own
+                    )
+                    listCategoryButton(
+                        title: "📚 Nach Niveau",
+                        count: levelListCount,
+                        category: .level
+                    )
+                }
+
+                HStack(spacing: 8) {
+                    listCategoryButton(
+                        title: "🏷️ Nach Thema",
+                        count: topicListCount,
+                        category: .topic
+                    )
+                    listCategoryButton(
+                        title: "📖 Komplett",
+                        count: allInOneCount,
+                        category: .all
+                    )
+                }
+
+                if !trainingListCount.isEmpty {
+                    Text(trainingListName + " · " + trainingListCount)
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundStyle(trainingActionTint)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 2)
+                }
             }
-            .buttonStyle(.plain)
             .padding(.bottom, AppTheme.Spacing.sm)
 
-            trainingDirectionCard
-                .padding(.bottom, AppTheme.Spacing.sm)
+            // Direction is set on Home screen
 
-            trainingModeCard
+            if launchContext?.preferredMode == nil {
+                trainingModeCard
+            }
 
             if isDictionaryTrainingSelected {
                 dictionaryTrainingLevelCard
@@ -138,16 +171,16 @@ extension TrainingView {
         .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 32)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .sheet(isPresented: $session.showingTrainingListPicker) {
+        .sheet(item: $listPickerCategory) { category in
             FlashcardStackComposerSheet(
                 style: sectionStyle,
-                lists: availableTrainingLists,
+                lists: filteredLists(for: category),
                 selectedListIDs: session.selectedTrainingListIDs,
                 language: selectedAppDirection.sourceLanguage,
                 cardTypeFilter: nil
             ) { updatedSelection in
                 session.selectedTrainingListIDs = updatedSelection
-                session.showingTrainingListPicker = false
+                listPickerCategory = nil
             }
         }
     }
@@ -172,6 +205,9 @@ extension TrainingView {
             }
             .onAppear {
                 handleTrainingAppear()
+            }
+            .onDisappear {
+                stopSpeedRoundTimer()
             }
             .onChange(of: session.direction) { _, _ in
                 handleTrainingDirectionChange()

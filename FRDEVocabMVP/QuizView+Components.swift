@@ -60,9 +60,7 @@ var quizSetupScreen: some View {
             .padding(.horizontal, quizSetupCardInset)
             .padding(.bottom, AppTheme.Spacing.sm)
 
-            quizDirectionCard
-                .padding(.horizontal, quizSetupCardInset)
-                .padding(.bottom, AppTheme.Spacing.sm)
+            // Direction is set on Home screen
 
             AppSurfaceCard(tint: sectionStyle.accent) {
                 VStack(alignment: .leading, spacing: 8) {
