@@ -8,6 +8,64 @@ struct SoundToggleToast: Equatable {
 }
 
 @MainActor
+final class SoundPlayer {
+    static let shared = SoundPlayer()
+    private var players: [String: AVAudioPlayer] = [:]
+
+    private func ensureAudioSession() {
+        if !isSessionActive {
+            do {
+                try AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default, options: [.mixWithOthers])
+                try AVAudioSession.sharedInstance().setActive(true)
+                isSessionActive = true
+            } catch {}
+        }
+    }
+    private var isSessionActive = false
+
+    func play(_ name: String, volume: Float = 1.0) {
+        guard let url = Bundle.main.url(forResource: "elumi_\(name)", withExtension: "wav") else {
+            print("⚠️ [Sound] Missing: elumi_\(name).wav")
+            return
+        }
+        ensureAudioSession()
+        do {
+            let player = try AVAudioPlayer(contentsOf: url)
+            player.volume = volume
+            player.play()
+            players[name] = player
+        } catch {
+            print("⚠️ [Sound] Error playing \(name): \(error)")
+        }
+    }
+
+    func loop(_ name: String) {
+        guard let url = Bundle.main.url(forResource: "elumi_\(name)", withExtension: "wav") else {
+            print("⚠️ [Sound] Missing: elumi_\(name).wav")
+            return
+        }
+        do {
+            let player = try AVAudioPlayer(contentsOf: url)
+            player.numberOfLoops = -1
+            player.play()
+            players[name] = player
+        } catch {
+            print("⚠️ [Sound] Error looping \(name): \(error)")
+        }
+    }
+
+    func stop(_ name: String) {
+        players[name]?.stop()
+        players[name] = nil
+    }
+
+    func stopAll() {
+        players.values.forEach { $0.stop() }
+        players.removeAll()
+    }
+}
+
+@MainActor
 final class FeedbackPlayer: ObservableObject {
     private let soundsEnabledKey = "FRDEVocabMVP.soundsEnabled.v1"
     @Published var areSoundsEnabled: Bool = true {
@@ -19,44 +77,18 @@ final class FeedbackPlayer: ObservableObject {
         }
     }
     @Published var soundToggleToast: SoundToggleToast?
+
+    // BGM uses AVAudioEngine (programmatic buffer, too large for WAV)
     var engine: AVAudioEngine?
-    var playerNode: AVAudioPlayerNode?
-    var loopPlayerNode: AVAudioPlayerNode?
     var bgmPlayerNode: AVAudioPlayerNode?
     let audioSession = AVAudioSession.sharedInstance()
     let sampleRate: Double = 44_100
-    lazy var cardFlipBuffer: AVAudioPCMBuffer? = makeCardFlipBuffer()
-    lazy var scanStartBuffer: AVAudioPCMBuffer? = makeScanStartBuffer()
-    lazy var scanDoneBuffer: AVAudioPCMBuffer? = makeScanDoneBuffer()
-    lazy var appStartBuffer: AVAudioPCMBuffer? = makeAppStartBuffer()
-    lazy var toggleBuffer: AVAudioPCMBuffer? = makeToggleBuffer()
-    lazy var tabSwitchBuffer: AVAudioPCMBuffer? = makeTabSwitchBuffer()
-    lazy var listActionBuffer: AVAudioPCMBuffer? = makeListActionBuffer()
-    lazy var favStarBuffer: AVAudioPCMBuffer? = makeFavStarBuffer()
-    lazy var launchBuffer: AVAudioPCMBuffer? = makeLaunchBuffer()
-    lazy var successBuffer: AVAudioPCMBuffer? = makeSuccessBuffer()
-    lazy var errorBuffer: AVAudioPCMBuffer? = makeErrorBuffer()
-    lazy var achievementBuffer: AVAudioPCMBuffer? = makeAchievementBuffer()
-    lazy var flashcardSuccessBuffer: AVAudioPCMBuffer? = makeFlashcardSuccessBuffer()
-    lazy var flashcardErrorBuffer: AVAudioPCMBuffer? = makeFlashcardErrorBuffer()
-    lazy var flashcardAchievementBuffer: AVAudioPCMBuffer? = makeFlashcardAchievementBuffer()
-    lazy var quizCoinBuffer: AVAudioPCMBuffer? = makeQuizCoinBuffer()
-    lazy var arcadeComboBuffer: AVAudioPCMBuffer? = makeArcadeComboBuffer()
-    lazy var gameOverBuffer: AVAudioPCMBuffer? = makeGameOverBuffer()
-    lazy var slowMotionActivateBuffer: AVAudioPCMBuffer? = makeSlowMotionActivateBuffer()
-    lazy var slowMotionEndBuffer: AVAudioPCMBuffer? = makeSlowMotionEndBuffer()
-    lazy var snackMissBuffer: AVAudioPCMBuffer? = makeSnackMissBuffer()
-    lazy var roundClearBuffer: AVAudioPCMBuffer? = makeRoundClearBuffer()
-    lazy var highScoreBuffer: AVAudioPCMBuffer? = makeHighScoreBuffer()
-    lazy var powerUpSpawnBuffer: AVAudioPCMBuffer? = makePowerUpSpawnBuffer()
-    lazy var shieldActivateBuffer: AVAudioPCMBuffer? = makeShieldActivateBuffer()
-    lazy var shieldAbsorbBuffer: AVAudioPCMBuffer? = makeShieldAbsorbBuffer()
     lazy var bgmBuffer: AVAudioPCMBuffer? = makeBGMBuffer()
-    lazy var suctionWhirBuffer: AVAudioPCMBuffer? = makeSuctionWhirBuffer()
-    lazy var suctionLoopBuffer: AVAudioPCMBuffer? = makeSuctionLoopBuffer()
-    lazy var suctionWindDownBuffer: AVAudioPCMBuffer? = makeSuctionWindDownBuffer()
-    var isConfigured = false
+    var isBGMConfigured = false
+
     var soundToastDismissWorkItem: DispatchWorkItem?
+
+    let sp = SoundPlayer.shared
 
     init() {
         if UserDefaults.standard.object(forKey: soundsEnabledKey) != nil {

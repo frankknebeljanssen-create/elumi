@@ -111,17 +111,29 @@ extension ElumiArcadeGameView {
                     .foregroundStyle(AppTheme.Colors.textPrimary)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    arcadeRuleRow(icon: "hand.draw.fill", text: "Zieh Elumi zum Futter")
-                    arcadeRuleRow(icon: "heart.fill", text: "3 Leben — verpasstes Futter = -1")
-                    arcadeRuleRow(icon: "xmark.octagon.fill", text: "Falscher Elumi = Game Over", tint: AppTheme.Colors.error)
-                    arcadeRuleRow(icon: "bolt.fill", text: "Runden werden schneller")
+                    arcadeRuleRow(icon: "hand.draw.fill", text: "Zieh Elumi zum Futter", iconSize: 20)
+                    arcadeRuleRow(icon: "heart.fill", text: "3 Leben — verpasstes Futter = -1", iconSize: 20)
+                    HStack(spacing: 10) {
+                        Image("SplashCharacter")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 22, height: 22)
+                            .saturation(0.85)
+                            .hueRotation(.degrees(-80))
+                            .brightness(0.05)
+                            .clipShape(Circle())
+                        Text("Elumi-Freunde vorbeischwimmen lassen!")
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .foregroundStyle(.cyan)
+                    }
+                    arcadeRuleRow(icon: "bolt.fill", text: "Runden werden schneller", iconSize: 20)
                 }
                 .padding(.horizontal, 4)
 
                 HStack(spacing: 16) {
-                    ElumiSnackIcon(.wuermchen, size: 24)
-                    ElumiSnackIcon(.wasserfloh, size: 22)
-                    ElumiSnackIcon(.algenkugel, size: 20)
+                    ElumiSnackIcon(.wuermchen, size: 30)
+                    ElumiSnackIcon(.wasserfloh, size: 28)
+                    ElumiSnackIcon(.algenkugel, size: 26)
                 }
 
                 HStack(spacing: 6) {
@@ -287,6 +299,46 @@ extension ElumiArcadeGameView {
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
+    var bonusRoundAnnouncement: some View {
+        VStack(spacing: 14) {
+            Text("🐟")
+                .font(.system(size: 48))
+
+            Text("Bonus-Runde!")
+                .font(.system(size: 24, weight: .black, design: .rounded))
+                .foregroundStyle(.white)
+
+            VStack(spacing: 6) {
+                Text("Fische fliegen vorbei —")
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                Text("fang 80% für ein Extra-Leben!")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundStyle(.cyan)
+            }
+
+            HStack(spacing: 6) {
+                Image(systemName: "hand.draw.fill")
+                    .font(.system(size: 13, weight: .bold))
+                Text("Zieh Elumi frei über den Screen")
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+            }
+            .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.7))
+            .padding(.top, 4)
+        }
+        .padding(.horizontal, 28)
+        .padding(.vertical, 24)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(AppTheme.Colors.secondarySurface.opacity(0.95))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .stroke(Color.cyan.opacity(0.3), lineWidth: 1.5)
+                )
+        )
+        .shadow(color: .cyan.opacity(0.2), radius: 20, x: 0, y: 8)
+    }
+
     func comboBanner(text: String) -> some View {
         HStack(spacing: 8) {
             if comboCount >= 2 {
@@ -395,12 +447,12 @@ extension ElumiArcadeGameView {
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
-    func arcadeRuleRow(icon: String, text: String, tint: Color? = nil) -> some View {
+    func arcadeRuleRow(icon: String, text: String, tint: Color? = nil, iconSize: CGFloat = 14) -> some View {
         HStack(spacing: 10) {
             Image(systemName: icon)
-                .font(.system(size: 14, weight: .bold))
+                .font(.system(size: iconSize, weight: .bold))
                 .foregroundStyle(tint ?? AppTheme.Colors.textSecondary)
-                .frame(width: 22)
+                .frame(width: 26)
 
             Text(text)
                 .font(.system(size: 14, weight: .semibold, design: .rounded))

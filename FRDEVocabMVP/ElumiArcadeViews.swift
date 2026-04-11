@@ -27,6 +27,16 @@ enum ElumiArcadeDropKind: Equatable {
     }
 }
 
+struct BonusFishState: Identifiable, Equatable {
+    let id = UUID()
+    let spawnedAt: Date
+    let fromLeft: Bool           // true = links→rechts, false = rechts→links
+    let normalizedY: CGFloat     // 0.2-0.8
+    let speed: Double            // 3-5s Durchflugzeit
+    let wobblePhase: Double
+    var isCaught: Bool = false
+}
+
 struct ElumiArcadeSnackState: Identifiable, Equatable {
     let id = UUID()
     let kind: ElumiArcadeDropKind
@@ -83,6 +93,16 @@ struct ElumiArcadeGameView: View {
     @State var readyBlinkVisible = true
     @State var elumiVisible = false
 
+    // Bonus fish round
+    @State var isBonusRound = false
+    @State var bonusFishCaught = 0
+    @State var bonusFishSpawned = 0
+    @State var activeFish: [BonusFishState] = []
+    @State var elumiY: CGFloat = 0.5
+    @State var bonusRoundStartedAt: Date?
+    let bonusFishTotal = 15
+    let bonusRoundDuration: TimeInterval = 12.0
+
     let maxMisses = 3
     let suctionDuration: TimeInterval = 4.6
     let bonusPointsDuration: TimeInterval = 5.0
@@ -110,7 +130,7 @@ struct ElumiArcadeGameView: View {
         case 2: return "🧪 Zeitlupe-Trank!"
         case 3: return "Querschläger!"
         case 4: return "Bonus-Regen!"
-        case 5: return "Doppelgänger!"
+        case 5: return "Elumi-Freunde!"
         default: return "Chaos!"
         }
     }

@@ -403,6 +403,7 @@ struct TrainingView: View {
 
             HStack(spacing: 10) {
                 Button {
+                    feedbackPlayer.playCardFlip()
                     revealSolution()
                 } label: {
                     Label(solutionButtonTitle, systemImage: "lightbulb")
@@ -1604,6 +1605,7 @@ struct FlashcardsView: View {
                     .contentShape(Rectangle())
                     .onTapGesture {
                         guard isSessionReady else { return }
+                        feedbackPlayer.playCardFlip()
                         if interaction.showingSolution {
                             interaction.flipBackToFront(dismissTypedAnswerFocus: dismissTypedAnswerFocus)
                         } else {

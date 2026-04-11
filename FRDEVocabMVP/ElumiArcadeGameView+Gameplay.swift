@@ -27,9 +27,12 @@ extension ElumiArcadeGameView {
         // Slow-motion potion: rare spawn, ~1x per 2-3 rounds
         let slowMotionPotionChance: Double = round >= 2 ? 0.04 : 0.0
 
-        // Guarantee at least 1 suction per round (halfway through)
-        let halfwayCount = snacksForRound(round) / 2
-        let forceSuction = !roundSuctionSpawned && roundCatchCount >= halfwayCount
+        // Never spawn a suction while one is already on screen
+        let suctionAlreadyOnScreen = activeSnacks.contains { $0.kind == .saugglocke }
+
+        // Guarantee at least 1 suction per round (after 1/3 of snacks caught)
+        let thirdCount = snacksForRound(round) / 3
+        let forceSuction = !roundSuctionSpawned && roundCatchCount >= thirdCount && !suctionAlreadyOnScreen
 
         let kind: ElumiArcadeDropKind
         if forceSuction {
@@ -39,7 +42,7 @@ extension ElumiArcadeGameView {
             kind = .slowMotionPotion
         } else if roll < slowMotionPotionChance + bonusChance {
             kind = .bonusblase
-        } else if roll < slowMotionPotionChance + bonusChance + suctionChance {
+        } else if roll < slowMotionPotionChance + bonusChance + suctionChance, !suctionAlreadyOnScreen {
             kind = .saugglocke
             roundSuctionSpawned = true
         } else if roll < slowMotionPotionChance + bonusChance + suctionChance + falseElumiChance {
@@ -185,14 +188,31 @@ extension ElumiArcadeGameView {
         feedbackPlayer.playAchievement()
     }
 
-    func triggerHazardGameOver() {
-        triggerScreenShake()
-        gameOverTitle = "Falscher Elumi"
-        gameOverSubtitle = "Den musst du vorbeischwimmen lassen."
+    func endGame() {
         isGameOver = true
         isPlaying = false
+        // Stop all sounds silently
+        feedbackPlayer.sp.stop("saugloop")
+        feedbackPlayer.sp.stop("bgm_fischfang")
         feedbackPlayer.stopBGM()
         feedbackPlayer.playGameOver()
+        // Clear power-up state
+        suctionEndsAt = nil
+        bonusPointsEndsAt = nil
+        slowMotionEndsAt = nil
+        // Clear all snacks from screen
+        activeSnacks = []
+        // Hide Elumi
+        withAnimation(.easeOut(duration: 0.25)) {
+            elumiVisible = false
+        }
+    }
+
+    func triggerHazardGameOver() {
+        triggerScreenShake()
+        gameOverTitle = "Freund gefressen!"
+        gameOverSubtitle = "Das war ein Elumi-Freund — lass die vorbeischwimmen!"
+        endGame()
     }
 
     func activateSlowMotion(at date: Date) {
@@ -252,13 +272,13 @@ extension ElumiArcadeGameView {
         return hasActiveBonusPoints(at: date) ? rawPoints * 2 : rawPoints
     }
 
-    func showComboBanner(_ text: String) {
+    func showComboBanner(_ text: String, duration: Int = 900) {
         withAnimation(.spring(response: 0.24, dampingFraction: 0.82)) {
             comboBannerText = text
         }
 
         Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(900))
+            try? await Task.sleep(for: .milliseconds(duration))
             guard comboBannerText == text else { return }
             withAnimation(.easeOut(duration: 0.18)) {
                 comboBannerText = nil
@@ -283,11 +303,24 @@ extension ElumiArcadeGameView {
             try? await Task.sleep(for: .seconds(2))
             guard showingRoundBanner else { return }
 
-            // Phase 1: "Ready?" + "Runde X+1" mit Blinken
+            // Bonus round every 3 rounds (after R3, R6, R9...)
+            if round % 3 == 0 {
+                showingRoundBanner = false
+                startBonusRound()
+                return
+            }
+
+            advanceToNextRound()
+        }
+    }
+
+    func advanceToNextRound() {
+        Task { @MainActor in
             round += 1
             roundCatchCount = 0
             roundSuctionSpawned = false
             roundBannerPhase = 1
+            showingRoundBanner = true
 
             for _ in 0..<3 {
                 withAnimation(.easeInOut(duration: 0.25)) { readyBlinkVisible = false }
@@ -302,8 +335,128 @@ extension ElumiArcadeGameView {
         }
     }
 
+    // ── BONUS FISH ROUND ──
+
+    func startBonusRound() {
+        isBonusRound = true
+        bonusFishCaught = 0
+        bonusFishSpawned = 0
+        activeFish = []
+        elumiY = 0.5
+        bonusRoundStartedAt = Date()
+        feedbackPlayer.stopBGM()
+        feedbackPlayer.sp.loop("bgm_fischfang")
+        feedbackPlayer.playPowerUpSpawn()
+        showComboBanner("🐟 Bonus-Runde!", duration: 2500)
+
+        // Spawn fish loop + timer
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(1.5)) // Wait for banner
+            guard isBonusRound else { return }
+
+            // Spawn 15 fish over ~12s (one every 0.8s)
+            for i in 0..<bonusFishTotal {
+                guard isBonusRound, !isGameOver else { break }
+                spawnBonusFish()
+                bonusFishSpawned = i + 1
+                try? await Task.sleep(for: .milliseconds(800))
+            }
+
+            // Wait for last fish to cross screen
+            try? await Task.sleep(for: .seconds(2.5))
+            guard isBonusRound else { return }
+            endBonusRound()
+        }
+    }
+
+    func spawnBonusFish() {
+        let fromLeft = Bool.random()
+        activeFish.append(BonusFishState(
+            spawnedAt: Date(),
+            fromLeft: fromLeft,
+            normalizedY: CGFloat.random(in: 0.15...0.75),
+            speed: Double.random(in: 0.9...2.0),
+            wobblePhase: Double.random(in: 0...(Double.pi * 2))
+        ))
+    }
+
+    func updateBonusRound(now: Date) {
+        guard isBonusRound, gameSize != .zero else { return }
+
+        let elumiPos = CGPoint(
+            x: elumiPositionX(in: gameSize.width),
+            y: elumiPositionY(in: gameSize.height)
+        )
+
+        var updated = activeFish
+        for i in updated.indices {
+            guard !updated[i].isCaught else { continue }
+            let fishPos = fishPosition(for: updated[i], at: now, in: gameSize)
+            let dist = hypot(fishPos.x - elumiPos.x, fishPos.y - elumiPos.y)
+            if dist <= 42 {
+                updated[i].isCaught = true
+                bonusFishCaught += 1
+                feedbackPlayer.playSuccess()
+                // Catch animation
+                withAnimation(.spring(response: 0.15, dampingFraction: 0.6)) {
+                    mouthOpen = true
+                    characterScale = 1.06
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                    withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
+                        self.mouthOpen = false
+                        self.characterScale = 1
+                    }
+                }
+            }
+        }
+
+        // Remove fish that left the screen (progress > 1.2)
+        updated.removeAll { fish in
+            if fish.isCaught { return true }
+            let elapsed = now.timeIntervalSince(fish.spawnedAt)
+            return elapsed / fish.speed > 1.3
+        }
+
+        activeFish = updated
+    }
+
+    func endBonusRound() {
+        isBonusRound = false
+        activeFish = []
+        feedbackPlayer.sp.stop("bgm_fischfang")
+        feedbackPlayer.startBGM()
+
+        let success = bonusFishCaught >= Int(Double(bonusFishTotal) * 0.8) // 80%
+
+        if success {
+            misses = max(0, misses - 1)
+            showComboBanner("🎉 +1 Leben!")
+            feedbackPlayer.playHighScore()
+        } else {
+            showComboBanner("🐟 \(bonusFishCaught)/\(bonusFishTotal) gefangen")
+            feedbackPlayer.playRoundClear()
+        }
+
+        // Return Elumi to bottom and advance to next round
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2))
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                elumiY = 0.5
+            }
+            advanceToNextRound()
+        }
+    }
+
     func updateGame(now: Date) {
         guard gameSize != .zero else { return }
+
+        // Bonus round uses its own update logic
+        if isBonusRound {
+            updateBonusRound(now: now)
+            return
+        }
+
         if let suctionEndsAt, suctionEndsAt <= now {
             self.suctionEndsAt = nil
         }
@@ -446,10 +599,7 @@ extension ElumiArcadeGameView {
         if misses >= maxMisses {
             gameOverTitle = "Game Over"
             gameOverSubtitle = "Alle Leben verbraucht."
-            feedbackPlayer.stopBGM()
-            feedbackPlayer.playGameOver()
-            isGameOver = true
-            isPlaying = false
+            endGame()
         }
     }
 
@@ -484,6 +634,12 @@ extension ElumiArcadeGameView {
         roundCatchCount = 0
         roundSuctionSpawned = false
         showingRoundBanner = false
+        isBonusRound = false
+        activeFish = []
+        bonusFishCaught = 0
+        bonusFishSpawned = 0
+        elumiY = 0.5
+        bonusRoundStartedAt = nil
         roundBannerPhase = 0
         readyBlinkVisible = true
     }

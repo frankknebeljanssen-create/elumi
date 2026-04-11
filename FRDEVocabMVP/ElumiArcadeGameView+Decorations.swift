@@ -191,38 +191,53 @@ extension ElumiArcadeGameView {
     }
 
     func hazardElumiIcon(size: CGFloat, at date: Date) -> some View {
-        let pulse = 0.92 + (0.09 * CGFloat(sin(date.timeIntervalSinceReferenceDate * 8.5)))
+        let friendSize = size * 1.1
+        let pulse = 0.94 + (0.06 * CGFloat(sin(date.timeIntervalSinceReferenceDate * 5.0)))
+        let glowColor = Color(red: 0.2, green: 0.6, blue: 0.9)
 
         return ZStack {
-            // Subtle reddish glow — looks like Elumi but "off"
+            // Blue glow
             Circle()
-                .fill(Color(red: 0.8, green: 0.3, blue: 0.5).opacity(0.14))
-                .frame(width: size * 1.1, height: size * 1.1)
-                .blur(radius: 4)
+                .fill(glowColor.opacity(0.22))
+                .frame(width: friendSize * 1.15, height: friendSize * 1.15)
+                .blur(radius: 5)
                 .scaleEffect(pulse)
 
-            // Elumi image — slightly purple/pink tinted, slightly desaturated
+            // Blue Elumi friend
             Image("SplashCharacter")
                 .resizable()
                 .interpolation(.high)
                 .scaledToFit()
-                .frame(width: size * 0.92, height: size * 0.92)
-                .saturation(0.55)
-                .hueRotation(.degrees(-30))
-                .brightness(-0.05)
+                .frame(width: friendSize * 0.92, height: friendSize * 0.92)
+                .saturation(0.85)
+                .hueRotation(.degrees(-80))
+                .brightness(0.05)
                 .clipShape(Circle())
 
-            // Small warning dot — subtle, not a huge badge
+            // Small blue heart badge
             Circle()
-                .fill(AppTheme.Colors.error)
-                .frame(width: size * 0.22, height: size * 0.22)
+                .fill(Color.cyan)
+                .frame(width: friendSize * 0.20, height: friendSize * 0.20)
                 .overlay(
-                    Image(systemName: "xmark")
-                        .font(.system(size: size * 0.12, weight: .black))
+                    Image(systemName: "heart.fill")
+                        .font(.system(size: friendSize * 0.11, weight: .bold))
                         .foregroundStyle(.white)
                 )
-                .offset(x: size * 0.3, y: -size * 0.3)
+                .offset(x: friendSize * 0.3, y: -friendSize * 0.28)
         }
-        .shadow(color: Color(red: 0.8, green: 0.3, blue: 0.5).opacity(0.25), radius: 10, x: 0, y: 4)
+        .shadow(color: glowColor.opacity(0.35), radius: 10, x: 0, y: 4)
+    }
+
+    // ── Bonus Fish ──
+
+    func bonusFishView(for fish: BonusFishState, at date: Date, in size: CGSize) -> some View {
+        let elapsed = date.timeIntervalSince(fish.spawnedAt)
+        let wobble = sin(elapsed * 4.0 + fish.wobblePhase) * 5
+
+        return Text("🐟")
+            .font(.system(size: 32))
+            .scaleEffect(x: fish.fromLeft ? 1 : -1, y: 1) // Flip if going right→left
+            .rotationEffect(.degrees(wobble))
+            .shadow(color: .cyan.opacity(0.4), radius: 6, x: 0, y: 2)
     }
 }

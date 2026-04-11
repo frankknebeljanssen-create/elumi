@@ -1,5 +1,5 @@
 import SwiftUI
-import AudioToolbox
+import AVFoundation
 
 extension TrainingView {
     func dismissToHome() {
@@ -92,10 +92,10 @@ extension TrainingView {
                 guard let session else { return }
                 session.speedRoundTimeRemaining -= 1
                 if session.speedRoundTimeRemaining <= 5, session.speedRoundTimeRemaining > 0 {
-                    AudioServicesPlaySystemSound(1057) // Tock sound
+                    self.feedbackPlayer.playToggle()
                 }
                 if session.speedRoundTimeRemaining <= 0 {
-                    AudioServicesPlaySystemSound(1005) // Final buzzer
+                    self.feedbackPlayer.playRoundClear()
                     session.speedRoundTimer?.invalidate()
                     session.speedRoundTimer = nil
                 }
@@ -125,16 +125,16 @@ extension TrainingView {
         if session.isSpeedRound {
             // 3-2-1 countdown before starting
             speedCountdown = 3
-            AudioServicesPlaySystemSound(1057)
+            feedbackPlayer.playToggle()
             scheduleFeedbackTask(after: 1.0) {
                 speedCountdown = 2
-                AudioServicesPlaySystemSound(1057)
+                feedbackPlayer.playToggle()
                 scheduleFeedbackTask(after: 1.0) {
                     speedCountdown = 1
-                    AudioServicesPlaySystemSound(1057)
+                    feedbackPlayer.playToggle()
                     scheduleFeedbackTask(after: 1.0) {
                         speedCountdown = nil
-                        AudioServicesPlaySystemSound(1114)
+                        feedbackPlayer.playLaunch()
                         startSpeedRoundTimer()
                         if isVerbMode { prepareVerbMCOptions() }
                     }

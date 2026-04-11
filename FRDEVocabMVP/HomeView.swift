@@ -70,6 +70,7 @@ struct HomeView: View {
 
         isHomeNavigationLocked = true
         pressedHomeScreen = screen
+        feedbackPlayer.playTabSwitch()
         openScreen(screen)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {

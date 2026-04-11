@@ -315,7 +315,40 @@
 		A00000000000000000000704 /* TrainingView+AnswerScoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000705 /* TrainingView+AnswerScoring.swift */; };
 		A00000000000000000000706 /* FeedbackPlayer+Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000707 /* FeedbackPlayer+Playback.swift */; };
 		A00000000000000000000708 /* FeedbackPlayer+Buffers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000709 /* FeedbackPlayer+Buffers.swift */; };
-		A00000000000000000000710 /* FeedbackPlayer+Waveform.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000711 /* FeedbackPlayer+Waveform.swift */; };
+		99AE414AD9F8468D8DF3007D /* elumi_wrong.wav in Resources */ = {isa = PBXBuildFile; fileRef = F5A9F51ED0654E5F94E00A68 /* elumi_wrong.wav */; };
+		729A713080B546A1B10C5ACA /* elumi_toggle.wav in Resources */ = {isa = PBXBuildFile; fileRef = 32C43DE8F494458D929C4AE1 /* elumi_toggle.wav */; };
+		114BC2757EED4D78B9EFADEA /* elumi_tabswitch.wav in Resources */ = {isa = PBXBuildFile; fileRef = F2F037219E904D3680DD724E /* elumi_tabswitch.wav */; };
+		0956E1BD7D8A4C2CA60FF949 /* elumi_streak.wav in Resources */ = {isa = PBXBuildFile; fileRef = 427B3F68D7FB4FBFA24DBD17 /* elumi_streak.wav */; };
+		4A2F5E28015042B8897FAD67 /* elumi_stackcomplete.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3CC12181E32D4557B70AA0CF /* elumi_stackcomplete.wav */; };
+		A32AEA7409624035B7BCEB16 /* elumi_snackmiss.wav in Resources */ = {isa = PBXBuildFile; fileRef = 08593D8836594A859D387AE8 /* elumi_snackmiss.wav */; };
+		FDAE5763D9AB4A198F799CCB /* elumi_snackcatch.wav in Resources */ = {isa = PBXBuildFile; fileRef = 985C1E62789347B8A53B860F /* elumi_snackcatch.wav */; };
+		19D3201DD0C84E8A83C2242D /* elumi_slowmostart.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2E74EDA8D2904AA7A3E9F688 /* elumi_slowmostart.wav */; };
+		DC356E5E6E7D471787978C2E /* elumi_slowmoend.wav in Resources */ = {isa = PBXBuildFile; fileRef = 8469BB0E7D1B47FE81099689 /* elumi_slowmoend.wav */; };
+		1D667A9B8D984D1CB42D8942 /* elumi_shieldactivate.wav in Resources */ = {isa = PBXBuildFile; fileRef = DADBA6D5B4FF4413839CBF0D /* elumi_shieldactivate.wav */; };
+		D771E6C94B97489EAC3CCA37 /* elumi_shieldabsorb.wav in Resources */ = {isa = PBXBuildFile; fileRef = CB93664F8123410AB10D5D2F /* elumi_shieldabsorb.wav */; };
+		D2C31485B1D74864B812D0D8 /* elumi_scanstart.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3EC276513665498B94332747 /* elumi_scanstart.wav */; };
+		BFB7270E17924A98985159AE /* elumi_scandone.wav in Resources */ = {isa = PBXBuildFile; fileRef = BAC62D87FEAD413F90BCE57C /* elumi_scandone.wav */; };
+		7D3B0E4411A243619FB50261 /* elumi_saugstart.wav in Resources */ = {isa = PBXBuildFile; fileRef = F9E9A871DD9141F488C32488 /* elumi_saugstart.wav */; };
+		DA57C4C566AF4DB3B5CC281D /* elumi_saugloop.wav in Resources */ = {isa = PBXBuildFile; fileRef = 51677781801E491EAEA0C07A /* elumi_saugloop.wav */; };
+		535BC11A38424C789F12B637 /* elumi_saugend.wav in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDD993CDA84C048277CCF7 /* elumi_saugend.wav */; };
+		B4758C33858646B6A402E9E2 /* elumi_roundclear.wav in Resources */ = {isa = PBXBuildFile; fileRef = 5F6AA0B1D09C4B26B5544537 /* elumi_roundclear.wav */; };
+		50F57B704E604DE98AD4FA51 /* elumi_quizcomplete.wav in Resources */ = {isa = PBXBuildFile; fileRef = 21594A50F0B744E68ED245F2 /* elumi_quizcomplete.wav */; };
+		44D622B2824546FFBDFF7083 /* elumi_powerupspawn.wav in Resources */ = {isa = PBXBuildFile; fileRef = 550C14FD7EDE4E0C8426E5C0 /* elumi_powerupspawn.wav */; };
+		E627ACD904664767B834476C /* elumi_listaction.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCE42C2B2A954601BA1CC327 /* elumi_listaction.wav */; };
+		6A9A9076F4D245A9AF3530F5 /* elumi_levelup.wav in Resources */ = {isa = PBXBuildFile; fileRef = 6D35D1BF6D2D4C5093A40F4E /* elumi_levelup.wav */; };
+		13634FD082AA43DEB7699146 /* elumi_highscore.wav in Resources */ = {isa = PBXBuildFile; fileRef = A2097A8DB27E4BDC957255A8 /* elumi_highscore.wav */; };
+		15E1874FDAE047E4AEC3DA6D /* elumi_gamestart.wav in Resources */ = {isa = PBXBuildFile; fileRef = 41F9D99E7DF54754980496C7 /* elumi_gamestart.wav */; };
+		54A069E941A24FAA8F5763B6 /* elumi_gameover.wav in Resources */ = {isa = PBXBuildFile; fileRef = 6DC3E67A0E5B47A6A21D7589 /* elumi_gameover.wav */; };
+		A8E9010B4F0C46149D900BCF /* elumi_favstar.wav in Resources */ = {isa = PBXBuildFile; fileRef = 9D22BEAA0CCF43968F2ECD5A /* elumi_favstar.wav */; };
+		9522ABC182EA4ED19082A0A4 /* elumi_error.wav in Resources */ = {isa = PBXBuildFile; fileRef = 749B020AED184C828FDAFB6C /* elumi_error.wav */; };
+		4074D78EE22D43E2986ACBF0 /* elumi_correct.wav in Resources */ = {isa = PBXBuildFile; fileRef = 97C3C5F1DA8C491FA5BB2809 /* elumi_correct.wav */; };
+		BFBC9A0F8FA14ED791E9E103 /* elumi_combo.wav in Resources */ = {isa = PBXBuildFile; fileRef = 777D26688D2246308F41248B /* elumi_combo.wav */; };
+		82DF25EBA98C4C9094BC3EFD /* elumi_cardwrong.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1607A964426A474FA6D8367C /* elumi_cardwrong.wav */; };
+		0539D34CCB4C4C24AE08BF34 /* elumi_cardright.wav in Resources */ = {isa = PBXBuildFile; fileRef = 95A777457F104E90B5FA1898 /* elumi_cardright.wav */; };
+		009819BB54954EAEBB5DEC28 /* elumi_cardflip.wav in Resources */ = {isa = PBXBuildFile; fileRef = 804F29773536414EAD31D9BF /* elumi_cardflip.wav */; };
+		85741A1459CD46F8B2D57ADA /* elumi_bonusbubble.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1EA2312346DD411E87EFE74C /* elumi_bonusbubble.wav */; };
+		2C02BD11DC6C449AA1D5BFFE /* elumi_appstart.wav in Resources */ = {isa = PBXBuildFile; fileRef = 9BA6DD9690D14C3F966AECF7 /* elumi_appstart.wav */; };
+		A92FD19A63604A98AC7A62D8 /* elumi_bgm_fischfang.wav in Resources */ = {isa = PBXBuildFile; fileRef = 7F3CEFA2774C4CC9871729D2 /* elumi_bgm_fischfang.wav */; };
 		A00000000000000000000712 /* ListsView+Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000713 /* ListsView+Screen.swift */; };
 		A00000000000000000000714 /* ListsView+Sections.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000715 /* ListsView+Sections.swift */; };
 		A00000000000000000000716 /* ListsView+Presentations.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000717 /* ListsView+Presentations.swift */; };
@@ -669,7 +702,40 @@
 		A00000000000000000000705 /* TrainingView+AnswerScoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrainingView+AnswerScoring.swift"; sourceTree = "<group>"; };
 		A00000000000000000000707 /* FeedbackPlayer+Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FeedbackPlayer+Playback.swift"; sourceTree = "<group>"; };
 		A00000000000000000000709 /* FeedbackPlayer+Buffers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FeedbackPlayer+Buffers.swift"; sourceTree = "<group>"; };
-		A00000000000000000000711 /* FeedbackPlayer+Waveform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FeedbackPlayer+Waveform.swift"; sourceTree = "<group>"; };
+		F5A9F51ED0654E5F94E00A68 /* elumi_wrong.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_wrong.wav"; sourceTree = "<group>"; };
+		32C43DE8F494458D929C4AE1 /* elumi_toggle.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_toggle.wav"; sourceTree = "<group>"; };
+		F2F037219E904D3680DD724E /* elumi_tabswitch.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_tabswitch.wav"; sourceTree = "<group>"; };
+		427B3F68D7FB4FBFA24DBD17 /* elumi_streak.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_streak.wav"; sourceTree = "<group>"; };
+		3CC12181E32D4557B70AA0CF /* elumi_stackcomplete.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_stackcomplete.wav"; sourceTree = "<group>"; };
+		08593D8836594A859D387AE8 /* elumi_snackmiss.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_snackmiss.wav"; sourceTree = "<group>"; };
+		985C1E62789347B8A53B860F /* elumi_snackcatch.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_snackcatch.wav"; sourceTree = "<group>"; };
+		2E74EDA8D2904AA7A3E9F688 /* elumi_slowmostart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_slowmostart.wav"; sourceTree = "<group>"; };
+		8469BB0E7D1B47FE81099689 /* elumi_slowmoend.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_slowmoend.wav"; sourceTree = "<group>"; };
+		DADBA6D5B4FF4413839CBF0D /* elumi_shieldactivate.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_shieldactivate.wav"; sourceTree = "<group>"; };
+		CB93664F8123410AB10D5D2F /* elumi_shieldabsorb.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_shieldabsorb.wav"; sourceTree = "<group>"; };
+		3EC276513665498B94332747 /* elumi_scanstart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_scanstart.wav"; sourceTree = "<group>"; };
+		BAC62D87FEAD413F90BCE57C /* elumi_scandone.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_scandone.wav"; sourceTree = "<group>"; };
+		F9E9A871DD9141F488C32488 /* elumi_saugstart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_saugstart.wav"; sourceTree = "<group>"; };
+		51677781801E491EAEA0C07A /* elumi_saugloop.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_saugloop.wav"; sourceTree = "<group>"; };
+		0BBDD993CDA84C048277CCF7 /* elumi_saugend.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_saugend.wav"; sourceTree = "<group>"; };
+		5F6AA0B1D09C4B26B5544537 /* elumi_roundclear.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_roundclear.wav"; sourceTree = "<group>"; };
+		21594A50F0B744E68ED245F2 /* elumi_quizcomplete.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_quizcomplete.wav"; sourceTree = "<group>"; };
+		550C14FD7EDE4E0C8426E5C0 /* elumi_powerupspawn.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_powerupspawn.wav"; sourceTree = "<group>"; };
+		CCE42C2B2A954601BA1CC327 /* elumi_listaction.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_listaction.wav"; sourceTree = "<group>"; };
+		6D35D1BF6D2D4C5093A40F4E /* elumi_levelup.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_levelup.wav"; sourceTree = "<group>"; };
+		A2097A8DB27E4BDC957255A8 /* elumi_highscore.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_highscore.wav"; sourceTree = "<group>"; };
+		41F9D99E7DF54754980496C7 /* elumi_gamestart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_gamestart.wav"; sourceTree = "<group>"; };
+		6DC3E67A0E5B47A6A21D7589 /* elumi_gameover.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_gameover.wav"; sourceTree = "<group>"; };
+		9D22BEAA0CCF43968F2ECD5A /* elumi_favstar.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_favstar.wav"; sourceTree = "<group>"; };
+		749B020AED184C828FDAFB6C /* elumi_error.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_error.wav"; sourceTree = "<group>"; };
+		97C3C5F1DA8C491FA5BB2809 /* elumi_correct.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_correct.wav"; sourceTree = "<group>"; };
+		777D26688D2246308F41248B /* elumi_combo.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_combo.wav"; sourceTree = "<group>"; };
+		1607A964426A474FA6D8367C /* elumi_cardwrong.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_cardwrong.wav"; sourceTree = "<group>"; };
+		95A777457F104E90B5FA1898 /* elumi_cardright.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_cardright.wav"; sourceTree = "<group>"; };
+		804F29773536414EAD31D9BF /* elumi_cardflip.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_cardflip.wav"; sourceTree = "<group>"; };
+		1EA2312346DD411E87EFE74C /* elumi_bonusbubble.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_bonusbubble.wav"; sourceTree = "<group>"; };
+		9BA6DD9690D14C3F966AECF7 /* elumi_appstart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_appstart.wav"; sourceTree = "<group>"; };
+		7F3CEFA2774C4CC9871729D2 /* elumi_bgm_fischfang.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_bgm_fischfang.wav"; sourceTree = "<group>"; };
 		A00000000000000000000713 /* ListsView+Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListsView+Screen.swift"; sourceTree = "<group>"; };
 		A00000000000000000000715 /* ListsView+Sections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListsView+Sections.swift"; sourceTree = "<group>"; };
 		A00000000000000000000717 /* ListsView+Presentations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListsView+Presentations.swift"; sourceTree = "<group>"; };
@@ -893,7 +959,40 @@
 				A00000000000000000000387 /* FeedbackPlayer.swift */,
 				A00000000000000000000707 /* FeedbackPlayer+Playback.swift */,
 				A00000000000000000000709 /* FeedbackPlayer+Buffers.swift */,
-				A00000000000000000000711 /* FeedbackPlayer+Waveform.swift */,
+				F5A9F51ED0654E5F94E00A68 /* elumi_wrong.wav */,
+				32C43DE8F494458D929C4AE1 /* elumi_toggle.wav */,
+				F2F037219E904D3680DD724E /* elumi_tabswitch.wav */,
+				427B3F68D7FB4FBFA24DBD17 /* elumi_streak.wav */,
+				3CC12181E32D4557B70AA0CF /* elumi_stackcomplete.wav */,
+				08593D8836594A859D387AE8 /* elumi_snackmiss.wav */,
+				985C1E62789347B8A53B860F /* elumi_snackcatch.wav */,
+				2E74EDA8D2904AA7A3E9F688 /* elumi_slowmostart.wav */,
+				8469BB0E7D1B47FE81099689 /* elumi_slowmoend.wav */,
+				DADBA6D5B4FF4413839CBF0D /* elumi_shieldactivate.wav */,
+				CB93664F8123410AB10D5D2F /* elumi_shieldabsorb.wav */,
+				3EC276513665498B94332747 /* elumi_scanstart.wav */,
+				BAC62D87FEAD413F90BCE57C /* elumi_scandone.wav */,
+				F9E9A871DD9141F488C32488 /* elumi_saugstart.wav */,
+				51677781801E491EAEA0C07A /* elumi_saugloop.wav */,
+				0BBDD993CDA84C048277CCF7 /* elumi_saugend.wav */,
+				5F6AA0B1D09C4B26B5544537 /* elumi_roundclear.wav */,
+				21594A50F0B744E68ED245F2 /* elumi_quizcomplete.wav */,
+				550C14FD7EDE4E0C8426E5C0 /* elumi_powerupspawn.wav */,
+				CCE42C2B2A954601BA1CC327 /* elumi_listaction.wav */,
+				6D35D1BF6D2D4C5093A40F4E /* elumi_levelup.wav */,
+				A2097A8DB27E4BDC957255A8 /* elumi_highscore.wav */,
+				41F9D99E7DF54754980496C7 /* elumi_gamestart.wav */,
+				6DC3E67A0E5B47A6A21D7589 /* elumi_gameover.wav */,
+				9D22BEAA0CCF43968F2ECD5A /* elumi_favstar.wav */,
+				749B020AED184C828FDAFB6C /* elumi_error.wav */,
+				97C3C5F1DA8C491FA5BB2809 /* elumi_correct.wav */,
+				777D26688D2246308F41248B /* elumi_combo.wav */,
+				1607A964426A474FA6D8367C /* elumi_cardwrong.wav */,
+				95A777457F104E90B5FA1898 /* elumi_cardright.wav */,
+				804F29773536414EAD31D9BF /* elumi_cardflip.wav */,
+				1EA2312346DD411E87EFE74C /* elumi_bonusbubble.wav */,
+				9BA6DD9690D14C3F966AECF7 /* elumi_appstart.wav */,
+				7F3CEFA2774C4CC9871729D2 /* elumi_bgm_fischfang.wav */,
 				A00000000000000000000151 /* AppStores.swift */,
 				A00000000000000000000335 /* StudyStoreSupport.swift */,
 				A00000000000000000000337 /* VocabularyListStore.swift */,
@@ -1164,6 +1263,40 @@
 				F43B1C062F86A79C0094BA73 /* StandardpaketGPT.tsv in Resources */,
 				F43B1C0A2F877A000094BA73 /* VerbNounPairs.tsv in Resources */,
 				F43B1C0E2F878B000094BA73 /* FillBlankSentences.tsv in Resources */,
+				A92FD19A63604A98AC7A62D8 /* elumi_bgm_fischfang.wav in Resources */,
+				2C02BD11DC6C449AA1D5BFFE /* elumi_appstart.wav in Resources */,
+				85741A1459CD46F8B2D57ADA /* elumi_bonusbubble.wav in Resources */,
+				009819BB54954EAEBB5DEC28 /* elumi_cardflip.wav in Resources */,
+				0539D34CCB4C4C24AE08BF34 /* elumi_cardright.wav in Resources */,
+				82DF25EBA98C4C9094BC3EFD /* elumi_cardwrong.wav in Resources */,
+				BFBC9A0F8FA14ED791E9E103 /* elumi_combo.wav in Resources */,
+				4074D78EE22D43E2986ACBF0 /* elumi_correct.wav in Resources */,
+				9522ABC182EA4ED19082A0A4 /* elumi_error.wav in Resources */,
+				A8E9010B4F0C46149D900BCF /* elumi_favstar.wav in Resources */,
+				54A069E941A24FAA8F5763B6 /* elumi_gameover.wav in Resources */,
+				15E1874FDAE047E4AEC3DA6D /* elumi_gamestart.wav in Resources */,
+				13634FD082AA43DEB7699146 /* elumi_highscore.wav in Resources */,
+				6A9A9076F4D245A9AF3530F5 /* elumi_levelup.wav in Resources */,
+				E627ACD904664767B834476C /* elumi_listaction.wav in Resources */,
+				44D622B2824546FFBDFF7083 /* elumi_powerupspawn.wav in Resources */,
+				50F57B704E604DE98AD4FA51 /* elumi_quizcomplete.wav in Resources */,
+				B4758C33858646B6A402E9E2 /* elumi_roundclear.wav in Resources */,
+				535BC11A38424C789F12B637 /* elumi_saugend.wav in Resources */,
+				DA57C4C566AF4DB3B5CC281D /* elumi_saugloop.wav in Resources */,
+				7D3B0E4411A243619FB50261 /* elumi_saugstart.wav in Resources */,
+				BFB7270E17924A98985159AE /* elumi_scandone.wav in Resources */,
+				D2C31485B1D74864B812D0D8 /* elumi_scanstart.wav in Resources */,
+				D771E6C94B97489EAC3CCA37 /* elumi_shieldabsorb.wav in Resources */,
+				1D667A9B8D984D1CB42D8942 /* elumi_shieldactivate.wav in Resources */,
+				DC356E5E6E7D471787978C2E /* elumi_slowmoend.wav in Resources */,
+				19D3201DD0C84E8A83C2242D /* elumi_slowmostart.wav in Resources */,
+				FDAE5763D9AB4A198F799CCB /* elumi_snackcatch.wav in Resources */,
+				A32AEA7409624035B7BCEB16 /* elumi_snackmiss.wav in Resources */,
+				4A2F5E28015042B8897FAD67 /* elumi_stackcomplete.wav in Resources */,
+				0956E1BD7D8A4C2CA60FF949 /* elumi_streak.wav in Resources */,
+				114BC2757EED4D78B9EFADEA /* elumi_tabswitch.wav in Resources */,
+				729A713080B546A1B10C5ACA /* elumi_toggle.wav in Resources */,
+				99AE414AD9F8468D8DF3007D /* elumi_wrong.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1348,7 +1481,6 @@
 				A00000000000000000000706 /* FeedbackPlayer+Playback.swift in Sources */,
 				A00000000000000000000708 /* FeedbackPlayer+Buffers.swift in Sources */,
 				B44AC0E115594918B192C1D1 /* FeedbackPlayer+BGM.swift in Sources */,
-				A00000000000000000000710 /* FeedbackPlayer+Waveform.swift in Sources */,
 				A00000000000000000000150 /* AppStores.swift in Sources */,
 				A00000000000000000000334 /* StudyStoreSupport.swift in Sources */,
 				A00000000000000000000336 /* VocabularyListStore.swift in Sources */,

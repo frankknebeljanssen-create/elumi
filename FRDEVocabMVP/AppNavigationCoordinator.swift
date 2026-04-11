@@ -3,7 +3,7 @@ import SwiftUI
 
 @MainActor
 final class AppNavigationCoordinator: ObservableObject {
-    static let isSplashTemporarilyDisabled = true
+    static let isSplashTemporarilyDisabled = false
 
     @Published var didCompleteSplashAnimation: Bool
     @Published var splashReplayID = UUID()

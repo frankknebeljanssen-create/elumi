@@ -33,7 +33,19 @@ extension ElumiArcadeGameView {
                         )
                         .scaleEffect(elumiVisible ? suctionDockScale : 0.4)
                         .opacity(elumiVisible ? 1 : 0)
-                        .position(x: elumiPositionX(in: geometry.size.width), y: geometry.size.height - 118)
+                        .position(
+                            x: elumiPositionX(in: geometry.size.width),
+                            y: elumiPositionY(in: geometry.size.height)
+                        )
+
+                        // Bonus round fish
+                        if isBonusRound {
+                            ForEach(activeFish.filter({ !$0.isCaught })) { fish in
+                                let pos = fishPosition(for: fish, at: context.date, in: geometry.size)
+                                bonusFishView(for: fish, at: context.date, in: geometry.size)
+                                    .position(pos)
+                            }
+                        }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
@@ -63,6 +75,12 @@ extension ElumiArcadeGameView {
                         .zIndex(4)
                 }
 
+                if isBonusRound && bonusFishSpawned == 0 {
+                    bonusRoundAnnouncement
+                        .transition(.scale.combined(with: .opacity))
+                        .zIndex(5)
+                }
+
                 if let comboBannerText, !comboBannerText.isEmpty, !isGameOver, !showingStartOverlay, !showingRoundBanner {
                     comboBanner(text: comboBannerText)
                         .padding(.top, 102)
@@ -74,7 +92,11 @@ extension ElumiArcadeGameView {
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
-                        updateElumiPosition(to: value.location.x, width: geometry.size.width)
+                        if isBonusRound {
+                            updateElumiPosition2D(to: value.location, in: geometry.size)
+                        } else {
+                            updateElumiPosition(to: value.location.x, width: geometry.size.width)
+                        }
                     }
             )
             .onAppear {
@@ -150,9 +172,9 @@ extension ElumiArcadeGameView {
 
                 Spacer(minLength: 0)
 
-                // Score - big and central
+                // Score
                 Text("\(score)")
-                    .font(.system(size: 42, weight: .black, design: .rounded))
+                    .font(.system(size: 32, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.warning)
                     .shadow(color: AppTheme.Colors.warning.opacity(0.3), radius: 8, x: 0, y: 2)
                     .contentTransition(.numericText())
@@ -160,12 +182,17 @@ extension ElumiArcadeGameView {
 
                 Spacer(minLength: 0)
 
-                // Lives
-                HStack(spacing: 5) {
+                // Lives as mini Elumis
+                HStack(spacing: 3) {
                     ForEach(0..<maxMisses, id: \.self) { index in
-                        Image(systemName: index < maxMisses - misses ? "heart.fill" : "heart")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(index < maxMisses - misses ? AppTheme.Colors.error : AppTheme.Colors.error.opacity(0.25))
+                        let alive = index < maxMisses - misses
+                        Image("SplashCharacter")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 22, height: 22)
+                            .clipShape(Circle())
+                            .saturation(alive ? 1.0 : 0.0)
+                            .opacity(alive ? 1.0 : 0.3)
                     }
                 }
             }
@@ -174,9 +201,9 @@ extension ElumiArcadeGameView {
             HStack(spacing: 0) {
                 arcadeStatPill(icon: "flag.fill", label: "Runde \(round)", tint: AppTheme.Colors.primary)
                 Spacer(minLength: 0)
-                arcadeStatPill(icon: "checkmark.circle.fill", label: "\(totalCaught)", tint: AppTheme.Colors.success)
+                arcadeStatPill(icon: "checkmark.circle.fill", label: "Gefangen \(totalCaught)", tint: AppTheme.Colors.success)
                 Spacer(minLength: 0)
-                arcadeStatPill(icon: "xmark.circle.fill", label: "\(misses)", tint: AppTheme.Colors.error)
+                arcadeStatPill(icon: "xmark.circle.fill", label: "Verloren \(misses)", tint: AppTheme.Colors.error)
             }
 
             // Power-up chips
@@ -184,22 +211,29 @@ extension ElumiArcadeGameView {
                 if hasActiveSuction() {
                     arcadeStatusChip(
                         icon: "sparkles",
-                        label: "Saugstrahl \(suctionSecondsRemaining())s",
+                        label: "Saugstrahl",
                         tint: AppTheme.Colors.primary
                     )
                 }
                 if hasActiveBonusPoints() {
                     arcadeStatusChip(
                         icon: "star.fill",
-                        label: "x2 \(bonusPointsSecondsRemaining())s",
+                        label: "x2 Punkte",
                         tint: AppTheme.Colors.warning
                     )
                 }
                 if hasActiveSlowMotion() && slowMotionSecondsRemaining() > 0 {
                     arcadeStatusChip(
                         icon: "tortoise.fill",
-                        label: "Zeitlupe \(slowMotionSecondsRemaining())s",
+                        label: "Zeitlupe",
                         tint: .blue
+                    )
+                }
+                if isBonusRound {
+                    arcadeStatusChip(
+                        icon: "fish.fill",
+                        label: "🐟 \(bonusFishCaught)/\(bonusFishTotal)",
+                        tint: .cyan
                     )
                 }
                 if comboCount >= 3 && !isGameOver {
@@ -214,11 +248,11 @@ extension ElumiArcadeGameView {
     }
 
     private func arcadeStatPill(icon: String, label: String, tint: Color) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 5) {
             Image(systemName: icon)
-                .font(.system(size: 11, weight: .bold))
+                .font(.system(size: 13, weight: .bold))
             Text(label)
-                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .font(.system(size: 14, weight: .bold, design: .rounded))
         }
         .foregroundStyle(tint)
         .padding(.horizontal, 8)

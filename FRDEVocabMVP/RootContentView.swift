@@ -134,6 +134,7 @@ struct ContentView: View {
         }
         .onAppear {
             runtime.bootstrapDependenciesIfNeeded()
+            runtime.feedbackPlayer?.playAppStart()
         }
     }
 
@@ -142,7 +143,7 @@ struct ContentView: View {
         runtime.ensureHomeShellDependenciesReady()
         runtime.bootstrapDependenciesIfNeeded()
         navigation.completeSplashAndEnsureMenuReady(immediate: immediate)
-        runtime.feedbackPlayer?.playAppStart()
+        // App start sound moved to .onAppear below
     }
 
     @MainActor

@@ -44,6 +44,7 @@ extension ScanImportView {
             importedItemIDs: importedItemIDs
         )
         resetScanInputAfterSuccessfulImport(keepingListName: false)
+        feedbackPlayer.playStudyAchievement()
         isShowingImportCompletion = true
     }
 

@@ -76,12 +76,42 @@ extension ElumiArcadeGameView {
         return minX + ((maxX - minX) * elumiX)
     }
 
+    func elumiPositionY(in height: CGFloat) -> CGFloat {
+        guard isBonusRound else { return height - 118 }
+        let minY: CGFloat = 80
+        let maxY = max(minY, height - 80)
+        return minY + ((maxY - minY) * elumiY)
+    }
+
     func updateElumiPosition(to x: CGFloat, width: CGFloat) {
         let minX: CGFloat = 42
         let maxX = max(minX, width - 42)
         let clampedX = min(max(x, minX), maxX)
         let normalized = (clampedX - minX) / max(maxX - minX, 1)
         elumiX = normalized
+    }
+
+    func updateElumiPosition2D(to point: CGPoint, in size: CGSize) {
+        updateElumiPosition(to: point.x, width: size.width)
+        let minY: CGFloat = 80
+        let maxY = max(minY, size.height - 80)
+        let clampedY = min(max(point.y, minY), maxY)
+        elumiY = (clampedY - minY) / max(maxY - minY, 1)
+    }
+
+    func fishPosition(for fish: BonusFishState, at date: Date, in size: CGSize) -> CGPoint {
+        let elapsed = date.timeIntervalSince(fish.spawnedAt)
+        let progress = CGFloat(elapsed / fish.speed)
+
+        let startX: CGFloat = fish.fromLeft ? -30 : size.width + 30
+        let endX: CGFloat = fish.fromLeft ? size.width + 30 : -30
+        let x = startX + (endX - startX) * progress
+
+        let baseY = 80 + (size.height - 160) * fish.normalizedY
+        let wobble = sin(elapsed * 5.0 + fish.wobblePhase) * 35
+        let y = baseY + CGFloat(wobble)
+
+        return CGPoint(x: x, y: y)
     }
 
     func snackProgress(for snack: ElumiArcadeSnackState, at date: Date) -> CGFloat {
