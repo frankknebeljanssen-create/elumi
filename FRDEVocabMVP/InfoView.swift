@@ -21,7 +21,7 @@ struct InfoView: View {
                 colorInfoCard(
                     title: "Vokabeln trainieren",
                     icon: "character.book.closed.fill",
-                    tint: AppTheme.Colors.elumiPinkDeep,
+                    tint: AppTheme.Colors.moduleVocabulary,
                     lines: [
                         "Alle Vokabeln aus deinen Listen üben.",
                         "Sprechen oder Tippen — du entscheidest.",
@@ -31,8 +31,8 @@ struct InfoView: View {
 
                 colorInfoCard(
                     title: "Artikel trainieren",
-                    icon: "text.badge.star",
-                    tint: Color(hex: "#F59E0B"),
+                    icon: "textformat.abc.dottedunderline",
+                    tint: AppTheme.Colors.moduleArticles,
                     lines: [
                         "le, la, l', les — den richtigen Artikel üben.",
                         "Nur Nomen werden abgefragt.",
@@ -43,7 +43,7 @@ struct InfoView: View {
                 colorInfoCard(
                     title: "Verben trainieren",
                     icon: "arrow.triangle.branch",
-                    tint: Color(hex: "#10B981"),
+                    tint: AppTheme.Colors.moduleVerbs,
                     lines: [
                         "Französische Verben und ihre Übersetzungen.",
                         "Fokus auf die wichtigsten Verben.",
@@ -54,7 +54,7 @@ struct InfoView: View {
                 colorInfoCard(
                     title: "Karteikarten",
                     icon: "square.stack.3d.up.fill",
-                    tint: Color(hex: "#EC4899"),
+                    tint: AppTheme.Colors.moduleFlashcards,
                     lines: [
                         "Arbeite einen Stapel Karte für Karte ab.",
                         "Falsche Karten bleiben im Stapel.",
@@ -65,7 +65,7 @@ struct InfoView: View {
                 colorInfoCard(
                     title: "Quiz",
                     icon: "lightbulb.fill",
-                    tint: Color(hex: "#8B5CF6"),
+                    tint: AppTheme.Colors.moduleQuiz,
                     lines: [
                         "Multiple Choice, Paare finden, Tippen, Lückentext.",
                         "Wähle 5 bis 30 Fragen pro Runde.",
@@ -76,7 +76,7 @@ struct InfoView: View {
                 colorInfoCard(
                     title: "Scan",
                     icon: "camera.viewfinder",
-                    tint: AppTheme.Colors.success,
+                    tint: AppTheme.Colors.moduleScan,
                     lines: [
                         "Fotografiere eine Schulbuch-Seite.",
                         "KI erkennt Vokabelpaare automatisch.",
@@ -87,7 +87,7 @@ struct InfoView: View {
                 colorInfoCard(
                     title: "Listen & Wörterbuch",
                     icon: "list.bullet.rectangle.fill",
-                    tint: Color(hex: "#57B8C9"),
+                    tint: AppTheme.Colors.moduleLists,
                     lines: [
                         "Eigene Listen anlegen und verwalten.",
                         "Wörterbuch zeigt alle gelernten Vokabeln.",

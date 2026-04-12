@@ -77,9 +77,9 @@ enum AppSectionStyle {
         case .train:
             return AppTheme.Colors.modulePractice
         case .trainArticles:
-            return Color(hex: "#F59E0B")
+            return AppTheme.Colors.moduleArticles
         case .trainVerbs:
-            return Color(hex: "#8B5CF6")
+            return AppTheme.Colors.moduleVerbs
         case .flashcards:
             return AppTheme.Colors.moduleFlashcards
         case .quiz:
@@ -89,9 +89,9 @@ enum AppSectionStyle {
         case .lists:
             return AppTheme.Colors.moduleSpecial
         case .scan:
-            return AppTheme.Colors.success                    // Green
+            return AppTheme.Colors.moduleScan
         case .lexicon:
-            return Color(hex: "#E879F9")                      // Fuchsia
+            return AppTheme.Colors.moduleLexicon
         }
     }
 }

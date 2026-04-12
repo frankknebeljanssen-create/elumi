@@ -49,19 +49,22 @@ struct TrainingLaunchContext: Hashable {
     let preferredDirection: Direction?
     let preferredCardType: CardType?
     let preferredMode: TrainingMode?
+    let shouldAutoStart: Bool
 
     init(
         preferredListID: UUID? = nil,
         preferredLanguage: StudyLanguage? = nil,
         preferredDirection: Direction? = nil,
         preferredCardType: CardType? = nil,
-        preferredMode: TrainingMode? = nil
+        preferredMode: TrainingMode? = nil,
+        shouldAutoStart: Bool = false
     ) {
         self.preferredListID = preferredListID
         self.preferredLanguage = preferredLanguage
         self.preferredDirection = preferredDirection
         self.preferredCardType = preferredCardType
         self.preferredMode = preferredMode
+        self.shouldAutoStart = shouldAutoStart
     }
 }
 

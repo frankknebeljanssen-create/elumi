@@ -59,10 +59,20 @@ enum AppTheme {
         static let cta = elumiAmberDeep
         static let warning = elumiAmberDeep
 
-        static let modulePractice = elumiPinkDeep          // Vokabeln
-        static let moduleSpecial = Color(hex: "#57B8C9")  // Listen — Teal
-        static let moduleFlashcards = Color(hex: "#3B82F6") // Karteikarten — Blue
-        static let moduleQuiz = Color(hex: "#10B981")       // Quiz — Green
+        // ── Single Source of Truth: Modul-Farben ──
+        static let moduleVocabulary = elumiPinkDeep              // Vokabeln — Pink
+        static let moduleArticles = Color(hex: "#F59E0B")        // Artikel — Amber
+        static let moduleVerbs = Color(hex: "#8B5CF6")           // Verben — Purple
+        static let moduleFlashcards = Color(hex: "#3B82F6")      // Karteikarten — Blue
+        static let moduleQuiz = Color(hex: "#10B981")            // Quiz — Green
+        static let moduleLexicon = Color(hex: "#E879F9")         // Wörterbuch — Fuchsia
+        static let moduleLists = Color(hex: "#57B8C9")           // Listen — Teal
+        static let moduleScan = Color(hex: "#10B981")            // Scan — Green (= Quiz)
+        static let moduleArcade = elumiPinkDeep                  // Arcade — Pink
+
+        // Legacy aliases
+        static let modulePractice = moduleVocabulary
+        static let moduleSpecial = moduleLists
 
         static let border = elumiCream.opacity(0.12)
         static let borderStrong = elumiBlush.opacity(0.22)

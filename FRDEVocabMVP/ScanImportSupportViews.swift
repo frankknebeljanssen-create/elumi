@@ -49,7 +49,7 @@ struct ImportCompletionView: View {
                 completionModuleButton(
                     title: "Vokabeln",
                     systemImage: "character.book.closed.fill",
-                    tint: AppTheme.Colors.modulePractice,
+                    tint: AppTheme.Colors.moduleVocabulary,
                     action: onTrain
                 )
 
@@ -57,13 +57,13 @@ struct ImportCompletionView: View {
                     completionModuleButton(
                         title: "Artikel",
                         systemImage: "textformat.abc.dottedunderline",
-                        tint: Color(hex: "#F59E0B"),
+                        tint: AppTheme.Colors.moduleArticles,
                         action: onArticles
                     )
                     completionModuleButton(
                         title: "Verben",
                         systemImage: "arrow.triangle.branch",
-                        tint: Color(hex: "#8B5CF6"),
+                        tint: AppTheme.Colors.moduleVerbs,
                         action: onVerbs
                     )
                 }
@@ -72,13 +72,13 @@ struct ImportCompletionView: View {
                     completionModuleButton(
                         title: "Karteikarten",
                         systemImage: "square.stack.3d.up.fill",
-                        tint: Color(hex: "#3B82F6"),
+                        tint: AppTheme.Colors.moduleFlashcards,
                         action: onFlashcards
                     )
                     completionModuleButton(
                         title: "Quiz",
                         systemImage: "lightbulb.fill",
-                        tint: Color(hex: "#10B981"),
+                        tint: AppTheme.Colors.moduleQuiz,
                         action: onQuiz
                     )
                 }

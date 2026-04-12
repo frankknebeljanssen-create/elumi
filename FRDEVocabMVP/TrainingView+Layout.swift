@@ -122,7 +122,8 @@ extension TrainingView {
                 systemImage: "waveform.circle.fill"
             )
 
-            // List category buttons
+            // List category buttons — hidden when auto-started from scan
+            if launchContext?.shouldAutoStart != true {
             VStack(spacing: 8) {
                 Text("Listen auswählen")
                     .font(.system(size: 13, weight: .bold, design: .rounded))
@@ -164,6 +165,7 @@ extension TrainingView {
                 }
             }
             .padding(.bottom, AppTheme.Spacing.sm)
+            } // end if not autoStart
 
             // Direction is set on Home screen
 

@@ -90,13 +90,13 @@ struct HomeView: View {
             : AppTheme.Spacing.lg
     }
 
-    private var homeVocabularyColor: Color { AppTheme.Colors.elumiPinkDeep }
-    private var homeArticlesColor: Color { Color(hex: "#F59E0B") }
-    private var homeVerbsColor: Color { Color(hex: "#8B5CF6") } // Purple
-    private var homeFlashcardsColor: Color { Color(hex: "#3B82F6") } // Blue
-    private var homeQuizColor: Color { Color(hex: "#10B981") } // Green (matches quiz mode)
-    private var homeLexiconColor: Color { Color(hex: "#E879F9") } // Fuchsia
-    private var homeListsColor: Color { Color(hex: "#57B8C9") } // Teal
+    private var homeVocabularyColor: Color { AppTheme.Colors.moduleVocabulary }
+    private var homeArticlesColor: Color { AppTheme.Colors.moduleArticles }
+    private var homeVerbsColor: Color { AppTheme.Colors.moduleVerbs }
+    private var homeFlashcardsColor: Color { AppTheme.Colors.moduleFlashcards }
+    private var homeQuizColor: Color { AppTheme.Colors.moduleQuiz }
+    private var homeLexiconColor: Color { AppTheme.Colors.moduleLexicon }
+    private var homeListsColor: Color { AppTheme.Colors.moduleLists }
 
     private var homeCreditsView: some View {
         Button {

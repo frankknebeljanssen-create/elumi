@@ -83,19 +83,22 @@ extension ScanImportView {
                         onTrain: {
                             handleCompletionSelection(.train(TrainingLaunchContext(
                                 preferredListID: importCompletionContext.targetListID,
-                                preferredMode: .vocabulary
+                                preferredMode: .vocabulary,
+                                shouldAutoStart: true
                             )))
                         },
                         onArticles: {
                             handleCompletionSelection(.train(TrainingLaunchContext(
                                 preferredListID: importCompletionContext.targetListID,
-                                preferredMode: .articles
+                                preferredMode: .articles,
+                                shouldAutoStart: true
                             )))
                         },
                         onVerbs: {
                             handleCompletionSelection(.train(TrainingLaunchContext(
                                 preferredListID: importCompletionContext.targetListID,
-                                preferredMode: .verbs
+                                preferredMode: .verbs,
+                                shouldAutoStart: true
                             )))
                         },
                         onFlashcards: {
