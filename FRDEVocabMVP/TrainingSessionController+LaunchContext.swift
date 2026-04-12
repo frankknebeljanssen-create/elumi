@@ -18,11 +18,14 @@ extension TrainingSessionController {
             } else if let practiceList = listStore.practiceList(with: preferredListID) {
                 listStore.selectedListID = practiceList.id
                 selectedTrainingListID = practiceList.id
+                selectedTrainingListIDs = [practiceList.id]
             } else if listStore.customList(with: preferredListID) != nil {
                 listStore.selectedListID = preferredListID
                 selectedTrainingListID = preferredListID
+                selectedTrainingListIDs = [preferredListID]
             } else if preferredListID == VocabularyListStore.allCustomVocabularyListID {
                 selectedTrainingListID = preferredListID
+                selectedTrainingListIDs = [preferredListID]
             }
         }
 

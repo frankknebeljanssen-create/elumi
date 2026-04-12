@@ -60,26 +60,26 @@ struct HomeView: View {
         } label: {
             HStack(spacing: 10) {
                 StraightFlagBadge(countryCode: leftFlag, width: 36, height: 24, labelFontSize: 10)
+                    .opacity(isSelected ? 1 : 0.25)
                 Image(systemName: "arrowtriangle.right.fill")
                     .font(.system(size: 14, weight: .black))
-                    .foregroundStyle(isSelected ? AppTheme.Colors.textPrimary : AppTheme.Colors.textSecondary)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .opacity(isSelected ? 1 : 0.25)
                 StraightFlagBadge(countryCode: rightFlag, width: 36, height: 24, labelFontSize: 10)
+                    .opacity(isSelected ? 1 : 0.25)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
-                .background(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(AppTheme.Colors.surface)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(isSelected ? AppTheme.Colors.primary.opacity(0.10) : Color.clear)
-                        )
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(isSelected ? AppTheme.Colors.primary.opacity(0.5) : AppTheme.Colors.border, lineWidth: isSelected ? 2 : 1)
-                )
-                .opacity(isSelected ? 1 : 0.18)
+            .background(
+                RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
+                    .fill(AppTheme.Colors.surface)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
+                    .stroke(AppTheme.Colors.border, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous))
+            .shadow(color: AppTheme.Shadow.card.color, radius: AppTheme.Shadow.card.radius, x: 0, y: 6)
         }
         .buttonStyle(.plain)
     }

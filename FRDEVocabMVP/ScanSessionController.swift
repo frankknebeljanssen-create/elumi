@@ -31,6 +31,7 @@ final class ScanSessionController: ObservableObject {
     @Published var pendingBatchImages: [UIImage] = []
     @Published var batchCurrentIndex = 0
     @Published var batchTotalCount = 0
+    @Published var batchCompleted = false
     @Published var originalScanImage: UIImage?
     @Published var preparedScanImage: UIImage?
     @Published var usePreparedScanImage = true

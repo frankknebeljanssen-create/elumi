@@ -73,18 +73,36 @@ extension ScanImportView {
 
     func applyingScanPresentationModifiers<Content: View>(to content: Content) -> some View {
         content
+            .navigationDestination(isPresented: $isShowingFullscreenReview) {
+                scanFullscreenReview
+            }
             .navigationDestination(isPresented: $isShowingImportCompletion) {
                 if let importCompletionContext {
                     ImportCompletionView(
                         context: importCompletionContext,
                         onTrain: {
-                            handleCompletionSelection(.train(importCompletionContext.trainingLaunchContext))
+                            handleCompletionSelection(.train(TrainingLaunchContext(
+                                preferredListID: importCompletionContext.targetListID,
+                                preferredMode: .vocabulary
+                            )))
+                        },
+                        onArticles: {
+                            handleCompletionSelection(.train(TrainingLaunchContext(
+                                preferredListID: importCompletionContext.targetListID,
+                                preferredMode: .articles
+                            )))
+                        },
+                        onVerbs: {
+                            handleCompletionSelection(.train(TrainingLaunchContext(
+                                preferredListID: importCompletionContext.targetListID,
+                                preferredMode: .verbs
+                            )))
                         },
                         onFlashcards: {
                             handleCompletionSelection(.flashcards(importCompletionContext.flashcardLaunchContext))
                         },
-                        onLists: {
-                            handleCompletionSelection(.lists(importCompletionContext.listLaunchContext))
+                        onQuiz: {
+                            handleCompletionSelection(.quiz)
                         },
                         onLater: {
                             handleCompletionSelection(nil)

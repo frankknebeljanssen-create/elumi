@@ -24,6 +24,7 @@ struct ScanImportView: View {
     @StateObject var session = ScanSessionController()
     @State var importCompletionContext: ImportCompletionContext?
     @State var isShowingImportCompletion = false
+    @State var isShowingFullscreenReview = false
     @State var pendingCompletionDestination: AppScreen?
     @State var scanKeyboardInset: CGFloat = 0
     @State var previewEditSyncWorkItem: DispatchWorkItem?

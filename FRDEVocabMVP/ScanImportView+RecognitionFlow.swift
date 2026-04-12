@@ -141,8 +141,14 @@ extension ScanImportView {
             }
 
             await MainActor.run {
-                isRecognizingImage = false
-                feedbackPlayer.playScanDone()
+                let isBatchMode = session.batchTotalCount > 1
+                let hasPendingPages = !session.pendingBatchImages.isEmpty
+                if !isBatchMode {
+                    isRecognizingImage = false
+                    feedbackPlayer.playScanDone()
+                    // Show summary screen for single scan too
+                    session.batchTotalCount = 1
+                }
                 session.stopProgressFeedback()
                 session.updateEvalReport(for: providerResult)
                 session.updateProviderDebugInfo(
@@ -166,6 +172,10 @@ extension ScanImportView {
                     if !session.pendingBatchImages.isEmpty {
                         session.showToast("Seite \(session.batchCurrentIndex) konnte nicht erkannt werden")
                         processNextBatchImage()
+                    } else if session.batchTotalCount > 1 {
+                        isRecognizingImage = false
+                        feedbackPlayer.playScanDone()
+                        session.batchCompleted = true
                     } else if let gptFallbackInfoMessage {
                         session.presentScanAIInfo(gptFallbackInfoMessage)
                     }
@@ -185,6 +195,13 @@ extension ScanImportView {
                 // Continue batch if more images queued
                 if !session.pendingBatchImages.isEmpty {
                     processNextBatchImage()
+                } else {
+                    // Analysis complete — show summary screen
+                    if isBatchMode {
+                        isRecognizingImage = false
+                        feedbackPlayer.playScanDone()
+                    }
+                    session.batchCompleted = true
                 }
             }
         }

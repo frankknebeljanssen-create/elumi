@@ -12,8 +12,10 @@ private struct HomeCardPressStyle: ButtonStyle {
 struct ImportCompletionView: View {
     let context: ImportCompletionContext
     let onTrain: () -> Void
+    let onArticles: () -> Void
+    let onVerbs: () -> Void
     let onFlashcards: () -> Void
-    let onLists: () -> Void
+    let onQuiz: () -> Void
     let onLater: () -> Void
     private let sectionStyle: AppSectionStyle = .scan
     @State private var isNavigationLocked = false
@@ -36,54 +38,50 @@ struct ImportCompletionView: View {
                         .lineLimit(2)
                         .minimumScaleFactor(0.85)
 
-                Text("Du kannst jetzt direkt üben oder später weitermachen.")
+                Text("Wie möchtest du weiterlernen?")
                         .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
             }
 
-            VStack(spacing: AppTheme.Spacing.sm) {
-                Button {
-                    guard !isNavigationLocked else { return }
-                    isNavigationLocked = true
-                    onTrain()
-                } label: {
-                    completionActionCard(
-                        title: "Jetzt trainieren",
-                        systemImage: "mic.fill",
-                        isPrimary: true
-                    )
-                }
-                .buttonStyle(.plain)
-                .disabled(isNavigationLocked)
+            // 5 module buttons like home screen
+            VStack(spacing: 8) {
+                completionModuleButton(
+                    title: "Vokabeln",
+                    systemImage: "character.book.closed.fill",
+                    tint: AppTheme.Colors.modulePractice,
+                    action: onTrain
+                )
 
-                Button {
-                    guard !isNavigationLocked else { return }
-                    isNavigationLocked = true
-                    onFlashcards()
-                } label: {
-                    completionActionCard(
-                        title: "Karteikarten üben",
-                        systemImage: "rectangle.stack.fill",
-                        isPrimary: false
+                HStack(spacing: 8) {
+                    completionModuleButton(
+                        title: "Artikel",
+                        systemImage: "textformat.abc.dottedunderline",
+                        tint: Color(hex: "#F59E0B"),
+                        action: onArticles
+                    )
+                    completionModuleButton(
+                        title: "Verben",
+                        systemImage: "arrow.triangle.branch",
+                        tint: Color(hex: "#8B5CF6"),
+                        action: onVerbs
                     )
                 }
-                .buttonStyle(.plain)
-                .disabled(isNavigationLocked)
 
-                Button {
-                    guard !isNavigationLocked else { return }
-                    isNavigationLocked = true
-                    onLists()
-                } label: {
-                    completionActionCard(
-                        title: "Zur Liste",
-                        systemImage: "list.bullet.rectangle.fill",
-                        isPrimary: false
+                HStack(spacing: 8) {
+                    completionModuleButton(
+                        title: "Karteikarten",
+                        systemImage: "square.stack.3d.up.fill",
+                        tint: Color(hex: "#3B82F6"),
+                        action: onFlashcards
+                    )
+                    completionModuleButton(
+                        title: "Quiz",
+                        systemImage: "lightbulb.fill",
+                        tint: Color(hex: "#10B981"),
+                        action: onQuiz
                     )
                 }
-                .buttonStyle(.plain)
-                .disabled(isNavigationLocked)
             }
 
             Button("Später") {
@@ -109,33 +107,39 @@ struct ImportCompletionView: View {
         }
     }
 
-    private func completionActionCard(title: String, systemImage: String, isPrimary: Bool) -> some View {
-        HStack(spacing: 14) {
-            Image(systemName: systemImage)
-                .font(.system(size: 22, weight: .bold))
-                .frame(width: 42, height: 42)
-                .background((isPrimary ? Color.white.opacity(0.22) : AppTheme.Colors.cta.opacity(0.14)))
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .foregroundStyle(isPrimary ? .white : AppTheme.Colors.cta)
-
-            Text(title)
-                .font(AppTheme.Typography.cardTitle)
-                .foregroundStyle(isPrimary ? .white : AppTheme.Colors.textPrimary)
-
-            Spacer(minLength: 0)
-
-            Image(systemName: "chevron.right")
-                .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(isPrimary ? Color.white.opacity(0.82) : AppTheme.Colors.textSecondary)
+    private func completionModuleButton(title: String, systemImage: String, tint: Color, action: @escaping () -> Void) -> some View {
+        Button {
+            guard !isNavigationLocked else { return }
+            isNavigationLocked = true
+            action()
+        } label: {
+            VStack(spacing: 6) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundStyle(tint)
+                    .frame(height: 32)
+                Text(title)
+                    .font(.system(size: 16, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(AppTheme.Spacing.sm)
+            .frame(maxWidth: .infinity, minHeight: 90)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(AppTheme.Colors.surface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(tint.opacity(0.12))
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(AppTheme.Colors.border, lineWidth: 1)
+            )
+            .shadow(color: AppTheme.Shadow.card.color, radius: AppTheme.Shadow.card.radius, x: 0, y: 6)
         }
-        .padding(.horizontal, 18)
-        .frame(maxWidth: .infinity, minHeight: 78, alignment: .leading)
-        .background(isPrimary ? AppTheme.Colors.cta : AppTheme.Colors.surface)
-        .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(isPrimary ? AppTheme.Colors.cta.opacity(0.18) : AppTheme.Colors.border, lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .shadow(color: AppTheme.Shadow.card.color, radius: AppTheme.Shadow.card.radius, x: 0, y: 6)
+        .buttonStyle(.plain)
+        .disabled(isNavigationLocked)
     }
 }

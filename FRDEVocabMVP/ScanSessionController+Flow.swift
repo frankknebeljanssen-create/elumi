@@ -110,10 +110,15 @@ extension ScanSessionController {
         selectedScanInputMethod = nil
     }
 
+    var isBatchAnalysisInProgress: Bool {
+        batchTotalCount > 1 && !batchCompleted && (isRecognizingImage || !pendingBatchImages.isEmpty)
+    }
+
     func cancelBatch() {
         pendingBatchImages = []
         batchTotalCount = 0
         batchCurrentIndex = 0
+        batchCompleted = false
     }
 
     func returnToSetup() {

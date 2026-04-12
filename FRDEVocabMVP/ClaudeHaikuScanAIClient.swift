@@ -55,7 +55,7 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.timeoutInterval = 30
+        request.timeoutInterval = 45
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
         request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
@@ -64,7 +64,7 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         request.httpBody = body
 
         let bodyKB = body.count / 1024
-        print("📡 [Scan] API request [haiku-vision]: model=\(model) payload=\(bodyKB)KB timeout=30s")
+        print("📡 [Scan] API request [haiku-vision]: model=\(model) payload=\(bodyKB)KB timeout=45s")
         let apiStart = CFAbsoluteTimeGetCurrent()
 
         let (data, response): (Data, URLResponse)
