@@ -15,7 +15,7 @@ extension AIScanProvider {
             != LexiconTextUtility.hasTerminalPunctuation(entry.source) { return false }
 
         if targetMatchesSuggestions(entry.target, suggestions: sourceMatch.suggestions) {
-            return sourceWasTrimmed
+            return false
         }
 
         let sourceWordCount = max(1, aiNormalizedWords(sourceMatch.sourceTerm).count)

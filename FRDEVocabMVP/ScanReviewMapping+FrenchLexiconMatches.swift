@@ -75,7 +75,7 @@ extension ScanReviewMapper {
         let targetWordCount = mapperNormalizedWords(targetText).count
         let suggestionWordCount = max(1, mapperNormalizedWords(firstSuggestion).count)
 
-        if sourceMatch.distance <= 0.08 && sourceWordCount <= 3 {
+        if sourceMatch.distance <= 0.08 && sourceWordCount <= 2 {
             return true
         }
 
