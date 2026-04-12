@@ -27,6 +27,62 @@ enum ElumiArcadeDropKind: Equatable {
     }
 }
 
+/// Central configuration for arcade round difficulty — single source of truth.
+struct ArcadeRoundConfig {
+    let round: Int
+
+    // ── Spawn rates ──
+    var bonusChance: Double {
+        switch round {
+        case 4: return 0.14          // Bonus-Regen
+        case 5: return 0.055         // Elumi-Freunde
+        default: return round >= 6 ? 0.10 : 0.055
+        }
+    }
+
+    var suctionChance: Double {
+        switch round {
+        case 4: return 0.12
+        case 5: return 0.07
+        default: return round >= 6 ? 0.10 : 0.07
+        }
+    }
+
+    var falseElumiChance: Double {
+        switch round {
+        case 4: return min(0.10, 0.04 + (Double(round - 1) * 0.02))
+        case 5: return 0.20           // Elumi-Freunde: many
+        default: return round >= 6 ? 0.16 : min(0.12, 0.04 + (Double(round - 1) * 0.02))
+        }
+    }
+
+    var slowMotionPotionChance: Double { round >= 2 ? 0.04 : 0.0 }
+
+    // ── Speed ──
+    var spawnDelay: Double { max(0.38, 1.05 - (Double(round - 1) * 0.13)) }
+    var fallDuration: Double { max(1.45, 4.2 - (Double(round - 1) * 0.4)) }
+
+    // ── Querschläger ──
+    var querschlaegerChance: Double {
+        switch round {
+        case 3: return 0.35
+        default: return round >= 4 ? 0.25 : 0.0
+        }
+    }
+
+    // ── Snacks per round ──
+    var snacksRequired: Int {
+        switch round {
+        case 1: return 12
+        case 2: return 15
+        default: return 18
+        }
+    }
+
+    // ── Bonus round ──
+    var isBonusRoundTrigger: Bool { round % 3 == 0 }
+}
+
 struct BonusFishState: Identifiable, Equatable {
     let id = UUID()
     let spawnedAt: Date
@@ -120,11 +176,7 @@ struct ElumiArcadeGameView: View {
     }
 
     func snacksForRound(_ r: Int) -> Int {
-        switch r {
-        case 1: return 12
-        case 2: return 15
-        default: return 18
-        }
+        ArcadeRoundConfig(round: r).snacksRequired
     }
 
     var roundSubtitle: String {

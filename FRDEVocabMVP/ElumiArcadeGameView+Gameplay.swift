@@ -3,57 +3,34 @@ import SwiftUI
 extension ElumiArcadeGameView {
     func spawnSnack() {
         let roll = Double.random(in: 0...1)
-
-        // Round-specific spawn rates
-        let bonusChance: Double
-        let falseElumiChance: Double
-        let suctionChance: Double
-
-        switch round {
-        case 4: // Bonus-Regen: more power-ups
-            bonusChance = 0.14
-            suctionChance = 0.12
-            falseElumiChance = min(0.10, 0.04 + (Double(round - 1) * 0.02))
-        case 5: // Doppelgänger: many false Elumis
-            bonusChance = 0.055
-            suctionChance = 0.07
-            falseElumiChance = 0.20
-        default: // Round 1, 2, 3, 6+
-            bonusChance = round >= 6 ? 0.10 : 0.055
-            suctionChance = round >= 6 ? 0.10 : 0.07
-            falseElumiChance = round >= 6 ? 0.16 : min(0.12, 0.04 + (Double(round - 1) * 0.02))
-        }
-
-        // Slow-motion potion: rare spawn, ~1x per 2-3 rounds
-        let slowMotionPotionChance: Double = round >= 2 ? 0.04 : 0.0
+        let config = ArcadeRoundConfig(round: round)
 
         // Never spawn power-ups while one of the same type is on screen or active
         let suctionBlocked = activeSnacks.contains { $0.kind == .saugglocke } || hasActiveSuction()
         let potionBlocked = activeSnacks.contains { $0.kind == .slowMotionPotion } || hasActiveSlowMotion()
 
         // Guarantee at least 1 suction per round (after 1/3 of snacks caught)
-        let thirdCount = snacksForRound(round) / 3
+        let thirdCount = config.snacksRequired / 3
         let forceSuction = !roundSuctionSpawned && roundCatchCount >= thirdCount && !suctionBlocked
 
         let kind: ElumiArcadeDropKind
         if forceSuction {
             kind = .saugglocke
             roundSuctionSpawned = true
-        } else if roll < slowMotionPotionChance, !potionBlocked {
+        } else if roll < config.slowMotionPotionChance, !potionBlocked {
             kind = .slowMotionPotion
-        } else if roll < slowMotionPotionChance + bonusChance {
+        } else if roll < config.slowMotionPotionChance + config.bonusChance {
             kind = .bonusblase
-        } else if roll < slowMotionPotionChance + bonusChance + suctionChance, !suctionBlocked {
+        } else if roll < config.slowMotionPotionChance + config.bonusChance + config.suctionChance, !suctionBlocked {
             kind = .saugglocke
             roundSuctionSpawned = true
-        } else if roll < slowMotionPotionChance + bonusChance + suctionChance + falseElumiChance {
+        } else if roll < config.slowMotionPotionChance + config.bonusChance + config.suctionChance + config.falseElumiChance {
             kind = .falseElumi
         } else {
             kind = [.wuermchen, .wasserfloh, .algenkugel].randomElement() ?? .wuermchen
         }
 
-        // Round 3+: Querschläger — aggressive zigzag across the screen
-        let querschlaegerChance: Double = round == 3 ? 0.35 : (round >= 4 ? 0.25 : 0)
+        let querschlaegerChance = config.querschlaegerChance
         let isQuerschlaeger = kind.isSnack && Double.random(in: 0...1) < querschlaegerChance
         let wobbleAmp = isQuerschlaeger
             ? CGFloat.random(in: 0.15...0.25)
@@ -64,8 +41,8 @@ extension ElumiArcadeGameView {
 
         // Power-ups fall slower (easier to catch)
         let fallDuration = kind == .slowMotionPotion
-            ? currentFallDuration() * 1.3
-            : currentFallDuration()
+            ? config.fallDuration * 1.3
+            : config.fallDuration
 
         activeSnacks.append(
             ElumiArcadeSnackState(
@@ -305,7 +282,7 @@ extension ElumiArcadeGameView {
             guard showingRoundBanner else { return }
 
             // Bonus round every 3 rounds (after R3, R6, R9...)
-            if round % 3 == 0 {
+            if ArcadeRoundConfig(round: round).isBonusRoundTrigger {
                 showingRoundBanner = false
                 startBonusRound()
                 return

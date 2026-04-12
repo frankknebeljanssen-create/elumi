@@ -62,12 +62,12 @@ extension ElumiArcadeGameView {
     }
 
     func currentSpawnDelay() -> Double {
-        let base = max(0.38, 1.05 - (Double(round - 1) * 0.13))
+        let base = ArcadeRoundConfig(round: round).spawnDelay
         return hasActiveSlowMotion() ? base * 1.8 : base
     }
 
     func currentFallDuration() -> Double {
-        max(1.45, 4.2 - (Double(round - 1) * 0.4))
+        ArcadeRoundConfig(round: round).fallDuration
     }
 
     func elumiPositionX(in width: CGFloat) -> CGFloat {
