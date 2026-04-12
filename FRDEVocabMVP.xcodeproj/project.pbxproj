@@ -315,6 +315,7 @@
 		A00000000000000000000704 /* TrainingView+AnswerScoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000705 /* TrainingView+AnswerScoring.swift */; };
 		A00000000000000000000706 /* FeedbackPlayer+Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000707 /* FeedbackPlayer+Playback.swift */; };
 		A00000000000000000000708 /* FeedbackPlayer+Buffers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000709 /* FeedbackPlayer+Buffers.swift */; };
+		26325168A6B64B9399DCD543 /* LexiconTextUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1FD5616CFA427DBAB4CE9D /* LexiconTextUtility.swift */; };
 		99AE414AD9F8468D8DF3007D /* elumi_wrong.wav in Resources */ = {isa = PBXBuildFile; fileRef = F5A9F51ED0654E5F94E00A68 /* elumi_wrong.wav */; };
 		729A713080B546A1B10C5ACA /* elumi_toggle.wav in Resources */ = {isa = PBXBuildFile; fileRef = 32C43DE8F494458D929C4AE1 /* elumi_toggle.wav */; };
 		114BC2757EED4D78B9EFADEA /* elumi_tabswitch.wav in Resources */ = {isa = PBXBuildFile; fileRef = F2F037219E904D3680DD724E /* elumi_tabswitch.wav */; };
@@ -702,6 +703,7 @@
 		A00000000000000000000705 /* TrainingView+AnswerScoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrainingView+AnswerScoring.swift"; sourceTree = "<group>"; };
 		A00000000000000000000707 /* FeedbackPlayer+Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FeedbackPlayer+Playback.swift"; sourceTree = "<group>"; };
 		A00000000000000000000709 /* FeedbackPlayer+Buffers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FeedbackPlayer+Buffers.swift"; sourceTree = "<group>"; };
+		4C1FD5616CFA427DBAB4CE9D /* LexiconTextUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LexiconTextUtility.swift"; sourceTree = "<group>"; };
 		F5A9F51ED0654E5F94E00A68 /* elumi_wrong.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_wrong.wav"; sourceTree = "<group>"; };
 		32C43DE8F494458D929C4AE1 /* elumi_toggle.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_toggle.wav"; sourceTree = "<group>"; };
 		F2F037219E904D3680DD724E /* elumi_tabswitch.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_tabswitch.wav"; sourceTree = "<group>"; };
@@ -959,6 +961,7 @@
 				A00000000000000000000387 /* FeedbackPlayer.swift */,
 				A00000000000000000000707 /* FeedbackPlayer+Playback.swift */,
 				A00000000000000000000709 /* FeedbackPlayer+Buffers.swift */,
+				4C1FD5616CFA427DBAB4CE9D /* LexiconTextUtility.swift */,
 				F5A9F51ED0654E5F94E00A68 /* elumi_wrong.wav */,
 				32C43DE8F494458D929C4AE1 /* elumi_toggle.wav */,
 				F2F037219E904D3680DD724E /* elumi_tabswitch.wav */,
@@ -1644,6 +1647,7 @@
 				A00000000000000000000746 /* ScanImportView+RepairDependencies.swift in Sources */,
 				A00000000000000000000748 /* ScanImportView+SessionBindings.swift in Sources */,
 				A00000000000000000000750 /* ScanImportView+ViewBindings.swift in Sources */,
+				26325168A6B64B9399DCD543 /* LexiconTextUtility.swift in Sources */
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

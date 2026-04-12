@@ -10,12 +10,9 @@ extension AIScanProvider {
             return false
         }
 
-        // Don't replace if match has terminal punctuation but source doesn't (ça va ≠ Ça va?)
-        let matchTerm = sourceMatch.sourceTerm.trimmingCharacters(in: .whitespacesAndNewlines)
-        let sourceTerm = entry.source.trimmingCharacters(in: .whitespacesAndNewlines)
-        let matchHasPunct = matchTerm.hasSuffix("?") || matchTerm.hasSuffix(".") || matchTerm.hasSuffix("!")
-        let sourceHasPunct = sourceTerm.hasSuffix("?") || sourceTerm.hasSuffix(".") || sourceTerm.hasSuffix("!")
-        if matchHasPunct != sourceHasPunct { return false }
+        // Don't replace if punctuation mismatch (ça va ≠ Ça va?)
+        if LexiconTextUtility.hasTerminalPunctuation(sourceMatch.sourceTerm)
+            != LexiconTextUtility.hasTerminalPunctuation(entry.source) { return false }
 
         if targetMatchesSuggestions(entry.target, suggestions: sourceMatch.suggestions) {
             return sourceWasTrimmed

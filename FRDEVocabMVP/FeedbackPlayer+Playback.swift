@@ -3,51 +3,56 @@ import AVFoundation
 
 extension FeedbackPlayer {
 
+    private func playIfEnabled(_ name: String, volume: Float = 1.0) {
+        guard areSoundsEnabled else { return }
+        sp.play(name, volume: volume)
+    }
+
     // ── UI / Navigation ──
 
-    func playCardFlip() { guard areSoundsEnabled else { return }; sp.play("cardflip") }
-    func playScanStart() { guard areSoundsEnabled else { return }; sp.play("scanstart", volume: 0.5) }
-    func playScanDone() { guard areSoundsEnabled else { return }; sp.play("scandone", volume: 0.35) }
-    func playAppStart() { guard areSoundsEnabled else { return }; sp.play("appstart") }
-    func playToggle() { guard areSoundsEnabled else { return }; sp.play("toggle") }
-    func playTabSwitch() { guard areSoundsEnabled else { return }; sp.play("tabswitch") }
-    func playListAction() { guard areSoundsEnabled else { return }; sp.play("listaction") }
-    func playFavStar() { guard areSoundsEnabled else { return }; sp.play("favstar") }
+    func playCardFlip() { playIfEnabled("cardflip") }
+    func playScanStart() { playIfEnabled("scanstart", volume: 0.5) }
+    func playScanDone() { playIfEnabled("scandone", volume: 0.35) }
+    func playAppStart() { playIfEnabled("appstart") }
+    func playToggle() { playIfEnabled("toggle") }
+    func playTabSwitch() { playIfEnabled("tabswitch") }
+    func playListAction() { playIfEnabled("listaction") }
+    func playFavStar() { playIfEnabled("favstar") }
 
     // ── Quiz ──
 
-    func playQuizCorrect() { guard areSoundsEnabled else { return }; sp.play("correct") }
-    func playStudySuccess() { guard areSoundsEnabled else { return }; sp.play("correct") }
-    func playStudyError() { guard areSoundsEnabled else { return }; sp.play("wrong") }
-    func playStudyAchievement() { guard areSoundsEnabled else { return }; sp.play("quizcomplete") }
-    func playStreak() { guard areSoundsEnabled else { return }; sp.play("streak") }
-    func playLevelUp() { guard areSoundsEnabled else { return }; sp.play("levelup") }
+    func playQuizCorrect() { playIfEnabled("correct") }
+    func playStudySuccess() { playIfEnabled("correct") }
+    func playStudyError() { playIfEnabled("wrong") }
+    func playStudyAchievement() { playIfEnabled("quizcomplete") }
+    func playStreak() { playIfEnabled("streak") }
+    func playLevelUp() { playIfEnabled("levelup") }
 
     // ── Flashcards ──
 
-    func playFlashcardSuccess() { guard areSoundsEnabled else { return }; sp.play("cardright") }
-    func playFlashcardError() { guard areSoundsEnabled else { return }; sp.play("cardwrong") }
-    func playFlashcardAchievement() { guard areSoundsEnabled else { return }; sp.play("stackcomplete") }
+    func playFlashcardSuccess() { playIfEnabled("cardright") }
+    func playFlashcardError() { playIfEnabled("cardwrong") }
+    func playFlashcardAchievement() { playIfEnabled("stackcomplete") }
 
     // ── General ──
 
-    func playSuccess() { guard areSoundsEnabled else { return }; sp.play("snackcatch") }
-    func playError() { guard areSoundsEnabled else { return }; sp.play("error") }
-    func playLaunch() { guard areSoundsEnabled else { return }; sp.play("gamestart") }
-    func playAchievement() { guard areSoundsEnabled else { return }; sp.play("bonusbubble") }
+    func playSuccess() { playIfEnabled("snackcatch") }
+    func playError() { playIfEnabled("error") }
+    func playLaunch() { playIfEnabled("gamestart") }
+    func playAchievement() { playIfEnabled("bonusbubble") }
 
     // ── Arcade ──
 
-    func playArcadeCombo() { guard areSoundsEnabled else { return }; sp.play("combo") }
-    func playGameOver() { guard areSoundsEnabled else { return }; sp.play("gameover") }
-    func playSnackMiss() { guard areSoundsEnabled else { return }; sp.play("snackmiss") }
-    func playRoundClear() { guard areSoundsEnabled else { return }; sp.play("roundclear") }
-    func playHighScore() { guard areSoundsEnabled else { return }; sp.play("highscore") }
-    func playPowerUpSpawn() { guard areSoundsEnabled else { return }; sp.play("powerupspawn") }
-    func playSlowMotionActivate() { guard areSoundsEnabled else { return }; sp.play("slowmostart") }
-    func playSlowMotionEnd() { guard areSoundsEnabled else { return }; sp.play("slowmoend") }
-    func playShieldActivate() { guard areSoundsEnabled else { return }; sp.play("shieldactivate") }
-    func playShieldAbsorb() { guard areSoundsEnabled else { return }; sp.play("shieldabsorb") }
+    func playArcadeCombo() { playIfEnabled("combo") }
+    func playGameOver() { playIfEnabled("gameover") }
+    func playSnackMiss() { playIfEnabled("snackmiss") }
+    func playRoundClear() { playIfEnabled("roundclear") }
+    func playHighScore() { playIfEnabled("highscore") }
+    func playPowerUpSpawn() { playIfEnabled("powerupspawn") }
+    func playSlowMotionActivate() { playIfEnabled("slowmostart") }
+    func playSlowMotionEnd() { playIfEnabled("slowmoend") }
+    func playShieldActivate() { playIfEnabled("shieldactivate") }
+    func playShieldAbsorb() { playIfEnabled("shieldabsorb") }
 
     // ── Saugglocke ──
 
