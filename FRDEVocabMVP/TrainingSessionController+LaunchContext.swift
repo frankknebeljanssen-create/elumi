@@ -12,6 +12,10 @@ extension TrainingSessionController {
             trainingMode = preferredMode
         }
 
+        if launchContext.shouldAutoStart {
+            isSpeedRound = false
+        }
+
         if let preferredListID = launchContext.preferredListID {
             if preferredListID == VocabularyListStore.dictionaryListID {
                 selectedTrainingListID = preferredListID
