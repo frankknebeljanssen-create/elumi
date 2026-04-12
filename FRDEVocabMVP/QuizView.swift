@@ -14,6 +14,7 @@ struct QuizView: View {
     @AppStorage(appArcadeCreditsKey) var arcadeCredits = 0
     @ObservedObject var listStore: VocabularyListStore
     @ObservedObject var feedbackPlayer: FeedbackPlayer
+    let launchContext: QuizLaunchContext?
     let goHome: () -> Void
     let openSettings: () -> Void
     let openInfo: () -> Void

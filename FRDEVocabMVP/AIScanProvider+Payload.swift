@@ -106,7 +106,8 @@ extension AIScanProvider {
                     targetPhonetic: $0.targetPhonetic,
                     confidence: $0.confidence,
                     reviewMetadata: $0.reviewMetadata,
-                    notes: $0.notes
+                    notes: $0.notes,
+                    wordClass: $0.wordClass
                 )
             },
             blocks: [],

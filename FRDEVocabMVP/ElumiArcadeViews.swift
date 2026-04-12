@@ -81,16 +81,39 @@ struct ArcadeRoundConfig {
     }
 
     // ── Snacks per round ──
-    var snacksRequired: Int {
-        switch round {
-        case 1: return 12
-        case 2: return 15
-        default: return 18
-        }
-    }
+    var snacksRequired: Int { 12 }
 
     // ── Bonus round ──
     var isBonusRoundTrigger: Bool { round % 3 == 0 }
+
+    // ── Jellyfish ──
+    var jellyfishChance: Double {
+        switch round {
+        case 1...2: return 0.0
+        case 3: return 0.008
+        default: return 0.012
+        }
+    }
+}
+
+struct JellyfishState: Identifiable, Equatable {
+    let id = UUID()
+    let spawnedAt: Date
+    let fromLeft: Bool
+    let normalizedY: CGFloat      // 0.15–0.40
+    let speed: Double             // 7–10s crossing time
+    let wobblePhase: Double
+    var tentaclesDropped: Int = 0
+    var lastTentacleDropAt: Date?
+}
+
+struct TentacleDropState: Identifiable, Equatable {
+    let id = UUID()
+    let spawnedAt: Date
+    let startY: CGFloat           // Quallen-Y beim Abwurf (screen coords)
+    let normalizedX: CGFloat      // X-Position beim Abwurf (0–1)
+    let wobbleAmplitude: CGFloat  // 0.02–0.05
+    let fallDuration: Double      // 2.8–3.5s
 }
 
 struct BonusFishState: Identifiable, Equatable {
@@ -172,6 +195,11 @@ struct ElumiArcadeGameView: View {
     let bonusFishTotal = 15
     let bonusRoundDuration: TimeInterval = 12.0
 
+    // Jellyfish
+    @State var activeJellyfish: JellyfishState?
+    @State var activeTentacles: [TentacleDropState] = []
+    @State var jellyfishStingCount = 0
+
     let maxMisses = 4
     let suctionDuration: TimeInterval = 4.6
     let bonusPointsDuration: TimeInterval = 5.0
@@ -181,7 +209,7 @@ struct ElumiArcadeGameView: View {
 
     var headerTitle: String {
         if isGameOver { return "Spiel vorbei" }
-        if showingStartOverlay { return "Elumi Arcade" }
+        if showingStartOverlay { return "Elumi Spiel" }
         return "Runde \(round)"
     }
 

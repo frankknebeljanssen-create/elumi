@@ -14,7 +14,8 @@ struct ScanVocabularyItemFactory {
         french: String,
         german: String,
         cardType: CardType,
-        sourceLanguage: StudyLanguage
+        sourceLanguage: StudyLanguage,
+        wordClass: String? = nil
     ) -> VocabularyItem? {
         let parsedFrench = dependencies.extractedTermComponents(french)
         let parsedGerman = dependencies.extractedTermComponents(german)
@@ -41,7 +42,8 @@ struct ScanVocabularyItemFactory {
             sourcePhonetic: parsedFrench.phonetic,
             targetPhonetic: parsedGerman.phonetic,
             cardType: cardType,
-            sourceLanguage: sourceLanguage
+            sourceLanguage: sourceLanguage,
+            wordClass: wordClass
         )
     }
 }

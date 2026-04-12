@@ -5,15 +5,18 @@ import Foundation
 struct ClaudeHaikuScanAIClient: ScanAIClient {
     let apiKey: String
     let model: String
+    let maxTokens: Int
     let session: URLSession
 
     init(
         apiKey: String,
         model: String = "claude-haiku-4-5-20251001",
+        maxTokens: Int = 8192,
         session: URLSession = .shared
     ) {
         self.apiKey = apiKey
         self.model = model
+        self.maxTokens = maxTokens
         self.session = session
     }
 
@@ -30,7 +33,7 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
 
         let requestBody: [String: Any] = [
             "model": model,
-            "max_tokens": 8192,
+            "max_tokens": maxTokens,
             "temperature": 0,
             "messages": [
                 [
@@ -92,6 +95,10 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
             throw ScanAIProviderError.invalidResponse
         }
 
+        if envelope.wasTruncated {
+            print("📡 [Scan] ⚠️ Response truncated (max_tokens hit)")
+        }
+
         // Claude might wrap JSON in ```json ... ``` — strip it
         var jsonText = outputText
             .replacingOccurrences(of: "```json", with: "")
@@ -104,14 +111,268 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         }
 
         do {
-            let scanResult = try JSONDecoder().decode(OpenAIScanSchemaResponse.self, from: Data(jsonText.utf8))
+            var scanResult = try JSONDecoder().decode(OpenAIScanSchemaResponse.self, from: Data(jsonText.utf8))
+            scanResult.entries = scanResult.entries.map { Self.postProcessEntry($0) }
             return scanResult.toPayload()
         } catch {
+            // If truncated, try to salvage partial JSON by closing brackets
+            if envelope.wasTruncated {
+                if var salvaged = Self.salvageTruncatedJSON(jsonText) {
+                    salvaged.entries = salvaged.entries.map { Self.postProcessEntry($0) }
+                    print("📡 [Scan] 🩹 Salvaged truncated JSON (\(salvaged.entries.count) entries)")
+                    return salvaged.toPayload()
+                }
+            }
             print("📡 [Scan] ❌ JSON decode failed: \(error)")
             print("📡 [Scan] Raw response (first 500 chars): \(String(jsonText.prefix(500)))")
             throw ScanAIProviderError.invalidResponse
         }
     }
+
+    /// Attempt to salvage truncated JSON by finding the last complete entry and closing brackets
+    static func salvageTruncatedJSON(_ json: String) -> OpenAIScanSchemaResponse? {
+        // Find the last complete entry: look for the last "}," or "}" before entries array ends
+        guard let entriesRange = json.range(of: "\"entries\"", options: .literal) else { return nil }
+        let afterEntries = json[entriesRange.upperBound...]
+
+        // Find the last complete object closing brace followed by comma or just brace
+        var lastGoodEnd: String.Index?
+        var braceDepth = 0
+        var inString = false
+        var escape = false
+        var searchStart = afterEntries.startIndex
+
+        // Skip to opening bracket of entries array
+        if let bracketStart = afterEntries.firstIndex(of: "[") {
+            searchStart = afterEntries.index(after: bracketStart)
+        }
+
+        for i in afterEntries[searchStart...].indices {
+            let ch = afterEntries[i]
+            if escape { escape = false; continue }
+            if ch == "\\" { escape = true; continue }
+            if ch == "\"" { inString.toggle(); continue }
+            if inString { continue }
+            if ch == "{" { braceDepth += 1 }
+            if ch == "}" {
+                braceDepth -= 1
+                if braceDepth == 0 {
+                    lastGoodEnd = i
+                }
+            }
+        }
+
+        guard let cutoff = lastGoodEnd else { return nil }
+
+        // Build salvaged JSON: everything up to and including the last complete entry, then close array + object
+        let salvaged = String(json[json.startIndex...cutoff]) + "\n  ]\n}"
+        do {
+            return try JSONDecoder().decode(OpenAIScanSchemaResponse.self, from: Data(salvaged.utf8))
+        } catch {
+            print("📡 [Scan] 🩹 Salvage attempt also failed: \(error)")
+            return nil
+        }
+    }
+
+    /// Words that are NEVER capitalized in German — matched via word boundary regex
+    private static let neverCapitalizedWords: [String] = [
+        // Konjunktionen
+        "und", "oder", "aber", "denn", "sondern", "doch",
+        // Verben
+        "ist", "sind", "bist", "bin", "hat", "haben", "heißt", "heißen",
+        "geht", "macht", "kann", "muss", "will", "soll", "darf",
+        "kommt", "spielt", "wohnt", "liebt", "kennt", "findet",
+        // Reflexivpronomen
+        "sich", "mich", "dich",
+        // Pronomen
+        "du", "er", "es", "wir", "ihr",
+        "andere", "anderen", "anderer",
+        // Artikel
+        "der", "die", "das", "den", "dem", "des", "ein", "eine", "einer", "einem", "einen",
+        // Adjektive
+        "alt", "neu", "jung", "groß", "klein", "gut", "schlecht",
+        // Adverbien
+        "hier", "dort", "auch", "sehr", "schon", "noch", "gern", "gerne",
+        // Präpositionen
+        "in", "auf", "mit", "von", "zu", "bei", "nach", "aus", "für",
+    ]
+
+    /// Set of capitalized forms that must be lowercased
+    private static let neverCapitalizedSet: Set<String> = {
+        var s = Set<String>()
+        for w in neverCapitalizedWords {
+            s.insert(w.prefix(1).uppercased() + w.dropFirst()) // "Und"
+            s.insert(w.uppercased())                            // "UND"
+        }
+        return s
+    }()
+
+    /// Force-lowercase non-nouns everywhere in German target text
+    static func forceGermanLowercase(_ text: String) -> String {
+        // Split by spaces, then handle slashes within each token
+        var tokens = text.components(separatedBy: " ")
+        for i in 0..<tokens.count {
+            // Split by "/" to handle "der/Die"
+            var subTokens = tokens[i].components(separatedBy: "/")
+            for j in 0..<subTokens.count {
+                let token = subTokens[j]
+                // Strip punctuation to get the pure word
+                let letters = token.trimmingCharacters(in: CharacterSet.letters.inverted)
+                guard !letters.isEmpty else { continue }
+                if neverCapitalizedSet.contains(letters) {
+                    subTokens[j] = token.replacingOccurrences(of: letters, with: letters.lowercased())
+                }
+            }
+            tokens[i] = subTokens.joined(separator: "/")
+        }
+        return tokens.joined(separator: " ")
+    }
+
+    /// Post-process decoded entries to fix systematic AI errors
+    static func postProcessEntry(_ entry: OpenAIScanSchemaResponse.Entry) -> OpenAIScanSchemaResponse.Entry {
+        var e = entry
+        let before = e.target
+        print("📡 [PP] IN: src=\"\(e.source)\" tgt=\"\(e.target)\"")
+
+        // Force-lowercase non-nouns (und, sich, sind, von, der, die, das...)
+        e.target = forceGermanLowercase(e.target)
+
+        // Fix "les les" → "les"
+        if e.source.lowercased().hasPrefix("les les") {
+            e.source = String(e.source.dropFirst(4))
+        }
+
+        // Remove trailing period from placeholder phrases like "ich heiße + Name."
+        if e.target.hasSuffix(".") && e.target.contains("+") {
+            e.target = String(e.target.dropLast())
+        }
+
+        if e.target != before {
+            print("📡 [PostProcess] \"\(before)\" → \"\(e.target)\"")
+        }
+        // Fix known question phrases translated as statements
+        let sourceKey = normalizeForLookup(e.source)
+        if let correctTarget = knownQuestionPhrases[sourceKey] {
+            e.target = correctTarget
+        }
+        // Fix article pairs without slash: "der DAS" → "der/das"
+        for (wrong, correct) in articlePairFixes {
+            e.target = e.target.replacingOccurrences(of: wrong, with: correct)
+        }
+        e.target = fixLnError(e.target)
+        // Fix commonly misread French source phrases
+        e.source = fixMisreadFrenchSource(e.source)
+        // Fix French prepositions/articles that got capitalized: "De" → "de"
+        e.source = fixFrenchCapitalization(e.source)
+        // Ensure source with "comment" has ? in target
+        if sourceKey.contains("comment") && !e.target.hasSuffix("?") {
+            e.target = e.target.trimmingCharacters(in: CharacterSet(charactersIn: ".")) + "?"
+        }
+        return e
+    }
+
+    /// Normalize text for dictionary lookup — unify apostrophe variants, lowercase, trim
+    private static func normalizeForLookup(_ text: String) -> String {
+        text.lowercased()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "\u{2019}", with: "'") // ' → '
+            .replacingOccurrences(of: "\u{02BC}", with: "'") // ʼ → '
+            .replacingOccurrences(of: "\u{2018}", with: "'") // ' → '
+            .replacingOccurrences(of: "?", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Fix French words that should never be capitalized (prepositions, articles)
+    private static func fixFrenchCapitalization(_ text: String) -> String {
+        let frenchLower = ["De", "Du", "Des", "Au", "Aux", "En", "Et", "Ou", "À"]
+        var tokens = text.components(separatedBy: " ")
+        for i in 0..<tokens.count {
+            var subTokens = tokens[i].components(separatedBy: "/")
+            for j in 0..<subTokens.count {
+                let token = subTokens[j]
+                let letters = token.trimmingCharacters(in: CharacterSet.letters.inverted)
+                if frenchLower.contains(letters) {
+                    subTokens[j] = token.replacingOccurrences(of: letters, with: letters.lowercased())
+                }
+            }
+            tokens[i] = subTokens.joined(separator: "/")
+        }
+        return tokens.joined(separator: " ")
+    }
+
+    /// Fix commonly misread French phrases in source text
+    private static func fixMisreadFrenchSource(_ text: String) -> String {
+        var result = text
+
+        // Fix "le l" → "le/la" (misread slash)
+        let sourceFixes: [(wrong: String, correct: String)] = [
+            ("le l", "le/la"),
+            ("Le L", "le/la"),
+            ("le la", "le/la"),
+            ("Le La", "le/la"),
+            ("le l'", "le/la/l'"),
+            ("le la l'", "le/la/l'"),
+            ("les les", "les"),
+        ]
+        let lower = result.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        for (wrong, correct) in sourceFixes {
+            if lower == wrong.lowercased() {
+                result = correct
+                return result
+            }
+        }
+
+        // Phrase-level fixes
+        let phraseFixes: [(wrong: String, correct: String)] = [
+            ("ca vient", "ce sont"),
+            ("ça vient", "ce sont"),
+            ("c'est sont", "ce sont"),
+        ]
+        for (wrong, correct) in phraseFixes {
+            if lower == wrong {
+                result = correct
+                break
+            }
+        }
+        return result
+    }
+
+    /// Fix "ln" / "l'n" errors in target text (l'ami misread)
+    private static func fixLnError(_ text: String) -> String {
+        text.replacingOccurrences(of: "der ln", with: "der Freund")
+            .replacingOccurrences(of: "die ln", with: "die Freundin")
+            .replacingOccurrences(of: "mein ln", with: "mein Freund")
+            .replacingOccurrences(of: "meine ln", with: "meine Freundin")
+            .replacingOccurrences(of: "der l'n", with: "der Freund")
+            .replacingOccurrences(of: "die l'n", with: "die Freundin")
+    }
+
+    /// Fix missing slash between article pairs: "der DAS" → "der/das", "Der Die" → "der/die"
+    private static let articlePairFixes: [(wrong: String, correct: String)] = [
+        // Mixed case without slash
+        ("der DAS", "der/das"), ("der Das", "der/das"), ("der das", "der/das"),
+        ("die DAS", "die/das"), ("die Das", "die/das"),
+        ("der DIE", "der/die"), ("der Die", "der/die"),
+        ("die DER", "die/der"), ("die Der", "die/der"),
+        // Both capitalized without slash
+        ("Der Die", "der/die"), ("Der Das", "der/das"), ("Die Der", "die/der"),
+        ("Die Das", "die/das"), ("Das Die", "das/die"),
+        ("Der die", "der/die"), ("Die der", "die/der"),
+        // Plural
+        ("die Plural", "die (bestimmter Artikel im Plural)"),
+    ]
+
+    /// Known French phrases that are ALWAYS questions — fix if translated as statement
+    private static let knownQuestionPhrases: [String: String] = [
+        "tu t'appelles comment": "Wie heißt du?",
+        "comment tu t'appelles": "Wie heißt du?",
+        "ça va": "Wie geht's?",
+        "ca va": "Wie geht's?",
+        "c'est qui": "Wer ist das?",
+        "c'est quoi": "Was ist das?",
+        "tu as quel âge": "Wie alt bist du?",
+        "tu as quel age": "Wie alt bist du?",
+    ]
 
     /// Known vision/OCR misreads — corrected in raw JSON before decode
     private static let knownVisionCorrections: [(wrong: String, correct: String)] = [
@@ -149,6 +410,13 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         """
         Du bist ein Vokabel-Extraktor für Französisch-Deutsch Schulbuchseiten.
 
+        *** KRITISCHE FEHLER DIE DU VERMEIDEN MUSST ***
+        1. l'ami = "der Freund". l'amie = "die Freundin". NIEMALS "ln", "l'n", "der ln", "die ln" schreiben!
+           Das l' ist der verkürzte Artikel (le/la). ami/amie ist das Wort. Zusammen: l'ami, l'amie.
+        2. Deutsche Kleinschreibung bei Verben/Konjunktionen: "und" NICHT "Und", "sind" NICHT "Sind", "bist" NICHT "Bist".
+           NUR Nomen und Satzanfänge groß! Alles andere klein!
+        ***
+
         *** PRIORITÄT 1 – WICHTIGSTE REGEL ***
         JEDE Tabellenzeile die in Spalte 2 eine deutsche Übersetzung hat ist ein Vokabeleintrag.
         Es spielt KEINE Rolle ob derselbe Begriff auch als Überschrift vorkommt.
@@ -160,6 +428,10 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         Wenn im Buch ein Artikel vor dem Wort steht (le, la, l', les), übernimm ihn EXAKT so in den source-Eintrag.
         Ergänze KEINEN Artikel wenn keiner sichtbar ist.
         Entferne KEINEN Artikel der sichtbar ist.
+        Korrekte Übersetzungen der französischen Artikel:
+        le → der, la → die, l' → der/die (je nach Geschlecht), les → die (bestimmter Artikel im Plural)
+        NIEMALS "les" als "die Plural" übersetzen — schreibe "die (bestimmter Artikel im Plural)" oder einfach "die".
+        le/la → "der/die" (mit Schrägstrich, NICHT "der die" oder "der DAS")
         ***
 
         REGEL 1 – Was eine Vokabelzeile ist:
@@ -223,6 +495,72 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         Erfinde KEINE Wörter, Übersetzungen oder Einträge die nicht im Bild sind.
         Im Zweifel lieber einen Eintrag weglassen als einen falschen erfinden.
 
+        REGEL 10 – Apostrophe und Elision (HÄUFIGSTER FEHLER!):
+        Wenn du im Bild "l'ami" oder "l'amie" siehst:
+        - l'ami → Übersetzung: "der Freund"
+        - l'amie → Übersetzung: "die Freundin"
+        - l'école → Übersetzung: "die Schule"
+        Das l' ist IMMER der Artikel le/la, verkürzt vor Vokal. Das Wort ist ami/amie/école.
+        Du darfst UNTER KEINEN UMSTÄNDEN "ln", "l'n", "der ln", "die ln" schreiben.
+        Wenn du "ln" in deiner Ausgabe findest, hast du einen Fehler gemacht — korrigiere zu "Freund"/"Freundin".
+        Auch: C'est (NICHT C#est), j'ai, qu'est-ce que — Apostroph = '
+        le/la/l' sind EINZELNE Artikel — NIEMALS "le l" oder "le la" zusammen.
+
+        REGEL 11 – Deutsche Groß-/Kleinschreibung (ZWEITHÄUFIGSTER FEHLER!):
+        Im Deutschen werden NUR groß geschrieben:
+        - Satzanfänge
+        - Nomen (Substantive): Freund, Haus, Schule, Name
+        ALLES ANDERE wird klein geschrieben:
+        - Verben: ist, bist, sind, heißt, geht, vorstellen
+        - Konjunktionen: und, oder, aber, denn
+        - Pronomen: du, andere, sich, es
+        - Adjektive: groß, klein, gut, alt, neu, jung
+        - Präpositionen: in, auf, mit, von
+        KONKRETE BEISPIELE:
+        ✅ "sich und andere vorstellen" ❌ "Sich Und Andere Vorstellen"
+        ✅ "das bist du" ❌ "Das Bist Du"
+        ✅ "wir sind Freunde" ❌ "Wir Sind Freunde"
+        ✅ "wie heißt du?" ❌ "Wie Heißt Du?"
+        ✅ "wie alt?" ❌ "Wie Alt?"
+        ✅ "Ich weiß nicht" ❌ "ich weiß nicht" (Satzanfang → groß!)
+        PRÜFE JEDEN EINTRAG: Ist ein Verb/Konjunktion/Pronomen großgeschrieben? → KORRIGIEREN!
+
+        REGEL 12 – Vollständige Übersetzungen und m/f Paare:
+        "moi, c'est + Name" → "ich heiße + Name" (NICHT nur "+ Name")
+        "mon ami" → "mein Freund" (NICHT "mein ln", NICHT "mein l'n")
+        "mon amie" → "meine Freundin" (NICHT "meine ln")
+        Übersetze den GESAMTEN Ausdruck — nicht nur Teile davon.
+        Bei männlich/weiblich Paaren mit "/" im Bild:
+        "l'ami/l'amie" → source: "l'ami/l'amie", target: "der Freund/die Freundin"
+        "mon ami/mon amie" → source: "mon ami/mon amie", target: "mein Freund/meine Freundin"
+        "le copain/la copine" → source: "le copain/la copine", target: "der Kumpel/die Kumpelin"
+        WICHTIG: Beide Teile EINZELN übersetzen! ami=Freund, amie=Freundin. NIEMALS "ln" schreiben!
+        NIEMALS "mon ami mon amie" ohne "/" — übernimm das "/" aus dem Bild.
+
+        REGEL 13 – Eigennamen korrekt schreiben:
+        Namen werden mit großem Anfangsbuchstaben und kleinen Folgebuchstaben geschrieben:
+        "Lena" NICHT "LENA", "Max" NICHT "MAX", "Jeanne" NICHT "JEANNE".
+        NIEMALS Namen komplett in Großbuchstaben schreiben — auch wenn sie im Bild so stehen.
+
+        REGEL 14 – Einzahl/Mehrzahl EXAKT vom Bild übernehmen:
+        Wenn im Bild "les jeux vidéo" steht, schreibe "les jeux vidéo" — NICHT "le jeu vidéo".
+        Wenn im Bild "les sports" steht, schreibe "les sports" — NICHT "le sport".
+        NIEMALS Mehrzahl zu Einzahl ändern oder umgekehrt. Übernimm EXAKT was sichtbar ist.
+        Wenn keine deutsche Übersetzung daneben steht, trotzdem den französischen Teil exakt übernehmen.
+
+        REGEL 15 – Wortart bestimmen:
+        Bestimme für JEDEN Eintrag die Wortart im Feld "word_class":
+        "noun" = Nomen/Substantiv (le chat, la maison, l'ami)
+        "verb" = Verb (être, avoir, aller)
+        "adjective" = Adjektiv (grand, petit, bon)
+        "adverb" = Adverb (bien, mal, très)
+        "pronoun" = Pronomen (je, tu, il, moi, toi)
+        "preposition" = Präposition (de, à, dans, pour, avec)
+        "conjunction" = Konjunktion (et, ou, mais)
+        "interjection" = Interjektion (ah, oh, merci, salut)
+        "phrase" = Feste Wendung/Phrase (ça va?, c'est parti!, je m'appelle)
+        Bei Phrasen mit mehreren Wörtern: "phrase" verwenden.
+
         Antworte AUSSCHLIESSLICH mit validem JSON (kein Markdown, keine Codeblöcke):
 
         {
@@ -234,6 +572,7 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
               "source": "la maison",
               "target": "das Haus",
               "card_type": "words",
+              "word_class": "noun",
               "source_phonetic": "",
               "target_phonetic": "",
               "confidence": 0.95,
@@ -261,9 +600,14 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
 // Anthropic Messages API response envelope
 struct AnthropicMessagesResponse: Decodable {
     let content: [ContentBlock]
+    let stop_reason: String?
 
     var firstText: String? {
         content.first(where: { $0.type == "text" })?.text
+    }
+
+    var wasTruncated: Bool {
+        stop_reason == "max_tokens"
     }
 
     struct ContentBlock: Decodable {

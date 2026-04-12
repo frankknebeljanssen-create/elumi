@@ -33,6 +33,14 @@ var quizSetupScreen: some View {
             )
 
             Button {
+                handleBackNavigation()
+            } label: {
+                Label("Zurück zur Auswahl", systemImage: "arrow.left")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))
+
+            Button {
                 showingQuizListPicker = true
             } label: {
                 HStack(spacing: 14) {
@@ -190,7 +198,7 @@ var quizSessionScreen: some View {
         )
 
         Button {
-            resetQuizToSetup()
+            handleBackNavigation()
         } label: {
             Label("Zurück zur Auswahl", systemImage: "arrow.left")
                 .frame(maxWidth: .infinity)
@@ -337,6 +345,7 @@ var quizResultScreen: some View {
 
         Button {
             resetQuizToSetup()
+            startQuiz()
         } label: {
             Text("Nochmal")
                 .frame(maxWidth: .infinity)
@@ -344,9 +353,9 @@ var quizResultScreen: some View {
         .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
 
         Button {
-            dismissToHome()
+            handleBackNavigation()
         } label: {
-            Text("Zur Startseite")
+            Label("Zurück zur Auswahl", systemImage: "arrow.left")
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))

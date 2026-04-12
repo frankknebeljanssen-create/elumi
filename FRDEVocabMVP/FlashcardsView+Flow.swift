@@ -17,18 +17,9 @@ extension FlashcardsView {
     }
 
     func handleBackNavigation() {
-        if setup.isShowingSetup {
-            sessionStore.clearTransientCustomDeckState()
-            dismiss()
-            return
-        }
-
         resetTransientState()
         sessionStore.clearTransientCustomDeckState()
-        setup.prepareReturnToSetup(
-            selectedAppDirection: selectedAppDirection,
-            sessionStore: sessionStore
-        )
+        dismiss()
     }
 
     func applyLaunchContextIfNeeded() {
@@ -143,7 +134,8 @@ extension FlashcardsView {
         interaction.syncDisplayedCard(with: sessionStore)
         if setup.shouldAutoStartFromLaunch {
             setup.shouldAutoStartFromLaunch = false
-            startFlashcardsFromSetup(autoplayPrompt: true)
+            isWaitingToStart = true
+            startFlashcardsFromSetup(autoplayPrompt: false)
         } else {
             syncSetupSelection()
         }

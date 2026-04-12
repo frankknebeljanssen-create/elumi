@@ -58,7 +58,8 @@ struct FlashcardDeckCard: Identifiable, Codable, Equatable {
                 answer: synchronizedPair.target,
                 promptLanguageCode: "fr-FR",
                 answerLanguageCode: "de-DE",
-                category: "Karteikarte"
+                category: "Karteikarte",
+                wordClass: nil
             )
         case .germanToFrench:
             return FlashCard(
@@ -66,7 +67,8 @@ struct FlashcardDeckCard: Identifiable, Codable, Equatable {
                 answer: synchronizedPair.source,
                 promptLanguageCode: "de-DE",
                 answerLanguageCode: "fr-FR",
-                category: "Karteikarte"
+                category: "Karteikarte",
+                wordClass: nil
             )
         case .englishToGerman:
             return FlashCard(
@@ -74,7 +76,8 @@ struct FlashcardDeckCard: Identifiable, Codable, Equatable {
                 answer: synchronizedPair.target,
                 promptLanguageCode: "en-US",
                 answerLanguageCode: "de-DE",
-                category: "Karteikarte"
+                category: "Karteikarte",
+                wordClass: nil
             )
         case .germanToEnglish:
             return FlashCard(
@@ -82,7 +85,8 @@ struct FlashcardDeckCard: Identifiable, Codable, Equatable {
                 answer: synchronizedPair.source,
                 promptLanguageCode: "de-DE",
                 answerLanguageCode: "en-US",
-                category: "Karteikarte"
+                category: "Karteikarte",
+                wordClass: nil
             )
         }
     }

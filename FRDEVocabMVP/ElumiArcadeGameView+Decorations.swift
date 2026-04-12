@@ -242,4 +242,115 @@ extension ElumiArcadeGameView {
             .rotationEffect(.degrees(wobble))
             .shadow(color: .cyan.opacity(0.4), radius: 6, x: 0, y: 2)
     }
+
+    // ── Jellyfish ──
+
+    func jellyfishView(for jelly: JellyfishState, at date: Date, in size: CGSize) -> some View {
+        let elapsed = date.timeIntervalSince(jelly.spawnedAt)
+        let pulse = 0.85 + sin(elapsed * 2.0) * 0.15
+        let tentaclePhases: [Double] = [0, 0.8, 1.6, 2.4, 3.2, 4.0, 4.8]
+
+        return ZStack {
+            // Outer glow
+            Ellipse()
+                .fill(
+                    RadialGradient(
+                        colors: [Color.purple.opacity(0.3), Color.clear],
+                        center: .center,
+                        startRadius: 10,
+                        endRadius: 50
+                    )
+                )
+                .frame(width: 80, height: 60)
+                .scaleEffect(CGFloat(pulse) * 1.2)
+
+            // Bell (dome)
+            Ellipse()
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            Color(red: 0.85, green: 0.5, blue: 1.0).opacity(0.7),
+                            Color(red: 0.6, green: 0.2, blue: 0.9).opacity(0.5),
+                            Color(red: 0.3, green: 0.8, blue: 0.4).opacity(0.25)
+                        ],
+                        center: .init(x: 0.4, y: 0.3),
+                        startRadius: 2,
+                        endRadius: 30
+                    )
+                )
+                .frame(width: 52, height: 38)
+                .scaleEffect(y: CGFloat(pulse))
+
+            // Inner bell highlight
+            Ellipse()
+                .fill(Color.white.opacity(0.25))
+                .frame(width: 24, height: 14)
+                .offset(y: -6)
+                .blur(radius: 2)
+
+            // Tentacles
+            ForEach(0..<7, id: \.self) { i in
+                let phase = tentaclePhases[i]
+                let baseX = CGFloat(i - 3) * 6
+                let sway = sin(elapsed * 2.8 + phase) * 8
+                let length: CGFloat = [40, 55, 48, 60, 45, 52, 38][i]
+
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.7, green: 0.3, blue: 1.0).opacity(0.6),
+                                Color(red: 0.2, green: 0.9, blue: 0.4).opacity(0.4)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .frame(width: 3, height: length)
+                    .offset(x: baseX + CGFloat(sway), y: 18 + length * 0.5)
+                    .rotationEffect(.degrees(sway * 0.4), anchor: .top)
+            }
+        }
+        .opacity(0.88)
+        .shadow(color: Color.purple.opacity(0.5), radius: 12, x: 0, y: 4)
+        .scaleEffect(x: jelly.fromLeft ? 1 : -1, y: 1)
+    }
+
+    func fallingTentacleView(for tentacle: TentacleDropState, at date: Date) -> some View {
+        let elapsed = date.timeIntervalSince(tentacle.spawnedAt)
+        let progress = elapsed / tentacle.fallDuration
+        let pulse = 0.8 + sin(elapsed * 5.0) * 0.2
+        let sway = sin(elapsed * 3.0) * 6
+
+        return ZStack {
+            // Glow
+            Capsule()
+                .fill(Color(red: 0.2, green: 0.9, blue: 0.3).opacity(0.3))
+                .frame(width: 12, height: 36)
+                .blur(radius: 4)
+                .scaleEffect(CGFloat(pulse) * 1.1)
+
+            // Tentacle body
+            Capsule()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.7, green: 0.2, blue: 1.0).opacity(0.8),
+                            Color(red: 0.1, green: 0.9, blue: 0.3).opacity(0.7)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .frame(width: 5, height: 28 + CGFloat(progress) * 8)
+
+            // Poison droplet tip
+            Circle()
+                .fill(Color(red: 0.1, green: 1.0, blue: 0.3).opacity(0.6))
+                .frame(width: 8, height: 8)
+                .offset(y: 14 + CGFloat(progress) * 4)
+        }
+        .rotationEffect(.degrees(sway * 0.5))
+        .shadow(color: Color(red: 0.2, green: 0.9, blue: 0.3).opacity(0.5), radius: 6)
+    }
 }

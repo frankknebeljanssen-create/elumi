@@ -29,6 +29,7 @@ final class ScanSessionController: ObservableObject {
     @Published var scanRuntimeStage: ScanRuntimeStage = .idle
     @Published var shouldAppendNextScan = false
     @Published var pendingBatchImages: [UIImage] = []
+    @Published var batchThumbnails: [UIImage] = []
     @Published var batchCurrentIndex = 0
     @Published var batchTotalCount = 0
     @Published var batchCompleted = false

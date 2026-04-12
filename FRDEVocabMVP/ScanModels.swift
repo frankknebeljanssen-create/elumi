@@ -25,6 +25,7 @@ struct ScanAIResponseEntry {
     let confidence: Double
     let reviewMetadata: ScanEntryReviewMetadata
     let notes: [String]
+    let wordClass: String?
 }
 
 struct ScanAIResponsePayload {

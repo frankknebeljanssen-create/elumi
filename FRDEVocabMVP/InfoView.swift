@@ -78,7 +78,7 @@ struct InfoView: View {
                     icon: "camera.viewfinder",
                     tint: AppTheme.Colors.moduleScan,
                     lines: [
-                        "Fotografiere eine Schulbuch-Seite.",
+                        "Fotografiere eine Vokabel-Seite.",
                         "KI erkennt Vokabelpaare automatisch.",
                         "Prüfen, importieren, direkt loslegen."
                     ]
@@ -107,12 +107,18 @@ struct InfoView: View {
                 )
 
                 colorInfoCard(
-                    title: "Elumi Arcade",
+                    title: "Elumi Spiel",
                     icon: "gamecontroller.fill",
                     tint: AppTheme.Colors.primary,
                     lines: [
                         "1 Credit = 1 Spiel. Zieh Elumi zum Futter.",
-                        "4 Leben — Elumi-Freunde nicht fressen!",
+                        "4 Leben — 12 Snacks pro Runde fangen!",
+                        "Elumi-Freunde nicht fressen (−1 Leben).",
+                        "Saugglocke: Saugstrahl zieht Snacks an.",
+                        "Zeitlupe-Trank: Verlangsamt alles für 5 Sek.",
+                        "Bonusblase: Doppelte Punkte für 5 Sek.",
+                        "Querschläger: Snacks prallen an den Rändern ab.",
+                        "Giftqualle: Weiche den Tentakeln aus! 3 Treffer = −1 Leben.",
                         "Alle 3 Runden: Fische fangen = Extra-Leben!",
                         "Runden werden immer schneller!"
                     ]

@@ -22,7 +22,8 @@ extension OCRScanProvider {
                     targetPhonetic: entry.targetPhonetic,
                     confidence: boundedConfidence,
                     reviewMetadata: entry.reviewMetadata,
-                    notes: entry.notes
+                    notes: entry.notes,
+                    wordClass: entry.wordClass
                 )
             },
             blocks: result.blocks,

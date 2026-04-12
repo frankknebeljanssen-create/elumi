@@ -29,7 +29,8 @@ enum ScanReviewMapper {
             cardType: reviewEntry.cardType,
             learningCategory: reviewEntry.learningCategory,
             note: reviewEntry.note,
-            isImportable: reviewEntry.isImportable
+            isImportable: reviewEntry.isImportable,
+            wordClass: reviewEntry.wordClass
         )
     }
 
@@ -66,7 +67,8 @@ enum ScanReviewMapper {
                     learningCategory: pair.learningCategory,
                     note: pair.note,
                     isImportable: pair.isImportable,
-                    isReviewed: pair.isReviewed
+                    isReviewed: pair.isReviewed,
+                    wordClass: pair.wordClass
                 )
             )
 
@@ -77,6 +79,22 @@ enum ScanReviewMapper {
 
             let key = "\(exactFrench)|\(exactGerman)"
             guard seen.insert(key).inserted else { return nil }
+
+            // FINAL fix: force German lowercase on non-nouns AFTER all normalization
+            let fixedGerman = ClaudeHaikuScanAIClient.forceGermanLowercase(normalizedPair.german)
+            if fixedGerman != normalizedPair.german {
+                return ImportPreviewPair(
+                    id: normalizedPair.id,
+                    french: normalizedPair.french,
+                    german: fixedGerman,
+                    cardType: normalizedPair.cardType,
+                    learningCategory: normalizedPair.learningCategory,
+                    note: normalizedPair.note,
+                    isImportable: normalizedPair.isImportable,
+                    isReviewed: normalizedPair.isReviewed,
+                    wordClass: normalizedPair.wordClass
+                )
+            }
             return normalizedPair
         }
     }

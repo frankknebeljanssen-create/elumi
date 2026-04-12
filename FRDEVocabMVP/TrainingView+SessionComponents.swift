@@ -79,6 +79,13 @@ extension TrainingView {
                         .minimumScaleFactor(0.5)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity, alignment: .center)
+
+                    if let wcLabel = currentCard.wordClassLabel(for: currentCard.promptLanguageCode) {
+                        Text("(\(wcLabel))")
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
                 }
                 .frame(maxWidth: .infinity, minHeight: sessionCardMinHeight, alignment: .center)
                 .padding(.horizontal, 16)

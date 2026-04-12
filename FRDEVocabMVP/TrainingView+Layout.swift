@@ -35,7 +35,7 @@ extension TrainingView {
             )
 
             Button {
-                returnToTrainingSetup()
+                dismissTraining()
             } label: {
                 Label("Zurück zur Auswahl", systemImage: "arrow.left")
                     .frame(maxWidth: .infinity)
@@ -114,7 +114,7 @@ extension TrainingView {
     }
 
     var trainingSetupScreen: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+        VStack(spacing: AppTheme.Spacing.md) {
             ScreenHeaderCard(
                 style: sectionStyle,
                 title: sessionHeaderTitle,
@@ -122,100 +122,37 @@ extension TrainingView {
                 systemImage: "waveform.circle.fill"
             )
 
-            // List category buttons — hidden when auto-started from scan
-            if launchContext?.shouldAutoStart != true {
-            VStack(spacing: 8) {
-                Text("Listen auswählen")
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                HStack(spacing: 8) {
-                    listCategoryButton(
-                        title: "📝 Meine Listen",
-                        count: ownListCount,
-                        category: .own
-                    )
-                    listCategoryButton(
-                        title: "📚 Nach Niveau",
-                        count: levelListCount,
-                        category: .level
-                    )
-                }
-
-                HStack(spacing: 8) {
-                    listCategoryButton(
-                        title: "🏷️ Nach Thema",
-                        count: topicListCount,
-                        category: .topic
-                    )
-                    listCategoryButton(
-                        title: "📖 Komplett",
-                        count: allInOneCount,
-                        category: .all
-                    )
-                }
-
-                if !trainingListCount.isEmpty {
-                    Text(trainingListName + " · " + trainingListCount)
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundStyle(trainingActionTint)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.top, 2)
-                }
+            Button {
+                dismiss()
+            } label: {
+                Label("Zurück zur Auswahl", systemImage: "arrow.left")
+                    .frame(maxWidth: .infinity)
             }
-            .padding(.bottom, AppTheme.Spacing.sm)
-            } // end if not autoStart
-
-            // Direction is set on Home screen
-
-            if launchContext?.preferredMode == nil {
-                trainingModeCard
-            }
-
-            if isDictionaryTrainingSelected {
-                dictionaryTrainingLevelCard
-            }
-
-            trainingBottomOptionCard
+            .buttonStyle(AppSecondaryButtonStyle(tint: trainingActionTint))
 
             Spacer(minLength: 0)
 
-            if !canStartTraining {
+            VStack(spacing: 12) {
+                Image(systemName: "tray")
+                    .font(.system(size: 44, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+
+                Text("Keine Einträge gefunden")
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+
                 Text(startHintText)
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
             }
 
-            Text("Los geht's!")
-                .font(AppTheme.Typography.button)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: AppTheme.Layout.buttonHeight)
-                .background(AppTheme.Colors.cta)
-                .cornerRadius(AppTheme.Radius.md)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    guard canStartTraining else { return }
-                    startTraining()
-                }
+            Spacer(minLength: 0)
         }
         .padding(.horizontal, AppLayout.screenPadding)
         .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 32)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .sheet(item: $listPickerCategory) { category in
-            FlashcardStackComposerSheet(
-                style: sectionStyle,
-                lists: filteredLists(for: category),
-                selectedListIDs: session.selectedTrainingListIDs,
-                language: selectedAppDirection.sourceLanguage,
-                cardTypeFilter: nil
-            ) { updatedSelection in
-                session.selectedTrainingListIDs = updatedSelection
-                listPickerCategory = nil
-            }
-        }
     }
 
     var body: some View {

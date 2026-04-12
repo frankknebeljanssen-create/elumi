@@ -4,7 +4,7 @@ import Foundation
 enum AppScreen: Hashable {
     case train(TrainingLaunchContext?)
     case flashcards(FlashcardLaunchContext?)
-    case quiz
+    case quiz(QuizLaunchContext?)
     case hearts
     case lists(ListLaunchContext?)
     case lexicon
@@ -77,6 +77,11 @@ struct FlashcardLaunchContext: Hashable {
     let shouldAutoStart: Bool
 }
 
+struct QuizLaunchContext: Hashable {
+    let preferredListID: UUID?
+    let shouldAutoStart: Bool
+}
+
 struct ListLaunchContext: Hashable {
     let preferredListID: UUID?
 }
@@ -118,6 +123,10 @@ struct ImportCompletionContext: Hashable {
             preferredItemIDs: importedItemIDs,
             shouldAutoStart: true
         )
+    }
+
+    var quizLaunchContext: QuizLaunchContext {
+        QuizLaunchContext(preferredListID: targetListID, shouldAutoStart: true)
     }
 
     var listLaunchContext: ListLaunchContext {

@@ -39,14 +39,20 @@ final class SoundPlayer {
         }
     }
 
-    func loop(_ name: String) {
+    func loop(_ name: String, volume: Float = 1.0, rate: Float = 1.0) {
         guard let url = Bundle.main.url(forResource: "elumi_\(name)", withExtension: "wav") else {
             print("⚠️ [Sound] Missing: elumi_\(name).wav")
             return
         }
+        ensureAudioSession()
         do {
             let player = try AVAudioPlayer(contentsOf: url)
             player.numberOfLoops = -1
+            player.volume = volume
+            if rate != 1.0 {
+                player.enableRate = true
+                player.rate = rate
+            }
             player.play()
             players[name] = player
         } catch {

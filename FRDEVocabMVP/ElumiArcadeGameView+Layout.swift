@@ -25,6 +25,18 @@ extension ElumiArcadeGameView {
                                 .shadow(color: .black.opacity(0.16), radius: 3, x: 0, y: 2)
                         }
 
+                        // Jellyfish
+                        if let jelly = activeJellyfish {
+                            jellyfishView(for: jelly, at: context.date, in: geometry.size)
+                                .position(jellyfishPosition(for: jelly, at: context.date, in: geometry.size))
+                        }
+
+                        // Falling tentacles
+                        ForEach(activeTentacles) { tentacle in
+                            fallingTentacleView(for: tentacle, at: context.date)
+                                .position(tentaclePosition(for: tentacle, at: context.date, in: geometry.size))
+                        }
+
                         ElumiArcadeCharacter(
                             mouthOpen: mouthOpen,
                             scale: characterScale,
@@ -33,6 +45,17 @@ extension ElumiArcadeGameView {
                         )
                         .scaleEffect(elumiVisible ? suctionDockScale : 0.4)
                         .opacity(elumiVisible ? 1 : 0)
+                        .overlay {
+                            // Sting flash overlay
+                            if jellyfishStingCount > 0 {
+                                let blinkFreq: Double = jellyfishStingCount >= 2 ? 6.0 : 3.0
+                                let blinkOn = sin(context.date.timeIntervalSinceReferenceDate * blinkFreq) > 0
+                                Circle()
+                                    .fill(Color.red.opacity(blinkOn ? 0.45 : 0))
+                                    .frame(width: 80, height: 80)
+                                    .allowsHitTesting(false)
+                            }
+                        }
                         .position(
                             x: elumiPositionX(in: geometry.size.width),
                             y: elumiPositionY(in: geometry.size.height)

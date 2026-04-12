@@ -343,11 +343,8 @@ extension QuizView {
     }
 
     func handleBackNavigation() {
-        if session.isShowingResult || !session.questions.isEmpty {
-            resetQuizToSetup()
-        } else {
-            dismiss()
-        }
+        resetQuizToSetup()
+        dismiss()
     }
 
 }

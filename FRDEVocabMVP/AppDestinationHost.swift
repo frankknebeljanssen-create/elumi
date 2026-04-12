@@ -16,8 +16,8 @@ struct AppDestinationHost: View {
             trainDestination(launchContext: launchContext)
         case .flashcards(let launchContext):
             flashcardsDestination(launchContext: launchContext)
-        case .quiz:
-            quizDestination
+        case .quiz(let launchContext):
+            quizDestination(launchContext: launchContext)
         case .hearts:
             heartsDestination
         case .lists(let launchContext):
@@ -129,11 +129,12 @@ struct AppDestinationHost: View {
     }
 
     @ViewBuilder
-    private var quizDestination: some View {
+    private func quizDestination(launchContext: QuizLaunchContext?) -> some View {
         if let listStore = runtime.listStore {
             QuizView(
                 listStore: listStore,
                 feedbackPlayer: feedbackPlayer,
+                launchContext: launchContext,
                 goHome: goHome,
                 openSettings: openSettings,
                 openInfo: openInfo

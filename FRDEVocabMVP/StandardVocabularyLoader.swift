@@ -35,7 +35,8 @@ enum StandardVocabularyLoader {
                 rawGerman: entry.target,
                 cardType: cardType,
                 level: vocabularyLevel(for: entry.level),
-                sourceLanguage: .french
+                sourceLanguage: .french,
+                wordClass: entry.wordClass.isEmpty ? nil : entry.wordClass
             )
         }
     }()

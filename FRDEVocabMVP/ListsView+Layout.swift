@@ -13,6 +13,11 @@ extension ListsView {
         "\(selectedList.items.count) Einträge · \(listCollectionSummary(for: selectedList))"
     }
 
+    /// When launched from Import Completion, skip showing the lists screen entirely
+    private var isDirectListLaunch: Bool {
+        launchContext?.preferredListID != nil
+    }
+
     var body: some View {
         applyListsPresentations(to: screenContent)
     }
@@ -20,7 +25,12 @@ extension ListsView {
     var screenContent: some View {
         ZStack(alignment: .top) {
             ZStack(alignment: .bottom) {
-                listsPrimaryContent
+                if isDirectListLaunch && !showingListDetail {
+                    // Hide content while sheet is about to open — prevents flash
+                    Color.clear
+                } else {
+                    listsPrimaryContent
+                }
 
                 if isShowingToast {
                     toastView
@@ -57,6 +67,8 @@ extension ListsView {
             if let preferredListID = launchContext?.preferredListID,
                listStore.allLists.contains(where: { $0.id == preferredListID }) {
                 listStore.selectedListID = preferredListID
+                // From Import Completion → open list detail directly
+                showingListDetail = true
             }
             editableListName = selectedList.name
         }

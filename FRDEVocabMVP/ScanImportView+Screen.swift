@@ -84,7 +84,15 @@ extension ScanImportView {
             ScrollView {
                 VStack(spacing: 6) {
                     ForEach(previewPairs) { pair in
-                        HStack(spacing: 8) {
+                        HStack(spacing: 6) {
+                            // Warning badge for unsure entries
+                            if !pair.isImportable {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundStyle(AppTheme.Colors.warning)
+                                    .frame(width: 24)
+                            }
+
                             VStack(alignment: .leading, spacing: 3) {
                                 Text(pair.french)
                                     .font(.system(size: 15, weight: .bold, design: .rounded))
@@ -92,15 +100,35 @@ extension ScanImportView {
                                     .lineLimit(2)
                                 Text(pair.german)
                                     .font(.system(size: 14, weight: .medium, design: .rounded))
-                                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                                    .foregroundStyle(pair.isImportable ? AppTheme.Colors.textSecondary : AppTheme.Colors.warning)
                                     .lineLimit(2)
                             }
                             Spacer(minLength: 0)
+
+                            // OK button — confirms unsure entry as importable
                             if !pair.isImportable {
-                                Image(systemName: "exclamationmark.triangle.fill")
-                                    .font(.system(size: 14))
-                                    .foregroundStyle(AppTheme.Colors.warning)
+                                Button {
+                                    if let idx = previewPairs.firstIndex(where: { $0.id == pair.id }) {
+                                        previewPairs[idx] = ImportPreviewPair(
+                                            id: pair.id,
+                                            french: pair.french,
+                                            german: pair.german,
+                                            cardType: pair.cardType,
+                                            learningCategory: pair.learningCategory,
+                                            note: pair.note,
+                                            isImportable: true,
+                                            isReviewed: true
+                                        )
+                                    }
+                                } label: {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 20, weight: .bold))
+                                        .foregroundStyle(AppTheme.Colors.success)
+                                        .frame(width: 32, height: 32)
+                                }
+                                .buttonStyle(.plain)
                             }
+
                             Button {
                                 reviewEditingPairID = IdentifiableUUID(pair.id)
                             } label: {
@@ -124,11 +152,11 @@ extension ScanImportView {
                         .padding(.vertical, 10)
                         .background(
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .fill(pair.isImportable ? AppTheme.Colors.surface : AppTheme.Colors.warning.opacity(0.06))
+                                .fill(pair.isImportable ? AppTheme.Colors.surface : AppTheme.Colors.warning.opacity(0.12))
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .stroke(pair.isImportable ? AppTheme.Colors.border : AppTheme.Colors.warning.opacity(0.3), lineWidth: 1)
+                                .stroke(pair.isImportable ? AppTheme.Colors.border : AppTheme.Colors.warning.opacity(0.5), lineWidth: pair.isImportable ? 1 : 2)
                         )
                     }
                 }
@@ -193,16 +221,16 @@ extension ScanImportView {
         let totalPairs = previewPairs.count
         let unsureCount = scanResultUnsureCount
 
-        return VStack(spacing: 14) {
+        return VStack(spacing: 10) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 44, weight: .bold))
+                .font(.system(size: 28, weight: .bold))
                 .foregroundStyle(AppTheme.Colors.success)
 
             Text("Analyse abgeschlossen")
-                .font(.system(size: 22, weight: .black, design: .rounded))
+                .font(.system(size: 20, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
 
-            VStack(spacing: 6) {
+            VStack(spacing: 5) {
                 HStack(spacing: 8) {
                     Image(systemName: "doc.text.fill")
                         .font(.system(size: 14, weight: .bold))
@@ -223,16 +251,24 @@ extension ScanImportView {
                     Spacer()
                 }
 
-                if unsureCount > 0 {
-                    HStack(spacing: 8) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(AppTheme.Colors.warning)
-                        Text("\(unsureCount) unsichere Einträge")
-                            .font(.system(size: 15, weight: .semibold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.warning)
-                        Spacer()
-                    }
+                HStack(spacing: 8) {
+                    Image(systemName: "square.and.arrow.down.fill")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(AppTheme.Colors.primary)
+                    Text("\(completePreviewPairCount) Einträge bereit zum Import")
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                    Spacer()
+                }
+
+                HStack(spacing: 8) {
+                    Image(systemName: unsureCount > 0 ? "exclamationmark.triangle.fill" : "checkmark.shield.fill")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(unsureCount > 0 ? AppTheme.Colors.warning : AppTheme.Colors.success)
+                    Text(unsureCount > 0 ? "\(unsureCount) unsichere Einträge" : "Keine unsicheren Einträge")
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .foregroundStyle(unsureCount > 0 ? AppTheme.Colors.warning : AppTheme.Colors.textSecondary)
+                    Spacer()
                 }
             }
             .padding(.horizontal, 4)
@@ -247,9 +283,9 @@ extension ScanImportView {
                     .frame(minHeight: 52)
             }
             .buttonStyle(AppPrimaryButtonStyle(color: sectionStyle.accent))
-            .padding(.top, 4)
+            .padding(.top, 2)
         }
-        .padding(20)
+        .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(AppTheme.Colors.surface)
@@ -262,7 +298,7 @@ extension ScanImportView {
 
     @ViewBuilder
     var scanStatusMessageView: some View {
-        if !isRecognizingImage {
+        if !isRecognizingImage, !session.batchCompleted {
             Text(importMessage)
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.textSecondary)
@@ -308,12 +344,14 @@ extension ScanImportView {
                             onCamera: {
                                 guard !isRecognizingImage else { return }
                                 guard isCameraCaptureAvailable else { return }
+                                feedbackPlayer.playTabSwitch()
                                 shouldAppendNextScan = false
                                 selectedScanInputMethod = .camera
                                 openCameraScanner()
                             },
                             onLibrary: {
                                 guard !isRecognizingImage else { return }
+                                feedbackPlayer.playTabSwitch()
                                 shouldAppendNextScan = false
                                 selectedScanInputMethod = .library
                                 showingPhotoLibrary = true
@@ -328,35 +366,34 @@ extension ScanImportView {
                         // Progress overlay during batch
                         // (handled below as overlay)
 
-                        if let selectedImage, !session.batchCompleted {
-                            ScanSelectedImageCardView(
-                                image: selectedImage,
-                                isRecognizingImage: isRecognizingImage,
-                                progressText: scanProgressText,
-                                runtimeLabel: scanProgressRuntimeLabel,
-                                runtimeTint: scanProgressRuntimeTint,
-                                runtimeIcon: scanProgressRuntimeIcon,
-                                sectionStyle: sectionStyle,
-                                onTap: {
-                                    showingImagePreview = true
-                                }
-                            )
-                        }
-
-                        if !importText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                            Button {
-                                showingAdditionalScanOptions = true
-                            } label: {
-                                HStack(spacing: 10) {
-                                    Image(systemName: "plus.viewfinder")
-                                        .font(.system(size: 20, weight: .bold))
-                                    Text("Noch mehr einlesen")
-                                        .font(AppTheme.Typography.button)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .frame(minHeight: 52)
+                        if !session.batchCompleted {
+                            if session.batchThumbnails.count > 1 {
+                                // Multi-page: thumbnail strip
+                                ScanBatchThumbnailCardView(
+                                    thumbnails: session.batchThumbnails,
+                                    currentIndex: session.batchCurrentIndex,
+                                    isRecognizing: isRecognizingImage,
+                                    progressText: scanProgressText,
+                                    runtimeLabel: scanProgressRuntimeLabel,
+                                    runtimeTint: scanProgressRuntimeTint,
+                                    runtimeIcon: scanProgressRuntimeIcon,
+                                    sectionStyle: sectionStyle
+                                )
+                            } else if let selectedImage {
+                                // Single page
+                                ScanSelectedImageCardView(
+                                    image: selectedImage,
+                                    isRecognizingImage: isRecognizingImage,
+                                    progressText: scanProgressText,
+                                    runtimeLabel: scanProgressRuntimeLabel,
+                                    runtimeTint: scanProgressRuntimeTint,
+                                    runtimeIcon: scanProgressRuntimeIcon,
+                                    sectionStyle: sectionStyle,
+                                    onTap: {
+                                        showingImagePreview = true
+                                    }
+                                )
                             }
-                            .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
                         }
 
                         scanStatusMessageView
@@ -396,12 +433,57 @@ extension ScanImportView {
     }
 
     var body: some View {
-        applyingScanPresentationModifiers(
-            to: applyingScanRootModifiers(
-                to: ScrollViewReader { proxy in
-                    scanRootContent(proxy: proxy)
-                }
-            )
+        Group {
+            if isShowingImportCompletion, let ctx = importCompletionContext {
+                importCompletionScreen(context: ctx)
+            } else {
+                applyingScanPresentationModifiers(
+                    to: applyingScanRootModifiers(
+                        to: ScrollViewReader { proxy in
+                            scanRootContent(proxy: proxy)
+                        }
+                    )
+                )
+            }
+        }
+    }
+
+    private func importCompletionScreen(context: ImportCompletionContext) -> some View {
+        ImportCompletionView(
+            context: context,
+            onTrain: {
+                handleCompletionSelection(.train(TrainingLaunchContext(
+                    preferredListID: context.targetListID,
+                    preferredMode: .vocabulary,
+                    shouldAutoStart: true
+                )))
+            },
+            onArticles: {
+                handleCompletionSelection(.train(TrainingLaunchContext(
+                    preferredListID: context.targetListID,
+                    preferredMode: .articles,
+                    shouldAutoStart: true
+                )))
+            },
+            onVerbs: {
+                handleCompletionSelection(.train(TrainingLaunchContext(
+                    preferredListID: context.targetListID,
+                    preferredMode: .verbs,
+                    shouldAutoStart: true
+                )))
+            },
+            onFlashcards: {
+                handleCompletionSelection(.flashcards(context.flashcardLaunchContext))
+            },
+            onQuiz: {
+                handleCompletionSelection(.quiz(context.quizLaunchContext))
+            },
+            onViewList: {
+                handleCompletionSelection(.lists(context.listLaunchContext))
+            },
+            onLater: {
+                handleCompletionSelection(nil)
+            }
         )
     }
 }

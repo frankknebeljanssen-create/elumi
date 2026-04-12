@@ -131,19 +131,22 @@ struct ScanReviewEntry: Identifiable, Equatable {
     let targetText: String
     let cardType: CardType
     let reviewMetadata: ScanEntryReviewMetadata
+    let wordClass: String?
 
     init(
         id: UUID = UUID(),
         sourceText: String,
         targetText: String,
         cardType: CardType,
-        reviewMetadata: ScanEntryReviewMetadata = ScanEntryReviewMetadata()
+        reviewMetadata: ScanEntryReviewMetadata = ScanEntryReviewMetadata(),
+        wordClass: String? = nil
     ) {
         self.id = id
         self.sourceText = sourceText
         self.targetText = targetText
         self.cardType = cardType
         self.reviewMetadata = reviewMetadata
+        self.wordClass = wordClass
     }
 
     var french: String { sourceText }

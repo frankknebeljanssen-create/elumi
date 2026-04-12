@@ -67,7 +67,7 @@ enum AppTheme {
         static let moduleQuiz = Color(hex: "#10B981")            // Quiz — Green
         static let moduleLexicon = Color(hex: "#E879F9")         // Wörterbuch — Fuchsia
         static let moduleLists = Color(hex: "#57B8C9")           // Listen — Teal
-        static let moduleScan = Color(hex: "#10B981")            // Scan — Green (= Quiz)
+        static let moduleScan = Color(hex: "#EF6C50")            // Scan — Coral
         static let moduleArcade = elumiPinkDeep                  // Arcade — Pink
 
         // Legacy aliases

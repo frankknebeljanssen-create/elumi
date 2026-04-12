@@ -10,9 +10,13 @@ extension TrainingView {
         refreshDictionaryTrainingListIfNeeded()
         ensureTrainingSelectionValidity()
         ensureDirectionValidity()
-        // Only reset if not currently in a training session
+        // Reset if not in active session
         if !session.hasStartedTraining {
             resetTrainingSession()
+        }
+        // Auto-start training — mode is already selected from Home/Import
+        if !session.hasStartedTraining {
+            startTraining()
         }
     }
 

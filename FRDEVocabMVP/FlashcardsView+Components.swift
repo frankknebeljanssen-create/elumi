@@ -2,7 +2,7 @@ import SwiftUI
 import UIKit
 
 extension FlashcardsView {
-    func flashcardFace(text: String, isAnswerSide: Bool, languageCode: String) -> some View {
+    func flashcardFace(text: String, isAnswerSide: Bool, languageCode: String, wordClassLabel: String? = nil) -> some View {
         RoundedRectangle(cornerRadius: 22, style: .continuous)
             .fill(isAnswerSide ? AppTheme.Colors.secondarySurface : AppTheme.Colors.surface)
             .overlay(
@@ -17,14 +17,22 @@ extension FlashcardsView {
                     )
             )
             .overlay(alignment: .center) {
-                Text(text)
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .lineLimit(4)
-                    .minimumScaleFactor(0.62)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, isAnswerSide ? 14 : 16)
+                VStack(spacing: 6) {
+                    Text(text)
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .lineLimit(4)
+                        .minimumScaleFactor(0.62)
+                        .multilineTextAlignment(.center)
+
+                    if let wordClassLabel, !wordClassLabel.isEmpty {
+                        Text("(\(wordClassLabel))")
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                    }
+                }
+                .padding(.horizontal, 18)
+                .padding(.vertical, isAnswerSide ? 14 : 16)
             }
             .frame(maxWidth: .infinity)
             .frame(height: flashcardFaceHeight)

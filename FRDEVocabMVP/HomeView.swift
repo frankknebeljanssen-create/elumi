@@ -38,35 +38,19 @@ struct HomeView: View {
     }
 
     private var directionToggle: some View {
-        HStack(spacing: 8) {
-            directionButton(
-                direction: .frenchToGerman,
-                leftFlag: "FR",
-                rightFlag: "DE"
-            )
-            directionButton(
-                direction: .germanToFrench,
-                leftFlag: "DE",
-                rightFlag: "FR"
-            )
-        }
-    }
-
-    private func directionButton(direction: Direction, leftFlag: String, rightFlag: String) -> some View {
-        let isSelected = selectedDirection == direction
+        let isFrToDE = selectedDirection == .frenchToGerman
         return Button {
             feedbackPlayer.playToggle()
-            selectedDirectionRaw = direction.rawValue
+            selectedDirectionRaw = isFrToDE
+                ? Direction.germanToFrench.rawValue
+                : Direction.frenchToGerman.rawValue
         } label: {
             HStack(spacing: 10) {
-                StraightFlagBadge(countryCode: leftFlag, width: 36, height: 24, labelFontSize: 10)
-                    .opacity(isSelected ? 1 : 0.25)
-                Image(systemName: "arrowtriangle.right.fill")
+                StraightFlagBadge(countryCode: isFrToDE ? "FR" : "DE", width: 36, height: 24, labelFontSize: 10)
+                Image(systemName: "arrow.left.arrow.right")
                     .font(.system(size: 14, weight: .black))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .opacity(isSelected ? 1 : 0.25)
-                StraightFlagBadge(countryCode: rightFlag, width: 36, height: 24, labelFontSize: 10)
-                    .opacity(isSelected ? 1 : 0.25)
+                StraightFlagBadge(countryCode: isFrToDE ? "DE" : "FR", width: 36, height: 24, labelFontSize: 10)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
@@ -78,7 +62,6 @@ struct HomeView: View {
                 RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
                     .stroke(AppTheme.Colors.border, lineWidth: 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous))
             .shadow(color: AppTheme.Shadow.card.color, radius: AppTheme.Shadow.card.radius, x: 0, y: 6)
         }
         .buttonStyle(.plain)
@@ -299,7 +282,7 @@ struct HomeView: View {
                     )
 
                     homeNavigationButton(
-                        screen: .quiz,
+                        screen: .quiz(nil),
                         title: "Quiz",
                         systemImage: "lightbulb.fill",
                         accentColor: homeQuizColor,
@@ -311,8 +294,6 @@ struct HomeView: View {
 
             // Bottom section — pinned to bottom
             VStack(spacing: 10) {
-                directionToggle
-
                 HStack(spacing: 10) {
                     homeSecondaryButton(
                         screen: .lists(nil),
@@ -328,6 +309,8 @@ struct HomeView: View {
                         accentColor: homeScanColor
                     )
                 }
+
+                directionToggle
             }
             .frame(maxHeight: .infinity, alignment: .bottom)
             .padding(.bottom, 10)

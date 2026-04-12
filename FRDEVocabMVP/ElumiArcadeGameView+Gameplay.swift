@@ -301,7 +301,18 @@ extension ElumiArcadeGameView {
             roundBannerPhase = 1
             readyBlinkVisible = true
             showingRoundBanner = true
-            // Ensure game is still running after bonus round
+
+            // Ensure clean state after bonus round
+            isBonusRound = false
+            activeFish = []
+            activeSnacks = []
+            activeTentacles = []
+            activeJellyfish = nil
+            jellyfishStingCount = 0
+            elumiY = 0.5
+            bonusRoundWaitingForTap = false
+            bonusRoundResultText = nil
+            feedbackPlayer.stopJellyfishAmbient()
             if !isPlaying { isPlaying = true }
 
             for _ in 0..<3 {
@@ -324,6 +335,15 @@ extension ElumiArcadeGameView {
         bonusFishCaught = 0
         bonusFishSpawned = 0
         activeFish = []
+        activeSnacks = []           // Clear leftover snacks from previous round
+        activeJellyfish = nil       // Clear jellyfish
+        activeTentacles = []        // Clear tentacles
+        jellyfishStingCount = 0
+        feedbackPlayer.stopJellyfishAmbient()
+        suctionEndsAt = nil         // Clear power-ups
+        bonusPointsEndsAt = nil
+        slowMotionEndsAt = nil
+        comboBannerText = nil
         elumiY = 0.5
         bonusRoundStartedAt = Date()
         bonusRoundWaitingForTap = true
@@ -431,8 +451,16 @@ extension ElumiArcadeGameView {
     func endBonusRound() {
         isBonusRound = false
         activeFish = []
+        activeSnacks = [] // Clear any lingering friend/snack sprites
+        activeJellyfish = nil
+        activeTentacles = []
+        jellyfishStingCount = 0
+        feedbackPlayer.stopJellyfishAmbient()
         feedbackPlayer.sp.stop("bgm_fischfang")
         feedbackPlayer.startBGM()
+
+        // Reset Elumi to bottom rail (normal game mode position)
+        elumiY = 0.5
 
         let success = bonusFishCaught >= Int(Double(bonusFishTotal) * 0.8) // 80%
 
@@ -600,6 +628,9 @@ extension ElumiArcadeGameView {
             resetCombo()
         }
 
+        // ── Jellyfish update ──
+        updateJellyfish(now: now)
+
         if misses >= maxMisses && !bonusRoundWaitingForTap {
             gameOverTitle = "Game Over"
             gameOverSubtitle = ""
@@ -648,6 +679,105 @@ extension ElumiArcadeGameView {
         bonusRoundWaitingForTap = false
         roundBannerPhase = 0
         readyBlinkVisible = true
+        activeJellyfish = nil
+        activeTentacles = []
+        jellyfishStingCount = 0
+        feedbackPlayer.stopJellyfishAmbient()
+    }
+
+    // ── JELLYFISH ──
+
+    func spawnJellyfish() {
+        let fromLeft = Bool.random()
+        let jelly = JellyfishState(
+            spawnedAt: Date(),
+            fromLeft: fromLeft,
+            normalizedY: CGFloat.random(in: 0.15...0.38),
+            speed: Double.random(in: 7...10),
+            wobblePhase: Double.random(in: 0...(.pi * 2))
+        )
+        activeJellyfish = jelly
+        feedbackPlayer.playJellyfishAppear()
+        feedbackPlayer.playJellyfishAmbientLoop()
+    }
+
+    func updateJellyfish(now: Date) {
+        guard var jelly = activeJellyfish, gameSize != .zero else { return }
+
+        let elapsed = now.timeIntervalSince(jelly.spawnedAt)
+        let progress = elapsed / jelly.speed
+
+        // Jellyfish left the screen
+        if progress > 1.15 {
+            activeJellyfish = nil
+            activeTentacles = []
+            jellyfishStingCount = 0
+            feedbackPlayer.stopJellyfishAmbient()
+            return
+        }
+
+        // Drop tentacles (max 4, every 1.5–2.5s while on screen 10%–90%)
+        if progress > 0.10 && progress < 0.90 && jelly.tentaclesDropped < 4 {
+            let timeSinceLastDrop = jelly.lastTentacleDropAt.map { now.timeIntervalSince($0) } ?? 999
+            let dropInterval = Double.random(in: 1.5...2.5)
+            if timeSinceLastDrop >= dropInterval {
+                let jellyPos = jellyfishPosition(for: jelly, at: now, in: gameSize)
+                let tentacle = TentacleDropState(
+                    spawnedAt: now,
+                    startY: jellyPos.y + 30,
+                    normalizedX: jellyPos.x / gameSize.width,
+                    wobbleAmplitude: CGFloat.random(in: 0.02...0.05),
+                    fallDuration: Double.random(in: 2.8...3.5)
+                )
+                activeTentacles.append(tentacle)
+                jelly.tentaclesDropped += 1
+                jelly.lastTentacleDropAt = now
+                activeJellyfish = jelly
+                feedbackPlayer.playTentacleDrop()
+            }
+        }
+
+        // Tentacle collision with Elumi
+        let elumiPos = CGPoint(
+            x: elumiPositionX(in: gameSize.width),
+            y: elumiPositionY(in: gameSize.height)
+        )
+        let catchLineY = gameSize.height - 158
+
+        var hitTentacleIDs: Set<UUID> = []
+        var missedTentacleIDs: Set<UUID> = []
+
+        for tentacle in activeTentacles {
+            let tPos = tentaclePosition(for: tentacle, at: now, in: gameSize)
+            let tProgress = now.timeIntervalSince(tentacle.spawnedAt) / tentacle.fallDuration
+
+            if tPos.y >= catchLineY && abs(tPos.x - elumiPos.x) <= 30 {
+                hitTentacleIDs.insert(tentacle.id)
+                jellyfishStingCount += 1
+                feedbackPlayer.playTentacleSting()
+
+                // Screen shake proportional to sting count
+                withAnimation(.easeOut(duration: 0.08)) {
+                    screenShakeOffset = jellyfishStingCount >= 2 ? 8 : 4
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
+                    withAnimation(.easeOut(duration: 0.12)) { screenShakeOffset = 0 }
+                }
+
+                if jellyfishStingCount >= 3 {
+                    misses += 1
+                    jellyfishStingCount = 0
+                    feedbackPlayer.playSnackMiss()
+                    resetCombo()
+                }
+            }
+
+            if tProgress > 1.1 {
+                missedTentacleIDs.insert(tentacle.id)
+            }
+        }
+
+        activeTentacles.removeAll { hitTentacleIDs.contains($0.id) || missedTentacleIDs.contains($0.id) }
     }
 
     func runGameLoops() async {
@@ -681,6 +811,13 @@ extension ElumiArcadeGameView {
                     guard !isBannerUp else { continue }
                     await MainActor.run {
                         spawnSnack()
+                        // Jellyfish spawn check
+                        let config = ArcadeRoundConfig(round: round)
+                        if activeJellyfish == nil && !isBonusRound && config.jellyfishChance > 0 {
+                            if Double.random(in: 0...1) < config.jellyfishChance {
+                                spawnJellyfish()
+                            }
+                        }
                     }
                 }
             }

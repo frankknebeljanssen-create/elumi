@@ -2,7 +2,10 @@ import SwiftUI
 
 extension QuizView {
     func handleQuizAppear() {
-        if session.selectedListIDs.isEmpty {
+        // Apply launch context from Import Completion
+        if let ctx = launchContext, let preferredListID = ctx.preferredListID {
+            session.selectedListIDs = [preferredListID]
+        } else if session.selectedListIDs.isEmpty {
             session.restoreSelectedListIDs()
         }
         print("🧩 [Quiz] handleQuizAppear, availableLists=\(availableQuizLists.count), selectedIDs=\(session.selectedListIDs)")
@@ -12,6 +15,10 @@ extension QuizView {
             direction: selectedAppDirection,
             force: session.cachedMergedItems.isEmpty
         )
+        // Auto-start quiz from Import Completion
+        if launchContext?.shouldAutoStart == true, session.questions.isEmpty {
+            startQuiz()
+        }
     }
 
     func handleQuizCustomListsChange() {

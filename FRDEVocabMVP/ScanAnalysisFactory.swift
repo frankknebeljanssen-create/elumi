@@ -50,7 +50,7 @@ struct ScanAnalysisFactory {
     private func makeAIProvider() -> ScanProvider {
         let primary = aiClientProvider()
         let fallback: ScanAIClient? = (primary as? ClaudeHaikuScanAIClient).map {
-            ClaudeHaikuScanAIClient(apiKey: $0.apiKey, model: "claude-sonnet-4-5-20250929")
+            ClaudeHaikuScanAIClient(apiKey: $0.apiKey, model: "claude-sonnet-4-5-20250929", maxTokens: 16384)
         }
         return AIScanProvider(client: primary, fallbackClient: fallback)
     }

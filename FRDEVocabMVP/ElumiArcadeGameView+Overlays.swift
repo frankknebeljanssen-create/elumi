@@ -106,7 +106,7 @@ extension ElumiArcadeGameView {
                 )
                 .frame(width: 64, height: 64)
 
-                Text("Elumi Arcade")
+                Text("Elumi Spiel")
                     .font(.system(size: 30, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
 

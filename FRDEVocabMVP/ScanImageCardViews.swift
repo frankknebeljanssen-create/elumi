@@ -42,6 +42,81 @@ struct ScanProgressOverlayCardView: View {
     }
 }
 
+struct ScanBatchThumbnailCardView: View {
+    let thumbnails: [UIImage]
+    let currentIndex: Int
+    let isRecognizing: Bool
+    let progressText: String
+    let runtimeLabel: String
+    let runtimeTint: Color
+    let runtimeIcon: String
+    let sectionStyle: AppSectionStyle
+
+    var body: some View {
+        VStack(spacing: 10) {
+            // Thumbnail strip
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(Array(thumbnails.enumerated()), id: \.offset) { index, thumb in
+                            let pageNum = index + 1
+                            let isCurrent = pageNum == currentIndex
+                            let isDone = pageNum < currentIndex
+
+                            ZStack {
+                                Image(uiImage: thumb)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 64, height: 80)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                    .opacity(isDone ? 0.5 : 1.0)
+
+                                if isDone {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 20, weight: .bold))
+                                        .foregroundStyle(AppTheme.Colors.success)
+                                }
+
+                                if isCurrent && isRecognizing {
+                                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                        .fill(Color.black.opacity(0.15))
+                                    ProgressView()
+                                        .progressViewStyle(.circular)
+                                        .tint(.white)
+                                        .scaleEffect(0.8)
+                                }
+                            }
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .stroke(isCurrent ? sectionStyle.accent : Color.clear, lineWidth: 2)
+                            )
+                            .id(index)
+                        }
+                    }
+                    .padding(.horizontal, 4)
+                }
+                .onChange(of: currentIndex) { _, newIndex in
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        proxy.scrollTo(max(newIndex - 1, 0), anchor: .leading)
+                    }
+                }
+            }
+
+            // Progress info
+            if isRecognizing {
+                ScanProgressOverlayCardView(
+                    progressText: progressText,
+                    runtimeLabel: runtimeLabel,
+                    runtimeTint: runtimeTint,
+                    runtimeIcon: runtimeIcon
+                )
+            }
+        }
+        .padding(12)
+        .appCardBackground(sectionStyle, intensity: 0.09)
+    }
+}
+
 struct ScanSelectedImageCardView: View {
     let image: UIImage
     let isRecognizingImage: Bool

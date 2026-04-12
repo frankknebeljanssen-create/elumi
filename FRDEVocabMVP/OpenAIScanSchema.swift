@@ -37,7 +37,7 @@ struct OpenAIScanSchemaResponse: Decodable {
     let documentType: ScanDocumentType
     let mode: ScanMode
     let sourceLanguage: StudyLanguage
-    let entries: [Entry]
+    var entries: [Entry]
     let warnings: [String]
     let summary: String
     let importMessage: String
@@ -46,8 +46,8 @@ struct OpenAIScanSchemaResponse: Decodable {
     let recognizedLineCount: Int
 
     struct Entry: Decodable {
-        let source: String
-        let target: String
+        var source: String
+        var target: String
         let cardType: CardType
         let sourcePhonetic: String
         let targetPhonetic: String
@@ -56,6 +56,7 @@ struct OpenAIScanSchemaResponse: Decodable {
         let note: String?
         let isImportable: Bool
         let notes: [String]
+        let wordClass: String?
 
         private enum CodingKeys: String, CodingKey {
             case source
@@ -68,6 +69,7 @@ struct OpenAIScanSchemaResponse: Decodable {
             case note
             case isImportable = "is_importable"
             case notes
+            case wordClass = "word_class"
         }
 
         init(from decoder: Decoder) throws {
@@ -97,6 +99,7 @@ struct OpenAIScanSchemaResponse: Decodable {
             learningCategory = resolvedMetadata.learningCategory
             note = resolvedMetadata.note
             isImportable = resolvedMetadata.isImportable
+            wordClass = try container.decodeIfPresent(String.self, forKey: .wordClass)
         }
     }
 
@@ -150,7 +153,8 @@ struct OpenAIScanSchemaResponse: Decodable {
                         note: $0.note,
                         isImportable: $0.isImportable
                     ),
-                    notes: $0.notes
+                    notes: $0.notes,
+                    wordClass: $0.wordClass
                 )
             },
             warnings: warnings,

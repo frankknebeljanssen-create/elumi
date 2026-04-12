@@ -84,6 +84,7 @@ struct ImportPreviewPair: Identifiable, Equatable {
     var note: String? = nil
     var isImportable: Bool = true
     var isReviewed: Bool = false
+    var wordClass: String? = nil
 }
 
 

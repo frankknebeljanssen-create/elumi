@@ -9,6 +9,7 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
     var cardType: CardType
     var level: VocabularyLevel? = nil
     var sourceLanguage: StudyLanguage = .french
+    var wordClass: String? = nil
 
     init(
         id: UUID = UUID(),
@@ -18,7 +19,8 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
         targetPhonetic: String? = nil,
         cardType: CardType,
         level: VocabularyLevel? = nil,
-        sourceLanguage: StudyLanguage = .french
+        sourceLanguage: StudyLanguage = .french,
+        wordClass: String? = nil
     ) {
         self.id = id
         self.french = sourceDisplayText(french, sourceLanguage: sourceLanguage)
@@ -28,6 +30,7 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
         self.cardType = cardType
         self.level = level
         self.sourceLanguage = sourceLanguage
+        self.wordClass = wordClass
     }
 
     /// Raw init that skips text processing — for pre-processed data (GPT translations)
@@ -36,7 +39,8 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
         rawGerman german: String,
         cardType: CardType,
         level: VocabularyLevel? = nil,
-        sourceLanguage: StudyLanguage = .french
+        sourceLanguage: StudyLanguage = .french,
+        wordClass: String? = nil
     ) {
         self.id = UUID()
         self.french = french
@@ -46,6 +50,7 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
         self.cardType = cardType
         self.level = level
         self.sourceLanguage = sourceLanguage
+        self.wordClass = wordClass
     }
 
     init(
@@ -74,6 +79,7 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
         case cardType
         case level
         case sourceLanguage
+        case wordClass
     }
 
     init(from decoder: Decoder) throws {
@@ -114,7 +120,8 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
                 answer: synchronizedPair.target,
                 promptLanguageCode: "fr-FR",
                 answerLanguageCode: "de-DE",
-                category: cardType.categoryName
+                category: cardType.categoryName,
+                wordClass: wordClass
             )
         case .germanToFrench:
             return FlashCard(
@@ -122,7 +129,8 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
                 answer: synchronizedPair.source,
                 promptLanguageCode: "de-DE",
                 answerLanguageCode: "fr-FR",
-                category: cardType.categoryName
+                category: cardType.categoryName,
+                wordClass: wordClass
             )
         case .englishToGerman:
             return FlashCard(
@@ -130,7 +138,8 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
                 answer: synchronizedPair.target,
                 promptLanguageCode: "en-US",
                 answerLanguageCode: "de-DE",
-                category: cardType.categoryName
+                category: cardType.categoryName,
+                wordClass: wordClass
             )
         case .germanToEnglish:
             return FlashCard(
@@ -138,7 +147,8 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
                 answer: synchronizedPair.source,
                 promptLanguageCode: "de-DE",
                 answerLanguageCode: "en-US",
-                category: cardType.categoryName
+                category: cardType.categoryName,
+                wordClass: wordClass
             )
         }
     }

@@ -21,14 +21,16 @@ extension FlashcardsView {
                             flashcardFace(
                                 text: currentFlashCard.prompt,
                                 isAnswerSide: false,
-                                languageCode: currentFlashCard.promptLanguageCode
+                                languageCode: currentFlashCard.promptLanguageCode,
+                                wordClassLabel: currentFlashCard.wordClassLabel(for: currentFlashCard.promptLanguageCode)
                             )
                             .opacity(interaction.isFlashcardFlipped ? 0 : 1)
 
                             flashcardFace(
                                 text: currentFlashCard.answer,
                                 isAnswerSide: true,
-                                languageCode: currentFlashCard.answerLanguageCode
+                                languageCode: currentFlashCard.answerLanguageCode,
+                                wordClassLabel: currentFlashCard.wordClassLabel(for: currentFlashCard.answerLanguageCode)
                             )
                             .opacity(interaction.isFlashcardFlipped ? 1 : 0)
                             .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0), perspective: 0.72)

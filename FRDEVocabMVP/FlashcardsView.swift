@@ -18,6 +18,7 @@ struct FlashcardsView: View {
 
     @StateObject var setup = FlashcardsSetupController()
     @StateObject var interaction = FlashcardsSessionController()
+    @State var isWaitingToStart = false
     @FocusState var isTypedAnswerFocused: Bool
     @FocusState var isCardCountFieldFocused: Bool
     let flashcardCountInputScrollID = "flashcardCountInput"

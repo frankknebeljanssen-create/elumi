@@ -83,7 +83,8 @@ extension AIScanProvider {
             targetPhonetic: entry.targetPhonetic,
             confidence: entry.confidence,
             reviewMetadata: entry.reviewMetadata,
-            notes: entry.notes
+            notes: entry.notes,
+            wordClass: entry.wordClass
         )
     }
 }

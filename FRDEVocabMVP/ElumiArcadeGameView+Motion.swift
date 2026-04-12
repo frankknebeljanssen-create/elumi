@@ -99,6 +99,33 @@ extension ElumiArcadeGameView {
         elumiY = (clampedY - minY) / max(maxY - minY, 1)
     }
 
+    // ── Jellyfish ──
+
+    func jellyfishPosition(for jelly: JellyfishState, at date: Date, in size: CGSize) -> CGPoint {
+        let elapsed = date.timeIntervalSince(jelly.spawnedAt)
+        let progress = CGFloat(elapsed / jelly.speed)
+
+        let startX: CGFloat = jelly.fromLeft ? -60 : size.width + 60
+        let endX: CGFloat = jelly.fromLeft ? size.width + 60 : -60
+        let x = startX + (endX - startX) * progress
+
+        let baseY = jelly.normalizedY * size.height
+        let y = baseY + sin(elapsed * 1.2 + jelly.wobblePhase) * 25
+
+        return CGPoint(x: x, y: y)
+    }
+
+    func tentaclePosition(for tentacle: TentacleDropState, at date: Date, in size: CGSize) -> CGPoint {
+        let elapsed = date.timeIntervalSince(tentacle.spawnedAt)
+        let progress = CGFloat(elapsed / tentacle.fallDuration)
+
+        let x = tentacle.normalizedX * size.width + sin(elapsed * 2.5) * tentacle.wobbleAmplitude * size.width
+        let endY = size.height - 100
+        let y = tentacle.startY + (endY - tentacle.startY) * min(progress, 1.0)
+
+        return CGPoint(x: x, y: y)
+    }
+
     func fishPosition(for fish: BonusFishState, at date: Date, in size: CGSize) -> CGPoint {
         let elapsed = date.timeIntervalSince(fish.spawnedAt)
         let progress = CGFloat(elapsed / fish.speed)

@@ -119,6 +119,7 @@ extension ScanSessionController {
 
     func cancelBatch() {
         pendingBatchImages = []
+        batchThumbnails = []
         batchTotalCount = 0
         batchCurrentIndex = 0
         batchCompleted = false

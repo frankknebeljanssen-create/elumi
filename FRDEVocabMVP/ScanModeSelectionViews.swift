@@ -119,7 +119,7 @@ struct ScanInputMethodOptionsCardView: View {
                 Button(action: onLibrary) {
                     ScanSelectionButtonCard(
                         systemImage: "photo.on.rectangle.fill",
-                        title: "Aufnahme",
+                        title: "Foto-Album",
                         isSelected: selectedMethod == .library,
                         accent: sectionStyle.accent
                     )

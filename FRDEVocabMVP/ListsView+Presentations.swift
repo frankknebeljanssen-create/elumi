@@ -43,6 +43,12 @@ extension ListsView {
                     list: selectedList,
                     onClose: {
                         showingListDetail = false
+                        // From Import Completion → dismiss entire ListsView to return to Import screen
+                        if launchContext?.preferredListID != nil {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                dismiss()
+                            }
+                        }
                     },
                     onEdit: { item in
                         shouldRestoreListDetailAfterEditing = true
@@ -56,6 +62,7 @@ extension ListsView {
                         }
                     }
                 )
+                .interactiveDismissDisabled()
             }
             .sheet(isPresented: $showingRenameDialog) {
                 RenameListSheet(

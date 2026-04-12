@@ -11,7 +11,8 @@ extension ScanImportView {
                     french: pair.french,
                     german: pair.german,
                     cardType: pair.cardType,
-                    sourceLanguage: scanSourceLanguage
+                    sourceLanguage: scanSourceLanguage,
+                    wordClass: pair.wordClass
                 )
             }
         let importedItemIDs = items.map(\.id)
@@ -66,7 +67,14 @@ extension ScanImportView {
     }
 
     func handleCompletionSelection(_ destination: AppScreen?) {
-        pendingCompletionDestination = destination
-        isShowingImportCompletion = false
+        guard let destination else {
+            // "Ich übe später" — go home
+            isShowingImportCompletion = false
+            goHome()
+            return
+        }
+        // Navigate to module — Import Completion stays as view state,
+        // so "Zurück" from Training returns here automatically
+        navigate(destination)
     }
 }

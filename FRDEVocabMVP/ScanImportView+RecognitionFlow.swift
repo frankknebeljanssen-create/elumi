@@ -42,10 +42,17 @@ extension ScanImportView {
             return
         }
 
-        // Multi-select: queue batch, process first image normally
+        // Multi-select: queue batch, generate thumbnails, process first image normally
         session.pendingBatchImages = Array(images.dropFirst())
         session.batchTotalCount = images.count
         session.batchCurrentIndex = 1
+        session.batchThumbnails = images.map { img in
+            let maxEdge: CGFloat = 120
+            let scale = min(maxEdge / img.size.width, maxEdge / img.size.height, 1.0)
+            let newSize = CGSize(width: img.size.width * scale, height: img.size.height * scale)
+            let renderer = UIGraphicsImageRenderer(size: newSize)
+            return renderer.image { _ in img.draw(in: CGRect(origin: .zero, size: newSize)) }
+        }
         handleSelectedImage(images[0])
     }
 

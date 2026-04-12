@@ -7,6 +7,25 @@ struct FlashCard: Identifiable, Equatable {
     let promptLanguageCode: String
     let answerLanguageCode: String
     let category: String
+    let wordClass: String?
+
+    /// Word class label localized for the given language code
+    func wordClassLabel(for languageCode: String) -> String? {
+        guard let wordClass, !wordClass.isEmpty else { return nil }
+        let isFrench = languageCode.hasPrefix("fr")
+        switch wordClass.lowercased() {
+        case "noun":         return isFrench ? "nom"         : "Nomen"
+        case "verb":         return isFrench ? "verbe"       : "Verb"
+        case "adjective":    return isFrench ? "adjectif"    : "Adjektiv"
+        case "adverb":       return isFrench ? "adverbe"     : "Adverb"
+        case "pronoun":      return isFrench ? "pronom"      : "Pronomen"
+        case "preposition":  return isFrench ? "préposition" : "Präposition"
+        case "conjunction":  return isFrench ? "conjonction" : "Konjunktion"
+        case "interjection": return isFrench ? "interjection": "Interjektion"
+        case "phrase":       return isFrench ? "expression"  : "Wendung"
+        default:             return wordClass
+        }
+    }
 }
 
 enum StudyLanguage: String, CaseIterable, Identifiable, Codable {

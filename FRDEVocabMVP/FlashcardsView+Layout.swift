@@ -106,7 +106,7 @@ extension FlashcardsView {
                 Spacer().frame(height: AppTheme.Spacing.md)
 
                 Button {
-                    returnToFlashcardSetup()
+                    handleBackNavigation()
                 } label: {
                     Label("Zurück zur Auswahl", systemImage: "arrow.left")
                         .frame(maxWidth: .infinity)
@@ -119,7 +119,7 @@ extension FlashcardsView {
                 Spacer().frame(height: 4)
 
                 Button {
-                    returnToFlashcardSetup()
+                    handleBackNavigation()
                 } label: {
                     Label("Zurück zur Auswahl", systemImage: "arrow.left")
                         .frame(maxWidth: .infinity)
@@ -138,23 +138,49 @@ extension FlashcardsView {
                 .buttonStyle(.plain)
                 .padding(.horizontal, flashcardSessionCardInset)
 
-                // Prompt Card
-                Spacer().frame(height: AppTheme.Spacing.lg)
+                if isWaitingToStart {
+                    // "Zum Starten tippen" overlay
+                    Spacer()
 
-                flashcardPromptCard
-                    .padding(.horizontal, flashcardSessionCardInset)
+                    VStack(spacing: 16) {
+                        Image(systemName: "hand.tap.fill")
+                            .font(.system(size: 44, weight: .bold))
+                            .foregroundStyle(sectionStyle.accent)
+                        Text("Zum Starten tippen")
+                            .font(.system(size: 22, weight: .black, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        isWaitingToStart = false
+                        feedbackPlayer.playCardFlip()
+                        Task { @MainActor in
+                            try? await Task.sleep(nanoseconds: 200_000_000)
+                            speakCurrentPrompt()
+                        }
+                    }
 
-                // Action Buttons
-                Spacer().frame(height: AppTheme.Spacing.lg)
+                    Spacer()
+                } else {
+                    // Prompt Card
+                    Spacer().frame(height: AppTheme.Spacing.lg)
 
-                flashcardActionButtons
-                    .padding(.horizontal, flashcardSessionCardInset)
+                    flashcardPromptCard
+                        .padding(.horizontal, flashcardSessionCardInset)
 
-                // Response Card
-                Spacer(minLength: AppTheme.Spacing.lg)
+                    // Action Buttons
+                    Spacer().frame(height: AppTheme.Spacing.lg)
 
-                flashcardResponseCard
-                    .padding(.horizontal, flashcardSessionCardInset)
+                    flashcardActionButtons
+                        .padding(.horizontal, flashcardSessionCardInset)
+
+                    // Response Card
+                    Spacer(minLength: AppTheme.Spacing.lg)
+
+                    flashcardResponseCard
+                        .padding(.horizontal, flashcardSessionCardInset)
+                }
             }
         }
         .padding(.horizontal, AppLayout.screenPadding)

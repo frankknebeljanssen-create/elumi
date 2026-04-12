@@ -16,35 +16,52 @@ struct ImportCompletionView: View {
     let onVerbs: () -> Void
     let onFlashcards: () -> Void
     let onQuiz: () -> Void
+    let onViewList: () -> Void
     let onLater: () -> Void
     private let sectionStyle: AppSectionStyle = .scan
     @State private var isNavigationLocked = false
 
     var body: some View {
-        VStack(spacing: AppTheme.Spacing.md) {
-            AppSurfaceCard(tint: sectionStyle.accent) {
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                Text("Import fertig")
-                        .font(AppTheme.Typography.largeTitle)
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-
-                Text(context.summaryText)
-                        .font(AppTheme.Typography.cardTitle)
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-
-                Text("Liste: \(context.targetListName)")
-                        .font(AppTheme.Typography.body)
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.85)
-
-                Text("Wie möchtest du weiterlernen?")
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                }
+        VStack(spacing: 16) {
+            // Import fertig! — outside card
+            VStack(spacing: 6) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 48, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.success)
+                Text("Import fertig!")
+                    .font(.system(size: 28, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
             }
 
-            // 5 module buttons like home screen
+            // Summary card
+            VStack(alignment: .leading, spacing: 6) {
+                Text(context.summaryText)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                Text("Liste: \(context.targetListName)")
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .lineLimit(2)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(AppTheme.Colors.surface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(AppTheme.Colors.border, lineWidth: 1)
+                    )
+            )
+
+            // Question — outside card
+            Text("Was möchtest du sofort üben?")
+                .font(.system(size: 22, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 4)
+
+            // 5 module buttons
             VStack(spacing: 8) {
                 completionModuleButton(
                     title: "Vokabeln",
@@ -84,16 +101,31 @@ struct ImportCompletionView: View {
                 }
             }
 
-            Button("Später") {
-                guard !isNavigationLocked else { return }
-                isNavigationLocked = true
-                onLater()
-            }
-            .buttonStyle(.plain)
-            .font(AppTheme.Typography.body)
-            .foregroundStyle(AppTheme.Colors.textSecondary)
+            HStack(spacing: 10) {
+                Button {
+                    guard !isNavigationLocked else { return }
+                    isNavigationLocked = true
+                    onViewList()
+                } label: {
+                    Label("Liste ansehen", systemImage: "list.bullet")
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 36)
+                }
+                .buttonStyle(AppSecondaryButtonStyle(tint: AppTheme.Colors.textSecondary))
 
-            Spacer(minLength: 0)
+                Button {
+                    guard !isNavigationLocked else { return }
+                    isNavigationLocked = true
+                    onLater()
+                } label: {
+                    Text("Ich übe später")
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 36)
+                }
+                .buttonStyle(AppSecondaryButtonStyle(tint: AppTheme.Colors.textSecondary))
+            }
         }
         .safeAreaPadding(.top, AppTheme.Spacing.xs)
         .padding(AppLayout.screenPadding)

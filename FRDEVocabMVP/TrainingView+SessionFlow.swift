@@ -7,7 +7,7 @@ extension TrainingView {
         goHome()
     }
 
-    func returnToTrainingSetup() {
+    func dismissTraining() {
         // Award XP for training session (2 XP per correct answer, not speed round)
         if !session.isSpeedRound, trainingCorrectCount > 0 {
             let earnedXP = trainingCorrectCount * 2
@@ -21,7 +21,7 @@ extension TrainingView {
         }
         trainingCorrectCount = 0
         resetTrainingSession()
-        session.returnToSetup()
+        dismiss()
     }
 
     func applyLaunchContextIfNeeded() {

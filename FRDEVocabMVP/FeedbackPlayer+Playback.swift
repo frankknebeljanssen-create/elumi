@@ -11,8 +11,10 @@ extension FeedbackPlayer {
     // ── UI / Navigation ──
 
     func playCardFlip() { playIfEnabled("cardflip") }
-    func playScanStart() { playIfEnabled("scanstart", volume: 0.5) }
-    func playScanDone() { playIfEnabled("scandone", volume: 0.35) }
+    func playScanStart() { playIfEnabled("scanstart", volume: 0.85) }
+    func playScanProcessLoop() { guard areSoundsEnabled else { return }; sp.loop("scanprocess", volume: 0.16, rate: 0.5) }
+    func stopScanProcessLoop() { sp.stop("scanprocess") }
+    func playScanDone() { stopScanProcessLoop(); playIfEnabled("scandone", volume: 0.7) }
     func playAppStart() { playIfEnabled("appstart") }
     func playToggle() { playIfEnabled("toggle") }
     func playTabSwitch() { playIfEnabled("tabswitch") }
@@ -53,6 +55,14 @@ extension FeedbackPlayer {
     func playSlowMotionEnd() { playIfEnabled("slowmoend") }
     func playShieldActivate() { playIfEnabled("shieldactivate") }
     func playShieldAbsorb() { playIfEnabled("shieldabsorb") }
+
+    // ── Giftqualle ──
+
+    func playJellyfishAppear() { playIfEnabled("jellyfish_appear", volume: 0.6) }
+    func playJellyfishAmbientLoop() { guard areSoundsEnabled else { return }; sp.loop("jellyfish_ambient", volume: 0.25) }
+    func stopJellyfishAmbient() { sp.stop("jellyfish_ambient") }
+    func playTentacleDrop() { playIfEnabled("tentacle_drop", volume: 0.5) }
+    func playTentacleSting() { playIfEnabled("tentacle_sting", volume: 0.7) }
 
     // ── Saugglocke ──
 

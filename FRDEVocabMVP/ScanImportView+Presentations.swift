@@ -36,6 +36,7 @@ extension ScanImportView {
             }
             .onDisappear {
                 stopScanProgressFeedback()
+                feedbackPlayer.stopScanProcessLoop()
                 scanKeyboardInset = 0
                 previewEditSyncWorkItem?.cancel()
             }
@@ -62,55 +63,12 @@ extension ScanImportView {
                 scanSourceLanguage = .french
                 refreshPreviewPairsFromImportText()
             }
-            .onChange(of: isShowingImportCompletion) { _, isPresented in
-                guard !isPresented, let pendingCompletionDestination else { return }
-                self.pendingCompletionDestination = nil
-                // Navigate directly — replace scan with module in navigation stack
-                navigate(pendingCompletionDestination)
-            }
     }
 
     func applyingScanPresentationModifiers<Content: View>(to content: Content) -> some View {
         content
             .navigationDestination(isPresented: $isShowingFullscreenReview) {
                 scanFullscreenReview
-            }
-            .navigationDestination(isPresented: $isShowingImportCompletion) {
-                if let importCompletionContext {
-                    ImportCompletionView(
-                        context: importCompletionContext,
-                        onTrain: {
-                            handleCompletionSelection(.train(TrainingLaunchContext(
-                                preferredListID: importCompletionContext.targetListID,
-                                preferredMode: .vocabulary,
-                                shouldAutoStart: true
-                            )))
-                        },
-                        onArticles: {
-                            handleCompletionSelection(.train(TrainingLaunchContext(
-                                preferredListID: importCompletionContext.targetListID,
-                                preferredMode: .articles,
-                                shouldAutoStart: true
-                            )))
-                        },
-                        onVerbs: {
-                            handleCompletionSelection(.train(TrainingLaunchContext(
-                                preferredListID: importCompletionContext.targetListID,
-                                preferredMode: .verbs,
-                                shouldAutoStart: true
-                            )))
-                        },
-                        onFlashcards: {
-                            handleCompletionSelection(.flashcards(importCompletionContext.flashcardLaunchContext))
-                        },
-                        onQuiz: {
-                            handleCompletionSelection(.quiz)
-                        },
-                        onLater: {
-                            handleCompletionSelection(nil)
-                        }
-                    )
-                }
             }
             .sheet(isPresented: showingCameraBinding) {
                 if VNDocumentCameraViewController.isSupported {
@@ -150,25 +108,6 @@ extension ScanImportView {
                     scanPreparationSheet(previewImage: previewImage)
                 }
             }
-            .confirmationDialog("Noch mehr einlesen", isPresented: showingAdditionalScanOptionsBinding, titleVisibility: .visible) {
-                if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                    Button("Foto machen") {
-                        shouldAppendNextScan = true
-                        openCameraScanner()
-                    }
-                }
-
-                Button("Bild wählen") {
-                    shouldAppendNextScan = true
-                    showingPhotoLibrary = true
-                }
-
-                Button("Abbrechen", role: .cancel) {
-                    shouldAppendNextScan = false
-                }
-            } message: {
-                Text("Der nächste Scan wird an die aktuelle Liste angehängt.")
-            }
             .alert("Wirklich löschen?", isPresented: Binding(
                 get: { previewPairPendingDeletion != nil },
                 set: { if !$0 { previewPairPendingDeletion = nil } }
@@ -184,7 +123,7 @@ extension ScanImportView {
                     }
                 }
             } message: {
-                Text(previewPairPendingDeletion.map { "„\($0.french)“ wird entfernt." } ?? "")
+                Text(previewPairPendingDeletion.map { "\($0.french) wird entfernt." } ?? "")
             }
             .alert("Hinweis", isPresented: isShowingScanAIInfoAlertBinding) {
                 if canRetryCurrentScanAfterAIAlert {

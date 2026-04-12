@@ -8,14 +8,30 @@ extension ScanReviewMapper {
                 sourceText: entry.source,
                 targetText: entry.target,
                 cardType: entry.cardType,
-                reviewMetadata: reviewMetadata
+                reviewMetadata: reviewMetadata,
+                wordClass: entry.wordClass
             )
 
-            return normalizedReviewEntry(
+            var normalized = normalizedReviewEntry(
                 reviewEntry,
                 mode: result.mode,
                 sourceLanguage: result.sourceLanguage
             )
+
+            // Post-process AFTER lexicon matching to fix capitalization from lexicon
+            let fixedTarget = ClaudeHaikuScanAIClient.forceGermanLowercase(normalized.targetText)
+            if fixedTarget != normalized.targetText {
+                normalized = ScanReviewEntry(
+                    id: normalized.id,
+                    sourceText: normalized.sourceText,
+                    targetText: fixedTarget,
+                    cardType: normalized.cardType,
+                    reviewMetadata: normalized.reviewMetadata,
+                    wordClass: normalized.wordClass
+                )
+            }
+
+            return normalized
         }
 
         return ScanAnalysisResult(
@@ -57,7 +73,8 @@ extension ScanReviewMapper {
                         note: entry.note,
                         isImportable: entry.isImportable
                     ),
-                    notes: []
+                    notes: [],
+                    wordClass: entry.wordClass
                 )
             },
             blocks: [],

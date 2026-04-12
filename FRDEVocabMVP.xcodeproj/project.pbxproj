@@ -329,6 +329,11 @@
 		D771E6C94B97489EAC3CCA37 /* elumi_shieldabsorb.wav in Resources */ = {isa = PBXBuildFile; fileRef = CB93664F8123410AB10D5D2F /* elumi_shieldabsorb.wav */; };
 		D2C31485B1D74864B812D0D8 /* elumi_scanstart.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3EC276513665498B94332747 /* elumi_scanstart.wav */; };
 		BFB7270E17924A98985159AE /* elumi_scandone.wav in Resources */ = {isa = PBXBuildFile; fileRef = BAC62D87FEAD413F90BCE57C /* elumi_scandone.wav */; };
+		58A13D20DB064DC3A1CFBDDD /* elumi_tentacle_sting.wav in Resources */ = {isa = PBXBuildFile; fileRef = 14D6AA0E2F7547C58EFD2C7B /* elumi_tentacle_sting.wav */; };
+		3F17F900156649F1B56821CA /* elumi_tentacle_drop.wav in Resources */ = {isa = PBXBuildFile; fileRef = C796DD66D33845D482971B80 /* elumi_tentacle_drop.wav */; };
+		495F17EE7BAD4C4E9518D9CE /* elumi_jellyfish_appear.wav in Resources */ = {isa = PBXBuildFile; fileRef = 997E13571F014504A8CCFE9C /* elumi_jellyfish_appear.wav */; };
+		910F1CC9A7444B38971AC68C /* elumi_jellyfish_ambient.wav in Resources */ = {isa = PBXBuildFile; fileRef = ED6E2620B526439EA130ADE9 /* elumi_jellyfish_ambient.wav */; };
+		8480D2B78B0940FF8334A168 /* elumi_scanprocess.wav in Resources */ = {isa = PBXBuildFile; fileRef = 8B3E6DF30BBB4EC3812B0DB2 /* elumi_scanprocess.wav */; };
 		7D3B0E4411A243619FB50261 /* elumi_saugstart.wav in Resources */ = {isa = PBXBuildFile; fileRef = F9E9A871DD9141F488C32488 /* elumi_saugstart.wav */; };
 		DA57C4C566AF4DB3B5CC281D /* elumi_saugloop.wav in Resources */ = {isa = PBXBuildFile; fileRef = 51677781801E491EAEA0C07A /* elumi_saugloop.wav */; };
 		535BC11A38424C789F12B637 /* elumi_saugend.wav in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDD993CDA84C048277CCF7 /* elumi_saugend.wav */; };
@@ -717,6 +722,11 @@
 		CB93664F8123410AB10D5D2F /* elumi_shieldabsorb.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_shieldabsorb.wav"; sourceTree = "<group>"; };
 		3EC276513665498B94332747 /* elumi_scanstart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_scanstart.wav"; sourceTree = "<group>"; };
 		BAC62D87FEAD413F90BCE57C /* elumi_scandone.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_scandone.wav"; sourceTree = "<group>"; };
+		14D6AA0E2F7547C58EFD2C7B /* elumi_tentacle_sting.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_tentacle_sting.wav"; sourceTree = "<group>"; };
+		C796DD66D33845D482971B80 /* elumi_tentacle_drop.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_tentacle_drop.wav"; sourceTree = "<group>"; };
+		997E13571F014504A8CCFE9C /* elumi_jellyfish_appear.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_jellyfish_appear.wav"; sourceTree = "<group>"; };
+		ED6E2620B526439EA130ADE9 /* elumi_jellyfish_ambient.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_jellyfish_ambient.wav"; sourceTree = "<group>"; };
+		8B3E6DF30BBB4EC3812B0DB2 /* elumi_scanprocess.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_scanprocess.wav"; sourceTree = "<group>"; };
 		F9E9A871DD9141F488C32488 /* elumi_saugstart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_saugstart.wav"; sourceTree = "<group>"; };
 		51677781801E491EAEA0C07A /* elumi_saugloop.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_saugloop.wav"; sourceTree = "<group>"; };
 		0BBDD993CDA84C048277CCF7 /* elumi_saugend.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_saugend.wav"; sourceTree = "<group>"; };
@@ -975,6 +985,11 @@
 				CB93664F8123410AB10D5D2F /* elumi_shieldabsorb.wav */,
 				3EC276513665498B94332747 /* elumi_scanstart.wav */,
 				BAC62D87FEAD413F90BCE57C /* elumi_scandone.wav */,
+				14D6AA0E2F7547C58EFD2C7B /* elumi_tentacle_sting.wav */,
+				C796DD66D33845D482971B80 /* elumi_tentacle_drop.wav */,
+				997E13571F014504A8CCFE9C /* elumi_jellyfish_appear.wav */,
+				ED6E2620B526439EA130ADE9 /* elumi_jellyfish_ambient.wav */,
+				8B3E6DF30BBB4EC3812B0DB2 /* elumi_scanprocess.wav */,
 				F9E9A871DD9141F488C32488 /* elumi_saugstart.wav */,
 				51677781801E491EAEA0C07A /* elumi_saugloop.wav */,
 				0BBDD993CDA84C048277CCF7 /* elumi_saugend.wav */,
@@ -1288,6 +1303,11 @@
 				DA57C4C566AF4DB3B5CC281D /* elumi_saugloop.wav in Resources */,
 				7D3B0E4411A243619FB50261 /* elumi_saugstart.wav in Resources */,
 				BFB7270E17924A98985159AE /* elumi_scandone.wav in Resources */,
+				58A13D20DB064DC3A1CFBDDD /* elumi_tentacle_sting.wav in Resources */,
+				3F17F900156649F1B56821CA /* elumi_tentacle_drop.wav in Resources */,
+				495F17EE7BAD4C4E9518D9CE /* elumi_jellyfish_appear.wav in Resources */,
+				910F1CC9A7444B38971AC68C /* elumi_jellyfish_ambient.wav in Resources */,
+				8480D2B78B0940FF8334A168 /* elumi_scanprocess.wav in Resources */,
 				D2C31485B1D74864B812D0D8 /* elumi_scanstart.wav in Resources */,
 				D771E6C94B97489EAC3CCA37 /* elumi_shieldabsorb.wav in Resources */,
 				1D667A9B8D984D1CB42D8942 /* elumi_shieldactivate.wav in Resources */,

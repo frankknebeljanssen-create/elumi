@@ -22,6 +22,7 @@ struct ScanExtractionEntry: Identifiable, Equatable {
     let confidence: Double
     let reviewMetadata: ScanEntryReviewMetadata
     let notes: [String]
+    let wordClass: String?
 }
 
 struct ScanProviderResult {
