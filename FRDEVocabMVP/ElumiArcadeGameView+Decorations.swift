@@ -238,7 +238,7 @@ extension ElumiArcadeGameView {
 
         return Text("🐟")
             .font(.system(size: size))
-            .scaleEffect(x: fish.fromLeft ? 1 : -1, y: 1)
+            .scaleEffect(x: fish.fromLeft ? -1 : 1, y: 1)
             .rotationEffect(.degrees(wobble))
             .shadow(color: .cyan.opacity(0.4), radius: 6, x: 0, y: 2)
     }

@@ -600,7 +600,7 @@ extension ElumiArcadeGameView {
             resetCombo()
         }
 
-        if misses >= maxMisses {
+        if misses >= maxMisses && !bonusRoundWaitingForTap {
             gameOverTitle = "Game Over"
             gameOverSubtitle = ""
             endGame()

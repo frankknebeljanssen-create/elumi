@@ -334,10 +334,14 @@ extension ElumiArcadeGameView {
             .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.7))
             .padding(.top, 4)
 
-            Text("Tippen zum Starten")
-                .font(.system(size: 13, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.6))
-                .padding(.top, 8)
+            Text("▶  Tippen zum Starten")
+                .font(.system(size: 17, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(AppTheme.Colors.primary)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .padding(.top, 12)
         }
         .padding(.horizontal, 28)
         .padding(.vertical, 24)
@@ -364,10 +368,14 @@ extension ElumiArcadeGameView {
                     .multilineTextAlignment(.center)
             }
 
-            Text("Tippen zum Weiterspielen")
-                .font(.system(size: 13, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.6))
-                .padding(.top, 8)
+            Text("▶  Weiterspielen")
+                .font(.system(size: 17, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(AppTheme.Colors.primary)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .padding(.top, 12)
         }
         .padding(.horizontal, 28)
         .padding(.vertical, 24)
