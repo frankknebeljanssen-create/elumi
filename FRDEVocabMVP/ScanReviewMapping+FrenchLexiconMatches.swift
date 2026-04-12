@@ -63,6 +63,13 @@ extension ScanReviewMapper {
             return false
         }
 
+        // Don't replace if punctuation mismatch (ça va ≠ Ça va?)
+        let matchTerm = sourceMatch.sourceTerm.trimmingCharacters(in: .whitespacesAndNewlines)
+        let sourceTerm = sourceText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let matchHasPunct = matchTerm.hasSuffix("?") || matchTerm.hasSuffix(".") || matchTerm.hasSuffix("!")
+        let sourceHasPunct = sourceTerm.hasSuffix("?") || sourceTerm.hasSuffix(".") || sourceTerm.hasSuffix("!")
+        if matchHasPunct != sourceHasPunct { return false }
+
         if targetMatchesSuggestions(targetText, suggestions: sourceMatch.suggestions) {
             return false
         }

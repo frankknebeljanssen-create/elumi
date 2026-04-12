@@ -24,6 +24,12 @@ extension AIScanProvider {
     private func normalizedFrenchEntry(
         _ entry: ScanAIResponseEntry
     ) -> ScanAIResponseEntry {
+        // Skip lexicon replacement if punctuation mismatch (ça va ≠ Ça va?)
+        // Terminal punctuation is meaning-bearing — trust the AI's translation
+        let trimmedSource = entry.source.trimmingCharacters(in: .whitespacesAndNewlines)
+        let sourceHasPunctuation = trimmedSource.hasSuffix("?") || trimmedSource.hasSuffix(".") || trimmedSource.hasSuffix("!")
+        if sourceHasPunctuation { return entry }
+
         if let trimmedSourceMatch = bestTrimmedFrenchLexiconMatch(forSource: entry.source),
            shouldForceFrenchLexiconReplacement(
                 entry,

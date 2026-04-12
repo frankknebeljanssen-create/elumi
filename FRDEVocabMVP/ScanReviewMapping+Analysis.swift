@@ -91,6 +91,13 @@ extension ScanReviewMapper {
         guard mode == .list, sourceLanguage == .french else { return entry }
         guard entry.isImportable else { return entry }
 
+        // Skip lexicon replacement if source has terminal punctuation (Ça va? ≠ Ça va.)
+        // Punctuation is meaning-bearing — trust the AI's translation
+        let trimmedSource = entry.sourceText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedSource.hasSuffix("?") || trimmedSource.hasSuffix(".") || trimmedSource.hasSuffix("!") {
+            return entry
+        }
+
         if let trimmedMatch = bestTrimmedFrenchLexiconMatch(forSource: entry.sourceText) {
             return ScanReviewEntry(
                 id: entry.id,

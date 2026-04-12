@@ -65,9 +65,8 @@ extension ScanImportView {
             .onChange(of: isShowingImportCompletion) { _, isPresented in
                 guard !isPresented, let pendingCompletionDestination else { return }
                 self.pendingCompletionDestination = nil
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    navigate(pendingCompletionDestination)
-                }
+                // Navigate directly — replace scan with module in navigation stack
+                navigate(pendingCompletionDestination)
             }
     }
 
