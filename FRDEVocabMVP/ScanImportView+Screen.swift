@@ -1,7 +1,8 @@
 import SwiftUI
 
-extension UUID: @retroactive Identifiable {
-    public var id: UUID { self }
+struct IdentifiableUUID: Identifiable {
+    let id: UUID
+    init(_ uuid: UUID) { self.id = uuid }
 }
 
 struct ReviewPairEditSheet: View {
@@ -101,7 +102,7 @@ extension ScanImportView {
                                     .foregroundStyle(AppTheme.Colors.warning)
                             }
                             Button {
-                                reviewEditingPairID = pair.id
+                                reviewEditingPairID = IdentifiableUUID(pair.id)
                             } label: {
                                 Image(systemName: "pencil")
                                     .font(.system(size: 16, weight: .bold))
@@ -138,28 +139,31 @@ extension ScanImportView {
             Divider().opacity(0.3)
 
             // Fixed footer — Import button only
-            Button {
-                isShowingFullscreenReview = false
-                session.batchCompleted = false
-                importScannedText()
-            } label: {
-                Label("Jetzt importieren", systemImage: "square.and.arrow.down.fill")
-                    .font(AppTheme.Typography.button)
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: 52)
+            VStack(spacing: 0) {
+                Button {
+                    isShowingFullscreenReview = false
+                    session.batchCompleted = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        importScannedText()
+                    }
+                } label: {
+                    Label("Jetzt importieren", systemImage: "square.and.arrow.down.fill")
+                        .font(AppTheme.Typography.button)
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 52)
+                }
+                .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+                .disabled(completePreviewPairCount == 0)
+                .padding(.horizontal, AppLayout.screenPadding)
+                .padding(.top, 10)
+                .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 16)
             }
-            .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-            .disabled(completePreviewPairCount == 0)
-            .padding(.horizontal, AppLayout.screenPadding)
-            .padding(.top, 10)
-            .padding(.bottom, 20)
-            .background(AppTheme.Colors.surface.opacity(0.95))
+            .background(AppTheme.Colors.surface)
         }
-        .ignoresSafeArea(.container, edges: .bottom)
         .toolbar(.hidden, for: .navigationBar)
         .appScreenBackground(sectionStyle)
-        .sheet(item: $reviewEditingPairID) { pairID in
-            if let index = previewPairs.firstIndex(where: { $0.id == pairID }) {
+        .sheet(item: $reviewEditingPairID) { wrapper in
+            if let index = previewPairs.firstIndex(where: { $0.id == wrapper.id }) {
                 ReviewPairEditSheet(
                     french: previewPairs[index].french,
                     german: previewPairs[index].german

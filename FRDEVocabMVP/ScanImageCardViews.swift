@@ -51,6 +51,7 @@ struct ScanSelectedImageCardView: View {
     let runtimeIcon: String
     let sectionStyle: AppSectionStyle
     let onTap: () -> Void
+    @State private var scanLineOffset: CGFloat = 0
 
     var body: some View {
         Button(action: onTap) {
@@ -64,6 +65,25 @@ struct ScanSelectedImageCardView: View {
                 if isRecognizingImage {
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
                         .fill(Color.black.opacity(0.12))
+
+                    // Scanner stripe animation
+                    GeometryReader { geo in
+                        Rectangle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        sectionStyle.accent.opacity(0),
+                                        sectionStyle.accent.opacity(0.6),
+                                        sectionStyle.accent.opacity(0)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .frame(height: 3)
+                            .shadow(color: sectionStyle.accent.opacity(0.5), radius: 6, x: 0, y: 0)
+                            .offset(y: scanLineOffset * geo.size.height)
+                    }
 
                     ScanProgressOverlayCardView(
                         progressText: progressText,
@@ -81,5 +101,17 @@ struct ScanSelectedImageCardView: View {
         }
         .buttonStyle(.plain)
         .appCardBackground(sectionStyle, intensity: 0.09)
+        .onChange(of: isRecognizingImage) { _, recognizing in
+            if recognizing {
+                scanLineOffset = 0
+                withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: true)) {
+                    scanLineOffset = 1.0
+                }
+            } else {
+                withAnimation(.none) {
+                    scanLineOffset = 0
+                }
+            }
+        }
     }
 }

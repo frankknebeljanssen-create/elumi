@@ -14,12 +14,6 @@ extension TrainingView {
         if !session.hasStartedTraining {
             resetTrainingSession()
         }
-        // Auto-start from scan import
-        if launchContext?.shouldAutoStart == true, !session.hasStartedTraining {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                startTraining()
-            }
-        }
     }
 
     func handleTrainingDirectionChange() {

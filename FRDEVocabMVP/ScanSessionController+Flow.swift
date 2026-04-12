@@ -76,7 +76,8 @@ extension ScanSessionController {
         importText = state.importText
         reviewScrollTrigger += state.reviewScrollTriggerDelta
         importMessage = state.importMessage
-        if !batchCompleted {
+        // No toast — summary screen handles the feedback
+        if batchTotalCount == 0 {
             showToast(state.toastMessage)
         }
     }

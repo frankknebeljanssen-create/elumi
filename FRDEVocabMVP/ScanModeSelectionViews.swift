@@ -107,7 +107,7 @@ struct ScanInputMethodOptionsCardView: View {
                 Button(action: onCamera) {
                     ScanSelectionButtonCard(
                         systemImage: "camera.fill",
-                        title: "Foto",
+                        title: "Kamera",
                         isSelected: selectedMethod == .camera,
                         accent: sectionStyle.accent
                     )
