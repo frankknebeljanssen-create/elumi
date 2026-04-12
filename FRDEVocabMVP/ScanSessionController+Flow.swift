@@ -76,7 +76,9 @@ extension ScanSessionController {
         importText = state.importText
         reviewScrollTrigger += state.reviewScrollTriggerDelta
         importMessage = state.importMessage
-        showToast(state.toastMessage)
+        if !batchCompleted {
+            showToast(state.toastMessage)
+        }
     }
 
     func applyResetState(_ state: ScanResetState) {

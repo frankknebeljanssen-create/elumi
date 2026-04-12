@@ -6,17 +6,18 @@ struct AppBottomBar: View {
     @ObservedObject var feedbackPlayer: FeedbackPlayer
     let onHome: () -> Void
     let onFavorite: (() -> Void)?
-    let onScan: (() -> Void)?
+    let onScan: (() -> Void)?  // Now used for Lexicon
     let onSettings: (() -> Void)?
     var isHeartsActive: Bool = false
-    var isScanActive: Bool = false
+    var isScanActive: Bool = false  // Now isLexiconActive
     var isSettingsActive: Bool = false
 
     private var homeTint: Color { Color(hex: "#78C8FF") }
     private var soundTint: Color {
         AppTheme.Colors.warning
     }
-    private var scanTint: Color { AppTheme.Colors.success }
+    private var scanTint: Color { AppTheme.Colors.moduleScan }
+    private var lexiconTint: Color { AppTheme.Colors.moduleLexicon }
     private var settingsTint: Color { Color(hex: "#B38DFF") }
 
     private var resolvedScanAction: (() -> Void)? {
@@ -67,11 +68,11 @@ struct AppBottomBar: View {
                 Spacer(minLength: 0)
 
                 AppBottomBarIconButton(
-                    systemImage: isScanActive ? "camera.viewfinder" : "camera.viewfinder",
-                    accessibilityLabel: "Scan",
+                    systemImage: isScanActive ? "book.closed.fill" : "book.closed",
+                    accessibilityLabel: "Wörterbuch",
                     action: resolvedScanAction,
                     isActive: isScanActive,
-                    foregroundColor: scanTint
+                    foregroundColor: lexiconTint
                 )
 
                 Spacer(minLength: 0)

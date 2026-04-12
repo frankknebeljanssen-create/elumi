@@ -95,6 +95,7 @@ struct HomeView: View {
     private var homeVerbsColor: Color { AppTheme.Colors.moduleVerbs }
     private var homeFlashcardsColor: Color { AppTheme.Colors.moduleFlashcards }
     private var homeQuizColor: Color { AppTheme.Colors.moduleQuiz }
+    private var homeScanColor: Color { AppTheme.Colors.moduleScan }
     private var homeLexiconColor: Color { AppTheme.Colors.moduleLexicon }
     private var homeListsColor: Color { AppTheme.Colors.moduleLists }
 
@@ -313,18 +314,18 @@ struct HomeView: View {
                 directionToggle
 
                 HStack(spacing: 10) {
-                homeSecondaryButton(
-                    screen: .lexicon,
-                    title: "Wörterbuch",
-                    systemImage: "book.closed.fill",
-                    accentColor: homeLexiconColor
-                )
-
                     homeSecondaryButton(
                         screen: .lists(nil),
                         title: "Listen",
                         systemImage: "list.bullet.rectangle.fill",
                         accentColor: homeListsColor
+                    )
+
+                    homeSecondaryButton(
+                        screen: .scan,
+                        title: "Scan",
+                        systemImage: "camera.viewfinder",
+                        accentColor: homeScanColor
                     )
                 }
             }

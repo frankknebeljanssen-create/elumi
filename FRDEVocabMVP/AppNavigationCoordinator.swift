@@ -71,6 +71,16 @@ final class AppNavigationCoordinator: ObservableObject {
         navigationPath.append(.hearts)
     }
 
+    func openLexiconScreen() {
+        guard currentScreen != .lexicon else { return }
+        navigationPath.append(.lexicon)
+    }
+
+    var isLexiconScreenActive: Bool {
+        if case .lexicon = currentScreen { return true }
+        return false
+    }
+
     func openScreenWhenReady(_ screen: AppScreen, onWillNavigate: (() -> Void)? = nil) {
         guard currentScreen != screen else { return }
         onWillNavigate?()

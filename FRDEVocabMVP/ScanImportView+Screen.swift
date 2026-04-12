@@ -1,5 +1,56 @@
 import SwiftUI
 
+extension UUID: @retroactive Identifiable {
+    public var id: UUID { self }
+}
+
+struct ReviewPairEditSheet: View {
+    @Environment(\.dismiss) var dismiss
+    @State var french: String
+    @State var german: String
+    let onSave: (String, String) -> Void
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Französisch")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                    TextField("Französisch", text: $french)
+                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .textFieldStyle(.roundedBorder)
+                }
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Deutsch")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                    TextField("Deutsch", text: $german)
+                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .textFieldStyle(.roundedBorder)
+                }
+                Spacer()
+            }
+            .padding(20)
+            .navigationTitle("Eintrag bearbeiten")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Abbrechen") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Speichern") {
+                        onSave(french, german)
+                    }
+                    .bold()
+                    .disabled(french.trimmingCharacters(in: .whitespaces).isEmpty || german.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+}
+
 extension ScanImportView {
     // ── FULLSCREEN REVIEW SCREEN ──
 
@@ -49,6 +100,24 @@ extension ScanImportView {
                                     .font(.system(size: 14))
                                     .foregroundStyle(AppTheme.Colors.warning)
                             }
+                            Button {
+                                reviewEditingPairID = pair.id
+                            } label: {
+                                Image(systemName: "pencil")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundStyle(sectionStyle.accent)
+                                    .frame(width: 32, height: 32)
+                            }
+                            .buttonStyle(.plain)
+                            Button {
+                                previewPairs.removeAll { $0.id == pair.id }
+                            } label: {
+                                Image(systemName: "trash")
+                                    .font(.system(size: 15, weight: .bold))
+                                    .foregroundStyle(AppTheme.Colors.error.opacity(0.7))
+                                    .frame(width: 32, height: 32)
+                            }
+                            .buttonStyle(.plain)
                         }
                         .padding(.horizontal, 14)
                         .padding(.vertical, 10)
@@ -68,39 +137,47 @@ extension ScanImportView {
 
             Divider().opacity(0.3)
 
-            // Fixed footer — Import button
-            VStack(spacing: 8) {
-                ScanImportDetailsCardView(
-                    sectionStyle: sectionStyle,
-                    selectedCollectionPreset: selectedCollectionPresetBinding,
-                    listName: listNameBinding,
-                    isListNameFocused: $isListNameFocused,
-                    isListNamePulseActive: isListNamePulseActive,
-                    listNameFieldBackground: listNameFieldBackground,
-                    listNameFieldBorder: listNameFieldBorder,
-                    listNameFieldIcon: listNameFieldIcon,
-                    onSubmitListName: confirmListNameEntry
-                )
-
-                Button {
-                    isShowingFullscreenReview = false
-                    session.batchCompleted = false
-                    importScannedText()
-                } label: {
-                    Label("Liste importieren", systemImage: "square.and.arrow.down.fill")
-                        .font(AppTheme.Typography.button)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 52)
-                }
-                .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-                .disabled(completePreviewPairCount == 0)
+            // Fixed footer — Import button only
+            Button {
+                isShowingFullscreenReview = false
+                session.batchCompleted = false
+                importScannedText()
+            } label: {
+                Label("Jetzt importieren", systemImage: "square.and.arrow.down.fill")
+                    .font(AppTheme.Typography.button)
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 52)
             }
+            .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+            .disabled(completePreviewPairCount == 0)
             .padding(.horizontal, AppLayout.screenPadding)
-            .padding(.vertical, 10)
+            .padding(.top, 10)
+            .padding(.bottom, 20)
             .background(AppTheme.Colors.surface.opacity(0.95))
         }
+        .ignoresSafeArea(.container, edges: .bottom)
         .toolbar(.hidden, for: .navigationBar)
         .appScreenBackground(sectionStyle)
+        .sheet(item: $reviewEditingPairID) { pairID in
+            if let index = previewPairs.firstIndex(where: { $0.id == pairID }) {
+                ReviewPairEditSheet(
+                    french: previewPairs[index].french,
+                    german: previewPairs[index].german
+                ) { newFrench, newGerman in
+                    previewPairs[index] = ImportPreviewPair(
+                        id: previewPairs[index].id,
+                        french: newFrench,
+                        german: newGerman,
+                        cardType: previewPairs[index].cardType,
+                        learningCategory: previewPairs[index].learningCategory,
+                        note: previewPairs[index].note,
+                        isImportable: true,
+                        isReviewed: true
+                    )
+                    reviewEditingPairID = nil
+                }
+            }
+        }
     }
 
     var scanResultUnsureCount: Int {
@@ -247,7 +324,7 @@ extension ScanImportView {
                         // Progress overlay during batch
                         // (handled below as overlay)
 
-                        if let selectedImage {
+                        if let selectedImage, !session.batchCompleted {
                             ScanSelectedImageCardView(
                                 image: selectedImage,
                                 isRecognizingImage: isRecognizingImage,
@@ -283,25 +360,6 @@ extension ScanImportView {
                     .padding(.bottom, 8 + scanKeyboardBottomPadding)
                 }
                 .scrollDismissesKeyboard(.interactively)
-            }
-
-            // Batch analysis progress overlay
-            if session.isBatchAnalysisInProgress {
-                VStack(spacing: 16) {
-                    Spacer()
-                    ProgressView()
-                        .scaleEffect(1.5)
-                        .tint(sectionStyle.accent)
-                    Text(scanProgressText)
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                    Text("\(previewPairs.count) Vokabeln bisher erkannt")
-                        .font(.system(size: 14, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.top, 120)
             }
 
             if isShowingScanToast {

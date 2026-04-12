@@ -39,6 +39,11 @@ struct ContentView: View {
         navigation.openScanScreen()
     }
 
+    private func openLexiconScreen() {
+        runtime.feedbackPlayer?.playTabSwitch()
+        navigation.openLexiconScreen()
+    }
+
     private func openHeartsScreen() {
         runtime.feedbackPlayer?.playTabSwitch()
         navigation.openHeartsScreen()
@@ -104,10 +109,10 @@ struct ContentView: View {
                             feedbackPlayer: feedbackPlayer,
                             onHome: { runtime.feedbackPlayer?.playTabSwitch(); navigation.goHome() },
                             onFavorite: isHeartsScreenActive ? nil : { openHeartsScreen() },
-                            onScan: isScanScreenActive ? nil : { openScanScreen() },
+                            onScan: navigation.isLexiconScreenActive ? nil : { openLexiconScreen() },
                             onSettings: isSettingsScreenActive ? nil : { openSettingsScreen() },
                             isHeartsActive: isHeartsScreenActive,
-                            isScanActive: isScanScreenActive,
+                            isScanActive: navigation.isLexiconScreenActive,
                             isSettingsActive: isSettingsScreenActive
                         )
                     }
