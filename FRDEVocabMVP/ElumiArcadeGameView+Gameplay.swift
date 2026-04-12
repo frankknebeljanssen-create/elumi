@@ -33,10 +33,10 @@ extension ElumiArcadeGameView {
         let querschlaegerChance = config.querschlaegerChance
         let isQuerschlaeger = kind.isSnack && Double.random(in: 0...1) < querschlaegerChance
         let wobbleAmp = isQuerschlaeger
-            ? CGFloat.random(in: 0.15...0.25)
+            ? CGFloat.random(in: config.querschlaegerAmplitude)
             : CGFloat.random(in: 0.01...0.05)
         let wobbleFreq = isQuerschlaeger
-            ? Double.random(in: 4.0...6.5)
+            ? Double.random(in: config.querschlaegerFrequency)
             : Double.random(in: 1.4...3.1)
 
         // Power-ups fall slower (easier to catch)
@@ -186,11 +186,12 @@ extension ElumiArcadeGameView {
         }
     }
 
-    func triggerHazardGameOver() {
+    func triggerFriendEaten() {
         triggerScreenShake()
-        gameOverTitle = "Freund gefressen!"
-        gameOverSubtitle = "Das war ein Elumi-Freund — lass die vorbeischwimmen!"
-        endGame()
+        misses += 1
+        feedbackPlayer.playSnackMiss()
+        showComboBanner("Elumi-Freund! −1 Leben", duration: 1500)
+        resetCombo()
     }
 
     func activateSlowMotion(at date: Date) {
@@ -298,7 +299,10 @@ extension ElumiArcadeGameView {
             roundCatchCount = 0
             roundSuctionSpawned = false
             roundBannerPhase = 1
+            readyBlinkVisible = true
             showingRoundBanner = true
+            // Ensure game is still running after bonus round
+            if !isPlaying { isPlaying = true }
 
             for _ in 0..<3 {
                 withAnimation(.easeInOut(duration: 0.25)) { readyBlinkVisible = false }
@@ -364,13 +368,22 @@ extension ElumiArcadeGameView {
 
     func spawnBonusFish() {
         let fromLeft = Bool.random()
+        // First fish round (R3) is easier: bigger fish, slower
+        let isFirstFishRound = round <= 3
+        let fishSpeed = isFirstFishRound
+            ? Double.random(in: 1.2...2.2)   // Slower
+            : Double.random(in: 0.7...1.6)   // Fast
+        let fishScale = isFirstFishRound
+            ? CGFloat.random(in: 1.5...3.0)   // Bigger minimum
+            : CGFloat.random(in: 1.0...3.0)
+
         activeFish.append(BonusFishState(
             spawnedAt: Date(),
             fromLeft: fromLeft,
             normalizedY: CGFloat.random(in: 0.15...0.75),
-            speed: Double.random(in: 0.7...1.6),
+            speed: fishSpeed,
             wobblePhase: Double.random(in: 0...(Double.pi * 2)),
-            renderScale: CGFloat.random(in: 1.0...3.0)
+            renderScale: fishScale
         ))
     }
 
@@ -480,8 +493,9 @@ extension ElumiArcadeGameView {
 
             if snack.kind == .falseElumi {
                 if isCatchable && horizontalDistance <= 34 {
-                    triggerHazardGameOver()
-                    return
+                    triggerFriendEaten()
+                    triggerCatchAnimation()
+                    continue // Remove from screen, don't return (game continues)
                 }
 
                 if progress >= 1.04 {

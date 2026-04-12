@@ -120,15 +120,31 @@ extension ElumiArcadeGameView {
 
     func snackPosition(for snack: ElumiArcadeSnackState, at date: Date, in size: CGSize) -> CGPoint {
         let progress = snackProgress(for: snack, at: date)
-        let baseX = snack.laneX * size.width
         let elapsed = date.timeIntervalSince(snack.spawnedAt)
-        let wobble = sin(elapsed * snack.wobbleFrequency) * snack.wobbleAmplitude * size.width
         let topY: CGFloat = -28
         let bottomY = size.height - 144
         let baseY = topY + ((bottomY - topY) * progress)
         let motionOffset = arcadeMotionOffset(for: snack, at: date, in: size)
 
-        return CGPoint(x: baseX + wobble + motionOffset.width, y: baseY + motionOffset.height)
+        let x: CGFloat
+        if snack.wobbleAmplitude >= 0.08 {
+            // Querschläger: bounce off screen edges using triangle wave
+            let minX: CGFloat = 30
+            let maxX = size.width - 30
+            let range = maxX - minX
+            let rawX = snack.laneX * size.width + sin(elapsed * snack.wobbleFrequency) * snack.wobbleAmplitude * size.width * 2
+            // Reflect into [minX, maxX] range
+            let normalized = ((rawX - minX) / range).truncatingRemainder(dividingBy: 2.0)
+            let reflected = normalized < 0 ? -normalized : normalized
+            x = minX + (reflected > 1 ? 2 - reflected : reflected) * range
+        } else {
+            // Normal snack: simple wobble
+            let baseX = snack.laneX * size.width
+            let wobble = sin(elapsed * snack.wobbleFrequency) * snack.wobbleAmplitude * size.width
+            x = baseX + wobble
+        }
+
+        return CGPoint(x: x + motionOffset.width, y: baseY + motionOffset.height)
     }
 
     func arcadeMotionOffset(for snack: ElumiArcadeSnackState, at date: Date, in size: CGSize) -> CGSize {

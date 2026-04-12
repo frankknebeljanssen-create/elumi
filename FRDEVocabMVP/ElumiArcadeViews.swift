@@ -65,9 +65,19 @@ struct ArcadeRoundConfig {
     // ── Querschläger ──
     var querschlaegerChance: Double {
         switch round {
-        case 3: return 0.35
-        default: return round >= 4 ? 0.25 : 0.0
+        case 3: return 0.20           // Sanfter Einstieg
+        default: return round >= 4 ? 0.30 : 0.0
         }
+    }
+
+    /// Wobble amplitude — how far Querschläger sway (wider = harder)
+    var querschlaegerAmplitude: ClosedRange<CGFloat> {
+        round <= 3 ? 0.08...0.15 : 0.15...0.30
+    }
+
+    /// Wobble frequency — how fast they zigzag
+    var querschlaegerFrequency: ClosedRange<Double> {
+        round <= 3 ? 2.0...4.0 : 4.0...6.5
     }
 
     // ── Snacks per round ──

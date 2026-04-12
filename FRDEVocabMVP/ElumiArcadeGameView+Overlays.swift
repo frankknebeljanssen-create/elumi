@@ -122,7 +122,7 @@ extension ElumiArcadeGameView {
                             .hueRotation(.degrees(-80))
                             .brightness(0.05)
                             .clipShape(Circle())
-                        Text("Elumi-Freunde nicht fressen — sonst Game Over!")
+                        Text("Elumi-Freunde nicht fressen — kostet 1 Leben!")
                             .font(.system(size: 14, weight: .semibold, design: .rounded))
                             .foregroundStyle(.cyan)
                     }

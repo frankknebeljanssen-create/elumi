@@ -4,6 +4,7 @@ extension TrainingSessionController {
     func resetTrainingSessionState() {
         print("🏋️ [Session] resetTrainingSessionState called, was hasStarted=\(hasStartedTraining)")
         hasStartedTraining = false
+        isSpeedRound = false
         failedAttemptsOnCurrentCard = 0
         currentTrainingItem = nil
         preparedTrainingItems = []
