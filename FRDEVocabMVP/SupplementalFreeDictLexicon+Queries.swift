@@ -2,6 +2,9 @@ import Foundation
 import SQLite3
 
 extension SupplementalFreeDictLexicon {
+
+    // MARK: - Gender Lookup
+
     static func queryExactGenderPair(
         in database: OpaquePointer,
         sourceLookupKey: String,
@@ -9,12 +12,11 @@ extension SupplementalFreeDictLexicon {
     ) -> ExactGenderPair? {
         let sql = """
         SELECT
-            COALESCE(source_gender, ''),
-            COALESCE(target_gender, ''),
-            COALESCE(source_article, ''),
-            COALESCE(target_leading_article, '')
-        FROM lexicon_entries
-        WHERE source_lookup_key = ? AND target_lookup_key = ?
+            COALESCE(e.gender_fr, ''),
+            COALESCE(e.gender_de, '')
+        FROM entries e
+        JOIN senses s ON s.entry_id = e.entry_id
+        WHERE LOWER(e.lemma_fr) = ? AND LOWER(s.translation_de) = ?
         LIMIT 1;
         """
 
@@ -31,49 +33,85 @@ extension SupplementalFreeDictLexicon {
             return nil
         }
 
-        let sourceGender = lexiconGender(from: sqliteTextColumn(statement, index: 0))
-        let targetGender = lexiconGender(from: sqliteTextColumn(statement, index: 1))
-        let sourceArticle = optionalTrimmed(sqliteTextColumn(statement, index: 2))
-        let targetArticle = optionalTrimmed(sqliteTextColumn(statement, index: 3))
+        let frGenderRaw = sqliteTextColumn(statement, index: 0)
+        let deGenderRaw = sqliteTextColumn(statement, index: 1)
 
-        let frenchInfo = exactFrenchGenderInfo(gender: sourceGender, article: sourceArticle)
-        let germanInfo = exactGermanGenderInfo(gender: targetGender, article: targetArticle)
+        let frenchInfo = masterGenderInfo(raw: frGenderRaw, language: .french)
+        let germanInfo = masterGenderInfo(raw: deGenderRaw, language: .german)
 
         guard frenchInfo != nil || germanInfo != nil else { return nil }
         return (french: frenchInfo, german: germanInfo)
     }
 
-    static func makeLexiconEntry(from statement: OpaquePointer?) -> LexiconEntry? {
-        let cardTypeRaw = sqliteTextColumn(statement, index: 2)
-        let cardType: CardType = cardTypeRaw == CardType.phrases.rawValue ? .phrases : .words
-        let isGermanNoun = sqlite3_column_int(statement, 9) != 0
-        let sourceTerm = sourceDisplayText(
-            sqliteTextColumn(statement, index: 0),
-            sourceLanguage: .french
-        )
-        // Casing based on actual word class of THIS entry, not sourceHint
-        let rawTarget = sqliteTextColumn(statement, index: 1)
+    /// Convert master DB gender string (m/f/n/empty) to LexiconGenderInfo
+    private static func masterGenderInfo(raw: String, language: MasterGenderLanguage) -> LexiconGenderInfo? {
+        switch raw.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) {
+        case "m":
+            return LexiconGenderInfo(
+                gender: .masculine,
+                article: language == .french ? "le" : "der",
+                isHeuristic: false
+            )
+        case "f":
+            return LexiconGenderInfo(
+                gender: .feminine,
+                article: language == .french ? "la" : "die",
+                isHeuristic: false
+            )
+        case "n":
+            return LexiconGenderInfo(
+                gender: .neuter,
+                article: language == .french ? nil : "das",
+                isHeuristic: false
+            )
+        default:
+            return nil
+        }
+    }
+
+    private enum MasterGenderLanguage { case french, german }
+
+    // MARK: - Build LexiconEntry from new schema
+
+    /// Builds a LexiconEntry from a query result row.
+    /// Expected columns: 0=lemma_fr, 1=translation_de, 2=word_class, 3=gender_fr, 4=gender_de, 5=is_phrase, 6=entry_id
+    static func makeLexiconEntryFromMaster(from statement: OpaquePointer?) -> LexiconEntry? {
+        let lemmaFr = sqliteTextColumn(statement, index: 0)
+        let translationDe = sqliteTextColumn(statement, index: 1)
+        let wordClass = sqliteTextColumn(statement, index: 2)
+        let genderFr = sqliteTextColumn(statement, index: 3)
+        let genderDe = sqliteTextColumn(statement, index: 4)
+        let isPhrase = sqlite3_column_int(statement, 5) != 0
+        let entryId = sqlite3_column_int(statement, 6)
+
+        let cardType: CardType = isPhrase ? .phrases : .words
+        let isNoun = wordClass.lowercased() == "noun"
+
+        let sourceTerm = sourceDisplayText(lemmaFr, sourceLanguage: .french)
         let targetTerm: String
-        if isGermanNoun {
-            targetTerm = germanDisplayText(rawTarget, cardType: cardType, sourceHint: nil)
+        if isNoun {
+            targetTerm = germanDisplayText(translationDe, cardType: cardType, sourceHint: nil)
         } else {
-            targetTerm = rawTarget.lowercased()
+            targetTerm = translationDe
         }
 
         guard !sourceTerm.isEmpty, !targetTerm.isEmpty else { return nil }
 
-        let sourceLookupKey = sqliteTextColumn(statement, index: 3)
-        let targetLookupKey = sqliteTextColumn(statement, index: 4)
-        let sourceGender = lexiconGender(from: sqliteTextColumn(statement, index: 5))
-        let targetGender = lexiconGender(from: sqliteTextColumn(statement, index: 6))
-        let sourceArticle = optionalTrimmed(sqliteTextColumn(statement, index: 7))
-        let targetArticle = optionalTrimmed(sqliteTextColumn(statement, index: 8))
+        let sourceLookupKey = normalizedLookupText(sourceTerm)
+        let targetLookupKey = normalizedLookupText(targetTerm)
+
         let id = [
             StudyLanguage.french.rawValue,
             cardType.rawValue,
-            sourceLookupKey.isEmpty ? normalizedLookupText(sourceTerm) : sourceLookupKey,
-            targetLookupKey.isEmpty ? normalizedLookupText(targetTerm) : targetLookupKey
+            sourceLookupKey,
+            targetLookupKey,
+            String(entryId)
         ].joined(separator: "|")
+
+        let frenchGender = masterGenderInfo(raw: genderFr, language: .french)
+            ?? frenchGenderInfo(for: sourceTerm, cardType: cardType)
+        let germanGender = masterGenderInfo(raw: genderDe, language: .german)
+            ?? germanGenderInfo(for: targetTerm, cardType: cardType)
 
         return LexiconEntry(
             id: id,
@@ -81,35 +119,29 @@ extension SupplementalFreeDictLexicon {
             targetTerm: targetTerm,
             sourceLanguage: .french,
             cardType: cardType,
-            frenchGender: preferredLexiconGenderInfo(
-                exactFrenchGenderInfo(gender: sourceGender, article: sourceArticle),
-                frenchGenderInfo(for: sourceTerm, cardType: cardType)
-            ),
-            germanGender: preferredLexiconGenderInfo(
-                exactGermanGenderInfo(gender: targetGender, article: targetArticle),
-                germanGenderInfo(for: targetTerm, cardType: cardType)
-            ),
-            isGermanNoun: isGermanNoun
+            frenchGender: isNoun ? frenchGender : nil,
+            germanGender: isNoun ? germanGender : nil,
+            isGermanNoun: isNoun
         )
     }
+
+    // MARK: - Query All Entries
 
     static func queryLexiconEntries(in database: OpaquePointer, limit: Int? = nil) -> [LexiconEntry] {
         let limitClause = limit.map { " LIMIT \($0)" } ?? ""
         let sql = """
         SELECT
-            source_term,
-            target_term,
-            card_type,
-            source_lookup_key,
-            target_lookup_key,
-            COALESCE(source_gender, ''),
-            COALESCE(target_gender, ''),
-            COALESCE(source_article, ''),
-            COALESCE(target_leading_article, ''),
-            is_german_noun
-        FROM lexicon_entries
-        WHERE target_term != ''
-        ORDER BY source_lookup_key ASC, target_lookup_key ASC\(limitClause);
+            e.lemma_fr,
+            s.translation_de,
+            e.word_class,
+            COALESCE(e.gender_fr, ''),
+            COALESCE(e.gender_de, ''),
+            e.is_phrase,
+            e.entry_id
+        FROM entries e
+        JOIN senses s ON s.entry_id = e.entry_id
+        WHERE s.translation_de != ''
+        ORDER BY LOWER(e.lemma_fr) ASC, LOWER(s.translation_de) ASC\(limitClause);
         """
 
         var statement: OpaquePointer?
@@ -121,12 +153,14 @@ extension SupplementalFreeDictLexicon {
 
         var entries: [LexiconEntry] = []
         while sqlite3_step(statement) == SQLITE_ROW {
-            guard let entry = makeLexiconEntry(from: statement) else { continue }
+            guard let entry = makeLexiconEntryFromMaster(from: statement) else { continue }
             entries.append(entry)
         }
 
         return entries
     }
+
+    // MARK: - Search via forms index
 
     static func querySearchLexiconEntries(
         in database: OpaquePointer,
@@ -134,35 +168,34 @@ extension SupplementalFreeDictLexicon {
         compactQuery: String,
         limit: Int
     ) -> [LexiconEntry] {
+        // Two-phase search: forms index (FR) + direct lemma/translation match (DE)
         let sql = """
-        SELECT
-            source_term,
-            target_term,
-            card_type,
-            source_lookup_key,
-            target_lookup_key,
-            COALESCE(source_gender, ''),
-            COALESCE(target_gender, ''),
-            COALESCE(source_article, ''),
-            COALESCE(target_leading_article, ''),
-            is_german_noun
-        FROM lexicon_entries
-        WHERE target_term != ''
+        SELECT DISTINCT
+            e.lemma_fr,
+            s.translation_de,
+            e.word_class,
+            COALESCE(e.gender_fr, ''),
+            COALESCE(e.gender_de, ''),
+            e.is_phrase,
+            e.entry_id
+        FROM entries e
+        JOIN senses s ON s.entry_id = e.entry_id
+        WHERE s.translation_de != ''
           AND (
-            source_lookup_key LIKE ? || '%'
-            OR target_lookup_key LIKE ? || '%'
-            OR source_compact_key LIKE ? || '%'
-            OR target_compact_key LIKE ? || '%'
+            e.entry_id IN (SELECT entry_id FROM forms WHERE form LIKE ? || '%')
+            OR LOWER(e.lemma_fr) LIKE ? || '%'
+            OR LOWER(e.lemma_de) LIKE ? || '%'
+            OR LOWER(s.translation_de) LIKE ? || '%'
           )
         ORDER BY
             CASE
-                WHEN source_lookup_key = ? OR target_lookup_key = ? THEN 0
-                WHEN source_lookup_key LIKE ? || '%' OR target_lookup_key LIKE ? || '%' THEN 1
+                WHEN LOWER(e.lemma_fr) = ? OR LOWER(s.translation_de) = ? THEN 0
+                WHEN LOWER(e.lemma_fr) LIKE ? || '%' THEN 1
                 ELSE 2
             END ASC,
-            LENGTH(source_lookup_key) ASC,
-            source_lookup_key ASC,
-            target_lookup_key ASC
+            LENGTH(e.lemma_fr) ASC,
+            LOWER(e.lemma_fr) ASC,
+            LOWER(s.translation_de) ASC
         LIMIT ?;
         """
 
@@ -174,17 +207,16 @@ extension SupplementalFreeDictLexicon {
         defer { sqlite3_finalize(statement) }
         sqlite3_bind_text(statement, 1, lookupQuery, -1, sqliteTransient)
         sqlite3_bind_text(statement, 2, lookupQuery, -1, sqliteTransient)
-        sqlite3_bind_text(statement, 3, compactQuery, -1, sqliteTransient)
-        sqlite3_bind_text(statement, 4, compactQuery, -1, sqliteTransient)
+        sqlite3_bind_text(statement, 3, lookupQuery, -1, sqliteTransient)
+        sqlite3_bind_text(statement, 4, lookupQuery, -1, sqliteTransient)
         sqlite3_bind_text(statement, 5, lookupQuery, -1, sqliteTransient)
         sqlite3_bind_text(statement, 6, lookupQuery, -1, sqliteTransient)
         sqlite3_bind_text(statement, 7, lookupQuery, -1, sqliteTransient)
-        sqlite3_bind_text(statement, 8, lookupQuery, -1, sqliteTransient)
-        sqlite3_bind_int(statement, 9, Int32(max(limit, 1)))
+        sqlite3_bind_int(statement, 8, Int32(max(limit, 1)))
 
         var entries: [LexiconEntry] = []
         while sqlite3_step(statement) == SQLITE_ROW {
-            guard let entry = makeLexiconEntry(from: statement) else { continue }
+            guard let entry = makeLexiconEntryFromMaster(from: statement) else { continue }
             entries.append(entry)
         }
 

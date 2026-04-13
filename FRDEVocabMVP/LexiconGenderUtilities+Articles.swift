@@ -2,6 +2,13 @@ import Foundation
 
 func leadingFrenchArticle(in text: String) -> String? {
     let normalized = normalizedLookupText(text)
+
+    // Detect l' elision: "l'ordonnance" → article is "l'"
+    let lowerTrimmed = normalized.lowercased()
+    if lowerTrimmed.hasPrefix("l'") || lowerTrimmed.hasPrefix("l\u{2019}") {
+        return "l'"
+    }
+
     let words = normalized.split(separator: " ").map(String.init)
     guard !words.isEmpty else { return nil }
 

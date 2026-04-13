@@ -77,6 +77,11 @@ func isLikelyPlaceNameLexiconEntry(_ entry: LexiconEntry) -> Bool {
 }
 
 func resolvedLexiconCardType(for entry: LexiconEntry) -> CardType {
+    // Respect explicit card_type from database
+    if entry.cardType == .phrases {
+        return .phrases
+    }
+
     if entry.frenchGender != nil || entry.germanGender != nil {
         return .words
     }

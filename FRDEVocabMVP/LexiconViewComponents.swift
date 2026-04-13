@@ -162,16 +162,18 @@ struct LexiconDetailSheetView: View {
     let onDone: () -> Void
 
     private func wordClassLabel(isFrench: Bool) -> String {
-        let stripped = strippingLeadingFrenchArticle(from: sourceText)
-        if StandardVocabularyLoader.isVerb(stripped) { return isFrench ? "Verbe" : "Verb" }
-        if StandardVocabularyLoader.isNoun(stripped) { return isFrench ? "Nom" : "Nomen" }
+        // Explicit marker takes priority (phrase, etc.)
         if let marker = wordClassMarker {
             switch marker {
             case .noun: return isFrench ? "Nom" : "Nomen"
             case .adjective: return isFrench ? "Adjectif" : "Adjektiv"
             case .verb: return isFrench ? "Verbe" : "Verb"
+            case .phrase: return isFrench ? "Expression" : "Redewendung"
             }
         }
+        let stripped = strippingLeadingFrenchArticle(from: sourceText)
+        if StandardVocabularyLoader.isVerb(stripped) { return isFrench ? "Verbe" : "Verb" }
+        if StandardVocabularyLoader.isNoun(stripped) { return isFrench ? "Nom" : "Nomen" }
         if StandardVocabularyLoader.isNonNoun(stripped) {
             return isFrench ? "Adjectif / Adverbe" : "Adjektiv / Adverb"
         }
@@ -258,6 +260,7 @@ struct LexiconDetailSheetView: View {
                         case .noun: return targetCountryCode == "FR" ? "Nom" : "Nomen"
                         case .adjective: return targetCountryCode == "FR" ? "Adj" : "Adj"
                         case .verb: return targetCountryCode == "FR" ? "Verbe" : "Verb"
+                        case .phrase: return targetCountryCode == "FR" ? "Expression" : "Redewendung"
                         }
                     }()
 

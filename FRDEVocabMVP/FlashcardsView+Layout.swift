@@ -202,17 +202,23 @@ extension FlashcardsView {
                     )
 
                     Button {
-                        setup.showingStackComposer = true
+                        handleBackNavigation()
                     } label: {
-                        largeFlashcardToggleCard(
-                            title: "Ausgewählte Listen",
-                            value: selectedStackSummary
-                        )
+                        Label("Zurück zur Auswahl", systemImage: "arrow.left")
+                            .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.plain)
-                    .padding(.bottom, AppTheme.Spacing.sm)
+                    .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))
 
-                    // Direction is set on Home screen
+                    ListCategoryPickerView(
+                        availableLists: availableStackLists,
+                        selectedListIDs: setup.selectedStackListIDs,
+                        accent: sectionStyle.accent,
+                        style: sectionStyle,
+                        feedbackPlayer: feedbackPlayer,
+                        summaryText: selectedStackSummary,
+                        onSelectionChanged: { setup.selectedStackListIDs = $0 }
+                    )
+                    .padding(.bottom, AppTheme.Spacing.sm)
 
                     if isDictionarySelectedInStack {
                         flashcardDictionaryLevelCard

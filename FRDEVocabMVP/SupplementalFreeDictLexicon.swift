@@ -23,10 +23,17 @@ enum SupplementalFreeDictLexicon {
         translationCacheLock.unlock()
 
         let compactKey = compactLookupKey(normalizedKey)
+        // Search via forms index → senses translations
         let results = withReadOnlyDatabase { database in
             queryDistinctStrings(
                 in: database,
-                sql: "SELECT DISTINCT target_term FROM lexicon_entries WHERE source_lookup_key = ? AND target_term != '' ORDER BY target_term ASC LIMIT 8;",
+                sql: """
+                SELECT DISTINCT s.translation_de
+                FROM forms f
+                JOIN senses s ON s.entry_id = f.entry_id
+                WHERE f.form = ? AND s.translation_de != ''
+                ORDER BY s.translation_de ASC LIMIT 8;
+                """,
                 parameter: normalizedKey
             )
         } ?? []
@@ -36,8 +43,14 @@ enum SupplementalFreeDictLexicon {
             compactResults = withReadOnlyDatabase { database in
                 queryDistinctStrings(
                     in: database,
-                    sql: "SELECT DISTINCT target_term FROM lexicon_entries WHERE source_compact_key = ? AND target_term != '' ORDER BY target_term ASC LIMIT 8;",
-                    parameter: compactKey
+                    sql: """
+                    SELECT DISTINCT s.translation_de
+                    FROM entries e
+                    JOIN senses s ON s.entry_id = e.entry_id
+                    WHERE LOWER(e.lemma_fr) = ? AND s.translation_de != ''
+                    ORDER BY s.translation_de ASC LIMIT 8;
+                    """,
+                    parameter: normalizedKey
                 )
             } ?? []
         } else {
@@ -65,10 +78,17 @@ enum SupplementalFreeDictLexicon {
         translationCacheLock.unlock()
 
         let compactKey = compactLookupKey(normalizedKey)
+        // Search via forms index → canonical lemma
         let direct = withReadOnlyDatabase { database in
             queryFirstString(
                 in: database,
-                sql: "SELECT source_term FROM lexicon_entries WHERE source_lookup_key = ? LIMIT 1;",
+                sql: """
+                SELECT e.lemma_fr
+                FROM forms f
+                JOIN entries e ON e.entry_id = f.entry_id
+                WHERE f.form = ?
+                LIMIT 1;
+                """,
                 parameter: normalizedKey
             )
         }
@@ -78,8 +98,8 @@ enum SupplementalFreeDictLexicon {
             return withReadOnlyDatabase { database in
                 queryFirstString(
                     in: database,
-                    sql: "SELECT source_term FROM lexicon_entries WHERE source_compact_key = ? LIMIT 1;",
-                    parameter: compactKey
+                    sql: "SELECT lemma_fr FROM entries WHERE LOWER(lemma_fr) = ? LIMIT 1;",
+                    parameter: normalizedKey
                 )
             }
         }()

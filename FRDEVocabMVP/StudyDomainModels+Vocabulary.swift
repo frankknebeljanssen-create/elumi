@@ -92,6 +92,12 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
         cardType = try container.decode(CardType.self, forKey: .cardType)
         level = try container.decodeIfPresent(VocabularyLevel.self, forKey: .level)
         sourceLanguage = try container.decodeIfPresent(StudyLanguage.self, forKey: .sourceLanguage) ?? .french
+        wordClass = try container.decodeIfPresent(String.self, forKey: .wordClass)
+    }
+
+    /// Resolved word class — uses stored value or falls back to StandardVocabularyLoader lookup
+    var resolvedWordClass: String? {
+        wordClass ?? StandardVocabularyLoader.wordClass(for: french)
     }
 
     func card(for direction: Direction) -> FlashCard {
@@ -121,7 +127,7 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
                 promptLanguageCode: "fr-FR",
                 answerLanguageCode: "de-DE",
                 category: cardType.categoryName,
-                wordClass: wordClass
+                wordClass: resolvedWordClass
             )
         case .germanToFrench:
             return FlashCard(
@@ -130,7 +136,7 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
                 promptLanguageCode: "de-DE",
                 answerLanguageCode: "fr-FR",
                 category: cardType.categoryName,
-                wordClass: wordClass
+                wordClass: resolvedWordClass
             )
         case .englishToGerman:
             return FlashCard(
@@ -139,7 +145,7 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
                 promptLanguageCode: "en-US",
                 answerLanguageCode: "de-DE",
                 category: cardType.categoryName,
-                wordClass: wordClass
+                wordClass: resolvedWordClass
             )
         case .germanToEnglish:
             return FlashCard(
@@ -148,7 +154,7 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
                 promptLanguageCode: "de-DE",
                 answerLanguageCode: "en-US",
                 category: cardType.categoryName,
-                wordClass: wordClass
+                wordClass: resolvedWordClass
             )
         }
     }

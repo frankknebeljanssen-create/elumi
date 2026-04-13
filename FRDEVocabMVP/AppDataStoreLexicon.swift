@@ -62,6 +62,9 @@ enum DataStoreLexiconSupport {
         start = CFAbsoluteTimeGetCurrent()
         let supplementResults = SupplementalFreeDictLexicon.searchLexiconEntries(matching: normalizedQuery, limit: supplementLimit)
         print("⏱ [Search] SQLite supplement (\(supplementResults.count)): \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
+        for r in supplementResults.prefix(3) {
+            print("  📖 \(r.sourceTerm) → \(r.targetTerm) [card=\(r.cardType), noun=\(r.isGermanNoun)]")
+        }
 
         start = CFAbsoluteTimeGetCurrent()
         let merged = SupplementalFreeDictLexicon.enrichMissingGenderInfo(in: mergeLexiconEntries(

@@ -39,6 +39,7 @@ enum LexiconWordClassMarker: String {
     case noun = "[nom]"
     case adjective = "[adj]"
     case verb = "[verb]"
+    case phrase = "[expression]"
 }
 
 @MainActor

@@ -94,6 +94,24 @@ enum StandardVocabularyLoader {
         nounSet.contains(frenchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines))
     }
 
+    /// Fast lookup: word class for a French term (lowercase key → word class)
+    static let wordClassMap: [String: String] = {
+        var map: [String: String] = [:]
+        for entry in allEntries where !entry.wordClass.isEmpty {
+            map[entry.sourceDisplay.lowercased()] = entry.wordClass
+        }
+        return map
+    }()
+
+    /// Lookup word class for a French term — returns "noun", "verb", etc. or nil
+    static func wordClass(for frenchText: String) -> String? {
+        let key = frenchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        if let wc = wordClassMap[key] { return wc }
+        let stripped = strippedArticle(key)
+        if stripped != key, let wc = wordClassMap[stripped] { return wc }
+        return nil
+    }
+
     /// Fast lookup set of non-noun French words (verbs, adjectives, adverbs, etc.)
     static let nonNounSet: Set<String> = {
         Set(allEntries.filter { $0.wordClass != "noun" && !$0.wordClass.isEmpty }.map { $0.sourceDisplay.lowercased() })

@@ -114,7 +114,7 @@ extension TrainingView {
     }
 
     var trainingSetupScreen: some View {
-        VStack(spacing: AppTheme.Spacing.md) {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             ScreenHeaderCard(
                 style: sectionStyle,
                 title: sessionHeaderTitle,
@@ -130,24 +130,41 @@ extension TrainingView {
             }
             .buttonStyle(AppSecondaryButtonStyle(tint: trainingActionTint))
 
-            Spacer(minLength: 0)
+            ListCategoryPickerView(
+                availableLists: availableTrainingLists,
+                selectedListIDs: session.selectedTrainingListIDs,
+                accent: trainingActionTint,
+                style: sectionStyle,
+                feedbackPlayer: feedbackPlayer,
+                summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " · " + trainingListCount),
+                onSelectionChanged: { session.selectedTrainingListIDs = $0 }
+            )
+            .padding(.bottom, AppTheme.Spacing.sm)
 
-            VStack(spacing: 12) {
-                Image(systemName: "tray")
-                    .font(.system(size: 44, weight: .bold))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-
-                Text("Keine Einträge gefunden")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-
-                Text(startHintText)
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .multilineTextAlignment(.center)
+            if isDictionaryTrainingSelected {
+                dictionaryTrainingLevelCard
             }
 
             Spacer(minLength: 0)
+
+            if !canStartTraining {
+                Text(startHintText)
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+
+            Text("Los geht's!")
+                .font(AppTheme.Typography.button)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: AppTheme.Layout.buttonHeight)
+                .background(AppTheme.Colors.cta)
+                .cornerRadius(AppTheme.Radius.md)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    guard canStartTraining else { return }
+                    startTraining()
+                }
         }
         .padding(.horizontal, AppLayout.screenPadding)
         .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 32)

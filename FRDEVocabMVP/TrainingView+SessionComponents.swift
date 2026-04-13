@@ -67,10 +67,12 @@ extension TrainingView {
                             .foregroundStyle(isCorrect ? AppTheme.Colors.success : Color(red: 0.9, green: 0.3, blue: 0.15))
                             .frame(maxWidth: .infinity, alignment: .center)
                     } else {
-                        Text(isArticleMode ? "ARTIKEL" : (isVerbMode ? "VERBEN" : currentCard.category.uppercased()))
-                            .font(AppTheme.Typography.caption)
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
-                            .frame(maxWidth: .infinity, alignment: .center)
+                        if let wcLabel = currentCard.wordClassLabel(for: currentCard.promptLanguageCode) {
+                            Text(wcLabel)
+                                .font(AppTheme.Typography.caption)
+                                .foregroundStyle(AppTheme.Colors.textSecondary)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                        }
                     }
                     Text(isArticleMode ? (articlePromptText ?? currentCard.prompt) : (isVerbMode ? verbPromptText : currentCard.prompt))
                         .font(isArticleMode ? .system(size: 32, weight: .black, design: .rounded) : sessionPromptFont)
@@ -80,12 +82,6 @@ extension TrainingView {
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity, alignment: .center)
 
-                    if let wcLabel = currentCard.wordClassLabel(for: currentCard.promptLanguageCode) {
-                        Text("(\(wcLabel))")
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                    }
                 }
                 .frame(maxWidth: .infinity, minHeight: sessionCardMinHeight, alignment: .center)
                 .padding(.horizontal, 16)

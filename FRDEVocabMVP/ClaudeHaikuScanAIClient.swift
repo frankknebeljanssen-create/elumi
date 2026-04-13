@@ -232,8 +232,6 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
     static func postProcessEntry(_ entry: OpenAIScanSchemaResponse.Entry) -> OpenAIScanSchemaResponse.Entry {
         var e = entry
         let before = e.target
-        print("📡 [PP] IN: src=\"\(e.source)\" tgt=\"\(e.target)\"")
-
         // Force-lowercase non-nouns (und, sich, sind, von, der, die, das...)
         e.target = forceGermanLowercase(e.target)
 
@@ -245,10 +243,6 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         // Remove trailing period from placeholder phrases like "ich heiße + Name."
         if e.target.hasSuffix(".") && e.target.contains("+") {
             e.target = String(e.target.dropLast())
-        }
-
-        if e.target != before {
-            print("📡 [PostProcess] \"\(before)\" → \"\(e.target)\"")
         }
         // Fix known question phrases translated as statements
         let sourceKey = normalizeForLookup(e.source)
@@ -415,6 +409,8 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
            Das l' ist der verkürzte Artikel (le/la). ami/amie ist das Wort. Zusammen: l'ami, l'amie.
         2. Deutsche Kleinschreibung bei Verben/Konjunktionen: "und" NICHT "Und", "sind" NICHT "Sind", "bist" NICHT "Bist".
            NUR Nomen und Satzanfänge groß! Alles andere klein!
+        3. "ce sont" NICHT überspringen! Es ist die Pluralform von "c'est" und steht häufig in Vokabeltabellen.
+           "ce sont" → "das sind". IMMER extrahieren wenn sichtbar!
         ***
 
         *** PRIORITÄT 1 – WICHTIGSTE REGEL ***
@@ -438,6 +434,10 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         Eine Vokabelzeile hat die Struktur: französischer Begriff [Lautschrift] Grammatikangabe → deutsche Übersetzung.
         Extrahiere NUR Zeilen die dieses Muster haben. Die 3. Spalte (Beispielsätze/Dialoge) vollständig ignorieren.
         Auch sehr kurze Einträge zählen: "ah" → "ach, ach so", "et" → "und", "toi" → "du"
+        Häufig übersehene Einträge — NICHT vergessen:
+        "ce sont" → "das sind" (Plural von "c'est")
+        "c'est" → "das ist" (Singular)
+        Beide MÜSSEN extrahiert werden wenn sie im Bild stehen!
         Artikel: siehe ARTIKEL-REGEL oben.
 
         REGEL 2 – Überschriften die auch Vokabeln sind:

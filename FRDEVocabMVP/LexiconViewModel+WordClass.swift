@@ -2,7 +2,7 @@ import Foundation
 
 extension LexiconViewModel {
     func lexiconWordClassMarker(for entry: PreparedLexiconEntry) -> LexiconWordClassMarker? {
-        guard entry.displayCardType == .words else { return nil }
+        if entry.displayCardType == .phrases { return .phrase }
 
         let hasNoun = entry.entries.contains(where: { $0.isGermanNoun })
         let hasNonNoun = entry.entries.contains(where: { !$0.isGermanNoun })

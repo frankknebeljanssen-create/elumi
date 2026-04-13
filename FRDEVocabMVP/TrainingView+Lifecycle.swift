@@ -14,8 +14,9 @@ extension TrainingView {
         if !session.hasStartedTraining {
             resetTrainingSession()
         }
-        // Auto-start training — mode is already selected from Home/Import
-        if !session.hasStartedTraining {
+        // Auto-start only from Import Completion (shouldAutoStart)
+        // From Home: show setup screen with list selection
+        if launchContext?.shouldAutoStart == true, !session.hasStartedTraining {
             startTraining()
         }
     }

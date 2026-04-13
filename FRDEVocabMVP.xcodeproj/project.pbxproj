@@ -17,6 +17,7 @@
 		A00000000000000000000090 /* FRDEKnowledgePool.tsv in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000091 /* FRDEKnowledgePool.tsv */; };
 		A00000000000000000000092 /* FRDEKnowledgePool.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000093 /* FRDEKnowledgePool.sqlite */; };
 		A00000000000000000000094 /* FRDEFreeDictSupplement.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000095 /* FRDEFreeDictSupplement.sqlite */; };
+		55916C8754034661BBD48F46 /* FRDEMasterLexicon.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */; };
 		A00000000000000000000096 /* ScanModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000100 /* ScanModels.swift */; };
 		A00000000000000000000097 /* ScanProviders.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000101 /* ScanProviders.swift */; };
 		A00000000000000000000098 /* ScanEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000102 /* ScanEngine.swift */; };
@@ -389,6 +390,7 @@
 		F43B1C0A2F877A000094BA73 /* VerbNounPairs.tsv in Resources */ = {isa = PBXBuildFile; fileRef = F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */; };
 		F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C0B2F877A100094BA73 /* VerbNounPairLoader.swift */; };
 		F43B1C122F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C112F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift */; };
+		DE208FC184184208BE875D1D /* ListCategoryPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10CDA22DCE1454195172B47 /* ListCategoryPickerView.swift */; };
 		F43B1C142F87C0100094BA73 /* ClaudeHaikuScanAIClient+Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C132F87C0100094BA73 /* ClaudeHaikuScanAIClient+Configuration.swift */; };
 		F43B1C0E2F878B000094BA73 /* FillBlankSentences.tsv in Resources */ = {isa = PBXBuildFile; fileRef = F43B1C0D2F878B000094BA73 /* FillBlankSentences.tsv */; };
 		F43B1C102F878B100094BA73 /* FillBlankSentenceLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C0F2F878B100094BA73 /* FillBlankSentenceLoader.swift */; };
@@ -410,6 +412,7 @@
 		A00000000000000000000091 /* FRDEKnowledgePool.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; path = FRDEKnowledgePool.tsv; sourceTree = "<group>"; };
 		A00000000000000000000093 /* FRDEKnowledgePool.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = FRDEKnowledgePool.sqlite; sourceTree = "<group>"; };
 		A00000000000000000000095 /* FRDEFreeDictSupplement.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = FRDEFreeDictSupplement.sqlite; sourceTree = "<group>"; };
+		DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = FRDEMasterLexicon.sqlite; sourceTree = "<group>"; };
 		A00000000000000000000100 /* ScanModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanModels.swift; sourceTree = "<group>"; };
 		A00000000000000000000101 /* ScanProviders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanProviders.swift; sourceTree = "<group>"; };
 		A00000000000000000000102 /* ScanEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanEngine.swift; sourceTree = "<group>"; };
@@ -782,6 +785,7 @@
 		F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; name = VerbNounPairs.tsv; path = FRDEVocabMVP/VerbNounPairs.tsv; sourceTree = "<group>"; };
 		F43B1C0B2F877A100094BA73 /* VerbNounPairLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VerbNounPairLoader.swift; path = FRDEVocabMVP/VerbNounPairLoader.swift; sourceTree = "<group>"; };
 		F43B1C112F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClaudeHaikuScanAIClient.swift; path = FRDEVocabMVP/ClaudeHaikuScanAIClient.swift; sourceTree = "<group>"; };
+		B10CDA22DCE1454195172B47 /* ListCategoryPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FRDEVocabMVP/ListCategoryPickerView.swift; sourceTree = SOURCE_ROOT; };
 		F43B1C132F87C0100094BA73 /* ClaudeHaikuScanAIClient+Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ClaudeHaikuScanAIClient+Configuration.swift"; path = "FRDEVocabMVP/ClaudeHaikuScanAIClient+Configuration.swift"; sourceTree = "<group>"; };
 		F43B1C0D2F878B000094BA73 /* FillBlankSentences.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; name = FillBlankSentences.tsv; path = FRDEVocabMVP/FillBlankSentences.tsv; sourceTree = "<group>"; };
 		F43B1C0F2F878B100094BA73 /* FillBlankSentenceLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FillBlankSentenceLoader.swift; path = FRDEVocabMVP/FillBlankSentenceLoader.swift; sourceTree = "<group>"; };
@@ -809,6 +813,7 @@
 				F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */,
 				F43B1C0B2F877A100094BA73 /* VerbNounPairLoader.swift */,
 				F43B1C112F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift */,
+				B10CDA22DCE1454195172B47 /* ListCategoryPickerView.swift */,
 				F43B1C132F87C0100094BA73 /* ClaudeHaikuScanAIClient+Configuration.swift */,
 				F43B1C0D2F878B000094BA73 /* FillBlankSentences.tsv */,
 				F43B1C0F2F878B100094BA73 /* FillBlankSentenceLoader.swift */,
@@ -1200,6 +1205,7 @@
 				A00000000000000000000091 /* FRDEKnowledgePool.tsv */,
 				A00000000000000000000093 /* FRDEKnowledgePool.sqlite */,
 				A00000000000000000000095 /* FRDEFreeDictSupplement.sqlite */,
+				DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */,
 			);
 			path = FRDEVocabMVP;
 			sourceTree = "<group>";
@@ -1278,6 +1284,7 @@
 				A00000000000000000000090 /* FRDEKnowledgePool.tsv in Resources */,
 				A00000000000000000000092 /* FRDEKnowledgePool.sqlite in Resources */,
 				A00000000000000000000094 /* FRDEFreeDictSupplement.sqlite in Resources */,
+				55916C8754034661BBD48F46 /* FRDEMasterLexicon.sqlite in Resources */,
 				F43B1C062F86A79C0094BA73 /* StandardpaketGPT.tsv in Resources */,
 				F43B1C0A2F877A000094BA73 /* VerbNounPairs.tsv in Resources */,
 				F43B1C0E2F878B000094BA73 /* FillBlankSentences.tsv in Resources */,
@@ -1332,6 +1339,7 @@
 			files = (
 				F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */,
 				F43B1C122F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift in Sources */,
+				DE208FC184184208BE875D1D /* ListCategoryPickerView.swift in Sources */,
 				F43B1C142F87C0100094BA73 /* ClaudeHaikuScanAIClient+Configuration.swift in Sources */,
 				F43B1C102F878B100094BA73 /* FillBlankSentenceLoader.swift in Sources */,
 				A00000000000000000000001 /* FRDEVocabMVPApp.swift in Sources */,

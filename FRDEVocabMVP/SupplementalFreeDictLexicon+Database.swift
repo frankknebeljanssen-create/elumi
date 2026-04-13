@@ -3,7 +3,7 @@ import SQLite3
 
 extension SupplementalFreeDictLexicon {
     static func withReadOnlyDatabase<T>(_ body: (OpaquePointer) -> T?) -> T? {
-        guard let url = Bundle.main.url(forResource: "FRDEFreeDictSupplement", withExtension: "sqlite") else {
+        guard let url = Bundle.main.url(forResource: "FRDEMasterLexicon", withExtension: "sqlite") else {
             return nil
         }
 
@@ -69,7 +69,7 @@ extension SupplementalFreeDictLexicon {
         return withReadOnlyDatabase { database in
             queryFirstString(
                 in: database,
-                sql: "SELECT source_gender FROM lexicon_entries WHERE source_lookup_key = ? AND source_gender != '' LIMIT 1;",
+                sql: "SELECT gender_fr FROM entries WHERE LOWER(lemma_fr) = ? AND gender_fr != '' LIMIT 1;",
                 parameter: lookupKey
             )
         }

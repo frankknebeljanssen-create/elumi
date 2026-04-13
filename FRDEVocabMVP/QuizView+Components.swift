@@ -40,32 +40,15 @@ var quizSetupScreen: some View {
             }
             .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))
 
-            Button {
-                showingQuizListPicker = true
-            } label: {
-                HStack(spacing: 14) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Ausgewählte Listen")
-                            .font(AppTheme.Typography.caption)
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
-                        Text(quizListSummary)
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textPrimary)
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.8)
-                    }
-                    Spacer(minLength: 0)
-                    Image(systemName: "chevron.down.circle.fill")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundStyle(sectionStyle.accent)
-                }
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: AppLayout.largeSelectionHeight)
-                .padding(.horizontal, AppTheme.Spacing.md)
-                .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
-            }
-            .buttonStyle(.plain)
-            .padding(.horizontal, quizSetupCardInset)
+            ListCategoryPickerView(
+                availableLists: availableQuizLists,
+                selectedListIDs: session.selectedListIDs,
+                accent: sectionStyle.accent,
+                style: sectionStyle,
+                feedbackPlayer: feedbackPlayer,
+                summaryText: quizListSummary,
+                onSelectionChanged: { session.selectedListIDs = $0 }
+            )
             .padding(.bottom, AppTheme.Spacing.sm)
 
             // Direction is set on Home screen
