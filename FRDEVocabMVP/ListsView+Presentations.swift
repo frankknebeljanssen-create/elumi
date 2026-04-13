@@ -25,33 +25,67 @@ extension ListsView {
                 ListPickerSheet(
                     style: sectionStyle,
                     lists: listStore.allLists,
-                    selectedListID: listStore.selectedListID
-                ) { pickedID in
-                    listStore.selectedListID = pickedID
-                    showingListPicker = false
-                } onDelete: { deletedList in
-                    listStore.deleteCustomList(id: deletedList.id)
-                    feedbackPlayer.playListAction()
-                    editableListName = listStore.selectedList.name
-                    cancelEditing()
-                    showToast("„\(deletedList.name)“ wurde gelöscht.")
-                }
+                    selectedListID: listStore.selectedListID,
+                    onSelect: { pickedID in
+                        listStore.selectedListID = pickedID
+                        showingListPicker = false
+                    },
+                    onDelete: { deletedList in
+                        listStore.deleteCustomList(id: deletedList.id)
+                        feedbackPlayer.playListAction()
+                        editableListName = listStore.selectedList.name
+                        cancelEditing()
+                        showToast("\(deletedList.name) wurde gel\u{f6}scht.")
+                    },
+                    onView: { list in
+                        listStore.selectedListID = list.id
+                        showingListPicker = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            showingListDetail = true
+                        }
+                    },
+                    onRename: { list in
+                        listStore.selectedListID = list.id
+                        editableListName = list.name
+                        showingListPicker = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            showingRenameDialog = true
+                        }
+                    }
+                )
             }
             .sheet(item: $listPickerFilter) { filter in
                 ListPickerSheet(
                     style: sectionStyle,
                     lists: filteredListsForPicker(filter),
-                    selectedListID: listStore.selectedListID
-                ) { pickedID in
-                    listStore.selectedListID = pickedID
-                    listPickerFilter = nil
-                } onDelete: { deletedList in
-                    listStore.deleteCustomList(id: deletedList.id)
-                    feedbackPlayer.playListAction()
-                    editableListName = listStore.selectedList.name
-                    cancelEditing()
-                    showToast("\u{201E}\(deletedList.name)\u{201C} wurde gel\u{00F6}scht.")
-                }
+                    selectedListID: listStore.selectedListID,
+                    onSelect: { pickedID in
+                        listStore.selectedListID = pickedID
+                        listPickerFilter = nil
+                    },
+                    onDelete: { deletedList in
+                        listStore.deleteCustomList(id: deletedList.id)
+                        feedbackPlayer.playListAction()
+                        editableListName = listStore.selectedList.name
+                        cancelEditing()
+                        showToast("\(deletedList.name) wurde gel\u{f6}scht.")
+                    },
+                    onView: { list in
+                        listStore.selectedListID = list.id
+                        listPickerFilter = nil
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            showingListDetail = true
+                        }
+                    },
+                    onRename: { list in
+                        listStore.selectedListID = list.id
+                        editableListName = list.name
+                        listPickerFilter = nil
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            showingRenameDialog = true
+                        }
+                    }
+                )
             }
             .sheet(isPresented: $showingListDetail) {
                 ListDetailSheet(
@@ -114,11 +148,11 @@ extension ListsView {
                         feedbackPlayer.playListAction()
                         cancelEditing()
                         self.listPendingDeletion = nil
-                        showToast("„\(deletedName)“ wurde gelöscht.")
+                        showToast("\(deletedName) wurde gel\u{00F6}scht.")
                     }
                 }
             } message: {
-                Text(listPendingDeletion.map { "„\($0.name)“ wird gelöscht." } ?? "")
+                Text(listPendingDeletion.map { "\($0.name) wird gel\u{00F6}scht." } ?? "")
             }
     }
 }

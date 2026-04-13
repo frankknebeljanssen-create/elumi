@@ -20,8 +20,8 @@ enum StandardVocabularyLoader {
     static let vocabularyItems: [VocabularyItem] = {
         var seen = Set<String>()
         return allEntries.compactMap { entry -> VocabularyItem? in
-            let cardType: CardType = entry.sourceDisplay.split(separator: " ").count >= 3 ? .phrases : .words
-            // Deduplicate by normalized key to prevent crashes
+            // Use cardType from DB (is_phrase), not word-count heuristic
+            let cardType = entry.cardType
             let key = [
                 entry.sourceDisplay.lowercased()
                     .folding(options: .diacriticInsensitive, locale: .current),
@@ -80,9 +80,11 @@ enum StandardVocabularyLoader {
         Set(allEntries.filter { $0.wordClass == "verb" }.map { $0.sourceDisplay.lowercased() })
     }()
 
-    /// Fast lookup: is this French word a verb?
+    /// Fast lookup: is this French word a verb? (includes conjugated forms)
     static func isVerb(_ frenchText: String) -> Bool {
-        verbSet.contains(frenchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines))
+        let key = frenchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        if verbSet.contains(key) { return true }
+        return inflectionWordClassMap[key] == "verb"
     }
 
     /// Fast lookup set of French nouns (lowercase)
@@ -90,9 +92,11 @@ enum StandardVocabularyLoader {
         Set(allEntries.filter { $0.wordClass == "noun" }.map { $0.sourceDisplay.lowercased() })
     }()
 
-    /// Fast lookup: is this French word a noun?
+    /// Fast lookup: is this French word a noun? (includes plural forms)
     static func isNoun(_ frenchText: String) -> Bool {
-        nounSet.contains(frenchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines))
+        let key = frenchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        if nounSet.contains(key) { return true }
+        return inflectionWordClassMap[key] == "noun"
     }
 
     /// Fast lookup: word class for a French term (lowercase key → word class)
@@ -104,12 +108,44 @@ enum StandardVocabularyLoader {
         return map
     }()
 
+    /// Inflection form → word class map (lazy loaded from SQLite forms table)
+    static let inflectionWordClassMap: [String: String] = {
+        var map: [String: String] = [:]
+        _ = SupplementalFreeDictLexicon.withReadOnlyDatabase { database -> Bool in
+            let sql = """
+                SELECT DISTINCT f.form, e.word_class
+                FROM forms f
+                JOIN entries e ON f.entry_id = e.entry_id
+                WHERE f.form_type = 'inflection' AND e.word_class != ''
+                """
+            var statement: OpaquePointer?
+            guard sqlite3_prepare_v2(database, sql, -1, &statement, nil) == SQLITE_OK,
+                  let stmt = statement else { return false }
+            defer { sqlite3_finalize(stmt) }
+            while sqlite3_step(stmt) == SQLITE_ROW {
+                let form = sqlite3_column_text(stmt, 0).map { String(cString: $0) } ?? ""
+                let wc = sqlite3_column_text(stmt, 1).map { String(cString: $0) } ?? ""
+                guard !form.isEmpty, !wc.isEmpty else { continue }
+                // Store individual words from the form (e.g. "je suis" → "suis")
+                let words = form.lowercased().split(separator: " ")
+                if let lastWord = words.last, words.count <= 2 {
+                    map[String(lastWord)] = wc
+                }
+            }
+            return true
+        }
+        return map
+    }()
+
     /// Lookup word class for a French term — returns "noun", "verb", etc. or nil
     static func wordClass(for frenchText: String) -> String? {
         let key = frenchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         if let wc = wordClassMap[key] { return wc }
         let stripped = strippedArticle(key)
         if stripped != key, let wc = wordClassMap[stripped] { return wc }
+        // Check inflection forms (conjugated verbs, plural nouns, etc.)
+        if let wc = inflectionWordClassMap[key] { return wc }
+        if stripped != key, let wc = inflectionWordClassMap[stripped] { return wc }
         return nil
     }
 

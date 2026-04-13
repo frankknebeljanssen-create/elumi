@@ -20,6 +20,8 @@ final class TrainingSessionController: ObservableObject {
     @Published var remainingTrainingItems: [VocabularyItem] = []
     @Published var preparedTrainingItems: [VocabularyItem] = []
     @Published var isShowingSetup = true
+    @Published var completedRound: Int = 0
+    @Published var isShowingRoundComplete = false
     @Published var showingTrainingListPicker = false
     @Published var selectedDictionaryLearningLevel: DictionaryLearningLevel = .beginner
     @Published var loadedDictionaryTrainingList: VocabularyList?

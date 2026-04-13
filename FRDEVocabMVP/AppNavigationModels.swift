@@ -97,12 +97,7 @@ struct ImportCompletionContext: Hashable {
     let importedItemIDs: [UUID]
 
     var summaryText: String {
-        switch cardType {
-        case .words:
-            return importedCount == 1 ? "1 Vokabel wurde gespeichert" : "\(importedCount) Vokabeln wurden gespeichert"
-        case .phrases:
-            return importedCount == 1 ? "1 Phrase wurde gespeichert" : "\(importedCount) Phrasen wurden gespeichert"
-        }
+        return importedCount == 1 ? "1 Eintrag wurde gespeichert" : "\(importedCount) Eintr\u{00E4}ge wurden gespeichert"
     }
 
     var trainingLaunchContext: TrainingLaunchContext {

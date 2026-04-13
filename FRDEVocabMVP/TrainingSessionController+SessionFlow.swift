@@ -6,6 +6,8 @@ extension TrainingSessionController {
         hasStartedTraining = false
         isSpeedRound = false
         isShowingSetup = true
+        isShowingRoundComplete = false
+        completedRound = 0
         failedAttemptsOnCurrentCard = 0
         currentTrainingItem = nil
         preparedTrainingItems = []
@@ -43,11 +45,17 @@ extension TrainingSessionController {
         failedAttemptsOnCurrentCard = 0
 
         if remainingTrainingItems.isEmpty {
+            // First call after startTraining: completedRound is 0, just shuffle
+            // Subsequent rounds: show round-complete celebration
+            if completedRound > 0, hasStartedTraining, !isSpeedRound, !preparedTrainingItems.isEmpty {
+                isShowingRoundComplete = true
+                return
+            }
+            completedRound += 1
             remainingTrainingItems = TrainingDeckBuilder.shuffledRound(
                 from: preparedTrainingItems,
                 avoiding: previousItem
             )
-            print("🏋️ [Training] reshuffled: prepared=\(preparedTrainingItems.count) → remaining=\(remainingTrainingItems.count)")
         }
 
         guard !remainingTrainingItems.isEmpty else {
@@ -57,6 +65,18 @@ extension TrainingSessionController {
             return
         }
 
+        currentTrainingItem = remainingTrainingItems.removeFirst()
+    }
+
+    func continueNextRound() {
+        isShowingRoundComplete = false
+        completedRound += 1
+        let previousItem = currentTrainingItem
+        remainingTrainingItems = TrainingDeckBuilder.shuffledRound(
+            from: preparedTrainingItems,
+            avoiding: previousItem
+        )
+        guard !remainingTrainingItems.isEmpty else { return }
         currentTrainingItem = remainingTrainingItems.removeFirst()
     }
 

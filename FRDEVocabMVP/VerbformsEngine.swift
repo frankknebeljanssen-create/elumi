@@ -124,17 +124,9 @@ enum VerbformsEngine {
             }
 
             return grouped.compactMap { entryID, data in
-                // Parse all forms: detect person + tense
-                var tenseForms: [VerbformsTense: [VerbformsPerson: String]] = [:]
+                let tenseForms = groupFormsByTense(data.forms)
 
-                for form in data.forms {
-                    guard let person = parsePerson(form) else { continue }
-                    let tense = detectTense(form, person: person)
-                    tenseForms[tense, default: [:]][person] = form
-                }
-
-                // Need at least one tense with 6 persons
-                let hasCompleteTense = tenseForms.values.contains { $0.count >= 5 }
+                let hasCompleteTense = tenseForms.values.contains { $0.count >= 6 }
                 guard hasCompleteTense else { return nil }
 
                 return VerbInflections(
@@ -164,7 +156,7 @@ enum VerbformsEngine {
 
             // Pick a random tense from the selected ones that this verb actually has
             let availableTenses = tenses.filter { tense in
-                (verb.tenseForms[tense]?.count ?? 0) >= 5
+                (verb.tenseForms[tense]?.count ?? 0) >= 6
             }
             guard let tense = availableTenses.randomElement() else { continue }
             guard let tenseForms = verb.tenseForms[tense] else { continue }
@@ -197,52 +189,74 @@ enum VerbformsEngine {
     static func availableTenses(in inflections: [VerbInflections]) -> Set<VerbformsTense> {
         var result = Set<VerbformsTense>()
         for verb in inflections {
-            for (tense, forms) in verb.tenseForms where forms.count >= 5 {
+            for (tense, forms) in verb.tenseForms where forms.count >= 6 {
                 result.insert(tense)
             }
         }
         return result
     }
 
-    // MARK: - Tense Detection
+    // MARK: - Tense Detection (Group-based)
 
-    /// Detect tense from a conjugated form based on endings
-    static func detectTense(_ form: String, person: VerbformsPerson) -> VerbformsTense {
-        let verbPart = stripPronoun(form).lowercased()
-
-        // Imparfait endings: -ais, -ais, -ait, -ions, -iez, -aient
-        switch person {
-        case .je, .tu:
-            if verbPart.hasSuffix("ais") { return .imparfait }
-        case .il:
-            if verbPart.hasSuffix("ait") { return .imparfait }
-        case .nous:
-            if verbPart.hasSuffix("ions") { return .imparfait }
-        case .vous:
-            if verbPart.hasSuffix("iez") { return .imparfait }
-        case .ils:
-            if verbPart.hasSuffix("aient") { return .imparfait }
+    /// Group a verb's raw forms into tense buckets by collecting 6-person sets
+    /// and using the nous-form as discriminator.
+    static func groupFormsByTense(_ rawForms: [String]) -> [VerbformsTense: [VerbformsPerson: String]] {
+        // 1. Parse all forms with pronouns into (person, form) pairs
+        var parsedForms: [(person: VerbformsPerson, form: String)] = []
+        for form in rawForms {
+            if let person = parsePerson(form) {
+                parsedForms.append((person, form))
+            }
         }
 
-        // Futur simple endings: -ai, -as, -a, -ons, -ez, -ont (on infinitive stem)
-        // Heuristic: futur has -rai, -ras, -ra, -rons, -rez, -ront
-        switch person {
-        case .je:
-            if verbPart.hasSuffix("rai") { return .futurSimple }
-        case .tu:
-            if verbPart.hasSuffix("ras") { return .futurSimple }
-        case .il:
-            if verbPart.hasSuffix("ra") && !verbPart.hasSuffix("ira") { return .futurSimple }
-            if verbPart.hasSuffix("ira") { return .futurSimple } // finira
-        case .nous:
+        // 2. Collect consecutive 6-person sets
+        var tenseForms: [VerbformsTense: [VerbformsPerson: String]] = [:]
+        var currentSet: [VerbformsPerson: String] = [:]
+
+        for (person, form) in parsedForms {
+            // If we already have this person, this is a new tense set
+            if currentSet[person] != nil {
+                // Finalize current set
+                if currentSet.count >= 6 {
+                    let tense = detectTenseFromSet(currentSet)
+                    tenseForms[tense] = currentSet
+                }
+                currentSet = [:]
+            }
+            currentSet[person] = form
+        }
+        // Finalize last set
+        if currentSet.count >= 6 {
+            let tense = detectTenseFromSet(currentSet)
+            tenseForms[tense] = currentSet
+        }
+
+        return tenseForms
+    }
+
+    /// Detect tense from a complete 6-person set using the nous-form as discriminator
+    private static func detectTenseFromSet(_ set: [VerbformsPerson: String]) -> VerbformsTense {
+        // Compound forms (2+ words after pronoun) → Passé composé
+        if let jeForm = set[.je] {
+            let verbPart = stripPronoun(jeForm)
+            if verbPart.contains(" ") { return .passeCompose }
+        }
+
+        // Use nous-form as reliable discriminator
+        if let nousForm = set[.nous] {
+            let verbPart = stripPronoun(nousForm).lowercased()
+            if verbPart.hasSuffix("ions") { return .imparfait }
             if verbPart.hasSuffix("rons") { return .futurSimple }
-        case .vous:
-            if verbPart.hasSuffix("rez") { return .futurSimple }
-        case .ils:
+            if verbPart.hasSuffix("rions") { return .present } // conditionnel, treat as other for now
+        }
+
+        // Fallback: use ils-form
+        if let ilsForm = set[.ils] {
+            let verbPart = stripPronoun(ilsForm).lowercased()
+            if verbPart.hasSuffix("aient") { return .imparfait }
             if verbPart.hasSuffix("ront") { return .futurSimple }
         }
 
-        // Default: Präsens
         return .present
     }
 

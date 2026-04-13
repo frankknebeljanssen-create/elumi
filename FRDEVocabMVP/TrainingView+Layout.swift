@@ -52,9 +52,26 @@ extension TrainingView {
             }
             .buttonStyle(AppSecondaryButtonStyle(tint: trainingActionTint))
             .padding(.horizontal, trainingSessionCardInset)
-            .padding(.bottom, AppTheme.Spacing.xs)
 
-            if let countdown = speedCountdown {
+            // Progress counter for Nomen, Artikel, Verben
+            if !session.isSpeedRound, (isNounMode || isArticleMode || isVerbMode), session.hasStartedTraining, !session.isShowingRoundComplete {
+                let solved = session.preparedTrainingItems.count - session.remainingTrainingItems.count
+                let total = session.preparedTrainingItems.count
+                HStack {
+                    Text("\(solved) / \(total)")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(trainingActionTint)
+                    Spacer()
+                    Text("Runde \(session.completedRound)")
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                }
+                .padding(.horizontal, trainingSessionCardInset + 4)
+            }
+
+            if session.isShowingRoundComplete {
+                roundCompleteView
+            } else if let countdown = speedCountdown {
                 // 3-2-1 Countdown overlay
                 Text("\(countdown)")
                     .font(.system(size: 72, weight: .black, design: .rounded))
@@ -179,7 +196,8 @@ extension TrainingView {
                     accent: trainingActionTint,
                     style: sectionStyle,
                     feedbackPlayer: feedbackPlayer,
-                    summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " · " + trainingListCount),
+                    summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " \u{00B7} " + trainingListCount),
+                    itemLabel: "Eintr\u{00E4}ge",
                     onSelectionChanged: { session.selectedTrainingListIDs = $0 }
                 )
             } else if session.trainingMode == .verbforms {
@@ -190,7 +208,8 @@ extension TrainingView {
                     accent: trainingActionTint,
                     style: sectionStyle,
                     feedbackPlayer: feedbackPlayer,
-                    summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " · " + trainingListCount),
+                    summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " \u{00B7} " + trainingListCount),
+                    itemLabel: "Verben",
                     onSelectionChanged: { session.selectedTrainingListIDs = $0 }
                 )
                 verbformsSetupOptions
@@ -202,7 +221,8 @@ extension TrainingView {
                     accent: trainingActionTint,
                     style: sectionStyle,
                     feedbackPlayer: feedbackPlayer,
-                    summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " · " + trainingListCount),
+                    summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " \u{00B7} " + trainingListCount),
+                    itemLabel: trainingItemLabel,
                     onSelectionChanged: { session.selectedTrainingListIDs = $0 }
                 )
 
@@ -310,6 +330,58 @@ extension TrainingView {
             )
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Round Complete View
+
+    private var roundCompleteView: some View {
+        VStack(spacing: 16) {
+            Spacer()
+
+            Image(systemName: "star.circle.fill")
+                .font(.system(size: 56, weight: .bold))
+                .foregroundStyle(AppTheme.Colors.warning)
+
+            Text("Runde \(session.completedRound) geschafft!")
+                .font(.system(size: 26, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+
+            Text("\(session.preparedTrainingItems.count) \(trainingItemLabel) durchgearbeitet")
+                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+
+            Spacer()
+
+            Button {
+                feedbackPlayer.playStudySuccess()
+                session.continueNextRound()
+            } label: {
+                Text("Weiter \u{2192} Runde \(session.completedRound + 1)")
+                    .font(AppTheme.Typography.button)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 56)
+                    .background(AppTheme.Colors.cta)
+                    .cornerRadius(AppTheme.Radius.md)
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, trainingSessionCardInset)
+
+            Button {
+                dismissTraining()
+            } label: {
+                Label("Zur\u{00FC}ck", systemImage: "arrow.left")
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 44)
+            }
+            .buttonStyle(AppSecondaryButtonStyle(tint: AppTheme.Colors.textSecondary))
+            .padding(.horizontal, trainingSessionCardInset)
+
+            Spacer().frame(height: 8)
+        }
+        .onAppear {
+            feedbackPlayer.playStudyAchievement()
+        }
     }
 
     // MARK: - Verb Content Type Selector (Verben / Phrasen)
@@ -788,12 +860,15 @@ extension TrainingView {
             verbformsCountdown = 3
             feedbackPlayer.playToggle()
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [self] in
+                guard verbformsSession.isActive else { return }
                 verbformsCountdown = 2
                 feedbackPlayer.playToggle()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [self] in
+                    guard verbformsSession.isActive else { return }
                     verbformsCountdown = 1
                     feedbackPlayer.playToggle()
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [self] in
+                        guard verbformsSession.isActive else { return }
                         verbformsCountdown = nil
                         feedbackPlayer.playLaunch()
                         verbformsSession.startSpeedRoundTimer(feedbackPlayer: feedbackPlayer)

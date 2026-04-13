@@ -90,22 +90,22 @@ struct TrainingView: View {
     var trainingListCount: String {
         let ids = session.selectedTrainingListIDs
         if ids.isEmpty { return "" }
-        let allAvailable = availableTrainingLists
-        let selected = allAvailable.filter { ids.contains($0.id) }
+
+        // Use activeItems count — same filtering as actual training
+        let count = activeItems.count
+        if count == 0 {
+            let allAvailable = availableTrainingLists
+            let selected = allAvailable.filter { ids.contains($0.id) }
+            let totalItems = selected.reduce(0) { $0 + $1.items.count }
+            return "\(totalItems) Eintr\u{00E4}ge"
+        }
 
         if isVerbMode || isVerbformsMode {
-            let verbCount = selected.flatMap(\.items).filter {
-                $0.cardType == .words && StandardVocabularyLoader.isVerb($0.french)
-            }.count
-            return "\(verbCount) Verben"
+            return "\(count) Verben"
         } else if isArticleMode || isNounMode {
-            let nounCount = selected.flatMap(\.items).filter {
-                $0.cardType == .words && (StandardVocabularyLoader.isNoun($0.french) || TrainingSessionController.hasFrenchArticle($0.french))
-            }.count
-            return "\(nounCount) Nomen"
+            return "\(count) Nomen"
         } else {
-            let totalItems = selected.reduce(0) { $0 + $1.items.count }
-            return "\(totalItems) Einträge"
+            return "\(count) Eintr\u{00E4}ge"
         }
     }
 
@@ -309,6 +309,12 @@ struct TrainingView: View {
 
     var sessionPromptFont: Font {
         .system(size: session.cardType == .phrases ? 20 : 28, weight: .bold, design: .rounded)
+    }
+
+    var trainingItemLabel: String {
+        if isVerbMode { return "Verben" }
+        if isNounMode || isArticleMode { return "Nomen" }
+        return "Eintr\u{00E4}ge"
     }
 
     var canStartTraining: Bool {

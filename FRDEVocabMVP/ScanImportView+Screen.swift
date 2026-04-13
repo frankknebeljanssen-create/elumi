@@ -216,59 +216,103 @@ extension ScanImportView {
         previewPairs.filter { !$0.isImportable }.count
     }
 
+    private func resolvedWordClass(for pair: ImportPreviewPair) -> String? {
+        if let wc = pair.wordClass, !wc.isEmpty { return wc }
+        // Try full text first
+        if let wc = StandardVocabularyLoader.wordClass(for: pair.french) { return wc }
+        // For phrases: check individual words
+        let words = pair.french.split(separator: " ").map(String.init)
+        if words.count > 1 {
+            for word in words {
+                if let wc = StandardVocabularyLoader.wordClass(for: word) { return wc }
+            }
+        }
+        return nil
+    }
+
     var batchCompleteSummary: some View {
         let pageCount = max(session.batchTotalCount, 1)
         let totalPairs = previewPairs.count
         let unsureCount = scanResultUnsureCount
 
-        return VStack(spacing: 10) {
+        // Word class counts — check wordClass, then individual words via inflection DB
+        var nounCount = 0
+        var verbCount = 0
+        var adjCount = 0
+        for pair in previewPairs {
+            let wc = resolvedWordClass(for: pair)
+            if wc == "noun" { nounCount += 1 }
+            else if wc == "verb" { verbCount += 1 }
+            else if wc == "adjective" { adjCount += 1 }
+            else {
+                // Fallback: check if any word in the french text is a known verb/noun/adj
+                let words = pair.french.lowercased()
+                    .replacingOccurrences(of: "'", with: " ")
+                    .replacingOccurrences(of: "\u{2019}", with: " ")
+                    .split(separator: " ").map(String.init)
+                let detectedWC = words.compactMap { StandardVocabularyLoader.wordClass(for: $0) }.first
+                if detectedWC == "verb" { verbCount += 1 }
+                else if detectedWC == "noun" { nounCount += 1 }
+                else if detectedWC == "adjective" { adjCount += 1 }
+            }
+        }
+        let otherCount = totalPairs - nounCount - verbCount - adjCount
+
+        return VStack(spacing: 16) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 28, weight: .bold))
+                .font(.system(size: 36, weight: .bold))
                 .foregroundStyle(AppTheme.Colors.success)
 
             Text("Analyse abgeschlossen")
+                .font(.system(size: 24, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+
+            Text(pageCount == 1 ? "1 Seite analysiert" : "\(pageCount) Seiten analysiert")
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+
+            // Total count big
+            Text("\(totalPairs) Vokabeln erkannt")
                 .font(.system(size: 20, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
 
-            VStack(spacing: 5) {
-                HStack(spacing: 8) {
-                    Image(systemName: "doc.text.fill")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                    Text(pageCount == 1 ? "1 Seite analysiert" : "\(pageCount) Seiten analysiert")
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                    Spacer()
+            // Word class breakdown — 2-zeilig pills
+            HStack(spacing: 10) {
+                if nounCount > 0 {
+                    wordClassBadge(count: nounCount, label: "Nomen", color: AppTheme.Colors.moduleNomen)
                 }
-
-                HStack(spacing: 8) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(AppTheme.Colors.success)
-                    Text("\(totalPairs) Vokabeln erkannt")
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                    Spacer()
+                if verbCount > 0 {
+                    wordClassBadge(count: verbCount, label: "Verben", color: AppTheme.Colors.moduleVerbs)
                 }
+                if adjCount > 0 {
+                    wordClassBadge(count: adjCount, label: "Adjektive", color: AppTheme.Colors.moduleQuiz)
+                }
+                if otherCount > 0 {
+                    wordClassBadge(count: otherCount, label: "Andere", color: AppTheme.Colors.textSecondary)
+                }
+            }
 
+            VStack(spacing: 6) {
                 HStack(spacing: 8) {
                     Image(systemName: "square.and.arrow.down.fill")
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(AppTheme.Colors.primary)
-                    Text("\(completePreviewPairCount) Einträge bereit zum Import")
+                    Text("\(completePreviewPairCount) Eintr\u{00E4}ge bereit zum Import")
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                     Spacer()
                 }
 
-                HStack(spacing: 8) {
-                    Image(systemName: unsureCount > 0 ? "exclamationmark.triangle.fill" : "checkmark.shield.fill")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(unsureCount > 0 ? AppTheme.Colors.warning : AppTheme.Colors.success)
-                    Text(unsureCount > 0 ? "\(unsureCount) unsichere Einträge" : "Keine unsicheren Einträge")
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
-                        .foregroundStyle(unsureCount > 0 ? AppTheme.Colors.warning : AppTheme.Colors.textSecondary)
-                    Spacer()
+                if unsureCount > 0 {
+                    HStack(spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(AppTheme.Colors.warning)
+                        Text("\(unsureCount) unsichere Eintr\u{00E4}ge")
+                            .font(.system(size: 15, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.warning)
+                        Spacer()
+                    }
                 }
             }
             .padding(.horizontal, 4)
@@ -294,6 +338,21 @@ extension ScanImportView {
                         .stroke(AppTheme.Colors.success.opacity(0.3), lineWidth: 1.5)
                 )
         )
+    }
+
+    private func wordClassBadge(count: Int, label: String, color: Color) -> some View {
+        VStack(spacing: 2) {
+            Text("\(count)")
+                .font(.system(size: 20, weight: .black, design: .rounded))
+            Text(label)
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+        }
+        .foregroundStyle(color)
+        .frame(minWidth: 60)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(color.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
     @ViewBuilder
@@ -328,6 +387,12 @@ extension ScanImportView {
                     .disabled(isRecognizingImage)
                 }
 
+                if session.batchCompleted && !previewPairs.isEmpty {
+                    // Summary: nur Summary zentriert, keine Auswahl-Buttons
+                    Spacer(minLength: 8)
+                    batchCompleteSummary
+                    Spacer(minLength: 8)
+                } else {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                         ScanModeSelectionCardView(
@@ -357,11 +422,6 @@ extension ScanImportView {
                                 showingPhotoLibrary = true
                             }
                         )
-
-                        // Summary screen (after analysis complete)
-                        if session.batchCompleted && !previewPairs.isEmpty {
-                            batchCompleteSummary
-                        }
 
                         // Progress overlay during batch
                         // (handled below as overlay)
@@ -401,6 +461,7 @@ extension ScanImportView {
                     .padding(.bottom, 8 + scanKeyboardBottomPadding)
                 }
                 .scrollDismissesKeyboard(.interactively)
+            } // else (nicht batchCompleted)
             }
 
             if isShowingScanToast {
@@ -458,6 +519,13 @@ extension ScanImportView {
                     shouldAutoStart: true
                 )))
             },
+            onNomen: {
+                handleCompletionSelection(.train(TrainingLaunchContext(
+                    preferredListID: context.targetListID,
+                    preferredMode: .nouns,
+                    shouldAutoStart: true
+                )))
+            },
             onArticles: {
                 handleCompletionSelection(.train(TrainingLaunchContext(
                     preferredListID: context.targetListID,
@@ -470,6 +538,13 @@ extension ScanImportView {
                     preferredListID: context.targetListID,
                     preferredMode: .verbs,
                     shouldAutoStart: true
+                )))
+            },
+            onVerbforms: {
+                handleCompletionSelection(.train(TrainingLaunchContext(
+                    preferredListID: context.targetListID,
+                    preferredMode: .verbforms,
+                    shouldAutoStart: false
                 )))
             },
             onFlashcards: {

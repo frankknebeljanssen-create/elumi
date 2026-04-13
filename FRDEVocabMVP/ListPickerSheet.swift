@@ -7,6 +7,8 @@ struct ListPickerSheet: View {
     let selectedListID: UUID
     let onSelect: (UUID) -> Void
     let onDelete: (VocabularyList) -> Void
+    var onView: ((VocabularyList) -> Void)? = nil
+    var onRename: ((VocabularyList) -> Void)? = nil
 
     @State private var listPendingDeletion: VocabularyList?
     @State private var localSelectedID: UUID?
@@ -161,25 +163,63 @@ struct ListPickerSheet: View {
         } label: {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(list.name)
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
-                    Text("\(list.items.count) Einträge")
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                    HStack(spacing: 6) {
+                        Text(list.name)
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                        if !list.isBuiltIn, onRename != nil {
+                            Button {
+                                onRename?(list)
+                            } label: {
+                                Image(systemName: "pencil")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundStyle(style.accent.opacity(0.6))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    if !list.isBuiltIn {
+                        wordClassBreakdownText(for: list)
+                    } else {
+                        Text("\(list.items.count) Eintr\u{00E4}ge")
+                            .font(AppTheme.Typography.caption)
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                    }
                 }
 
                 Spacer(minLength: 0)
 
                 if !list.isBuiltIn {
+                    if onView != nil {
+                        Button {
+                            onView?(list)
+                        } label: {
+                            Image(systemName: "eye")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(style.accent.opacity(0.7))
+                                .frame(width: 32, height: 32)
+                        }
+                        .buttonStyle(.plain)
+                    }
+
                     Button {
                         listPendingDeletion = list
                     } label: {
                         Image(systemName: "trash")
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundStyle(AppTheme.Colors.error.opacity(0.7))
+                            .frame(width: 32, height: 32)
+                    }
+                    .buttonStyle(.plain)
+                } else if onView != nil {
+                    Button {
+                        onView?(list)
+                    } label: {
+                        Image(systemName: "eye")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(style.accent.opacity(0.7))
                             .frame(width: 32, height: 32)
                     }
                     .buttonStyle(.plain)
@@ -198,6 +238,68 @@ struct ListPickerSheet: View {
             )
         }
         .buttonStyle(.plain)
+    }
+
+    private func wordClassBreakdownText(for list: VocabularyList) -> some View {
+        let items = list.items
+        var nouns = 0
+        var verbs = 0
+        var adj = 0
+        for item in items {
+            // 1. Stored wordClass
+            if let wc = item.wordClass, !wc.isEmpty {
+                if wc == "noun" { nouns += 1 }
+                else if wc == "verb" { verbs += 1 }
+                else if wc == "adjective" { adj += 1 }
+                continue
+            }
+            // 2. Lookup full term
+            if let wc = StandardVocabularyLoader.wordClass(for: item.french) {
+                if wc == "noun" { nouns += 1 }
+                else if wc == "verb" { verbs += 1 }
+                else if wc == "adjective" { adj += 1 }
+                continue
+            }
+            // 3. Fallback: check individual words (for phrases like "je ne sais pas")
+            let words = item.french.lowercased()
+                .replacingOccurrences(of: "'", with: " ")
+                .replacingOccurrences(of: "\u{2019}", with: " ")
+                .split(separator: " ").map(String.init)
+            if let wc = words.compactMap({ StandardVocabularyLoader.wordClass(for: $0) }).first {
+                if wc == "noun" { nouns += 1 }
+                else if wc == "verb" { verbs += 1 }
+                else if wc == "adjective" { adj += 1 }
+            }
+        }
+
+        let other = items.count - nouns - verbs - adj
+        var line1Parts: [String] = []
+        if nouns > 0 { line1Parts.append("\(nouns) Nomen") }
+        if verbs > 0 { line1Parts.append("\(verbs) Verben") }
+        var line2Parts: [String] = []
+        if adj > 0 { line2Parts.append("\(adj) Adjektive") }
+        if other > 0 { line2Parts.append("\(other) Andere") }
+
+        let allParts = line1Parts + line2Parts
+
+        return VStack(alignment: .leading, spacing: 1) {
+            if allParts.isEmpty {
+                Text("\(items.count) Eintr\u{00E4}ge")
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            } else {
+                if !line1Parts.isEmpty {
+                    Text(line1Parts.joined(separator: " \u{00B7} "))
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                }
+                if !line2Parts.isEmpty {
+                    Text(line2Parts.joined(separator: " \u{00B7} "))
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                }
+            }
+        }
     }
 }
 

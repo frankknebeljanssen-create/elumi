@@ -12,8 +12,10 @@ private struct HomeCardPressStyle: ButtonStyle {
 struct ImportCompletionView: View {
     let context: ImportCompletionContext
     let onTrain: () -> Void
+    let onNomen: () -> Void
     let onArticles: () -> Void
     let onVerbs: () -> Void
+    let onVerbforms: () -> Void
     let onFlashcards: () -> Void
     let onQuiz: () -> Void
     let onViewList: () -> Void
@@ -61,36 +63,47 @@ struct ImportCompletionView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, 4)
 
-            // 5 module buttons
+            // Module buttons — same layout as Home
             VStack(spacing: 8) {
-                completionModuleButton(
-                    title: "Vokabeln",
-                    systemImage: "character.book.closed.fill",
-                    tint: AppTheme.Colors.moduleVocabulary,
-                    action: onTrain
-                )
-
+                // Nomen + Artikel
                 HStack(spacing: 8) {
+                    completionModuleButton(
+                        title: "Nomen",
+                        systemImage: "textformat",
+                        tint: AppTheme.Colors.moduleNomen,
+                        action: onNomen
+                    )
                     completionModuleButton(
                         title: "Artikel",
                         systemImage: "textformat.abc.dottedunderline",
                         tint: AppTheme.Colors.moduleArticles,
                         action: onArticles
                     )
+                }
+
+                // Verben + Verbformen
+                HStack(spacing: 8) {
                     completionModuleButton(
                         title: "Verben",
                         systemImage: "arrow.triangle.branch",
                         tint: AppTheme.Colors.moduleVerbs,
                         action: onVerbs
                     )
+                    completionModuleButton(
+                        title: "Verbformen",
+                        systemImage: "text.line.first.and.arrowtriangle.forward",
+                        tint: AppTheme.Colors.moduleVerbforms,
+                        action: onVerbforms
+                    )
                 }
 
+                // Vokabeln + Quiz
                 HStack(spacing: 8) {
                     completionModuleButton(
-                        title: "Karteikarten",
-                        systemImage: "square.stack.3d.up.fill",
-                        tint: AppTheme.Colors.moduleFlashcards,
-                        action: onFlashcards
+                        title: "Vokabeln",
+                        systemImage: "character.book.closed.fill",
+                        tint: AppTheme.Colors.moduleVocabulary,
+                        action: onTrain
                     )
                     completionModuleButton(
                         title: "Quiz",
@@ -99,6 +112,14 @@ struct ImportCompletionView: View {
                         action: onQuiz
                     )
                 }
+
+                // Karteikarten full width
+                completionModuleButton(
+                    title: "Karteikarten",
+                    systemImage: "square.stack.3d.up.fill",
+                    tint: AppTheme.Colors.moduleFlashcards,
+                    action: onFlashcards
+                )
             }
 
             HStack(spacing: 10) {

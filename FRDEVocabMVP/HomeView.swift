@@ -162,34 +162,33 @@ struct HomeView: View {
         Button {
             openHomeScreen(screen)
         } label: {
-            HStack(spacing: 8) {
+            VStack(spacing: 4) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.system(size: 20, weight: .bold))
                     .foregroundStyle(accentColor)
                 Text(title)
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .font(.system(size: 14, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(1)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .background(
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background {
                 RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
                     .fill(AppTheme.Colors.surface)
                     .overlay(
                         RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
-                            .fill(accentColor.opacity(0.06))
+                            .fill(accentColor.opacity(0.12))
                     )
-            )
+            }
             .overlay(
                 RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
                     .stroke(AppTheme.Colors.border, lineWidth: 1)
             )
+            .clipShape(RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous))
+            .shadow(color: AppTheme.Shadow.card.color, radius: AppTheme.Shadow.card.radius, x: 0, y: 6)
             .opacity(pressedHomeScreen == screen ? 0.8 : 1)
-            .scaleEffect(pressedHomeScreen == screen ? 0.97 : 1)
+            .scaleEffect(pressedHomeScreen == screen ? 0.965 : 1)
             .animation(.easeOut(duration: 0.12), value: pressedHomeScreen == screen)
         }
         .buttonStyle(.plain)
@@ -348,18 +347,24 @@ struct HomeView: View {
                     )
                 }
 
+                // Divider
+                Rectangle()
+                    .fill(AppTheme.Colors.border)
+                    .frame(height: 1)
+                    .padding(.vertical, 6)
+
                 // Listen + Scan
                 HStack(spacing: 10) {
                     homeSecondaryButton(
                         screen: .lists(nil),
-                        title: "Meine Listen\nbearbeiten",
+                        title: "Listen",
                         systemImage: "list.bullet.rectangle.fill",
                         accentColor: homeListsColor
                     )
 
                     homeSecondaryButton(
                         screen: .scan,
-                        title: "Neue Vokabeln\neinlesen",
+                        title: "Scan",
                         systemImage: "camera.viewfinder",
                         accentColor: homeScanColor
                     )
@@ -368,7 +373,7 @@ struct HomeView: View {
                 // Flag toggle — shifted up between cards and footer
                 Spacer(minLength: 4)
                 directionToggle
-                Spacer(minLength: 20)
+                Spacer(minLength: 40)
             }
             .padding(.top, 105)
             .frame(maxHeight: .infinity)

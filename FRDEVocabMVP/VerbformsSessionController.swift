@@ -85,12 +85,12 @@ final class VerbformsSessionController: ObservableObject {
         } else if isCorrect {
             // Normal: correct → lock + show "Weiter"
             isLocked = true
-            score += 1
+            if wrongOptions.isEmpty { score += 1 } // nur Punkt wenn beim ersten Versuch richtig
             totalAsked += 1
         } else {
             // Normal: wrong → mark orange, keep trying
             wrongOptions.insert(option.lowercased())
-            selectedOption = nil // reset so buttons stay active
+            selectedOption = nil
         }
     }
 

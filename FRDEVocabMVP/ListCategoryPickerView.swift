@@ -9,6 +9,7 @@ struct ListCategoryPickerView: View {
     let style: AppSectionStyle
     let feedbackPlayer: FeedbackPlayer
     let summaryText: String
+    var itemLabel: String = "Karten"
     let onSelectionChanged: (Set<UUID>) -> Void
 
     enum Category: Identifiable {
@@ -69,7 +70,7 @@ struct ListCategoryPickerView: View {
                                 .foregroundStyle(AppTheme.Colors.textPrimary)
                                 .lineLimit(1)
                             Spacer(minLength: 4)
-                            Text("\(list.items.count) Karten")
+                            Text("\(list.items.count) \(itemLabel)")
                                 .font(.system(size: 12, weight: .semibold, design: .rounded))
                                 .foregroundStyle(accent)
                         }
