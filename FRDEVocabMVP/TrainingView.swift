@@ -17,8 +17,10 @@ struct TrainingView: View {
     var sectionStyle: AppSectionStyle {
         switch session.trainingMode {
         case .vocabulary: return .train
+        case .nouns: return .trainNouns
         case .articles: return .trainArticles
         case .verbs: return .trainVerbs
+        case .verbforms: return .trainVerbforms
         }
     }
 
@@ -42,6 +44,11 @@ struct TrainingView: View {
     @State var verbMCLocked = false
     @State var showingVerbTranslation = false
     @State var listPickerCategory: ListPickerCategory?
+
+    // Verbformen
+    @StateObject var verbformsSession = VerbformsSessionController()
+    @State var verbformsInflections: [VerbformsEngine.VerbInflections] = []
+    @State var verbformsCountdown: Int? = nil
 
     enum ListPickerCategory: Identifiable {
         case own, level, topic, all
@@ -86,12 +93,12 @@ struct TrainingView: View {
         let allAvailable = availableTrainingLists
         let selected = allAvailable.filter { ids.contains($0.id) }
 
-        if isVerbMode {
+        if isVerbMode || isVerbformsMode {
             let verbCount = selected.flatMap(\.items).filter {
                 $0.cardType == .words && StandardVocabularyLoader.isVerb($0.french)
             }.count
             return "\(verbCount) Verben"
-        } else if isArticleMode {
+        } else if isArticleMode || isNounMode {
             let nounCount = selected.flatMap(\.items).filter {
                 $0.cardType == .words && (StandardVocabularyLoader.isNoun($0.french) || TrainingSessionController.hasFrenchArticle($0.french))
             }.count
@@ -114,6 +121,10 @@ struct TrainingView: View {
         session.currentTrainingItem?.card(for: session.direction)
     }
 
+    var isNounMode: Bool {
+        session.trainingMode == .nouns
+    }
+
     var isArticleMode: Bool {
         session.trainingMode == .articles
     }
@@ -130,6 +141,10 @@ struct TrainingView: View {
 
     var isVerbMode: Bool {
         session.trainingMode == .verbs
+    }
+
+    var isVerbformsMode: Bool {
+        session.trainingMode == .verbforms
     }
 
     var ownListCount: Int {
@@ -241,7 +256,7 @@ struct TrainingView: View {
     }
 
     var solutionUnlockThreshold: Int {
-        2
+        0
     }
 
     var canRevealSolution: Bool {

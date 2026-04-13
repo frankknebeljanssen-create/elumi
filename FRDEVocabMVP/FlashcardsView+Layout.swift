@@ -108,7 +108,7 @@ extension FlashcardsView {
                 Button {
                     handleBackNavigation()
                 } label: {
-                    Label("Zurück zur Auswahl", systemImage: "arrow.left")
+                    Label("Zurück", systemImage: "arrow.left")
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 46)
                 }
@@ -121,7 +121,7 @@ extension FlashcardsView {
                 Button {
                     handleBackNavigation()
                 } label: {
-                    Label("Zurück zur Auswahl", systemImage: "arrow.left")
+                    Label("Zurück", systemImage: "arrow.left")
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 40)
                         .font(AppTheme.Typography.button)
@@ -204,7 +204,7 @@ extension FlashcardsView {
                     Button {
                         handleBackNavigation()
                     } label: {
-                        Label("Zurück zur Auswahl", systemImage: "arrow.left")
+                        Label("Zurück", systemImage: "arrow.left")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))

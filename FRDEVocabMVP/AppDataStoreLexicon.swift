@@ -36,12 +36,10 @@ enum DataStoreLexiconSupport {
         curatedEntries: [LexiconEntry],
         supplementLimit: Int = 80
     ) -> [LexiconEntry] {
-        let totalStart = CFAbsoluteTimeGetCurrent()
         let normalizedQuery = normalizedLookupText(query)
         let compactQuery = compactLookupKey(query)
         guard !normalizedQuery.isEmpty else { return [] }
 
-        var start = CFAbsoluteTimeGetCurrent()
         let curatedMatches = curatedEntries.filter { entry in
             if entry.sourceSortKey.hasPrefix(normalizedQuery) || entry.targetSortKey.hasPrefix(normalizedQuery) {
                 return true
@@ -57,16 +55,8 @@ enum DataStoreLexiconSupport {
             }
             return false
         }
-        print("⏱ [Search] curatedFilter (\(curatedEntries.count)→\(curatedMatches.count)): \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
-
-        start = CFAbsoluteTimeGetCurrent()
         let supplementResults = SupplementalFreeDictLexicon.searchLexiconEntries(matching: normalizedQuery, limit: supplementLimit)
-        print("⏱ [Search] SQLite supplement (\(supplementResults.count)): \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
-        for r in supplementResults.prefix(3) {
-            print("  📖 \(r.sourceTerm) → \(r.targetTerm) [card=\(r.cardType), noun=\(r.isGermanNoun)]")
-        }
 
-        start = CFAbsoluteTimeGetCurrent()
         let merged = SupplementalFreeDictLexicon.enrichMissingGenderInfo(in: mergeLexiconEntries(
             curatedMatches + supplementResults
         )).sorted {
@@ -75,9 +65,6 @@ enum DataStoreLexiconSupport {
             }
             return $0.sourceSortKey < $1.sourceSortKey
         }
-        print("⏱ [Search] merge+enrich+sort (\(merged.count)): \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
-        print("⏱ [Search] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
-
         return merged
     }
 

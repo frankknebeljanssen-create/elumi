@@ -16,7 +16,7 @@
 		A00000000000000000000038 /* ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000039 /* ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav */; };
 		A00000000000000000000090 /* FRDEKnowledgePool.tsv in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000091 /* FRDEKnowledgePool.tsv */; };
 		A00000000000000000000092 /* FRDEKnowledgePool.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000093 /* FRDEKnowledgePool.sqlite */; };
-		A00000000000000000000094 /* FRDEFreeDictSupplement.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000095 /* FRDEFreeDictSupplement.sqlite */; };
+
 		55916C8754034661BBD48F46 /* FRDEMasterLexicon.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */; };
 		A00000000000000000000096 /* ScanModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000100 /* ScanModels.swift */; };
 		A00000000000000000000097 /* ScanProviders.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000101 /* ScanProviders.swift */; };
@@ -96,6 +96,8 @@
 		A00000000000000000000246 /* OpenAIScanSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000247 /* OpenAIScanSchema.swift */; };
 		A00000000000000000000248 /* FlashcardsView+Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000249 /* FlashcardsView+Components.swift */; };
 		A00000000000000000000250 /* TrainingView+Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000251 /* TrainingView+Components.swift */; };
+		VF00000000000000000000001 /* VerbformsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = VF00000000000000000000002 /* VerbformsEngine.swift */; };
+		VF00000000000000000000003 /* VerbformsSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = VF00000000000000000000004 /* VerbformsSessionController.swift */; };
 		A00000000000000000000252 /* QuizView+Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000253 /* QuizView+Components.swift */; };
 		A00000000000000000000254 /* LexiconGenderModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000255 /* LexiconGenderModels.swift */; };
 		A00000000000000000000256 /* OfflineFrenchGermanKnowledgePool.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000257 /* OfflineFrenchGermanKnowledgePool.swift */; };
@@ -386,7 +388,7 @@
 		A00000000000000000000766 /* FlashcardsSessionController+AnswerFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000767 /* FlashcardsSessionController+AnswerFlow.swift */; };
 		A00000000000000000000768 /* FlashcardsView+PromptResponseComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000769 /* FlashcardsView+PromptResponseComponents.swift */; };
 		A00000000000000000000770 /* FlashcardsView+InputActionComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000771 /* FlashcardsView+InputActionComponents.swift */; };
-		F43B1C062F86A79C0094BA73 /* StandardpaketGPT.tsv in Resources */ = {isa = PBXBuildFile; fileRef = F43B1C052F86A79C0094BA73 /* StandardpaketGPT.tsv */; };
+
 		F43B1C0A2F877A000094BA73 /* VerbNounPairs.tsv in Resources */ = {isa = PBXBuildFile; fileRef = F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */; };
 		F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C0B2F877A100094BA73 /* VerbNounPairLoader.swift */; };
 		F43B1C122F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C112F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift */; };
@@ -411,7 +413,7 @@
 		A00000000000000000000039 /* ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav; sourceTree = "<group>"; };
 		A00000000000000000000091 /* FRDEKnowledgePool.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; path = FRDEKnowledgePool.tsv; sourceTree = "<group>"; };
 		A00000000000000000000093 /* FRDEKnowledgePool.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = FRDEKnowledgePool.sqlite; sourceTree = "<group>"; };
-		A00000000000000000000095 /* FRDEFreeDictSupplement.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = FRDEFreeDictSupplement.sqlite; sourceTree = "<group>"; };
+
 		DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = FRDEMasterLexicon.sqlite; sourceTree = "<group>"; };
 		A00000000000000000000100 /* ScanModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanModels.swift; sourceTree = "<group>"; };
 		A00000000000000000000101 /* ScanProviders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanProviders.swift; sourceTree = "<group>"; };
@@ -490,6 +492,8 @@
 		A00000000000000000000245 /* AIScanProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIScanProvider.swift; sourceTree = "<group>"; };
 		A00000000000000000000247 /* OpenAIScanSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIScanSchema.swift; sourceTree = "<group>"; };
 		A00000000000000000000249 /* FlashcardsView+Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsView+Components.swift"; sourceTree = "<group>"; };
+		VF00000000000000000000002 /* VerbformsEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerbformsEngine.swift; sourceTree = "<group>"; };
+		VF00000000000000000000004 /* VerbformsSessionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerbformsSessionController.swift; sourceTree = "<group>"; };
 		A00000000000000000000251 /* TrainingView+Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrainingView+Components.swift"; sourceTree = "<group>"; };
 		A00000000000000000000253 /* QuizView+Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "QuizView+Components.swift"; sourceTree = "<group>"; };
 		A00000000000000000000255 /* LexiconGenderModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LexiconGenderModels.swift; sourceTree = "<group>"; };
@@ -781,7 +785,7 @@
 		A00000000000000000000767 /* FlashcardsSessionController+AnswerFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsSessionController+AnswerFlow.swift"; sourceTree = "<group>"; };
 		A00000000000000000000769 /* FlashcardsView+PromptResponseComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsView+PromptResponseComponents.swift"; sourceTree = "<group>"; };
 		A00000000000000000000771 /* FlashcardsView+InputActionComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsView+InputActionComponents.swift"; sourceTree = "<group>"; };
-		F43B1C052F86A79C0094BA73 /* StandardpaketGPT.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; name = StandardpaketGPT.tsv; path = FRDEVocabMVP/StandardpaketGPT.tsv; sourceTree = "<group>"; };
+
 		F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; name = VerbNounPairs.tsv; path = FRDEVocabMVP/VerbNounPairs.tsv; sourceTree = "<group>"; };
 		F43B1C0B2F877A100094BA73 /* VerbNounPairLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VerbNounPairLoader.swift; path = FRDEVocabMVP/VerbNounPairLoader.swift; sourceTree = "<group>"; };
 		F43B1C112F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClaudeHaikuScanAIClient.swift; path = FRDEVocabMVP/ClaudeHaikuScanAIClient.swift; sourceTree = "<group>"; };
@@ -809,7 +813,7 @@
 			children = (
 				F458EECF2F8770F9009A2683 /* ArcadeCreditSystem.swift */,
 				F43B1C072F86A7BA0094BA73 /* StandardVocabularyLoader.swift */,
-				F43B1C052F86A79C0094BA73 /* StandardpaketGPT.tsv */,
+
 				F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */,
 				F43B1C0B2F877A100094BA73 /* VerbNounPairLoader.swift */,
 				F43B1C112F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift */,
@@ -900,6 +904,8 @@
 				A00000000000000000000695 /* HeartsView+Cards.swift */,
 				A00000000000000000000313 /* InfoView.swift */,
 				A00000000000000000000201 /* TrainingView.swift */,
+				VF00000000000000000000002 /* VerbformsEngine.swift */,
+				VF00000000000000000000004 /* VerbformsSessionController.swift */,
 				A00000000000000000000237 /* TrainingView+Flow.swift */,
 				A00000000000000000000701 /* TrainingView+SessionFlow.swift */,
 				A00000000000000000000703 /* TrainingView+AudioFlow.swift */,
@@ -1204,7 +1210,7 @@
 				A00000000000000000000039 /* ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav */,
 				A00000000000000000000091 /* FRDEKnowledgePool.tsv */,
 				A00000000000000000000093 /* FRDEKnowledgePool.sqlite */,
-				A00000000000000000000095 /* FRDEFreeDictSupplement.sqlite */,
+
 				DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */,
 			);
 			path = FRDEVocabMVP;
@@ -1283,9 +1289,9 @@
 				A00000000000000000000038 /* ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav in Resources */,
 				A00000000000000000000090 /* FRDEKnowledgePool.tsv in Resources */,
 				A00000000000000000000092 /* FRDEKnowledgePool.sqlite in Resources */,
-				A00000000000000000000094 /* FRDEFreeDictSupplement.sqlite in Resources */,
+
 				55916C8754034661BBD48F46 /* FRDEMasterLexicon.sqlite in Resources */,
-				F43B1C062F86A79C0094BA73 /* StandardpaketGPT.tsv in Resources */,
+
 				F43B1C0A2F877A000094BA73 /* VerbNounPairs.tsv in Resources */,
 				F43B1C0E2F878B000094BA73 /* FillBlankSentences.tsv in Resources */,
 				A92FD19A63604A98AC7A62D8 /* elumi_bgm_fischfang.wav in Resources */,
@@ -1367,6 +1373,8 @@
 				A00000000000000000000694 /* HeartsView+Cards.swift in Sources */,
 				A00000000000000000000312 /* InfoView.swift in Sources */,
 				A00000000000000000000200 /* TrainingView.swift in Sources */,
+				VF00000000000000000000001 /* VerbformsEngine.swift in Sources */,
+				VF00000000000000000000003 /* VerbformsSessionController.swift in Sources */,
 				A00000000000000000000196 /* FlashcardsView.swift in Sources */,
 				A00000000000000000000696 /* FlashcardsView+Layout.swift in Sources */,
 				A00000000000000000000698 /* FlashcardsView+Lifecycle.swift in Sources */,

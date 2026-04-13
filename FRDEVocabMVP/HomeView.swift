@@ -47,22 +47,13 @@ struct HomeView: View {
         } label: {
             HStack(spacing: 10) {
                 StraightFlagBadge(countryCode: isFrToDE ? "FR" : "DE", width: 36, height: 24, labelFontSize: 10)
-                Image(systemName: "arrow.left.arrow.right")
+                Image(systemName: "arrow.right")
                     .font(.system(size: 14, weight: .black))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                 StraightFlagBadge(countryCode: isFrToDE ? "DE" : "FR", width: 36, height: 24, labelFontSize: 10)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(
-                RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
-                    .fill(AppTheme.Colors.surface)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
-                    .stroke(AppTheme.Colors.border, lineWidth: 1)
-            )
-            .shadow(color: AppTheme.Shadow.card.color, radius: AppTheme.Shadow.card.radius, x: 0, y: 6)
+            .padding(.vertical, 10)
         }
         .buttonStyle(.plain)
     }
@@ -78,6 +69,8 @@ struct HomeView: View {
     private var homeVerbsColor: Color { AppTheme.Colors.moduleVerbs }
     private var homeFlashcardsColor: Color { AppTheme.Colors.moduleFlashcards }
     private var homeQuizColor: Color { AppTheme.Colors.moduleQuiz }
+    private var homeNomenColor: Color { AppTheme.Colors.moduleNomen }
+    private var homeVerbformenColor: Color { AppTheme.Colors.moduleVerbforms }
     private var homeScanColor: Color { AppTheme.Colors.moduleScan }
     private var homeLexiconColor: Color { AppTheme.Colors.moduleLexicon }
     private var homeListsColor: Color { AppTheme.Colors.moduleLists }
@@ -125,14 +118,10 @@ struct HomeView: View {
             openHomeScreen(screen)
         } label: {
             VStack(spacing: 6) {
-                HStack(spacing: 2) {
-                    Text("le")
-                        .font(.system(size: 17, weight: .black, design: .serif))
-                    Text("la")
-                        .font(.system(size: 17, weight: .black, design: .serif))
-                }
-                .foregroundStyle(accentColor)
-                .frame(height: 32)
+                Text("le  la")
+                    .font(.system(size: 22, weight: .black, design: .serif))
+                    .foregroundStyle(accentColor)
+                    .frame(height: 32)
 
                 Text("Artikel")
                     .font(.system(size: 19, weight: .black, design: .rounded))
@@ -173,16 +162,20 @@ struct HomeView: View {
         Button {
             openHomeScreen(screen)
         } label: {
-            VStack(spacing: 4) {
+            HStack(spacing: 8) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 22, weight: .bold))
+                    .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(accentColor)
                 Text(title)
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
             .background(
                 RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
                     .fill(AppTheme.Colors.surface)
@@ -197,6 +190,52 @@ struct HomeView: View {
             )
             .opacity(pressedHomeScreen == screen ? 0.8 : 1)
             .scaleEffect(pressedHomeScreen == screen ? 0.97 : 1)
+            .animation(.easeOut(duration: 0.12), value: pressedHomeScreen == screen)
+        }
+        .buttonStyle(.plain)
+        .disabled(isHomeNavigationLocked)
+    }
+
+    @ViewBuilder
+    private func homeTextIconButton(
+        screen: AppScreen,
+        title: String,
+        textIcon: String,
+        accentColor: Color,
+        cardColor: Color
+    ) -> some View {
+        Button {
+            openHomeScreen(screen)
+        } label: {
+            VStack(spacing: 6) {
+                Text(textIcon)
+                    .font(.system(size: 22, weight: .black, design: .serif))
+                    .foregroundStyle(accentColor)
+                    .frame(height: 32)
+
+                Text(title)
+                    .font(.system(size: 19, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(AppTheme.Spacing.sm)
+            .frame(maxWidth: .infinity, minHeight: AppLayout.homeCardHeight)
+            .background {
+                RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
+                    .fill(AppTheme.Colors.surface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
+                            .fill(cardColor)
+                    )
+            }
+            .overlay(
+                RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
+                    .stroke(AppTheme.Colors.border, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous))
+            .shadow(color: AppTheme.Shadow.card.color, radius: AppTheme.Shadow.card.radius, x: 0, y: 6)
+            .opacity(pressedHomeScreen == screen ? 0.8 : 1)
+            .scaleEffect(pressedHomeScreen == screen ? 0.965 : 1)
             .animation(.easeOut(duration: 0.12), value: pressedHomeScreen == screen)
         }
         .buttonStyle(.plain)
@@ -232,7 +271,7 @@ struct HomeView: View {
     var body: some View {
         ZStack(alignment: .top) {
             // Greeting — fixed at top
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text("Salut \(displayName) !")
                     .font(.system(size: 34, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
@@ -254,20 +293,39 @@ struct HomeView: View {
                     cardColor: homeFlashcardsColor.opacity(0.12)
                 )
 
-                // Artikel + Verben
+                // Nomen + Artikel
                 HStack(spacing: 8) {
+                    homeTextIconButton(
+                        screen: .train(TrainingLaunchContext(preferredMode: .nouns)),
+                        title: "Nomen",
+                        textIcon: "maison",
+                        accentColor: homeNomenColor,
+                        cardColor: homeNomenColor.opacity(0.12)
+                    )
+
                     homeArticleButton(
                         screen: .train(TrainingLaunchContext(preferredMode: .articles)),
                         accentColor: homeArticlesColor,
                         cardColor: homeArticlesColor.opacity(0.12)
                     )
+                }
 
-                    homeNavigationButton(
+                // Verben + Verbformen
+                HStack(spacing: 8) {
+                    homeTextIconButton(
                         screen: .train(TrainingLaunchContext(preferredMode: .verbs)),
                         title: "Verben",
-                        systemImage: "arrow.triangle.branch",
+                        textIcon: "aller",
                         accentColor: homeVerbsColor,
                         cardColor: homeVerbsColor.opacity(0.12)
+                    )
+
+                    homeNavigationButton(
+                        screen: .train(TrainingLaunchContext(preferredMode: .verbforms)),
+                        title: "Verbformen",
+                        systemImage: "text.line.first.and.arrowtriangle.forward",
+                        accentColor: homeVerbformenColor,
+                        cardColor: homeVerbformenColor.opacity(0.12)
                     )
                 }
 
@@ -289,31 +347,31 @@ struct HomeView: View {
                         cardColor: homeQuizColor.opacity(0.12)
                     )
                 }
-            }
-            .padding(.top, 105)
 
-            // Bottom section — pinned to bottom
-            VStack(spacing: 10) {
+                // Listen + Scan
                 HStack(spacing: 10) {
                     homeSecondaryButton(
                         screen: .lists(nil),
-                        title: "Listen",
+                        title: "Meine Listen\nbearbeiten",
                         systemImage: "list.bullet.rectangle.fill",
                         accentColor: homeListsColor
                     )
 
                     homeSecondaryButton(
                         screen: .scan,
-                        title: "Scan",
+                        title: "Neue Vokabeln\neinlesen",
                         systemImage: "camera.viewfinder",
                         accentColor: homeScanColor
                     )
                 }
 
+                // Flag toggle — shifted up between cards and footer
+                Spacer(minLength: 4)
                 directionToggle
+                Spacer(minLength: 20)
             }
-            .frame(maxHeight: .infinity, alignment: .bottom)
-            .padding(.bottom, 10)
+            .padding(.top, 105)
+            .frame(maxHeight: .infinity)
         }
         .padding(.horizontal, AppLayout.screenPadding)
         .padding(.top, AppLayout.contentTopPadding)

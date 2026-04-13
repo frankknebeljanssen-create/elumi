@@ -19,18 +19,29 @@ struct InfoView: View {
                 )
 
                 colorInfoCard(
-                    title: "Vokabeln trainieren",
-                    icon: "character.book.closed.fill",
-                    tint: AppTheme.Colors.moduleVocabulary,
+                    title: "Karteikarten",
+                    icon: "square.stack.3d.up.fill",
+                    tint: AppTheme.Colors.moduleFlashcards,
                     lines: [
-                        "Alle Vokabeln aus deinen Listen üben.",
-                        "Sprechen oder Tippen — du entscheidest.",
-                        "Speed Round: 45 Sekunden Countdown!"
+                        "Arbeite einen Stapel Karte für Karte ab.",
+                        "Falsche Karten bleiben im Stapel.",
+                        "Tippe auf die Karte um die Lösung zu sehen."
                     ]
                 )
 
                 colorInfoCard(
-                    title: "Artikel trainieren",
+                    title: "Nomen",
+                    icon: "textformat",
+                    tint: AppTheme.Colors.moduleNomen,
+                    lines: [
+                        "Französische Nomen und ihre Übersetzung üben.",
+                        "la ville → die Stadt, le chat → die Katze.",
+                        "Fokus auf Wortschatz und Bedeutung."
+                    ]
+                )
+
+                colorInfoCard(
+                    title: "Artikel",
                     icon: "textformat.abc.dottedunderline",
                     tint: AppTheme.Colors.moduleArticles,
                     lines: [
@@ -41,24 +52,35 @@ struct InfoView: View {
                 )
 
                 colorInfoCard(
-                    title: "Verben trainieren",
+                    title: "Verben",
                     icon: "arrow.triangle.branch",
                     tint: AppTheme.Colors.moduleVerbs,
                     lines: [
                         "Französische Verben und ihre Übersetzungen.",
                         "Fokus auf die wichtigsten Verben.",
-                        "Konjugation kommt bald!"
+                        "Sprechen oder Tippen — du entscheidest."
                     ]
                 )
 
                 colorInfoCard(
-                    title: "Karteikarten",
-                    icon: "square.stack.3d.up.fill",
-                    tint: AppTheme.Colors.moduleFlashcards,
+                    title: "Verbformen",
+                    icon: "text.line.first.and.arrowtriangle.forward",
+                    tint: AppTheme.Colors.moduleVerbforms,
                     lines: [
-                        "Arbeite einen Stapel Karte für Karte ab.",
-                        "Falsche Karten bleiben im Stapel.",
-                        "Tippe auf die Karte um die Lösung zu sehen."
+                        "Konjugation französischer Verben üben.",
+                        "je vais, tu vas, il va — alle Formen trainieren.",
+                        "Kommt bald — Konjugationsdaten werden aufgebaut."
+                    ]
+                )
+
+                colorInfoCard(
+                    title: "Vokabeln",
+                    icon: "character.book.closed.fill",
+                    tint: AppTheme.Colors.moduleVocabulary,
+                    lines: [
+                        "Alle Vokabeln aus deinen Listen üben.",
+                        "Sprechen oder Tippen — du entscheidest.",
+                        "Speed Round: 45 Sekunden Countdown!"
                     ]
                 )
 

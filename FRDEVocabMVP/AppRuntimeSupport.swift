@@ -61,8 +61,10 @@ func endFlashcardsOpenTiming(_ event: String) {
 enum AppSectionStyle {
     case home
     case train
+    case trainNouns
     case trainArticles
     case trainVerbs
+    case trainVerbforms
     case flashcards
     case quiz
     case hearts
@@ -76,10 +78,14 @@ enum AppSectionStyle {
             return AppTheme.Colors.primary
         case .train:
             return AppTheme.Colors.modulePractice
+        case .trainNouns:
+            return AppTheme.Colors.moduleNomen
         case .trainArticles:
             return AppTheme.Colors.moduleArticles
         case .trainVerbs:
             return AppTheme.Colors.moduleVerbs
+        case .trainVerbforms:
+            return AppTheme.Colors.moduleVerbforms
         case .flashcards:
             return AppTheme.Colors.moduleFlashcards
         case .quiz:

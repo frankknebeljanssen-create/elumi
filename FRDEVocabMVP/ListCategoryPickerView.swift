@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// Shared 4-card list category picker used across Training, Flashcards, and Quiz setup screens.
+/// Shared list selection component used across Training, Flashcards, and Quiz setup screens.
+/// Shows selected lists + "Liste auswählen" button that opens the category picker.
 struct ListCategoryPickerView: View {
     let availableLists: [VocabularyList]
     let selectedListIDs: Set<UUID>
@@ -11,13 +12,12 @@ struct ListCategoryPickerView: View {
     let onSelectionChanged: (Set<UUID>) -> Void
 
     enum Category: Identifiable {
-        case own, level, topic, all
+        case own, level, topic
         var id: String {
             switch self {
             case .own: return "own"
             case .level: return "level"
             case .topic: return "topic"
-            case .all: return "all"
             }
         }
     }
@@ -36,104 +36,297 @@ struct ListCategoryPickerView: View {
         availableLists.filter { $0.collectionPreset == .standardTopic }
     }
 
+    private var selectedLists: [VocabularyList] {
+        availableLists.filter { selectedListIDs.contains($0.id) }
+    }
+
+    private var selectedListNames: String {
+        let names = selectedLists.map(\.name)
+        if names.isEmpty { return "Keine Listen gewählt" }
+        if names.count <= 2 { return names.joined(separator: ", ") }
+        return "\(names[0]), \(names[1]) +\(names.count - 2)"
+    }
+
     var body: some View {
-        VStack(spacing: 8) {
-            Text("Listen auswählen")
-                .font(.system(size: 13, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            HStack(spacing: 8) {
-                categoryButton(
-                    title: "📝 Meine Listen",
-                    count: ownLists.count,
-                    category: .own
-                )
-                categoryButton(
-                    title: "📚 Nach Niveau",
-                    count: levelLists.count,
-                    category: .level
-                )
-            }
-
-            HStack(spacing: 8) {
-                categoryButton(
-                    title: "🏷️ Nach Thema",
-                    count: topicLists.count,
-                    category: .topic
-                )
-                categoryButton(
-                    title: "📖 Komplett",
-                    count: 1,
-                    category: .all
-                )
-            }
-
-            if !summaryText.isEmpty {
-                Text(summaryText)
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundStyle(accent)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 2)
-            }
-        }
-        .sheet(item: $activeCategory) { category in
-            FlashcardStackComposerSheet(
-                style: style,
-                lists: listsForCategory(category),
-                selectedListIDs: selectedListIDs,
-                language: .french,
-                cardTypeFilter: nil
-            ) { updatedSelection in
-                onSelectionChanged(updatedSelection)
-                activeCategory = nil
-            }
-        }
-    }
-
-    private func listsForCategory(_ category: Category) -> [VocabularyList] {
-        switch category {
-        case .own: return ownLists
-        case .level: return levelLists
-        case .topic: return topicLists
-        case .all: return [StandardVocabularyLoader.allInOneList]
-        }
-    }
-
-    private func categoryButton(title: String, count: Int, category: Category) -> some View {
-        let hasSelected = !selectedListIDs.isEmpty && {
-            let filtered = listsForCategory(category)
-            return filtered.contains { selectedListIDs.contains($0.id) }
-        }()
-
-        return Button {
-            feedbackPlayer.playTabSwitch()
-            activeCategory = category
-        } label: {
-            HStack(spacing: 8) {
-                Text(title)
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                Spacer(minLength: 0)
-                Text("\(count)")
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
+        // Combined selected-lists card with edit button
+        ZStack(alignment: .topTrailing) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Ausgewählte Listen")
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
+
+                if selectedLists.isEmpty {
+                    Text("Keine Listen gewählt")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textDisabled)
+                    Text(" ").font(.system(size: 13))
+                    Text(" ").font(.system(size: 13))
+                } else {
+                    ForEach(selectedLists.prefix(3)) { list in
+                        HStack(spacing: 0) {
+                            Text(list.name)
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.textPrimary)
+                                .lineLimit(1)
+                            Spacer(minLength: 4)
+                            Text("\(list.items.count) Karten")
+                                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                .foregroundStyle(accent)
+                        }
+                    }
+                    if selectedLists.count > 3 {
+                        Text("+\(selectedLists.count - 3) weitere")
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                    }
+                    // Spacer lines to maintain 3-line height
+                    if selectedLists.count == 1 {
+                        Text(" ").font(.system(size: 13))
+                        Text(" ").font(.system(size: 13))
+                    } else if selectedLists.count == 2 {
+                        Text(" ").font(.system(size: 13))
+                    }
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 14)
-            .padding(.vertical, 12)
+            .padding(.vertical, 10)
+            .padding(.trailing, 32) // room for edit icon
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(AppTheme.Colors.surface)
                     .overlay(
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(hasSelected ? accent.opacity(0.12) : accent.opacity(0.04))
+                            .fill(selectedLists.isEmpty ? Color.clear : accent.opacity(0.08))
                     )
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(hasSelected ? accent.opacity(0.4) : AppTheme.Colors.border, lineWidth: 1)
+                    .stroke(selectedLists.isEmpty ? AppTheme.Colors.border : accent.opacity(0.3), lineWidth: 1)
+            )
+
+            // Edit icon — opens category picker
+            Button {
+                feedbackPlayer.playTabSwitch()
+                activeCategory = .own
+            } label: {
+                Image(systemName: "pencil.circle.fill")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(accent)
+                    .padding(10)
+            }
+            .buttonStyle(.plain)
+        }
+        .sheet(item: $activeCategory) { category in
+            ListSelectionSheet(
+                style: style,
+                ownLists: ownLists,
+                levelLists: levelLists,
+                topicLists: topicLists,
+                selectedListIDs: selectedListIDs,
+                onSelectionChanged: { updatedSelection in
+                    onSelectionChanged(updatedSelection)
+                    activeCategory = nil
+                }
+            )
+        }
+    }
+}
+
+/// Full-screen sheet for list selection with 3 categories
+struct ListSelectionSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let style: AppSectionStyle
+    let ownLists: [VocabularyList]
+    let levelLists: [VocabularyList]
+    let topicLists: [VocabularyList]
+    let selectedListIDs: Set<UUID>
+    let onSelectionChanged: (Set<UUID>) -> Void
+
+    @State private var localSelection: Set<UUID> = []
+
+    var body: some View {
+        VStack(spacing: AppTheme.Spacing.md) {
+            AppSheetHeader(
+                title: "Liste auswählen",
+                trailingTitle: "Fertig",
+                leadingTint: style.accent,
+                trailingTint: style.accent,
+                onLeading: { dismiss() },
+                onTrailing: {
+                    onSelectionChanged(localSelection)
+                    dismiss()
+                }
+            )
+
+            ScrollView {
+                VStack(spacing: 6) {
+                    if !ownLists.isEmpty {
+                        sectionHeader("📝 Meine Listen")
+                        ForEach(ownLists) { list in listRow(list) }
+                    }
+
+                    if !levelLists.isEmpty {
+                        sectionHeader("📚 Nach Niveau")
+                        ForEach(levelLists) { list in listRow(list) }
+                    }
+
+                    if !topicLists.isEmpty {
+                        sectionHeader("🏷️ Nach Thema")
+                        ForEach(topicLists) { list in listRow(list) }
+                    }
+                }
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(AppLayout.screenPadding)
+        .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .tint(style.accent)
+        .appScreenBackground(style)
+        .onAppear { localSelection = selectedListIDs }
+    }
+
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.system(size: 13, weight: .bold, design: .rounded))
+            .foregroundStyle(AppTheme.Colors.textSecondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 12)
+            .padding(.bottom, 2)
+    }
+
+    private func listRow(_ list: VocabularyList) -> some View {
+        let isSelected = localSelection.contains(list.id)
+        return Button {
+            if list.isAggregateVocabulary {
+                localSelection = isSelected ? [] : [list.id]
+            } else {
+                localSelection.remove(VocabularyListStore.allCustomVocabularyListID)
+                if isSelected {
+                    localSelection.remove(list.id)
+                } else {
+                    localSelection.insert(list.id)
+                }
+            }
+        } label: {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(list.name)
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                    Text("\(list.items.count) Einträge")
+                        .font(AppTheme.Typography.caption)
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(isSelected ? style.accent : AppTheme.Colors.textDisabled)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .appCardBackground(style, intensity: isSelected ? 0.22 : 0.05, cornerRadius: 18)
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(isSelected ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// Single-category list picker sheet used by Training setup
+struct TrainingCategoryListSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let category: TrainingView.ListPickerCategory
+    let style: AppSectionStyle
+    let lists: [VocabularyList]
+    let selectedListIDs: Set<UUID>
+    let onSelectionChanged: (Set<UUID>) -> Void
+
+    @State private var localSelection: Set<UUID> = []
+
+    private var sheetTitle: String {
+        switch category {
+        case .topic: return "Nach Themen"
+        case .level: return "Nach Niveau"
+        case .own: return "Eigene Listen"
+        case .all: return "Ganzes Wörterbuch"
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: AppTheme.Spacing.md) {
+            AppSheetHeader(
+                title: sheetTitle,
+                trailingTitle: "Fertig",
+                leadingTint: style.accent,
+                trailingTint: style.accent,
+                onLeading: { dismiss() },
+                onTrailing: {
+                    onSelectionChanged(localSelection)
+                    dismiss()
+                }
+            )
+
+            ScrollView {
+                VStack(spacing: 6) {
+                    ForEach(lists) { list in
+                        categoryListRow(list)
+                    }
+                }
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(AppLayout.screenPadding)
+        .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .tint(style.accent)
+        .appScreenBackground(style)
+        .onAppear { localSelection = selectedListIDs }
+    }
+
+    private func categoryListRow(_ list: VocabularyList) -> some View {
+        let isSelected = localSelection.contains(list.id)
+        return Button {
+            if list.isAggregateVocabulary {
+                localSelection = isSelected ? [] : [list.id]
+            } else {
+                localSelection.remove(VocabularyListStore.allCustomVocabularyListID)
+                if isSelected {
+                    localSelection.remove(list.id)
+                } else {
+                    localSelection.insert(list.id)
+                }
+            }
+        } label: {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(list.name)
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                    Text("\(list.items.count) Einträge")
+                        .font(AppTheme.Typography.caption)
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(isSelected ? style.accent : AppTheme.Colors.textDisabled)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .appCardBackground(style, intensity: isSelected ? 0.22 : 0.05, cornerRadius: 18)
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(isSelected ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
             )
         }
         .buttonStyle(.plain)

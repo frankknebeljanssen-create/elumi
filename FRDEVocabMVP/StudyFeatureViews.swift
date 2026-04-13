@@ -1213,7 +1213,7 @@ struct FlashcardsView: View {
                 Button {
                     returnToFlashcardSetup()
                 } label: {
-                    Label("Zurück zur Auswahl", systemImage: "arrow.left")
+                    Label("Zurück", systemImage: "arrow.left")
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 46)
                 }
@@ -1223,7 +1223,7 @@ struct FlashcardsView: View {
                 Button {
                     returnToFlashcardSetup()
                 } label: {
-                    Label("Zurück zur Auswahl", systemImage: "arrow.left")
+                    Label("Zurück", systemImage: "arrow.left")
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 40)
                         .font(AppTheme.Typography.button)

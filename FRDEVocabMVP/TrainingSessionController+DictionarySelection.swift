@@ -33,6 +33,7 @@ extension TrainingSessionController {
         var lists = listStore.practiceLists
             + StandardVocabularyLoader.levelLists
             + StandardVocabularyLoader.topicLists
+            + [StandardVocabularyLoader.allInOneList]
 
         return lists
     }
@@ -76,10 +77,21 @@ extension TrainingSessionController {
             switch trainingMode {
             case .vocabulary:
                 return item.cardType == cardType
+            case .nouns:
+                guard item.cardType == .words else { return false }
+                return StandardVocabularyLoader.isNoun(item.french) || Self.hasFrenchArticle(item.french)
             case .articles:
                 guard item.cardType == .words else { return false }
                 return StandardVocabularyLoader.isNoun(item.french) || Self.hasFrenchArticle(item.french)
             case .verbs:
+                if cardType == .phrases {
+                    guard item.cardType == .phrases else { return false }
+                    // Only verb phrases: check if any word in the phrase is a known verb
+                    let words = item.french.lowercased().split(separator: " ").map(String.init)
+                    return words.contains { StandardVocabularyLoader.isVerb($0) }
+                }
+                return item.cardType == .words && StandardVocabularyLoader.isVerb(item.french)
+            case .verbforms:
                 return item.cardType == .words && StandardVocabularyLoader.isVerb(item.french)
             }
         } ?? []

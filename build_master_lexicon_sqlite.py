@@ -64,7 +64,8 @@ def create_schema(db):
             gender_de TEXT DEFAULT '',
             level TEXT DEFAULT '',
             is_phrase INTEGER DEFAULT 0,
-            frequency_rank INTEGER DEFAULT 0
+            frequency_rank INTEGER DEFAULT 0,
+            topic TEXT DEFAULT 'Allgemein'
         );
 
         CREATE TABLE forms (
@@ -107,6 +108,7 @@ def create_indexes(db):
         CREATE INDEX IF NOT EXISTS idx_entries_level ON entries(level);
         CREATE INDEX IF NOT EXISTS idx_entries_word_class ON entries(word_class);
         CREATE INDEX IF NOT EXISTS idx_entries_lemma_fr ON entries(lemma_fr);
+        CREATE INDEX IF NOT EXISTS idx_entries_topic ON entries(topic);
         CREATE INDEX IF NOT EXISTS idx_relations_entry ON relations(entry_id);
     """)
 
@@ -124,7 +126,7 @@ def import_entries(db, path):
     """Import app_entries.tsv."""
     headers, rows = load_tsv(path)
     db.executemany(
-        "INSERT INTO entries (entry_id, lemma_fr, lemma_de, word_class, gender_fr, gender_de, level, is_phrase, frequency_rank) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO entries (entry_id, lemma_fr, lemma_de, word_class, gender_fr, gender_de, level, is_phrase, frequency_rank, topic) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [
             (
                 int(r[0]),       # entry_id
@@ -136,6 +138,7 @@ def import_entries(db, path):
                 r[6],            # level
                 int(r[7]) if r[7] else 0,  # is_phrase
                 int(r[8]) if r[8] else 0,  # frequency_rank
+                r[9] if len(r) > 9 else "Allgemein",  # topic
             )
             for r in rows
             if len(r) >= 9 and r[0].strip()
@@ -156,6 +159,80 @@ def import_forms(db, path):
         ],
     )
     return len(rows)
+
+
+def generate_search_forms(db):
+    """Generate accent-stripped and article-stripped search forms for better findability."""
+    import unicodedata
+
+    def strip_accents(text):
+        """Remove diacritical marks: é→e, è→e, ê→e, ç→c, etc."""
+        nfkd = unicodedata.normalize("NFKD", text)
+        return "".join(c for c in nfkd if not unicodedata.combining(c))
+
+    articles = ["le ", "la ", "l'", "les ", "un ", "une ", "des ", "du ", "de la ", "de l'"]
+
+    cursor = db.cursor()
+    cursor.execute("SELECT DISTINCT form, entry_id FROM forms")
+    existing = cursor.fetchall()
+
+    # Collect existing form+entry pairs to avoid duplicates
+    existing_set = set((f.lower(), eid) for f, eid in existing)
+
+    # Add German translations as search forms (for DE→FR search)
+    de_articles = ["der ", "die ", "das ", "den ", "dem ", "des ", "ein ", "eine "]
+    cursor.execute("SELECT DISTINCT entry_id, translation_de FROM senses WHERE translation_de != ''")
+    de_new = []
+    for entry_id, translation_de in cursor.fetchall():
+        de_lower = translation_de.lower().strip()
+        if not de_lower:
+            continue
+        if (de_lower, entry_id) not in existing_set:
+            de_new.append((de_lower, entry_id, "de_translation"))
+            existing_set.add((de_lower, entry_id))
+        # Strip German article
+        for art in de_articles:
+            if de_lower.startswith(art):
+                without = de_lower[len(art):].strip()
+                if without and (without, entry_id) not in existing_set:
+                    de_new.append((without, entry_id, "de_translation"))
+                    existing_set.add((without, entry_id))
+                break
+    if de_new:
+        db.executemany("INSERT INTO forms (form, entry_id, form_type) VALUES (?, ?, ?)", de_new)
+    print(f"  (added {len(de_new)} German translation forms)")
+    new_forms = []
+
+    for form, entry_id in existing:
+        form_lower = form.lower()
+
+        # 1. Strip accents
+        stripped = strip_accents(form_lower)
+        if stripped != form_lower and (stripped, entry_id) not in existing_set:
+            new_forms.append((stripped, entry_id, "search_variant"))
+            existing_set.add((stripped, entry_id))
+
+        # 2. Strip leading article
+        for art in articles:
+            if form_lower.startswith(art):
+                without_article = form_lower[len(art):].strip()
+                if without_article and (without_article, entry_id) not in existing_set:
+                    new_forms.append((without_article, entry_id, "search_variant"))
+                    existing_set.add((without_article, entry_id))
+                # Also accent-strip the article-stripped version
+                stripped_no_art = strip_accents(without_article)
+                if stripped_no_art != without_article and (stripped_no_art, entry_id) not in existing_set:
+                    new_forms.append((stripped_no_art, entry_id, "search_variant"))
+                    existing_set.add((stripped_no_art, entry_id))
+                break
+
+    if new_forms:
+        db.executemany(
+            "INSERT INTO forms (form, entry_id, form_type) VALUES (?, ?, ?)",
+            new_forms,
+        )
+
+    return len(new_forms)
 
 
 def import_senses(db, path):
@@ -253,6 +330,10 @@ def main():
     print("Importing pronunciations...", end=" ")
     n = import_pronunciations(db, OPTIONAL_FILES["pronunciations"])
     print(f"{n} rows")
+
+    print("Generating search forms (accent-stripped, article-stripped)...", end=" ")
+    n = generate_search_forms(db)
+    print(f"{n} new forms")
 
     print("Creating indexes...")
     create_indexes(db)

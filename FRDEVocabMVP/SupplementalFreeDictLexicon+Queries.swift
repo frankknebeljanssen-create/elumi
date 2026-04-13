@@ -88,12 +88,9 @@ extension SupplementalFreeDictLexicon {
         let isNoun = wordClass.lowercased() == "noun"
 
         let sourceTerm = sourceDisplayText(lemmaFr, sourceLanguage: .french)
-        let targetTerm: String
-        if isNoun {
-            targetTerm = germanDisplayText(translationDe, cardType: cardType, sourceHint: nil)
-        } else {
-            targetTerm = translationDe
-        }
+        // Use translation directly from DB — no article manipulation
+        // The new master DB already has correct article handling
+        let targetTerm = translationDe
 
         guard !sourceTerm.isEmpty, !targetTerm.isEmpty else { return nil }
 
@@ -184,14 +181,17 @@ extension SupplementalFreeDictLexicon {
           AND (
             e.entry_id IN (SELECT entry_id FROM forms WHERE form LIKE ? || '%')
             OR LOWER(e.lemma_fr) LIKE ? || '%'
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(e.lemma_fr,'è','e'),'é','e'),'ê','e'),'ë','e'),'à','a'),'ô','o')) LIKE ? || '%'
             OR LOWER(e.lemma_de) LIKE ? || '%'
             OR LOWER(s.translation_de) LIKE ? || '%'
+            OR LOWER(s.translation_de) LIKE '% ' || ? || '%'
           )
         ORDER BY
             CASE
                 WHEN LOWER(e.lemma_fr) = ? OR LOWER(s.translation_de) = ? THEN 0
-                WHEN LOWER(e.lemma_fr) LIKE ? || '%' THEN 1
-                ELSE 2
+                WHEN LOWER(e.lemma_fr) LIKE ? || '%' OR LOWER(s.translation_de) LIKE ? || '%' THEN 1
+                WHEN LOWER(s.translation_de) LIKE '% ' || ? || '%' THEN 2
+                ELSE 3
             END ASC,
             LENGTH(e.lemma_fr) ASC,
             LOWER(e.lemma_fr) ASC,
@@ -205,18 +205,32 @@ extension SupplementalFreeDictLexicon {
         }
 
         defer { sqlite3_finalize(statement) }
+        // WHERE: forms(1), lemma_fr(2), lemma_fr_stripped(3), lemma_de(4), translation_de prefix(5), translation_de word(6)
         sqlite3_bind_text(statement, 1, lookupQuery, -1, sqliteTransient)
         sqlite3_bind_text(statement, 2, lookupQuery, -1, sqliteTransient)
         sqlite3_bind_text(statement, 3, lookupQuery, -1, sqliteTransient)
         sqlite3_bind_text(statement, 4, lookupQuery, -1, sqliteTransient)
         sqlite3_bind_text(statement, 5, lookupQuery, -1, sqliteTransient)
         sqlite3_bind_text(statement, 6, lookupQuery, -1, sqliteTransient)
+        // ORDER BY: exact(7,8), prefix(9,10), word-in(11)
         sqlite3_bind_text(statement, 7, lookupQuery, -1, sqliteTransient)
-        sqlite3_bind_int(statement, 8, Int32(max(limit, 1)))
+        sqlite3_bind_text(statement, 8, lookupQuery, -1, sqliteTransient)
+        sqlite3_bind_text(statement, 9, lookupQuery, -1, sqliteTransient)
+        sqlite3_bind_text(statement, 10, lookupQuery, -1, sqliteTransient)
+        sqlite3_bind_text(statement, 11, lookupQuery, -1, sqliteTransient)
+        // LIMIT
+        sqlite3_bind_int(statement, 12, Int32(max(limit, 1)))
 
         var entries: [LexiconEntry] = []
+        var seen = Set<String>()
         while sqlite3_step(statement) == SQLITE_ROW {
             guard let entry = makeLexiconEntryFromMaster(from: statement) else { continue }
+            // Dedup by normalized source+target (strips articles)
+            let dedupKey = [
+                strippingLeadingFrenchArticle(from: entry.sourceSortKey),
+                strippingLeadingGermanArticle(from: entry.targetSortKey)
+            ].joined(separator: "|")
+            guard seen.insert(dedupKey).inserted else { continue }
             entries.append(entry)
         }
 

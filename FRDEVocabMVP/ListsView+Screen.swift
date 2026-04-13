@@ -10,11 +10,9 @@ extension ListsView {
                 systemImage: "list.bullet.rectangle"
             )
 
-            listSelectionSection
+            allListsCard
 
-            if !showingCreateListForm {
-                selectedListSection
-            }
+            categoryCardsSection
 
             createListSection
 
@@ -22,123 +20,131 @@ extension ListsView {
         }
     }
 
-    var listSelectionSection: some View {
+    // MARK: - Alle Listen (große Card)
+
+    var allListsCard: some View {
         Button {
             showingListPicker = true
         } label: {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Alle Listen")
-                        .font(AppTheme.Typography.cardTitle)
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .lineLimit(1)
-                    Text(countLabel(listStore.allLists.count, singular: "Liste", plural: "Listen"))
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                }
-
-                Spacer(minLength: 0)
-
-                Image(systemName: "chevron.right.circle.fill")
-                    .font(.system(size: 22, weight: .bold))
+            VStack(spacing: 8) {
+                Image(systemName: "list.bullet.rectangle.fill")
+                    .font(.system(size: 32, weight: .bold))
                     .foregroundStyle(sectionStyle.accent)
+
+                Text("Alle Listen")
+                    .font(.system(size: 22, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+
+                Text(countLabel(listStore.allLists.count, singular: "Liste", plural: "Listen"))
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 20)
             .appCardBackground(sectionStyle, intensity: 0.09)
         }
         .buttonStyle(.plain)
     }
 
-    var selectedListSection: some View {
-        VStack(spacing: 10) {
-            // Current list info card
-            Button {
-                showingListDetail = true
-            } label: {
-                HStack(spacing: 12) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(selectedList.name)
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textPrimary)
-                            .lineLimit(1)
-                        Text(listMetaText)
-                            .font(AppTheme.Typography.caption)
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
-                    }
+    // MARK: - Kategorie-Cards (Themen, Niveau, Eigene)
 
-                    Spacer(minLength: 0)
+    private var categoryCardsSection: some View {
+        let topicLists = StandardVocabularyLoader.topicLists
+        let levelLists = StandardVocabularyLoader.levelLists
+        let ownLists = listStore.sortedCustomLists
 
-                    Image(systemName: "chevron.right.circle.fill")
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundStyle(sectionStyle.accent)
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .appChipBackground(sectionStyle, intensity: 0.08, cornerRadius: 20)
-            }
-            .buttonStyle(.plain)
-
-            // Action buttons — different for built-in vs custom lists
-            VStack(spacing: 10) {
-                if selectedList.isBuiltIn {
-                    Button {
-                        showingListDetail = true
-                    } label: {
-                        Text("Liste ansehen")
-                            .frame(maxWidth: .infinity)
-                            .frame(minHeight: 38)
-                    }
-                    .buttonStyle(AppPrimaryButtonStyle(color: sectionStyle.accent))
-                } else {
-                    Button {
-                        startNewEntry()
-                    } label: {
-                        Text("Neue Vokabeln eingeben")
-                            .frame(maxWidth: .infinity)
-                            .frame(minHeight: 38)
-                    }
-                    .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-
-                    Button {
-                        showingListDetail = true
-                    } label: {
-                        Text("Liste bearbeiten")
-                            .frame(maxWidth: .infinity)
-                            .frame(minHeight: 38)
-                    }
-                    .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))
-
-                    Button {
-                        editableListName = selectedList.name
-                        showingRenameDialog = true
-                    } label: {
-                        Text("Umbenennen")
-                            .frame(maxWidth: .infinity)
-                            .frame(minHeight: 38)
-                    }
-                    .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))
-
-                    Button {
-                        listPendingDeletion = selectedList
-                    } label: {
-                        Text("Liste löschen")
-                            .frame(maxWidth: .infinity)
-                            .frame(minHeight: 38)
-                    }
-                    .buttonStyle(AppSecondaryButtonStyle(tint: AppTheme.Colors.error))
+        return VStack(spacing: 10) {
+            // Eigene Listen
+            if !ownLists.isEmpty {
+                listsCategoryRow(
+                    title: "Eigene Listen",
+                    systemImage: "person.fill",
+                    count: ownLists.count
+                ) {
+                    listPickerFilter = .own
                 }
             }
-            .frame(minHeight: 180) // Fixed height so card size stays consistent
 
-            if selectedList.isBuiltIn {
-                Text("Das Standardpaket bleibt unverändert. Lege für eigene Inhalte eine neue Liste an.")
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            // Nach Niveau
+            if !levelLists.isEmpty {
+                listsCategoryRow(
+                    title: "Nach Niveau",
+                    systemImage: "chart.bar.fill",
+                    count: levelLists.count
+                ) {
+                    listPickerFilter = .level
+                }
+            }
+
+            // Nach Themen
+            if !topicLists.isEmpty {
+                listsCategoryRow(
+                    title: "Nach Themen",
+                    systemImage: "tag.fill",
+                    count: topicLists.count
+                ) {
+                    listPickerFilter = .topic
+                }
             }
         }
-        .padding(16)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+    }
+
+    private func listsCategoryRow(
+        title: String,
+        systemImage: String,
+        count: Int,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(sectionStyle.accent)
+                    .frame(width: 28)
+
+                Text(title)
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+
+                Spacer(minLength: 0)
+
+                Text("\(count)")
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(sectionStyle.accent)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(AppTheme.Colors.surface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(sectionStyle.accent.opacity(0.05))
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(AppTheme.Colors.border, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    func filteredListsForPicker(_ filter: ListPickerFilter) -> [VocabularyList] {
+        switch filter {
+        case .all:
+            return listStore.allLists
+        case .own:
+            return listStore.sortedCustomLists
+        case .level:
+            return StandardVocabularyLoader.levelLists
+        case .topic:
+            return StandardVocabularyLoader.topicLists
+        }
     }
 
     var createListSection: some View {

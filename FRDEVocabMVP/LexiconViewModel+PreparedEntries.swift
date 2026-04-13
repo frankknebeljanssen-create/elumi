@@ -188,7 +188,14 @@ extension LexiconViewModel {
         compactQuery: String
     ) -> Bool {
         guard !query.isEmpty else { return false }
-        return lookupKey.hasPrefix(query) || (!compactQuery.isEmpty && compactKey.hasPrefix(compactQuery))
+        if lookupKey.hasPrefix(query) { return true }
+        if !compactQuery.isEmpty && compactKey.hasPrefix(compactQuery) { return true }
+        // Match after article: "der hase" contains " hase"
+        if lookupKey.contains(" \(query)") { return true }
+        // Match article-stripped
+        let stripped = strippingLeadingGermanArticle(from: strippingLeadingFrenchArticle(from: lookupKey))
+        if stripped != lookupKey && stripped.hasPrefix(query) { return true }
+        return false
     }
 
     nonisolated static func searchMatchRank(
@@ -200,10 +207,15 @@ extension LexiconViewModel {
         if lookupKey == query || (!compactQuery.isEmpty && compactKey == compactQuery) {
             return 0
         }
-        if lookupKey.hasPrefix(query) {
+        let stripped = strippingLeadingGermanArticle(from: strippingLeadingFrenchArticle(from: lookupKey))
+        if stripped == query { return 0 }
+        if lookupKey.hasPrefix(query) || (stripped != lookupKey && stripped.hasPrefix(query)) {
             return 1
         }
         if !compactQuery.isEmpty && compactKey.hasPrefix(compactQuery) {
+            return 2
+        }
+        if lookupKey.contains(" \(query)") {
             return 2
         }
         return 3

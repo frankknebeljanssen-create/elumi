@@ -21,6 +21,19 @@ struct ListsView: View {
     @State var showingEntryEditor = false
     @State var showingRenameDialog = false
     @State var showingListPicker = false
+    @State var listPickerFilter: ListPickerFilter?
+
+    enum ListPickerFilter: Identifiable {
+        case all, own, level, topic
+        var id: String {
+            switch self {
+            case .all: return "all"
+            case .own: return "own"
+            case .level: return "level"
+            case .topic: return "topic"
+            }
+        }
+    }
     @State var showingListDetail = false
     @State var showingCreateListForm = false
     @State var shouldRestoreListDetailAfterEditing = false

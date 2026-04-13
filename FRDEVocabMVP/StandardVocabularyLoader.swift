@@ -1,6 +1,7 @@
 import Foundation
+import SQLite3
 
-/// Loads the FLELex-based vocabulary from StandardpaketGPT.tsv
+/// Loads all vocabulary from FRDEMasterLexicon.sqlite (unified source).
 /// Single source of truth for all vocabulary in the app.
 enum StandardVocabularyLoader {
     struct Entry {
@@ -199,38 +200,51 @@ enum StandardVocabularyLoader {
     // MARK: - Private
 
     private static func loadEntries() -> [Entry] {
-        guard let url = Bundle.main.url(forResource: "StandardpaketGPT", withExtension: "tsv"),
-              let content = try? String(contentsOf: url, encoding: .utf8) else {
-            print("⚠️ StandardpaketGPT.tsv not found")
+        guard let result = SupplementalFreeDictLexicon.withReadOnlyDatabase({ database -> [Entry] in
+            let sql = """
+                SELECT lemma_fr, lemma_de, word_class, gender_fr, level, is_phrase, frequency_rank, topic
+                FROM entries
+                ORDER BY frequency_rank ASC
+                """
+            var statement: OpaquePointer?
+            guard sqlite3_prepare_v2(database, sql, -1, &statement, nil) == SQLITE_OK,
+                  let stmt = statement else {
+                return []
+            }
+            defer { sqlite3_finalize(stmt) }
+
+            var entries: [Entry] = []
+            while sqlite3_step(stmt) == SQLITE_ROW {
+                let lemmaFr = sqlite3_column_text(stmt, 0).map { String(cString: $0) } ?? ""
+                let lemmaDe = sqlite3_column_text(stmt, 1).map { String(cString: $0) } ?? ""
+                guard !lemmaFr.isEmpty, !lemmaDe.isEmpty else { continue }
+
+                let wordClass = sqlite3_column_text(stmt, 2).map { String(cString: $0) } ?? ""
+                let genderFr = sqlite3_column_text(stmt, 3).map { String(cString: $0) } ?? ""
+                let level = sqlite3_column_text(stmt, 4).map { String(cString: $0) } ?? ""
+                let isPhrase = sqlite3_column_int(stmt, 5)
+                let freqRank = sqlite3_column_int(stmt, 6)
+                let topic = sqlite3_column_text(stmt, 7).map { String(cString: $0) } ?? "Allgemein"
+
+                entries.append(Entry(
+                    sourceDisplay: lemmaFr,
+                    target: lemmaDe,
+                    cardType: isPhrase == 1 ? .phrases : .words,
+                    level: level,
+                    wordClass: wordClass,
+                    gender: genderFr,
+                    topic: topic,
+                    frequency: Double(freqRank)
+                ))
+            }
+            return entries
+        }) else {
+            print("⚠️ FRDEMasterLexicon.sqlite not found or failed to open")
             return []
         }
 
-        var entries: [Entry] = []
-        let lines = content.components(separatedBy: .newlines)
-
-        for (index, line) in lines.enumerated() {
-            guard index > 0, !line.isEmpty else { continue } // Skip header
-            let columns = line.components(separatedBy: "\t")
-            guard columns.count >= 7 else { continue }
-
-            let sourceDisplay = columns[0].trimmingCharacters(in: .whitespacesAndNewlines)
-            let target = columns[1].trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !sourceDisplay.isEmpty, !target.isEmpty else { continue }
-
-            entries.append(Entry(
-                sourceDisplay: sourceDisplay,
-                target: target,
-                cardType: columns.count > 2 ? (columns[2] == "phrases" ? .phrases : .words) : .words,
-                level: columns.count > 3 ? columns[3] : "",
-                wordClass: columns.count > 4 ? columns[4] : "",
-                gender: columns.count > 5 ? columns[5] : "",
-                topic: columns.count > 6 ? columns[6] : "Allgemein",
-                frequency: columns.count > 8 ? (Double(columns[8]) ?? 0) : 0
-            ))
-        }
-
-        print("📚 StandardVocabulary loaded: \(entries.count) entries")
-        return entries
+        print("📚 StandardVocabulary loaded from SQLite: \(result.count) entries")
+        return result
     }
 
     private static func vocabularyLevel(for level: String) -> VocabularyLevel? {

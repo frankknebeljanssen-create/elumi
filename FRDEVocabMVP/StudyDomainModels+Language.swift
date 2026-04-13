@@ -178,24 +178,30 @@ enum Direction: String, CaseIterable, Identifiable, Codable {
 
 enum TrainingMode: String, CaseIterable, Identifiable, Hashable {
     case vocabulary = "Vokabeln"
+    case nouns = "Nomen"
     case articles = "Artikel"
     case verbs = "Verben"
+    case verbforms = "Verbformen"
 
     var id: String { rawValue }
 
     var systemImage: String {
         switch self {
         case .vocabulary: return "book.fill"
-        case .articles: return "textformat"
+        case .nouns: return "textformat"
+        case .articles: return "textformat.abc.dottedunderline"
         case .verbs: return "arrow.triangle.branch"
+        case .verbforms: return "text.line.first.and.arrowtriangle.forward"
         }
     }
 
     var iconLabel: String {
         switch self {
         case .vocabulary: return "📖"
+        case .nouns: return "📝"
         case .articles: return "le, la"
         case .verbs: return "🔄"
+        case .verbforms: return "✏️"
         }
     }
 }

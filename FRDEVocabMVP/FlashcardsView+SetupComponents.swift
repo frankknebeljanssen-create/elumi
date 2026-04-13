@@ -147,18 +147,45 @@ extension FlashcardsView {
         )
         let displayCount = setup.selectedCardCount == 0 ? maxCards : min(setup.selectedCardCount, maxCards)
         let isAll = setup.selectedCardCount == 0 || setup.selectedCardCount >= maxCards
+        let progress = maxCards > minSlider ? CGFloat(displayCount - minSlider) / CGFloat(maxCards - minSlider) : 1.0
 
-        return VStack(alignment: .leading, spacing: 12) {
+        return VStack(alignment: .leading, spacing: 8) {
             Text("Anzahl der Karten")
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.textSecondary)
 
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(isAll ? "Alle \(maxCards) Karten" : "\(displayCount) Karten")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(sectionStyle.accent)
+            // Visual card stack
+            HStack(spacing: 0) {
+                Spacer()
+                ZStack {
+                    // Stack of cards — grows with slider
+                    let visibleCards = max(1, Int(progress * 6) + 1)
+                    ForEach(0..<visibleCards, id: \.self) { i in
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(sectionStyle.accent.opacity(0.12 + Double(i) * 0.08))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                    .stroke(sectionStyle.accent.opacity(0.25 + Double(i) * 0.06), lineWidth: 1)
+                            )
+                            .frame(width: 44, height: 54)
+                            .offset(x: CGFloat(i) * 3.5, y: -CGFloat(i) * 2.5)
+                    }
+
+                    // Count label on top card
+                    Text("\(displayCount)")
+                        .font(.system(size: 20, weight: .black, design: .rounded))
+                        .foregroundStyle(sectionStyle.accent)
+                        .offset(x: CGFloat(visibleCards - 1) * 3.5, y: -CGFloat(visibleCards - 1) * 2.5)
+                }
+                .frame(height: 72)
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: displayCount)
+                Spacer()
             }
-            .frame(maxWidth: .infinity, alignment: .center)
+
+            Text(isAll ? "Alle \(maxCards) Karten" : "\(displayCount) von \(maxCards) Karten")
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .foregroundStyle(sectionStyle.accent)
+                .frame(maxWidth: .infinity, alignment: .center)
 
             if maxCards > minSlider {
                 Slider(value: sliderValue, in: Double(minSlider)...Double(maxCards), step: 1)

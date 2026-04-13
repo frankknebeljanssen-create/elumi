@@ -37,6 +37,22 @@ extension ListsView {
                     showToast("„\(deletedList.name)“ wurde gelöscht.")
                 }
             }
+            .sheet(item: $listPickerFilter) { filter in
+                ListPickerSheet(
+                    style: sectionStyle,
+                    lists: filteredListsForPicker(filter),
+                    selectedListID: listStore.selectedListID
+                ) { pickedID in
+                    listStore.selectedListID = pickedID
+                    listPickerFilter = nil
+                } onDelete: { deletedList in
+                    listStore.deleteCustomList(id: deletedList.id)
+                    feedbackPlayer.playListAction()
+                    editableListName = listStore.selectedList.name
+                    cancelEditing()
+                    showToast("\u{201E}\(deletedList.name)\u{201C} wurde gel\u{00F6}scht.")
+                }
+            }
             .sheet(isPresented: $showingListDetail) {
                 ListDetailSheet(
                     style: sectionStyle,

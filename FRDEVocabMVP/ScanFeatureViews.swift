@@ -477,7 +477,7 @@ struct ScanImportView: View {
                         Button {
                             returnToScanSetup()
                         } label: {
-                            Label("Zurück zur Auswahl", systemImage: "arrow.left")
+                            Label("Zurück", systemImage: "arrow.left")
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))

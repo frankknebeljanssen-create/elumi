@@ -61,10 +61,12 @@ enum AppTheme {
 
         // ── Single Source of Truth: Modul-Farben ──
         static let moduleVocabulary = elumiPinkDeep              // Vokabeln — Pink
-        static let moduleArticles = Color(hex: "#F59E0B")        // Artikel — Amber
+        static let moduleNomen = Color(hex: "#059669")           // Nomen — Emerald
+        static let moduleArticles = Color(hex: "#34D399")        // Artikel — Light Emerald (Nomen-Familie)
         static let moduleVerbs = Color(hex: "#8B5CF6")           // Verben — Purple
+        static let moduleVerbforms = Color(hex: "#A78BFA")       // Verbformen — Light Purple (Verben-Familie)
         static let moduleFlashcards = Color(hex: "#3B82F6")      // Karteikarten — Blue
-        static let moduleQuiz = Color(hex: "#10B981")            // Quiz — Green
+        static let moduleQuiz = Color(hex: "#F59E0B")            // Quiz — Amber
         static let moduleLexicon = Color(hex: "#E879F9")         // Wörterbuch — Fuchsia
         static let moduleLists = Color(hex: "#57B8C9")           // Listen — Teal
         static let moduleScan = Color(hex: "#EF6C50")            // Scan — Coral

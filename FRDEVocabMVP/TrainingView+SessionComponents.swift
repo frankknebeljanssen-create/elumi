@@ -231,9 +231,9 @@ extension TrainingView {
                         submitVerbMC(option)
                     } label: {
                         Text(option)
-                            .font(.system(size: 15, weight: .semibold, design: .rounded))
+                            .font(.system(size: session.cardType == .phrases ? 12 : 15, weight: .semibold, design: .rounded))
                             .lineLimit(2)
-                            .minimumScaleFactor(0.7)
+                            .minimumScaleFactor(0.6)
                             .frame(maxWidth: .infinity)
                             .frame(minHeight: 48)
                             .foregroundStyle(verbMCButtonForeground(option))
