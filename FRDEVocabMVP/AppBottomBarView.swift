@@ -6,17 +6,19 @@ struct AppBottomBar: View {
     @ObservedObject var feedbackPlayer: FeedbackPlayer
     let onHome: () -> Void
     let onFavorite: (() -> Void)?
-    let onScan: (() -> Void)?  // Now used for Lexicon
+    let onScan: (() -> Void)?  // Now used for Lexicon (historical name)
     let onSettings: (() -> Void)?
+    var onScanCamera: (() -> Void)? = nil  // New: actual Scan/camera action
     var isHeartsActive: Bool = false
     var isScanActive: Bool = false  // Now isLexiconActive
+    var isScanCameraActive: Bool = false
     var isSettingsActive: Bool = false
 
     private var homeTint: Color { Color(hex: "#78C8FF") }
     private var soundTint: Color {
         AppTheme.Colors.warning
     }
-    private var scanTint: Color { AppTheme.Colors.moduleScan }
+    private var scanTint: Color { Color(hex: "#FF9F40") }
     private var lexiconTint: Color { AppTheme.Colors.moduleLexicon }
     private var settingsTint: Color { Color(hex: "#B38DFF") }
 
@@ -59,10 +61,11 @@ struct AppBottomBar: View {
                 Spacer(minLength: 0)
 
                 AppBottomBarIconButton(
-                    systemImage: feedbackPlayer.areSoundsEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill",
-                    accessibilityLabel: feedbackPlayer.areSoundsEnabled ? "Ton ausschalten" : "Ton einschalten",
-                    action: { feedbackPlayer.toggleSoundsFromQuickAction() },
-                    foregroundColor: soundTint
+                    systemImage: "camera.viewfinder",
+                    accessibilityLabel: "Scan",
+                    action: onScanCamera ?? globalOpenScanAction,
+                    isActive: isScanCameraActive,
+                    foregroundColor: scanTint
                 )
 
                 Spacer(minLength: 0)

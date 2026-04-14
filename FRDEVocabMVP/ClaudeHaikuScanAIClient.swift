@@ -174,58 +174,12 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         }
     }
 
-    /// Words that are NEVER capitalized in German — matched via word boundary regex
-    private static let neverCapitalizedWords: [String] = [
-        // Konjunktionen
-        "und", "oder", "aber", "denn", "sondern", "doch",
-        // Verben
-        "ist", "sind", "bist", "bin", "hat", "haben", "heißt", "heißen",
-        "geht", "macht", "kann", "muss", "will", "soll", "darf",
-        "kommt", "spielt", "wohnt", "liebt", "kennt", "findet",
-        // Reflexivpronomen
-        "sich", "mich", "dich",
-        // Pronomen
-        "du", "er", "es", "wir", "ihr",
-        "andere", "anderen", "anderer",
-        // Artikel
-        "der", "die", "das", "den", "dem", "des", "ein", "eine", "einer", "einem", "einen",
-        // Adjektive
-        "alt", "neu", "jung", "groß", "klein", "gut", "schlecht",
-        // Adverbien
-        "hier", "dort", "auch", "sehr", "schon", "noch", "gern", "gerne",
-        // Präpositionen
-        "in", "auf", "mit", "von", "zu", "bei", "nach", "aus", "für",
-    ]
+    // Alte lokale „neverCapitalizedSet"-Heuristik entfernt — Casing läuft
+    // ausschließlich über TextNormalizationEngine.
 
-    /// Set of capitalized forms that must be lowercased
-    private static let neverCapitalizedSet: Set<String> = {
-        var s = Set<String>()
-        for w in neverCapitalizedWords {
-            s.insert(w.prefix(1).uppercased() + w.dropFirst()) // "Und"
-            s.insert(w.uppercased())                            // "UND"
-        }
-        return s
-    }()
-
-    /// Force-lowercase non-nouns everywhere in German target text
+    /// Force-lowercase non-nouns in German target text — zentrale Engine.
     static func forceGermanLowercase(_ text: String) -> String {
-        // Split by spaces, then handle slashes within each token
-        var tokens = text.components(separatedBy: " ")
-        for i in 0..<tokens.count {
-            // Split by "/" to handle "der/Die"
-            var subTokens = tokens[i].components(separatedBy: "/")
-            for j in 0..<subTokens.count {
-                let token = subTokens[j]
-                // Strip punctuation to get the pure word
-                let letters = token.trimmingCharacters(in: CharacterSet.letters.inverted)
-                guard !letters.isEmpty else { continue }
-                if neverCapitalizedSet.contains(letters) {
-                    subTokens[j] = token.replacingOccurrences(of: letters, with: letters.lowercased())
-                }
-            }
-            tokens[i] = subTokens.joined(separator: "/")
-        }
-        return tokens.joined(separator: " ")
+        return TextNormalizationEngine.normalize(text, language: .german)
     }
 
     /// Post-process decoded entries to fix systematic AI errors
@@ -276,22 +230,9 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    /// Fix French words that should never be capitalized (prepositions, articles)
+    /// Fix French capitalization — zentrale Engine.
     private static func fixFrenchCapitalization(_ text: String) -> String {
-        let frenchLower = ["De", "Du", "Des", "Au", "Aux", "En", "Et", "Ou", "À"]
-        var tokens = text.components(separatedBy: " ")
-        for i in 0..<tokens.count {
-            var subTokens = tokens[i].components(separatedBy: "/")
-            for j in 0..<subTokens.count {
-                let token = subTokens[j]
-                let letters = token.trimmingCharacters(in: CharacterSet.letters.inverted)
-                if frenchLower.contains(letters) {
-                    subTokens[j] = token.replacingOccurrences(of: letters, with: letters.lowercased())
-                }
-            }
-            tokens[i] = subTokens.joined(separator: "/")
-        }
-        return tokens.joined(separator: " ")
+        return TextNormalizationEngine.normalize(text, language: .french)
     }
 
     /// Fix commonly misread French phrases in source text

@@ -50,6 +50,14 @@ struct TrainingView: View {
     @State var verbformsInflections: [VerbformsEngine.VerbInflections] = []
     @State var verbformsCountdown: Int? = nil
 
+    // Verbformen Drag-and-Drop (Quiz-Stil: DragGesture + Frame-Tracking,
+    // KEIN Long-Press wie bei `.draggable`)
+    @State var verbformsDraggingPronoun: VerbformsPerson?
+    @State var verbformsDragOffset: CGSize = .zero
+    @State var verbformsPronounFrames: [VerbformsPerson: CGRect] = [:]
+    @State var verbformsFormFrames: [VerbformsPerson: CGRect] = [:]
+    @State var verbformsHoveredForm: VerbformsPerson?
+
     enum ListPickerCategory: Identifiable {
         case own, level, topic, all
         var id: String {

@@ -36,11 +36,12 @@ struct HomeActionButton: View {
     let systemImage: String
     let accentColor: Color
     let cardColor: Color
+    var iconSize: CGFloat = 28
 
     var body: some View {
         VStack(spacing: 6) {
             Image(systemName: systemImage)
-                .font(.system(size: 28, weight: .bold))
+                .font(.system(size: iconSize, weight: .bold))
                 .foregroundStyle(accentColor)
                 .frame(height: 32)
 

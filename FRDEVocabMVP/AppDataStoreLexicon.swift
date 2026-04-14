@@ -34,7 +34,7 @@ enum DataStoreLexiconSupport {
     static func searchLexiconEntries(
         query: String,
         curatedEntries: [LexiconEntry],
-        supplementLimit: Int = 80
+        supplementLimit: Int = 250
     ) -> [LexiconEntry] {
         let normalizedQuery = normalizedLookupText(query)
         let compactQuery = compactLookupKey(query)
@@ -65,6 +65,7 @@ enum DataStoreLexiconSupport {
             }
             return $0.sourceSortKey < $1.sourceSortKey
         }
+
         return merged
     }
 

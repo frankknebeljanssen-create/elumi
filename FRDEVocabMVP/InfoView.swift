@@ -18,6 +18,14 @@ struct InfoView: View {
                     systemImage: "info.circle.fill"
                 )
 
+                Button {
+                    dismiss()
+                } label: {
+                    Label("Zur\u{00FC}ck", systemImage: "arrow.left")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))
+
                 colorInfoCard(
                     title: "Karteikarten",
                     icon: "square.stack.3d.up.fill",

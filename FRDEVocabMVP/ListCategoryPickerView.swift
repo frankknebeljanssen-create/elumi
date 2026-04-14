@@ -48,6 +48,14 @@ struct ListCategoryPickerView: View {
         return "\(names[0]), \(names[1]) +\(names.count - 2)"
     }
 
+    /// Aggregierte POS-Statistik über alle gewählten Listen — zentrale Single Source of Truth.
+    private var combinedPOSStatistics: ListPOSStatistics {
+        let allItems = selectedLists.flatMap(\.items)
+        return FrenchListStatisticsAggregator.cachedStatistics(for: allItems)
+    }
+
+    // (wordClassBreakdownText entfernt — `POSBreakdownLine` rendert direkt aus `combinedPOSStatistics`)
+
     var body: some View {
         // Combined selected-lists card with edit button
         ZStack(alignment: .topTrailing) {
@@ -62,6 +70,7 @@ struct ListCategoryPickerView: View {
                         .foregroundStyle(AppTheme.Colors.textDisabled)
                     Text(" ").font(.system(size: 13))
                     Text(" ").font(.system(size: 13))
+                    Text(" ").font(.system(size: 11))
                 } else {
                     ForEach(selectedLists.prefix(3)) { list in
                         HStack(spacing: 0) {
@@ -87,6 +96,11 @@ struct ListCategoryPickerView: View {
                     } else if selectedLists.count == 2 {
                         Text(" ").font(.system(size: 13))
                     }
+
+                    // Aggregierte Wortarten-Übersicht über alle gewählten Listen.
+                    // „X Verben" ist tappable — öffnet Sheet mit Verb-Lemmata.
+                    POSBreakdownLine(stats: combinedPOSStatistics)
+                        .padding(.top, 2)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

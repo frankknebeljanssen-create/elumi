@@ -90,6 +90,10 @@ func normalizedLookupText(_ text: String) -> String {
     cleanedQuizDisplayText(text)
         .folding(options: .diacriticInsensitive, locale: .current)
         .lowercased()
+        // Deutsches Eszett muss auf „ss" expandiert werden, sonst wird es von der
+        // ASCII-Regex zu Leerzeichen — „Straße" → „stra e" wäre keine nützliche
+        // Such-Normalform. So: „Straße" → „strasse", „heißen" → „heissen".
+        .replacingOccurrences(of: "\u{00DF}", with: "ss")
         .replacingOccurrences(of: #"[^a-z0-9 ]+"#, with: " ", options: .regularExpression)
         .replacingOccurrences(of: #" + "#, with: " ", options: .regularExpression)
         .trimmingCharacters(in: .whitespacesAndNewlines)

@@ -2,22 +2,40 @@ import Foundation
 
 extension LexiconViewModel {
     func lexiconWordClassMarker(for entry: PreparedLexiconEntry) -> LexiconWordClassMarker? {
+        // Legacy-Marker (nur noun/verb/adjective/phrase) — bleibt für DetailSheet-Header
+        // wo expliziter Marker gewünscht ist. Für die Listen-Badges siehe `lexiconWordClassBadgeText`.
         if entry.displayCardType == .phrases { return .phrase }
-
         let hasNoun = entry.entries.contains(where: { $0.isGermanNoun })
-        let hasNonNoun = entry.entries.contains(where: { !$0.isGermanNoun })
-
-        if hasNoun && !hasNonNoun { return .noun }
-        if hasNonNoun && !hasNoun {
-            // Use StandardVocabularyLoader for precise word class
-            let sourceTerms = entry.entries.map(\.sourceTerm)
-            if sourceTerms.contains(where: { StandardVocabularyLoader.isVerb($0) }) {
-                return .verb
-            }
-            return .adjective
+        if hasNoun { return .noun }
+        let sourceTerms = entry.entries.map(\.sourceTerm)
+        if sourceTerms.contains(where: { StandardVocabularyLoader.isVerb($0) }) {
+            return .verb
         }
-
+        let isAdjLike = sourceTerms.contains { term in
+            self.isLikelyAdjectiveLexiconEntry(makeStubEntry(sourceTerm: term))
+        }
+        if isAdjLike { return .adjective }
         return nil
+    }
+
+    /// Zentrale Wortart-Anzeige fürs Wörterbuch — IMMER ein Label, nutzt
+    /// `FrenchLemmaFormatter.wordClassLabel(forLexiconEntry:)` (Single Source of Truth).
+    /// Liefert kompakte deutsche Bezeichnung („Nomen", „Verb", „Adverb", „Pronomen", …).
+    func lexiconWordClassBadgeText(for entry: PreparedLexiconEntry) -> String? {
+        guard let firstEntry = entry.entries.first else { return nil }
+        let label = FrenchLemmaFormatter.wordClassLabel(forLexiconEntry: firstEntry)
+        // „Wort" ist ein Default-Fallback ohne Aussagewert — lieber kein Badge.
+        return label == "Wort" ? nil : label
+    }
+
+    private func makeStubEntry(sourceTerm: String) -> LexiconEntry {
+        LexiconEntry(
+            id: "stub|\(sourceTerm)",
+            sourceTerm: sourceTerm,
+            targetTerm: "",
+            sourceLanguage: .french,
+            cardType: .words
+        )
     }
 
     func isLikelyNounLexiconEntry(_ entry: LexiconEntry) -> Bool {

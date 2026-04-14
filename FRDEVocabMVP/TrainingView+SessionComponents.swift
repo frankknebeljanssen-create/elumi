@@ -336,6 +336,14 @@ extension TrainingView {
                 Button {
                     cancelPendingFeedback()
                     loadNextTrainingCard()
+                    // Wichtig: Für Verben-MC die Optionen für die neue Karte neu aufbauen,
+                    // sonst bleiben die alten Optionen stehen und das Lösungswort
+                    // der neuen Runde fehlt.
+                    if isVerbMode {
+                        verbMCSelected = nil
+                        verbMCLocked = false
+                        prepareVerbMCOptions()
+                    }
                     speakCurrentPromptAfterScreenUpdate(initialDelay: 0.06)
                 } label: {
                     Label(nextCardTitle, systemImage: "arrow.triangle.2.circlepath")

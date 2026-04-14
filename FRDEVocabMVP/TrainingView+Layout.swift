@@ -1,6 +1,23 @@
 import SwiftUI
 import Combine
 
+/// Tracking-PreferenceKeys für das Drag-and-Drop-Matching im Verbformen-Modul.
+/// Dieselbe Mechanik wie im Quiz-Matching: Chips/Targets melden ihre Frames
+/// im gemeinsamen `coordinateSpace`, der Drag-State berechnet daraus den Hover-Treffer.
+struct VerbformsPronounFramePreferenceKey: PreferenceKey {
+    static var defaultValue: [VerbformsPerson: CGRect] = [:]
+    static func reduce(value: inout [VerbformsPerson: CGRect], nextValue: () -> [VerbformsPerson: CGRect]) {
+        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
+    }
+}
+
+struct VerbformsFormFramePreferenceKey: PreferenceKey {
+    static var defaultValue: [VerbformsPerson: CGRect] = [:]
+    static func reduce(value: inout [VerbformsPerson: CGRect], nextValue: () -> [VerbformsPerson: CGRect]) {
+        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
+    }
+}
+
 extension TrainingView {
     var trainingRootContent: some View {
         ZStack(alignment: .top) {
@@ -143,8 +160,10 @@ extension TrainingView {
             ScreenHeaderCard(
                 style: sectionStyle,
                 title: sessionHeaderTitle,
-                subtitle: "",
-                systemImage: "waveform.circle.fill"
+                subtitle: isVerbformsMode ? "Konjugationen üben" : "",
+                systemImage: isVerbformsMode
+                    ? "text.line.first.and.arrowtriangle.forward"
+                    : "waveform.circle.fill"
             )
 
             Button {
@@ -215,6 +234,7 @@ extension TrainingView {
                 verbformsSetupOptions
             } else {
                 // Nomen, Artikel, Verben: Ausgewählte Listen card
+                // (Verben trainiert NUR Infinitive → kein Wörter/Phrasen-Selector nötig)
                 ListCategoryPickerView(
                     availableLists: availableTrainingLists,
                     selectedListIDs: session.selectedTrainingListIDs,
@@ -225,11 +245,6 @@ extension TrainingView {
                     itemLabel: trainingItemLabel,
                     onSelectionChanged: { session.selectedTrainingListIDs = $0 }
                 )
-
-                // Verben: Auswahl Verben / Phrasen
-                if isVerbMode {
-                    verbContentTypeSelector
-                }
             }
 
             if isDictionaryTrainingSelected {
@@ -246,16 +261,32 @@ extension TrainingView {
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
 
+            // Verbformen: spezifischer Hint, wenn die Analyse der Listen keine
+            // Verben ergeben hat — deckt sich mit der Datenquelle für
+            // „Verben trainieren" (gleiche Verb-Basis).
+            if isVerbformsMode && !verbformsCanStart {
+                Text(verbformsStartHint)
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+            }
+
             Text("Los geht's!")
                 .font(AppTheme.Typography.button)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .frame(minHeight: AppTheme.Layout.buttonHeight)
-                .background(isVerbformsMode ? AppTheme.Colors.cta : (canStartTraining ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled))
+                .background(
+                    isVerbformsMode
+                        ? (verbformsCanStart ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled)
+                        : (canStartTraining ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled)
+                )
                 .cornerRadius(AppTheme.Radius.md)
                 .contentShape(Rectangle())
                 .onTapGesture {
                     if isVerbformsMode {
+                        guard verbformsCanStart else { return }
                         startVerbformsTraining()
                     } else {
                         guard canStartTraining else { return }
@@ -417,32 +448,8 @@ extension TrainingView {
 
     private var verbformsSetupOptions: some View {
         VStack(spacing: 12) {
-            // Mode selection
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Modus")
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-
-                HStack(spacing: 10) {
-                    ForEach(VerbformsMode.allCases) { mode in
-                        Button {
-                            verbformsSession.mode = mode
-                        } label: {
-                            Text(mode.rawValue)
-                                .font(.system(size: 15, weight: .semibold, design: .rounded))
-                                .frame(maxWidth: .infinity)
-                                .frame(minHeight: 44)
-                                .foregroundStyle(verbformsSession.mode == mode ? .white : AppTheme.Colors.textPrimary)
-                                .background(verbformsSession.mode == mode ? trainingActionTint : AppTheme.Colors.secondarySurface)
-                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .appCardBackground(sectionStyle, intensity: 0.09, cornerRadius: AppLayout.largeCardCornerRadius)
+            // Hinweis: Modus-Toggle (Auswählen/Tippen) wurde entfernt.
+            // Verbformen läuft jetzt ausschließlich im Drag-&-Drop-Modus.
 
             // Tense selection
             VStack(alignment: .leading, spacing: 8) {
@@ -452,10 +459,11 @@ extension TrainingView {
 
                 LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
                     ForEach(VerbformsTense.allCases) { tense in
+                        let isActive = tense.isAvailable   // aktuell nur Präsens
+                        let isSelected = verbformsSession.selectedTenses.contains(tense)
                         Button {
-                            let hasTenseData = verbformsSession.availableTenses.contains(tense)
-                            guard hasTenseData else { return }
-                            if verbformsSession.selectedTenses.contains(tense) {
+                            guard isActive else { return }
+                            if isSelected {
                                 if verbformsSession.selectedTenses.count > 1 {
                                     verbformsSession.selectedTenses.remove(tense)
                                 }
@@ -463,36 +471,41 @@ extension TrainingView {
                                 verbformsSession.selectedTenses.insert(tense)
                             }
                         } label: {
-                            let hasTenseData = verbformsSession.availableTenses.contains(tense)
                             VStack(spacing: 2) {
-                                Text(hasTenseData ? tense.rawValue : "demnächst")
+                                Text(tense.rawValue)
                                     .font(.system(size: 16, weight: .bold, design: .rounded))
+                                if !isActive {
+                                    Text("demnächst")
+                                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                                }
                             }
                             .frame(maxWidth: .infinity)
-                            .frame(minHeight: 48)
+                            .frame(minHeight: 56)
                             .foregroundStyle(
-                                verbformsSession.selectedTenses.contains(tense)
+                                isSelected
                                     ? .white
-                                    : (tense.isAvailable ? AppTheme.Colors.textPrimary : AppTheme.Colors.textSecondary)
+                                    : (isActive ? AppTheme.Colors.textPrimary : AppTheme.Colors.textSecondary)
                             )
                             .background(
-                                verbformsSession.selectedTenses.contains(tense)
+                                isSelected
                                     ? trainingActionTint
-                                    : (tense.isAvailable ? AppTheme.Colors.surface : AppTheme.Colors.surface.opacity(0.6))
+                                    : (isActive ? AppTheme.Colors.surface : AppTheme.Colors.surface.opacity(0.4))
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                                     .stroke(
-                                        verbformsSession.selectedTenses.contains(tense)
+                                        isSelected
                                             ? trainingActionTint
-                                            : AppTheme.Colors.border,
+                                            : AppTheme.Colors.border.opacity(isActive ? 1.0 : 0.4),
                                         lineWidth: 1
                                     )
                             )
+                            .opacity(isActive ? 1.0 : 0.45)
                         }
                         .buttonStyle(.plain)
-                        .disabled(!tense.isAvailable)
+                        .disabled(!isActive)
                     }
                 }
             }
@@ -533,77 +546,386 @@ extension TrainingView {
             } else if verbformsSession.isSpeedRound {
                 // Speed Round Timer
                 verbformsSpeedRoundBar
-
-                if let question = verbformsSession.currentQuestion {
-                    verbformsQuestionContent(question: question)
-                }
+                verbformsActiveContent
+            } else if verbformsSession.isShowingRoundComplete {
+                // Runde abgeschlossen → Gratulation + Weitermachen / Fertig
+                verbformsRoundCompleteView
             } else {
-                // Normal Progress
+                // Normal Progress inkl. Runden-Zähler
                 HStack {
                     Text(verbformsSession.progressText)
                         .font(.system(size: 14, weight: .bold, design: .rounded))
                         .foregroundStyle(trainingActionTint)
                     Spacer()
+                    Text("Runde \(verbformsSession.completedRound)")
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                    Text("·")
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
                     Text("\(verbformsSession.score) richtig")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
                 .padding(.horizontal, 4)
-
-                if let question = verbformsSession.currentQuestion {
-                    verbformsQuestionContent(question: question)
-                }
+                verbformsActiveContent
             }
 
             Spacer(minLength: 0)
+
+            // Persistenter Weiter-Button — sitzt zwischen Cards und Footer.
+            // Nur sichtbar, wenn alle 6 Pronomen-Form-Paare einer Runde sitzen.
+            if verbformsSession.isMatchingRoundComplete,
+               !verbformsSession.isSpeedRound,
+               !verbformsSession.isShowingRoundComplete,
+               verbformsCountdown == nil {
+                Button {
+                    feedbackPlayer.playStudySuccess()
+                    verbformsSession.next()
+                } label: {
+                    Text("Weiter")
+                        .font(AppTheme.Typography.button)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 56)
+                        .background(AppTheme.Colors.cta)
+                        .cornerRadius(AppTheme.Radius.md)
+                }
+                .buttonStyle(.plain)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
         .padding(.horizontal, AppLayout.screenPadding)
-        .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 32)
+        .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 16)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(AppTheme.Colors.background.ignoresSafeArea())
     }
 
+    /// Zeigt je nach Modus das Matching-Grid (Drag&Drop) oder den Typing-Input.
     @ViewBuilder
-    private func verbformsQuestionContent(question: VerbformsQuestion) -> some View {
-        // Verb card
+    var verbformsActiveContent: some View {
+        if verbformsSession.mode == .multipleChoice,
+           let round = verbformsSession.currentMatching {
+            verbformsMatchingContent(round: round)
+        } else if let question = verbformsSession.currentQuestion {
+            verbformsTypingQuestionContent(question: question)
+        }
+    }
+
+    // MARK: - Drag & Drop Matching (Auswählen-Modus)
+
+    /// Einheitliche Farbe für alle 6 Pronomen-Chips — das Verbformen-Purple
+    /// des Moduls. Keine Variationen, damit keine Positions-/Farb-Hints
+    /// auf die Lösung entstehen.
+    static let verbformsPronounColor = Color(hue: 0.72, saturation: 0.55, brightness: 0.78)
+
+    /// Einheitliche Farbe für alle 6 Form-Karten — ein sattes Blau.
+    /// Absichtlich NICHT grün (= richtig) und NICHT orange (= falsch), damit
+    /// die Feedback-Farben eindeutig bleiben. Klar vom Purple unterscheidbar.
+    static let verbformsFormColor = Color(hue: 0.58, saturation: 0.55, brightness: 0.80)
+
+    /// Aktuell vom DragGesture überfahrene Form-Karte (für Hover-Highlight).
+    /// Wird live während des Drag-Updates berechnet — ohne das Quiz-Pattern
+    /// nutzt SwiftUI's `.draggable` einen Long-Press, der hier nicht erwünscht ist.
+    func verbformsHoveredFormPerson(for pronoun: VerbformsPerson) -> VerbformsPerson? {
+        guard let pronounFrame = verbformsPronounFrames[pronoun] else { return nil }
+        let dragged = CGPoint(
+            x: pronounFrame.midX + verbformsDragOffset.width,
+            y: pronounFrame.midY + verbformsDragOffset.height
+        )
+        return verbformsFormFrames.first(where: { person, frame in
+            !verbformsSession.matchedPersons.contains(person) && frame.contains(dragged)
+        })?.key
+    }
+
+    /// Beendet eine Drag-Geste: prüft welche Form-Karte unter dem Cursor liegt
+    /// und ruft `dropPronoun` im Session-Controller auf. Setzt Drag-State zurück.
+    func verbformsFinishDrag(for pronoun: VerbformsPerson) {
+        let target = verbformsHoveredFormPerson(for: pronoun)
+        if let target {
+            let correct = verbformsSession.dropPronoun(pronoun, onForm: target)
+            if correct {
+                feedbackPlayer.playStudySuccess()
+            } else {
+                feedbackPlayer.playStudyError()
+            }
+        }
+        // Snap zurück (egal ob richtig oder falsch — bei richtig wird der Chip
+        // ohnehin ausgeblendet, bei falsch springt er optisch in seine Grid-Position)
+        withAnimation(.spring(response: 0.24, dampingFraction: 0.82)) {
+            verbformsDragOffset = .zero
+        }
+        verbformsDraggingPronoun = nil
+        verbformsHoveredForm = nil
+    }
+
+    @ViewBuilder
+    private func verbformsMatchingContent(round: VerbformsMatchingRound) -> some View {
+        // Fragekarte: Infinitiv + Tempus + gefragte Form („1. Person Plural" etc.)
+        VStack(spacing: 8) {
+            Text(round.infinitive)
+                .font(.system(size: 30, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+            if !round.translation.isEmpty {
+                Text("(\(round.translation))")
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+            Text(round.tense.rawValue)
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(AppTheme.Colors.secondarySurface)
+                .clipShape(Capsule())
+
+            // Gefragte Person als zentrale „Fragestellung" — Font 17pt
+            // (2pt größer als die vorige Variante), kräftig in Akzentfarbe.
+            if let nextPerson = verbformsSession.nextTargetPerson {
+                Text(nextPerson.promptLabel)
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .foregroundStyle(trainingActionTint)
+                    .padding(.top, 2)
+            } else {
+                Text("Alle Paare gefunden!")
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.success)
+                    .padding(.top, 2)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+
+        // Extra Raum zwischen Fragekarte und Grids
+        Spacer().frame(height: 10)
+
+        let pronounColumns = [
+            GridItem(.flexible(), spacing: 10),
+            GridItem(.flexible(), spacing: 10),
+            GridItem(.flexible(), spacing: 10)
+        ]
+
+        // Drag/Drop-Container: gemeinsamer coordinateSpace + Frame-Tracking
         VStack(spacing: 6) {
+            // Draggable pronouns (2×3) in gemischter Reihenfolge
+            LazyVGrid(columns: pronounColumns, spacing: 10) {
+                ForEach(verbformsSession.shuffledPronouns, id: \.self) { person in
+                    verbformsPronounChip(person: person)
+                }
+            }
+
+            // Drop-target forms (2×3) in separat gemischter Reihenfolge
+            LazyVGrid(columns: pronounColumns, spacing: 10) {
+                ForEach(verbformsSession.shuffledForms, id: \.self) { person in
+                    verbformsFormTarget(person: person, round: round)
+                }
+            }
+        }
+        .coordinateSpace(name: "verbformsMatchingArea")
+        .onPreferenceChange(VerbformsPronounFramePreferenceKey.self) { frames in
+            verbformsPronounFrames = frames
+        }
+        .onPreferenceChange(VerbformsFormFramePreferenceKey.self) { frames in
+            verbformsFormFrames = frames
+        }
+
+        // Weiter-Button bewusst NICHT hier — wird im verbformsSessionScreen
+        // nach dem Spacer gerendert, damit er garantiert UNTEN sitzt
+        // (zwischen Cards und Footer) und nicht von der Bottom-Bar überlagert wird.
+    }
+
+    // MARK: - Verbformen Round-Complete View
+
+    private var verbformsRoundCompleteView: some View {
+        VStack(spacing: 16) {
+            Spacer()
+
+            Image(systemName: "star.circle.fill")
+                .font(.system(size: 56, weight: .bold))
+                .foregroundStyle(AppTheme.Colors.warning)
+
+            Text("Runde \(verbformsSession.completedRound) geschafft!")
+                .font(.system(size: 26, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+
+            Text("\(verbformsSession.score) von \(verbformsSession.totalAsked) Zuordnungen richtig")
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+
+            Spacer()
+
+            Button {
+                feedbackPlayer.playStudySuccess()
+                verbformsSession.continueToNextRound()
+            } label: {
+                Text("Weiter \u{2192} Runde \(verbformsSession.completedRound + 1)")
+                    .font(AppTheme.Typography.button)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 56)
+                    .background(AppTheme.Colors.cta)
+                    .cornerRadius(AppTheme.Radius.md)
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                verbformsSession.finishTraining()
+            } label: {
+                Label("Fertig", systemImage: "checkmark")
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 44)
+            }
+            .buttonStyle(AppSecondaryButtonStyle(tint: AppTheme.Colors.textSecondary))
+
+            Spacer().frame(height: 8)
+        }
+    }
+
+    /// Pronomen-Chip als Drag-Source — manuelle DragGesture (kein Long-Press),
+    /// Quiz-Stil. Beim Drag-Update wird der Hover über Form-Karten live berechnet,
+    /// beim Drag-Ende erfolgt Drop-Validation via `verbformsFinishDrag`.
+    @ViewBuilder
+    private func verbformsPronounChip(person: VerbformsPerson) -> some View {
+        let isUsed = verbformsSession.usedPronouns.contains(person)
+        let tint = Self.verbformsPronounColor
+        let isDragging = verbformsDraggingPronoun == person
+
+        Text(person.label)
+            .font(.system(size: 16, weight: .bold, design: .rounded))
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 50)
+            .foregroundStyle(.white)
+            .background(tint)
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.Radius.md)
+                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
+            )
+            .contentShape(Rectangle())
+            .opacity(isUsed ? 0.0 : 1.0)
+            .scaleEffect(isDragging ? 1.05 : 1.0)
+            .shadow(color: isDragging ? tint.opacity(0.5) : .clear,
+                    radius: isDragging ? 12 : 0, x: 0, y: isDragging ? 6 : 0)
+            .offset(isDragging ? verbformsDragOffset : .zero)
+            .zIndex(isDragging ? 100 : 0)
+            .animation(.easeOut(duration: 0.25), value: isUsed)
+            .allowsHitTesting(!isUsed)
+            .background(
+                GeometryReader { geo in
+                    Color.clear.preference(
+                        key: VerbformsPronounFramePreferenceKey.self,
+                        value: [person: geo.frame(in: .named("verbformsMatchingArea"))]
+                    )
+                }
+            )
+            .gesture(
+                DragGesture(coordinateSpace: .named("verbformsMatchingArea"))
+                    .onChanged { value in
+                        guard !isUsed else { return }
+                        verbformsDraggingPronoun = person
+                        verbformsDragOffset = value.translation
+                        verbformsHoveredForm = verbformsHoveredFormPerson(for: person)
+                    }
+                    .onEnded { _ in
+                        guard !isUsed else { return }
+                        verbformsFinishDrag(for: person)
+                    }
+            )
+    }
+
+    /// Form-Karte als Drop-Target (manuelles Drop via Frame-Tracking, kein
+    /// `.dropDestination`). Default-Farbe Blau, Match → grün, Wrong-Flash → orange.
+    /// Wenn ein Pronomen-Drag die Karte überfährt, leichter Hover-Highlight.
+    @ViewBuilder
+    private func verbformsFormTarget(person: VerbformsPerson, round: VerbformsMatchingRound) -> some View {
+        let form = round.forms[person] ?? "?"
+        let isMatched = verbformsSession.matchedPersons.contains(person)
+        let isFlashWrong = verbformsSession.wrongFlashTarget == person
+        let isHovered = verbformsHoveredForm == person
+
+        let bg: Color = {
+            if isMatched { return AppTheme.Colors.success }
+            if isFlashWrong { return Color(red: 0.95, green: 0.55, blue: 0.15) }
+            return Self.verbformsFormColor
+        }()
+
+        VStack(spacing: 2) {
+            if isMatched {
+                Text(person.label)
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.9))
+            }
+            Text(form)
+                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .lineLimit(2)
+                .minimumScaleFactor(0.7)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(minHeight: 56)
+        .padding(.horizontal, 6)
+        .foregroundStyle(.white)
+        .background(bg)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.Radius.md)
+                .stroke(isHovered ? Color.white : Color.white.opacity(0.25),
+                        lineWidth: isHovered ? 2.5 : 1)
+        )
+        .scaleEffect(isHovered && !isMatched ? 1.05 : 1.0)
+        .animation(.easeInOut(duration: 0.18), value: isMatched)
+        .animation(.easeInOut(duration: 0.18), value: isFlashWrong)
+        .animation(.easeInOut(duration: 0.15), value: isHovered)
+        .background(
+            GeometryReader { geo in
+                Color.clear.preference(
+                    key: VerbformsFormFramePreferenceKey.self,
+                    value: [person: geo.frame(in: .named("verbformsMatchingArea"))]
+                )
+            }
+        )
+    }
+
+    // MARK: - Typing-Modus-Frage (alt: verbformsQuestionContent)
+
+    @ViewBuilder
+    private func verbformsTypingQuestionContent(question: VerbformsQuestion) -> some View {
+        // Verb card — Infinitiv + Übersetzung + Person/Zeit
+        VStack(spacing: 10) {
             Text(question.infinitive)
-                .font(.system(size: 32, weight: .black, design: .rounded))
+                .font(.system(size: 34, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
             if !question.translation.isEmpty {
-                Text(question.translation)
+                Text("(\(question.translation))")
                     .font(.system(size: 15, weight: .semibold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
             HStack(spacing: 8) {
+                Text(question.person.promptLabel)
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 5)
+                    .background(trainingActionTint)
+                    .clipShape(Capsule())
                 Text(question.tense.rawValue)
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
+                    .padding(.vertical, 5)
                     .background(AppTheme.Colors.secondarySurface)
                     .clipShape(Capsule())
-                Text("·")
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                Text(question.person.promptLabel)
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
-                    .foregroundStyle(trainingActionTint)
             }
-            .padding(.top, 4)
+            .padding(.top, 2)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
         .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
 
-        // Answer area
-        if verbformsSession.mode == .multipleChoice {
-            verbformsMCGrid(question: question)
-        } else {
-            verbformsTypingInput(question: question)
-        }
+        verbformsTypingInput(question: question)
 
-        // Next button (after correct answer, not in speed round) — centered in remaining space
         if verbformsSession.isLocked, !verbformsSession.isSpeedRound {
             Spacer(minLength: 8)
             Button {
@@ -613,55 +935,13 @@ extension TrainingView {
                     .font(AppTheme.Typography.button)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
-                    .frame(minHeight: 96)
+                    .frame(minHeight: 48)
                     .background(trainingActionTint)
                     .cornerRadius(AppTheme.Radius.md)
             }
             .buttonStyle(.plain)
             Spacer(minLength: 8)
         }
-    }
-
-    @ViewBuilder
-    private func verbformsMCGrid(question: VerbformsQuestion) -> some View {
-        let columns = [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)]
-        LazyVGrid(columns: columns, spacing: 8) {
-            ForEach(Array(verbformsSession.currentOptions.enumerated()), id: \.offset) { _, option in
-                let isTappable = !verbformsSession.isLocked && !verbformsSession.wrongOptions.contains(option.lowercased())
-                Button {
-                    guard isTappable else { return }
-                    feedbackPlayer.playTabSwitch()
-                    verbformsSession.submitMC(option)
-                    if option.lowercased() == question.correctAnswer.lowercased() {
-                        feedbackPlayer.playStudySuccess()
-                    } else {
-                        feedbackPlayer.playStudyError()
-                    }
-                } label: {
-                    Text(option)
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.7)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 48)
-                        .foregroundStyle(verbformsMCForeground(option, question: question))
-                        .background(verbformsMCBackground(option, question: question))
-                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
-                }
-                .buttonStyle(.plain)
-            }
-        }
-    }
-
-    private func verbformsMCForeground(_ option: String, question: VerbformsQuestion) -> Color {
-        .white
-    }
-
-    private func verbformsMCBackground(_ option: String, question: VerbformsQuestion) -> Color {
-        let lower = option.lowercased()
-        if verbformsSession.wrongOptions.contains(lower) { return Color(red: 0.95, green: 0.55, blue: 0.15) }
-        if verbformsSession.isLocked, lower == question.correctAnswer.lowercased() { return AppTheme.Colors.success }
-        return trainingActionTint
     }
 
     @ViewBuilder
@@ -705,15 +985,37 @@ extension TrainingView {
             if let result = verbformsSession.typingResult {
                 switch result {
                 case .correct:
-                    Text("Richtig!")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.success)
+                    if let question = verbformsSession.currentQuestion {
+                        // Volle Phrase als Bestätigung: „Richtig: je vais"
+                        let full = VerbformsEngine.fullConjugation(
+                            person: question.person,
+                            form: question.correctAnswer
+                        )
+                        Text("Richtig: \(full)")
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.success)
+                    } else {
+                        Text("Richtig!")
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.success)
+                    }
                 case .incorrect(let correctAnswer):
+                    // correctAnswer ist die kurze Form (z.B. „vais") — für
+                    // das Feedback rekonstruieren wir die volle Phrase.
+                    let fullCorrect: String = {
+                        guard let question = verbformsSession.currentQuestion else {
+                            return correctAnswer
+                        }
+                        return VerbformsEngine.fullConjugation(
+                            person: question.person,
+                            form: correctAnswer
+                        )
+                    }()
                     VStack(spacing: 4) {
-                        Text("Falsch")
+                        Text("Fast.")
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                             .foregroundStyle(Color(red: 0.9, green: 0.3, blue: 0.15))
-                        Text("Richtig: \(correctAnswer)")
+                        Text("Die richtige Form ist: \(fullCorrect)")
                             .font(.system(size: 15, weight: .semibold, design: .rounded))
                             .foregroundStyle(AppTheme.Colors.textSecondary)
                     }
@@ -830,8 +1132,44 @@ extension TrainingView {
 
     // MARK: - Verbformen Start
 
+    /// Zentrale Lemma-Quelle für Verbformen — nutzt dieselbe Analyse-Pipeline wie
+    /// „Verben trainieren" (FrenchListStatisticsAggregator.verbLemmas).
+    /// Damit: gleiche Liste → gleiche Verb-Basis in beiden Modulen.
+    /// Liefert Lemmas inkl. reflexiver Form („s'appeler", „se lever").
+    func verbformsLemmasFromSelectedLists() -> [String] {
+        let selectedIDs = session.selectedTrainingListIDs
+        guard !selectedIDs.isEmpty else { return [] }
+        let lists = availableTrainingLists.filter { selectedIDs.contains($0.id) }
+        let items = lists.flatMap(\.items)
+            .filter { $0.sourceLanguage == selectedAppDirection.sourceLanguage }
+        let stats = FrenchListStatisticsAggregator.cachedStatistics(for: items)
+        return stats.verbLemmas
+    }
+
+    /// Kann Verbformen mit der aktuellen Listen-Auswahl gestartet werden?
+    var verbformsCanStart: Bool {
+        let lemmas = verbformsLemmasFromSelectedLists()
+        return !lemmas.isEmpty && !verbformsSession.availableTenses.isEmpty
+    }
+
+    /// Hilfetext, der erklärt, warum nicht gestartet werden kann.
+    var verbformsStartHint: String {
+        if session.selectedTrainingListIDs.isEmpty {
+            return "Wähle zuerst eine Liste aus."
+        }
+        let lemmas = verbformsLemmasFromSelectedLists()
+        if lemmas.isEmpty {
+            return "In der gewählten Liste wurden keine Verben erkannt."
+        }
+        if verbformsSession.availableTenses.isEmpty {
+            return "Für die erkannten Verben sind noch keine Konjugationsformen verfügbar."
+        }
+        return ""
+    }
+
     func loadVerbformsAvailableTenses() {
-        let inflections = VerbformsEngine.loadAllInflections(limit: 100)
+        let lemmas = verbformsLemmasFromSelectedLists()
+        let inflections = lemmas.isEmpty ? [] : VerbformsEngine.loadInflections(forLemmas: lemmas)
         verbformsSession.availableTenses = VerbformsEngine.availableTenses(in: inflections)
         // Auto-select only available tenses
         verbformsSession.selectedTenses = verbformsSession.selectedTenses.intersection(verbformsSession.availableTenses)
@@ -841,22 +1179,55 @@ extension TrainingView {
     }
 
     func startVerbformsTraining() {
-        let allInflections = VerbformsEngine.loadAllInflections(limit: 200)
+        // Verben aus den gewählten Listen holen (via Analyse-Pipeline, konsistent
+        // mit „Verben trainieren"). Reflexive Lemmas werden im Engine-Lookup
+        // auf ihre konjugierte Reflexiv-Form expandiert.
+        let lemmas = verbformsLemmasFromSelectedLists()
+        guard !lemmas.isEmpty else { return }
+
+        let allInflections = VerbformsEngine.loadInflections(forLemmas: lemmas)
         guard !allInflections.isEmpty else { return }
 
         verbformsSession.availableTenses = VerbformsEngine.availableTenses(in: allInflections)
         let isSpeed = session.isSpeedRound
-        let questionCount = isSpeed ? 5 : 20
         let selectedTenses = verbformsSession.selectedTenses.intersection(verbformsSession.availableTenses)
         guard !selectedTenses.isEmpty else { return }
-        let questions = VerbformsEngine.generateQuestions(from: allInflections, tenses: selectedTenses, count: questionCount)
-        guard !questions.isEmpty else { return }
+
+        // Modus-Weiche: MC-Modus = Drag&Drop-Matching-Runden (6 Paare pro Verb);
+        // Typing-Modus = klassische Einzelfragen (1 Person pro Karte).
+        let isMatching = (verbformsSession.mode == .multipleChoice)
+
+        let matchingCount = isSpeed ? 10 : 8
+        let questionCount = isSpeed ? 30 : 20
+
+        let matchingRounds: [VerbformsMatchingRound]
+        let questions: [VerbformsQuestion]
+        if isMatching {
+            matchingRounds = VerbformsEngine.generateMatchingRounds(
+                from: allInflections, tenses: selectedTenses, count: matchingCount
+            )
+            questions = []
+            guard !matchingRounds.isEmpty else { return }
+        } else {
+            matchingRounds = []
+            questions = VerbformsEngine.generateQuestions(
+                from: allInflections, tenses: selectedTenses, count: questionCount
+            )
+            guard !questions.isEmpty else { return }
+        }
 
         feedbackPlayer.playTabSwitch()
 
+        let startSession: () -> Void = {
+            if isMatching {
+                verbformsSession.startMatching(with: matchingRounds, inflections: allInflections, speedRound: isSpeed)
+            } else {
+                verbformsSession.start(with: questions, inflections: allInflections, speedRound: isSpeed)
+            }
+        }
+
         if isSpeed {
-            // Show session screen with 3-2-1 countdown overlay, then start timer
-            verbformsSession.start(with: questions, inflections: allInflections, speedRound: true)
+            startSession()
             verbformsCountdown = 3
             feedbackPlayer.playToggle()
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [self] in
@@ -876,7 +1247,7 @@ extension TrainingView {
                 }
             }
         } else {
-            verbformsSession.start(with: questions, inflections: allInflections, speedRound: false)
+            startSession()
         }
     }
 
@@ -913,6 +1284,20 @@ extension TrainingView {
             }
             .onChange(of: session.selectedTrainingListID) { _, _ in
                 handleTrainingListChange()
+            }
+            .onChange(of: session.selectedTrainingListIDs) { _, _ in
+                // Verfügbare Zeiten für Verbformen hängen direkt an der gewählten Liste
+                if isVerbformsMode { loadVerbformsAvailableTenses() }
+            }
+            .onChange(of: session.currentTrainingItem) { _, newItem in
+                // Pragmatischer Fix gegen „Lösungswort fehlt in Runde 2":
+                // Sobald sich die aktuelle Trainingskarte ändert, im Verben-MC
+                // die Optionen (Lösung + frische Distraktoren) KOMPLETT neu
+                // aufbauen und die Selection/Lock-State zurücksetzen.
+                guard isVerbMode, newItem != nil else { return }
+                verbMCSelected = nil
+                verbMCLocked = false
+                prepareVerbMCOptions()
             }
             .onChange(of: session.selectedDictionaryLearningLevel) { _, _ in
                 handleDictionaryLearningLevelChange()

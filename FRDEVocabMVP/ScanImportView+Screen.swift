@@ -9,16 +9,28 @@ struct ReviewPairEditSheet: View {
     @Environment(\.dismiss) var dismiss
     @State var french: String
     @State var german: String
-    let onSave: (String, String) -> Void
+    @State var wordClass: String
+    let onSave: (String, String, String?) -> Void
+
+    private let wordClassOptions: [(key: String, label: String)] = [
+        ("noun", "Nomen"),
+        ("verb", "Verb"),
+        ("adjective", "Adjektiv"),
+        ("adverb", "Adverb"),
+        ("preposition", "Pr\u{00E4}position"),
+        ("pronoun", "Pronomen"),
+        ("conjunction", "Konjunktion"),
+        ("", "Andere"),
+    ]
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Französisch")
+                    Text("Franz\u{00F6}sisch")
                         .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
-                    TextField("Französisch", text: $french)
+                    TextField("Franz\u{00F6}sisch", text: $french)
                         .font(.system(size: 17, weight: .semibold, design: .rounded))
                         .textFieldStyle(.roundedBorder)
                 }
@@ -29,6 +41,29 @@ struct ReviewPairEditSheet: View {
                     TextField("Deutsch", text: $german)
                         .font(.system(size: 17, weight: .semibold, design: .rounded))
                         .textFieldStyle(.roundedBorder)
+                }
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Wortart")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 6) {
+                            ForEach(wordClassOptions, id: \.key) { option in
+                                Button {
+                                    wordClass = option.key
+                                } label: {
+                                    Text(option.label)
+                                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 7)
+                                        .foregroundStyle(wordClass == option.key ? .white : AppTheme.Colors.textPrimary)
+                                        .background(wordClass == option.key ? AppTheme.Colors.primary : AppTheme.Colors.secondarySurface)
+                                        .clipShape(Capsule())
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
                 }
                 Spacer()
             }
@@ -41,7 +76,7 @@ struct ReviewPairEditSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Speichern") {
-                        onSave(french, german)
+                        onSave(french, german, wordClass.isEmpty ? nil : wordClass)
                     }
                     .bold()
                     .disabled(french.trimmingCharacters(in: .whitespaces).isEmpty || german.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -94,10 +129,19 @@ extension ScanImportView {
                             }
 
                             VStack(alignment: .leading, spacing: 3) {
-                                Text(pair.french)
-                                    .font(.system(size: 15, weight: .bold, design: .rounded))
-                                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                                    .lineLimit(2)
+                                HStack(spacing: 6) {
+                                    Text(pair.french)
+                                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                                        .lineLimit(2)
+                                    Text(reviewWordClassLabel(for: pair))
+                                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                                        .foregroundStyle(reviewWordClassColor(for: pair))
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(reviewWordClassColor(for: pair).opacity(0.15))
+                                        .clipShape(Capsule())
+                                }
                                 Text(pair.german)
                                     .font(.system(size: 14, weight: .medium, design: .rounded))
                                     .foregroundStyle(pair.isImportable ? AppTheme.Colors.textSecondary : AppTheme.Colors.warning)
@@ -194,8 +238,9 @@ extension ScanImportView {
             if let index = previewPairs.firstIndex(where: { $0.id == wrapper.id }) {
                 ReviewPairEditSheet(
                     french: previewPairs[index].french,
-                    german: previewPairs[index].german
-                ) { newFrench, newGerman in
+                    german: previewPairs[index].german,
+                    wordClass: resolvedWordClass(for: previewPairs[index]) ?? ""
+                ) { newFrench, newGerman, newWordClass in
                     previewPairs[index] = ImportPreviewPair(
                         id: previewPairs[index].id,
                         french: newFrench,
@@ -204,7 +249,8 @@ extension ScanImportView {
                         learningCategory: previewPairs[index].learningCategory,
                         note: previewPairs[index].note,
                         isImportable: true,
-                        isReviewed: true
+                        isReviewed: true,
+                        wordClass: newWordClass
                     )
                     reviewEditingPairID = nil
                 }
@@ -216,18 +262,73 @@ extension ScanImportView {
         previewPairs.filter { !$0.isImportable }.count
     }
 
+    /// Didactic word class overrides for common words misclassified in DB
+    private static let wordClassOverrides: [String: String] = [
+        // Interjektionen
+        "voil\u{00E0}": "interjection", "voila": "interjection",
+        "merci": "interjection", "salut": "interjection",
+        "bonjour": "interjection", "bonsoir": "interjection",
+        "bravo": "interjection", "h\u{00E9}las": "interjection",
+        "oui": "interjection", "non": "interjection",
+        "pardon": "interjection", "attention": "interjection",
+        // Adverbien
+        "l\u{00E0}": "adverb",
+        "ici": "adverb", "comment": "adverb",
+        "bien": "adverb", "mal": "adverb",
+        "tr\u{00E8}s": "adverb", "tres": "adverb",
+        "aussi": "adverb", "encore": "adverb",
+        "toujours": "adverb", "jamais": "adverb",
+        "d\u{00E9}j\u{00E0}": "adverb", "deja": "adverb",
+        "beaucoup": "adverb", "peu": "adverb",
+        "da": "adverb",
+        // Präpositionen
+        "de": "preposition",
+        // Artikel
+        "le/la": "article", "le / la": "article",
+        // Phrasen (feste Ausdrücke)
+        "c'est": "phrase", "ce sont": "phrase",
+        "il y a": "phrase", "s'il vous pla\u{00EE}t": "phrase",
+        "s'il te pla\u{00EE}t": "phrase",
+    ]
+
+    /// French stopwords that should be skipped in word-by-word lookup
+    private static let frenchStopwords: Set<String> = [
+        "le", "la", "les", "l", "un", "une", "des", "du", "d",
+        "je", "tu", "il", "elle", "on", "nous", "vous", "ils", "elles",
+        "me", "te", "se", "ce", "c", "ne", "pas", "n", "y", "en",
+        "et", "ou", "mais", "que", "qui", "est", "a", "au", "aux",
+        "mon", "ma", "mes", "ton", "ta", "tes", "son", "sa", "ses",
+        "notre", "votre", "leur", "leurs",
+    ]
+
+    /// Wortart eines ImportPreviewPair — delegiert an die zentrale FrenchEntryAnalyzer-Pipeline.
+    /// Ergebnis ist konsistent mit Listen-Detail, Wörterbuch und Training.
+    /// Nutzer-gesetzte `pair.wordClass` hat Vorrang.
     private func resolvedWordClass(for pair: ImportPreviewPair) -> String? {
         if let wc = pair.wordClass, !wc.isEmpty { return wc }
-        // Try full text first
-        if let wc = StandardVocabularyLoader.wordClass(for: pair.french) { return wc }
-        // For phrases: check individual words
-        let words = pair.french.split(separator: " ").map(String.init)
-        if words.count > 1 {
-            for word in words {
-                if let wc = StandardVocabularyLoader.wordClass(for: word) { return wc }
+
+        let result = FrenchListStatisticsAggregator.cachedAnalyze(pair.french)
+        // Sonderkategorien (interjection, presentationWord, particle, formulaic):
+        // strukturiert in eigener Achse, hier auf String mappen für Display-Konsistenz.
+        if let special = result.specialCategory {
+            switch special {
+            case .interjection, .presentationWord: return "interjection"
+            case .particle:                        return "particle"
+            case .formulaic:                       return "phrase"
+            case .other:                           return "other"
             }
         }
-        return nil
+        switch result.primaryPos {
+        case .verb:      return "verb"
+        case .noun:      return "noun"
+        case .adjective: return "adjective"
+        case .adverb:    return "adverb"
+        case .phrase:    return "phrase"
+        case .sentence:  return "phrase"
+        case .unknown:
+            // Direct DB lookup fallback (Pronomen, Konjunktion etc.)
+            return result.directWordClass
+        }
     }
 
     var batchCompleteSummary: some View {
@@ -235,7 +336,7 @@ extension ScanImportView {
         let totalPairs = previewPairs.count
         let unsureCount = scanResultUnsureCount
 
-        // Word class counts — check wordClass, then individual words via inflection DB
+        // Word class counts — uses resolvedWordClass (with stopword filter)
         var nounCount = 0
         var verbCount = 0
         var adjCount = 0
@@ -244,17 +345,6 @@ extension ScanImportView {
             if wc == "noun" { nounCount += 1 }
             else if wc == "verb" { verbCount += 1 }
             else if wc == "adjective" { adjCount += 1 }
-            else {
-                // Fallback: check if any word in the french text is a known verb/noun/adj
-                let words = pair.french.lowercased()
-                    .replacingOccurrences(of: "'", with: " ")
-                    .replacingOccurrences(of: "\u{2019}", with: " ")
-                    .split(separator: " ").map(String.init)
-                let detectedWC = words.compactMap { StandardVocabularyLoader.wordClass(for: $0) }.first
-                if detectedWC == "verb" { verbCount += 1 }
-                else if detectedWC == "noun" { nounCount += 1 }
-                else if detectedWC == "adjective" { adjCount += 1 }
-            }
         }
         let otherCount = totalPairs - nounCount - verbCount - adjCount
 
@@ -338,6 +428,63 @@ extension ScanImportView {
                         .stroke(AppTheme.Colors.success.opacity(0.3), lineWidth: 1.5)
                 )
         )
+    }
+
+    private func reviewWordClassLabel(for pair: ImportPreviewPair) -> String {
+        let wc = resolvedWordClass(for: pair)
+        if wc == nil && pair.cardType == .phrases { return "Phrase" }
+        switch wc {
+        case "noun": return "Nomen"
+        case "verb":
+            if let inf = resolvedInfinitive(for: pair) {
+                return "Verb (\(inf))"
+            }
+            return "Verb"
+        case "adjective": return "Adjektiv"
+        case "adverb": return "Adverb"
+        case "preposition": return "Pr\u{00E4}position"
+        case "conjunction": return "Konjunktion"
+        case "pronoun": return "Pronomen"
+        case "interjection": return "Interjektion"
+        case "phrase": return "Phrase"
+        case "article": return "Artikel"
+        default: return "Wort"
+        }
+    }
+
+    /// Find the infinitive for a scan entry — checks individual words
+    private func resolvedInfinitive(for pair: ImportPreviewPair) -> String? {
+        let french = pair.french.lowercased()
+        // Direct lookup
+        if let inf = StandardVocabularyLoader.infinitive(for: french) { return inf }
+        // Word-by-word (skip stopwords)
+        let words = french
+            .replacingOccurrences(of: "'", with: " ")
+            .replacingOccurrences(of: "\u{2019}", with: " ")
+            .split(separator: " ").map(String.init)
+            .filter { !Self.frenchStopwords.contains($0) && $0.count > 1 }
+        for word in words {
+            if let inf = StandardVocabularyLoader.infinitive(for: word) { return inf }
+        }
+        return nil
+    }
+
+    private func reviewWordClassColor(for pair: ImportPreviewPair) -> Color {
+        let wc = resolvedWordClass(for: pair)
+        if wc == nil && pair.cardType == .phrases { return AppTheme.Colors.textSecondary }
+        return Self.wordClassColor(wc)
+    }
+
+    static func wordClassColor(_ wc: String?) -> Color {
+        switch wc {
+        case "noun": return AppTheme.Colors.moduleNomen
+        case "verb": return AppTheme.Colors.moduleVerbs
+        case "adjective": return AppTheme.Colors.moduleQuiz
+        case "adverb": return AppTheme.Colors.modulePractice
+        case "preposition", "conjunction": return AppTheme.Colors.moduleScan
+        case "interjection": return AppTheme.Colors.warning
+        default: return AppTheme.Colors.textSecondary
+        }
     }
 
     private func wordClassBadge(count: Int, label: String, color: Color) -> some View {

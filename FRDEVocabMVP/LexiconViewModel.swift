@@ -13,6 +13,11 @@ struct PreparedLexiconEntry: Identifiable {
     let targetVariants: [String]
     let sourceSearchKey: String
     let targetSearchKey: String
+    /// Bester Match-Rang der Gruppe (0 = exakter Treffer, höher = weniger gut).
+    /// Wird für die App-weite Ergebnis-Sortierung verwendet:
+    /// exakte Treffer („Straße" bei Suche „strasse") kommen VOR Compound-Wörtern
+    /// („Straßenbahn") und Phrasen („donne sur la rue").
+    let matchRank: Int
 
     /// Grouped translations by word class
     var nounTranslations: [String] {

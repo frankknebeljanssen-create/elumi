@@ -155,7 +155,7 @@ enum SupplementalFreeDictLexicon {
         return loadedEntries
     }
 
-    static func searchLexiconEntries(matching query: String, limit: Int = 80) -> [LexiconEntry] {
+    static func searchLexiconEntries(matching query: String, limit: Int = 250) -> [LexiconEntry] {
         let normalizedQuery = normalizedLookupText(query)
         let compactQuery = compactLookupKey(query)
         guard !normalizedQuery.isEmpty else { return [] }

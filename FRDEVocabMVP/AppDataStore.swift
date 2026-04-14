@@ -73,7 +73,7 @@ struct DataStore {
     static func searchLexiconEntries(
         query: String,
         curatedEntries: [LexiconEntry],
-        supplementLimit: Int = 80
+        supplementLimit: Int = 250
     ) -> [LexiconEntry] {
         DataStoreLexiconSupport.searchLexiconEntries(
             query: query,

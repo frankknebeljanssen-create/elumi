@@ -86,18 +86,41 @@ extension TrainingView {
             return
         }
         let isFRtoDe = selectedAppDirection == .frenchToGerman || selectedAppDirection == .englishToGerman
-        let correctAnswer = (isFRtoDe ? item.german : item.french).lowercased()
-
+        // WICHTIG: Original-Schreibweise beibehalten (Nomen-Großschreibung etc.).
+        // Vergleich läuft per .lowercased() — Anzeige bleibt aber kapitalisiert.
+        let correctAnswer = (isFRtoDe ? item.german : item.french)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !correctAnswer.isEmpty else {
+            verbMCOptions = []
+            return
+        }
+        let correctKey = correctAnswer.lowercased()
         let isAnswerGerman = isFRtoDe
-        let allVerbOptions = StandardVocabularyLoader.allEntries
+
+        // Verb-Training trainiert NUR Infinitive (siehe activeItems Filter in
+        // TrainingSessionController+DictionarySelection). Distraktoren sind also
+        // ebenfalls Infinitive — same form as correct answer.
+        let allVerbOptions: [String] = StandardVocabularyLoader.allEntries
             .filter { $0.wordClass == "verb" && !$0.target.isEmpty && !$0.sourceDisplay.isEmpty }
-            .map { (isAnswerGerman ? $0.target : $0.sourceDisplay).lowercased() }
+            .map { isAnswerGerman ? $0.target : $0.sourceDisplay }
 
-        let pool = Array(Set(allVerbOptions.filter { $0 != correctAnswer }))
-        let shuffled = pool.shuffled()
-        let distractors = Array(shuffled.prefix(7))
+        // Dedup case-insensitive, schließe correctAnswer aus (nur ein Treffer in options)
+        var seenKeys: Set<String> = [correctKey]
+        var pool: [String] = []
+        for candidate in allVerbOptions {
+            let k = candidate.lowercased()
+            if seenKeys.contains(k) { continue }
+            seenKeys.insert(k)
+            pool.append(candidate)
+        }
 
+        let distractors = Array(pool.shuffled().prefix(7))
         var options = [correctAnswer] + distractors
+        // SAFETY: garantiert, dass correctAnswer IMMER in den Optionen enthalten ist
+        // (schützt vor Edge-Cases, z.B. leerem Pool).
+        if !options.contains(where: { $0.lowercased() == correctKey }) {
+            options.append(correctAnswer)
+        }
         options.shuffle()
         verbMCOptions = options
     }

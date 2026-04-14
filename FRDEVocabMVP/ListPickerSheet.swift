@@ -9,8 +9,14 @@ struct ListPickerSheet: View {
     let onDelete: (VocabularyList) -> Void
     var onView: ((VocabularyList) -> Void)? = nil
     var onRename: ((VocabularyList) -> Void)? = nil
+    var onMerge: ((VocabularyList, VocabularyList) -> Void)? = nil // (source, target)
+    /// Optionaler Footer (Standard-AppBottomBar). Nur anzeigen wenn feedbackPlayer + onHome geliefert.
+    var feedbackPlayer: FeedbackPlayer? = nil
+    var onHome: (() -> Void)? = nil
+    var onSettings: (() -> Void)? = nil
 
     @State private var listPendingDeletion: VocabularyList?
+    @State private var listPendingMerge: VocabularyList?
     @State private var localSelectedID: UUID?
 
     private var displayedLists: [VocabularyList] {
@@ -92,9 +98,13 @@ struct ListPickerSheet: View {
                         ForEach(topicLists) { list in listRow(list) }
                     }
 
-                    Spacer().frame(height: 12)
-                    sectionHeader("📖 Komplettes Wörterbuch")
-                    ForEach(dictionaryLists) { list in listRow(list) }
+                    // „Komplettes Wörterbuch" nur zeigen, wenn es solche Listen
+                    // im aktuellen Filter-Ausschnitt überhaupt gibt.
+                    if !dictionaryLists.isEmpty {
+                        Spacer().frame(height: 12)
+                        sectionHeader("📖 Komplettes Wörterbuch")
+                        ForEach(dictionaryLists) { list in listRow(list) }
+                    }
                 }
             }
 
@@ -105,6 +115,23 @@ struct ListPickerSheet: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .tint(style.accent)
         .appScreenBackground(style)
+        // Footer als korrekter Local-Chrome-BottomBar (mit Safe-Area + Surface-Modifier).
+        // Nur sichtbar, wenn Aufrufer feedbackPlayer + onHome injiziert.
+        .appLocalChrome(enabled: feedbackPlayer != nil && onHome != nil) {
+            EmptyView()
+        } bottomBar: {
+            if let player = feedbackPlayer, let homeAction = onHome {
+                AppBottomBar(
+                    feedbackPlayer: player,
+                    onHome: { dismiss(); homeAction() },
+                    onFavorite: nil,
+                    onScan: nil,
+                    onSettings: onSettings.map { settingsAction in
+                        { dismiss(); settingsAction() }
+                    }
+                )
+            }
+        }
         .onAppear { localSelectedID = selectedListID }
         .alert("Wirklich löschen?", isPresented: Binding(
             get: { listPendingDeletion != nil },
@@ -122,6 +149,69 @@ struct ListPickerSheet: View {
         } message: {
             Text(listPendingDeletion.map { "„\($0.name)“ wird gelöscht." } ?? "")
         }
+        .sheet(item: $listPendingMerge) { sourceList in
+            mergeTargetPicker(source: sourceList)
+        }
+    }
+
+    private func mergeTargetPicker(source: VocabularyList) -> some View {
+        let targets = lists.filter { !$0.isBuiltIn && $0.id != source.id && !$0.isAggregateVocabulary }
+
+        return VStack(spacing: AppTheme.Spacing.md) {
+            AppSheetHeader(
+                title: "Zusammenf\u{00FC}hren",
+                trailingTitle: "",
+                leadingTint: style.accent,
+                trailingTint: style.accent,
+                onLeading: { listPendingMerge = nil },
+                onTrailing: {}
+            )
+
+            Text("\(source.name) zusammenf\u{00FC}hren mit:")
+                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            ScrollView {
+                VStack(spacing: 6) {
+                    ForEach(targets) { target in
+                        Button {
+                            onMerge?(source, target)
+                            listPendingMerge = nil
+                        } label: {
+                            HStack(spacing: 12) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(target.name)
+                                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                                    Text("\(target.items.count) Eintr\u{00E4}ge")
+                                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                                }
+                                Spacer()
+                                Image(systemName: "plus.circle")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundStyle(style.accent)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .appCardBackground(style, intensity: 0.05, cornerRadius: 16)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+
+            if targets.isEmpty {
+                Text("Keine andere eigene Liste vorhanden.")
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(AppLayout.screenPadding)
+        .appScreenBackground(style)
     }
 
     // MARK: - Grouped Lists
@@ -149,12 +239,17 @@ struct ListPickerSheet: View {
     }
 
     private func sectionHeader(_ title: String) -> some View {
-        Text(title)
-            .font(.system(size: 13, weight: .bold, design: .rounded))
-            .foregroundStyle(AppTheme.Colors.textSecondary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.top, 12)
-            .padding(.bottom, 2)
+        VStack(spacing: 8) {
+            Rectangle()
+                .fill(AppTheme.Colors.border)
+                .frame(height: 1.5)
+            Text(title)
+                .font(.system(size: 18, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.top, 18)
+        .padding(.bottom, 6)
     }
 
     private func listRow(_ list: VocabularyList) -> some View {
@@ -165,7 +260,7 @@ struct ListPickerSheet: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Text(list.name)
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
                             .foregroundStyle(AppTheme.Colors.textPrimary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
@@ -174,7 +269,7 @@ struct ListPickerSheet: View {
                                 onRename?(list)
                             } label: {
                                 Image(systemName: "pencil")
-                                    .font(.system(size: 13, weight: .semibold))
+                                    .font(.system(size: 18, weight: .semibold))
                                     .foregroundStyle(style.accent.opacity(0.6))
                             }
                             .buttonStyle(.plain)
@@ -197,7 +292,19 @@ struct ListPickerSheet: View {
                             onView?(list)
                         } label: {
                             Image(systemName: "eye")
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.system(size: 19, weight: .semibold))
+                                .foregroundStyle(style.accent.opacity(0.7))
+                                .frame(width: 32, height: 32)
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    if onMerge != nil {
+                        Button {
+                            listPendingMerge = list
+                        } label: {
+                            Image(systemName: "plus.circle")
+                                .font(.system(size: 19, weight: .semibold))
                                 .foregroundStyle(style.accent.opacity(0.7))
                                 .frame(width: 32, height: 32)
                         }
@@ -208,18 +315,8 @@ struct ListPickerSheet: View {
                         listPendingDeletion = list
                     } label: {
                         Image(systemName: "trash")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.system(size: 19, weight: .semibold))
                             .foregroundStyle(AppTheme.Colors.error.opacity(0.7))
-                            .frame(width: 32, height: 32)
-                    }
-                    .buttonStyle(.plain)
-                } else if onView != nil {
-                    Button {
-                        onView?(list)
-                    } label: {
-                        Image(systemName: "eye")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(style.accent.opacity(0.7))
                             .frame(width: 32, height: 32)
                     }
                     .buttonStyle(.plain)
@@ -241,60 +338,22 @@ struct ListPickerSheet: View {
     }
 
     private func wordClassBreakdownText(for list: VocabularyList) -> some View {
-        let items = list.items
-        var nouns = 0
-        var verbs = 0
-        var adj = 0
-        for item in items {
-            // 1. Stored wordClass
-            if let wc = item.wordClass, !wc.isEmpty {
-                if wc == "noun" { nouns += 1 }
-                else if wc == "verb" { verbs += 1 }
-                else if wc == "adjective" { adj += 1 }
-                continue
-            }
-            // 2. Lookup full term
-            if let wc = StandardVocabularyLoader.wordClass(for: item.french) {
-                if wc == "noun" { nouns += 1 }
-                else if wc == "verb" { verbs += 1 }
-                else if wc == "adjective" { adj += 1 }
-                continue
-            }
-            // 3. Fallback: check individual words (for phrases like "je ne sais pas")
-            let words = item.french.lowercased()
-                .replacingOccurrences(of: "'", with: " ")
-                .replacingOccurrences(of: "\u{2019}", with: " ")
-                .split(separator: " ").map(String.init)
-            if let wc = words.compactMap({ StandardVocabularyLoader.wordClass(for: $0) }).first {
-                if wc == "noun" { nouns += 1 }
-                else if wc == "verb" { verbs += 1 }
-                else if wc == "adjective" { adj += 1 }
-            }
-        }
-
-        let other = items.count - nouns - verbs - adj
-        var line1Parts: [String] = []
-        if nouns > 0 { line1Parts.append("\(nouns) Nomen") }
-        if verbs > 0 { line1Parts.append("\(verbs) Verben") }
-        var line2Parts: [String] = []
-        if adj > 0 { line2Parts.append("\(adj) Adjektive") }
-        if other > 0 { line2Parts.append("\(other) Andere") }
-
-        let allParts = line1Parts + line2Parts
-
+        // Zentraler Aggregator — eine Quelle für Listen-Statistik überall in der App.
+        let stats = FrenchListStatisticsAggregator.cachedStatistics(for: list.items)
+        let breakdown = FrenchLemmaFormatter.twoLineBreakdown(from: stats)
         return VStack(alignment: .leading, spacing: 1) {
-            if allParts.isEmpty {
-                Text("\(items.count) Eintr\u{00E4}ge")
+            if breakdown.line1.isEmpty && breakdown.line2.isEmpty {
+                Text("\(list.items.count) Eintr\u{00E4}ge")
                     .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             } else {
-                if !line1Parts.isEmpty {
-                    Text(line1Parts.joined(separator: " \u{00B7} "))
+                if !breakdown.line1.isEmpty {
+                    Text(breakdown.line1)
                         .font(.system(size: 12, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
-                if !line2Parts.isEmpty {
-                    Text(line2Parts.joined(separator: " \u{00B7} "))
+                if !breakdown.line2.isEmpty {
+                    Text(breakdown.line2)
                         .font(.system(size: 12, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }

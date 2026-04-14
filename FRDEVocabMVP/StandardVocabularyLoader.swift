@@ -81,29 +81,62 @@ enum StandardVocabularyLoader {
     }()
 
     /// Fast lookup: is this French word a verb? (includes conjugated forms)
+    /// Respektiert `wordClassOverrides` — „voilà" zählt z.\u{00A0}B. NICHT als Verb.
     static func isVerb(_ frenchText: String) -> Bool {
         let key = frenchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        if let override = wordClassOverrides[key] { return override == "verb" }
         if verbSet.contains(key) { return true }
+        if wordClassMap[key] == "verb" { return true }
         return inflectionWordClassMap[key] == "verb"
     }
 
-    /// Fast lookup set of French nouns (lowercase)
+    /// Fast lookup set of French nouns (lowercase, includes article-stripped + accent-stripped)
     static let nounSet: Set<String> = {
-        Set(allEntries.filter { $0.wordClass == "noun" }.map { $0.sourceDisplay.lowercased() })
+        var set = Set<String>()
+        for entry in allEntries where entry.wordClass == "noun" {
+            let lower = entry.sourceDisplay.lowercased()
+            set.insert(lower)
+            let stripped = strippedArticle(lower)
+            if stripped != lower {
+                set.insert(stripped)
+                let accentStripped = stripDiacritics(stripped)
+                if accentStripped != stripped { set.insert(accentStripped) }
+            }
+        }
+        return set
     }()
 
     /// Fast lookup: is this French word a noun? (includes plural forms)
     static func isNoun(_ frenchText: String) -> Bool {
         let key = frenchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         if nounSet.contains(key) { return true }
+        if wordClassMap[key] == "noun" { return true }
         return inflectionWordClassMap[key] == "noun"
     }
 
+    /// Strip diacritics: é→e, ç→c, etc.
+    private static func stripDiacritics(_ text: String) -> String {
+        text.folding(options: .diacriticInsensitive, locale: .current)
+    }
+
     /// Fast lookup: word class for a French term (lowercase key → word class)
+    /// Includes full lemma, article-stripped, AND accent-stripped versions
     static let wordClassMap: [String: String] = {
         var map: [String: String] = [:]
         for entry in allEntries where !entry.wordClass.isEmpty {
-            map[entry.sourceDisplay.lowercased()] = entry.wordClass
+            let key = entry.sourceDisplay.lowercased()
+            map[key] = entry.wordClass
+            // Article-stripped: "la maison" → "maison"
+            let stripped = strippedArticle(key)
+            if stripped != key {
+                map[stripped] = entry.wordClass
+                // Also accent-strip the article-stripped version: "garçon" → "garcon"
+                let accentStripped = stripDiacritics(stripped)
+                if accentStripped != stripped { map[accentStripped] = entry.wordClass }
+            }
+            // Accent-stripped full key: "le garçon" → "le garcon"
+            let accentStripped = stripDiacritics(key)
+            if accentStripped != key { map[accentStripped] = entry.wordClass }
         }
         return map
     }()
@@ -126,10 +159,16 @@ enum StandardVocabularyLoader {
                 let form = sqlite3_column_text(stmt, 0).map { String(cString: $0) } ?? ""
                 let wc = sqlite3_column_text(stmt, 1).map { String(cString: $0) } ?? ""
                 guard !form.isEmpty, !wc.isEmpty else { continue }
-                // Store individual words from the form (e.g. "je suis" → "suis")
-                let words = form.lowercased().split(separator: " ")
-                if let lastWord = words.last, words.count <= 2 {
-                    map[String(lastWord)] = wc
+                let lower = form.lowercased()
+                // Store bare form (no spaces = single word like "maisons", "sais")
+                if !lower.contains(" ") {
+                    map[lower] = wc
+                } else {
+                    // Multi-word: store last word (e.g. "je suis" → "suis")
+                    if let lastWord = lower.split(separator: " ").last {
+                        let lastStr = String(lastWord)
+                        if map[lastStr] == nil { map[lastStr] = wc }
+                    }
                 }
             }
             return true
@@ -137,15 +176,197 @@ enum StandardVocabularyLoader {
         return map
     }()
 
-    /// Lookup word class for a French term — returns "noun", "verb", etc. or nil
+    /// Inflection form → infinitive map (lazy loaded from SQLite)
+    static let inflectionInfinitiveMap: [String: String] = {
+        var map: [String: String] = [:]
+        _ = SupplementalFreeDictLexicon.withReadOnlyDatabase { database -> Bool in
+            let sql = """
+                SELECT DISTINCT f.form, e.lemma_fr
+                FROM forms f
+                JOIN entries e ON f.entry_id = e.entry_id
+                WHERE f.form_type = 'inflection' AND e.word_class = 'verb'
+                """
+            var statement: OpaquePointer?
+            guard sqlite3_prepare_v2(database, sql, -1, &statement, nil) == SQLITE_OK,
+                  let stmt = statement else { return false }
+            defer { sqlite3_finalize(stmt) }
+            while sqlite3_step(stmt) == SQLITE_ROW {
+                let form = sqlite3_column_text(stmt, 0).map { String(cString: $0) } ?? ""
+                let lemma = sqlite3_column_text(stmt, 1).map { String(cString: $0) } ?? ""
+                guard !form.isEmpty, !lemma.isEmpty else { continue }
+                let lower = form.lowercased()
+                if !lower.contains(" ") {
+                    // bare form: "sais" → "savoir"
+                    map[lower] = lemma
+                } else {
+                    // "je sais" → last word "sais" → "savoir"
+                    if let lastWord = lower.split(separator: " ").last {
+                        let key = String(lastWord)
+                        if map[key] == nil { map[key] = lemma }
+                    }
+                }
+            }
+            return true
+        }
+        return map
+    }()
+
+    /// Look up the infinitive for a conjugated verb form (e.g. "sais" → "savoir")
+    static func infinitive(for conjugatedForm: String) -> String? {
+        let key = conjugatedForm.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        return inflectionInfinitiveMap[key]
+    }
+
+    /// Flexion → Lemma (alle Wortarten). „maisons" → „maison", „heureuse" → „heureux", „petites" → „petit".
+    /// Artikel-Präfixe (la/le/les/l') werden aus dem Lemma entfernt.
+    static let inflectionLemmaMap: [String: String] = {
+        var map: [String: String] = [:]
+        _ = SupplementalFreeDictLexicon.withReadOnlyDatabase { database -> Bool in
+            let sql = """
+                SELECT DISTINCT f.form, e.lemma_fr, e.word_class
+                FROM forms f
+                JOIN entries e ON f.entry_id = e.entry_id
+                WHERE f.form_type = 'inflection' AND e.word_class != 'phrase'
+                """
+            var statement: OpaquePointer?
+            guard sqlite3_prepare_v2(database, sql, -1, &statement, nil) == SQLITE_OK,
+                  let stmt = statement else { return false }
+            defer { sqlite3_finalize(stmt) }
+            while sqlite3_step(stmt) == SQLITE_ROW {
+                let form = sqlite3_column_text(stmt, 0).map { String(cString: $0) } ?? ""
+                let lemma = sqlite3_column_text(stmt, 1).map { String(cString: $0) } ?? ""
+                guard !form.isEmpty, !lemma.isEmpty else { continue }
+                let cleanedLemma = stripFrenchLemmaArticle(lemma)
+                let lower = form.lowercased()
+                if !lower.contains(" ") {
+                    if map[lower] == nil { map[lower] = cleanedLemma }
+                } else if let lastWord = lower.split(separator: " ").last {
+                    let key = String(lastWord)
+                    if map[key] == nil { map[key] = cleanedLemma }
+                }
+            }
+            return true
+        }
+        return map
+    }()
+
+    /// Liefert das Lemma (Grundform) für eine beliebige Oberflächenform.
+    /// Reihenfolge: Volltext-Lemma-Treffer → Flexion → nil.
+    static func lemma(for text: String) -> String? {
+        let key = text.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        if wordClassMap[key] != nil { return stripFrenchLemmaArticle(key) }
+        let strippedArticleKey = strippedArticle(key)
+        if strippedArticleKey != key, wordClassMap[strippedArticleKey] != nil {
+            return strippedArticleKey
+        }
+        if let inf = inflectionInfinitiveMap[key] { return inf }
+        if let lem = inflectionLemmaMap[key]     { return lem }
+        return nil
+    }
+
+    /// Entfernt führende französische Artikel aus einem Lemma („la maison" → „maison").
+    private static func stripFrenchLemmaArticle(_ text: String) -> String {
+        let lower = text.lowercased()
+        let prefixes = ["le ", "la ", "les ", "un ", "une ", "des ", "l'", "du ", "de la ", "de l'"]
+        for prefix in prefixes where lower.hasPrefix(prefix) {
+            return String(lower.dropFirst(prefix.count)).trimmingCharacters(in: .whitespaces)
+        }
+        return lower
+    }
+
+    /// Verben, die beim Phrase-Split NICHT zur Verb-Einstufung führen (Hilfsverben).
+    /// „c'est fini" enthält „est" (être) — reicht nicht als Verb-Lernziel.
+    static let helperVerbInfinitives: Set<String> = [
+        "\u{00EA}tre", "etre",   // être
+        "avoir"
+    ]
+
+    /// Einheitliche Wortart-Auflösung — legacy-API, delegiert jetzt an die zentrale
+    /// `FrenchEntryAnalyzer`. Pfad durch die EINE Analyse-Pipeline.
+    ///
+    /// Reihenfolge:
+    ///  1) Vom Nutzer gesetzt (`item.wordClass`)
+    ///  2) Analyzer-`primaryPos` (falls bestimmbar — noun/verb/adjective/adverb)
+    ///  3) Erste erkannte Wortart aus `detectedPos`
+    ///  4) DisplayType-Fallback (phrase/sentence)
+    ///  5) Volltext-Lookup für Spezialfälle (pronoun, preposition, conjunction, interjection)
+    static func resolvedWordClass(forItem item: VocabularyItem) -> String? {
+        if let stored = item.wordClass, !stored.isEmpty {
+            return stored
+        }
+
+        let result = FrenchListStatisticsAggregator.cachedAnalyze(item.french)
+
+        switch result.primaryPos {
+        case .noun:      return "noun"
+        case .verb:      return "verb"
+        case .adjective: return "adjective"
+        case .adverb:    return "adverb"
+        case .phrase:
+            if let first = result.detectedPos.first {
+                return first.rawValue
+            }
+            // Fallback: direkte DB-Wortart für Funktionswörter/Pronomen etc.
+            let cleaned = item.french.trimmingCharacters(
+                in: CharacterSet.punctuationCharacters.union(.whitespacesAndNewlines)
+            )
+            if let direct = wordClass(for: cleaned) { return direct }
+            return "phrase"
+        case .sentence:  return "phrase"
+        case .unknown:
+            let cleaned = item.french.trimmingCharacters(
+                in: CharacterSet.punctuationCharacters.union(.whitespacesAndNewlines)
+            )
+            return wordClass(for: cleaned)
+        }
+    }
+
+    /// Zentrale Overrides für falsch oder irreführend klassifizierte DB-Einträge.
+    /// Werden VOR der DB konsultiert — eine Stelle für alle App-weiten Korrekturen.
+    /// Erweiterbar — Key ist das normalisierte (lowercase, trim) Französisch.
+    /// Zentrale Overrides für Wortart-Fehler in der DB-Export.
+    ///
+    /// WICHTIG: Dies ist nur ein SICHERHEITSNETZ für Einzelfälle.
+    /// Langfristig sollen solche Einträge im Master-Export (TSV) korrigiert werden.
+    /// Strukturelle Fixes (z. B. Compound-Nomen) laufen im Python-Build-Script
+    /// via `promote_compound_nouns(db)` — nicht hier.
+    static let wordClassOverrides: [String: String] = [
+        // Interjektionen, die in der DB teilweise als „verb" oder „phrase" klassifiziert werden.
+        // Diese haben keine strukturelle Kennung — zentraler Override bleibt bis DB-Fix.
+        "voil\u{00E0}":  "interjection",   // voilà
+        "voila":         "interjection",
+        "voici":         "interjection",
+        "merci":         "interjection",
+        "bonjour":       "interjection",
+        "salut":         "interjection",
+        "bonsoir":       "interjection",
+        "au revoir":     "interjection",
+        "bienvenue":     "interjection",
+        "d'accord":      "interjection",
+        "oui":           "interjection",
+        "non":           "interjection",
+        "s'il vous pla\u{00EE}t": "interjection",
+        "s'il te pla\u{00EE}t":   "interjection",
+        "comment":       "adverb"          // interrogatives Adverb, nicht Pronomen
+    ]
+
+    /// Lookup word class for a French term — returns "noun", "verb", etc. or nil.
+    /// Overrides-Tabelle gewinnt vor der DB, damit „voilà" nicht als Verb durchgeht.
     static func wordClass(for frenchText: String) -> String? {
         let key = frenchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        if let override = wordClassOverrides[key] { return override }
         if let wc = wordClassMap[key] { return wc }
         let stripped = strippedArticle(key)
         if stripped != key, let wc = wordClassMap[stripped] { return wc }
+        // Accent-insensitive fallback: "garcon" → "garçon"
+        let accentStripped = stripDiacritics(key)
+        if accentStripped != key, let wc = wordClassMap[accentStripped] { return wc }
+        let accentStrippedArticle = stripDiacritics(stripped)
+        if accentStrippedArticle != stripped, let wc = wordClassMap[accentStrippedArticle] { return wc }
         // Check inflection forms (conjugated verbs, plural nouns, etc.)
         if let wc = inflectionWordClassMap[key] { return wc }
         if stripped != key, let wc = inflectionWordClassMap[stripped] { return wc }
+        if accentStripped != key, let wc = inflectionWordClassMap[accentStripped] { return wc }
         return nil
     }
 
@@ -217,7 +438,7 @@ enum StandardVocabularyLoader {
     static let topicLists: [VocabularyList] = {
         let minItems = 20
         var lists: [VocabularyList] = []
-        let sortedTopics = allTopics.filter { $0 != "Allgemein" }
+        let sortedTopics = allTopics
         for (index, topic) in sortedTopics.enumerated() {
             let topicItems = items(forTopic: topic)
             guard topicItems.count >= minItems else { continue }

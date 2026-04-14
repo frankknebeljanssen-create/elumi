@@ -92,28 +92,29 @@ extension TrainingView {
         Button {
             session.isSpeedRound.toggle()
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: 14) {
                 Image(systemName: session.isSpeedRound ? "bolt.circle.fill" : "bolt.circle")
-                    .font(.system(size: 24, weight: .bold))
+                    .font(.system(size: 32, weight: .bold))
                     .foregroundStyle(session.isSpeedRound ? trainingActionTint : AppTheme.Colors.textSecondary)
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("Speed Round")
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                     Text("45 Sekunden, so viele wie möglich!")
-                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
 
                 Spacer()
 
                 Image(systemName: session.isSpeedRound ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 22, weight: .bold))
+                    .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(session.isSpeedRound ? trainingActionTint : AppTheme.Colors.textDisabled)
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.vertical, 28)
+            .frame(maxWidth: .infinity)
             .appCardBackground(sectionStyle, intensity: session.isSpeedRound ? 0.18 : 0.07, cornerRadius: AppLayout.largeCardCornerRadius)
         }
         .buttonStyle(.plain)

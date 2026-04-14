@@ -25,16 +25,43 @@ extension LexiconViewModel {
 
             let candidates: [AggregationCandidate] = entries.flatMap { entry in
                 let displayCardType = resolvedLexiconCardType(for: entry)
-                let frenchText = sourceDisplayText(entry.sourceTerm, sourceLanguage: .french)
-                // targetTerm is already correctly cased based on isGermanNoun in makeLexiconEntry
-                // Only add article for nouns if not already present
-                let germanText: String
-                if entry.isGermanNoun, !startsWithGermanArticle(entry.targetTerm),
-                   let article = entry.germanGender?.article, !article.isEmpty {
-                    germanText = "\(article) \(entry.targetTerm)"
+
+                // Französisch display-ready: bei Einzelwort-Nomen Artikel hinzufügen,
+                // wenn nicht schon vorhanden (l'auto, la voiture, le chien).
+                let frenchGenderHint: String? = {
+                    switch entry.frenchGender?.gender {
+                    case .masculine: return "m"
+                    case .feminine: return "f"
+                    case .plural: return "pl"
+                    default: return nil
+                    }
+                }()
+                let frenchRawDisplay = sourceDisplayText(entry.sourceTerm, sourceLanguage: .french)
+                let frenchIsNoun = entry.isGermanNoun || (entry.frenchGender != nil)
+                // Nur bei Nomen-Einzelwort Artikel ergänzen, sonst restoreFrenchElisions etc.
+                let frenchText: String
+                if frenchIsNoun, displayCardType == .words {
+                    frenchText = FrenchLemmaFormatter.displayFrenchRaw(
+                        frenchRawDisplay,
+                        isNoun: true,
+                        gender: frenchGenderHint
+                    )
                 } else {
-                    germanText = entry.targetTerm
+                    frenchText = frenchRawDisplay
                 }
+
+                // Deutsch display-ready: bei Nomen Großschreibung sicherstellen, Artikel ergänzen
+                let germanRaw: String = {
+                    if entry.isGermanNoun, !startsWithGermanArticle(entry.targetTerm),
+                       let article = entry.germanGender?.article, !article.isEmpty {
+                        return "\(article) \(entry.targetTerm)"
+                    }
+                    return entry.targetTerm
+                }()
+                let germanText = FrenchLemmaFormatter.displayGermanRaw(
+                    germanRaw,
+                    isNoun: entry.isGermanNoun
+                )
                 let frenchLookupKey = normalizedLookupText(frenchText)
                 // Use raw targetTerm for lookup (without added article prefix)
                 let germanLookupKey = normalizedLookupText(entry.targetTerm)
@@ -42,6 +69,8 @@ extension LexiconViewModel {
                 let germanCompactKey = compactLookupKey(germanText)
                 var result: [AggregationCandidate] = []
 
+                // Always display the matched side as source — regardless of global direction.
+                // The UI filter (lexiconFilterMode) handles direction-based filtering.
                 if Self.isSearchMatch(
                     lookupKey: frenchLookupKey,
                     compactKey: frenchCompactKey,
@@ -53,14 +82,10 @@ extension LexiconViewModel {
                             entry: entry,
                             displayCardType: displayCardType,
                             displayCountryCode: "FR",
-                            sourceText: selectedDirection == .germanToFrench && !entry.targetTerm.isEmpty
-                                ? entry.targetTerm
-                                : frenchText,
-                            targetText: selectedDirection == .germanToFrench
-                                ? frenchText
-                                : (germanText.isEmpty ? "Im internen Wörterbuch gespeichert" : germanText),
-                            sourceSearchKey: selectedDirection == .germanToFrench ? germanLookupKey : frenchLookupKey,
-                            targetSearchKey: selectedDirection == .germanToFrench ? frenchLookupKey : germanLookupKey,
+                            sourceText: frenchText,
+                            targetText: germanText.isEmpty ? "Im internen Wörterbuch gespeichert" : germanText,
+                            sourceSearchKey: frenchLookupKey,
+                            targetSearchKey: germanLookupKey,
                             matchRank: Self.searchMatchRank(
                                 lookupKey: frenchLookupKey,
                                 compactKey: frenchCompactKey,
@@ -97,17 +122,21 @@ extension LexiconViewModel {
                     )
                 }
 
-                return result.filter {
-                    selectedDirection == .germanToFrench ? $0.displayCountryCode == "DE" : true
-                }
+                return result
             }
 
             let grouped = Dictionary(grouping: candidates) { candidate in
                 let nounSuffix = candidate.entry.isGermanNoun ? "|n" : "|a"
+                // DE-Kandidaten: alle Senses desselben DB-Eintrags zusammenfassen
+                // (sonst entstehen Duplikate wie „Straße" + „Straße; Öffentlichkeit; …"
+                // als separate Einträge, obwohl es dieselbe entry_id ist).
+                if candidate.displayCountryCode == "DE", let id = candidate.entry.entryID {
+                    return "DE|entryID:\(id)\(nounSuffix)"
+                }
                 return "\(candidate.displayCountryCode)|\(candidate.sourceSearchKey)\(nounSuffix)"
             }
 
-            return grouped.values.compactMap { group in
+            let sortedResults: [PreparedLexiconEntry] = grouped.values.compactMap { group in
                 let sortedGroup = group.sorted {
                     if $0.matchRank == $1.matchRank {
                         if $0.sourceText.count == $1.sourceText.count {
@@ -152,6 +181,7 @@ extension LexiconViewModel {
 
                 let isNounGroup = sortedGroup.first?.entry.isGermanNoun ?? false
                 let wordClassSuffix = isNounGroup ? "|n" : "|a"
+                let bestMatchRank = sortedGroup.map(\.matchRank).min() ?? 3
                 return PreparedLexiconEntry(
                     id: "\(first.displayCountryCode)|\(groupDisplayCardType.rawValue)|\(first.sourceSearchKey)\(wordClassSuffix)",
                     entries: sortedGroup.map(\.entry),
@@ -163,10 +193,23 @@ extension LexiconViewModel {
                     targetText: targetSummary,
                     targetVariants: targetVariants,
                     sourceSearchKey: first.sourceSearchKey,
-                    targetSearchKey: targetSearchKey
+                    targetSearchKey: targetSearchKey,
+                    matchRank: bestMatchRank
                 )
             }
             .sorted {
+                // 1. Primär: Match-Rang (0 = exakter Treffer kommt zuerst).
+                //    Damit steht „Straße → la rue" bei Suche „strasse" oben,
+                //    NICHT die Compound-Wörter wie „Straßenbahn".
+                if $0.matchRank != $1.matchRank {
+                    return $0.matchRank < $1.matchRank
+                }
+                // 2. Innerhalb gleichen Rangs: kürzerer sourceText zuerst
+                //    (Primärwort vor Komposita vor Phrasen).
+                if $0.sourceText.count != $1.sourceText.count {
+                    return $0.sourceText.count < $1.sourceText.count
+                }
+                // 3. Alphabetische Tiebreaker
                 if $0.sourceSearchKey == $1.sourceSearchKey {
                     if $0.displayCountryCode == $1.displayCountryCode {
                         if $0.targetSearchKey == $1.targetSearchKey {
@@ -178,7 +221,33 @@ extension LexiconViewModel {
                 }
                 return $0.sourceSearchKey < $1.sourceSearchKey
             }
+            // Final-Dedup: pro DB-entry_id wird nur EIN PreparedLexiconEntry behalten.
+            // Verhindert Duplikate, wenn ein Eintrag sowohl auf der FR- als auch
+            // der DE-Seite die Query trifft („l'automne" + „der Herbst").
+            // Behält den besseren Match-Rang (der wegen vorheriger Sortierung zuerst kommt).
+            return Self.dedupePreparedByEntryID(sortedResults)
         }.value
+    }
+
+    /// Pro entry_id wird der PreparedLexiconEntry mit dem besseren matchRank behalten.
+    /// Bei Gleichstand bleibt der erste in der Reihenfolge.
+    nonisolated static func dedupePreparedByEntryID(
+        _ entries: [PreparedLexiconEntry]
+    ) -> [PreparedLexiconEntry] {
+        var seenEntryIDs: Set<Int> = []
+        var output: [PreparedLexiconEntry] = []
+        for prep in entries {
+            // Wenn keiner der enthaltenen LexiconEntries eine entryID hat → durchlassen
+            let ids = prep.entries.compactMap(\.entryID)
+            guard let primaryID = ids.first else {
+                output.append(prep)
+                continue
+            }
+            if seenEntryIDs.insert(primaryID).inserted {
+                output.append(prep)
+            }
+        }
+        return output
     }
 
     nonisolated static func isSearchMatch(
@@ -198,26 +267,82 @@ extension LexiconViewModel {
         return false
     }
 
+    /// Zentrale Ranking-Funktion für Wörterbuch-Suchergebnisse.
+    /// Niedrigere Zahl = relevanter (steht oben in der Liste).
+    ///
+    /// Stufen:
+    ///   0  → Exakter Treffer auf Haupteintrag (Strasse == strasse)
+    ///   10 → Exakter Treffer nach Artikel-Strip („die Strasse" → „strasse")
+    ///   20 → Mehrwortig, beginnt mit Query als eigenständigem Wort
+    ///        („die Strasse überqueren", „Auto fahren") — Query bleibt erkennbar
+    ///   30 → Einzelwort-Compound mit Query als Präfix („Strassenbahn", „Autobahn")
+    ///   40 → Mehrwortig, Query als Präfix mitten im Wort
+    ///   50 → Query als ganzes Wort innerhalb der Phrase („an der Strasse wohnen")
+    ///   60 → Compact-Match (Leerzeichen-frei, Fallback)
+    ///   90 → Sonst (sehr unscharf)
+    ///
+    /// Damit erscheint bei Suche „Strasse" die Reihenfolge:
+    ///   Strasse → die Strasse → die Strasse überqueren → Strassenbahn → an der Strasse wohnen
     nonisolated static func searchMatchRank(
         lookupKey: String,
         compactKey: String,
         query: String,
         compactQuery: String
     ) -> Int {
-        if lookupKey == query || (!compactQuery.isEmpty && compactKey == compactQuery) {
-            return 0
-        }
+        guard !query.isEmpty else { return 999 }
+
+        // Artikel-Strip einmalig (FR + DE)
         let stripped = strippingLeadingGermanArticle(from: strippingLeadingFrenchArticle(from: lookupKey))
-        if stripped == query { return 0 }
-        if lookupKey.hasPrefix(query) || (stripped != lookupKey && stripped.hasPrefix(query)) {
-            return 1
+
+        // 0: Exakt-Treffer auf den ganzen Eintrag
+        if lookupKey == query { return 0 }
+        if !compactQuery.isEmpty && compactKey == compactQuery { return 0 }
+
+        // 10: Exakt nach Artikel-Strip („die Strasse" mit Query „strasse")
+        if stripped != lookupKey && stripped == query { return 10 }
+
+        // 20: Mehrwortig, das ERSTE Wort (nach Artikel-Strip oder direkt) ist die Query.
+        //     Query bleibt als eigenes Wort sichtbar — viel näher am Haupteintrag als
+        //     ein verschmolzenes Compound-Wort.
+        let lookupTokens = lookupKey.split(separator: " ").map(String.init)
+        let strippedTokens = stripped.split(separator: " ").map(String.init)
+        if let first = strippedTokens.first, first == query, strippedTokens.count > 1 {
+            return 20
         }
-        if !compactQuery.isEmpty && compactKey.hasPrefix(compactQuery) {
-            return 2
+        if let first = lookupTokens.first, first == query, lookupTokens.count > 1 {
+            return 20
         }
-        if lookupKey.contains(" \(query)") {
-            return 2
+
+        // 25: Plural-/Flexions-Form derselben Grundform — „Strassen" für Query „Strasse",
+        //     „les amis" für Query „ami", „Hasen" für Query „Hase".
+        //     Rangiert klar VOR fremden Wörtern, die zufällig denselben Präfix haben
+        //     (z.B. „amiable" bei Suche „ami").
+        if strippedTokens.count == 1, let single = strippedTokens.first {
+            // Häufige Plural- und Flexions-Endungen FR + DE
+            let endings = ["s", "x", "es", "en", "n", "er", "e"]
+            for ending in endings {
+                if single.count > query.count + ending.count - 1,
+                   single.hasSuffix(ending),
+                   String(single.dropLast(ending.count)) == query {
+                    return 25
+                }
+            }
         }
-        return 3
+
+        // 30: Einzelwort-Compound, beginnt mit Query („Strassenbahn", „Autobahn")
+        if lookupTokens.count == 1, lookupKey.hasPrefix(query) { return 30 }
+        if strippedTokens.count == 1, stripped.hasPrefix(query) { return 30 }
+
+        // 40: Mehrwortig, Eintrag startet mit Query (aber nicht als sauberes Wort)
+        if lookupKey.hasPrefix(query) || stripped.hasPrefix(query) { return 40 }
+
+        // 50: Query als ganzes Wort irgendwo in der Phrase
+        if lookupKey.contains(" \(query) ") { return 50 }
+        if lookupKey.contains(" \(query)") { return 50 }   // am Ende der Phrase
+
+        // 60: Compact-Match (Leerzeichen ignoriert, schwächer)
+        if !compactQuery.isEmpty, compactKey.hasPrefix(compactQuery) { return 60 }
+
+        return 90
     }
 }

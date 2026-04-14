@@ -51,6 +51,11 @@ extension ListsView {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                             showingRenameDialog = true
                         }
+                    },
+                    onMerge: { source, target in
+                        listStore.mergeLists(sourceID: source.id, into: target.id)
+                        feedbackPlayer.playListAction()
+                        showToast("\(source.name) in \(target.name) zusammengef\u{00FC}hrt.")
                     }
                 )
             }
@@ -84,7 +89,15 @@ extension ListsView {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                             showingRenameDialog = true
                         }
-                    }
+                    },
+                    onMerge: { source, target in
+                        listStore.mergeLists(sourceID: source.id, into: target.id)
+                        feedbackPlayer.playListAction()
+                        showToast("\(source.name) in \(target.name) zusammengef\u{00FC}hrt.")
+                    },
+                    feedbackPlayer: feedbackPlayer,
+                    onHome: { goHome() },
+                    onSettings: { openSettings() }
                 )
             }
             .sheet(isPresented: $showingListDetail) {

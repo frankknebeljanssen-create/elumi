@@ -2,64 +2,28 @@ import Foundation
 import SwiftUI
 
 func germanDisplayText(_ text: String, cardType: CardType, sourceHint: String? = nil) -> String {
+    _ = cardType
+    _ = sourceHint
+    // Casing: zentrale Regelwerk-Engine (TextNormalizationEngine).
+    // Satzzeichen-Inferenz und Text-Sanitization bleiben hier lokal.
     let cleaned = cleanedQuizDisplayText(text)
     guard !cleaned.isEmpty else { return cleaned }
 
-    // Non-nouns (verbs, adjectives, adverbs, etc.): always lowercase
-    // Only check sourceHint (French), NOT the German text (a word can be both noun+adjective)
-    if cardType == .words, let hint = sourceHint, StandardVocabularyLoader.isNonNoun(hint) {
-        return cleaned.lowercased()
-    }
+    let normalized = TextNormalizationEngine.normalize(cleaned, language: .german)
 
-    // Always capitalize German nouns in multi-word text
-    let wordCount = cleaned.split(separator: " ").count
-    let isPhrase = cardType == .phrases || wordCount >= 3
-
-    if isPhrase {
-        let capitalized = capitalizingGermanNounsInPhrase(cleaned)
-        let preserved = preservingTerminalSentencePunctuation(
-            from: text,
-            in: capitalized,
-            style: .neutral,
-            cardType: cardType
-        )
-        if detectedTerminalSentencePunctuation(from: preserved) != nil {
-            return preserved
-        }
-        if let inferred = inferredGermanTerminalSentencePunctuation(preserved, cardType: cardType) {
-            return applyingTerminalSentencePunctuation(inferred, to: preserved, style: .neutral)
-        }
+    let preserved = preservingTerminalSentencePunctuation(
+        from: text,
+        in: normalized,
+        style: .neutral,
+        cardType: cardType
+    )
+    if detectedTerminalSentencePunctuation(from: preserved) != nil {
         return preserved
     }
-
-    let isNonNoun = sourceHint.map { StandardVocabularyLoader.isNonNoun($0) } ?? false
-    let shouldCapitalizeLeadingWord = !isNonNoun
-
-    let separators = CharacterSet(charactersIn: "/|;")
-    let segments = cleaned.components(separatedBy: separators)
-    if segments.count > 1 {
-        let separatorScalars = cleaned.unicodeScalars.filter { separators.contains($0) }.map(String.init)
-        var rebuilt = ""
-
-        for (index, segment) in segments.enumerated() {
-            rebuilt += normalizedGermanWordSegment(
-                segment,
-                forceLeadingWordCapitalization: shouldCapitalizeLeadingWord
-            )
-            if index < separatorScalars.count {
-                rebuilt += " \(separatorScalars[index]) "
-            }
-        }
-
-        return rebuilt
-            .replacingOccurrences(of: #" + "#, with: " ", options: .regularExpression)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+    if let inferred = inferredGermanTerminalSentencePunctuation(preserved, cardType: cardType) {
+        return applyingTerminalSentencePunctuation(inferred, to: preserved, style: .neutral)
     }
-
-    return normalizedGermanWordSegment(
-        cleaned,
-        forceLeadingWordCapitalization: shouldCapitalizeLeadingWord
-    )
+    return preserved
 }
 
 func formattedGermanLexiconDisplayText(
@@ -69,80 +33,26 @@ func formattedGermanLexiconDisplayText(
     frenchGender: LexiconGenderInfo? = nil,
     sourceHint: String? = nil
 ) -> String {
-    let displayed = germanDisplayText(text, cardType: cardType, sourceHint: sourceHint)
-    guard cardType == .words else { return displayed }
-
-    // Non-nouns stay lowercase — germanDisplayText already handled this
-    // Only check sourceHint (French), NOT displayed (German) — word can be both noun+adjective
-    if let hint = sourceHint, StandardVocabularyLoader.isNonNoun(hint) {
-        return displayed
-    }
-
-    let normalized = normalizedLookupText(displayed)
-    guard !normalized.isEmpty else { return displayed }
-    let wordCount = normalized.split(separator: " ").count
-    let effectiveGermanGender = germanGender ?? germanGenderInfo(for: displayed, cardType: cardType)
-    let hasFrenchNounHint =
-        frenchGender != nil ||
-        hasFrenchNounHint(sourceHint ?? "", cardType: cardType)
-
-    let shouldCapitalizeAsNoun =
-        effectiveGermanGender != nil ||
-        hasFrenchNounHint ||
-        startsWithGermanArticle(displayed) ||
-        (wordCount == 1 && DataStore.likelyGermanNounSet.contains(normalized))
-
-    if shouldCapitalizeAsNoun {
-        return stronglyCapitalizedGermanQuizWordText(displayed)
-    }
-
-    if wordCount == 1 {
-        return lowercasingFirstGermanLetter(in: displayed)
-    }
-
-    guard !germanLexiconLowercaseExceptions.contains(normalized) else { return displayed }
-    return displayed
+    _ = germanGender
+    _ = frenchGender
+    // Zentrale Engine übernimmt Casing. Keine Zusatzheuristik (Gender/NonNoun) —
+    // deterministische Ausgabe gleich wie überall in der App.
+    return germanDisplayText(text, cardType: cardType, sourceHint: sourceHint)
 }
 
 func bootstrappedGermanText(_ text: String, cardType: CardType, sourceHint: String? = nil) -> String {
+    _ = cardType
+    _ = sourceHint
     let cleaned = cleanedQuizDisplayText(text)
     guard !cleaned.isEmpty else { return cleaned }
-
-    if cardType == .phrases {
-        return uppercasingFirstGermanLetter(in: cleaned)
-    }
-
-    return normalizedGermanWordSegment(
-        cleaned,
-        forceLeadingWordCapitalization: true
-    )
+    return TextNormalizationEngine.normalize(cleaned, language: .german)
 }
 
 func capitalizingGermanNounsInPhrase(_ text: String) -> String {
-    let tokens = text.split(separator: " ", omittingEmptySubsequences: false).map(String.init)
-    guard !tokens.isEmpty else { return text }
-
-    var rebuilt: [String] = []
-
-    for index in tokens.indices {
-        let token = tokens[index]
-        let normalizedToken = normalizedLookupText(token)
-        guard !normalizedToken.isEmpty else {
-            rebuilt.append(token)
-            continue
-        }
-
-        let previousNormalized = index > 0 ? normalizedLookupText(tokens[index - 1]) : ""
-        let afterTrigger = germanNounTriggerWords.contains(previousNormalized) || germanHabenForms.contains(previousNormalized)
-        let isKnownNoun = DataStore.likelyGermanNounSet.contains(normalizedToken)
-        // Capitalize after articles/triggers (always) or if it's a known noun
-        let shouldCapitalize = afterTrigger || isKnownNoun
-
-        rebuilt.append(shouldCapitalize ? uppercasingFirstGermanLetter(in: token) : token)
-    }
-
-    return rebuilt.joined(separator: " ")
+    // Einziger Einstiegspunkt: zentrale Engine.
+    return TextNormalizationEngine.normalize(text, language: .german)
 }
+
 
 func looksLikeGermanDisplayText(_ text: String) -> Bool {
     let tokens = normalizedLookupText(text).split(separator: " ").map(String.init)
@@ -160,63 +70,17 @@ func quizVisibleText(
     category: String,
     sourceHint: String? = nil
 ) -> String {
+    _ = category
+    _ = sourceHint
     let cleaned = cleanedQuizDisplayText(text)
-
-    // French: always lowercase
-    guard languageCode == "de-DE" else { return cleaned.lowercased() }
-
-    // German phrases: capitalize first letter only
-    if category == CardType.phrases.categoryName {
-        return uppercasingFirstGermanLetter(in: cleaned)
-    }
-
-    // German words: apply noun/verb/article casing rules
-    return quizGermanWordCasing(cleaned, sourceHint: sourceHint)
+    let language: NormalizationLanguage = (languageCode == "de-DE") ? .german : .french
+    return TextNormalizationEngine.normalize(cleaned, language: language)
 }
 
-/// German quiz casing: only nouns uppercase, everything else lowercase
+/// German quiz casing — delegiert an die zentrale Engine.
 func quizGermanWordCasing(_ text: String, sourceHint: String?) -> String {
-    let hint = sourceHint ?? ""
-    let stripped = strippingLeadingFrenchArticle(from: hint)
-
-    // If German text already has an article → definitely a noun, capitalize
-    if startsWithGermanArticle(text) {
-        let parts = text.components(separatedBy: "/")
-        return parts.map { part in
-            part.split(separator: " ").map { token in
-                let lower = String(token).lowercased()
-                if germanArticleHints.contains(lower) { return lower }
-                return uppercasingFirstGermanLetter(in: String(token))
-            }.joined(separator: " ")
-        }.joined(separator: " / ")
-    }
-
-    // If French text has an article → also a noun
-    if TrainingSessionController.hasFrenchArticle(hint) {
-        return uppercasingFirstGermanLetter(in: text)
-    }
-
-    // Also check nounSet explicitly (in case it's in both)
-    if StandardVocabularyLoader.isNoun(stripped) || StandardVocabularyLoader.isNoun(hint) {
-        return uppercasingFirstGermanLetter(in: text)
-    }
-
-    // Explicitly non-noun (verb, adjective, adverb): always lowercase
-    if StandardVocabularyLoader.isNonNoun(stripped) || StandardVocabularyLoader.isNonNoun(hint) {
-        return text.lowercased()
-    }
-
-    // Everything else (nouns + unknown): article lowercase, word uppercase
-    let parts = text.components(separatedBy: "/")
-    return parts.map { part in
-        part.split(separator: " ").map { token in
-            let lower = String(token).lowercased()
-            if germanArticleHints.contains(lower) {
-                return lower
-            }
-            return uppercasingFirstGermanLetter(in: String(token))
-        }.joined(separator: " ")
-    }.joined(separator: " / ")
+    _ = sourceHint
+    return TextNormalizationEngine.normalize(text, language: .german)
 }
 
 func visibleQuizPromptText(_ text: String, category: String) -> String {
@@ -237,15 +101,13 @@ func canonicalGermanQuizText(
     category: String,
     sourceHint: String? = nil
 ) -> String {
+    _ = promptLanguageCode
+    _ = category
+    _ = sourceHint
+    _ = prompt
     let cleanedAnswer = cleanedQuizDisplayText(answer)
     guard !cleanedAnswer.isEmpty else { return cleanedAnswer }
-    let cardType: CardType = category == CardType.words.categoryName ? .words : .phrases
-
-    return germanDisplayText(
-        cleanedAnswer,
-        cardType: cardType,
-        sourceHint: sourceHint ?? prompt
-    )
+    return TextNormalizationEngine.normalize(cleanedAnswer, language: .german)
 }
 
 func looksLikeGermanNounList(_ text: String) -> Bool {

@@ -134,7 +134,7 @@ enum AppTheme {
         static let footerHeight: CGFloat = 50
         static let inputHeight: CGFloat = 52
         static let buttonHeight: CGFloat = 54
-        static let homeCardHeight: CGFloat = 107
+        static let homeCardHeight: CGFloat = 102
         static let wideCardHeight: CGFloat = 82
         static let selectionHeight: CGFloat = 76
         static let maxContentWidth: CGFloat = 720

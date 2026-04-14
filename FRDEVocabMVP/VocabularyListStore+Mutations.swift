@@ -109,6 +109,18 @@ extension VocabularyListStore {
         )
     }
 
+    /// Merge source list into target list, then delete source
+    func mergeLists(sourceID: UUID, into targetID: UUID) {
+        guard sourceID != targetID,
+              let sourceIndex = customLists.firstIndex(where: { $0.id == sourceID }),
+              let targetIndex = customLists.firstIndex(where: { $0.id == targetID }) else { return }
+        customLists[targetIndex].items.append(contentsOf: customLists[sourceIndex].items)
+        customLists.remove(at: sourceIndex)
+        if selectedListID == sourceID {
+            selectedListID = targetID
+        }
+    }
+
     func removeItem(itemID: UUID, from listID: UUID) {
         guard let listIndex = customLists.firstIndex(where: { $0.id == listID }) else { return }
         customLists[listIndex].items.removeAll { $0.id == itemID }

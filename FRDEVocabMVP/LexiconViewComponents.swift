@@ -86,6 +86,9 @@ struct LexiconEntryRowView: View {
     let sourceText: String
     let targetText: String
     let wordClassMarker: LexiconWordClassMarker?
+    /// Vollständiger Wortart-Badge-Text (zentrale Quelle: FrenchLemmaFormatter.wordClassLabel).
+    /// Alle Wortarten bekommen einen Badge — Pronomen, Konjunktion, Adverb, Adjektiv etc.
+    var wordClassBadge: String? = nil
     let accentColor: Color
     let secondaryTextColor: Color
     let rowBackgroundColor: Color
@@ -106,7 +109,15 @@ struct LexiconEntryRowView: View {
                             .lineLimit(2)
                             .minimumScaleFactor(0.78)
 
-                        if let wordClassMarker {
+                        if let badge = wordClassBadge {
+                            Text(badge)
+                                .font(.system(size: 10, weight: .bold, design: .rounded))
+                                .foregroundStyle(accentColor)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 1)
+                                .background(accentColor.opacity(0.14))
+                                .clipShape(Capsule())
+                        } else if let wordClassMarker {
                             Text(wordClassMarker.rawValue)
                                 .font(.system(size: 11, weight: .bold, design: .rounded))
                                 .foregroundStyle(accentColor)
@@ -136,7 +147,7 @@ struct LexiconEntryRowView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 12)
-            .padding(.vertical, 9)
+            .padding(.vertical, 6)
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(rowBackgroundColor)
@@ -161,23 +172,45 @@ struct LexiconDetailSheetView: View {
     let sectionStyle: AppSectionStyle
     let onDone: () -> Void
 
-    private func wordClassLabel(isFrench: Bool) -> String {
-        // Explicit marker takes priority (phrase, etc.)
-        if let marker = wordClassMarker {
-            switch marker {
-            case .noun: return isFrench ? "Nom" : "Nomen"
-            case .adjective: return isFrench ? "Adjectif" : "Adjektiv"
-            case .verb: return isFrench ? "Verbe" : "Verb"
-            case .phrase: return isFrench ? "Expression" : "Redewendung"
+    /// Alle Beispielsätze aller Einträge dieser Gruppe, deduped via example_id,
+    /// sortiert: bevorzugt `example_order = 1` zuerst.
+    private var allExamples: [DictionaryExample] {
+        var seen = Set<Int>()
+        var combined: [DictionaryExample] = []
+        for lexEntry in entry.entries {
+            guard let entryID = lexEntry.entryID else { continue }
+            for ex in SupplementalFreeDictLexicon.examples(forEntryID: entryID) {
+                if seen.insert(ex.id).inserted {
+                    combined.append(ex)
+                }
             }
         }
-        let stripped = strippingLeadingFrenchArticle(from: sourceText)
-        if StandardVocabularyLoader.isVerb(stripped) { return isFrench ? "Verbe" : "Verb" }
-        if StandardVocabularyLoader.isNoun(stripped) { return isFrench ? "Nom" : "Nomen" }
-        if StandardVocabularyLoader.isNonNoun(stripped) {
-            return isFrench ? "Adjectif / Adverbe" : "Adjektiv / Adverb"
+        return combined.sorted { lhs, rhs in
+            let lo = lhs.order > 0 ? lhs.order : 999
+            let ro = rhs.order > 0 ? rhs.order : 999
+            if lo != ro { return lo < ro }
+            return lhs.id < rhs.id
         }
-        return isFrench ? "Nom" : "Nomen"
+    }
+
+    private func wordClassLabel(isFrench: Bool) -> String {
+        // Zentrale Single-Source-of-Truth: FrenchLemmaFormatter.
+        // Marker hat Vorrang (für Direktanzeige im französischen Raum), sonst LexiconEntry-Lookup.
+        if let marker = wordClassMarker {
+            switch marker {
+            case .noun:      return isFrench ? "Nom"        : "Nomen"
+            case .adjective: return isFrench ? "Adjectif"   : "Adjektiv"
+            case .verb:      return isFrench ? "Verbe"      : "Verb"
+            case .phrase:    return isFrench ? "Expression" : "Redewendung"
+            }
+        }
+        guard let firstEntry = entry.entries.first else {
+            return isFrench ? "Nom" : "Nomen"
+        }
+        let germanLabel = FrenchLemmaFormatter.wordClassLabel(forLexiconEntry: firstEntry)
+        if !isFrench { return germanLabel }
+        // Französische Übersetzung der deutschen Bezeichnung
+        return FrenchLemmaFormatter.frenchLabel(forGermanLabel: germanLabel)
     }
 
     private func translationGroupCard(countryCode: String?, badge: String?, translations: [String]) -> some View {
@@ -235,6 +268,46 @@ struct LexiconDetailSheetView: View {
             .clipShape(Capsule())
     }
 
+    @ViewBuilder
+    private func examplesCard(_ examples: [DictionaryExample]) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(examples.count == 1 ? "Beispiel" : "Beispiele")
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                Spacer()
+                Text("\(examples.count)")
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(sectionStyle.accent)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(sectionStyle.accent.opacity(0.14))
+                    .clipShape(Capsule())
+            }
+
+            VStack(alignment: .leading, spacing: 14) {
+                ForEach(examples) { ex in
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(ex.french)
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        if !ex.german.isEmpty {
+                            Text(ex.german)
+                                .font(.system(size: 14, weight: .medium, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.textSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(18)
+        .appCardBackground(sectionStyle, intensity: 0.08)
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
@@ -269,6 +342,13 @@ struct LexiconDetailSheetView: View {
                         badge: badgeText,
                         translations: targetTexts
                     )
+
+                    // Beispiele (aus examples-Tabelle, mehrere pro Eintrag möglich,
+                    // sortiert nach example_order; `order=1` zuerst)
+                    let examples = allExamples
+                    if !examples.isEmpty {
+                        examplesCard(examples)
+                    }
                 }
                 .padding(AppLayout.screenPadding)
                 .frame(maxWidth: .infinity)

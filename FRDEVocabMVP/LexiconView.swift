@@ -102,7 +102,7 @@ struct LexiconView: View {
                         if !allEntries.isEmpty {
                             searchResultSummaryCard
 
-                            LazyVStack(spacing: 12) {
+                            LazyVStack(spacing: 6) {
                                 ForEach(allEntries) { entry in
                                     LexiconEntryRowView(
                                         entry: entry,
@@ -111,6 +111,7 @@ struct LexiconView: View {
                                         sourceText: model.displayedSourceText(for: entry),
                                         targetText: model.displayedTargetText(for: entry),
                                         wordClassMarker: model.lexiconWordClassMarker(for: entry),
+                                        wordClassBadge: model.lexiconWordClassBadgeText(for: entry),
                                         accentColor: lexiconAccentColor,
                                         secondaryTextColor: lexiconSecondaryTextColor,
                                         rowBackgroundColor: lexiconRowBackgroundColor,

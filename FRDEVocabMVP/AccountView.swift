@@ -19,6 +19,14 @@ struct AccountView: View {
                 systemImage: "person.crop.circle.fill"
             )
 
+            Button {
+                dismiss()
+            } label: {
+                Label("Zur\u{00FC}ck", systemImage: "arrow.left")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))
+
             VStack(alignment: .leading, spacing: 10) {
                 Text("Vorname")
                     .font(.system(size: 18, weight: .bold, design: .rounded))

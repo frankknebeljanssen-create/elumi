@@ -12,6 +12,13 @@ struct LexiconEntry: Identifiable {
     let isGermanNoun: Bool
     let sourceSortKey: String
     let targetSortKey: String
+    /// DB entry_id (nur für supplement-Einträge aus der SQLite-DB; `nil` für curated/custom).
+    /// Wird für Beispiel-Lookups via `SupplementalFreeDictLexicon.examples(forEntryID:)` verwendet.
+    let entryID: Int?
+    /// DB word_class String („noun", „verb", „adjective", „phrase", „pronoun", …)
+    /// Direkt aus dem Master-Export. Wird vom zentralen `FrenchLemmaFormatter`
+    /// als bevorzugte Wortart-Quelle verwendet, wenn vorhanden.
+    let wordClass: String?
 
     init(
         id: String,
@@ -21,7 +28,9 @@ struct LexiconEntry: Identifiable {
         cardType: CardType,
         frenchGender: LexiconGenderInfo? = nil,
         germanGender: LexiconGenderInfo? = nil,
-        isGermanNoun: Bool? = nil
+        isGermanNoun: Bool? = nil,
+        entryID: Int? = nil,
+        wordClass: String? = nil
     ) {
         self.id = id
         self.sourceTerm = sourceTerm
@@ -33,6 +42,19 @@ struct LexiconEntry: Identifiable {
         self.isGermanNoun = isGermanNoun ?? false
         self.sourceSortKey = sourceTerm.folding(options: .diacriticInsensitive, locale: .current).lowercased()
         self.targetSortKey = targetTerm.lowercased()
+        // Fallback: entry_id aus der id-Komponente extrahieren
+        // (Format: language|cardType|srcKey|tgtKey|entryId)
+        if let explicit = entryID {
+            self.entryID = explicit
+        } else {
+            let parts = id.split(separator: "|")
+            if let last = parts.last, let parsed = Int(last) {
+                self.entryID = parsed
+            } else {
+                self.entryID = nil
+            }
+        }
+        self.wordClass = wordClass?.isEmpty == true ? nil : wordClass
     }
 
     var letterKey: String {

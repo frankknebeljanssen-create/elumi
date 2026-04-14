@@ -33,7 +33,13 @@ extension TrainingSessionController {
         var lists = listStore.practiceLists
             + StandardVocabularyLoader.levelLists
             + StandardVocabularyLoader.topicLists
-            + [StandardVocabularyLoader.allInOneList]
+
+        // „Komplettes Wörterbuch" (allInOneList) nur im Vokabel-Modus zur Auswahl bieten.
+        // Andere Module (Nomen, Verben, Verbformen, Artikel) wären zu groß
+        // und unspezifisch, wenn das ganze Lexikon mitgewählt wird.
+        if trainingMode == .vocabulary {
+            lists.append(StandardVocabularyLoader.allInOneList)
+        }
 
         return lists
     }
@@ -71,30 +77,77 @@ extension TrainingSessionController {
             return []
         }
 
-        return selectedLists.flatMap(\.items).filter { item in
-            guard item.sourceLanguage == selectedAppDirection.sourceLanguage else { return false }
+        let allItems = selectedLists.flatMap(\.items)
+            .filter { $0.sourceLanguage == selectedAppDirection.sourceLanguage }
 
+        // Spezialpfad für Verben: Aus ALLEN Items (auch Phrasen) die eindeutigen
+        // Verb-LEMMATA extrahieren und als synthetische Trainings-Items zurückgeben.
+        // Damit wird aus „je ne sais pas" → „savoir" trainiert (Infinitiv-Form).
+        if trainingMode == .verbs {
+            return Self.synthesizeVerbInfinitiveItems(
+                from: allItems,
+                language: selectedAppDirection.sourceLanguage
+            )
+        }
+
+        return allItems.filter { item in
             switch trainingMode {
             case .vocabulary:
                 return item.cardType == cardType
             case .nouns:
-                guard item.cardType == .words else { return false }
-                return StandardVocabularyLoader.isNoun(item.french) || Self.hasFrenchArticle(item.french)
-            case .articles:
-                guard item.cardType == .words else { return false }
-                return StandardVocabularyLoader.isNoun(item.french) || Self.hasFrenchArticle(item.french)
-            case .verbs:
-                if cardType == .phrases {
-                    guard item.cardType == .phrases else { return false }
-                    // Only verb phrases: check if any word in the phrase is a known verb
-                    let words = item.french.lowercased().split(separator: " ").map(String.init)
-                    return words.contains { StandardVocabularyLoader.isVerb($0) }
+                // Zentrale Auflösung: Wort-Nomen UND Nomen-Phrasen (z.B. „la maison blanche").
+                if StandardVocabularyLoader.resolvedWordClass(forItem: item) == "noun" {
+                    return true
                 }
-                return item.cardType == .words && StandardVocabularyLoader.isVerb(item.french)
+                return item.cardType == .words && Self.hasFrenchArticle(item.french)
+            case .articles:
+                if StandardVocabularyLoader.resolvedWordClass(forItem: item) == "noun" {
+                    return true
+                }
+                return item.cardType == .words && Self.hasFrenchArticle(item.french)
+            case .verbs:
+                return false  // siehe Spezialpfad oben
             case .verbforms:
+                // Konjugations-Training: nur Einzelwort-Verben (Infinitive),
+                // weil wir eine sauber konjugierbare Lemma-Form brauchen.
                 return item.cardType == .words && StandardVocabularyLoader.isVerb(item.french)
             }
-        } ?? []
+        }
+    }
+
+    /// Verb-Training: aus den Items einer Liste (Wörter + Phrasen) die EINDEUTIGEN
+    /// Verb-Lemmata via zentralem Analyzer ziehen und als synthetische
+    /// VocabularyItems im Infinitiv zurückgeben.
+    /// Beispiel: Liste hat „je ne sais pas" + „je sais" + „tu sais" + „je m'appelle"
+    /// → trainiert wird `savoir` (1×) und `s'appeler` (1×) — nicht die 4 Phrasen.
+    static func synthesizeVerbInfinitiveItems(
+        from items: [VocabularyItem],
+        language: StudyLanguage
+    ) -> [VocabularyItem] {
+        let stats = FrenchListStatisticsAggregator.cachedStatistics(for: items)
+        var synthesized: [VocabularyItem] = []
+        for lemma in stats.verbLemmas {
+            // DE-Übersetzung aus der Master-DB (z.B. savoir → wissen, s'appeler → heißen)
+            let germanRaw = SupplementalFreeDictLexicon.germanTranslation(
+                forFrenchLemma: lemma,
+                wordClassHint: "verb"
+            ) ?? ""
+            let germanClean = germanRaw
+                .components(separatedBy: ";")
+                .first?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                ?? germanRaw
+            guard !germanClean.isEmpty else { continue }
+            let item = VocabularyItem(
+                rawFrench: lemma,
+                rawGerman: germanClean,
+                cardType: .words,
+                sourceLanguage: language,
+                wordClass: "verb"
+            )
+            synthesized.append(item)
+        }
+        return synthesized
     }
 
     nonisolated private static let frenchArticles: Set<String> = ["le", "la", "l'", "les", "un", "une", "des", "du"]

@@ -96,6 +96,9 @@
 		A00000000000000000000246 /* OpenAIScanSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000247 /* OpenAIScanSchema.swift */; };
 		A00000000000000000000248 /* FlashcardsView+Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000249 /* FlashcardsView+Components.swift */; };
 		A00000000000000000000250 /* TrainingView+Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000251 /* TrainingView+Components.swift */; };
+		TC00000000000000000000001 /* TextCasingRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = TC00000000000000000000002 /* TextCasingRules.swift */; };
+		FA00000000000000000000001 /* FrenchLinguisticAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00000000000000000000002 /* FrenchLinguisticAnalysis.swift */; };
+		PB00000000000000000000001 /* POSBreakdownComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = PB00000000000000000000002 /* POSBreakdownComponents.swift */; };
 		VF00000000000000000000001 /* VerbformsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = VF00000000000000000000002 /* VerbformsEngine.swift */; };
 		VF00000000000000000000003 /* VerbformsSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = VF00000000000000000000004 /* VerbformsSessionController.swift */; };
 		A00000000000000000000252 /* QuizView+Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000253 /* QuizView+Components.swift */; };
@@ -493,6 +496,9 @@
 		A00000000000000000000247 /* OpenAIScanSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIScanSchema.swift; sourceTree = "<group>"; };
 		A00000000000000000000249 /* FlashcardsView+Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsView+Components.swift"; sourceTree = "<group>"; };
 		VF00000000000000000000002 /* VerbformsEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerbformsEngine.swift; sourceTree = "<group>"; };
+		TC00000000000000000000002 /* TextCasingRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextCasingRules.swift; sourceTree = "<group>"; };
+		FA00000000000000000000002 /* FrenchLinguisticAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrenchLinguisticAnalysis.swift; sourceTree = "<group>"; };
+		PB00000000000000000000002 /* POSBreakdownComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = POSBreakdownComponents.swift; sourceTree = "<group>"; };
 		VF00000000000000000000004 /* VerbformsSessionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerbformsSessionController.swift; sourceTree = "<group>"; };
 		A00000000000000000000251 /* TrainingView+Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrainingView+Components.swift"; sourceTree = "<group>"; };
 		A00000000000000000000253 /* QuizView+Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "QuizView+Components.swift"; sourceTree = "<group>"; };
@@ -905,6 +911,9 @@
 				A00000000000000000000313 /* InfoView.swift */,
 				A00000000000000000000201 /* TrainingView.swift */,
 				VF00000000000000000000002 /* VerbformsEngine.swift */,
+				TC00000000000000000000002 /* TextCasingRules.swift */,
+				FA00000000000000000000002 /* FrenchLinguisticAnalysis.swift */,
+				PB00000000000000000000002 /* POSBreakdownComponents.swift */,
 				VF00000000000000000000004 /* VerbformsSessionController.swift */,
 				A00000000000000000000237 /* TrainingView+Flow.swift */,
 				A00000000000000000000701 /* TrainingView+SessionFlow.swift */,
@@ -1374,6 +1383,9 @@
 				A00000000000000000000312 /* InfoView.swift in Sources */,
 				A00000000000000000000200 /* TrainingView.swift in Sources */,
 				VF00000000000000000000001 /* VerbformsEngine.swift in Sources */,
+				TC00000000000000000000001 /* TextCasingRules.swift in Sources */,
+				FA00000000000000000000001 /* FrenchLinguisticAnalysis.swift in Sources */,
+				PB00000000000000000000001 /* POSBreakdownComponents.swift in Sources */,
 				VF00000000000000000000003 /* VerbformsSessionController.swift in Sources */,
 				A00000000000000000000196 /* FlashcardsView.swift in Sources */,
 				A00000000000000000000696 /* FlashcardsView+Layout.swift in Sources */,

@@ -42,7 +42,9 @@ struct AppBottomBarSnackButton: View {
             action?()
         } label: {
             ZStack(alignment: .topTrailing) {
-                ElumiSnackIcon(kind, size: 30)
+                Image(systemName: "trophy.fill")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.warning)
                     .frame(width: 38, height: 38)
                     .scaleEffect(isActive ? 1.06 : 1)
                     .opacity(isActive ? 1 : 0.95)
