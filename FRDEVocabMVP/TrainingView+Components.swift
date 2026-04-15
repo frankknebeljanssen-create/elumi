@@ -101,7 +101,7 @@ extension TrainingView {
                     Text("Speed Round")
                         .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
-                    Text("45 Sekunden, so viele wie möglich!")
+                    Text("45 Sekunden")
                         .font(.system(size: 13, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }

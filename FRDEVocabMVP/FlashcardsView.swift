@@ -23,6 +23,9 @@ struct FlashcardsView: View {
     @FocusState var isCardCountFieldFocused: Bool
     let flashcardCountInputScrollID = "flashcardCountInput"
 
+    // Listen-Picker-Sheet für die custom Listen-Card im Speed-Round-Stil
+    @State var stackListPickerActive: Bool = false
+
     var currentCard: FlashcardDeckCard? {
         sessionStore.currentCard
     }

@@ -68,11 +68,13 @@ struct ListCategoryPickerView: View {
                     Text("Keine Listen gewählt")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textDisabled)
+                    // 4 Spacer-Lines, damit die Card auf 4-Zeilen-Höhe bleibt
+                    Text(" ").font(.system(size: 13))
                     Text(" ").font(.system(size: 13))
                     Text(" ").font(.system(size: 13))
                     Text(" ").font(.system(size: 11))
                 } else {
-                    ForEach(selectedLists.prefix(3)) { list in
+                    ForEach(selectedLists.prefix(4)) { list in
                         HStack(spacing: 0) {
                             Text(list.name)
                                 .font(.system(size: 14, weight: .bold, design: .rounded))
@@ -84,16 +86,20 @@ struct ListCategoryPickerView: View {
                                 .foregroundStyle(accent)
                         }
                     }
-                    if selectedLists.count > 3 {
-                        Text("+\(selectedLists.count - 3) weitere")
+                    if selectedLists.count > 4 {
+                        Text("+\(selectedLists.count - 4) weitere")
                             .font(.system(size: 12, weight: .semibold, design: .rounded))
                             .foregroundStyle(AppTheme.Colors.textSecondary)
                     }
-                    // Spacer lines to maintain 3-line height
+                    // Spacer-Lines, damit die Card auf 4-Zeilen-Höhe bleibt
                     if selectedLists.count == 1 {
                         Text(" ").font(.system(size: 13))
                         Text(" ").font(.system(size: 13))
+                        Text(" ").font(.system(size: 13))
                     } else if selectedLists.count == 2 {
+                        Text(" ").font(.system(size: 13))
+                        Text(" ").font(.system(size: 13))
+                    } else if selectedLists.count == 3 {
                         Text(" ").font(.system(size: 13))
                     }
 
@@ -222,6 +228,8 @@ struct ListSelectionSheet: View {
                 if isSelected {
                     localSelection.remove(list.id)
                 } else {
+                    // App-weites 5er-Limit für Mehrfachauswahl
+                    guard localSelection.count < AppLayout.maxSelectableLists else { return }
                     localSelection.insert(list.id)
                 }
             }
@@ -316,6 +324,8 @@ struct TrainingCategoryListSheet: View {
                 if isSelected {
                     localSelection.remove(list.id)
                 } else {
+                    // App-weites 5er-Limit für Mehrfachauswahl
+                    guard localSelection.count < AppLayout.maxSelectableLists else { return }
                     localSelection.insert(list.id)
                 }
             }

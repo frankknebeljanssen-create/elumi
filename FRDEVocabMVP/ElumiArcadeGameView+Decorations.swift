@@ -1,5 +1,153 @@
 import SwiftUI
 
+// MARK: - Standalone Icon-Views (überall in der App nutzbar)
+
+/// Echter Elumi-Avatar — gleiches Asset wie im Footer-Button und im Spiel.
+struct ArcadeElumiAvatar: View {
+    let size: CGFloat
+    var withShadow: Bool = true
+
+    var body: some View {
+        Image("SplashCharacter")
+            .resizable()
+            .interpolation(.high)
+            .scaledToFit()
+            .frame(width: size, height: size)
+            .shadow(color: withShadow ? .black.opacity(0.16) : .clear,
+                    radius: withShadow ? 4 : 0,
+                    x: 0,
+                    y: withShadow ? 2 : 0)
+    }
+}
+
+/// Elumi-Freund (blauer „falscher" Elumi). Statische Version des hazardElumiIcon.
+struct ArcadeHazardElumiAvatar: View {
+    let size: CGFloat
+    private let glowColor = Color(red: 0.2, green: 0.6, blue: 0.9)
+
+    var body: some View {
+        let friendSize = size * 1.1
+        ZStack {
+            Circle()
+                .fill(glowColor.opacity(0.22))
+                .frame(width: friendSize * 1.15, height: friendSize * 1.15)
+                .blur(radius: 5)
+
+            Image("SplashCharacter")
+                .resizable()
+                .interpolation(.high)
+                .scaledToFit()
+                .frame(width: friendSize * 0.92, height: friendSize * 0.92)
+                .saturation(0.85)
+                .hueRotation(.degrees(-80))
+                .brightness(0.05)
+                .clipShape(Circle())
+
+            Circle()
+                .fill(Color.cyan)
+                .frame(width: friendSize * 0.20, height: friendSize * 0.20)
+                .overlay(
+                    Image(systemName: "heart.fill")
+                        .font(.system(size: friendSize * 0.11, weight: .bold))
+                        .foregroundStyle(.white)
+                )
+                .offset(x: friendSize * 0.3, y: -friendSize * 0.28)
+        }
+        .shadow(color: glowColor.opacity(0.35), radius: 10, x: 0, y: 4)
+    }
+}
+
+/// Saugglocke — statische Version des suctionCupIcon.
+struct ArcadeSuctionIconStandalone: View {
+    let size: CGFloat
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(AppTheme.Colors.warning.opacity(0.16))
+                .frame(width: size * 1.2, height: size * 1.2)
+                .blur(radius: 6)
+
+            Circle()
+                .stroke(AppTheme.Colors.warning.opacity(0.46), lineWidth: 1.6)
+                .frame(width: size * 1.08, height: size * 1.08)
+
+            Capsule()
+                .fill(AppTheme.Colors.textPrimary.opacity(0.92))
+                .frame(width: size * 0.16, height: size * 0.34)
+                .offset(y: -size * 0.16)
+
+            RoundedRectangle(cornerRadius: size * 0.16, style: .continuous)
+                .fill(AppTheme.Colors.warning)
+                .frame(width: size * 0.38, height: size * 0.18)
+                .offset(y: -size * 0.03)
+
+            Ellipse()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            AppTheme.Colors.elumiMint.opacity(0.88),
+                            AppTheme.Colors.primary.opacity(0.9)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .frame(width: size * 0.86, height: size * 0.44)
+                .overlay(
+                    Ellipse()
+                        .stroke(Color.white.opacity(0.28), lineWidth: 1.2)
+                )
+                .offset(y: size * 0.12)
+
+            Image(systemName: "sparkles")
+                .font(.system(size: size * 0.18, weight: .black))
+                .foregroundStyle(Color.white.opacity(0.92))
+                .offset(x: size * 0.18, y: -size * 0.16)
+        }
+        .frame(width: size, height: size)
+        .shadow(color: AppTheme.Colors.warning.opacity(0.28), radius: 12, x: 0, y: 5)
+    }
+}
+
+/// Zeitlupe-Trank — statische Version des slowMotionPotionIcon.
+struct ArcadeSlowMotionIconStandalone: View {
+    let size: CGFloat
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            Color.white.opacity(0.9),
+                            Color.blue.opacity(0.85),
+                            Color.blue.opacity(0.5)
+                        ],
+                        center: .topLeading,
+                        startRadius: 2,
+                        endRadius: size * 0.54
+                    )
+                )
+                .frame(width: size, height: size)
+                .overlay(
+                    Circle()
+                        .stroke(Color.cyan.opacity(0.5), lineWidth: 1.5)
+                )
+
+            Text("🧪")
+                .font(.system(size: size * 0.48))
+
+            Circle()
+                .fill(Color.white.opacity(0.25))
+                .frame(width: size * 0.2, height: size * 0.2)
+                .offset(x: -size * 0.16, y: -size * 0.18)
+        }
+        .frame(width: size, height: size)
+        .shadow(color: Color.blue.opacity(0.4), radius: 14, x: 0, y: 4)
+    }
+}
+
 extension ElumiArcadeGameView {
     @ViewBuilder
     func fallingObjectView(for snack: ElumiArcadeSnackState, at date: Date) -> some View {

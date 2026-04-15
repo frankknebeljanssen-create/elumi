@@ -209,16 +209,8 @@ extension FlashcardsView {
                     }
                     .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))
 
-                    ListCategoryPickerView(
-                        availableLists: availableStackLists,
-                        selectedListIDs: setup.selectedStackListIDs,
-                        accent: sectionStyle.accent,
-                        style: sectionStyle,
-                        feedbackPlayer: feedbackPlayer,
-                        summaryText: selectedStackSummary,
-                        onSelectionChanged: { setup.selectedStackListIDs = $0 }
-                    )
-                    .padding(.bottom, AppTheme.Spacing.sm)
+                    flashcardsListSelectionCard
+                        .padding(.bottom, AppTheme.Spacing.sm)
 
                     if isDictionarySelectedInStack {
                         flashcardDictionaryLevelCard
@@ -268,6 +260,78 @@ extension FlashcardsView {
                 setup.selectedStackListIDs = updatedSelection
                 setup.showingStackComposer = false
             }
+        }
+    }
+
+    /// Custom Listen-Auswahl-Card im Speed-Round-Stil — analog zu den
+    /// Trainings-Modulen. Listen werden untereinander angezeigt (max 5),
+    /// Card wächst nach unten. Tap öffnet das Listen-Auswahl-Sheet.
+    private var flashcardsListSelectionCard: some View {
+        let selectedIDs = setup.selectedStackListIDs
+        let selectedLists = availableStackLists.filter { selectedIDs.contains($0.id) }
+        let hasSelection = !selectedLists.isEmpty
+        let totalCards = selectedStackCardCount
+
+        return Button {
+            feedbackPlayer.playTabSwitch()
+            stackListPickerActive = true
+        } label: {
+            HStack(alignment: .center, spacing: 14) {
+                Image(systemName: "list.bullet.rectangle.fill")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Ausgewählte Listen")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.cta)
+                        .textCase(.uppercase)
+                        .padding(.bottom, 2)
+                    if hasSelection {
+                        ForEach(selectedLists.prefix(AppLayout.maxSelectableLists)) { list in
+                            Text(list.name)
+                                .font(.system(size: 17, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.textPrimary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
+                        }
+                        Text("\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n") · \(totalCards) Karten gesamt")
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                            .padding(.top, 2)
+                    } else {
+                        Text("Keine Liste gewählt")
+                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                        Text("Tippe zum Auswählen")
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Image(systemName: "pencil.circle.fill")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(sectionStyle.accent)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 28)
+            .frame(maxWidth: .infinity, minHeight: 100)
+            .appCardBackground(sectionStyle, intensity: hasSelection ? 0.18 : 0.07, cornerRadius: AppLayout.largeCardCornerRadius)
+        }
+        .buttonStyle(.plain)
+        .sheet(isPresented: $stackListPickerActive) {
+            ListSelectionSheet(
+                style: sectionStyle,
+                ownLists: availableStackLists.filter { !$0.isBuiltIn || $0.isAggregateVocabulary },
+                levelLists: availableStackLists.filter { $0.collectionPreset == .standardLevel },
+                topicLists: availableStackLists.filter { $0.collectionPreset == .standardTopic },
+                selectedListIDs: setup.selectedStackListIDs,
+                onSelectionChanged: { updated in
+                    setup.selectedStackListIDs = updated
+                    stackListPickerActive = false
+                }
+            )
         }
     }
 }

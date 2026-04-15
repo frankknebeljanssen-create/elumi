@@ -110,32 +110,60 @@ extension ElumiArcadeGameView {
                     .font(.system(size: 30, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    arcadeRuleRow(icon: "hand.draw.fill", text: "Zieh Elumi zum Futter", iconSize: 20)
-                    arcadeRuleRow(icon: "heart.fill", text: "4 Leben — verpasstes Futter = -1", iconSize: 20)
+                VStack(alignment: .leading, spacing: 9) {
+                    // Zeile 1: Zieh Elumi + 3 Snack-Icons
+                    HStack(spacing: 8) {
+                        Text("Zieh Elumi zum Futter")
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                        ElumiSnackIcon(.wuermchen, size: 18)
+                        ElumiSnackIcon(.wasserfloh, size: 20)
+                        ElumiSnackIcon(.algenkugel, size: 18)
+                    }
+
+                    // Zeile 2: 4 Leben + 4 Mini-Elumi
+                    HStack(spacing: 6) {
+                        Text("4 Leben")
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                        ForEach(0..<4, id: \.self) { _ in
+                            ArcadeElumiAvatar(size: 18, withShadow: false)
+                        }
+                    }
+
+                    Text("Verpasstes Futter = −1 Leben")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+
+                    // Elumi-Freund + Text
                     HStack(spacing: 10) {
-                        Image("SplashCharacter")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 22, height: 22)
-                            .saturation(0.85)
-                            .hueRotation(.degrees(-80))
-                            .brightness(0.05)
-                            .clipShape(Circle())
-                        Text("Elumi-Freunde nicht fressen — kostet 1 Leben!")
+                        ArcadeHazardElumiAvatar(size: 24)
+                        Text("Elumi-Freund fressen = −1 Leben")
                             .font(.system(size: 14, weight: .semibold, design: .rounded))
                             .foregroundStyle(.cyan)
                     }
-                    arcadeRuleRow(icon: "fish.fill", text: "Alle 3 Runden: Fische fangen = Extra-Leben!", tint: .cyan, iconSize: 20)
-                    arcadeRuleRow(icon: "bolt.fill", text: "Runden werden schneller", iconSize: 20)
+
+                    Text("Bonus-Runde Fische fangen = +1 Extra Leben")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+
+                    // Saugglocke (echtes Icon)
+                    HStack(spacing: 10) {
+                        ArcadeSuctionIconStandalone(size: 26)
+                        Text("Saugglocke: zieht Snacks heran")
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                    }
+
+                    // Zeitlupe-Trank (echtes Icon)
+                    HStack(spacing: 10) {
+                        ArcadeSlowMotionIconStandalone(size: 26)
+                        Text("Zeitlupe-Trank: alles in Slow-Motion (5 Sek.)")
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                    }
                 }
                 .padding(.horizontal, 4)
-
-                HStack(spacing: 16) {
-                    ElumiSnackIcon(.wuermchen, size: 30)
-                    ElumiSnackIcon(.wasserfloh, size: 28)
-                    ElumiSnackIcon(.algenkugel, size: 26)
-                }
 
                 HStack(spacing: 6) {
                     Image(systemName: "sparkles")

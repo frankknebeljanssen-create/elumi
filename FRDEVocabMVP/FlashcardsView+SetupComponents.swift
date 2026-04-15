@@ -188,8 +188,14 @@ extension FlashcardsView {
                 .frame(maxWidth: .infinity, alignment: .center)
 
             if maxCards > minSlider {
-                Slider(value: sliderValue, in: Double(minSlider)...Double(maxCards), step: 1)
-                    .tint(sectionStyle.accent)
+                // Custom Slider mit Elumi-Handle. Etwas eingerückt, damit man
+                // nicht ganz bis an den Card-Rand ziehen muss, um Min/Max zu erreichen.
+                elumiCardCountSlider(
+                    value: sliderValue,
+                    range: Double(minSlider)...Double(maxCards),
+                    step: 1
+                )
+                .padding(.horizontal, 22)
 
                 HStack {
                     Text("\(minSlider)")
@@ -235,5 +241,59 @@ extension FlashcardsView {
         .frame(minHeight: title.isEmpty ? 72 : AppLayout.largeSelectionHeight)
         .padding(.horizontal, AppTheme.Spacing.md)
         .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+    }
+
+    /// Custom Slider mit Elumi-Avatar als Handle. Dünner Track + großer
+    /// Drag-Handle, Tap+Drag auf der gesamten Track-Fläche.
+    @ViewBuilder
+    func elumiCardCountSlider(
+        value: Binding<Double>,
+        range: ClosedRange<Double>,
+        step: Double = 1
+    ) -> some View {
+        let handleSize: CGFloat = 32
+        let trackHeight: CGFloat = 8
+
+        GeometryReader { geo in
+            let trackWidth = geo.size.width
+            let progress: CGFloat = {
+                let span = range.upperBound - range.lowerBound
+                guard span > 0 else { return 0 }
+                return CGFloat((value.wrappedValue - range.lowerBound) / span)
+            }()
+            let handleX = max(handleSize / 2, min(trackWidth - handleSize / 2, trackWidth * progress))
+
+            ZStack(alignment: .leading) {
+                // Track-Hintergrund
+                Capsule()
+                    .fill(AppTheme.Colors.border.opacity(0.35))
+                    .frame(height: trackHeight)
+                    .frame(maxHeight: .infinity)
+
+                // Track-Fortschritt
+                Capsule()
+                    .fill(sectionStyle.accent)
+                    .frame(width: max(handleSize / 2, trackWidth * progress), height: trackHeight)
+                    .frame(maxHeight: .infinity)
+
+                // Elumi-Handle (echtes Asset wie im Footer + Spiel)
+                ArcadeElumiAvatar(size: handleSize, withShadow: true)
+                    .offset(x: handleX - handleSize / 2)
+                    .animation(.spring(response: 0.18, dampingFraction: 0.85), value: handleX)
+            }
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { drag in
+                        let clampedX = min(max(0, drag.location.x), trackWidth)
+                        let span = range.upperBound - range.lowerBound
+                        guard span > 0 else { return }
+                        let newValue = range.lowerBound + Double(clampedX / trackWidth) * span
+                        let stepped = (newValue / step).rounded() * step
+                        value.wrappedValue = min(max(range.lowerBound, stepped), range.upperBound)
+                    }
+            )
+        }
+        .frame(height: handleSize)
     }
 }

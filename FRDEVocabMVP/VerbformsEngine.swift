@@ -50,11 +50,10 @@ enum VerbformsTense: String, CaseIterable, Identifiable {
         true // wird dynamisch geprüft
     }
 
-    /// Nur Präsens ist aktuell spielbar. Andere Zeitformen werden in der UI
-    /// angezeigt, aber gedimmt („demnächst"), bis sie didaktisch sauber
-    /// integriert sind.
+    /// Aktuell spielbar: Präsens + Imparfait. Futur und Passé composé bleiben
+    /// gedimmt („demnächst"), bis sie didaktisch sauber integriert sind.
     var isAvailable: Bool {
-        self == .present
+        self == .present || self == .imparfait
     }
 }
 

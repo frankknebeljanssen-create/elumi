@@ -15,6 +15,13 @@ enum AppLayout {
     static let topBarInsetTop: CGFloat = AppTheme.Spacing.sm
     static let bottomBarInsetBottom: CGFloat = AppTheme.Spacing.xs
     static let contentTopPadding: CGFloat = AppTheme.Spacing.xl
+
+    /// App-weite Obergrenze für Mehrfachauswahl von Vokabel-Listen
+    /// (Training, Flashcards, Verbformen). Mehr als 5 würden in den Card-Layouts
+    /// (Listen-Übersicht in der Setup-Card) den Bildschirm sprengen.
+    /// Hinweis: Limit auf 6 statt 5 gesetzt, damit auch nach internen Aggregate-
+    /// Removal-Schritten garantiert 5 Listen wählbar sind.
+    static let maxSelectableLists: Int = 6
 }
 
 extension View {

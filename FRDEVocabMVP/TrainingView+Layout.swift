@@ -160,7 +160,7 @@ extension TrainingView {
             ScreenHeaderCard(
                 style: sectionStyle,
                 title: sessionHeaderTitle,
-                subtitle: isVerbformsMode ? "Konjugationen üben" : "",
+                subtitle: "",
                 systemImage: isVerbformsMode
                     ? "text.line.first.and.arrowtriangle.forward"
                     : "waveform.circle.fill"
@@ -223,9 +223,13 @@ extension TrainingView {
                 // Verbformen: Custom Listen-Card im Speed-Round-Stil + Setup-Optionen
                 verbformsListSelectionCard
                 verbformsSetupOptions
+            } else if session.trainingMode == .verbs {
+                verbsListSelectionCard
+            } else if session.trainingMode == .nouns {
+                nounsListSelectionCard
+            } else if session.trainingMode == .articles {
+                articlesListSelectionCard
             } else {
-                // Nomen, Artikel, Verben: Ausgewählte Listen card
-                // (Verben trainiert NUR Infinitive → kein Wörter/Phrasen-Selector nötig)
                 ListCategoryPickerView(
                     availableLists: availableTrainingLists,
                     selectedListIDs: session.selectedTrainingListIDs,
@@ -310,6 +314,8 @@ extension TrainingView {
         systemImage: String,
         subtitle: String
     ) -> some View {
+        // Subtitle wird absichtlich nicht angezeigt — nur Icon + Titel,
+        // Card etwas flacher (vertikales Padding 14 → 10).
         Button {
             feedbackPlayer.playTabSwitch()
             if category == .all {
@@ -331,13 +337,9 @@ extension TrainingView {
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
-
-                Text(subtitle)
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
+            .padding(.vertical, 10)
             .background(
                 RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
                     .fill(AppTheme.Colors.surface)
@@ -437,18 +439,13 @@ extension TrainingView {
 
     // MARK: - Verbformen Setup Options
 
-    /// Custom Listen-Auswahl-Card für Verbformen — exakt im Speed-Round-Stil:
-    /// `appCardBackground` (intensity 0.18), Icon + Text in Akzent/Primary,
-    /// Anzahl Verben in CTA-Amber als klickbarer Hinweis.
+    /// Custom Listen-Auswahl-Card für Verbformen — Speed-Round-Stil.
+    /// Bei Mehrfachauswahl werden ALLE gewählten Listen untereinander angezeigt
+    /// (max. 5 lt. App-Limit), darunter die Gesamt-Anzahl Verben.
     private var verbformsListSelectionCard: some View {
         let selectedIDs = session.selectedTrainingListIDs
         let selectedLists = availableTrainingLists.filter { selectedIDs.contains($0.id) }
         let hasSelection = !selectedLists.isEmpty
-        let displayName: String = {
-            if !hasSelection { return "Keine Liste gewählt" }
-            if selectedLists.count == 1 { return selectedLists[0].name }
-            return "\(selectedLists.count) Listen"
-        }()
         let lemmas = verbformsLemmasFromSelectedLists()
         let verbformsCount = lemmas.count
 
@@ -456,49 +453,49 @@ extension TrainingView {
             feedbackPlayer.playTabSwitch()
             verbformsListPickerActive = true
         } label: {
-            HStack(spacing: 14) {
-                // Listen-Icon — exakt selbe Farbe wie der Bolt im Speed-Round-Toggle
-                // (textSecondary = das dezente Grau, das der Bolt im inaktiven
-                // Default-Zustand hat). Bewusst NICHT vom hasSelection abhängig.
+            HStack(alignment: .center, spacing: 14) {
                 Image(systemName: "list.bullet.rectangle.fill")
                     .font(.system(size: 32, weight: .bold))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(displayName)
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
                     if hasSelection {
+                        ForEach(selectedLists.prefix(AppLayout.maxSelectableLists)) { list in
+                            Text(list.name)
+                                .font(.system(size: 17, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.textPrimary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
+                        }
+                        // Gesamt-Anzahl Verben über alle gewählten Listen
                         Button {
                             feedbackPlayer.playTabSwitch()
                             verbformsVerbDetailActive = true
                         } label: {
-                            Text("\(verbformsCount) Verb\(verbformsCount == 1 ? "" : "en")")
+                            Text("\(verbformsCount) Verb\(verbformsCount == 1 ? "" : "en") gesamt")
                                 .font(.system(size: 13, weight: .medium, design: .rounded))
                                 .foregroundStyle(AppTheme.Colors.textSecondary)
                                 .underline(true, color: AppTheme.Colors.textSecondary.opacity(0.4))
                         }
                         .buttonStyle(.plain)
+                        .padding(.top, 2)
                     } else {
+                        Text("Keine Liste gewählt")
+                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
                         Text("Tippe zum Auswählen")
                             .font(.system(size: 13, weight: .medium, design: .rounded))
                             .foregroundStyle(AppTheme.Colors.textSecondary)
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                Spacer()
-
-                // Stift — gleiche Größe wie das Checkmark im Speed-Round (24pt),
-                // damit die Card-Höhe exakt identisch ausfällt.
                 Image(systemName: "pencil.circle.fill")
                     .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(trainingActionTint)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 28)
-            // Identische Höhen-Konstante zur Speed-Round-Card (= pixelgenau gleich).
             .frame(maxWidth: .infinity, minHeight: 100)
             .appCardBackground(sectionStyle, intensity: hasSelection ? 0.18 : 0.07, cornerRadius: AppLayout.largeCardCornerRadius)
         }
@@ -521,40 +518,246 @@ extension TrainingView {
         }
     }
 
-    private var verbformsSetupOptions: some View {
-        VStack(spacing: 12) {
-            // Hinweis: Modus-Toggle (Auswählen/Tippen) wurde entfernt.
-            // Verbformen läuft jetzt ausschließlich im Drag-&-Drop-Modus.
+    /// Berechnet die Lemma-Liste für die Setup-Card abhängig vom Trainings-Modus.
+    /// Die expensive `FrenchListStatisticsAggregator.cachedStatistics`-Berechnung
+    /// läuft auf einem Background-Thread (`Task.detached`), das Ergebnis wird
+    /// per `MainActor.run` in `setupCardLemmas` zurückgespielt — verhindert
+    /// UI-Freeze beim Öffnen oder bei Selection-Wechsel.
+    func refreshSetupCardLemmas() {
+        let mode = session.trainingMode
+        guard mode != .vocabulary else {
+            setupCardLemmas = []
+            setupCanStartCached = false
+            return
+        }
+        let selectedIDs = session.selectedTrainingListIDs
+        let lists = availableTrainingLists.filter { selectedIDs.contains($0.id) }
+        let lang = selectedAppDirection.sourceLanguage
+        let items = lists.flatMap(\.items).filter { $0.sourceLanguage == lang }
 
-            // Tense selection
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Zeitform")
-                    .font(AppTheme.Typography.caption)
+        guard !items.isEmpty else {
+            setupCardLemmas = []
+            setupCanStartCached = false
+            return
+        }
+
+        Task.detached(priority: .userInitiated) {
+            let stats = FrenchListStatisticsAggregator.cachedStatistics(for: items)
+            let lemmas: [String]
+            switch mode {
+            case .verbforms, .verbs:
+                lemmas = stats.verbLemmas
+            case .nouns, .articles:
+                lemmas = stats.nounLemmas
+            case .vocabulary:
+                lemmas = []
+            }
+            let canStart = !lemmas.isEmpty
+            await MainActor.run {
+                setupCardLemmas = lemmas
+                setupCanStartCached = canStart
+            }
+        }
+    }
+
+    /// Anzahl eindeutiger Nomen-Lemmata aus der Listen-Analyse — Pendant zu
+    /// `verbformsLemmasFromSelectedLists()`. Wird in der Listen-Card der
+    /// Module „Nomen" und „Artikel" als Anzeige verwendet.
+    func nounsLemmasFromSelectedLists() -> [String] {
+        let selectedIDs = session.selectedTrainingListIDs
+        guard !selectedIDs.isEmpty else { return [] }
+        let lists = availableTrainingLists.filter { selectedIDs.contains($0.id) }
+        let items = lists.flatMap(\.items)
+            .filter { $0.sourceLanguage == selectedAppDirection.sourceLanguage }
+        let stats = FrenchListStatisticsAggregator.cachedStatistics(for: items)
+        return stats.nounLemmas
+    }
+
+    /// Generischer Helper für die Listen-Auswahl-Card im Speed-Round-Stil.
+    /// Nutzt Listen aus `session.selectedTrainingListIDs`. Zeigt alle gewählten
+    /// Listen untereinander (max. 5), darunter den `countLabel`-Text mit
+    /// `countValue`. Optionaler Tap-Handler auf den Counter (Detail-Sheet).
+    @ViewBuilder
+    private func setupListSelectionCard(
+        countLabel: String,
+        countValue: Int,
+        onTapPicker: @escaping () -> Void,
+        onTapCounter: (() -> Void)? = nil
+    ) -> some View {
+        let selectedIDs = session.selectedTrainingListIDs
+        let selectedLists = availableTrainingLists.filter { selectedIDs.contains($0.id) }
+        let hasSelection = !selectedLists.isEmpty
+
+        Button {
+            feedbackPlayer.playTabSwitch()
+            onTapPicker()
+        } label: {
+            HStack(alignment: .center, spacing: 14) {
+                Image(systemName: "list.bullet.rectangle.fill")
+                    .font(.system(size: 32, weight: .bold))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
 
-                LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
-                    ForEach(VerbformsTense.allCases) { tense in
-                        let isActive = tense.isAvailable   // aktuell nur Präsens
-                        let isSelected = verbformsSession.selectedTenses.contains(tense)
-                        Button {
-                            guard isActive else { return }
-                            if isSelected {
-                                if verbformsSession.selectedTenses.count > 1 {
-                                    verbformsSession.selectedTenses.remove(tense)
-                                }
-                            } else {
-                                verbformsSession.selectedTenses.insert(tense)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Ausgewählte Listen")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.cta)
+                        .textCase(.uppercase)
+                        .padding(.bottom, 2)
+                    if hasSelection {
+                        ForEach(selectedLists.prefix(AppLayout.maxSelectableLists)) { list in
+                            Text(list.name)
+                                .font(.system(size: 17, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.textPrimary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
+                        }
+                        // Gesamt-Anzahl mit Listen-Anzahl-Prefix („3 Listen · 47 Verben gesamt").
+                        // Klickbar wenn Detail-Handler übergeben.
+                        let listsText = "\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n")"
+                        let summary = "\(listsText) · \(countValue) \(countLabel) gesamt"
+                        if let onTapCounter {
+                            Button {
+                                feedbackPlayer.playTabSwitch()
+                                onTapCounter()
+                            } label: {
+                                Text(summary)
+                                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                                    .underline(true, color: AppTheme.Colors.textSecondary.opacity(0.4))
                             }
-                        } label: {
-                            VStack(spacing: 2) {
-                                Text(tense.rawValue)
-                                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                                if !isActive {
-                                    Text("demnächst")
-                                        .font(.system(size: 11, weight: .semibold, design: .rounded))
-                                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                                }
+                            .buttonStyle(.plain)
+                            .padding(.top, 2)
+                        } else {
+                            Text(summary)
+                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.textSecondary)
+                                .padding(.top, 2)
+                        }
+                    } else {
+                        Text("Keine Liste gewählt")
+                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                        Text("Tippe zum Auswählen")
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Image(systemName: "pencil.circle.fill")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(trainingActionTint)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 28)
+            .frame(maxWidth: .infinity, minHeight: 100)
+            .appCardBackground(sectionStyle, intensity: hasSelection ? 0.18 : 0.07, cornerRadius: AppLayout.largeCardCornerRadius)
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// Custom Listen-Auswahl-Card für Verben — Speed-Round-Stil mit klickbarer
+    /// Verben-Anzahl. Counter aus gecachtem `setupCardLemmas` (wird via
+    /// onChange aktualisiert, nicht pro Render).
+    private var verbsListSelectionCard: some View {
+        setupListSelectionCard(
+            countLabel: "Verben",
+            countValue: setupCardLemmas.count,
+            onTapPicker: { verbsListPickerActive = true },
+            onTapCounter: { verbsVerbDetailActive = true }
+        )
+        .sheet(isPresented: $verbsListPickerActive) {
+            ListSelectionSheet(
+                style: sectionStyle,
+                ownLists: availableTrainingLists.filter { !$0.isBuiltIn || $0.isAggregateVocabulary },
+                levelLists: availableTrainingLists.filter { $0.collectionPreset == .standardLevel },
+                topicLists: availableTrainingLists.filter { $0.collectionPreset == .standardTopic },
+                selectedListIDs: session.selectedTrainingListIDs,
+                onSelectionChanged: { updated in
+                    session.selectedTrainingListIDs = updated
+                    verbsListPickerActive = false
+                }
+            )
+        }
+        .sheet(isPresented: $verbsVerbDetailActive) {
+            VerbLemmaListSheet(lemmas: setupCardLemmas)
+        }
+    }
+
+    /// Custom Listen-Auswahl-Card für Nomen — Speed-Round-Stil, ohne Detail-Sheet
+    /// auf der Anzahl (User wollte nur Anzeige). Counter aus gecachtem State.
+    private var nounsListSelectionCard: some View {
+        setupListSelectionCard(
+            countLabel: "Nomen",
+            countValue: setupCardLemmas.count,
+            onTapPicker: { nounsListPickerActive = true },
+            onTapCounter: nil
+        )
+        .sheet(isPresented: $nounsListPickerActive) {
+            ListSelectionSheet(
+                style: sectionStyle,
+                ownLists: availableTrainingLists.filter { !$0.isBuiltIn || $0.isAggregateVocabulary },
+                levelLists: availableTrainingLists.filter { $0.collectionPreset == .standardLevel },
+                topicLists: availableTrainingLists.filter { $0.collectionPreset == .standardTopic },
+                selectedListIDs: session.selectedTrainingListIDs,
+                onSelectionChanged: { updated in
+                    session.selectedTrainingListIDs = updated
+                    nounsListPickerActive = false
+                }
+            )
+        }
+    }
+
+    /// Custom Listen-Auswahl-Card für Artikel — gleiche Anzeige wie Nomen.
+    private var articlesListSelectionCard: some View {
+        setupListSelectionCard(
+            countLabel: "Nomen",
+            countValue: setupCardLemmas.count,
+            onTapPicker: { articlesListPickerActive = true },
+            onTapCounter: nil
+        )
+        .sheet(isPresented: $articlesListPickerActive) {
+            ListSelectionSheet(
+                style: sectionStyle,
+                ownLists: availableTrainingLists.filter { !$0.isBuiltIn || $0.isAggregateVocabulary },
+                levelLists: availableTrainingLists.filter { $0.collectionPreset == .standardLevel },
+                topicLists: availableTrainingLists.filter { $0.collectionPreset == .standardTopic },
+                selectedListIDs: session.selectedTrainingListIDs,
+                onSelectionChanged: { updated in
+                    session.selectedTrainingListIDs = updated
+                    articlesListPickerActive = false
+                }
+            )
+        }
+    }
+
+    private var verbformsSetupOptions: some View {
+        // Tense-Selector im Speed-Round/Listen-Stil:
+        // Links Uhr-Icon (gleiche Größe + Farbe wie Listen-Icon), rechts daneben
+        // die 4 Tense-Buttons gleichmäßig in einer Reihe verteilt.
+        HStack(spacing: 14) {
+            Image(systemName: "clock.fill")
+                .font(.system(size: 32, weight: .bold))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+
+            HStack(spacing: 6) {
+                ForEach(VerbformsTense.allCases) { tense in
+                    let isActive = tense.isAvailable
+                    let isSelected = verbformsSession.selectedTenses.contains(tense)
+                    Button {
+                        guard isActive else { return }
+                        if isSelected {
+                            if verbformsSession.selectedTenses.count > 1 {
+                                verbformsSession.selectedTenses.remove(tense)
                             }
+                        } else {
+                            verbformsSession.selectedTenses.insert(tense)
+                        }
+                    } label: {
+                        Text(tense.rawValue)
+                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.6)
                             .frame(maxWidth: .infinity)
                             .frame(minHeight: 44)
                             .foregroundStyle(
@@ -567,9 +770,9 @@ extension TrainingView {
                                     ? trainingActionTint
                                     : (isActive ? AppTheme.Colors.surface : AppTheme.Colors.surface.opacity(0.4))
                             )
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                             .overlay(
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
                                     .stroke(
                                         isSelected
                                             ? trainingActionTint
@@ -578,16 +781,16 @@ extension TrainingView {
                                     )
                             )
                             .opacity(isActive ? 1.0 : 0.45)
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(!isActive)
                     }
+                    .buttonStyle(.plain)
+                    .disabled(!isActive)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
-            .appCardBackground(sectionStyle, intensity: 0.18, cornerRadius: AppLayout.largeCardCornerRadius)
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 28)
+        .frame(maxWidth: .infinity, minHeight: 100)
+        .appCardBackground(sectionStyle, intensity: 0.18, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
     // MARK: - Verbformen Session Screen
@@ -1245,17 +1448,18 @@ extension TrainingView {
 
     /// Kann Verbformen mit der aktuellen Listen-Auswahl gestartet werden?
     var verbformsCanStart: Bool {
-        let lemmas = verbformsLemmasFromSelectedLists()
-        return !lemmas.isEmpty && !verbformsSession.availableTenses.isEmpty
+        // Nutzt cached Lemma-State (gleich wie canStartTraining), damit der
+        // Setup-Body keinen synchronen analyze() pro Render auslöst.
+        return setupCanStartCached && !verbformsSession.availableTenses.isEmpty
     }
 
     /// Hilfetext, der erklärt, warum nicht gestartet werden kann.
+    /// Liest aus dem gecachten setupCardLemmas — kein Live-Compute pro Render.
     var verbformsStartHint: String {
         if session.selectedTrainingListIDs.isEmpty {
             return "Wähle zuerst eine Liste aus."
         }
-        let lemmas = verbformsLemmasFromSelectedLists()
-        if lemmas.isEmpty {
+        if setupCardLemmas.isEmpty {
             return "In der gewählten Liste wurden keine Verben erkannt."
         }
         if verbformsSession.availableTenses.isEmpty {
@@ -1369,6 +1573,7 @@ extension TrainingView {
             .onAppear {
                 handleTrainingAppear()
                 if isVerbformsMode { loadVerbformsAvailableTenses() }
+                refreshSetupCardLemmas()
             }
             .onDisappear {
                 stopSpeedRoundTimer()
@@ -1385,6 +1590,11 @@ extension TrainingView {
             .onChange(of: session.selectedTrainingListIDs) { _, _ in
                 // Verfügbare Zeiten für Verbformen hängen direkt an der gewählten Liste
                 if isVerbformsMode { loadVerbformsAvailableTenses() }
+                // Setup-Card-Lemmas neu berechnen (gecached, NICHT pro Render)
+                refreshSetupCardLemmas()
+            }
+            .onChange(of: session.trainingMode) { _, _ in
+                refreshSetupCardLemmas()
             }
             .onChange(of: session.currentTrainingItem) { _, newItem in
                 // Pragmatischer Fix gegen „Lösungswort fehlt in Runde 2":

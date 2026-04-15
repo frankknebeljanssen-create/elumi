@@ -123,6 +123,8 @@ struct FlashcardStackComposerSheet: View {
         if localSelection.contains(list.id) {
             localSelection.remove(list.id)
         } else {
+            // App-weites 5er-Limit für Mehrfachauswahl
+            guard localSelection.count < AppLayout.maxSelectableLists else { return }
             localSelection.insert(list.id)
         }
     }

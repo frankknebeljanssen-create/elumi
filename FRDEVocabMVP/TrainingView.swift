@@ -63,6 +63,25 @@ struct TrainingView: View {
     // Verbformen Verb-Lemma-Detail-Sheet (geöffnet via „X Verben"-Tap)
     @State var verbformsVerbDetailActive: Bool = false
 
+    // Verben-Modul Listen-Picker / Lemma-Detail (eigene Sheet-States, damit
+    // die Custom-Card im Verben-Setup unabhängig von Verbformen funktioniert)
+    @State var verbsListPickerActive: Bool = false
+    @State var verbsVerbDetailActive: Bool = false
+
+    // Nomen + Artikel: jeweils eigener Listen-Picker (gleicher Stil wie Verben)
+    @State var nounsListPickerActive: Bool = false
+    @State var articlesListPickerActive: Bool = false
+
+    // Cache: Lemma-Liste für die aktuelle Setup-Card. Wird bei Selection- oder
+    // Mode-Wechsel via onChange neu berechnet, NICHT bei jedem Render — sonst
+    // hängt die App ab ~4 großen Listen (verbformsLemmasFromSelectedLists ist
+    // teuer wegen FrenchListStatisticsAggregator).
+    @State var setupCardLemmas: [String] = []
+    /// Gecachter „kann Training starten"-Flag für die Modi mit teurer
+    /// Analyse-Pipeline (verbs/verbforms/nouns/articles). Wird im selben
+    /// Background-Task gesetzt wie `setupCardLemmas`.
+    @State var setupCanStartCached: Bool = false
+
     enum ListPickerCategory: Identifiable {
         case own, level, topic, all
         var id: String {
@@ -331,7 +350,15 @@ struct TrainingView: View {
     }
 
     var canStartTraining: Bool {
-        !activeItems.isEmpty
+        // Vocabulary nutzt simple cardType-Filterung (kein analyze) — fast.
+        // Verbs/Verbforms/Nouns/Articles laufen über teure Pipeline und werden
+        // im setupCanStartCached gehalten (per onChange aktualisiert).
+        switch session.trainingMode {
+        case .vocabulary:
+            return !activeItems.isEmpty
+        case .verbs, .verbforms, .nouns, .articles:
+            return setupCanStartCached
+        }
     }
 
     var isSpeechRecording: Bool {

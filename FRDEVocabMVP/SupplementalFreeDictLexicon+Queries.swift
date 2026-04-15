@@ -13,7 +13,56 @@ struct DictionaryExample: Identifiable, Equatable {
     let level: String     // z.B. "7"
 }
 
+/// Anzahl-Paar pro Wortart für die Wörterbuch-Statistik (Info-Screen).
+struct DictionaryWordClassCount: Identifiable, Equatable {
+    let id: String         // raw word_class key (z.B. "noun")
+    let label: String      // deutsche Anzeige (z.B. "Nomen")
+    let count: Int
+}
+
 extension SupplementalFreeDictLexicon {
+
+    // MARK: - Wörterbuch-Statistik (Info-Screen)
+
+    /// Liefert die Gesamt-Anzahl der Einträge und die Aufteilung nach Wortart.
+    /// Sortiert absteigend nach Häufigkeit. Wortart-Labels in deutsch.
+    static func dictionaryStatistics() -> (total: Int, breakdown: [DictionaryWordClassCount]) {
+        let germanLabels: [String: String] = [
+            "noun": "Nomen",
+            "phrase": "Phrasen",
+            "adjective": "Adjektive",
+            "verb": "Verben",
+            "adverb": "Adverbien",
+            "conjunction": "Konjunktionen",
+            "preposition": "Präpositionen",
+            "pronoun": "Pronomen",
+            "interjection": "Interjektionen",
+            "numeral": "Zahlwörter",
+            "article": "Artikel",
+            "determiner": "Determinative",
+            "particle": "Partikel"
+        ]
+
+        return withReadOnlyDatabase { database -> (Int, [DictionaryWordClassCount]) in
+            var stmt: OpaquePointer?
+            let sql = "SELECT word_class, COUNT(*) FROM entries GROUP BY word_class ORDER BY COUNT(*) DESC"
+            guard sqlite3_prepare_v2(database, sql, -1, &stmt, nil) == SQLITE_OK,
+                  let statement = stmt else { return (0, []) }
+            defer { sqlite3_finalize(statement) }
+
+            var total = 0
+            var breakdown: [DictionaryWordClassCount] = []
+            while sqlite3_step(statement) == SQLITE_ROW {
+                let raw = sqliteTextColumn(statement, index: 0).lowercased()
+                let count = Int(sqlite3_column_int(statement, 1))
+                total += count
+                guard !raw.isEmpty else { continue }
+                let label = germanLabels[raw] ?? raw.capitalized
+                breakdown.append(DictionaryWordClassCount(id: raw, label: label, count: count))
+            }
+            return (total, breakdown)
+        } ?? (0, [])
+    }
 
     // MARK: - Quick Lemma Translation Lookup
 
