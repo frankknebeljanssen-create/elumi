@@ -475,23 +475,16 @@ enum VerbformsEngine {
 
                 guard stripped.count == 6 else { continue }
 
-                // Eindeutigkeit prüfen: bei -er-Verben in Präsens haben je/il/ils
-                // teilweise identische Stamm-Formen („parle"). Dann nicht verwerfen,
-                // sondern auf VOLLE Formen mit Subjekt-Pronomen zurückfallen — so
-                // bleibt das Verb spielbar (Counter zeigt korrekt 5/5 statt 3/5).
-                let strippedValues = stripped.values.map { $0.lowercased() }
-                let formsToUse: [VerbformsPerson: String]
-                if Set(strippedValues).count == strippedValues.count {
-                    formsToUse = stripped
-                } else {
-                    formsToUse = full
-                }
-
+                // KEIN Eindeutigkeits-Filter — bei -er-Verben in Präsens haben
+                // je/il/elles dieselbe Form („parle"). Das wird in der UI durch
+                // N-zu-1-Mapping gelöst: pro eindeutiger Form nur eine Karte unten,
+                // freie Slots werden mit Platzhaltern aufgefüllt. So bleiben alle
+                // Listen-Verben spielbar; Pronomen erscheinen nie in den Form-Karten.
                 rounds.append(VerbformsMatchingRound(
                     infinitive: verb.infinitive,
                     translation: verb.translation,
                     tense: tense,
-                    forms: formsToUse
+                    forms: stripped
                 ))
                 break // pro Verb nur eine Runde, danach nächstes Verb
             }

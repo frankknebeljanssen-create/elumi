@@ -58,6 +58,11 @@ struct TrainingView: View {
     @State var verbformsFormFrames: [VerbformsPerson: CGRect] = [:]
     @State var verbformsHoveredForm: VerbformsPerson?
 
+    // Verbformen Listen-Picker Sheet (separates Sheet auf der custom Listen-Card)
+    @State var verbformsListPickerActive: Bool = false
+    // Verbformen Verb-Lemma-Detail-Sheet (geöffnet via „X Verben"-Tap)
+    @State var verbformsVerbDetailActive: Bool = false
+
     enum ListPickerCategory: Identifiable {
         case own, level, topic, all
         var id: String {

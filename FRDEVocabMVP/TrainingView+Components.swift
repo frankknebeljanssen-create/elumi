@@ -114,7 +114,7 @@ extension TrainingView {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 28)
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, minHeight: 100)
             .appCardBackground(sectionStyle, intensity: session.isSpeedRound ? 0.18 : 0.07, cornerRadius: AppLayout.largeCardCornerRadius)
         }
         .buttonStyle(.plain)

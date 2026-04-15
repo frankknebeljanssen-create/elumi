@@ -220,17 +220,8 @@ extension TrainingView {
                     onSelectionChanged: { session.selectedTrainingListIDs = $0 }
                 )
             } else if session.trainingMode == .verbforms {
-                // Verbformen: Listen oben, dann Modus + Zeitform
-                ListCategoryPickerView(
-                    availableLists: availableTrainingLists,
-                    selectedListIDs: session.selectedTrainingListIDs,
-                    accent: trainingActionTint,
-                    style: sectionStyle,
-                    feedbackPlayer: feedbackPlayer,
-                    summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " \u{00B7} " + trainingListCount),
-                    itemLabel: "Verben",
-                    onSelectionChanged: { session.selectedTrainingListIDs = $0 }
-                )
+                // Verbformen: Custom Listen-Card im Speed-Round-Stil + Setup-Optionen
+                verbformsListSelectionCard
                 verbformsSetupOptions
             } else {
                 // Nomen, Artikel, Verben: Ausgewählte Listen card
@@ -446,6 +437,90 @@ extension TrainingView {
 
     // MARK: - Verbformen Setup Options
 
+    /// Custom Listen-Auswahl-Card für Verbformen — exakt im Speed-Round-Stil:
+    /// `appCardBackground` (intensity 0.18), Icon + Text in Akzent/Primary,
+    /// Anzahl Verben in CTA-Amber als klickbarer Hinweis.
+    private var verbformsListSelectionCard: some View {
+        let selectedIDs = session.selectedTrainingListIDs
+        let selectedLists = availableTrainingLists.filter { selectedIDs.contains($0.id) }
+        let hasSelection = !selectedLists.isEmpty
+        let displayName: String = {
+            if !hasSelection { return "Keine Liste gewählt" }
+            if selectedLists.count == 1 { return selectedLists[0].name }
+            return "\(selectedLists.count) Listen"
+        }()
+        let lemmas = verbformsLemmasFromSelectedLists()
+        let verbformsCount = lemmas.count
+
+        return Button {
+            feedbackPlayer.playTabSwitch()
+            verbformsListPickerActive = true
+        } label: {
+            HStack(spacing: 14) {
+                // Listen-Icon — exakt selbe Farbe wie der Bolt im Speed-Round-Toggle
+                // (textSecondary = das dezente Grau, das der Bolt im inaktiven
+                // Default-Zustand hat). Bewusst NICHT vom hasSelection abhängig.
+                Image(systemName: "list.bullet.rectangle.fill")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(displayName)
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                    if hasSelection {
+                        Button {
+                            feedbackPlayer.playTabSwitch()
+                            verbformsVerbDetailActive = true
+                        } label: {
+                            Text("\(verbformsCount) Verb\(verbformsCount == 1 ? "" : "en")")
+                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.textSecondary)
+                                .underline(true, color: AppTheme.Colors.textSecondary.opacity(0.4))
+                        }
+                        .buttonStyle(.plain)
+                    } else {
+                        Text("Tippe zum Auswählen")
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                    }
+                }
+
+                Spacer()
+
+                // Stift — gleiche Größe wie das Checkmark im Speed-Round (24pt),
+                // damit die Card-Höhe exakt identisch ausfällt.
+                Image(systemName: "pencil.circle.fill")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(trainingActionTint)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 28)
+            // Identische Höhen-Konstante zur Speed-Round-Card (= pixelgenau gleich).
+            .frame(maxWidth: .infinity, minHeight: 100)
+            .appCardBackground(sectionStyle, intensity: hasSelection ? 0.18 : 0.07, cornerRadius: AppLayout.largeCardCornerRadius)
+        }
+        .buttonStyle(.plain)
+        .sheet(isPresented: $verbformsListPickerActive) {
+            ListSelectionSheet(
+                style: sectionStyle,
+                ownLists: availableTrainingLists.filter { !$0.isBuiltIn || $0.isAggregateVocabulary },
+                levelLists: availableTrainingLists.filter { $0.collectionPreset == .standardLevel },
+                topicLists: availableTrainingLists.filter { $0.collectionPreset == .standardTopic },
+                selectedListIDs: session.selectedTrainingListIDs,
+                onSelectionChanged: { updated in
+                    session.selectedTrainingListIDs = updated
+                    verbformsListPickerActive = false
+                }
+            )
+        }
+        .sheet(isPresented: $verbformsVerbDetailActive) {
+            VerbLemmaListSheet(lemmas: verbformsLemmasFromSelectedLists())
+        }
+    }
+
     private var verbformsSetupOptions: some View {
         VStack(spacing: 12) {
             // Hinweis: Modus-Toggle (Auswählen/Tippen) wurde entfernt.
@@ -481,7 +556,7 @@ extension TrainingView {
                                 }
                             }
                             .frame(maxWidth: .infinity)
-                            .frame(minHeight: 56)
+                            .frame(minHeight: 44)
                             .foregroundStyle(
                                 isSelected
                                     ? .white
@@ -510,8 +585,8 @@ extension TrainingView {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .appCardBackground(sectionStyle, intensity: 0.09, cornerRadius: AppLayout.largeCardCornerRadius)
+            .padding(.vertical, 14)
+            .appCardBackground(sectionStyle, intensity: 0.18, cornerRadius: AppLayout.largeCardCornerRadius)
         }
     }
 
@@ -551,11 +626,9 @@ extension TrainingView {
                 // Runde abgeschlossen → Gratulation + Weitermachen / Fertig
                 verbformsRoundCompleteView
             } else {
-                // Normal Progress inkl. Runden-Zähler
+                // Runden-Anzeige rechts oben — Counter „X/Y" weggelassen,
+                // weil der Status unten im Weiter-Button den Fortschritt zeigt.
                 HStack {
-                    Text(verbformsSession.progressText)
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundStyle(trainingActionTint)
                     Spacer()
                     Text("Runde \(verbformsSession.completedRound)")
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -571,28 +644,6 @@ extension TrainingView {
             }
 
             Spacer(minLength: 0)
-
-            // Persistenter Weiter-Button — sitzt zwischen Cards und Footer.
-            // Nur sichtbar, wenn alle 6 Pronomen-Form-Paare einer Runde sitzen.
-            if verbformsSession.isMatchingRoundComplete,
-               !verbformsSession.isSpeedRound,
-               !verbformsSession.isShowingRoundComplete,
-               verbformsCountdown == nil {
-                Button {
-                    feedbackPlayer.playStudySuccess()
-                    verbformsSession.next()
-                } label: {
-                    Text("Weiter")
-                        .font(AppTheme.Typography.button)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 56)
-                        .background(AppTheme.Colors.cta)
-                        .cornerRadius(AppTheme.Radius.md)
-                }
-                .buttonStyle(.plain)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
         }
         .padding(.horizontal, AppLayout.screenPadding)
         .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 16)
@@ -625,16 +676,18 @@ extension TrainingView {
     static let verbformsFormColor = Color(hue: 0.58, saturation: 0.55, brightness: 0.80)
 
     /// Aktuell vom DragGesture überfahrene Form-Karte (für Hover-Highlight).
-    /// Wird live während des Drag-Updates berechnet — ohne das Quiz-Pattern
-    /// nutzt SwiftUI's `.draggable` einen Long-Press, der hier nicht erwünscht ist.
+    /// WICHTIG: Filter NICHT per matched-Anchor — bei N-zu-1 müssen mehrere
+    /// Pronomen nacheinander auf dieselbe Form-Card gedroppt werden können
+    /// (z.B. je, il und elles alle auf „parle"). `dropPronoun` validiert
+    /// selbst, ob das Pronomen zur Form passt.
     func verbformsHoveredFormPerson(for pronoun: VerbformsPerson) -> VerbformsPerson? {
         guard let pronounFrame = verbformsPronounFrames[pronoun] else { return nil }
         let dragged = CGPoint(
             x: pronounFrame.midX + verbformsDragOffset.width,
             y: pronounFrame.midY + verbformsDragOffset.height
         )
-        return verbformsFormFrames.first(where: { person, frame in
-            !verbformsSession.matchedPersons.contains(person) && frame.contains(dragged)
+        return verbformsFormFrames.first(where: { _, frame in
+            frame.contains(dragged)
         })?.key
     }
 
@@ -672,23 +725,23 @@ extension TrainingView {
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
             Text(round.tense.rawValue)
-                .font(.system(size: 12, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundStyle(trainingActionTint)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
-                .background(AppTheme.Colors.secondarySurface)
+                .background(trainingActionTint.opacity(0.12))
                 .clipShape(Capsule())
 
-            // Gefragte Person als zentrale „Fragestellung" — Font 17pt
-            // (2pt größer als die vorige Variante), kräftig in Akzentfarbe.
+            // Gefragte Person als zentrale „Fragestellung" — Font 19pt
+            // (kräftig in Akzentfarbe).
             if let nextPerson = verbformsSession.nextTargetPerson {
                 Text(nextPerson.promptLabel)
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .font(.system(size: 19, weight: .bold, design: .rounded))
                     .foregroundStyle(trainingActionTint)
                     .padding(.top, 2)
             } else {
                 Text("Alle Paare gefunden!")
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .font(.system(size: 19, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.success)
                     .padding(.top, 2)
             }
@@ -697,8 +750,11 @@ extension TrainingView {
         .padding(.vertical, 12)
         .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
 
-        // Extra Raum zwischen Fragekarte und Grids
-        Spacer().frame(height: 10)
+        // Engerer Abstand zwischen Fragekarte und Pronomen-Grid, damit
+        // der größere Spacing zwischen Pronomen-Grid und Form-Grid (+12)
+        // das Form-Grid nicht nach unten verschiebt → Weiter-Button bleibt
+        // an der gleichen Position.
+        Spacer().frame(height: 0)
 
         let pronounColumns = [
             GridItem(.flexible(), spacing: 10),
@@ -707,7 +763,9 @@ extension TrainingView {
         ]
 
         // Drag/Drop-Container: gemeinsamer coordinateSpace + Frame-Tracking
-        VStack(spacing: 6) {
+        // Spacing 18 zwischen Pronomen- und Form-Grid → klare visuelle Trennung
+        // zwischen „oben Pronomen" und „unten Verbformen".
+        VStack(spacing: 18) {
             // Draggable pronouns (2×3) in gemischter Reihenfolge
             LazyVGrid(columns: pronounColumns, spacing: 10) {
                 ForEach(verbformsSession.shuffledPronouns, id: \.self) { person in
@@ -715,10 +773,15 @@ extension TrainingView {
                 }
             }
 
-            // Drop-target forms (2×3) in separat gemischter Reihenfolge
+            // Form-Slots (2×3): pro eindeutiger Form eine Karte, Rest leere
+            // Platzhalter-Slots, sodass die Grid-Struktur immer stabil ist.
             LazyVGrid(columns: pronounColumns, spacing: 10) {
-                ForEach(verbformsSession.shuffledForms, id: \.self) { person in
-                    verbformsFormTarget(person: person, round: round)
+                ForEach(Array(verbformsSession.displayedFormSlots.enumerated()), id: \.offset) { _, slot in
+                    if let anchorPerson = slot {
+                        verbformsFormTarget(person: anchorPerson, round: round)
+                    } else {
+                        verbformsFormPlaceholder()
+                    }
                 }
             }
         }
@@ -730,9 +793,49 @@ extension TrainingView {
             verbformsFormFrames = frames
         }
 
-        // Weiter-Button bewusst NICHT hier — wird im verbformsSessionScreen
-        // nach dem Spacer gerendert, damit er garantiert UNTEN sitzt
-        // (zwischen Cards und Footer) und nicht von der Bottom-Bar überlagert wird.
+        // Weiter-Button — IMMER sichtbar während der Runde.
+        // - Bevor das erste Paar gelöst ist: grau, disabled, Status-Text mit
+        //   noch zu lösenden Paaren (max 6).
+        // - Sobald die richtige Card abgelegt wurde (= mind. 1 Drop korrekt):
+        //   orange CTA „Weiter", aktiv → Klick führt zur nächsten Verbform.
+        if verbformsSession.currentMatching != nil,
+           !verbformsSession.isSpeedRound,
+           !verbformsSession.isShowingRoundComplete,
+           verbformsCountdown == nil {
+            let canContinue = verbformsSession.matchedPersons.count > 0
+            let remaining = verbformsSession.remainingItemsInRound
+            Button {
+                guard canContinue else { return }
+                feedbackPlayer.playStudySuccess()
+                verbformsSession.next()
+            } label: {
+                Text(canContinue ? "Weiter" : "Noch \(remaining) zu lösen")
+                    .font(AppTheme.Typography.button)
+                    .foregroundColor(canContinue ? .white : AppTheme.Colors.textSecondary)
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 56)
+                    .background(canContinue ? AppTheme.Colors.cta : AppTheme.Colors.secondarySurface)
+                    .cornerRadius(AppTheme.Radius.md)
+            }
+            .buttonStyle(.plain)
+            .disabled(!canContinue)
+            .padding(.top, 0)
+            .animation(.easeInOut(duration: 0.2), value: canContinue)
+        }
+    }
+
+    /// Leerer Form-Slot — sichtbar als gestrichelter Rahmen, hält die
+    /// 2×3-Grid-Struktur stabil, wenn ein Verb weniger als 6 unterschiedliche
+    /// Formen hat (z.B. -er-Präsens mit je=il=elles → 5 Forms + 1 Platzhalter).
+    @ViewBuilder
+    private func verbformsFormPlaceholder() -> some View {
+        RoundedRectangle(cornerRadius: AppTheme.Radius.md)
+            .strokeBorder(
+                AppTheme.Colors.border.opacity(0.4),
+                style: StrokeStyle(lineWidth: 1.5, dash: [5, 4])
+            )
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 56)
     }
 
     // MARK: - Verbformen Round-Complete View
@@ -836,13 +939,13 @@ extension TrainingView {
             )
     }
 
-    /// Form-Karte als Drop-Target (manuelles Drop via Frame-Tracking, kein
-    /// `.dropDestination`). Default-Farbe Blau, Match → grün, Wrong-Flash → orange.
-    /// Wenn ein Pronomen-Drag die Karte überfährt, leichter Hover-Highlight.
+    /// Form-Karte als Drop-Target. Default-Farbe Blau, Match → grün (sobald
+    /// mindestens eine passende Person gedropped), Wrong-Flash → orange.
     @ViewBuilder
     private func verbformsFormTarget(person: VerbformsPerson, round: VerbformsMatchingRound) -> some View {
         let form = round.forms[person] ?? "?"
-        let isMatched = verbformsSession.matchedPersons.contains(person)
+        let sharedPersons = verbformsSession.personsSharingForm(with: person)
+        let isMatched = sharedPersons.contains(where: { verbformsSession.matchedPersons.contains($0) })
         let isFlashWrong = verbformsSession.wrongFlashTarget == person
         let isHovered = verbformsHoveredForm == person
 
@@ -852,17 +955,11 @@ extension TrainingView {
             return Self.verbformsFormColor
         }()
 
-        VStack(spacing: 2) {
-            if isMatched {
-                Text(person.label)
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.9))
-            }
-            Text(form)
-                .font(.system(size: 15, weight: .bold, design: .rounded))
-                .lineLimit(2)
-                .minimumScaleFactor(0.7)
-        }
+        // Form-Card zeigt NUR die Verbform (keine Subjekt-Pronomen).
+        Text(form)
+            .font(.system(size: 15, weight: .bold, design: .rounded))
+            .lineLimit(2)
+            .minimumScaleFactor(0.7)
         .frame(maxWidth: .infinity)
         .frame(minHeight: 56)
         .padding(.horizontal, 6)

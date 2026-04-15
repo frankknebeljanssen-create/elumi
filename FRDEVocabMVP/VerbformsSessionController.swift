@@ -48,8 +48,12 @@ final class VerbformsSessionController: ObservableObject {
     /// Welche Form flasht gerade orange (falscher Drop, ~0.6s).
     @Published var wrongFlashTarget: VerbformsPerson?
 
+    /// Eine Matching-Aufgabe (= ein Verb) ist „gelöst", sobald MINDESTENS
+    /// ein Pronomen korrekt zur passenden Form gedropped wurde. Der Nutzer
+    /// kann dann über „Weiter" zum nächsten Verb wechseln (oder weitere
+    /// Paare derselben Runde üben, bevor er weiter klickt).
     var isMatchingRoundComplete: Bool {
-        currentMatching != nil && matchedPersons.count == 6
+        currentMatching != nil && !matchedPersons.isEmpty
     }
 
     // MARK: - Runden-Tracking (analog zu „Verben trainieren")
@@ -65,8 +69,10 @@ final class VerbformsSessionController: ObservableObject {
     /// Reihenfolge der 6 Pronomen-Chips im Grid — pro Runde neu gemischt,
     /// damit die Position der Lösung nicht erkennbar ist.
     @Published var shuffledPronouns: [VerbformsPerson] = VerbformsPerson.allCases
-    /// Reihenfolge der 6 Form-Karten im Grid — separat gemischt.
-    @Published var shuffledForms: [VerbformsPerson] = VerbformsPerson.allCases
+    /// Form-Karten-Slots: bei N eindeutigen Formen (N ≤ 6) sind die ersten
+    /// N Slots belegt mit jeweils einer Anchor-Person, der Rest ist nil
+    /// (= leerer Platzhalter-Slot). Die Reihenfolge ist gemischt.
+    @Published var displayedFormSlots: [VerbformsPerson?] = []
     /// Reihenfolge der Prompt-Sequenz (welche Person als nächstes „dran" ist).
     /// Pro Runde gemischt, damit nicht immer mit „1. Person Singular" begonnen wird.
     @Published var promptOrder: [VerbformsPerson] = VerbformsPerson.allCases
@@ -75,6 +81,25 @@ final class VerbformsSessionController: ObservableObject {
     /// z.B. „1. Person Plural"). Folgt der gemischten promptOrder-Reihenfolge.
     var nextTargetPerson: VerbformsPerson? {
         promptOrder.first(where: { !matchedPersons.contains($0) })
+    }
+
+    /// Liefert für eine Anchor-Person alle Personen mit derselben Verb-Form
+    /// (für N-zu-1-Mapping bei nicht-eindeutigen Formen wie -er-Präsens).
+    func personsSharingForm(with anchor: VerbformsPerson) -> [VerbformsPerson] {
+        guard let round = currentMatching else { return [anchor] }
+        let anchorForm = (round.forms[anchor] ?? "").lowercased()
+        guard !anchorForm.isEmpty else { return [anchor] }
+        return VerbformsPerson.allCases.filter { person in
+            (round.forms[person] ?? "").lowercased() == anchorForm
+        }
+    }
+
+    /// Anzahl Verben/Fragen, die in der aktuellen Runde noch ausstehen
+    /// (inkl. der aktuell angezeigten). Wird im Status-Text des Weiter-Buttons
+    /// genutzt — synchron mit dem oberen Counter (z.B. „3/5").
+    var remainingItemsInRound: Int {
+        let total = mode == .multipleChoice ? matchingRounds.count : questions.count
+        return max(0, total - questionIndex)
     }
 
     private var questions: [VerbformsQuestion] = []
@@ -204,25 +229,27 @@ final class VerbformsSessionController: ObservableObject {
 
     // MARK: - Matching Flow
 
-    /// User hat Pronomen-Karte auf Form-Target abgelegt. Prüft Paar.
-    /// Gibt zurück, ob der Drop gepasst hat.
+    /// User hat Pronomen-Karte auf Form-Slot abgelegt. Match-Logik per FORM-INHALT
+    /// (nicht per Person), damit N-zu-1-Mapping funktioniert: bei -er-Verben in
+    /// Präsens dürfen je / il / elles alle auf dieselbe „parle"-Karte gedroppt werden.
     @discardableResult
     func dropPronoun(_ pronoun: VerbformsPerson, onForm target: VerbformsPerson) -> Bool {
-        guard !matchedPersons.contains(target) else { return false }
+        guard let round = currentMatching else { return false }
         guard !usedPronouns.contains(pronoun) else { return false }
 
-        if pronoun == target {
-            matchedPersons.insert(target)
+        let targetForm = (round.forms[target] ?? "").lowercased()
+        let pronounForm = (round.forms[pronoun] ?? "").lowercased()
+
+        if !targetForm.isEmpty, targetForm == pronounForm {
+            matchedPersons.insert(pronoun)
             usedPronouns.insert(pronoun)
             totalAsked += 1
-            if wrongFlashTarget == target { wrongFlashTarget = nil }
-            // Score: 1 Punkt pro korrekt zugeordnetem Paar
             score += 1
+            if wrongFlashTarget == target { wrongFlashTarget = nil }
             return true
         } else {
             totalAsked += 1
             wrongFlashTarget = target
-            // Orange-Flash kurz anzeigen, dann zurücksetzen
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
                 guard let self, self.wrongFlashTarget == target else { return }
                 self.wrongFlashTarget = nil
@@ -278,16 +305,32 @@ final class VerbformsSessionController: ObservableObject {
             isActive = false
             return
         }
-        currentMatching = matchingRounds[questionIndex]
+        let round = matchingRounds[questionIndex]
+        currentMatching = round
         matchedPersons = []
         usedPronouns = []
         wrongFlashTarget = nil
         isLocked = false
-        // Pronomen-, Formen- und Prompt-Reihenfolge pro Runde UNABHÄNGIG mischen,
-        // damit weder Position noch Reihenfolge die Lösung ablesbar machen.
+        // Pronomen- und Prompt-Reihenfolge pro Runde unabhängig mischen.
         shuffledPronouns = VerbformsPerson.allCases.shuffled()
-        shuffledForms = VerbformsPerson.allCases.shuffled()
         promptOrder = VerbformsPerson.allCases.shuffled()
+
+        // Form-Slots: pro EINDEUTIGER Form eine Anchor-Person (erste in
+        // VerbformsPerson.allCases-Reihenfolge mit dieser Form). Restliche
+        // Slots werden mit nil aufgefüllt — bleibt immer 6 Slots, behält die
+        // 2×3-Grid-Struktur unten. Anschließend gemischt.
+        var seenForms = Set<String>()
+        var anchors: [VerbformsPerson] = []
+        for person in VerbformsPerson.allCases {
+            let form = (round.forms[person] ?? "").lowercased()
+            if form.isEmpty || seenForms.contains(form) { continue }
+            seenForms.insert(form)
+            anchors.append(person)
+        }
+        let pads = max(0, 6 - anchors.count)
+        var slots: [VerbformsPerson?] = anchors.map { Optional($0) }
+        slots.append(contentsOf: Array(repeating: nil as VerbformsPerson?, count: pads))
+        displayedFormSlots = slots.shuffled()
     }
 
     private func nextSpeedRound() {
