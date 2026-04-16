@@ -516,13 +516,6 @@ extension ScanImportView {
     func scanRootContent(proxy: ScrollViewProxy) -> some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: AppTheme.Spacing.sm) {
-                ScreenHeaderCard(
-                    style: sectionStyle,
-                    title: "Scan",
-                    subtitle: "",
-                    systemImage: "camera.viewfinder"
-                )
-
                 if hasActiveScanDraft {
                     Button {
                         returnToScanSetup()
@@ -541,34 +534,76 @@ extension ScanImportView {
                     Spacer(minLength: 8)
                 } else {
                 ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        ScanModeSelectionCardView(
-                            activeMode: activeScanMode,
-                            sectionStyle: sectionStyle,
-                            onSelect: selectScanMode
+                    VStack(alignment: .leading, spacing: 16) {
+                        // Header (links-bündig, 3-stufige Hierarchie)
+                        ScanScreenHeader()
+                            .padding(.top, 4)
+
+                        // Hero-Card mit Maskottchen — emotionaler Einstieg
+                        ScanHeroCard(
+                            mascotImageName: "SplashCharacter",
+                            title: "Was möchtest du scannen?",
+                            subtitle: "Ich mache daraus eine Lerneinheit",
+                            accent: sectionStyle.accent
                         )
 
-                        ScanInputMethodOptionsCardView(
-                            isRecognizingImage: isRecognizingImage,
-                            isCameraAvailable: isCameraCaptureAvailable,
-                            selectedMethod: selectedScanInputMethod,
-                            sectionStyle: sectionStyle,
-                            onCamera: {
-                                guard !isRecognizingImage else { return }
-                                guard isCameraCaptureAvailable else { return }
-                                feedbackPlayer.playTabSwitch()
-                                shouldAppendNextScan = false
-                                selectedScanInputMethod = .camera
-                                openCameraScanner()
-                            },
-                            onLibrary: {
-                                guard !isRecognizingImage else { return }
-                                feedbackPlayer.playTabSwitch()
-                                shouldAppendNextScan = false
-                                selectedScanInputMethod = .library
-                                showingPhotoLibrary = true
-                            }
-                        )
+                        // Vier Choice-Cards mit Custom-Illustrationen,
+                        // konsistentes Tap-Feedback (Scale, Brightness,
+                        // Haptic, 120ms Delay). Top-Optionen Vokabelliste +
+                        // Kamera mit isPriority (mehr Padding, stärkerer Border).
+                        ScanChoiceCard(
+                            illustrationName: "ScanIconVokabelliste",
+                            title: "Vokabelliste",
+                            subtitle: "Aus dem Buch oder Heft",
+                            accent: sectionStyle.accent,
+                            isPriority: true
+                        ) {
+                            guard !isRecognizingImage else { return }
+                            selectScanMode(.list)
+                            shouldAppendNextScan = false
+                            selectedScanInputMethod = .camera
+                            openCameraScanner()
+                        }
+
+                        ScanChoiceCard(
+                            illustrationName: "ScanIconFreierText",
+                            title: "Freier Text",
+                            subtitle: "Romane, Notizen, Briefe",
+                            accent: sectionStyle.accent
+                        ) {
+                            guard !isRecognizingImage else { return }
+                            selectScanMode(.text)
+                            shouldAppendNextScan = false
+                            selectedScanInputMethod = .camera
+                            openCameraScanner()
+                        }
+
+                        ScanChoiceCard(
+                            illustrationName: "ScanIconKamera",
+                            title: "Kamera",
+                            subtitle: "Direkt fotografieren",
+                            accent: sectionStyle.accent,
+                            isPriority: true
+                        ) {
+                            guard !isRecognizingImage else { return }
+                            guard isCameraCaptureAvailable else { return }
+                            shouldAppendNextScan = false
+                            selectedScanInputMethod = .camera
+                            openCameraScanner()
+                        }
+
+                        ScanChoiceCard(
+                            illustrationName: "ScanIconFotoAlbum",
+                            title: "Foto-Album",
+                            subtitle: "Aus deinen Aufnahmen wählen",
+                            accent: sectionStyle.accent
+                        ) {
+                            guard !isRecognizingImage else { return }
+                            shouldAppendNextScan = false
+                            selectedScanInputMethod = .library
+                            showingPhotoLibrary = true
+                        }
+                        .padding(.bottom, 8)
 
                         // Progress overlay during batch
                         // (handled below as overlay)
