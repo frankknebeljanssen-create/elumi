@@ -29,7 +29,7 @@ struct SessionOptionGroupCard<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
                 if let iconName {
                     Image(systemName: iconName)
@@ -44,7 +44,12 @@ struct SessionOptionGroupCard<Content: View>: View {
 
             content()
         }
-        .padding(18)
+        // Vertikal etwas enger (18 → 10) — zieht den Chip-Inhalt um
+        // ~10 pt nach oben. Gilt aktuell ausschließlich für die
+        // Quiz-„Anzahl Fragen"-Card, die als einziger Call-Site diese
+        // Komponente verwendet.
+        .padding(.horizontal, 18)
+        .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(SessionCardBackground())
     }
@@ -109,10 +114,12 @@ struct OptionChipGrid<Option: Hashable>: View {
                         }
                     }
                     .frame(maxWidth: .infinity)
-                    // Etwas flacher als zuvor (76 → 62) — die Anzahl-
-                    // Fragen-Chips im Quiz-Setup wirken dadurch weniger
-                    // dominant. Inhalt sitzt weiterhin komfortabel.
-                    .frame(height: 62)
+                    // Noch einmal minimal flacher als zuvor (62 → 56) —
+                    // die Anzahl-Fragen-Chips im Quiz-Setup wirken
+                    // dadurch weniger dominant. Inhalt sitzt weiterhin
+                    // komfortabel, Text + Subtitle bleiben sauber
+                    // zentriert.
+                    .frame(height: 56)
                     .background(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .fill(isSelected

@@ -70,7 +70,11 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
             SessionSetupHeader(title: title, accent: accent, onBack: onBack)
 
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
+                // Spacing = `sessionContextToDirectionSpacing` — verbindlich
+                // für den Abstand **Ausgewählte Listen ↔ Richtung**. Ändern
+                // der Konstante in `AppLayout` verschiebt den Abstand
+                // systemweit auf allen Setup-Screens synchron.
+                VStack(spacing: AppLayout.sessionContextToDirectionSpacing) {
                     contextContent()
                     if showsDirection {
                         SessionDirectionRow()

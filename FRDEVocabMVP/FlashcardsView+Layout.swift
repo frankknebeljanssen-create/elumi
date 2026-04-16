@@ -204,6 +204,16 @@ extension FlashcardsView {
 
                     flashcardsListSelectionCard
 
+                    // Richtungs-Zeile — systemweit direkt unter
+                    // „Ausgewählte Listen", mit verbindlichem Abstand aus
+                    // `AppLayout.sessionContextToDirectionSpacing`. Zieht
+                    // die globale Lernrichtung hier nach oben, identisch
+                    // zu allen anderen Setup-Screens (Quiz, Nomen, …).
+                    // Negative Top-Korrektur kompensiert das `VStack`-
+                    // Spacing (AppTheme.Spacing.md) des äußeren Stacks.
+                    SessionDirectionRow()
+                        .padding(.top, AppLayout.sessionContextToDirectionSpacing - AppTheme.Spacing.md)
+
                     if isDictionarySelectedInStack {
                         flashcardDictionaryLevelCard
                     }

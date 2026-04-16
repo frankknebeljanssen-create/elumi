@@ -2,12 +2,23 @@ import SwiftUI
 
 /// Shared list selection component used across Training, Flashcards, and Quiz setup screens.
 /// Shows selected lists + "Liste auswählen" button that opens the category picker.
+///
+/// **Format-Angleichung (System-Master):**
+/// Dieser Picker rendert visuell identisch zu den Custom-Cards in
+/// `FlashcardsView+Layout.flashcardsListSelectionCard` und
+/// `TrainingView+Layout.verbformsListSelectionCard` (Icon + Listen-Rows
+/// mit „X Einträge" + Summary-Zeile + Stift-Pill). Frühere
+/// POS-Breakdown-Zeile und die Spacer-Lines-Fixhöhen-Logik sind
+/// entfallen — Quiz und Vokabeln sehen jetzt wie alle anderen Module aus.
 struct ListCategoryPickerView: View {
     let availableLists: [VocabularyList]
     let selectedListIDs: Set<UUID>
     let accent: Color
     let style: AppSectionStyle
     let feedbackPlayer: FeedbackPlayer
+    /// Kompatibilitäts-Param aus der Pre-Master-Zeit — aktuell nicht mehr
+    /// gerendert (der Picker baut Titel + Summary selbst aus den gewählten
+    /// Listen, einheitlich mit den Training-/Karteikarten-Cards).
     let summaryText: String
     var itemLabel: String = "Karten"
     let onSelectionChanged: (Set<UUID>) -> Void
@@ -41,105 +52,82 @@ struct ListCategoryPickerView: View {
         availableLists.filter { selectedListIDs.contains($0.id) }
     }
 
-    private var selectedListNames: String {
-        let names = selectedLists.map(\.name)
-        if names.isEmpty { return "Keine Listen gewählt" }
-        if names.count <= 2 { return names.joined(separator: ", ") }
-        return "\(names[0]), \(names[1]) +\(names.count - 2)"
-    }
-
-    /// Aggregierte POS-Statistik über alle gewählten Listen — zentrale Single Source of Truth.
-    private var combinedPOSStatistics: ListPOSStatistics {
-        let allItems = selectedLists.flatMap(\.items)
-        return FrenchListStatisticsAggregator.cachedStatistics(for: allItems)
-    }
-
-    // (wordClassBreakdownText entfernt — `POSBreakdownLine` rendert direkt aus `combinedPOSStatistics`)
-
     var body: some View {
-        // Combined selected-lists card with edit button
-        ZStack(alignment: .topTrailing) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Ausgewählte Listen")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.cardLabel)
-                    .textCase(.uppercase)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+        let hasSelection = !selectedLists.isEmpty
+        let totalItems = selectedLists.reduce(0) { $0 + $1.items.count }
 
-                if selectedLists.isEmpty {
-                    Text("Keine Listen gewählt")
-                        .font(.system(size: 14, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textDisabled)
-                    // 4 Spacer-Lines, damit die Card auf 4-Zeilen-Höhe bleibt
-                    Text(" ").font(.system(size: 13))
-                    Text(" ").font(.system(size: 13))
-                    Text(" ").font(.system(size: 13))
-                    Text(" ").font(.system(size: 11))
-                } else {
-                    ForEach(selectedLists.prefix(4)) { list in
-                        HStack(spacing: 0) {
-                            Text(list.name)
-                                .font(.system(size: 14, weight: .bold, design: .rounded))
+        Button {
+            feedbackPlayer.playTabSwitch()
+            activeCategory = .own
+        } label: {
+            // Master-Format: Header GANZ links oben, darunter eine HStack
+            // aus Modul-Icon (links) · Listen+Summary (Mitte) · Stift-Pill
+            // (rechts). Identisch mit `flashcardsListSelectionCard` und
+            // `verbformsListSelectionCard` — keine visuellen Ausreißer mehr.
+            VStack(alignment: .leading, spacing: 8) {
+                Text("AUSGEWÄHLTE LISTEN")
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .tracking(1.4)
+                    .foregroundStyle(AppTheme.Colors.cardLabel)
+
+                HStack(alignment: .center, spacing: 14) {
+                    Image(systemName: "list.bullet.rectangle.fill")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundStyle(accent)
+                        .frame(width: 36, height: 36)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        if hasSelection {
+                            // Pro-Liste-Row: Name links + „N Einträge" rechts —
+                            // selber Rhythmus wie in den Training-Cards.
+                            ForEach(selectedLists.prefix(AppLayout.maxSelectableLists)) { list in
+                                HStack(spacing: 0) {
+                                    Text(list.name)
+                                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.7)
+                                    Spacer(minLength: 4)
+                                    Text("\(list.items.count) \(itemLabel)")
+                                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                        .foregroundStyle(accent)
+                                }
+                            }
+
+                            // Summary-Zeile — einheitliches Format
+                            // „X Listen · N Einträge gesamt" über alle Module.
+                            Text("\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n") · \(totalItems) \(itemLabel) gesamt")
+                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.elumiBlue)
+                                .padding(.top, 2)
+                        } else {
+                            Text("Keine Liste gewählt")
+                                .font(.system(size: 18, weight: .bold, design: .rounded))
                                 .foregroundStyle(AppTheme.Colors.textPrimary)
-                                .lineLimit(1)
-                            Spacer(minLength: 4)
-                            Text("\(list.items.count) \(itemLabel)")
-                                .font(.system(size: 12, weight: .semibold, design: .rounded))
-                                .foregroundStyle(accent)
+                            Text("Tippe zum Auswählen")
+                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.elumiBlue)
                         }
                     }
-                    if selectedLists.count > 4 {
-                        Text("+\(selectedLists.count - 4) weitere")
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
-                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                    // Summary-Zeile — analog zu `setupListSelectionCard` im
-                    // Training. Einheitliches Format „X Listen · N Einträge
-                    // gesamt" über alle Module hinweg.
-                    let listsLabel = "\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n")"
-                    let totalItems = selectedLists.reduce(0) { $0 + $1.items.count }
-                    Text("\(listsLabel) · \(totalItems) \(itemLabel) gesamt")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    // Stift in rundem Pill — dezent, nicht zu dominant.
+                    Image(systemName: "pencil")
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(accent)
-                        .padding(.top, 2)
-
-                    // Spacer-Lines, damit die Card auf 4-Zeilen-Höhe bleibt
-                    if selectedLists.count == 1 {
-                        Text(" ").font(.system(size: 13))
-                        Text(" ").font(.system(size: 13))
-                    } else if selectedLists.count == 2 {
-                        Text(" ").font(.system(size: 13))
-                    }
-
-                    // Aggregierte Wortarten-Übersicht über alle gewählten Listen.
-                    // „X Verben" ist tappable — öffnet Sheet mit Verb-Lemmata.
-                    POSBreakdownLine(stats: combinedPOSStatistics)
-                        .padding(.top, 2)
+                        .frame(width: 32, height: 32)
+                        .background(
+                            Circle()
+                                .fill(accent.opacity(0.18))
+                        )
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .padding(.trailing, 32) // room for edit icon
-            // Master-Session-Setup-Chrome — identisch mit
-            // `setupListSelectionCard` (Nomen/Artikel/Verben/Verbformen)
-            // und allen anderen Setup-Cards. Vorher war dieser Picker
-            // der einzige Außenseiter mit Surface-Fill + 14pt Radius.
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity)
             .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
-
-            // Edit icon — opens category picker
-            Button {
-                feedbackPlayer.playTabSwitch()
-                activeCategory = .own
-            } label: {
-                Image(systemName: "pencil.circle.fill")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(accent)
-                    .padding(10)
-            }
-            .buttonStyle(.plain)
         }
+        .buttonStyle(.plain)
         .sheet(item: $activeCategory) { category in
             ListSelectionSheet(
                 style: style,

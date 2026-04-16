@@ -258,35 +258,59 @@ extension TrainingView {
 
     // MARK: - Training-Setup Content-Slots (für SessionSetupScreen)
 
-    /// Context-Slot: modul-abhängige Listen-Auswahl. Vokabeln bekommt 4
-    /// Category-Cards + Listen-Picker, Nomen/Artikel/Verben/Verbformen
-    /// haben jeweils ihre spezifische Custom-Card. Fallback: ListCategoryPickerView.
-    ///
-    /// Für Verbformen wird `verbformsSetupOptions` (Tense-Picker etc.)
-    /// bewusst *hier* im Context-Slot mit eingebunden, damit die Reihenfolge
-    /// „Liste → Zeitform" eng zusammen bleibt (wie vor der Migration).
+    /// Context-Slot: **nur** die Listen-Auswahl-Card. Alles, was früher
+    /// zusätzlich im Context-Slot mitlief (Vokabeln-Kategorie-Grid,
+    /// Verbformen-Tense-Picker), ist in den Options-Slot gewandert — damit
+    /// systemweit gilt: direkt unter „Ausgewählte Listen" sitzt die
+    /// Richtungs-Zeile, ohne Zwischenelemente.
     @ViewBuilder
     private var trainingSetupContextContent: some View {
         if session.trainingMode == .vocabulary {
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                // Reihenfolge analog zu allen anderen Modulen:
-                //  1) Ausgewählte-Listen-Card oben (Primär-Status)
-                //  2) Kategorie-Auswahl-Grid darunter (Sekundär-Entry-Point)
-                ListCategoryPickerView(
-                    availableLists: availableTrainingLists,
-                    selectedListIDs: session.selectedTrainingListIDs,
-                    accent: trainingActionTint,
-                    style: sectionStyle,
-                    feedbackPlayer: feedbackPlayer,
-                    summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " \u{00B7} " + trainingListCount),
-                    itemLabel: "Einträge",
-                    onSelectionChanged: { session.selectedTrainingListIDs = $0 }
-                )
+            ListCategoryPickerView(
+                availableLists: availableTrainingLists,
+                selectedListIDs: session.selectedTrainingListIDs,
+                accent: trainingActionTint,
+                style: sectionStyle,
+                feedbackPlayer: feedbackPlayer,
+                summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " \u{00B7} " + trainingListCount),
+                itemLabel: "Einträge",
+                onSelectionChanged: { session.selectedTrainingListIDs = $0 }
+            )
+        } else if session.trainingMode == .verbforms {
+            verbformsListSelectionCard
+        } else if session.trainingMode == .verbs {
+            verbsListSelectionCard
+        } else if session.trainingMode == .nouns {
+            nounsListSelectionCard
+        } else if session.trainingMode == .articles {
+            articlesListSelectionCard
+        } else {
+            ListCategoryPickerView(
+                availableLists: availableTrainingLists,
+                selectedListIDs: session.selectedTrainingListIDs,
+                accent: trainingActionTint,
+                style: sectionStyle,
+                feedbackPlayer: feedbackPlayer,
+                summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " \u{00B7} " + trainingListCount),
+                itemLabel: trainingItemLabel,
+                onSelectionChanged: { session.selectedTrainingListIDs = $0 }
+            )
+        }
+    }
 
+    /// Options-Slot: alles, was **unter** der Richtungs-Zeile liegen soll.
+    /// Modul-spezifisch:
+    ///   • Vokabeln: Kategorie-Grid („Was möchtest Du trainieren?").
+    ///   • Verbformen: Tense-Picker (Zeitformen).
+    ///   • alle Modi: Dictionary-Level-Card (konditional), Speed-Round-
+    ///     Toggle und Start-Hints.
+    @ViewBuilder
+    private var trainingSetupOptionsContent: some View {
+        if session.trainingMode == .vocabulary {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 Text("Was möchtest Du trainieren?")
                     .font(.system(size: 20, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .padding(.top, 4)
 
                 LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                     trainingCategoryCard(
@@ -315,36 +339,12 @@ extension TrainingView {
                     )
                 }
             }
-        } else if session.trainingMode == .verbforms {
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                verbformsListSelectionCard
-                verbformsSetupOptions
-            }
-        } else if session.trainingMode == .verbs {
-            verbsListSelectionCard
-        } else if session.trainingMode == .nouns {
-            nounsListSelectionCard
-        } else if session.trainingMode == .articles {
-            articlesListSelectionCard
-        } else {
-            ListCategoryPickerView(
-                availableLists: availableTrainingLists,
-                selectedListIDs: session.selectedTrainingListIDs,
-                accent: trainingActionTint,
-                style: sectionStyle,
-                feedbackPlayer: feedbackPlayer,
-                summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " \u{00B7} " + trainingListCount),
-                itemLabel: trainingItemLabel,
-                onSelectionChanged: { session.selectedTrainingListIDs = $0 }
-            )
         }
-    }
 
-    /// Options-Slot: Dictionary-Level-Card (konditional), Speed-Round-Toggle
-    /// und Start-Hints. Verbformen hat seine Options bereits im contextSlot
-    /// (weil sie inhaltlich zur Listen-Auswahl gehören).
-    @ViewBuilder
-    private var trainingSetupOptionsContent: some View {
+        if session.trainingMode == .verbforms {
+            verbformsSetupOptions
+        }
+
         if isDictionaryTrainingSelected {
             dictionaryTrainingLevelCard
         }

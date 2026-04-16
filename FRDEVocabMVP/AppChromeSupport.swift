@@ -55,6 +55,18 @@ enum AppLayout {
     /// darunter hat.
     static let sessionCTAHorizontalPadding: CGFloat = 16
 
+    /// **Systemweites vertikales Padding zwischen der „Ausgewählte Listen"-
+    /// Card und der direkt darunter sitzenden Richtungs-Zeile** — in
+    /// jedem Session-Setup-Screen (Karteikarten, Quiz, Nomen, Artikel,
+    /// Verben, Verbformen, Vokabeln).
+    ///
+    /// Single Source of Truth: wird hier geändert, springt der Abstand
+    /// **synchron** in allen Modulen. `SessionSetupScreen` nutzt den Wert
+    /// als VStack-Spacing (gilt damit auch zwischen Richtung und Options-
+    /// Slot), modul-eigene Setup-Screens (z. B. Karteikarten) wenden ihn
+    /// explizit als Top-Padding auf `SessionDirectionRow` an.
+    static let sessionContextToDirectionSpacing: CGFloat = 20
+
     /// App-weite Obergrenze für Mehrfachauswahl von Vokabel-Listen
     /// App-weites Limit für gleichzeitig ausgewählte Listen — gilt für Training,
     /// Karteikarten, Quiz und Verbformen. Mehr als 3 Listen verwirren in der
