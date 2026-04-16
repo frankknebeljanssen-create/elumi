@@ -7,8 +7,9 @@ extension ListsView {
                 style: sectionStyle,
                 title: "Listen verwalten",
                 subtitle: "",
-                systemImage: "list.bullet.rectangle",
-                onBack: { dismiss() }
+                systemImage: nil, // kein Icon rechts — klassischer Nav-Bar-Look
+                onBack: { dismiss() },
+                centeredTitle: true
             )
 
             allListsCard

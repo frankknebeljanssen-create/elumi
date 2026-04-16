@@ -4,7 +4,10 @@ struct ScreenHeaderCard: View {
     let style: AppSectionStyle
     let title: String
     let subtitle: String
-    let systemImage: String
+    /// Optionales SF-Symbol für den Icon-Kreis rechts. Wenn `nil`, wird
+    /// kein Icon-Kreis gezeichnet — der Header bekommt dann das klassische
+    /// Navigation-Bar-Layout (Back links, Titel zentriert, rechts leer).
+    let systemImage: String?
     var actionTitle: String? = nil
     var actionSystemImage: String = "house.fill"
     var action: (() -> Void)? = nil
@@ -18,6 +21,10 @@ struct ScreenHeaderCard: View {
     /// Lexikon, Info, Settings) sichtbar und konsistent — unabhängig
     /// davon, ob das globale Chrome aktiv ist.
     var onBack: (() -> Void)? = nil
+    /// Wenn `true`, wird der Titel in der Mitte gesetzt (klassischer
+    /// Nav-Bar-Look). Rechts wird bei fehlendem Icon ein unsichtbarer
+    /// 34×34-Platzhalter gezeichnet, damit der Titel exakt mittig sitzt.
+    var centeredTitle: Bool = false
 
     private var titleParts: [String] {
         subtitle.isEmpty ? [title] : [title, subtitle]
@@ -25,26 +32,19 @@ struct ScreenHeaderCard: View {
 
     var body: some View {
         HStack(spacing: AppTheme.Spacing.sm) {
-            if let onBack {
-                Button(action: onBack) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 16, weight: .bold))
-                        .frame(width: 34, height: 34)
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .background(AppTheme.Colors.secondarySurface)
-                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.sm, style: .continuous))
-                        .accessibilityLabel(Text("Zurück"))
-                }
-                .buttonStyle(.plain)
+            leadingSlot
+
+            if centeredTitle {
+                Spacer(minLength: 0)
             }
 
-            VStack(alignment: .leading, spacing: subtitle.isEmpty ? 0 : 4) {
+            VStack(alignment: centeredTitle ? .center : .leading, spacing: subtitle.isEmpty ? 0 : 4) {
                 Text(title)
                     .font(AppTheme.Typography.screenTitle)
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
-                    .multilineTextAlignment(.leading)
+                    .multilineTextAlignment(centeredTitle ? .center : .leading)
 
                 if !subtitle.isEmpty {
                     Text(subtitle)
@@ -52,12 +52,47 @@ struct ScreenHeaderCard: View {
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
-                        .multilineTextAlignment(.leading)
+                        .multilineTextAlignment(centeredTitle ? .center : .leading)
                 }
             }
 
-            Spacer(minLength: AppTheme.Spacing.sm)
+            if centeredTitle {
+                Spacer(minLength: 0)
+            } else {
+                Spacer(minLength: AppTheme.Spacing.sm)
+            }
 
+            trailingSlot
+        }
+        .frame(maxWidth: .infinity)
+        .frame(minHeight: AppLayout.headerHeight)
+    }
+
+    // MARK: - Slots
+
+    @ViewBuilder
+    private var leadingSlot: some View {
+        if let onBack {
+            Button(action: onBack) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 16, weight: .bold))
+                    .frame(width: 34, height: 34)
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .background(AppTheme.Colors.secondarySurface)
+                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.sm, style: .continuous))
+                    .accessibilityLabel(Text("Zurück"))
+            }
+            .buttonStyle(.plain)
+        } else if centeredTitle {
+            // Symmetric placeholder, damit der Titel bei fehlendem
+            // Back-Button trotzdem sauber mittig sitzt.
+            Color.clear.frame(width: 34, height: 34)
+        }
+    }
+
+    @ViewBuilder
+    private var trailingSlot: some View {
+        if let systemImage {
             ZStack {
                 Circle()
                     .fill(style.accent.opacity(0.12))
@@ -66,9 +101,12 @@ struct ScreenHeaderCard: View {
                     .foregroundStyle(style.accent)
             }
             .frame(width: 34, height: 34)
+        } else if centeredTitle {
+            // Ohne Trailing-Icon braucht der zentrierte Titel rechts
+            // einen Platzhalter von 34×34 — exakt die Breite des
+            // Back-Buttons links, damit der Text wirklich mittig sitzt.
+            Color.clear.frame(width: 34, height: 34)
         }
-        .frame(maxWidth: .infinity)
-        .frame(minHeight: AppLayout.headerHeight)
     }
 }
 
