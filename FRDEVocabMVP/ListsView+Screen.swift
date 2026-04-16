@@ -29,9 +29,10 @@ extension ListsView {
             showingListPicker = true
         } label: {
             VStack(spacing: 8) {
-                Image(systemName: "list.bullet.rectangle.fill")
-                    .font(.system(size: 32, weight: .bold))
-                    .foregroundStyle(sectionStyle.accent)
+                // Home-Listen-Icon — identisch zur Listen-Kachel auf dem
+                // Home-Screen und zu den „Ausgewählte Listen"-Cards in den
+                // Session-Setups. Ein Icon für „Listen" durch die ganze App.
+                HomeModuleIconView(icon: .listen, size: 40)
 
                 Text("Alle Listen")
                     .font(.system(size: 22, weight: .black, design: .rounded))

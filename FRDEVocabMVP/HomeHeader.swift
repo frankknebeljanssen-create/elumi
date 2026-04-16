@@ -50,15 +50,22 @@ struct HomeHeader: View {
                 )
                 .frame(width: Self.mascotSize, height: Self.mascotSize)
             }
+            // 20 pt optisch nach links — der Mascot sitzt dadurch bewusst
+            // ein Stück von der rechten Screen-Kante weg. Offset statt
+            // Padding, damit weder der Header-Rahmen noch der Text-Block
+            // links davon ihre Position ändern.
+            .offset(x: -20)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .task {
             // Periodisches Re-Triggern des Blink-Envelopes — der Overlay
             // blinzelt zweimal pro Session-Range (bei 1.35 s und 3.15 s
-            // nach `startDate`). Alle 3.8–4.4 s (Random-Jitter) starten wir
-            // neu, damit es natürlich und nicht mechanisch wirkt.
+            // nach `startDate`). Intervall zwischen den Envelopes bewusst
+            // **um 2 s erhöht** (3.8–4.4 s → 5.8–6.4 s), damit der Mascot
+            // seltener blinzelt und Pausen zwischen den Blinks ruhiger
+            // wirken.
             while !Task.isCancelled {
-                let interval = UInt64.random(in: 3_800...4_400) * 1_000_000
+                let interval = UInt64.random(in: 5_800...6_400) * 1_000_000
                 try? await Task.sleep(nanoseconds: interval)
                 await MainActor.run {
                     blinkStartDate = .now

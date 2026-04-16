@@ -41,11 +41,12 @@ struct HomeModuleTile: View {
 
                 Text(title)
                     .font(.system(size: spec.titleFontSize, weight: .black, design: .rounded))
-                    .foregroundStyle(
-                        deemphasized
-                            ? AppTheme.Colors.textSecondary
-                            : AppTheme.Colors.textPrimary
-                    )
+                    // Titel ist **immer** `textPrimary` (weiß-cremefarben) —
+                    // auch für `deemphasized`-Kacheln wie „Listen". Frühere
+                    // Variante hat den Titel dort in Rose gefärbt; jetzt liest
+                    // sich „Listen" in derselben sauberen weißen Schrift wie
+                    // jeder Lernmodul-Titel.
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
@@ -74,8 +75,13 @@ struct HomeModuleTile: View {
         RoundedRectangle(cornerRadius: spec.cornerRadius, style: .continuous)
             .fill(AppTheme.Colors.surface)
             .overlay(
+                // Accent-Tint in voller Stärke — auch bei `deemphasized`.
+                // Die Listen-Kachel nutzt dadurch denselben Card-Background
+                // wie die „Alle Listen"-Card im Listen-Screen
+                // (`appCardBackground(.lists, intensity: 0.09…0.11)`),
+                // statt eines halbierten, optisch verschwommenen Tints.
                 RoundedRectangle(cornerRadius: spec.cornerRadius, style: .continuous)
-                    .fill(accent.opacity(spec.accentTintOpacity * (deemphasized ? 0.5 : 1.0)))
+                    .fill(accent.opacity(spec.accentTintOpacity))
             )
     }
 

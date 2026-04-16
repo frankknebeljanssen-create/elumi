@@ -71,10 +71,11 @@ struct ListCategoryPickerView: View {
                     .foregroundStyle(AppTheme.Colors.cardLabel)
 
                 HStack(alignment: .center, spacing: 14) {
-                    Image(systemName: "list.bullet.rectangle.fill")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundStyle(accent)
-                        .frame(width: 36, height: 36)
+                    // Home-Listen-Icon — identisch zur "Listen"-Kachel auf
+                    // dem Home-Screen (Asset `HomeIconListen`). Systemweit
+                    // identisches Icon für „Ausgewählte Listen" statt des
+                    // früheren SF-Symbols `list.bullet.rectangle.fill`.
+                    HomeModuleIconView(icon: .listen, size: 36)
 
                     VStack(alignment: .leading, spacing: 2) {
                         if hasSelection {

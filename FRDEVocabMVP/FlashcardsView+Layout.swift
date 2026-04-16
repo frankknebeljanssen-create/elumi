@@ -279,7 +279,14 @@ extension FlashcardsView {
         .padding(.bottom, AppLayout.screenPadding)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(AppTheme.Colors.surface.ignoresSafeArea())
+        // Opaker Screen-Fill auf `background` (elumiMidnight) — identisch
+        // zum Home-Screen. Cards heben sich dadurch minimal heller ab
+        // (`surface` = elumiNavy), statt in der gleichen Farbe wie der
+        // Screen zu versinken. Dieser lokale Override ist nötig, damit
+        // während der Navigation-Push-Transition die Home-View nicht
+        // durchscheint — das äußere `appScreenBackground` greift erst
+        // nach dem Layout.
+        .background(AppTheme.Colors.background.ignoresSafeArea())
         .sheet(isPresented: $setup.showingStackComposer) {
             FlashcardStackComposerSheet(
                 style: sectionStyle,
@@ -313,10 +320,11 @@ extension FlashcardsView {
                 flashcardSetupCardLabel("Ausgewählte Listen")
 
                 HStack(alignment: .center, spacing: 14) {
-                    Image(systemName: "list.bullet.rectangle.fill")
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundStyle(sectionStyle.accent)
-                            .frame(width: 36, height: 36)
+                    // Home-Listen-Icon — identisch zur "Listen"-Kachel auf
+                    // dem Home-Screen (Asset `HomeIconListen`). Systemweit
+                    // identisches Icon für „Ausgewählte Listen" statt des
+                    // früheren SF-Symbols `list.bullet.rectangle.fill`.
+                    HomeModuleIconView(icon: .listen, size: 36)
 
                         VStack(alignment: .leading, spacing: 2) {
                             if hasSelection {

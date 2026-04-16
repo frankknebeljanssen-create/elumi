@@ -50,7 +50,13 @@ struct AppBottomBarSurfaceModifier: ViewModifier {
 
 extension View {
     func appScreenBackground(_ style: AppSectionStyle) -> some View {
-        background(AppTheme.Colors.surface.ignoresSafeArea())
+        // System-Pattern: Screen-Hintergrund ist der **dunklere** Ton
+        // (`background` = elumiMidnight), Cards darauf nutzen `surface`
+        // (= elumiNavy) und heben sich minimal heller ab — identisch zum
+        // Home-Screen. Frühere Variante (surface als Screen-Fill) ließ
+        // Cards in der gleichen Farbe wie der Screen liegen, dadurch
+        // verschwanden sie optisch.
+        background(AppTheme.Colors.background.ignoresSafeArea())
     }
 
     func appCardBackground(_ style: AppSectionStyle, intensity: Double = 0.09, cornerRadius: CGFloat = AppTheme.Radius.lg) -> some View {
