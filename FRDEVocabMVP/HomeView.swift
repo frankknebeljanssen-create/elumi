@@ -46,11 +46,16 @@ struct HomeView: View {
             : AppTheme.Spacing.lg
     }
 
-    /// 4 Spalten — Modul-Grid zeigt alle 8 Kacheln (7 Lernmodule + Listen)
-    /// auf einen Schlag in 2 Reihen. Auf kleineren iPhones bleibt die Card
-    /// dank `minimumScaleFactor` im Tile lesbar.
-    private var gridColumns: [GridItem] {
-        Array(repeating: GridItem(.flexible(), spacing: 8), count: 4)
+    /// 2 Spalten für das Hero-Grid — Top-Module sind Hauptaktion,
+    /// entsprechend großformatig.
+    private var heroGridColumns: [GridItem] {
+        Array(repeating: GridItem(.flexible(), spacing: 16), count: 2)
+    }
+
+    /// 3 Spalten für die Sekundär-Module (Verbformen, Vokabeln, Quiz) —
+    /// kompaktere Kacheln, gleiche visuelle Sprache, niedrigere Hierarchie.
+    private var secondaryGridColumns: [GridItem] {
+        Array(repeating: GridItem(.flexible(), spacing: 10), count: 3)
     }
 
     private var selectedDirection: Direction {
@@ -203,10 +208,17 @@ struct HomeView: View {
                     continueSession()
                 }
 
-                moduleGrid
-                    .padding(.top, 2)
+                // Hero-Grid dichter an der Fokus-Card — das Grid ist jetzt
+                // Hauptfeature, kein Menü.
+                heroModuleGrid
+                    .padding(.top, 4)
+
+                secondaryModuleGrid
+
+                listenOrganizationRow
 
                 directionToggleRow
+                    .padding(.top, 2)
             }
             .padding(.horizontal, AppLayout.screenPadding)
             .padding(.top, AppLayout.contentTopPadding)
@@ -238,64 +250,84 @@ struct HomeView: View {
 
     // MARK: - Module Grid
 
-    /// 4 × 2 Grid — 7 Lernmodule + Listen als 8. Kachel. Listen läuft zwar
-    /// visuell gleich wie die Lernmodule mit (gleiche Kachelgröße + SVG-
-    /// Icon), bleibt aber inhaltlich eindeutig „Organisation" (siehe
-    /// `HomeModuleIcon.listen`). Die Trennung geschieht über die Ziel-
-    /// Navigation (`.lists(nil)` vs. Training/Quiz/Flashcards).
-    private var moduleGrid: some View {
-        LazyVGrid(columns: gridColumns, spacing: 8) {
+    /// 2 × 2 Hero-Grid — die vier wichtigsten Lernmodule als primärer
+    /// Einstieg. Großformatige Kacheln (`.hero`), 16 pt Spacing, macht
+    /// das Grid zum Hauptfeature des Home-Screens.
+    ///
+    /// Reihenfolge folgt der didaktischen Progression:
+    ///   Karteikarten (Format) · Nomen · Artikel · Verben
+    private var heroModuleGrid: some View {
+        LazyVGrid(columns: heroGridColumns, spacing: 16) {
             moduleTile(
                 icon: .karteikarten,
                 title: "Karteikarten",
                 accent: moduleFlashcards,
-                screen: .flashcards(nil)
+                screen: .flashcards(nil),
+                size: .hero
             )
             moduleTile(
                 icon: .nomen,
                 title: "Nomen",
                 accent: moduleNomen,
-                screen: .train(TrainingLaunchContext(preferredMode: .nouns))
+                screen: .train(TrainingLaunchContext(preferredMode: .nouns)),
+                size: .hero
             )
             moduleTile(
                 icon: .artikel,
                 title: "Artikel",
                 accent: moduleArticles,
-                screen: .train(TrainingLaunchContext(preferredMode: .articles))
+                screen: .train(TrainingLaunchContext(preferredMode: .articles)),
+                size: .hero
             )
             moduleTile(
                 icon: .verben,
                 title: "Verben",
                 accent: moduleVerbs,
-                screen: .train(TrainingLaunchContext(preferredMode: .verbs))
+                screen: .train(TrainingLaunchContext(preferredMode: .verbs)),
+                size: .hero
             )
+        }
+    }
+
+    /// Sekundär-Reihe — kompaktere Kacheln (`.compact`) für die
+    /// verbleibenden Lernmodule. Gleiche Komponente wie im Hero-Grid,
+    /// nur kleiner gerendert.
+    private var secondaryModuleGrid: some View {
+        LazyVGrid(columns: secondaryGridColumns, spacing: 10) {
             moduleTile(
                 icon: .verbformen,
                 title: "Verbformen",
                 accent: moduleVerbforms,
-                screen: .train(TrainingLaunchContext(preferredMode: .verbforms))
+                screen: .train(TrainingLaunchContext(preferredMode: .verbforms)),
+                size: .compact
             )
             moduleTile(
                 icon: .vokabeln,
                 title: "Vokabeln",
                 accent: moduleVocabulary,
-                screen: .train(TrainingLaunchContext(preferredMode: .vocabulary))
+                screen: .train(TrainingLaunchContext(preferredMode: .vocabulary)),
+                size: .compact
             )
             moduleTile(
                 icon: .quiz,
                 title: "Quiz",
                 accent: moduleQuiz,
-                screen: .quiz(nil)
-            )
-            // Listen läuft visuell mit im Grid, zielt aber auf den
-            // Organisations-Screen — nicht auf eine Training-Session.
-            moduleTile(
-                icon: .listen,
-                title: "Listen",
-                accent: moduleLists,
-                screen: .lists(nil)
+                screen: .quiz(nil),
+                size: .compact
             )
         }
+    }
+
+    /// Listen — bewusst **außerhalb** des Modul-Grids. Kein gleichwertiges
+    /// Lernmodul, sondern Organisation.
+    private var listenOrganizationRow: some View {
+        HomeOrganizationTile(
+            icon: .listen,
+            title: "Listen",
+            subtitle: "Eigene Vokabellisten verwalten",
+            isPressed: pressedHomeScreen == .lists(nil),
+            onTap: { openHomeScreen(.lists(nil)) }
+        )
     }
 
     @ViewBuilder
@@ -303,14 +335,16 @@ struct HomeView: View {
         icon: HomeModuleIcon,
         title: String,
         accent: Color,
-        screen: AppScreen
+        screen: AppScreen,
+        size: HomeModuleTile.Size
     ) -> some View {
         HomeModuleTile(
             icon: icon,
             title: title,
             accent: accent,
             isPressed: pressedHomeScreen == screen,
-            onTap: { openHomeScreen(screen) }
+            onTap: { openHomeScreen(screen) },
+            size: size
         )
     }
 
