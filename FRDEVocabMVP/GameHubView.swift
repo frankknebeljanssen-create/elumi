@@ -217,7 +217,13 @@ struct GameHubView: View {
         // bekommt dadurch konsistenten Startzustand und kann im autoStart-
         // Modus ohne eigenen Gate sofort loslegen.
         arcadeCredits -= ArcadeCreditSystem.gamesCost
-        isPresentingArcade = true
+        // Instant-Switch ohne Slide-from-bottom — konsistent mit
+        // Footer-Navigation und AppNavigationCoordinator.
+        var transaction = Transaction(animation: nil)
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            isPresentingArcade = true
+        }
     }
 
     // MARK: - Reward Explainer

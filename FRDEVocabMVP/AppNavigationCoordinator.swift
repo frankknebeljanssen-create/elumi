@@ -54,38 +54,47 @@ final class AppNavigationCoordinator: ObservableObject {
         return false
     }
 
+    /// Führt eine Path-Mutation ohne Slide-Animation aus. Zentraler Helper
+    /// für **alle** Navigation — die App soll sich schnell anfühlen,
+    /// kein Rechts-von-Slide, kein Fade, kein Micro-Delay.
+    private func navigateInstant(_ change: () -> Void) {
+        var transaction = Transaction(animation: nil)
+        transaction.disablesAnimations = true
+        withTransaction(transaction, change)
+    }
+
     func goHome() {
-        navigationPath.removeAll()
+        navigateInstant { navigationPath.removeAll() }
     }
 
     func openInfoScreen() {
         guard currentScreen != .info else { return }
-        navigationPath.append(.info)
+        navigateInstant { navigationPath.append(.info) }
     }
 
     func openSettingsScreen() {
         guard currentScreen != .settings else { return }
-        navigationPath.append(.settings)
+        navigateInstant { navigationPath.append(.settings) }
     }
 
     func openScanScreen() {
         guard currentScreen != .scan else { return }
-        navigationPath.append(.scan)
+        navigateInstant { navigationPath.append(.scan) }
     }
 
     func openHeartsScreen() {
         guard currentScreen != .hearts else { return }
-        navigationPath.append(.hearts)
+        navigateInstant { navigationPath.append(.hearts) }
     }
 
     func openGameHubScreen() {
         guard currentScreen != .gameHub else { return }
-        navigationPath.append(.gameHub)
+        navigateInstant { navigationPath.append(.gameHub) }
     }
 
     func openLexiconScreen() {
         guard currentScreen != .lexicon else { return }
-        navigationPath.append(.lexicon)
+        navigateInstant { navigationPath.append(.lexicon) }
     }
 
     var isLexiconScreenActive: Bool {
@@ -96,7 +105,7 @@ final class AppNavigationCoordinator: ObservableObject {
     func openScreenWhenReady(_ screen: AppScreen, onWillNavigate: (() -> Void)? = nil) {
         guard currentScreen != screen else { return }
         onWillNavigate?()
-        navigationPath.append(screen)
+        navigateInstant { navigationPath.append(screen) }
     }
 
     func completeSplashAndEnsureMenuReady(immediate: Bool) {

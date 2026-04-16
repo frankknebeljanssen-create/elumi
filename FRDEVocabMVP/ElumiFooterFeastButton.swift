@@ -16,7 +16,14 @@ struct ElumiFooterFeastButton: View {
 
     var body: some View {
         Button {
-            showingArcadeGame = true
+            // Instant-Switch ohne Slide-from-bottom — matcht die
+            // Navigation-Stack-Animationen, die in `AppNavigationCoordinator`
+            // ebenfalls deaktiviert sind.
+            var transaction = Transaction(animation: nil)
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+                showingArcadeGame = true
+            }
         } label: {
             ZStack {
                 if let activeSnackKind {
