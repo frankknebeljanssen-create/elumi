@@ -224,6 +224,11 @@ var quizSessionScreen: some View {
 }
 
 var quizResultScreen: some View {
+    // Scrollbar verpackt: der Result-Screen kann bei vielen Rewards
+    // (Level-Up + Streak-Milestone + Variable-Reward + Wrong-Answers-Button)
+    // höher sein als der Viewport. Zusätzlich: Bottom-Padding deckt die
+    // Footer-AppBottomBar ab, damit CTA-Buttons nicht verdeckt werden.
+    ScrollView(showsIndicators: false) {
     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
         ScreenHeaderCard(
             style: sectionStyle,
@@ -326,14 +331,16 @@ var quizResultScreen: some View {
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))
-
-        Spacer(minLength: 0)
     }
     .padding(.horizontal, AppLayout.screenPadding)
     .padding(.top, AppLayout.contentTopPadding)
-    .padding(.bottom, AppLayout.screenPadding)
-    .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
-    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    // Bottom-Padding muss die Footer-BottomBar freihalten, sonst
+    // verdeckt der Footer die letzten CTA-Buttons (Nochmal / Zurück).
+    .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.md)
+    .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .top)
+    .frame(maxWidth: .infinity, alignment: .top)
+    }
+    .frame(maxHeight: .infinity)
     .onAppear {
         persistHeartsIfNeeded()
     }
