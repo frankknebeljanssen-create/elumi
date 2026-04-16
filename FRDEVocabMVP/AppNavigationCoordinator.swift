@@ -9,6 +9,10 @@ final class AppNavigationCoordinator: ObservableObject {
     @Published var splashReplayID = UUID()
     @Published var navigationPath: [AppScreen] = []
     @Published var shouldAnimateSplashDismissal = true
+    /// Sichtbar-ausblenden des globalen Footers, wenn die Arcade tatsächlich
+    /// gespielt wird. Beim Start-Overlay ist der Footer bewusst weiter sichtbar,
+    /// damit User bei Fehltap direkt zum nächsten Footer-Button wechseln kann.
+    @Published var isImmersiveArcadeActive = false
 
     init() {
         didCompleteSplashAnimation = Self.isSplashTemporarilyDisabled
@@ -23,7 +27,7 @@ final class AppNavigationCoordinator: ObservableObject {
     }
 
     var shouldShowGlobalChrome: Bool {
-        !shouldShowSplashOverlay
+        !shouldShowSplashOverlay && !isImmersiveArcadeActive
     }
 
     var isSettingsScreenActive: Bool {
@@ -90,6 +94,16 @@ final class AppNavigationCoordinator: ObservableObject {
     func openGameHubScreen() {
         guard currentScreen != .gameHub else { return }
         navigateInstant { navigationPath.append(.gameHub) }
+    }
+
+    func openArcadeScreen(autoStart: Bool) {
+        // Falls bereits auf Arcade: nichts tun (kein Stacking).
+        if case .arcade = currentScreen { return }
+        navigateInstant { navigationPath.append(.arcade(autoStart: autoStart)) }
+    }
+
+    func setImmersiveArcade(_ active: Bool) {
+        isImmersiveArcadeActive = active
     }
 
     func openLexiconScreen() {

@@ -20,16 +20,13 @@ import SwiftUI
 struct GameHubView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.appUsesGlobalChrome) private var usesGlobalChrome
+    @Environment(\.appOpenArcadeAction) private var openArcade
     @AppStorage(appArcadeCreditsKey) private var arcadeCredits = 0
     @ObservedObject private var progressStore = ProgressStore.shared
     @ObservedObject var feedbackPlayer: FeedbackPlayer
     let goHome: () -> Void
     let openSettings: () -> Void
     let openInfo: () -> Void
-
-    /// Zeigt den Arcade-FullScreenCover an, wenn `true`. Wird vom CTA
-    /// gesetzt, nachdem der Credit-Abzug erfolgt ist (siehe `startGameTapped`).
-    @State private var isPresentingArcade = false
 
     private let sectionStyle: AppSectionStyle = .hearts
     private let livesPerCredit = 4   // sichtbare Credit → Leben Zuordnung
@@ -75,11 +72,6 @@ struct GameHubView: View {
                 onSettings: { openSettings() },
                 isHeartsActive: true
             )
-        }
-        .fullScreenCover(isPresented: $isPresentingArcade) {
-            // Credit-Abzug ist beim CTA-Tap schon passiert → autoStart = true,
-            // damit das Arcade-Overlay übersprungen und direkt gespielt wird.
-            ElumiArcadeGameView(feedbackPlayer: feedbackPlayer, autoStart: true)
         }
     }
 
@@ -217,13 +209,10 @@ struct GameHubView: View {
         // bekommt dadurch konsistenten Startzustand und kann im autoStart-
         // Modus ohne eigenen Gate sofort loslegen.
         arcadeCredits -= ArcadeCreditSystem.gamesCost
-        // Instant-Switch ohne Slide-from-bottom — konsistent mit
-        // Footer-Navigation und AppNavigationCoordinator.
-        var transaction = Transaction(animation: nil)
-        transaction.disablesAnimations = true
-        withTransaction(transaction) {
-            isPresentingArcade = true
-        }
+        // Navigation zur Arcade als echte Route mit autoStart=true —
+        // Start-Overlay wird übersprungen, Immersive-Mode aktiviert sich
+        // on-appear und lässt den globalen Footer sauber verschwinden.
+        openArcade?(true)
     }
 
     // MARK: - Reward Explainer

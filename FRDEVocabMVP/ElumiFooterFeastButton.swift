@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ElumiFooterFeastButton: View {
-    @Environment(\.appOpenGameHubAction) private var openGameHub
+    @Environment(\.appOpenArcadeAction) private var openArcade
     @ObservedObject var feedbackPlayer: FeedbackPlayer
     @AppStorage(appArcadeCreditsKey) private var arcadeCredits = 0
     @State private var activeSnackKind: ElumiSnackKind?
@@ -16,11 +16,11 @@ struct ElumiFooterFeastButton: View {
 
     var body: some View {
         Button {
-            // Navigation über Game Hub — Footer bleibt sichtbar,
-            // User kann bei Fehltap direkt zum nächsten Footer-Button.
-            // Das Start-Overlay der Arcade entfällt für diesen Einstieg;
-            // der „Spiel starten"-CTA lebt jetzt ausschließlich im Game Hub.
-            openGameHub?()
+            // Navigation zur Arcade als echte Route (kein fullScreenCover).
+            // autoStart=false → Start-Overlay poppt auf, Footer bleibt
+            // während des Overlays sichtbar. Erst wenn der User „Spiel
+            // starten" drückt, verschwindet der Footer (immersive mode).
+            openArcade?(false)
         } label: {
             ZStack {
                 if let activeSnackKind {

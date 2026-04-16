@@ -143,6 +143,7 @@ struct ElumiArcadeSnackState: Identifiable, Equatable {
 
 struct ElumiArcadeGameView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.appSetImmersiveArcadeAction) var setImmersiveArcade
     @ObservedObject var feedbackPlayer: FeedbackPlayer
     @AppStorage(appElumiArcadeHighScoreKey) var highScore = 0
     @AppStorage(appArcadeCreditsKey) var arcadeCredits = 0

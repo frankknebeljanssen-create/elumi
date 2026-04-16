@@ -7,6 +7,7 @@ enum AppScreen: Hashable {
     case quiz(QuizLaunchContext?)
     case hearts      // Progress Hub (Fortschritt) — reached via Home Board tap
     case gameHub     // Game Hub (Reward + Spiel-Start) — reached via Footer-Snack
+    case arcade(autoStart: Bool)  // Das eigentliche Spiel — Start-Overlay oder Direkt-Start
     case lists(ListLaunchContext?)
     case lexicon
     case scan
@@ -23,11 +24,23 @@ private struct AppOpenScanActionKey: EnvironmentKey {
     static let defaultValue: (() -> Void)? = nil
 }
 
-/// Zentrale Aktion, um den Game Hub zu öffnen — wird vom Elumi-Footer-
-/// Mascot-Button gerufen, damit dieser nicht mehr direkt in die Arcade
-/// springt, sondern über den Game Hub (mit sichtbarem Footer) einsteigt.
+/// Zentrale Aktion, um den Game Hub zu öffnen — vom Footer-Snack-Button genutzt.
 private struct AppOpenGameHubActionKey: EnvironmentKey {
     static let defaultValue: (() -> Void)? = nil
+}
+
+/// Zentrale Aktion, um die Arcade-Route (`.arcade`) zu öffnen. `autoStart`:
+///   • `false` → Start-Overlay wird angezeigt, Footer bleibt sichtbar
+///   • `true`  → direkt ins Spiel, Footer verschwindet sofort
+/// Typischer Aufruf: Elumi-Mascot (autoStart=false), GameHub-CTA (autoStart=true).
+private struct AppOpenArcadeActionKey: EnvironmentKey {
+    static let defaultValue: ((Bool) -> Void)? = nil
+}
+
+/// Setzt den Immersive-Arcade-Flag — ElumiArcadeGameView nutzt ihn, um
+/// den globalen Footer auszublenden, sobald das Spiel tatsächlich läuft.
+private struct AppSetImmersiveArcadeActionKey: EnvironmentKey {
+    static let defaultValue: ((Bool) -> Void)? = nil
 }
 
 private struct AppUsesGlobalChromeKey: EnvironmentKey {
@@ -48,6 +61,16 @@ extension EnvironmentValues {
     var appOpenGameHubAction: (() -> Void)? {
         get { self[AppOpenGameHubActionKey.self] }
         set { self[AppOpenGameHubActionKey.self] = newValue }
+    }
+
+    var appOpenArcadeAction: ((Bool) -> Void)? {
+        get { self[AppOpenArcadeActionKey.self] }
+        set { self[AppOpenArcadeActionKey.self] = newValue }
+    }
+
+    var appSetImmersiveArcadeAction: ((Bool) -> Void)? {
+        get { self[AppSetImmersiveArcadeActionKey.self] }
+        set { self[AppSetImmersiveArcadeActionKey.self] = newValue }
     }
 
     var appUsesGlobalChrome: Bool {

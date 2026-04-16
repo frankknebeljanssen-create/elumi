@@ -132,12 +132,19 @@ extension ElumiArcadeGameView {
             .onAppear {
                 gameSize = geometry.size
                 // AutoStart-Pfad: Credit-Abzug + CTA wurden schon vom
-                // aufrufenden `GameHubView` erledigt → Overlay überspringen
-                // und direkt starten.
+                // aufrufenden `GameHubView` erledigt → Overlay überspringen,
+                // direkt starten und Immersive-Mode aktivieren (Footer weg).
                 if autoStart, showingStartOverlay {
                     showingStartOverlay = false
+                    setImmersiveArcade?(true)
                     startGame()
                 }
+            }
+            .onChange(of: showingStartOverlay) { _, isShowing in
+                // Sobald der User im Start-Overlay „Spiel starten" drückt
+                // (oder das Overlay anderweitig dismissed wird), wird
+                // Immersive aktiv und der globale Footer blendet aus.
+                setImmersiveArcade?(!isShowing)
             }
             .onChange(of: geometry.size) { _, newSize in
                 gameSize = newSize
@@ -148,10 +155,13 @@ extension ElumiArcadeGameView {
             await runGameLoops()
         }
         .onDisappear {
-            // Spiel endgültig beenden — egal auf welchem Weg der Cover
+            // Spiel endgültig beenden — egal auf welchem Weg der Screen
             // dismissed wurde (X-Button, Footer-Wechsel, System-Geste).
-            // Musik, BGM, Loops und Ambient müssen zuverlässig verstummen.
+            // Musik, BGM, Loops und Ambient müssen zuverlässig verstummen,
+            // und der Immersive-Flag zurückgesetzt werden, damit der
+            // globale Footer auf der zurückkehrenden View wieder erscheint.
             exitArcadeSilently()
+            setImmersiveArcade?(false)
         }
     }
 

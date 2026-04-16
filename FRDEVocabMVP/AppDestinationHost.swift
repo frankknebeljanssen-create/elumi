@@ -27,6 +27,11 @@ struct AppDestinationHost: View {
                 openSettings: openSettings,
                 openInfo: openInfo
             )
+        case .arcade(let autoStart):
+            // Arcade als echte Navigation-Destination — Footer bleibt
+            // während des Start-Overlays sichtbar, verschwindet erst,
+            // wenn das Spiel tatsächlich beginnt (via Immersive-Flag).
+            ElumiArcadeGameView(feedbackPlayer: feedbackPlayer, autoStart: autoStart)
         case .lists(let launchContext):
             listsDestination(launchContext: launchContext)
         case .lexicon:

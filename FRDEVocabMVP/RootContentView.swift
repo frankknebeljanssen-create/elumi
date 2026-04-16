@@ -148,6 +148,12 @@ struct ContentView: View {
                 .environment(\.appOpenGameHubAction, {
                     openGameHubScreen()
                 })
+                .environment(\.appOpenArcadeAction, { autoStart in
+                    navigation.openArcadeScreen(autoStart: autoStart)
+                })
+                .environment(\.appSetImmersiveArcadeAction, { active in
+                    navigation.setImmersiveArcade(active)
+                })
                 .environment(\.appUsesGlobalChrome, navigation.shouldShowGlobalChrome)
                 } // ← schließt Onboarding-Gate-else (NavigationStack-Branch)
             } else {
