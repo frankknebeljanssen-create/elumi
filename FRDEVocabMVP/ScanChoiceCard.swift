@@ -263,15 +263,60 @@ struct ScanHeroCard: View {
     }
 }
 
-/// Header-Block des neuen Scan-Screens — links-bündig.
-/// Nur der Titel „Scan" — Frage + Subtext leben in der HeroCard
-/// darunter, daher hier bewusst keine Wiederholung.
+/// Kombinierter Header-Block des Scan-Screens.
+/// Links: 3-stufige Typo-Hierarchie (Modul-Titel klein → Hauptfrage groß
+/// → Subtext sehr ruhig). Rechts: Maskottchen, leicht überlappend nach
+/// unten, dezente Bounce-Animation beim Erscheinen.
+///
+/// Wichtig (per Spec):
+///   • „Scan" ist NICHT der Fokus — die **Frage** ist der Hero-Text
+///   • Subtext: max. 70–80 % Opacity
+///   • Maskottchen rechts, größer als Text-Baseline, leicht versetzt
 struct ScanScreenHeader: View {
+    @State private var hasAppeared = false
+
     var body: some View {
-        Text("Scan")
-            .font(.system(size: 32, weight: .black, design: .rounded))
-            .foregroundStyle(AppTheme.Colors.textPrimary)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        HStack(alignment: .center, spacing: 14) {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("Scan")
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.65))
+
+                Text("Was möchtest du scannen?")
+                    .font(.system(size: 26, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+                    .padding(.top, 7)
+
+                Text("Ich passe die Analyse automatisch an")
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.55))
+                    .padding(.top, 4)
+            }
+            .opacity(hasAppeared ? 1 : 0)
+            .offset(x: hasAppeared ? 0 : -6)
+
+            Spacer(minLength: 0)
+
+            Image("SplashCharacter")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 88, height: 88)
+                // Leicht nach unten versetzt → überlappt minimal mit
+                // dem nächsten Block, wirkt „lebendig" verankert.
+                .offset(y: 10)
+                .scaleEffect(hasAppeared ? 1.0 : 0.85)
+                .rotationEffect(.degrees(hasAppeared ? 0 : -8))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.bottom, 6) // Platz für die Mascot-Überlappung
+        .onAppear {
+            withAnimation(.spring(response: 0.55, dampingFraction: 0.62).delay(0.08)) {
+                hasAppeared = true
+            }
+        }
     }
 }
 

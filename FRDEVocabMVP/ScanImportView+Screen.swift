@@ -556,18 +556,11 @@ extension ScanImportView {
                             && session.batchThumbnails.isEmpty
 
                         if isOnChoiceScreen {
-                            // Header (links-bündig, nur "Scan")
+                            // Kombinierter Header — Modul-Titel + Hauptfrage
+                            // + Subtext links, Maskottchen rechts. Ersetzt
+                            // die separate ScanHeroCard (war redundant).
                             ScanScreenHeader()
                                 .padding(.top, 4)
-
-                            // Hero-Card — angepasste Frage (passt zu
-                            // Modus-Auswahl statt Aktions-Auswahl)
-                            ScanHeroCard(
-                                mascotImageName: "SplashCharacter",
-                                title: "Wie soll ich den Text verstehen?",
-                                subtitle: "Ich passe die Analyse automatisch an",
-                                accent: sectionStyle.accent
-                            )
 
                             // ─────── Schritt 1 — MODUS ───────
                             // Selection-Toggles (kein Navigations-Element).
