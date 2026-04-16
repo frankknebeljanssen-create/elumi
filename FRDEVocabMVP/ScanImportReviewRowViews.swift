@@ -15,14 +15,34 @@ struct ScanEditablePreviewRowView: View {
     let onMarkReviewed: () -> Void
     let onDelete: () -> Void
     let note: String?
+    /// Optionales Wortarten-Label inkl. Verb-Infinitiv ("Verb (être)") —
+    /// wird über dem Source-Feld als kleiner Badge angezeigt. Wenn nil,
+    /// erscheint kein Badge (z. B. für ungeklärte Wortarten).
+    var wordClassLabel: String? = nil
+    var wordClassColor: Color? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .top, spacing: 8) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(sourceLanguageLabel)
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                    HStack(spacing: 6) {
+                        Text(sourceLanguageLabel)
+                            .font(AppTheme.Typography.caption)
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                        // Wortart-Badge mit Verb-Infinitiv (z. B. „Verb (être)")
+                        if let wordClassLabel, !wordClassLabel.isEmpty {
+                            Text(wordClassLabel)
+                                .font(.system(size: 10, weight: .bold, design: .rounded))
+                                .foregroundStyle(wordClassColor ?? AppTheme.Colors.textSecondary)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(
+                                    (wordClassColor ?? AppTheme.Colors.textSecondary).opacity(0.15)
+                                )
+                                .clipShape(Capsule())
+                        }
+                        Spacer(minLength: 0)
+                    }
 
                     TextField(sourceLanguageLabel, text: sourceText, axis: .vertical)
                         .textFieldStyle(.roundedBorder)

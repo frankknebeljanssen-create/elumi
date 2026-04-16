@@ -50,7 +50,12 @@ extension ScanImportView {
             onDelete: {
                 previewPairPendingDeletion = pair
             },
-            note: pair.note
+            note: pair.note,
+            // Wortart inkl. Verb-Infinitiv ("Verb (être)") — gleiche Logik
+            // wie der Fullscreen-Review-Sheet, damit der Inline-Review
+            // konsistent ist und das Lemma sichtbar bleibt.
+            wordClassLabel: reviewWordClassLabel(for: pair),
+            wordClassColor: reviewWordClassColor(for: pair)
         )
     }
 
