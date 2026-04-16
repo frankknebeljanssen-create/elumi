@@ -272,9 +272,24 @@ extension TrainingView {
     private var trainingSetupContextContent: some View {
         if session.trainingMode == .vocabulary {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                // Reihenfolge analog zu allen anderen Modulen:
+                //  1) Ausgewählte-Listen-Card oben (Primär-Status)
+                //  2) Kategorie-Auswahl-Grid darunter (Sekundär-Entry-Point)
+                ListCategoryPickerView(
+                    availableLists: availableTrainingLists,
+                    selectedListIDs: session.selectedTrainingListIDs,
+                    accent: trainingActionTint,
+                    style: sectionStyle,
+                    feedbackPlayer: feedbackPlayer,
+                    summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " \u{00B7} " + trainingListCount),
+                    itemLabel: "Einträge",
+                    onSelectionChanged: { session.selectedTrainingListIDs = $0 }
+                )
+
                 Text("Was möchtest Du trainieren?")
                     .font(.system(size: 20, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .padding(.top, 4)
 
                 LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                     trainingCategoryCard(
@@ -302,17 +317,6 @@ extension TrainingView {
                         subtitle: "Alle Einträge"
                     )
                 }
-
-                ListCategoryPickerView(
-                    availableLists: availableTrainingLists,
-                    selectedListIDs: session.selectedTrainingListIDs,
-                    accent: trainingActionTint,
-                    style: sectionStyle,
-                    feedbackPlayer: feedbackPlayer,
-                    summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " \u{00B7} " + trainingListCount),
-                    itemLabel: "Einträge",
-                    onSelectionChanged: { session.selectedTrainingListIDs = $0 }
-                )
             }
         } else if session.trainingMode == .verbforms {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
