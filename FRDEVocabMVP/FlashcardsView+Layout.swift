@@ -244,19 +244,22 @@ extension FlashcardsView {
                 }
                 .scrollDismissesKeyboard(.interactively)
                 .safeAreaInset(edge: .bottom) {
+                    // GamificationBar + CTA nutzen denselben horizontalen
+                    // Rahmen wie die `SessionSetupScreen`-Master — identisches
+                    // Padding auf beiden sorgt dafür, dass die beiden Cards
+                    // exakt gleich breit sind. Frühere Abweichung: die Bar
+                    // hatte zusätzliches `screenPadding` von 16 pt, der Button
+                    // nur die äußere `screenPadding` des Screen-VStacks — Bar
+                    // war dadurch 32 pt schmaler als der Button.
                     VStack(spacing: 14) {
-                        // Master-Session-Setup-Bar — verbindlich über dem CTA.
                         SessionGamificationBar(estimate: flashcardsSessionEstimate)
-                            .padding(.horizontal, AppLayout.screenPadding)
 
-                        Button {
+                        SessionPrimaryCTA(
+                            title: "Los geht's!",
+                            isEnabled: canStartSetup
+                        ) {
                             startFlashcardsFromSetup(autoplayPrompt: true)
-                        } label: {
-                            Text("Los geht's!")
-                                .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(AppPrimaryButtonStyle(color: canStartSetup ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled))
-                        .disabled(!canStartSetup)
                         .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 4)
                     }
                 }

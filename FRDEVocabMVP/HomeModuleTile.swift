@@ -87,8 +87,14 @@ struct HomeModuleTile: View {
     private var spec: Spec {
         switch size {
         case .hero:
+            // Hero-Kachel: Icon bewusst etwas größer (72 → 84), während
+            // Titel-Font (16 pt) und `minHeight` (148 pt) unverändert
+            // bleiben — die Kachel wächst nicht, das Icon bekommt nur mehr
+            // Präsenz. `iconTextSpacing` bleibt bei 10 pt, weil der
+            // Footer-Text dadurch automatisch näher an die Unterkante rückt
+            // (gewollt — Icon ist der primäre Anker).
             return Spec(
-                iconSize: 72,
+                iconSize: 84,
                 iconTextSpacing: 10,
                 titleFontSize: 16,
                 verticalPadding: 14,

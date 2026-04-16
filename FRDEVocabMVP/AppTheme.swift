@@ -48,10 +48,14 @@ enum AppTheme {
         // Info-Texte (Subtitles wie „1 Liste · 60 Karten gesamt") und allgemein
         // sekundäre Akzente. Hellblau, freundlich, klar erkennbar.
         static let elumiBlue = Color(hex: "#5B9CF5")
-        // Setup-Card-Hintergrund + Border — etwas heller als die globale
-        // Surface, damit Cards auf dem Setup-Screen optisch abgesetzt sind.
-        static let setupCardBackground = Color(hex: "#0F2D48")
-        static let setupCardBorder = Color(hex: "#1A3A55")
+        // Setup-Card-Hintergrund + Border — **identisch** zu den Home-Cards
+        // (Progress-Board, Daily-Focus, Modul-Kacheln). Ein einziger
+        // Card-Look durch die App: `surface` (#101522 elumiNavy) als Fill
+        // + cremefarbener 12%-Border. Frühere Abweichung (#0F2D48 heller
+        // Setup-Tint) fiel visuell aus dem Raster und ist mit dem Master-
+        // Setup-Screen entfallen.
+        static let setupCardBackground = elumiNavy
+        static let setupCardBorder = elumiCream.opacity(0.12)
 
         static let primary = elumiPinkDeep
         static let background = elumiMidnight

@@ -176,7 +176,12 @@ struct SessionDirectionRow: View {
             LanguageDirectionSwitch(size: .compact, onToggle: onToggle)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        // Kompakte Richtungs-Card: vertikales Padding systemweit um 5 pt
+        // reduziert (12 → 7), damit die Zeile nicht wie ein fetter Button,
+        // sondern wie ein schlanker Kontext-Wert neben „Ausgewählte Listen"
+        // wirkt. Gilt auf **allen** Setup-Screens (Karteikarten, Quiz,
+        // Nomen, Artikel, Verben, Verbformen, Vokabeln).
+        .padding(.vertical, 7)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(SessionCardBackground(cornerRadius: 18))
         .accessibilityElement(children: .contain)
