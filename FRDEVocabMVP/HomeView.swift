@@ -339,15 +339,7 @@ struct HomeView: View {
                 icon: .karteikarten,
                 title: "Karteikarten",
                 accent: moduleFlashcards,
-                screen: .flashcards(nil),
-                // Kartenstapel-Asset sitzt gegenüber dem restlichen Modul-
-                // Raster deutlich asymmetrisch — daher 35 pt nach links
-                // und 20 pt nach unten geschoben, damit der visuelle
-                // Schwerpunkt der Karten-Illustration über der Kachel
-                // optisch zentriert wirkt. Gilt bewusst **nur** für die
-                // Karteikarten-Kachel; alle anderen Module bleiben bei
-                // `.zero` Offset.
-                iconOffset: CGSize(width: -35, height: 20)
+                screen: .flashcards(nil)
             )
             moduleTile(
                 icon: .nomen,

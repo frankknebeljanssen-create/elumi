@@ -181,6 +181,13 @@ extension FlashcardsView {
                     }
                 }
                 .frame(width: 36, height: 36)
+                // Mini-Stapel sitzt visuell zwischen der großen roten Zahl
+                // und dem Slider. 15 pt nach links rückt den Stapel näher
+                // an die Zahl heran, 10 pt nach unten senkt ihn auf die
+                // vertikale Achse des Slider-Tracks — die drei Elemente
+                // (Zahl · Stapel · Slider) wirken dadurch nicht mehr als
+                // versetzte Treppe.
+                .offset(x: -15, y: 10)
                 .animation(.spring(response: 0.3, dampingFraction: 0.7), value: displayCount)
 
                 if maxCards > minSlider {
