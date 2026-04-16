@@ -79,15 +79,20 @@ struct HomeProgressBoardCard: View {
             Image(systemName: "flame.fill")
                 .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(Color(hex: "#FF9F40"))
-            VStack(alignment: .leading, spacing: 1) {
-                Text("\(data.streakDays) Tage")
+            // „Streak"-Label jetzt **mittig unter der Tageszahl** statt
+            // links-bündig — dadurch wirkt der Block als kompakter Tages-
+            // Wert (Zahl dominant, Label als zentrierte Caption darunter).
+            // Label zusätzlich 3 pt größer (10 → 13), damit die Hierarchie
+            // Zahl/Label weniger extrem gestaffelt ist.
+            VStack(alignment: .center, spacing: 1) {
+                Text("\(data.streakDays) \(data.streakDays == 1 ? "Tag" : "Tage")")
                     .font(.system(size: 15, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .monospacedDigit()
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                 Text("Streak")
-                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.elumiPink)
                     .tracking(0.4)
             }
@@ -105,8 +110,10 @@ struct HomeProgressBoardCard: View {
                 .minimumScaleFactor(0.85)
             progressBar(progress: data.levelProgress)
             if let hint = data.goalHint, !hint.isEmpty {
+                // „Noch xxx XP bis …"-Hint 1 pt größer (10 → 11), damit die
+                // Zeile nicht unter der Progress-Bar verschwindet.
                 Text(hint)
-                    .font(.system(size: 10, weight: .medium, design: .rounded))
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.9))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
@@ -139,7 +146,12 @@ struct HomeProgressBoardCard: View {
     }
 
     private var xpSegment: some View {
-        VStack(alignment: .trailing, spacing: 1) {
+        // „Gesamt"-Label jetzt **mittig unter der XP-Zahl** statt trailing-
+        // bündig — spiegelt das neue Streak-Layout links und macht den
+        // rechten Block symmetrisch. Label zusätzlich 2 pt größer (10 →
+        // 12), damit „Gesamt" nicht zu fein unter der dominanten Zahl
+        // sitzt.
+        VStack(alignment: .center, spacing: 1) {
             Text("\(data.totalXP) XP")
                 .font(.system(size: 15, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
@@ -147,7 +159,7 @@ struct HomeProgressBoardCard: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
             Text("Gesamt")
-                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .font(.system(size: 12, weight: .bold, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.elumiPink)
                 .tracking(0.4)
         }
@@ -176,7 +188,7 @@ struct HomeProgressBoardCard: View {
 
     private var accessibilitySummary: String {
         var parts: [String] = [
-            "Streak \(data.streakDays) Tage",
+            "Streak \(data.streakDays) \(data.streakDays == 1 ? "Tag" : "Tage")",
             "Level \(data.level)",
             "\(data.totalXP) XP"
         ]

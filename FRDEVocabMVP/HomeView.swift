@@ -221,7 +221,7 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 10) {
                 HomeHeader(
                     greeting: Personalization.homeGreeting(for: profileStore.profile?.displayName),
-                    mainQuestion: "Was möchtest du heute lernen?"
+                    mainQuestion: "Wähle dein Training"
                 )
 
                 // Reihenfolge bewusst auf Flow optimiert: direkt nach
@@ -260,40 +260,10 @@ struct HomeView: View {
             .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .center)
         }
-        // Flags sind **fixed** über dem Footer — scrollen nicht weg,
-        // bleiben als globaler System-Schalter immer erreichbar. Der
-        // Inset verdrängt zusätzlich den ScrollView-Content, damit nichts
-        // darunter verschwindet.
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            // Sound + Haptik laufen jetzt in `LanguageDirectionSwitch.toggle()`
-            // selbst — der Richtungs-Toggle klingt damit auf jedem Screen
-            // (Home + alle Setup-Screens) gleich, ohne dass der jeweilige
-            // Aufrufer das Sound-Feedback separat verkabeln muss.
-            LanguageDirectionSwitch(size: .regular)
-            .padding(.horizontal, AppLayout.screenPadding)
-            .padding(.top, 6)
-            // +5 pt Abstand zum Footer gegenüber vorher — die Flag-Card
-            // sitzt nicht mehr direkt auf der BottomBar, was den System-
-            // Schalter optisch von der Navigation trennt.
-            .padding(.bottom, homeFooterClearance + 5)
-            .background(
-                // Deckender Hintergrund, damit scrollender Content nicht
-                // hinter den Flags durchschimmert. Zusätzlich ein weicher
-                // Top-Gradient (8 pt), der den Abschluss zum ScrollView
-                // dezent ausfadet statt hart abzuschneiden.
-                ZStack(alignment: .top) {
-                    AppTheme.Colors.background
-                        .ignoresSafeArea(edges: .bottom)
-                    LinearGradient(
-                        colors: [AppTheme.Colors.background.opacity(0), AppTheme.Colors.background],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .frame(height: 12)
-                    .offset(y: -12)
-                }
-            )
-        }
+        // Die fixe Flag-Leiste am Home-Footer ist entfernt — der globale
+        // Richtungs-Schalter bleibt in jedem Session-Setup erreichbar und
+        // belegt nicht mehr permanent den Home-Fußbereich. Home wirkt
+        // dadurch ruhiger und die 8 Modul-Tiles bekommen den Abschluss.
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .tint(sectionStyle.accent)
         .appScreenBackground(sectionStyle)

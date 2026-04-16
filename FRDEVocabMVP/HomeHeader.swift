@@ -13,9 +13,11 @@ struct HomeHeader: View {
     let greeting: String
     let mainQuestion: String
     var mascotImageName: String = "SplashCharacter"
-    /// 72 pt — ~14 % kleiner als der vorige Wert (84). Spart sichtbar
-    /// Höhe im Header, Mascot bleibt klar erkennbar.
-    private static let mascotSize: CGFloat = 72
+    /// 65 pt — ~10 % kleiner als der vorherige Wert (72). Der Mascot
+    /// bleibt klar erkennbar, gibt dem Greeting-Block aber noch
+    /// deutlicher den Vorrang; außerdem kürzt sich der Header vertikal
+    /// nochmal etwas.
+    private static let mascotSize: CGFloat = 65
 
     @State private var blinkStartDate: Date = .now
 

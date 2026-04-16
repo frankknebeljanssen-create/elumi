@@ -47,25 +47,18 @@ struct HomeDailyFocusCard: View {
                 iconBadge
 
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(sectionLabel)
-                        .font(.system(size: 10, weight: .black, design: .rounded))
-                        .foregroundStyle(sectionLabelColor)
-
+                    // Label „Dein Fokus heute" und der Subtitle („Halte deinen
+                    // Streak am Leben" etc.) sind bewusst entfernt — die Card
+                    // trägt nur noch den eigentlichen Fokus-Titel plus Icon +
+                    // Trailing-Accessory, damit Home ruhiger wirkt und die
+                    // Fokus-Zeile nicht wie eine dreistufige Mini-Section
+                    // aussieht.
                     Text(data.title)
                         .font(.system(size: 15, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
                         .multilineTextAlignment(.leading)
-
-                    if let subtitle = data.subtitle, !subtitle.isEmpty {
-                        Text(subtitle)
-                            .font(.system(size: 11, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.75))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.85)
-                            .multilineTextAlignment(.leading)
-                    }
                 }
 
                 Spacer(minLength: 6)
