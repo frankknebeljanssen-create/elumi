@@ -212,9 +212,6 @@ struct HomeView: View {
 
                 directionToggleRow
                     .padding(.top, 4)
-
-                versionFooter
-                    .padding(.top, 8)
             }
             .padding(.horizontal, AppLayout.screenPadding)
             .padding(.top, AppLayout.contentTopPadding + AppTheme.Spacing.sm)
@@ -353,29 +350,7 @@ struct HomeView: View {
         .accessibilityLabel(isFrToDE ? "Richtung: Französisch nach Deutsch" : "Richtung: Deutsch nach Französisch")
     }
 
-    // MARK: - Version footer
-
-    private var versionFooter: some View {
-        Button {
-            replaySplash()
-        } label: {
-            VStack(spacing: 3) {
-                Text("© Frank Knebel-Janssen 2026")
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                Text(versionText)
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.85))
-            }
-            .frame(maxWidth: .infinity)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var versionText: String {
-        let shortVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
-        let buildNumber = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
-        return "Version \(shortVersion) (\(buildNumber))"
-    }
+    // Version/Credit-Footer wurde entfernt — die Info ist unter
+    // Account/Info zu finden. Der `replaySplash`-Prop bleibt im Struct
+    // erhalten, damit die Aufruferseite nicht angefasst werden muss.
 }
