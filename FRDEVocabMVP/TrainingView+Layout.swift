@@ -221,18 +221,60 @@ extension TrainingView {
     }
 
     var trainingSetupScreen: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            // Kompakter Header analog Karteikarten: kleiner „< Zurück" links,
-            // Modul-Titel zentriert. Großer Zurück-Button + ScreenHeaderCard
-            // entfernt — gibt Platz für die eigentlichen Setup-Karten.
-            trainingCompactHeader
+        // Migration auf Master-Session-Setup: Header / CTA / Gamification-Bar
+        // kommen zentral aus `SessionSetupScreen`. Die modul-spezifischen
+        // Listen-Auswahl-Varianten (5 Modi × unterschiedliche Cards) leben
+        // weiter in contextContent. Options (Dictionary-Level, Speed-Round,
+        // Hints, Verbformen-Tense-Picker) kommen in optionsContent darunter.
+        SessionSetupScreen(
+            title: sessionHeaderTitle,
+            accent: trainingActionTint,
+            estimate: trainingSessionEstimate,
+            primaryButtonTitle: "Los geht's!",
+            isPrimaryEnabled: isVerbformsMode ? verbformsCanStart : canStartTraining,
+            onBack: { dismiss() },
+            onStart: {
+                if isVerbformsMode {
+                    guard verbformsCanStart else { return }
+                    startVerbformsTraining()
+                } else {
+                    guard canStartTraining else { return }
+                    startTraining()
+                }
+            },
+            contextContent: { trainingSetupContextContent },
+            optionsContent: { trainingSetupOptionsContent }
+        )
+        .sheet(item: $listPickerCategory) { category in
+            TrainingCategoryListSheet(
+                category: category,
+                style: sectionStyle,
+                lists: filteredLists(for: category),
+                selectedListIDs: session.selectedTrainingListIDs,
+                onSelectionChanged: { updatedSelection in
+                    session.selectedTrainingListIDs = updatedSelection
+                    listPickerCategory = nil
+                }
+            )
+        }
+    }
 
-            if session.trainingMode == .vocabulary {
-                // Vokabeln: 4 category cards
+    // MARK: - Training-Setup Content-Slots (für SessionSetupScreen)
+
+    /// Context-Slot: modul-abhängige Listen-Auswahl. Vokabeln bekommt 4
+    /// Category-Cards + Listen-Picker, Nomen/Artikel/Verben/Verbformen
+    /// haben jeweils ihre spezifische Custom-Card. Fallback: ListCategoryPickerView.
+    ///
+    /// Für Verbformen wird `verbformsSetupOptions` (Tense-Picker etc.)
+    /// bewusst *hier* im Context-Slot mit eingebunden, damit die Reihenfolge
+    /// „Liste → Zeitform" eng zusammen bleibt (wie vor der Migration).
+    @ViewBuilder
+    private var trainingSetupContextContent: some View {
+        if session.trainingMode == .vocabulary {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 Text("Was möchtest Du trainieren?")
                     .font(.system(size: 20, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .padding(.top, 4)
 
                 LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                     trainingCategoryCard(
@@ -261,7 +303,6 @@ extension TrainingView {
                     )
                 }
 
-                // Ausgewählte Listen card below
                 ListCategoryPickerView(
                     availableLists: availableTrainingLists,
                     selectedListIDs: session.selectedTrainingListIDs,
@@ -269,99 +310,58 @@ extension TrainingView {
                     style: sectionStyle,
                     feedbackPlayer: feedbackPlayer,
                     summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " \u{00B7} " + trainingListCount),
-                    itemLabel: "Eintr\u{00E4}ge",
+                    itemLabel: "Einträge",
                     onSelectionChanged: { session.selectedTrainingListIDs = $0 }
                 )
-            } else if session.trainingMode == .verbforms {
-                // Verbformen: Custom Listen-Card im Speed-Round-Stil + Setup-Optionen
+            }
+        } else if session.trainingMode == .verbforms {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 verbformsListSelectionCard
                 verbformsSetupOptions
-            } else if session.trainingMode == .verbs {
-                verbsListSelectionCard
-            } else if session.trainingMode == .nouns {
-                nounsListSelectionCard
-            } else if session.trainingMode == .articles {
-                articlesListSelectionCard
-            } else {
-                ListCategoryPickerView(
-                    availableLists: availableTrainingLists,
-                    selectedListIDs: session.selectedTrainingListIDs,
-                    accent: trainingActionTint,
-                    style: sectionStyle,
-                    feedbackPlayer: feedbackPlayer,
-                    summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " \u{00B7} " + trainingListCount),
-                    itemLabel: trainingItemLabel,
-                    onSelectionChanged: { session.selectedTrainingListIDs = $0 }
-                )
             }
-
-            if isDictionaryTrainingSelected {
-                dictionaryTrainingLevelCard
-            }
-
-            speedRoundToggle
-
-            Spacer(minLength: 0)
-
-            if !canStartTraining && !isVerbformsMode {
-                Text(startHintText)
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-            }
-
-            // Verbformen: spezifischer Hint, wenn die Analyse der Listen keine
-            // Verben ergeben hat — deckt sich mit der Datenquelle für
-            // „Verben trainieren" (gleiche Verb-Basis).
-            if isVerbformsMode && !verbformsCanStart {
-                Text(verbformsStartHint)
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-            }
-
-            // Master-Session-Setup-Bar — verbindlich über dem CTA.
-            // Dezente Card + Divider-Metriken, 14pt Abstand zum CTA.
-            SessionGamificationBar(estimate: trainingSessionEstimate)
-                .padding(.bottom, 6)
-
-            Text("Los geht's!")
-                .font(AppTheme.Typography.button)
-                .foregroundColor(.black)
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: AppTheme.Layout.buttonHeight)
-                .background(
-                    isVerbformsMode
-                        ? (verbformsCanStart ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled)
-                        : (canStartTraining ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled)
-                )
-                .cornerRadius(AppTheme.Radius.md)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    if isVerbformsMode {
-                        guard verbformsCanStart else { return }
-                        startVerbformsTraining()
-                    } else {
-                        guard canStartTraining else { return }
-                        startTraining()
-                    }
-                }
-        }
-        .padding(.horizontal, AppLayout.screenPadding)
-        .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 32)
-        .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .sheet(item: $listPickerCategory) { category in
-            TrainingCategoryListSheet(
-                category: category,
-                style: sectionStyle,
-                lists: filteredLists(for: category),
+        } else if session.trainingMode == .verbs {
+            verbsListSelectionCard
+        } else if session.trainingMode == .nouns {
+            nounsListSelectionCard
+        } else if session.trainingMode == .articles {
+            articlesListSelectionCard
+        } else {
+            ListCategoryPickerView(
+                availableLists: availableTrainingLists,
                 selectedListIDs: session.selectedTrainingListIDs,
-                onSelectionChanged: { updatedSelection in
-                    session.selectedTrainingListIDs = updatedSelection
-                    listPickerCategory = nil
-                }
+                accent: trainingActionTint,
+                style: sectionStyle,
+                feedbackPlayer: feedbackPlayer,
+                summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " \u{00B7} " + trainingListCount),
+                itemLabel: trainingItemLabel,
+                onSelectionChanged: { session.selectedTrainingListIDs = $0 }
             )
+        }
+    }
+
+    /// Options-Slot: Dictionary-Level-Card (konditional), Speed-Round-Toggle
+    /// und Start-Hints. Verbformen hat seine Options bereits im contextSlot
+    /// (weil sie inhaltlich zur Listen-Auswahl gehören).
+    @ViewBuilder
+    private var trainingSetupOptionsContent: some View {
+        if isDictionaryTrainingSelected {
+            dictionaryTrainingLevelCard
+        }
+
+        speedRoundToggle
+
+        if !canStartTraining && !isVerbformsMode {
+            Text(startHintText)
+                .font(AppTheme.Typography.caption)
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+        }
+
+        if isVerbformsMode && !verbformsCanStart {
+            Text(verbformsStartHint)
+                .font(AppTheme.Typography.caption)
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
         }
     }
 

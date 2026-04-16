@@ -226,8 +226,8 @@ var quizSessionScreen: some View {
 var quizResultScreen: some View {
     // Scrollbar verpackt: der Result-Screen kann bei vielen Rewards
     // (Level-Up + Streak-Milestone + Variable-Reward + Wrong-Answers-Button)
-    // höher sein als der Viewport. Zusätzlich: Bottom-Padding deckt die
-    // Footer-AppBottomBar ab, damit CTA-Buttons nicht verdeckt werden.
+    // höher sein als der Viewport. Bottom-Padding deckt die Footer-AppBottomBar
+    // ab, damit die unteren CTA-Buttons nicht verdeckt werden.
     ScrollView(showsIndicators: false) {
     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
         ScreenHeaderCard(
