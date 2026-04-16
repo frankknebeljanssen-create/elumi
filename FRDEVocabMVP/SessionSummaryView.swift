@@ -27,6 +27,13 @@ struct SessionSummaryView: View {
     /// `onPrimaryCTA`/`onSecondaryCTA` gesetzt sind.
     var onContinue: (() -> Void)? = nil
 
+    /// Aktuelle Lernrichtung der Session. Gelesen direkt aus dem globalen
+    /// `appDirectionKey`-State — es gibt keine session-lokale Richtung
+    /// (siehe System-Regel „ein zentraler Switch"). Dadurch kann sich
+    /// `SessionResult`/`SessionRewardOutcome` den zusätzlichen Direction-
+    /// Parameter sparen und bleibt nicht-redundant.
+    @AppStorage(appDirectionKey) private var selectedDirectionRaw = Direction.frenchToGerman.rawValue
+
     // MARK: - Phase 3.5 optionale Parameter
 
     /// Ergebnis-Überschrift oben — z. B. „8 von 10 richtig".
@@ -62,17 +69,26 @@ struct SessionSummaryView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
+            // Reihenfolge (Phase 9.1 Spec):
+            //   1. Ergebnis  2. XP  3. Richtung (NEU)
+            //   4. Progress  5. Rewards  6. CTA
+            //
+            // Direction steht direkt unter XP und vor Progress — dadurch
+            // bekommt der User zuerst die Belohnung, dann den Kontext
+            // („was hab ich gerade gelernt?"), dann Progress + Rewards.
             header
 
             xpBreakdown
 
-            if outcome.totalCredits > 0 || outcome.leveledUp || outcome.streakIncreasedToday || outcome.dailyBonusXP > 0 || outcome.variableReward.hasBonus {
-                divider
-                rewardHighlights
-            }
+            directionRow
 
             divider
             levelProgress
+
+            if hasRewards {
+                divider
+                rewardHighlights
+            }
 
             ctaFooter
         }
@@ -159,6 +175,78 @@ struct SessionSummaryView: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
             .background(Capsule().fill(tint.opacity(0.15)))
+    }
+
+    // MARK: - Direction Row (Phase 9.1)
+    //
+    // Rein informative, kompakte Zeile — keine Interaktion. Spiegelt die
+    // globale Lernrichtung in der gleichen Bildsprache wie Home /
+    // Session-Setup (StraightFlagBadge + Pfeil).
+
+    private var sessionDirection: Direction {
+        Direction(rawValue: selectedDirectionRaw) ?? .frenchToGerman
+    }
+
+    private var directionRow: some View {
+        let isFrToDE = sessionDirection == .frenchToGerman
+        // Bei einem Level-Up wird die Richtung einen Ticken stärker
+        // eingefärbt, damit der „Ich habe gerade in dieser Richtung ein
+        // Level erreicht"-Moment sichtbar bleibt — ohne den
+        // Haupt-Reward-Chip zu verdrängen.
+        let highlight = outcome.leveledUp
+        return HStack(spacing: 8) {
+            setupCardLabel("RICHTUNG")
+
+            Spacer(minLength: 0)
+
+            HStack(spacing: 6) {
+                StraightFlagBadge(
+                    countryCode: isFrToDE ? "FR" : "DE",
+                    width: 26,
+                    height: 17,
+                    labelFontSize: 8
+                )
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 11, weight: .black))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                StraightFlagBadge(
+                    countryCode: isFrToDE ? "DE" : "FR",
+                    width: 26,
+                    height: 17,
+                    labelFontSize: 8
+                )
+            }
+            .padding(.horizontal, highlight ? 8 : 4)
+            .padding(.vertical, highlight ? 5 : 2)
+            .background(
+                Capsule()
+                    .fill(AppTheme.Colors.cta.opacity(highlight ? 0.14 : 0))
+            )
+            .overlay(
+                Capsule()
+                    .stroke(
+                        AppTheme.Colors.cta.opacity(highlight ? 0.28 : 0),
+                        lineWidth: 1
+                    )
+            )
+            .animation(.easeOut(duration: 0.2), value: highlight)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(
+            isFrToDE
+                ? "Lernrichtung: Französisch nach Deutsch."
+                : "Lernrichtung: Deutsch nach Französisch."
+        )
+    }
+
+    /// True, wenn mindestens **ein** Reward-Chip gezeigt würde — sonst
+    /// sparen wir uns den Divider + die leere Section.
+    private var hasRewards: Bool {
+        outcome.totalCredits > 0
+            || outcome.leveledUp
+            || outcome.streakIncreasedToday
+            || outcome.dailyBonusXP > 0
+            || outcome.variableReward.hasBonus
     }
 
     private var xpBreakdown: some View {
