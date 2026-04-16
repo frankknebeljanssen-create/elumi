@@ -91,7 +91,7 @@ struct RenameListSheet: View {
                     .foregroundStyle(isNameConfirmed && canSave ? AppTheme.Colors.success : AppTheme.Colors.textSecondary)
             }
             .padding(AppTheme.Spacing.md)
-            .appCardBackground(style, intensity: 0.09)
+            .appCardBackground(style, intensity: AppTheme.CardIntensity.soft)
 
             Spacer(minLength: 0)
         }

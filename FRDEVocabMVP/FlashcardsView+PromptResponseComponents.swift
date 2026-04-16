@@ -77,7 +77,7 @@ extension FlashcardsView {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(18)
-                .appCardBackground(sectionStyle, intensity: 0.07)
+                .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.subtle)
             }
         }
     }

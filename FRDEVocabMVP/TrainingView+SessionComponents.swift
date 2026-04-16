@@ -42,7 +42,7 @@ extension TrainingView {
                 .frame(maxWidth: .infinity, minHeight: sessionCardMinHeight, alignment: .center)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
-                .appCardBackground(sectionStyle, intensity: 0.12)
+                .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium)
                 .onAppear {
                     if earnedCredits > 0 {
                         arcadeCredits += earnedCredits
@@ -86,7 +86,7 @@ extension TrainingView {
                 .frame(maxWidth: .infinity, minHeight: sessionCardMinHeight, alignment: .center)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
-                .appCardBackground(sectionStyle, intensity: isVerbMode && verbMCSelected != nil ? 0.14 : 0.07)
+                .appCardBackground(sectionStyle, intensity: isVerbMode && verbMCSelected != nil ? AppTheme.CardIntensity.strong : AppTheme.CardIntensity.subtle)
             } else {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Keine Karten")
@@ -98,7 +98,7 @@ extension TrainingView {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(18)
-                .appCardBackground(sectionStyle, intensity: 0.07)
+                .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.subtle)
             }
         }
     }
@@ -151,7 +151,7 @@ extension TrainingView {
         }
         .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
         .padding(14)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 
     var articleButtons: some View {
@@ -385,7 +385,7 @@ extension TrainingView {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
                 .frame(maxWidth: .infinity)
-                .appCardBackground(sectionStyle, intensity: 0.09)
+                .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
             } else {
                 Button {
                     guard session.hasStartedTraining, currentCard != nil else { return }
@@ -400,7 +400,7 @@ extension TrainingView {
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: actionButtonHeight)
                         .foregroundStyle(trainingActionTint)
-                        .appCardBackground(sectionStyle, intensity: 0.11)
+                        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium)
                 }
                 .buttonStyle(.plain)
                 .disabled(!session.hasStartedTraining || currentCard == nil)

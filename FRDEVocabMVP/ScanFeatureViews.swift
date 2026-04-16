@@ -525,7 +525,7 @@ struct ScanImportView: View {
                             }
                             .padding(.horizontal, AppTheme.Spacing.sm)
                             .padding(.vertical, AppTheme.Spacing.sm)
-                            .appCardBackground(sectionStyle, intensity: 0.09)
+                            .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
 
                             if !previewPairs.isEmpty {
                                 previewCard
@@ -566,7 +566,7 @@ struct ScanImportView: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                                 }
                                 .buttonStyle(.plain)
-                                .appCardBackground(sectionStyle, intensity: 0.09)
+                                .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
                             }
 
                             if !importText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -878,7 +878,7 @@ struct ScanImportView: View {
             scanCollectionCard
         }
         .padding(16)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 
     private func confirmListNameEntry() {
@@ -1163,7 +1163,7 @@ struct ScanImportView: View {
         }
         .padding(.horizontal, AppTheme.Spacing.sm)
         .padding(.vertical, AppTheme.Spacing.sm)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 
     private var scanTypeCard: some View {
@@ -1191,7 +1191,7 @@ struct ScanImportView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 
     private var previewCard: some View {
@@ -1340,7 +1340,7 @@ struct ScanImportView: View {
             }
         }
         .padding(16)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 
     private var canRescanCurrentSelection: Bool {

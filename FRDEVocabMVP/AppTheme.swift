@@ -166,6 +166,63 @@ enum AppTheme {
         static let selectionHeight: CGFloat = 76
         static let maxContentWidth: CGFloat = 720
     }
+
+    /// Zentrale Intensity-Kaskade für `appCardBackground(sectionStyle, …)`
+    /// und verwandte getönte Hintergründe.
+    ///
+    /// **Warum eine Token-Hierarchie statt Magic Numbers?**
+    /// Jede Card in der App trägt die Modul-Akzentfarbe (Nomen = Grün,
+    /// Verben = Lila, Quiz = Amber …) als Overlay über dem Surface-Token.
+    /// Die `intensity`-Zahl entscheidet, *wie deutlich* der Modul-Ton
+    /// durchkommt. Bisher waren diese Werte überall frei verteilt
+    /// (0.05 … 0.22, 12 verschiedene Werte, keine Systematik). Dieses
+    /// Enum bündelt sie auf 8 klare Stufen mit sprechenden Namen — damit
+    /// lassen sich systemweit die Intensitäten in einem Schritt justieren
+    /// (z. B. „alle Setup-Cards nochmal dezenter" = `medium` runterdrehen).
+    ///
+    /// Die heutigen Rohwerte werden 1:1 beibehalten, wo es passt; nur
+    /// Zwischenwerte (0.06 / 0.08 / 0.10 / 0.12 / 0.15 / 0.16) runden auf
+    /// den nächstliegenden Bucket — maximale Abweichung 0.02, auf dem
+    /// dunklen Background unsichtbar.
+    ///
+    /// Reihenfolge bewusst „whisper → selected": jede Stufe ist ein
+    /// **visuelles** Level, kein rein semantisches Label.
+    enum CardIntensity {
+        /// Kaum wahrnehmbar — unausgewählte Picker-/Listen-Items, die
+        /// nur zur Raum-Struktur da sind. Wert: `0.05`.
+        static let whisper: Double = 0.05
+
+        /// Dezent — ruhige Content-Rows, Inner-Cards, Mute-/Reward-
+        /// Zustände. Wert: `0.07`. (0.06-Legacy rundet hierher.)
+        static let subtle: Double = 0.07
+
+        /// Sanft — Such-Ergebnis-Rows, Chips, dezente Detail-Cards.
+        /// Eigener Bucket, damit 0.08-Aufrufer nicht in den dominanten
+        /// 0.09-Bucket kippen. Wert: `0.08`.
+        static let gentle: Double = 0.08
+
+        /// Standard — Default von `appCardBackground`. Die breite Masse
+        /// der Content-Cards (Home, Hearts, Profile, Scan, Listen).
+        /// Wert: `0.09`. (0.10-Legacy rundet hierher.)
+        static let soft: Double = 0.09
+
+        /// Medium — aktiver Content-Bereich, Setup-Cards, Hero-Cards in
+        /// Session-Flows. Wert: `0.11`. (0.12-Legacy rundet hierher.)
+        static let medium: Double = 0.11
+
+        /// Stark — ausgewählte/aktive Zustände, prominente Stats-Cards,
+        /// urgent/strong-highlight-Cards. Wert: `0.14`.
+        /// (0.15 und 0.16 Legacy runden hierher; max Drift 0.02.)
+        static let strong: Double = 0.14
+
+        /// Bold — Feature-Card, Speed-Round-Active, Settings-Hero.
+        /// Wert: `0.18`.
+        static let bold: Double = 0.18
+
+        /// Prominent — aktuelle Auswahl im Picker. Einziger Zustand, in
+        /// dem der Modul-Ton wirklich „leuchtet". Wert: `0.22`.
+        static let selected: Double = 0.22
+    }
 }
 
 enum AppModuleTone {

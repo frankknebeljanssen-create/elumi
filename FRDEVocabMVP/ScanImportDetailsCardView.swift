@@ -84,6 +84,6 @@ struct ScanImportDetailsCardView: View {
             }
         }
         .padding(16)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 }

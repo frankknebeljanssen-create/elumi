@@ -89,7 +89,7 @@ struct ScanModeSelectionCardView: View {
         }
         .padding(.horizontal, AppTheme.Spacing.sm)
         .padding(.vertical, AppTheme.Spacing.sm)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 }
 
@@ -130,6 +130,6 @@ struct ScanInputMethodOptionsCardView: View {
         }
         .padding(.horizontal, AppTheme.Spacing.sm)
         .padding(.vertical, AppTheme.Spacing.sm)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 }

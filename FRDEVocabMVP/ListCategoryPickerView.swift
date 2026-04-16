@@ -243,7 +243,7 @@ struct ListSelectionSheet: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .appCardBackground(style, intensity: isSelected ? 0.22 : 0.05, cornerRadius: 14)
+            .appCardBackground(style, intensity: isSelected ? AppTheme.CardIntensity.selected : AppTheme.CardIntensity.whisper, cornerRadius: 14)
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .stroke(isSelected ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
@@ -339,7 +339,7 @@ struct TrainingCategoryListSheet: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .appCardBackground(style, intensity: isSelected ? 0.22 : 0.05, cornerRadius: 14)
+            .appCardBackground(style, intensity: isSelected ? AppTheme.CardIntensity.selected : AppTheme.CardIntensity.whisper, cornerRadius: 14)
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .stroke(isSelected ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)

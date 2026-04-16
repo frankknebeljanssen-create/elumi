@@ -85,7 +85,7 @@ extension TrainingView {
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 18)
         .padding(.vertical, 12)
-        .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
     var speedRoundToggle: some View {
@@ -117,7 +117,7 @@ extension TrainingView {
             .padding(.horizontal, 16)
             .padding(.vertical, 28)
             .frame(maxWidth: .infinity, minHeight: 100)
-            .appCardBackground(sectionStyle, intensity: session.isSpeedRound ? 0.18 : 0.07, cornerRadius: AppLayout.largeCardCornerRadius)
+            .appCardBackground(sectionStyle, intensity: session.isSpeedRound ? AppTheme.CardIntensity.bold : AppTheme.CardIntensity.subtle, cornerRadius: AppLayout.largeCardCornerRadius)
         }
         .buttonStyle(.plain)
     }
@@ -166,7 +166,7 @@ extension TrainingView {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .appCardBackground(sectionStyle, intensity: isUrgent ? 0.15 : 0.09)
+        .appCardBackground(sectionStyle, intensity: isUrgent ? AppTheme.CardIntensity.strong : AppTheme.CardIntensity.soft)
         .overlay(
             RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
                 .stroke(isUrgent ? AppTheme.Colors.error.opacity(session.speedRoundTimeRemaining % 2 == 0 ? 0.8 : 0.3) : Color.clear, lineWidth: isUrgent ? 2 : 0)
@@ -203,7 +203,7 @@ extension TrainingView {
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
     func largeTrainingSelectionCard(title: String, value: String, detail: String = "") -> some View {
@@ -235,7 +235,7 @@ extension TrainingView {
         .frame(maxWidth: .infinity)
         .frame(minHeight: 100)
         .padding(.horizontal, AppTheme.Spacing.md)
-        .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
     var trainingModeCard: some View {
@@ -267,7 +267,7 @@ extension TrainingView {
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
     var trainingBottomOptionCard: some View {
@@ -323,6 +323,6 @@ extension TrainingView {
         .frame(minHeight: 76)
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 }

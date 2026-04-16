@@ -131,7 +131,7 @@ struct GameHubView: View {
         }
         .padding(AppTheme.Spacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .appCardBackground(sectionStyle, intensity: 0.16, cornerRadius: AppLayout.largeCardCornerRadius)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.strong, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
     @ViewBuilder
@@ -259,7 +259,7 @@ struct GameHubView: View {
                     subtitle: "+\(GamificationConfig.creditsPerLevelUp) Credits pro neuem Level"
                 )
             }
-            .appCardBackground(sectionStyle, intensity: 0.07)
+            .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.subtle)
         }
     }
 

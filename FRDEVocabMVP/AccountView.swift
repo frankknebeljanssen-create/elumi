@@ -62,7 +62,7 @@ struct AccountView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(18)
-            .appCardBackground(sectionStyle, intensity: 0.09)
+            .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
 
             Spacer(minLength: 0)
         }

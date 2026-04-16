@@ -48,7 +48,7 @@ struct SettingsView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(18)
-            .appCardBackground(sectionStyle, intensity: 0.09)
+            .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
 
             Button {
                 openAccountAction?()
@@ -70,7 +70,7 @@ struct SettingsView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(18)
-                .appCardBackground(sectionStyle, intensity: 0.09)
+                .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
             }
             .buttonStyle(.plain)
 
@@ -94,7 +94,7 @@ struct SettingsView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(18)
-                .appCardBackground(sectionStyle, intensity: 0.09)
+                .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
             }
             .buttonStyle(.plain)
 
@@ -162,7 +162,7 @@ struct SettingsView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(18)
-            .appCardBackground(sectionStyle, intensity: 0.09)
+            .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
         }
         .buttonStyle(.plain)
         .sheet(isPresented: $dictionaryDetailActive) {
@@ -192,7 +192,7 @@ struct SettingsView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(18)
-            .appCardBackground(sectionStyle, intensity: 0.09)
+            .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
         }
         .buttonStyle(.plain)
         .sheet(isPresented: $arcadeDetailActive) {
@@ -314,7 +314,7 @@ private struct DictionaryStatsDetailSheet: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
-            .appCardBackground(sectionStyle, intensity: 0.18, cornerRadius: AppLayout.largeCardCornerRadius)
+            .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.bold, cornerRadius: AppLayout.largeCardCornerRadius)
 
             // Breakdown nach Wortart
             ScrollView {
@@ -332,7 +332,7 @@ private struct DictionaryStatsDetailSheet: View {
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
-                        .appCardBackground(sectionStyle, intensity: 0.07, cornerRadius: 14)
+                        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.subtle, cornerRadius: 14)
                     }
                 }
             }

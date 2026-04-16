@@ -113,7 +113,7 @@ struct ScanBatchThumbnailCardView: View {
             }
         }
         .padding(12)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 }
 
@@ -175,7 +175,7 @@ struct ScanSelectedImageCardView: View {
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .buttonStyle(.plain)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
         .onChange(of: isRecognizingImage) { _, recognizing in
             if recognizing {
                 scanLineOffset = 0

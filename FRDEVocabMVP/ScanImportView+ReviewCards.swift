@@ -26,7 +26,7 @@ extension ScanImportView {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 
     var previewCard: some View {
@@ -102,7 +102,7 @@ extension ScanImportView {
             }
         }
         .padding(16)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 
     var canRescanCurrentSelection: Bool {

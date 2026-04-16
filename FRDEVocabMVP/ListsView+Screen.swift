@@ -53,7 +53,7 @@ extension ListsView {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 20)
-            .appCardBackground(sectionStyle, intensity: 0.09)
+            .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
         }
         .buttonStyle(.plain)
     }
@@ -223,6 +223,6 @@ extension ListsView {
             }
         }
         .padding(16)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 }

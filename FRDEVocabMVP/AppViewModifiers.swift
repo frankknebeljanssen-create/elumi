@@ -59,7 +59,7 @@ extension View {
         background(AppTheme.Colors.background.ignoresSafeArea())
     }
 
-    func appCardBackground(_ style: AppSectionStyle, intensity: Double = 0.09, cornerRadius: CGFloat = AppTheme.Radius.lg) -> some View {
+    func appCardBackground(_ style: AppSectionStyle, intensity: Double = AppTheme.CardIntensity.soft, cornerRadius: CGFloat = AppTheme.Radius.lg) -> some View {
         background {
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .fill(AppTheme.Colors.surface)
@@ -80,7 +80,7 @@ extension View {
         )
     }
 
-    func appChipBackground(_ style: AppSectionStyle, intensity: Double = 0.12, cornerRadius: CGFloat = AppTheme.Radius.md) -> some View {
+    func appChipBackground(_ style: AppSectionStyle, intensity: Double = AppTheme.CardIntensity.medium, cornerRadius: CGFloat = AppTheme.Radius.md) -> some View {
         background {
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .fill(AppTheme.Colors.secondarySurface)

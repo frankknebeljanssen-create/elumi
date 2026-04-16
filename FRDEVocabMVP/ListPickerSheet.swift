@@ -195,7 +195,7 @@ struct ListPickerSheet: View {
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
-                            .appCardBackground(style, intensity: 0.05, cornerRadius: 16)
+                            .appCardBackground(style, intensity: AppTheme.CardIntensity.whisper, cornerRadius: 16)
                         }
                         .buttonStyle(.plain)
                     }
@@ -328,7 +328,7 @@ struct ListPickerSheet: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .appCardBackground(style, intensity: list.id == currentSelectedID ? 0.22 : 0.05, cornerRadius: 14)
+            .appCardBackground(style, intensity: list.id == currentSelectedID ? AppTheme.CardIntensity.selected : AppTheme.CardIntensity.whisper, cornerRadius: 14)
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .stroke(list.id == currentSelectedID ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)

@@ -33,7 +33,7 @@ extension FlashcardsView {
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 18)
         .padding(.vertical, 8)
-        .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
     func largeSetupSelectionCard(title: String, value: String) -> some View {
@@ -58,7 +58,7 @@ extension FlashcardsView {
         .frame(maxWidth: .infinity)
         .frame(minHeight: AppLayout.largeSelectionHeight)
         .padding(.horizontal, 18)
-        .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
     var largeFlashcardContentCard: some View {
@@ -88,7 +88,7 @@ extension FlashcardsView {
         .frame(minHeight: 108)
         .padding(.horizontal, 18)
         .padding(.vertical, 4)
-        .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
     var flashcardDirectionCard: some View {
@@ -136,7 +136,7 @@ extension FlashcardsView {
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 18)
         .padding(.vertical, 12)
-        .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
     var flashcardCountLimitCard: some View {
@@ -283,7 +283,7 @@ extension FlashcardsView {
         .frame(maxWidth: .infinity)
         .frame(minHeight: title.isEmpty ? 72 : AppLayout.largeSelectionHeight)
         .padding(.horizontal, AppTheme.Spacing.md)
-        .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
     /// Effektive Karten-Anzahl für die kommende Übung — berücksichtigt

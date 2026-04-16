@@ -66,7 +66,7 @@ extension HeartsView {
         .padding(.horizontal, AppTheme.Spacing.sm)
         .padding(.vertical, AppTheme.Spacing.md)
         .frame(maxWidth: .infinity)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 
     @ViewBuilder
@@ -152,7 +152,7 @@ extension HeartsView {
         .padding(.horizontal, AppTheme.Spacing.sm)
         .padding(.vertical, AppTheme.Spacing.md)
         .frame(maxWidth: .infinity)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 
     @ViewBuilder
@@ -196,7 +196,7 @@ extension HeartsView {
                 }
             }
         }
-        .appCardBackground(sectionStyle, intensity: 0.06)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.subtle)
     }
 
     @ViewBuilder

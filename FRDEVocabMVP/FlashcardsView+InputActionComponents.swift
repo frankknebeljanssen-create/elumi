@@ -38,7 +38,7 @@ extension FlashcardsView {
                 }
                 .padding(10)
                 .frame(maxWidth: AppTheme.Layout.maxContentWidth)
-                .appCardBackground(sectionStyle, intensity: 0.12)
+                .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium)
                 .shadow(color: AppTheme.Shadow.card.color, radius: 12, x: 0, y: 8)
             }
         }
@@ -109,7 +109,7 @@ extension FlashcardsView {
                                 .frame(maxWidth: .infinity)
                                 .frame(minHeight: actionButtonHeight)
                                 .foregroundStyle(AppTheme.Colors.textPrimary)
-                                .appCardBackground(sectionStyle, intensity: 0.11)
+                                .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium)
                         }
                     }
                 }
@@ -154,7 +154,7 @@ extension FlashcardsView {
             .foregroundStyle(AppTheme.Colors.textPrimary)
             .frame(maxWidth: .infinity)
             .frame(minHeight: flashcardSecondaryActionHeight)
-            .appCardBackground(sectionStyle, intensity: 0.11)
+            .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium)
             .disabled(!canRestorePreviousFlashcard)
             .opacity(canRestorePreviousFlashcard ? 1 : 0.5)
 
@@ -175,7 +175,7 @@ extension FlashcardsView {
             .foregroundStyle(AppTheme.Colors.textPrimary)
             .frame(maxWidth: .infinity)
             .frame(minHeight: flashcardSecondaryActionHeight)
-            .appCardBackground(sectionStyle, intensity: 0.11)
+            .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium)
             .disabled(!isSessionReady)
             .opacity(isSessionReady ? 1 : 0.5)
         }

@@ -124,7 +124,7 @@ struct ProgressHeroCard: View {
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .appCardBackground(sectionStyle, intensity: 0.14, cornerRadius: AppLayout.largeCardCornerRadius)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.strong, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
     /// Deutliche Progress-Bar — 12pt hoch, 2-Stopp-Gradient, Capsule-geclipped.

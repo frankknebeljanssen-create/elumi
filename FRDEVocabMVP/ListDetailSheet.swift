@@ -40,7 +40,7 @@ struct ListDetailSheet: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(AppTheme.Spacing.md)
-            .appCardBackground(style, intensity: 0.09)
+            .appCardBackground(style, intensity: AppTheme.CardIntensity.soft)
 
             if list.items.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
@@ -50,7 +50,7 @@ struct ListDetailSheet: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(AppTheme.Spacing.md)
-                .appCardBackground(style, intensity: 0.09)
+                .appCardBackground(style, intensity: AppTheme.CardIntensity.soft)
             } else {
                 ScrollView {
                     VStack(spacing: 10) {
@@ -140,7 +140,7 @@ struct ListDetailSheet: View {
                                 .frame(maxWidth: .infinity)
                             }
                             .padding(AppTheme.Spacing.sm)
-                            .appChipBackground(style, intensity: 0.08, cornerRadius: 14)
+                            .appChipBackground(style, intensity: AppTheme.CardIntensity.gentle, cornerRadius: 14)
                         }
                     }
                 }

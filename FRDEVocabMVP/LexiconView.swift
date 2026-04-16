@@ -267,7 +267,7 @@ struct LexiconView: View {
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 4)
         .padding(.vertical, 8)
-        .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
     private func lexiconFilterButton<Content: View>(_ mode: LexiconFilterMode, @ViewBuilder content: () -> Content) -> some View {
@@ -300,6 +300,6 @@ struct LexiconView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 }

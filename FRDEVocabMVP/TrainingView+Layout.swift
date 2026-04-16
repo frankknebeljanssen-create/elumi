@@ -1048,7 +1048,7 @@ extension TrainingView {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
-        .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
 
         // Engerer Abstand zwischen Fragekarte und Pronomen-Grid, damit
         // der größere Spacing zwischen Pronomen-Grid und Form-Grid (+12)
@@ -1319,7 +1319,7 @@ extension TrainingView {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
-        .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
 
         verbformsTypingInput(question: question)
 
@@ -1420,7 +1420,7 @@ extension TrainingView {
             }
         }
         .padding(16)
-        .appCardBackground(sectionStyle, intensity: 0.08, cornerRadius: AppLayout.largeCardCornerRadius)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.gentle, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
     // MARK: - Verbformen Result Screen
@@ -1502,7 +1502,7 @@ extension TrainingView {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .appCardBackground(sectionStyle, intensity: isUrgent ? 0.15 : 0.09)
+        .appCardBackground(sectionStyle, intensity: isUrgent ? AppTheme.CardIntensity.strong : AppTheme.CardIntensity.soft)
         .overlay(
             RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
                 .stroke(isUrgent ? AppTheme.Colors.error.opacity(verbformsSession.speedRoundTimeRemaining % 2 == 0 ? 0.8 : 0.3) : Color.clear, lineWidth: isUrgent ? 2 : 0)

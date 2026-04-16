@@ -164,7 +164,7 @@ struct ProfileView: View {
         }
         .padding(AppTheme.Spacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 
     // MARK: - Edit Card (Name + Lernziel bearbeiten)
@@ -243,7 +243,7 @@ struct ProfileView: View {
         }
         .padding(AppTheme.Spacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 
     @ViewBuilder
@@ -356,7 +356,7 @@ struct ProfileView: View {
         .padding(.vertical, AppTheme.Spacing.sm)
         .padding(.horizontal, AppTheme.Spacing.sm)
         .frame(maxWidth: .infinity)
-        .appCardBackground(sectionStyle, intensity: 0.07)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.subtle)
     }
 
     @ViewBuilder
@@ -414,6 +414,6 @@ struct ProfileView: View {
             }
             .buttonStyle(.plain)
         }
-        .appCardBackground(sectionStyle, intensity: 0.06)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.subtle)
     }
 }

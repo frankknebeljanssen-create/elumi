@@ -38,7 +38,7 @@ struct LexiconInfoCard: View {
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 }
 
@@ -75,7 +75,7 @@ struct LexiconSearchCardView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 }
 
@@ -255,7 +255,7 @@ struct LexiconDetailSheetView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
-        .appCardBackground(sectionStyle, intensity: 0.10)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 
     private func wordClassBadge(isFrench: Bool) -> some View {
@@ -305,7 +305,7 @@ struct LexiconDetailSheetView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
-        .appCardBackground(sectionStyle, intensity: 0.08)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.gentle)
     }
 
     var body: some View {
@@ -324,7 +324,7 @@ struct LexiconDetailSheetView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(18)
-                    .appCardBackground(sectionStyle, intensity: 0.10)
+                    .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
 
                     // Target language section — use targetTexts which respect direction
                     let badgeText: String? = {

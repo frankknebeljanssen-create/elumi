@@ -85,7 +85,7 @@ struct HomeModuleTile: View {
                 // Accent-Tint in voller Stärke — auch bei `deemphasized`.
                 // Die Listen-Kachel nutzt dadurch denselben Card-Background
                 // wie die „Alle Listen"-Card im Listen-Screen
-                // (`appCardBackground(.lists, intensity: 0.09…0.11)`),
+                // (`appCardBackground(.lists, intensity: AppTheme.CardIntensity.soft…medium)`),
                 // statt eines halbierten, optisch verschwommenen Tints.
                 RoundedRectangle(cornerRadius: spec.cornerRadius, style: .continuous)
                     .fill(accent.opacity(spec.accentTintOpacity))

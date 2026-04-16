@@ -119,7 +119,7 @@ var quizDirectionCard: some View {
     .frame(maxWidth: .infinity)
     .padding(.horizontal, 18)
     .padding(.vertical, 12)
-    .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
+    .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
 }
 
 /// Kompakter Header für den Quiz-Setup-Screen — nackter Back-Pfeil links,
