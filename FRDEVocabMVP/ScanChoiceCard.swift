@@ -255,15 +255,12 @@ struct ScanHeroCard: View {
 }
 
 /// Kombinierter Header-Block des Scan-Screens.
-/// Links: Hauptfrage groß + Subtext ruhig. Rechts: Maskottchen, das
-/// alle ~3.5 s kurz „zwinkert" (vertikal kompressed, wie ein Blinzeln).
-///
-/// Spec-Anpassung:
-///   • „Scan"-Modul-Tag entfernt — Frage ist die einzige Headline
-///   • Maskottchen näher am Text (geringer HStack-Spacing)
-///   • Periodisches Zwinkern statt Bounce-Entrance (deutlich sichtbar)
+/// Links: Hauptfrage + Subtext. Rechts: Maskottchen, dessen Augen
+/// regelmäßig zwinkern — über den bestehenden `SplashCharacterBlinkOverlay`,
+/// der die Lider exakt auf die Augen-Positionen legt.
 struct ScanScreenHeader: View {
-    @State private var blinkPhase: CGFloat = 1.0
+    @State private var blinkStartDate: Date = .now
+    private static let mascotSize: CGFloat = 88
 
     var body: some View {
         HStack(alignment: .center, spacing: 4) {
@@ -283,33 +280,34 @@ struct ScanScreenHeader: View {
 
             Spacer(minLength: 0)
 
-            Image("SplashCharacter")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 88, height: 88)
-                .offset(y: 10)
-                // Zwinker-Effekt: vertikal kurz zusammengedrückt — sieht
-                // aus wie ein Blinzeln. Subtil, aber sichtbar.
-                .scaleEffect(x: 1.0, y: blinkPhase, anchor: .center)
+            ZStack {
+                Image("SplashCharacter")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: Self.mascotSize, height: Self.mascotSize)
+                // Echtes Augen-Zwinkern via existierendem Overlay —
+                // legt die Lider exakt auf die Pupillen. Wird periodisch
+                // re-startet, damit immer wieder geblinzelt wird.
+                SplashCharacterBlinkOverlay(
+                    size: Self.mascotSize,
+                    startDate: blinkStartDate
+                )
+                .frame(width: Self.mascotSize, height: Self.mascotSize)
+            }
+            .offset(y: 10)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.bottom, 6) // Platz für die Mascot-Überlappung
+        .padding(.bottom, 6)
         .task {
-            // Periodisches Zwinkern alle ~3.5 Sekunden, mit kleiner
-            // Zufalls-Variation, damit's nicht zu mechanisch wirkt.
+            // Der Overlay blinzelt zweimal innerhalb seiner Session-Range
+            // (bei 1.35s und 3.15s nach startDate). Wir restarten den
+            // Zyklus alle ~4s mit minimaler Random-Jitter, damit's
+            // natürlich wirkt und nicht zu mechanisch.
             while !Task.isCancelled {
-                let interval = UInt64.random(in: 3_200...4_200) * 1_000_000
+                let interval = UInt64.random(in: 3_800...4_400) * 1_000_000
                 try? await Task.sleep(nanoseconds: interval)
                 await MainActor.run {
-                    withAnimation(.easeIn(duration: 0.09)) {
-                        blinkPhase = 0.18
-                    }
-                }
-                try? await Task.sleep(nanoseconds: 120_000_000)
-                await MainActor.run {
-                    withAnimation(.easeOut(duration: 0.18)) {
-                        blinkPhase = 1.0
-                    }
+                    blinkStartDate = .now
                 }
             }
         }
