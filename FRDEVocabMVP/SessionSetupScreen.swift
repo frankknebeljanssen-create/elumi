@@ -81,7 +81,10 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
                     action: onStart
                 )
                 .padding(.horizontal, 16)
-                .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 4)
+                // +14pt statt +4 — der Footer braucht etwas mehr Luft
+                // darüber, sonst ragt die Shadow-Edge der BottomBar leicht
+                // in den CTA rein.
+                .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 14)
             }
         }
     }
