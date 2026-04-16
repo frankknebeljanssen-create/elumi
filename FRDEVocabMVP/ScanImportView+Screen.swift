@@ -420,9 +420,16 @@ extension ScanImportView {
             .padding(.top, 2)
         }
         .padding(16)
+        // Scan-Modul-Tint additiv unter der semantischen Success-Border —
+        // Hero-Card liest sich als Scan-Akzent-Card, Success-Green bleibt
+        // aber als klares „Analyse abgeschlossen"-Signal erhalten.
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(AppTheme.Colors.surface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(sectionStyle.accent.opacity(AppTheme.CardIntensity.medium))
+                )
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .stroke(AppTheme.Colors.success.opacity(0.3), lineWidth: 1.5)

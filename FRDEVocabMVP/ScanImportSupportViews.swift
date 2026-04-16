@@ -47,14 +47,9 @@ struct ImportCompletionView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(AppTheme.Colors.surface)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .stroke(AppTheme.Colors.border, lineWidth: 1)
-                    )
-            )
+            // Zentralisierter Scan-Modul-Tint — Summary-Card wird Teil des
+            // Scan-Farbsystems statt flat-Surface.
+            .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft, cornerRadius: 16)
 
             // Question — outside card
             Text("Was möchtest du sofort üben?")
