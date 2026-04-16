@@ -46,11 +46,11 @@ struct HomeView: View {
             : AppTheme.Spacing.lg
     }
 
+    /// 4 Spalten — Modul-Grid zeigt alle 8 Kacheln (7 Lernmodule + Listen)
+    /// auf einen Schlag in 2 Reihen. Auf kleineren iPhones bleibt die Card
+    /// dank `minimumScaleFactor` im Tile lesbar.
     private var gridColumns: [GridItem] {
-        [
-            GridItem(.flexible(), spacing: 10),
-            GridItem(.flexible(), spacing: 10)
-        ]
+        Array(repeating: GridItem(.flexible(), spacing: 8), count: 4)
     }
 
     private var selectedDirection: Direction {
@@ -185,12 +185,11 @@ struct HomeView: View {
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 12) {
                 HomeHeader(
                     greeting: Personalization.homeGreeting(for: profileStore.profile?.displayName),
                     mainQuestion: "Was möchtest du heute lernen?"
                 )
-                .padding(.top, 4)
 
                 HomeProgressBoardCard(data: progressBoardData) {
                     openHomeScreen(.hearts)
@@ -207,14 +206,10 @@ struct HomeView: View {
                 moduleGrid
                     .padding(.top, 2)
 
-                organizationRow
-                    .padding(.top, 2)
-
                 directionToggleRow
-                    .padding(.top, 4)
             }
             .padding(.horizontal, AppLayout.screenPadding)
-            .padding(.top, AppLayout.contentTopPadding + AppTheme.Spacing.sm)
+            .padding(.top, AppLayout.contentTopPadding)
             .padding(.bottom, homeFooterClearance)
             .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .center)
@@ -243,8 +238,13 @@ struct HomeView: View {
 
     // MARK: - Module Grid
 
+    /// 4 × 2 Grid — 7 Lernmodule + Listen als 8. Kachel. Listen läuft zwar
+    /// visuell gleich wie die Lernmodule mit (gleiche Kachelgröße + SVG-
+    /// Icon), bleibt aber inhaltlich eindeutig „Organisation" (siehe
+    /// `HomeModuleIcon.listen`). Die Trennung geschieht über die Ziel-
+    /// Navigation (`.lists(nil)` vs. Training/Quiz/Flashcards).
     private var moduleGrid: some View {
-        LazyVGrid(columns: gridColumns, spacing: 10) {
+        LazyVGrid(columns: gridColumns, spacing: 8) {
             moduleTile(
                 icon: .karteikarten,
                 title: "Karteikarten",
@@ -287,6 +287,14 @@ struct HomeView: View {
                 accent: moduleQuiz,
                 screen: .quiz(nil)
             )
+            // Listen läuft visuell mit im Grid, zielt aber auf den
+            // Organisations-Screen — nicht auf eine Training-Session.
+            moduleTile(
+                icon: .listen,
+                title: "Listen",
+                accent: moduleLists,
+                screen: .lists(nil)
+            )
         }
     }
 
@@ -303,18 +311,6 @@ struct HomeView: View {
             accent: accent,
             isPressed: pressedHomeScreen == screen,
             onTap: { openHomeScreen(screen) }
-        )
-    }
-
-    // MARK: - Organization row (Listen)
-
-    private var organizationRow: some View {
-        HomeOrganizationTile(
-            icon: .listen,
-            title: "Listen",
-            subtitle: "Eigene Vokabellisten verwalten",
-            isPressed: pressedHomeScreen == .lists(nil),
-            onTap: { openHomeScreen(.lists(nil)) }
         )
     }
 

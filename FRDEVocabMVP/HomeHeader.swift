@@ -3,8 +3,8 @@ import SwiftUI
 /// Einstiegs-Header des Home-Screens.
 ///
 /// Layout (Spec):
-///   • links: Begrüßung („Salut Frank") — kleiner, sekundär
-///           Hauptfrage („Was möchtest du heute lernen?") — größer, dominant
+///   • links: kleine Pink-Begrüßung („Salut Frank")
+///            Hauptfrage („Was möchtest du heute lernen?") — groß, dominant
 ///   • rechts: Maskottchen mit echtem Augen-Zwinkern (SplashCharacterBlinkOverlay)
 ///
 /// Keine zusätzlichen Subtexte — bewusst ruhig. Die folgenden Bereiche
@@ -13,25 +13,26 @@ struct HomeHeader: View {
     let greeting: String
     let mainQuestion: String
     var mascotImageName: String = "SplashCharacter"
-    private static let mascotSize: CGFloat = 88
+    private static let mascotSize: CGFloat = 84
 
     @State private var blinkStartDate: Date = .now
 
     var body: some View {
-        HStack(alignment: .center, spacing: 10) {
-            VStack(alignment: .leading, spacing: 6) {
+        HStack(alignment: .center, spacing: 8) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(greeting)
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.85))
+                    .font(.system(size: 14, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.elumiPink)
                     .lineLimit(1)
                     .minimumScaleFactor(0.9)
 
                 Text(mainQuestion)
-                    .font(.system(size: 26, weight: .black, design: .rounded))
+                    .font(.system(size: 24, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .lineLimit(2)
                     .minimumScaleFactor(0.85)
                     .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             Spacer(minLength: 0)
@@ -47,7 +48,6 @@ struct HomeHeader: View {
                 )
                 .frame(width: Self.mascotSize, height: Self.mascotSize)
             }
-            .offset(y: 4)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .task {

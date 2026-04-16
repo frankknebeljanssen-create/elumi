@@ -20,14 +20,16 @@ struct HomeProgressBoardData: Equatable {
     let goalHint: String?
 }
 
-/// Horizontale, **eine** kompakte Card — ersetzt die frühere Kombination
-/// aus Gamification-Bar + separatem Tagesbonus-Chip.
+/// Horizontale, **eine** kompakte Card.
 ///
-/// Layout (Spec):
-///   • obere Zeile: Streak · Level+Progress · XP · Credits
-///   • Hairline-Divider
-///   • untere Zeile: Goal-Hint („Noch X XP bis …") + Chevron
+/// Layout (Spec nach Iteration):
+///   • Streak (Flamme + „3 Tage" + „Streak"-Label)
+///   • Level (ausgeschrieben „Level 3") mit Progress-Bar darunter
+///     → Goal-Hint („Noch 37 XP bis Champion") direkt unter der Bar
+///   • XP-Block („663 XP" + „Gesamt"-Label)
+///   • Credits-Block (Hexagon + „2" + „Credits"-Label)
 ///
+/// Flacher als vorher — Inhalt steht klarer, Card braucht weniger Höhe.
 /// Tap → `onTap` (üblich: Navigation in den Progress Hub).
 struct HomeProgressBoardCard: View {
     let data: HomeProgressBoardData
@@ -35,44 +37,17 @@ struct HomeProgressBoardCard: View {
 
     var body: some View {
         Button(action: onTap) {
-            VStack(spacing: 12) {
-                HStack(spacing: 14) {
-                    streakSegment
-                    segmentDivider
-                    levelSegment
-                    segmentDivider
-                    xpSegment
-                    segmentDivider
-                    creditsSegment
-                }
-
-                if let goalHint = data.goalHint, !goalHint.isEmpty {
-                    Rectangle()
-                        .fill(AppTheme.Colors.textSecondary.opacity(0.14))
-                        .frame(height: 1)
-
-                    HStack(spacing: 10) {
-                        Image(systemName: "target")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundStyle(AppTheme.Colors.cta)
-                            .frame(width: 18)
-
-                        Text(goalHint)
-                            .font(.system(size: 12, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
-
-                        Spacer(minLength: 0)
-
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.55))
-                    }
-                }
+            HStack(alignment: .center, spacing: 12) {
+                streakSegment
+                segmentDivider
+                levelSegment
+                segmentDivider
+                xpSegment
+                segmentDivider
+                creditsSegment
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
             .frame(maxWidth: .infinity)
             .background(cardBackground)
             .overlay(cardBorder)
@@ -93,33 +68,42 @@ struct HomeProgressBoardCard: View {
     // MARK: - Segments
 
     private var streakSegment: some View {
-        HStack(spacing: 7) {
+        HStack(alignment: .center, spacing: 8) {
             Image(systemName: "flame.fill")
-                .font(.system(size: 20, weight: .bold))
+                .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(Color(hex: "#FF9F40"))
-            Text("\(data.streakDays)")
-                .font(.system(size: 22, weight: .black, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-                .monospacedDigit()
-                .minimumScaleFactor(0.8)
-                .lineLimit(1)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("\(data.streakDays) Tage")
+                    .font(.system(size: 15, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                Text("Streak")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.elumiPink)
+                    .tracking(0.4)
+            }
         }
-        .frame(minWidth: 44, alignment: .leading)
+        .fixedSize()
     }
 
     private var levelSegment: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text("Lv")
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .tracking(0.8)
-                Text("\(data.level)")
-                    .font(.system(size: 17, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .monospacedDigit()
-            }
+        VStack(alignment: .leading, spacing: 5) {
+            Text("Level \(data.level)")
+                .font(.system(size: 14, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
             progressBar(progress: data.levelProgress)
+            if let hint = data.goalHint, !hint.isEmpty {
+                Text(hint)
+                    .font(.system(size: 10, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.9))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -133,8 +117,8 @@ struct HomeProgressBoardCard: View {
                     .fill(
                         LinearGradient(
                             colors: [
-                                AppTheme.Colors.cta,
-                                AppTheme.Colors.cta.opacity(0.82)
+                                AppTheme.Colors.elumiPink,
+                                AppTheme.Colors.elumiPinkDeep
                             ],
                             startPoint: .leading,
                             endPoint: .trailing
@@ -143,45 +127,50 @@ struct HomeProgressBoardCard: View {
                     .frame(width: max(4, geo.size.width * progress.clamped01))
             }
         }
-        .frame(height: 8)
+        .frame(height: 7)
         .clipShape(Capsule())
     }
 
     private var xpSegment: some View {
         VStack(alignment: .trailing, spacing: 1) {
-            Text("XP")
-                .font(.system(size: 10, weight: .bold, design: .rounded))
-                .tracking(1.2)
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-            Text("\(data.totalXP)")
-                .font(.system(size: 17, weight: .black, design: .rounded))
+            Text("\(data.totalXP) XP")
+                .font(.system(size: 14, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
                 .monospacedDigit()
-                .minimumScaleFactor(0.7)
                 .lineLimit(1)
+                .minimumScaleFactor(0.75)
+            Text("Gesamt")
+                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.elumiPink)
+                .tracking(0.4)
         }
-        .frame(minWidth: 40, alignment: .trailing)
+        .fixedSize()
     }
 
     private var creditsSegment: some View {
-        HStack(spacing: 5) {
+        HStack(alignment: .center, spacing: 6) {
             Image(systemName: "circle.hexagongrid.fill")
-                .font(.system(size: 15, weight: .bold))
+                .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(AppTheme.Colors.elumiBlue)
-            Text("\(data.credits)")
-                .font(.system(size: 17, weight: .black, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-                .monospacedDigit()
-                .minimumScaleFactor(0.7)
-                .lineLimit(1)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("\(data.credits)")
+                    .font(.system(size: 15, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .monospacedDigit()
+                    .lineLimit(1)
+                Text("Credits")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.elumiPink)
+                    .tracking(0.4)
+            }
         }
-        .frame(minWidth: 40, alignment: .trailing)
+        .fixedSize()
     }
 
     private var segmentDivider: some View {
         Rectangle()
             .fill(AppTheme.Colors.textSecondary.opacity(0.18))
-            .frame(width: 1, height: 26)
+            .frame(width: 1, height: 34)
     }
 
     // MARK: - Chrome
@@ -189,24 +178,11 @@ struct HomeProgressBoardCard: View {
     private var cardBackground: some View {
         RoundedRectangle(cornerRadius: 16, style: .continuous)
             .fill(AppTheme.Colors.surface)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.white.opacity(0.04),
-                                Color.clear
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-            )
     }
 
     private var cardBorder: some View {
         RoundedRectangle(cornerRadius: 16, style: .continuous)
-            .stroke(AppTheme.Colors.cta.opacity(0.22), lineWidth: 1)
+            .stroke(AppTheme.Colors.border.opacity(0.5), lineWidth: 1)
     }
 
     // MARK: - Accessibility

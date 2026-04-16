@@ -4,8 +4,9 @@ import SwiftUI
 ///
 /// Wird von der späteren Content-Logik (z. B. `LastSessionStore`) gefüllt —
 /// die View bleibt davon unberührt. `moduleIcon` ist optional: wenn
-/// gesetzt, nutzt die Card das bestehende SVG-Asset. Ohne Icon wird der
-/// Akzent allein aus `accent` gezeichnet, damit ein Fallback existiert.
+/// gesetzt, nutzt die Card das bestehende SVG-Asset als Fallback. Ohne
+/// Icon zeigt die Card das Raketen-Emoji als visuelles „Weiter-Lernen"-
+/// Leitbild.
 struct HomeContinueSessionData: Equatable {
     let moduleTitle: String
     /// Unterzeile z. B. „Vokabeln · 15 Min." — die konkrete Formatierung
@@ -22,8 +23,14 @@ struct HomeContinueSessionData: Equatable {
 /// gebaut, damit die Logik-Runde danach nur noch das Datenmodell erzeugen
 /// muss.
 ///
+/// Layout:
+///   • Icon-Badge links — Raketen-Emoji (SPEC) über einem dunklen Kreis
+///   • Text-Block — kleine Mint-Überschrift „Weiter lernen" + großer Titel
+///     + dezenter Subtitle
+///   • CTA rechts — Pill in Mint („Weiter ›")
+///
 /// Zustände:
-///   • `data != nil` → aktive Card mit Modul-Icon, Titel, Subtext, CTA
+///   • `data != nil` → aktive Card
 ///   • `data == nil` → dezenter Empty-State („Noch keine Session zum
 ///     Fortsetzen"), damit der Home-Flow nicht „reißt", wenn wirklich nichts
 ///     da ist. Die HomeView kann optional entscheiden, den Empty-State
@@ -44,14 +51,13 @@ struct HomeContinueSessionCard: View {
 
     private func activeCard(data: HomeContinueSessionData) -> some View {
         Button(action: onContinue) {
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
                 iconBadge(data: data)
 
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("LETZTE SESSION")
-                        .font(.system(size: 10, weight: .black, design: .rounded))
-                        .tracking(1.0)
-                        .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.75))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Weiter lernen")
+                        .font(.system(size: 11, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.elumiMint)
 
                     Text(data.moduleTitle)
                         .font(.system(size: 17, weight: .black, design: .rounded))
@@ -71,41 +77,36 @@ struct HomeContinueSessionCard: View {
                 HStack(spacing: 6) {
                     Text(data.ctaLabel)
                         .font(.system(size: 13, weight: .black, design: .rounded))
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 12, weight: .bold))
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .black))
                 }
-                .foregroundStyle(data.accent)
+                .foregroundStyle(Color.black.opacity(0.9))
                 .padding(.horizontal, 12)
                 .padding(.vertical, 7)
-                .background(data.accent.opacity(0.15))
+                .background(AppTheme.Colors.elumiMint)
                 .clipShape(Capsule())
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(cardBackground(accent: data.accent))
-            .overlay(cardBorder(accent: data.accent))
+            .background(cardBackground)
+            .overlay(cardBorder)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .shadow(color: AppTheme.Shadow.card.color.opacity(0.4), radius: 6, x: 0, y: 2)
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Letzte Session fortsetzen: \(data.moduleTitle), \(data.subtitle)")
+        .accessibilityLabel("Weiter lernen: \(data.moduleTitle), \(data.subtitle)")
     }
 
     @ViewBuilder
     private func iconBadge(data: HomeContinueSessionData) -> some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(data.accent.opacity(0.14))
-                .frame(width: 46, height: 46)
-            if let icon = data.moduleIcon {
-                HomeModuleIconView(icon: icon, size: 36)
-            } else {
-                Image(systemName: "play.fill")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundStyle(data.accent)
-            }
+            Circle()
+                .fill(AppTheme.Colors.elumiMint.opacity(0.18))
+                .frame(width: 44, height: 44)
+            Text("🚀")
+                .font(.system(size: 24))
         }
     }
 
@@ -113,20 +114,27 @@ struct HomeContinueSessionCard: View {
 
     private var emptyCard: some View {
         HStack(spacing: 12) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.55))
-                .frame(width: 36, height: 36)
-                .background(AppTheme.Colors.textSecondary.opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            ZStack {
+                Circle()
+                    .fill(AppTheme.Colors.textSecondary.opacity(0.12))
+                    .frame(width: 40, height: 40)
+                Text("🚀")
+                    .font(.system(size: 20))
+                    .opacity(0.45)
+            }
 
             VStack(alignment: .leading, spacing: 2) {
+                Text("Weiter lernen")
+                    .font(.system(size: 11, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.65))
+
                 Text("Noch keine Session")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
+
                 Text("Starte ein Modul und wir merken uns, wo du warst.")
                     .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.75))
+                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.7))
                     .lineLimit(2)
                     .minimumScaleFactor(0.85)
             }
@@ -134,7 +142,7 @@ struct HomeContinueSessionCard: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 12)
+        .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -142,7 +150,7 @@ struct HomeContinueSessionCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(AppTheme.Colors.border.opacity(0.7), lineWidth: 1)
+                .strokeBorder(AppTheme.Colors.border.opacity(0.5), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .accessibilityElement(children: .combine)
@@ -151,17 +159,13 @@ struct HomeContinueSessionCard: View {
 
     // MARK: - Chrome
 
-    private func cardBackground(accent: Color) -> some View {
+    private var cardBackground: some View {
         RoundedRectangle(cornerRadius: 16, style: .continuous)
             .fill(AppTheme.Colors.surface)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(accent.opacity(0.05))
-            )
     }
 
-    private func cardBorder(accent: Color) -> some View {
+    private var cardBorder: some View {
         RoundedRectangle(cornerRadius: 16, style: .continuous)
-            .stroke(accent.opacity(0.22), lineWidth: 1)
+            .stroke(AppTheme.Colors.border.opacity(0.5), lineWidth: 1)
     }
 }

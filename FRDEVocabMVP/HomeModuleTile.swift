@@ -4,12 +4,12 @@ import SwiftUI
 /// Module — verhindert Mischungen aus SF-Symbols, Eigen-Schriften und
 /// SVG-Icons.
 ///
-/// Layout:
+/// Layout (kompakt für 4×2-Grid):
 ///   • Icon oben (SVG aus `HomeModuleIcon`)
 ///   • Titel unten (gerounded, bold)
 ///
-/// Die Card bringt den Akzent über einen sehr dezenten Background-Tint,
-/// nicht über den Border — so bleiben die Icons die visuelle Hauptquelle.
+/// Der Akzent steckt in einem sehr dezenten Background-Tint, nicht im
+/// Border — die Icons bleiben die visuelle Hauptquelle.
 struct HomeModuleTile: View {
     let icon: HomeModuleIcon
     let title: String
@@ -17,36 +17,38 @@ struct HomeModuleTile: View {
     let isPressed: Bool
     let onTap: () -> Void
 
-    /// Default 64 pt — entspricht Spec (64–72 pt im Grid).
-    var iconSize: CGFloat = 64
-    /// Default-Höhe; bleibt in allen Grid-Cards gleich, damit die Kacheln
-    /// sauber ausgerichtet sind.
-    var minHeight: CGFloat = 118
+    /// Default 44 pt — gewählt für 4-Spalten-Grid (≈ 68 pt Card-Breite
+    /// nach Padding auf einem iPhone). Das matcht die Design-Spec
+    /// („Icons alle gleich groß"), bleibt aber sichtbar auf einen
+    /// Blick.
+    var iconSize: CGFloat = 44
+    /// Default-Höhe; bleibt in allen Grid-Cards gleich.
+    var minHeight: CGFloat = 86
 
     var body: some View {
         Button(action: onTap) {
-            VStack(spacing: 8) {
+            VStack(spacing: 4) {
                 HomeModuleIconView(icon: icon, size: iconSize)
                     .frame(height: iconSize)
 
                 Text(title)
-                    .font(.system(size: 15, weight: .black, design: .rounded))
+                    .font(.system(size: 12, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.85)
+                    .minimumScaleFactor(0.8)
             }
             .frame(maxWidth: .infinity)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 4)
+            .padding(.vertical, 8)
             .frame(maxWidth: .infinity, minHeight: minHeight)
             .background(cardBackground)
             .overlay(cardBorder)
-            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .shadow(
-                color: AppTheme.Shadow.card.color.opacity(isPressed ? 0.8 : 0.75),
-                radius: isPressed ? 10 : 7,
+                color: AppTheme.Shadow.card.color.opacity(isPressed ? 0.75 : 0.6),
+                radius: isPressed ? 8 : 5,
                 x: 0,
-                y: isPressed ? 5 : 3
+                y: isPressed ? 4 : 2
             )
             .scaleEffect(isPressed ? 0.965 : 1.0)
             .opacity(isPressed ? 0.92 : 1.0)
@@ -57,68 +59,16 @@ struct HomeModuleTile: View {
     }
 
     private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 20, style: .continuous)
+        RoundedRectangle(cornerRadius: 16, style: .continuous)
             .fill(AppTheme.Colors.surface)
             .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(accent.opacity(0.10))
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(accent.opacity(0.09))
             )
     }
 
     private var cardBorder: some View {
-        RoundedRectangle(cornerRadius: 20, style: .continuous)
-            .stroke(AppTheme.Colors.border, lineWidth: 1)
-    }
-}
-
-/// Schwache Organisations-Zeile für „Listen" — bewusst visuell getrennt
-/// vom Lern-Modul-Grid. Kein Shadow, ruhiger Hintergrund.
-struct HomeOrganizationTile: View {
-    let icon: HomeModuleIcon
-    let title: String
-    let subtitle: String
-    let isPressed: Bool
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: 12) {
-                HomeModuleIconView(icon: icon, size: 36)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                    Text(subtitle)
-                        .font(.system(size: 11, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.7))
-                        .lineLimit(1)
-                }
-
-                Spacer(minLength: 0)
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.5))
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(AppTheme.Colors.surface.opacity(0.6))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .strokeBorder(AppTheme.Colors.border.opacity(0.65), lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .scaleEffect(isPressed ? 0.975 : 1.0)
-            .opacity(isPressed ? 0.9 : 1.0)
-            .animation(.easeOut(duration: 0.12), value: isPressed)
-        }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title), \(subtitle)")
+        RoundedRectangle(cornerRadius: 16, style: .continuous)
+            .stroke(AppTheme.Colors.border.opacity(0.55), lineWidth: 1)
     }
 }
