@@ -32,19 +32,23 @@ extension ListsView {
                 // Home-Listen-Icon — identisch zur Listen-Kachel auf dem
                 // Home-Screen und zu den „Ausgewählte Listen"-Cards in den
                 // Session-Setups. Ein Icon für „Listen" durch die ganze App.
-                // Icon etwas größer gesetzt (48 statt 40), damit es auf der
-                // Hero-Card „Alle Listen" mehr Präsenz bekommt.
-                HomeModuleIconView(icon: .listen, size: 48)
+                // Icon auf 54 pt — weiter gewachsen gegenüber 48, damit die
+                // Hero-Card optisch dominanter bleibt als die Kategorie-
+                // Cards darunter.
+                HomeModuleIconView(icon: .listen, size: 54)
 
+                // Titel +1 pt (22 → 23) — kräftigere Hierarchie gegenüber
+                // den Kategorie-Cards (deren Titel 17 → 18 mitgewachsen
+                // sind).
                 Text("Alle Listen")
-                    .font(.system(size: 22, weight: .black, design: .rounded))
+                    .font(.system(size: 23, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
 
-                // +2 pt gegenüber der Caption-Default-Größe (12 → 14) —
-                // besser lesbar im größeren Card-Format, ohne den
-                // sekundären Charakter zu verlieren.
+                // Count-Text mit der Card mitgewachsen (14 → 15) — bleibt
+                // sekundär, aber nicht mehr winzig gegenüber dem größeren
+                // Titel.
                 Text(countLabel(listStore.allLists.count, singular: "Liste", plural: "Listen"))
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
             .frame(maxWidth: .infinity)
@@ -106,21 +110,24 @@ extension ListsView {
         Button(action: action) {
             HStack(spacing: 12) {
                 // Eigenständige SVG-Icons aus dem Catalog (nicht SF-Symbols).
-                // Bounding-Box 40pt hält den Text-Anker konsistent und gibt
-                // der Illustration genug Platz.
+                // Bounding-Box 46pt — etwas größer als vorher (40), damit die
+                // Kategorie-Illustrationen auch in der Row sichtbar „atmen".
                 Image(iconAsset)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 40, height: 40)
+                    .frame(width: 46, height: 46)
 
+                // Titel +1pt (17 → 18) — besser lesbar auf der gewachsenen
+                // Card, bleibt aber klar unterhalb des Alle-Listen-Titels.
                 Text(title)
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
 
                 Spacer(minLength: 0)
 
+                // Count ebenfalls +1pt (16 → 17) — skaliert mit dem Titel.
                 Text("\(count)")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
                     .foregroundStyle(sectionStyle.accent)
 
                 Image(systemName: "chevron.right")
@@ -176,13 +183,16 @@ extension ListsView {
                     // CTA-Ansicht visuell zur Listen-Welt gehört.
                     if showingCreateListForm {
                         Image(systemName: "chevron.up.circle.fill")
-                            .font(.system(size: 38, weight: .bold))
+                            .font(.system(size: 42, weight: .bold))
                             .foregroundStyle(sectionStyle.accent)
                     } else {
+                        // Icon synchron zum Alle-Listen-Icon gewachsen
+                        // (48 → 54), damit beide Hero-Icons auf dem Screen
+                        // dieselbe Gewichtung haben.
                         Image("ListIconNeueListe")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 48, height: 48)
+                            .frame(width: 54, height: 54)
                     }
                     Text("Neue Liste anlegen")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))

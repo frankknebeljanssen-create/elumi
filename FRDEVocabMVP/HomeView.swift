@@ -239,13 +239,14 @@ struct HomeView: View {
                 // beiden Funktionen aufzugeben.
                 focusOrContinueCard
 
-                // 40 pt Luft über dem Pager — die 8 Modul-Kacheln sitzen
-                // spürbar tiefer als im Ausgangszustand (+20 pt), aber
-                // 10 pt höher als die zwischenzeitlich getestete 50-pt-
-                // Version. Unten bleiben 30 pt Abstand zur fixierten
-                // Flag-Leiste.
+                // 25 pt Luft über dem Pager — die 8 Modul-Kacheln rücken
+                // gegenüber der Zwischenstufe (40 pt) nochmal 15 pt höher.
+                // Gegenüber dem ursprünglichen 20-pt-Wert bleiben sie nur
+                // 5 pt tiefer, der zweite Status-Block oben bekommt aber
+                // weiterhin mehr visuelle Luft als zu Beginn. Unten
+                // bleiben 30 pt Abstand zur fixierten Flag-Leiste.
                 moduleSwipePager
-                    .padding(.top, 40)
+                    .padding(.top, 25)
                     .padding(.bottom, 30)
             }
             .padding(.horizontal, AppLayout.screenPadding)
