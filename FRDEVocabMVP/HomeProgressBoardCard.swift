@@ -7,6 +7,11 @@ import SwiftUI
 /// Level-Tiers). Der nächste Schritt („Content-Logik" direkt im Anschluss)
 /// kann dieses Modell aus einem dedizierten ViewModel / Service befüllen,
 /// ohne die View anzufassen.
+///
+/// **Credits** bleiben weiterhin Teil des Modells (weil sie in anderen
+/// Kontexten, z. B. Progress-Hub, genutzt werden), werden aber im
+/// Home-Board bewusst nicht mehr gezeigt — Streak/Level/XP bekommen so
+/// mehr Platz.
 struct HomeProgressBoardData: Equatable {
     let streakDays: Int
     let level: Int
@@ -27,24 +32,22 @@ struct HomeProgressBoardData: Equatable {
 ///   • Level (ausgeschrieben „Level 3") mit Progress-Bar darunter
 ///     → Goal-Hint („Noch 37 XP bis Champion") direkt unter der Bar
 ///   • XP-Block („663 XP" + „Gesamt"-Label)
-///   • Credits-Block (Hexagon + „2" + „Credits"-Label)
 ///
-/// Flacher als vorher — Inhalt steht klarer, Card braucht weniger Höhe.
-/// Tap → `onTap` (üblich: Navigation in den Progress Hub).
+/// Credits sind aus dieser Card entfernt — sie sind im Progress-Hub
+/// weiterhin sichtbar. Dadurch bekommen die drei verbleibenden Segmente
+/// deutlich mehr Raum und die Card wirkt weniger gestapelt.
 struct HomeProgressBoardCard: View {
     let data: HomeProgressBoardData
     let onTap: () -> Void
 
     var body: some View {
         Button(action: onTap) {
-            HStack(alignment: .center, spacing: 12) {
+            HStack(alignment: .center, spacing: 14) {
                 streakSegment
                 segmentDivider
                 levelSegment
                 segmentDivider
                 xpSegment
-                segmentDivider
-                creditsSegment
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
@@ -134,7 +137,7 @@ struct HomeProgressBoardCard: View {
     private var xpSegment: some View {
         VStack(alignment: .trailing, spacing: 1) {
             Text("\(data.totalXP) XP")
-                .font(.system(size: 14, weight: .black, design: .rounded))
+                .font(.system(size: 15, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
                 .monospacedDigit()
                 .lineLimit(1)
@@ -143,26 +146,6 @@ struct HomeProgressBoardCard: View {
                 .font(.system(size: 10, weight: .bold, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.elumiPink)
                 .tracking(0.4)
-        }
-        .fixedSize()
-    }
-
-    private var creditsSegment: some View {
-        HStack(alignment: .center, spacing: 6) {
-            Image(systemName: "circle.hexagongrid.fill")
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(AppTheme.Colors.elumiBlue)
-            VStack(alignment: .leading, spacing: 1) {
-                Text("\(data.credits)")
-                    .font(.system(size: 15, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .monospacedDigit()
-                    .lineLimit(1)
-                Text("Credits")
-                    .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.elumiPink)
-                    .tracking(0.4)
-            }
         }
         .fixedSize()
     }
@@ -191,8 +174,7 @@ struct HomeProgressBoardCard: View {
         var parts: [String] = [
             "Streak \(data.streakDays) Tage",
             "Level \(data.level)",
-            "\(data.totalXP) XP",
-            "\(data.credits) Credits"
+            "\(data.totalXP) XP"
         ]
         if let hint = data.goalHint, !hint.isEmpty {
             parts.append(hint)

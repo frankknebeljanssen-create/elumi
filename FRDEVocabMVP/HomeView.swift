@@ -33,6 +33,10 @@ struct HomeView: View {
     private let sectionStyle: AppSectionStyle = .home
     @State private var pressedHomeScreen: AppScreen?
     @State private var isHomeNavigationLocked = false
+    /// Aktive Seite im Modul-Swipe-Pager (0 = erste Vier, 1 = zweite Vier).
+    /// Bleibt während der Session erhalten, damit ein zurückkehrender User
+    /// dort weitermacht, wo er war.
+    @State private var modulePage: Int = 0
 
     @ObservedObject private var progressStore = ProgressStore.shared
     @ObservedObject private var profileStore = ProfileStore.shared
@@ -46,17 +50,18 @@ struct HomeView: View {
             : AppTheme.Spacing.lg
     }
 
-    /// 2 Spalten für das Hero-Grid — Top-Module sind Hauptaktion,
-    /// entsprechend großformatig.
+    /// 2 Spalten — alle Modul-Kacheln sind jetzt gleich groß (Hero-Size).
+    /// Beide Pager-Seiten nutzen dasselbe Grid, damit Seite 2 identisch
+    /// wirkt und nur die Icons/Titel wechseln.
     private var heroGridColumns: [GridItem] {
         Array(repeating: GridItem(.flexible(), spacing: 16), count: 2)
     }
 
-    /// 3 Spalten für die Sekundär-Module (Verbformen, Vokabeln, Quiz) —
-    /// kompaktere Kacheln, gleiche visuelle Sprache, niedrigere Hierarchie.
-    private var secondaryGridColumns: [GridItem] {
-        Array(repeating: GridItem(.flexible(), spacing: 10), count: 3)
-    }
+    /// Feste Höhe für den Modul-Pager. Ergibt sich aus
+    /// 2 × Tile-MinHeight (148) + Row-Spacing (16) + Platz für die
+    /// PageTabView-Dots (~18). Konstante Höhe ist wichtig, damit die
+    /// TabView in einer vertikalen ScrollView stabil bleibt.
+    private let moduleSwipePagerHeight: CGFloat = 334
 
     private var selectedDirection: Direction {
         Direction(rawValue: selectedDirectionRaw) ?? .frenchToGerman
@@ -208,14 +213,11 @@ struct HomeView: View {
                     continueSession()
                 }
 
-                // Hero-Grid dichter an der Fokus-Card — das Grid ist jetzt
-                // Hauptfeature, kein Menü.
-                heroModuleGrid
+                // Alle acht Modul-Kacheln als horizontaler Pager.
+                // Initial sichtbar: die ersten vier — per Swipe links/rechts
+                // kommen die weiteren vier (inkl. Listen).
+                moduleSwipePager
                     .padding(.top, 4)
-
-                secondaryModuleGrid
-
-                listenOrganizationRow
 
                 directionToggleRow
                     .padding(.top, 2)
@@ -248,86 +250,89 @@ struct HomeView: View {
         }
     }
 
-    // MARK: - Module Grid
+    // MARK: - Module Swipe Pager
 
-    /// 2 × 2 Hero-Grid — die vier wichtigsten Lernmodule als primärer
-    /// Einstieg. Großformatige Kacheln (`.hero`), 16 pt Spacing, macht
-    /// das Grid zum Hauptfeature des Home-Screens.
-    ///
-    /// Reihenfolge folgt der didaktischen Progression:
-    ///   Karteikarten (Format) · Nomen · Artikel · Verben
-    private var heroModuleGrid: some View {
+    /// Horizontaler Pager mit zwei Seiten à 4 Kacheln — alle gleich groß
+    /// (Hero-Size). Swipe nach links zeigt die zweite Seite. Page-Dots
+    /// unten signalisieren, dass es eine weitere Seite gibt.
+    private var moduleSwipePager: some View {
+        TabView(selection: $modulePage) {
+            modulePagePrimary
+                .tag(0)
+            modulePageSecondary
+                .tag(1)
+        }
+        .tabViewStyle(.page(indexDisplayMode: .always))
+        .indexViewStyle(.page(backgroundDisplayMode: .never))
+        .frame(height: moduleSwipePagerHeight)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Modul-Auswahl, Seite \(modulePage + 1) von 2")
+    }
+
+    /// Seite 1 — Karteikarten · Nomen · Artikel · Verben.
+    /// Reihenfolge folgt der didaktischen Progression (Lernformat →
+    /// Wortarten-Grundlagen).
+    private var modulePagePrimary: some View {
         LazyVGrid(columns: heroGridColumns, spacing: 16) {
             moduleTile(
                 icon: .karteikarten,
                 title: "Karteikarten",
                 accent: moduleFlashcards,
-                screen: .flashcards(nil),
-                size: .hero
+                screen: .flashcards(nil)
             )
             moduleTile(
                 icon: .nomen,
                 title: "Nomen",
                 accent: moduleNomen,
-                screen: .train(TrainingLaunchContext(preferredMode: .nouns)),
-                size: .hero
+                screen: .train(TrainingLaunchContext(preferredMode: .nouns))
             )
             moduleTile(
                 icon: .artikel,
                 title: "Artikel",
                 accent: moduleArticles,
-                screen: .train(TrainingLaunchContext(preferredMode: .articles)),
-                size: .hero
+                screen: .train(TrainingLaunchContext(preferredMode: .articles))
             )
             moduleTile(
                 icon: .verben,
                 title: "Verben",
                 accent: moduleVerbs,
-                screen: .train(TrainingLaunchContext(preferredMode: .verbs)),
-                size: .hero
+                screen: .train(TrainingLaunchContext(preferredMode: .verbs))
             )
         }
+        .padding(.bottom, 22) // Platz für die Page-Dots unter dem Grid
     }
 
-    /// Sekundär-Reihe — kompaktere Kacheln (`.compact`) für die
-    /// verbleibenden Lernmodule. Gleiche Komponente wie im Hero-Grid,
-    /// nur kleiner gerendert.
-    private var secondaryModuleGrid: some View {
-        LazyVGrid(columns: secondaryGridColumns, spacing: 10) {
+    /// Seite 2 — Verbformen · Vokabeln · Quiz · Listen.
+    /// Listen läuft hier visuell mit, zielt aber auf den Organisations-
+    /// Screen (`.lists`), nicht auf eine Training-Session.
+    private var modulePageSecondary: some View {
+        LazyVGrid(columns: heroGridColumns, spacing: 16) {
             moduleTile(
                 icon: .verbformen,
                 title: "Verbformen",
                 accent: moduleVerbforms,
-                screen: .train(TrainingLaunchContext(preferredMode: .verbforms)),
-                size: .compact
+                screen: .train(TrainingLaunchContext(preferredMode: .verbforms))
             )
             moduleTile(
                 icon: .vokabeln,
                 title: "Vokabeln",
                 accent: moduleVocabulary,
-                screen: .train(TrainingLaunchContext(preferredMode: .vocabulary)),
-                size: .compact
+                screen: .train(TrainingLaunchContext(preferredMode: .vocabulary))
             )
             moduleTile(
                 icon: .quiz,
                 title: "Quiz",
                 accent: moduleQuiz,
-                screen: .quiz(nil),
-                size: .compact
+                screen: .quiz(nil)
+            )
+            moduleTile(
+                icon: .listen,
+                title: "Listen",
+                accent: moduleLists,
+                screen: .lists(nil)
             )
         }
-    }
-
-    /// Listen — bewusst **außerhalb** des Modul-Grids. Kein gleichwertiges
-    /// Lernmodul, sondern Organisation.
-    private var listenOrganizationRow: some View {
-        HomeOrganizationTile(
-            icon: .listen,
-            title: "Listen",
-            subtitle: "Eigene Vokabellisten verwalten",
-            isPressed: pressedHomeScreen == .lists(nil),
-            onTap: { openHomeScreen(.lists(nil)) }
-        )
+        .padding(.bottom, 22)
     }
 
     @ViewBuilder
@@ -335,16 +340,14 @@ struct HomeView: View {
         icon: HomeModuleIcon,
         title: String,
         accent: Color,
-        screen: AppScreen,
-        size: HomeModuleTile.Size
+        screen: AppScreen
     ) -> some View {
         HomeModuleTile(
             icon: icon,
             title: title,
             accent: accent,
             isPressed: pressedHomeScreen == screen,
-            onTap: { openHomeScreen(screen) },
-            size: size
+            onTap: { openHomeScreen(screen) }
         )
     }
 
