@@ -556,55 +556,60 @@ extension ScanImportView {
                             && session.batchThumbnails.isEmpty
 
                         if isOnChoiceScreen {
-                            // Header (links-bündig)
+                            // Header (links-bündig, nur "Scan")
                             ScanScreenHeader()
                                 .padding(.top, 4)
 
-                            // Hero-Card mit Maskottchen — emotionaler Einstieg
+                            // Hero-Card — angepasste Frage (passt zu
+                            // Modus-Auswahl statt Aktions-Auswahl)
                             ScanHeroCard(
                                 mascotImageName: "SplashCharacter",
-                                title: "Was möchtest du scannen?",
-                                subtitle: "Ich mache daraus eine Lerneinheit",
+                                title: "Wie soll ich den Text verstehen?",
+                                subtitle: "Ich passe die Analyse automatisch an",
                                 accent: sectionStyle.accent
                             )
 
-                            // Vier Choice-Cards mit Custom-Illustrationen,
-                            // konsistentes Tap-Feedback. Top-Optionen
-                            // Vokabelliste + Kamera mit isPriority (subtiler
-                            // accent-Tint im Background, etwas mehr Padding).
-                            ScanChoiceCard(
-                                illustrationName: "ScanIconVokabelliste",
-                                title: "Vokabelliste",
-                                subtitle: "Aus dem Buch oder Heft",
-                                accent: sectionStyle.accent,
-                                isPriority: true
-                            ) {
-                                guard !isRecognizingImage else { return }
-                                selectScanMode(.list)
-                                shouldAppendNextScan = false
-                                selectedScanInputMethod = .camera
-                                openCameraScanner()
+                            // ────────────── MODUS-Block ──────────────
+                            // Selection-Toggles (kein Navigations-Element).
+                            // Tap ändert nur den Modus, User bleibt auf dem Screen.
+                            ScanSectionLabel(title: "MODUS")
+                                .padding(.top, 8)
+
+                            HStack(spacing: 12) {
+                                ScanModeSelectionCard(
+                                    illustrationName: "ScanIconVokabelliste",
+                                    title: "Vokabelliste",
+                                    subtitle: "Ich erkenne Wörter und Übersetzungen",
+                                    isSelected: activeScanMode == .list,
+                                    accent: sectionStyle.accent
+                                ) {
+                                    selectScanMode(.list)
+                                }
+
+                                ScanModeSelectionCard(
+                                    illustrationName: "ScanIconFreierText",
+                                    title: "Freier Text",
+                                    subtitle: "Ich analysiere ganze Sätze und Inhalte",
+                                    isSelected: activeScanMode == .text,
+                                    accent: sectionStyle.accent
+                                ) {
+                                    selectScanMode(.text)
+                                }
                             }
 
-                            ScanChoiceCard(
-                                illustrationName: "ScanIconFreierText",
-                                title: "Freier Text",
-                                subtitle: "Romane, Notizen, Briefe",
-                                accent: sectionStyle.accent
-                            ) {
-                                guard !isRecognizingImage else { return }
-                                selectScanMode(.text)
-                                shouldAppendNextScan = false
-                                selectedScanInputMethod = .camera
-                                openCameraScanner()
-                            }
+                            // ────────────── QUELLE-Block ──────────────
+                            // Action-Buttons. Tap startet Kamera/Galerie
+                            // mit dem aktuell gewählten Modus.
+                            ScanSectionLabel(title: "QUELLE")
+                                .padding(.top, 12)
 
                             ScanChoiceCard(
                                 illustrationName: "ScanIconKamera",
                                 title: "Kamera",
-                                subtitle: "Direkt fotografieren",
+                                subtitle: "Foto aufnehmen",
                                 accent: sectionStyle.accent,
-                                isPriority: true
+                                isPriority: true,
+                                modeHint: "Scan als: \(activeScanMode.title)"
                             ) {
                                 guard !isRecognizingImage else { return }
                                 guard isCameraCaptureAvailable else { return }
@@ -616,8 +621,9 @@ extension ScanImportView {
                             ScanChoiceCard(
                                 illustrationName: "ScanIconFotoAlbum",
                                 title: "Foto-Album",
-                                subtitle: "Aus deinen Aufnahmen wählen",
-                                accent: sectionStyle.accent
+                                subtitle: "Bild auswählen",
+                                accent: sectionStyle.accent,
+                                modeHint: "Scan als: \(activeScanMode.title)"
                             ) {
                                 guard !isRecognizingImage else { return }
                                 shouldAppendNextScan = false
