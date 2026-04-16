@@ -59,24 +59,14 @@ extension FlashcardsView {
                 .frame(maxWidth: .infinity, alignment: .center)
 
             HStack {
-                Button(action: onBack) {
-                    HStack(spacing: 2) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .semibold))
-                        Text("Zurück")
-                            .font(.system(size: 16, weight: .semibold))
-                    }
-                    .foregroundStyle(sectionStyle.accent)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
+                AppBackButton(action: onBack, tint: sectionStyle.accent)
 
                 Spacer()
             }
         }
         .padding(.horizontal, flashcardSessionCardInset)
         .padding(.top, 4)
-        .padding(.bottom, 6)
+        .padding(.bottom, AppLayout.screenHeaderBottomPadding)
     }
 
     /// Header für die laufende Karteikarten-Übung — Zurück führt zur

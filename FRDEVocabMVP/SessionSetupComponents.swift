@@ -87,24 +87,20 @@ struct SessionSetupHeader: View {
                 .frame(maxWidth: .infinity, alignment: .center)
 
             HStack {
-                Button(action: onBack) {
-                    HStack(spacing: 2) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .semibold))
-                        Text("Zurück")
-                            .font(.system(size: 16, weight: .semibold))
-                    }
-                    .foregroundStyle(accent)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
+                // Systemweiter Back-Button — „Zurück"-Text entfernt,
+                // einheitlicher nackter Pfeil. `tint` in Modul-Akzent
+                // erlaubt, damit der Setup-Header seine Akzent-Sprache
+                // behält.
+                AppBackButton(action: onBack, tint: accent)
 
                 Spacer()
             }
         }
         .padding(.horizontal, 16)
         .padding(.top, 4)
-        .padding(.bottom, 10)
+        // Systemweites Bottom-Padding — identisch zu allen anderen
+        // Headern in der App.
+        .padding(.bottom, AppLayout.screenHeaderBottomPadding)
     }
 }
 

@@ -122,8 +122,9 @@ var quizDirectionCard: some View {
     .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
 }
 
-/// Kompakter Header für den Quiz-Setup-Screen — analog zum Karteikarten-Setup.
-/// Kleiner „< Zurück" links, zentrierter „Quiz"-Titel.
+/// Kompakter Header für den Quiz-Setup-Screen — nackter Back-Pfeil links,
+/// zentrierter „Quiz"-Titel, rechts leer. Systemweiter AppBackButton +
+/// screenHeaderBottomPadding — identisch zu allen anderen Headern.
 var quizSetupHeader: some View {
     ZStack {
         Text("Quiz")
@@ -132,26 +133,14 @@ var quizSetupHeader: some View {
             .frame(maxWidth: .infinity, alignment: .center)
 
         HStack {
-            Button {
-                handleBackNavigation()
-            } label: {
-                HStack(spacing: 2) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 16, weight: .semibold))
-                    Text("Zurück")
-                        .font(.system(size: 16, weight: .semibold))
-                }
-                .foregroundStyle(sectionStyle.accent)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
+            AppBackButton(action: { handleBackNavigation() }, tint: sectionStyle.accent)
 
             Spacer()
         }
     }
     .padding(.horizontal, quizSetupCardInset)
     .padding(.top, 4)
-    .padding(.bottom, 6)
+    .padding(.bottom, AppLayout.screenHeaderBottomPadding)
 }
 
 // `quizQuestionCountCard` und `quizCountButton` wurden im Master-Session-

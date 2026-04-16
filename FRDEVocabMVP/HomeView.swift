@@ -239,10 +239,11 @@ struct HomeView: View {
                 // beiden Funktionen aufzugeben.
                 focusOrContinueCard
 
-                // +30 pt zwischen Modul-Pager und den fixierten Flags —
-                // klare Trennung zwischen Lern-Modulen (Learning-Ebene)
-                // und dem globalen System-Schalter/Footer (Chrome-Ebene).
+                // +20 pt zusätzliche Luft über dem Pager (macht die
+                // Hero-Cards ruhiger), +30 pt Abstand nach unten zu den
+                // fixierten Flags (Trennung Lern- vs. Chrome-Ebene).
                 moduleSwipePager
+                    .padding(.top, 20)
                     .padding(.bottom, 30)
             }
             .padding(.horizontal, AppLayout.screenPadding)

@@ -66,6 +66,9 @@ struct ScreenHeaderCard: View {
         }
         .frame(maxWidth: .infinity)
         .frame(minHeight: AppLayout.headerHeight)
+        // Systemweites Padding unter dem Header — gleicher Abstand zum
+        // nächsten Content-Block auf **jedem** Screen.
+        .padding(.bottom, AppLayout.screenHeaderBottomPadding)
     }
 
     // MARK: - Slots
@@ -73,20 +76,13 @@ struct ScreenHeaderCard: View {
     @ViewBuilder
     private var leadingSlot: some View {
         if let onBack {
-            Button(action: onBack) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .bold))
-                    .frame(width: 34, height: 34)
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .background(AppTheme.Colors.secondarySurface)
-                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.sm, style: .continuous))
-                    .accessibilityLabel(Text("Zurück"))
-            }
-            .buttonStyle(.plain)
+            // Systemweiter Back-Button — nackter Pfeil, kein Rahmen.
+            AppBackButton(action: onBack)
         } else if centeredTitle {
             // Symmetric placeholder, damit der Titel bei fehlendem
-            // Back-Button trotzdem sauber mittig sitzt.
-            Color.clear.frame(width: 34, height: 34)
+            // Back-Button trotzdem sauber mittig sitzt. 44 pt = Breite
+            // des AppBackButton-Touch-Targets.
+            Color.clear.frame(width: 44, height: 44)
         }
     }
 
@@ -103,9 +99,9 @@ struct ScreenHeaderCard: View {
             .frame(width: 34, height: 34)
         } else if centeredTitle {
             // Ohne Trailing-Icon braucht der zentrierte Titel rechts
-            // einen Platzhalter von 34×34 — exakt die Breite des
+            // einen Platzhalter von 44×44 — exakt die Breite des
             // Back-Buttons links, damit der Text wirklich mittig sitzt.
-            Color.clear.frame(width: 34, height: 34)
+            Color.clear.frame(width: 44, height: 44)
         }
     }
 }
@@ -155,16 +151,9 @@ struct AppTopBar: View {
     var body: some View {
         HStack {
             if let onBack {
-                Button(action: onBack) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 16, weight: .bold))
-                        .frame(width: 30, height: 30)
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .background(AppTheme.Colors.secondarySurface)
-                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.sm, style: .continuous))
-                        .accessibilityLabel(Text("Zurück"))
-                }
-                .buttonStyle(.plain)
+                // Systemweiter Back-Button — kein Rahmen mehr, einheitlich
+                // mit allen anderen Screens und Headern.
+                AppBackButton(action: onBack)
             }
 
             Spacer(minLength: 0)

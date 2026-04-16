@@ -98,9 +98,14 @@ extension TrainingView {
         trainingHeaderShared(onBack: { handleTopBarBack() })
     }
 
-    /// Gemeinsame Header-Implementierung — kleiner „< Zurück" links in der
-    /// Modul-Akzentfarbe, Modul-Titel zentriert. Analog zu Karteikarten/Quiz.
-    /// `onBack` ist die jeweilige Aktion (Setup → Home; Session → Setup).
+    /// Gemeinsame Header-Implementierung — nackter Back-Pfeil links
+    /// (in Modul-Akzentfarbe), Modul-Titel zentriert, rechts leer.
+    /// Analog zu Karteikarten/Quiz/SessionSetup. `onBack` ist die
+    /// jeweilige Aktion (Setup → Home; Session → Setup).
+    ///
+    /// Back-Button und Bottom-Padding kommen aus systemweiten Primitiven,
+    /// damit Position + Abstand zum Content auf jedem Screen identisch
+    /// bleiben.
     private func trainingHeaderShared(onBack: @escaping () -> Void) -> some View {
         ZStack {
             Text(sessionHeaderTitle)
@@ -109,23 +114,13 @@ extension TrainingView {
                 .frame(maxWidth: .infinity, alignment: .center)
 
             HStack {
-                Button(action: onBack) {
-                    HStack(spacing: 2) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .semibold))
-                        Text("Zurück")
-                            .font(.system(size: 16, weight: .semibold))
-                    }
-                    .foregroundStyle(trainingActionTint)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
+                AppBackButton(action: onBack, tint: trainingActionTint)
 
                 Spacer()
             }
         }
         .padding(.top, 4)
-        .padding(.bottom, 6)
+        .padding(.bottom, AppLayout.screenHeaderBottomPadding)
     }
 
     var trainingSessionScreen: some View {

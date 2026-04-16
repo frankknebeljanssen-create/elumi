@@ -18,6 +18,14 @@ enum AppLayout {
     static let bottomBarInsetBottom: CGFloat = AppTheme.Spacing.xs
     static let contentTopPadding: CGFloat = AppTheme.Spacing.xl
 
+    /// **Systemweites Bottom-Padding** unter jedem Screen-Header
+    /// (AppTopBar, ScreenHeaderCard, SessionSetupHeader, Training-Header).
+    /// Garantiert, dass der erste Content-Block in **jedem** Screen im
+    /// gleichen Abstand unterhalb der Header-Zeile beginnt.
+    ///
+    /// Ändern → alle Header springen gemeinsam. Keine Local-Overrides.
+    static let screenHeaderBottomPadding: CGFloat = 16
+
     /// App-weite Obergrenze für Mehrfachauswahl von Vokabel-Listen
     /// App-weites Limit für gleichzeitig ausgewählte Listen — gilt für Training,
     /// Karteikarten, Quiz und Verbformen. Mehr als 3 Listen verwirren in der
