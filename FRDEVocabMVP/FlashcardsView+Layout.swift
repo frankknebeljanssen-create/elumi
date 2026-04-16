@@ -188,74 +188,84 @@ extension FlashcardsView {
     }
 
     var flashcardSetupScreen: some View {
-        ScrollViewReader { proxy in
-            // Opaker Screen-Fill — verhindert, dass während des Navigation-
-            // Push-Transition die Home-View durchscheint („Was möchtest
-            // du üben?" wurde sichtbar, weil die ScrollView keinen eigenen
-            // Hintergrund hatte und das appScreenBackground des äußeren
-            // Chrome-Wrappers erst nach dem Layout greift).
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                    // Kompakter Header analog zum Session-Screen — kleiner
-                    // „< Zurück" links + zentrierter Karteikarten-Titel. Die
-                    // alte ScreenHeaderCard + großer Zurück-Button wurden
-                    // entfernt.
-                    flashcardSetupHeader
+        // Struktur identisch zu `SessionSetupScreen` (Quiz, Nomen, …):
+        //   • Header liegt OBERHALB der ScrollView, damit sein
+        //     `screenHeaderBottomPadding` der einzige Abstand zum ersten
+        //     Content-Block bleibt. Früher saß der Header innerhalb des
+        //     scroll-VStack (spacing 16), was zusätzlich 16 pt einschob —
+        //     der Gap Header ↔ Ausgewählte Listen war dadurch größer als
+        //     bei allen anderen Modulen.
+        //   • ScrollView darunter scrollt nur den Content, Header bleibt
+        //     visuell am Screen-Top.
+        VStack(spacing: 0) {
+            flashcardSetupHeader
 
-                    flashcardsListSelectionCard
+            ScrollViewReader { proxy in
+                // Opaker Screen-Fill — verhindert, dass während des Navigation-
+                // Push-Transition die Home-View durchscheint („Was möchtest
+                // du üben?" wurde sichtbar, weil die ScrollView keinen eigenen
+                // Hintergrund hatte und das appScreenBackground des äußeren
+                // Chrome-Wrappers erst nach dem Layout greift).
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                        flashcardsListSelectionCard
 
-                    // Richtungs-Zeile — systemweit direkt unter
-                    // „Ausgewählte Listen", mit verbindlichem Abstand aus
-                    // `AppLayout.sessionContextToDirectionSpacing`. Zieht
-                    // die globale Lernrichtung hier nach oben, identisch
-                    // zu allen anderen Setup-Screens (Quiz, Nomen, …).
-                    // Negative Top-Korrektur kompensiert das `VStack`-
-                    // Spacing (AppTheme.Spacing.md) des äußeren Stacks.
-                    SessionDirectionRow()
-                        .padding(.top, AppLayout.sessionContextToDirectionSpacing - AppTheme.Spacing.md)
+                        // Richtungs-Zeile — systemweit direkt unter
+                        // „Ausgewählte Listen", mit verbindlichem Abstand aus
+                        // `AppLayout.sessionContextToDirectionSpacing`. Die
+                        // Top-Korrektur kompensiert das `VStack`-Spacing
+                        // (AppTheme.Spacing.md) des äußeren Stacks, so dass
+                        // der Gap identisch zu Quiz/Nomen/... ausfällt.
+                        SessionDirectionRow()
+                            .padding(.top, AppLayout.sessionContextToDirectionSpacing - AppTheme.Spacing.md)
 
-                    if isDictionarySelectedInStack {
-                        flashcardDictionaryLevelCard
+                        if isDictionarySelectedInStack {
+                            flashcardDictionaryLevelCard
+                        }
+
+                        flashcardCountLimitCard
+
+                        flashcardMasteryThresholdCard
+
+                        // `flashcardHungerCard` + `flashcardStatsTrioCard` sind
+                        // mit der Master-Setup-Migration ersatzlos entfallen:
+                        // isoliertes Würmchen-Messaging und die Mini-Stat-Kacheln
+                        // werden jetzt durch die globale `SessionGamificationBar`
+                        // oberhalb des CTA abgedeckt.
+
+                        Spacer(minLength: 0)
                     }
-
-                    flashcardCountLimitCard
-
-                    flashcardMasteryThresholdCard
-
-                    // `flashcardHungerCard` + `flashcardStatsTrioCard` sind
-                    // mit der Master-Setup-Migration ersatzlos entfallen:
-                    // isoliertes Würmchen-Messaging und die Mini-Stat-Kacheln
-                    // werden jetzt durch die globale `SessionGamificationBar`
-                    // oberhalb des CTA abgedeckt.
-
-                    Spacer(minLength: 0)
+                    .frame(maxWidth: .infinity, alignment: .top)
+                    // 4 pt Atemraum zwischen Header-Unterkante und erstem
+                    // Content — analog zum `SessionSetupScreen`-Master
+                    // (dort: ScrollView `padding(.top, 4)`).
+                    .padding(.top, 4)
+                    .padding(.bottom, isCardCountFieldFocused ? 140 : AppTheme.Spacing.lg)
                 }
-                .frame(maxWidth: .infinity, alignment: .top)
-                .padding(.bottom, isCardCountFieldFocused ? 140 : AppTheme.Spacing.lg)
-            }
-            .scrollDismissesKeyboard(.interactively)
-            .safeAreaInset(edge: .bottom) {
-                VStack(spacing: 14) {
-                    // Master-Session-Setup-Bar — verbindlich über dem CTA.
-                    SessionGamificationBar(estimate: flashcardsSessionEstimate)
-                        .padding(.horizontal, AppLayout.screenPadding)
+                .scrollDismissesKeyboard(.interactively)
+                .safeAreaInset(edge: .bottom) {
+                    VStack(spacing: 14) {
+                        // Master-Session-Setup-Bar — verbindlich über dem CTA.
+                        SessionGamificationBar(estimate: flashcardsSessionEstimate)
+                            .padding(.horizontal, AppLayout.screenPadding)
 
-                    Button {
-                        startFlashcardsFromSetup(autoplayPrompt: true)
-                    } label: {
-                        Text("Los geht's!")
-                            .frame(maxWidth: .infinity)
+                        Button {
+                            startFlashcardsFromSetup(autoplayPrompt: true)
+                        } label: {
+                            Text("Los geht's!")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(AppPrimaryButtonStyle(color: canStartSetup ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled))
+                        .disabled(!canStartSetup)
+                        .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 4)
                     }
-                    .buttonStyle(AppPrimaryButtonStyle(color: canStartSetup ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled))
-                    .disabled(!canStartSetup)
-                    .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 4)
                 }
-            }
-            .onChange(of: isCardCountFieldFocused) { _, isFocused in
-                guard isFocused else { return }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                    withAnimation(.easeInOut(duration: 0.22)) {
-                        proxy.scrollTo(flashcardCountInputScrollID, anchor: .bottom)
+                .onChange(of: isCardCountFieldFocused) { _, isFocused in
+                    guard isFocused else { return }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                        withAnimation(.easeInOut(duration: 0.22)) {
+                            proxy.scrollTo(flashcardCountInputScrollID, anchor: .bottom)
+                        }
                     }
                 }
             }
