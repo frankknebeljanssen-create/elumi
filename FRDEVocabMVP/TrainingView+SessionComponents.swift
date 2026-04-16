@@ -274,21 +274,32 @@ extension TrainingView {
             Button {
                 toggleRecording()
             } label: {
+                // Feedback-Texte und Idle/Recording-Icon müssen ihren
+                // Farb-Kontext getrennt halten: Texte und Stop-Symbol tragen
+                // die foregroundStyle-Tönung (weiß / rot), das Cartoon-
+                // Mikrofon kommt mit eigener Farbe und ignoriert Tints.
                 Group {
                     if showsSuccessOnlyMessage {
                         Text("Richtig 🙂")
                             .font(.system(size: 26, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
                     } else if showsRetryOnlyMessage {
                         Text("Falsch 😕")
                             .font(.system(size: 26, weight: .bold, design: .rounded))
-                    } else {
-                        Image(systemName: recordingSymbolName)
+                            .foregroundStyle(.white)
+                    } else if isSpeechRecording {
+                        // Recording: klassisches rotes Stop-Quadrat
+                        // (OS-Konvention, nicht Teil des Cartoon-Sets).
+                        Image(systemName: "stop.fill")
                             .font(.system(size: 28, weight: .bold))
+                            .foregroundStyle(AppTheme.Colors.error)
+                    } else {
+                        // Idle: Cartoon-Mikrofon.
+                        ElumiIconView(icon: .mikrofon, size: 32)
                     }
                 }
                 .frame(maxWidth: .infinity)
                 .frame(minHeight: actionButtonHeight)
-                .foregroundStyle(.white)
                 .background(recordingButtonColor)
                 .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
             }
@@ -306,11 +317,12 @@ extension TrainingView {
             Button {
                 speakCurrentPrompt()
             } label: {
-                Image(systemName: "speaker.wave.2.fill")
-                    .font(.system(size: 25, weight: .bold))
+                // Cartoon-Lautsprecher statt SF `speaker.wave.2.fill`.
+                // State-Signal bleibt am Background (listeningButtonColor),
+                // das Icon selbst ist konstant farbig.
+                ElumiIconView(icon: .lautsprecher, size: 32)
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: actionButtonHeight)
-                    .foregroundStyle(.white)
                     .background(listeningButtonColor)
                     .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
             }
@@ -395,11 +407,13 @@ extension TrainingView {
                         typedAnswerFieldFocused = true
                     }
                 } label: {
-                    Image(systemName: "keyboard")
-                        .font(.system(size: 25, weight: .bold))
+                    // Cartoon-Tastatur als Modus-Öffner. Das Inline-SF
+                    // `keyboard` innerhalb der aktiven Input-Card (oben)
+                    // bleibt bewusst SF — dort ist es eine schmale
+                    // Affordance, kein primärer Action-Slot.
+                    ElumiIconView(icon: .tastatur, size: 32)
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: actionButtonHeight)
-                        .foregroundStyle(trainingActionTint)
                         .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium)
                 }
                 .buttonStyle(.plain)

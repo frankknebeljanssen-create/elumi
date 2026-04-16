@@ -63,14 +63,18 @@ extension FlashcardsView {
                             Text("Falsch 😕")
                                 .font(.system(size: 24, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
-                        } else {
+                        } else if speechController.isRecording {
                             // Bei aktiver Aufnahme das Stop-Quadrat rot
-                            // einfärben — Standard-Aufnahmeindikator.
-                            Image(systemName: recordingSymbolName)
+                            // einfärben — Standard-Aufnahmeindikator
+                            // (OS-Konvention, nicht Teil des Cartoon-Sets).
+                            Image(systemName: "stop.fill")
                                 .font(.system(size: 28, weight: .bold))
-                                .foregroundStyle(speechController.isRecording
-                                    ? AppTheme.Colors.error
-                                    : .white)
+                                .foregroundStyle(AppTheme.Colors.error)
+                        } else {
+                            // Idle: Cartoon-Mikrofon statt mic.fill. Kein
+                            // foregroundStyle — das SVG bringt seine
+                            // Farbigkeit selbst mit.
+                            ElumiIconView(icon: .mikrofon, size: 32)
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -96,19 +100,15 @@ extension FlashcardsView {
                     let isPlayingTTS = speaker.isSpeaking
                     Group {
                         if isPlayingTTS {
-                            Image(systemName: "speaker.wave.2.fill")
-                                .font(.system(size: 28, weight: .bold))
+                            ElumiIconView(icon: .lautsprecher, size: 32)
                                 .frame(maxWidth: .infinity)
                                 .frame(minHeight: actionButtonHeight)
-                                .foregroundStyle(.white)
                                 .background(AppTheme.Colors.warning)
                                 .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
                         } else {
-                            Image(systemName: "speaker.wave.2.fill")
-                                .font(.system(size: 28, weight: .bold))
+                            ElumiIconView(icon: .lautsprecher, size: 32)
                                 .frame(maxWidth: .infinity)
                                 .frame(minHeight: actionButtonHeight)
-                                .foregroundStyle(AppTheme.Colors.textPrimary)
                                 .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium)
                         }
                     }
@@ -122,11 +122,14 @@ extension FlashcardsView {
             Button {
                 showFlashcardTypedAnswerField()
             } label: {
-                Image(systemName: "keyboard")
-                    .font(.system(size: 28, weight: .bold))
+                // Cartoon-Tastatur statt SF `keyboard`. Der Active-State
+                // wird weiterhin über den Background signalisiert
+                // (sectionStyle.accent statt secondarySurface), der Icon-
+                // Look bleibt konstant — das SVG bringt eigene Farbigkeit
+                // mit und reagiert nicht auf foregroundStyle.
+                ElumiIconView(icon: .tastatur, size: 32)
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: actionButtonHeight)
-                    .foregroundStyle(interaction.showingTypedAnswerInput ? .white : AppTheme.Colors.textPrimary)
                     .background(interaction.showingTypedAnswerInput ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
                     .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
             }
