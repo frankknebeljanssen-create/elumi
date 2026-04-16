@@ -187,46 +187,67 @@ struct SessionGamificationBar: View {
     let estimate: SessionEstimate
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 0) {
             GamificationMetric(
                 icon: "sparkles",
                 value: "+\(estimate.estimatedXP)",
                 label: "XP",
                 isPrimary: true
             )
+            .frame(maxWidth: .infinity)
 
             if let minutes = estimate.estimatedMinutes {
+                metricDivider
                 GamificationMetric(
                     icon: "clock",
                     value: "~\(minutes)",
                     label: "min"
                 )
+                .frame(maxWidth: .infinity)
             }
 
             if let streakText = estimate.streakMultiplierText {
+                metricDivider
                 GamificationMetric(
                     icon: "flame.fill",
                     value: streakText,
                     label: "Bonus",
                     iconTint: Color(hex: "#FF9F40")
                 )
+                .frame(maxWidth: .infinity)
             }
 
             if let creditText = estimate.estimatedCreditsText {
+                metricDivider
                 GamificationMetric(
                     icon: "circle.hexagongrid.fill",
                     value: creditText,
                     label: "Credit",
                     iconTint: AppTheme.Colors.elumiBlue
                 )
+                .frame(maxWidth: .infinity)
             }
-
-            Spacer(minLength: 0)
         }
-        .padding(.horizontal, 4)
-        .padding(.top, 16)
-        .padding(.bottom, 4)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 11)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(AppTheme.Colors.setupCardBackground)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(AppTheme.Colors.setupCardBorder, lineWidth: 1)
+        )
         .accessibilityElement(children: .combine)
+    }
+
+    /// Dezenter vertikaler Trennstrich zwischen den Metriken.
+    /// Nicht über die volle Höhe — trennt, ohne zu zerschneiden.
+    private var metricDivider: some View {
+        Rectangle()
+            .fill(AppTheme.Colors.textSecondary.opacity(0.16))
+            .frame(width: 1, height: 26)
     }
 }
 

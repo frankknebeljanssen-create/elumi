@@ -56,9 +56,8 @@ var quizSetupScreen: some View {
         .padding(.bottom, AppTheme.Spacing.sm)
     }
     .safeAreaInset(edge: .bottom) {
-        VStack(spacing: 6) {
+        VStack(spacing: 14) {
             // Master-Session-Setup-Bar — verbindlich über dem CTA.
-            // Keine Card, kein Rahmen: kompakte horizontale Zeile.
             SessionGamificationBar(estimate: quizSessionEstimate)
 
             Button {

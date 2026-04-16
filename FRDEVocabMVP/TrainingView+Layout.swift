@@ -321,9 +321,9 @@ extension TrainingView {
             }
 
             // Master-Session-Setup-Bar — verbindlich über dem CTA.
-            // Keine Card, kein Rahmen: kompakte horizontale Zeile mit
-            // +XP · ~min · 🔥 Streak-Multi · Credit-Preview.
+            // Dezente Card + Divider-Metriken, 14pt Abstand zum CTA.
             SessionGamificationBar(estimate: trainingSessionEstimate)
+                .padding(.bottom, 6)
 
             Text("Los geht's!")
                 .font(AppTheme.Typography.button)

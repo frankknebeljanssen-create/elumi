@@ -188,6 +188,11 @@ extension FlashcardsView {
 
     var flashcardSetupScreen: some View {
         ScrollViewReader { proxy in
+            // Opaker Screen-Fill — verhindert, dass während des Navigation-
+            // Push-Transition die Home-View durchscheint („Was möchtest
+            // du üben?" wurde sichtbar, weil die ScrollView keinen eigenen
+            // Hintergrund hatte und das appScreenBackground des äußeren
+            // Chrome-Wrappers erst nach dem Layout greift).
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
                     // Kompakter Header analog zum Session-Screen — kleiner
@@ -219,9 +224,10 @@ extension FlashcardsView {
             }
             .scrollDismissesKeyboard(.interactively)
             .safeAreaInset(edge: .bottom) {
-                VStack(spacing: 6) {
+                VStack(spacing: 14) {
                     // Master-Session-Setup-Bar — verbindlich über dem CTA.
                     SessionGamificationBar(estimate: flashcardsSessionEstimate)
+                        .padding(.horizontal, AppLayout.screenPadding)
 
                     Button {
                         startFlashcardsFromSetup(autoplayPrompt: true)
@@ -248,6 +254,7 @@ extension FlashcardsView {
         .padding(.bottom, AppLayout.screenPadding)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(AppTheme.Colors.surface.ignoresSafeArea())
         .sheet(isPresented: $setup.showingStackComposer) {
             FlashcardStackComposerSheet(
                 style: sectionStyle,
