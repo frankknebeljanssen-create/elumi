@@ -127,7 +127,16 @@ final class ProgressService {
             store.mutate { p in p.arcadeCredits += creditsFromLevelUp }
         }
 
-        // 4) Daily Challenge fortschreiben. Wenn dadurch das Tagesziel
+        // 4) Home-Status „Heute" fortschreiben — Anzahl der Aktionen
+        //    (richtig + falsch, also alles was der User wirklich bearbeitet
+        //    hat). Der Store ist feedback-only, kein Zielsystem; er
+        //    ersetzt visuell die alte „Dein Fokus heute"-Card auf Home.
+        //    Einziger Schreib-Pfad, damit keine Zähler-Drift zwischen
+        //    Modulen entstehen kann.
+        let sessionActions = session.correctCount + session.wrongCount
+        DailyStatsStore.shared.recordSession(actionsCount: sessionActions)
+
+        // 5) Daily Challenge fortschreiben. Wenn dadurch das Tagesziel
         //    erreicht wurde, bekommen wir Reward-XP + Credit zurück und
         //    der Streak wird (einmal pro Tag) vom Store hochgezogen.
         let dailyOutcome = DailyChallengeStore.shared.recordSession(session)
@@ -136,7 +145,7 @@ final class ProgressService {
         let creditsFromStreakMilestone = dailyOutcome?.creditsFromStreakMilestone ?? 0
         let streakIncreasedToday = dailyOutcome?.streakAdvanced ?? false
 
-        // 5) Variable Reward rollen (Phase 7). Seltenes Glücksmoment,
+        // 6) Variable Reward rollen (Phase 7). Seltenes Glücksmoment,
         //    Wahrscheinlichkeiten zentral in `VariableRewardEngine`.
         //    Bonus-XP und -Credits werden **zusätzlich** auf den Store
         //    gebucht, damit sie sofort wirksam sind.

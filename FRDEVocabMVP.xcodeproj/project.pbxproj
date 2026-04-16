@@ -414,6 +414,8 @@
 		A5E02C81EAD95B48BD32C1C4 /* HomeHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FEDD84AF0BD7AE57209A819 /* HomeHeader.swift */; };
 		9B14BFA58530E8E1A5226DA7 /* HomeContinueSessionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B52D4534719D39C429A3514 /* HomeContinueSessionCard.swift */; };
 		F430601DADA83D05822596D0 /* HomeDailyFocusCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7E48C7D56DE47BA8A612FB2 /* HomeDailyFocusCard.swift */; };
+		A1B2C3D4E5F60708090A0B01 /* HomeStatusCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0B02 /* HomeStatusCard.swift */; };
+		A1B2C3D4E5F60708090A0C01 /* DailyStatsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */; };
 		4C49B8DF9320038C9966EF64 /* HomeProgressBoardCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE477CD1315E437F15BA91BD /* HomeProgressBoardCard.swift */; };
 		21539C42B3F8DFAF90B3E180 /* HomeModuleIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4908A2A5A962323D3A36B07 /* HomeModuleIcon.swift */; };
 		D8F531550E0A4DF7B96CC21C /* SessionSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */; };
@@ -845,6 +847,8 @@
 		6FEDD84AF0BD7AE57209A819 /* HomeHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeHeader.swift; path = FRDEVocabMVP/HomeHeader.swift; sourceTree = "<group>"; };
 		3B52D4534719D39C429A3514 /* HomeContinueSessionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeContinueSessionCard.swift; path = FRDEVocabMVP/HomeContinueSessionCard.swift; sourceTree = "<group>"; };
 		D7E48C7D56DE47BA8A612FB2 /* HomeDailyFocusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeDailyFocusCard.swift; path = FRDEVocabMVP/HomeDailyFocusCard.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0B02 /* HomeStatusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeStatusCard.swift; path = FRDEVocabMVP/HomeStatusCard.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyStatsStore.swift; path = FRDEVocabMVP/DailyStatsStore.swift; sourceTree = "<group>"; };
 		DE477CD1315E437F15BA91BD /* HomeProgressBoardCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeProgressBoardCard.swift; path = FRDEVocabMVP/HomeProgressBoardCard.swift; sourceTree = "<group>"; };
 		C4908A2A5A962323D3A36B07 /* HomeModuleIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeModuleIcon.swift; path = FRDEVocabMVP/HomeModuleIcon.swift; sourceTree = "<group>"; };
 		47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupScreen.swift; path = FRDEVocabMVP/SessionSetupScreen.swift; sourceTree = "<group>"; };
@@ -887,6 +891,8 @@
 				6FEDD84AF0BD7AE57209A819 /* HomeHeader.swift */,
 				3B52D4534719D39C429A3514 /* HomeContinueSessionCard.swift */,
 				D7E48C7D56DE47BA8A612FB2 /* HomeDailyFocusCard.swift */,
+				A1B2C3D4E5F60708090A0B02 /* HomeStatusCard.swift */,
+				A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */,
 				DE477CD1315E437F15BA91BD /* HomeProgressBoardCard.swift */,
 				C4908A2A5A962323D3A36B07 /* HomeModuleIcon.swift */,
 				47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */,
@@ -1666,6 +1672,8 @@ F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */,
 				A5E02C81EAD95B48BD32C1C4 /* HomeHeader.swift in Sources */,
 				9B14BFA58530E8E1A5226DA7 /* HomeContinueSessionCard.swift in Sources */,
 				F430601DADA83D05822596D0 /* HomeDailyFocusCard.swift in Sources */,
+				A1B2C3D4E5F60708090A0B01 /* HomeStatusCard.swift in Sources */,
+				A1B2C3D4E5F60708090A0C01 /* DailyStatsStore.swift in Sources */,
 				4C49B8DF9320038C9966EF64 /* HomeProgressBoardCard.swift in Sources */,
 				21539C42B3F8DFAF90B3E180 /* HomeModuleIcon.swift in Sources */,
 				D8F531550E0A4DF7B96CC21C /* SessionSetupScreen.swift in Sources */,

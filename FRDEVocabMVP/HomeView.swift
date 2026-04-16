@@ -3,12 +3,14 @@ import SwiftUI
 
 /// Neu strukturierter Home-Screen (Home-Redesign).
 ///
-/// Der Screen besteht aus fünf klaren Sektionen — in dieser Reihenfolge:
+/// Der Screen besteht aus vier klaren Sektionen — in dieser Reihenfolge:
 ///   1. Header (Begrüßung + Hauptfrage + Maskottchen)
-///   2. Progress Board (Streak · Level/Progress · XP · Credits · Ziel-Hinweis)
-///   3. Dein Fokus heute (genau **eine** Tagesaufgabe)
-///   4. Weiterlernen / Letzte Session fortsetzen
-///   5. Modul-Grid (7 Lernmodule) + schwache Organisations-Zeile (Listen)
+///   2. Status-Card „Heute" (Feedback: Anzahl Aktionen, **kein** Ziel) —
+///      wird bei aktiver „Weiterlernen"-Session durch die Continue-Card
+///      ersetzt (Merge, nie beide parallel)
+///   3. Progress Board (Streak · Level/Progress · XP · Ziel-Hinweis)
+///   4. Modul-Pager (8 Lernmodule, 2 Seiten) — die Organisations-Kacheln
+///      (Listen, Lexikon) liegen auf Seite 2 neben den Lernmodulen
 ///
 /// Die drei oberen Komponenten (Progress / Fokus / Weiterlernen) sind
 /// eigenständige Views mit dedizierten Datenmodellen — die HomeView baut
@@ -44,6 +46,9 @@ struct HomeView: View {
     @ObservedObject private var progressStore = ProgressStore.shared
     @ObservedObject private var profileStore = ProfileStore.shared
     @ObservedObject private var dailyChallengeStore = DailyChallengeStore.shared
+    /// Feedback-Quelle für die Status-Card „Heute" — zählt Aktionen des
+    /// aktuellen Tages, ohne ein Tagesziel vorzugeben.
+    @ObservedObject private var dailyStatsStore = DailyStatsStore.shared
 
     // MARK: - Layout helpers
 
@@ -117,64 +122,25 @@ struct HomeView: View {
         return "Noch \(remaining) XP bis \(next.title)"
     }
 
-    // MARK: - Daily Focus mapping
+    // MARK: - Status-Card „Heute" mapping
     //
-    // Bis die Content-Logik das Fokus-System eigenständig bestimmt, leiten
-    // wir die Card direkt aus dem `DailyChallengeStore` ab — exakt eine
-    // Aufgabe, drei klare Zustände.
+    // Die frühere „Dein Fokus heute"-Card (Tagesaufgabe/Ziel-System) ist
+    // bewusst ersetzt worden — die Home-Priorität ist „User wählt selbst",
+    // nicht „System gibt Aufgabe vor". Statt eines Ziels zeigt die
+    // Status-Card, **was heute passiert ist**: Anzahl der absolvierten
+    // Aktionen + optional „+X seit letzter Session".
+    //
+    // Quelle: `DailyStatsStore` (zählt zentral in `ProgressService.record`).
+    // Der `DailyChallengeStore` bleibt bestehen — Rewards und Streak-
+    // Advance hängen weiterhin an der Challenge-Logik, werden aber nicht
+    // mehr als Home-Card dargestellt.
 
-    private var dailyFocusData: HomeDailyFocusData {
-        guard let challenge = dailyChallengeStore.challenge else {
-            return HomeDailyFocusData(
-                title: "Tagesaufgabe wird vorbereitet …",
-                subtitle: "Gleich steht dein Fokus für heute.",
-                progressText: nil,
-                iconSystemName: "sparkles",
-                accent: AppTheme.Colors.cta,
-                state: .open
-            )
-        }
-        switch challenge.status {
-        case .open:
-            return HomeDailyFocusData(
-                title: challenge.type.title,
-                subtitle: "Halte deinen Streak am Leben.",
-                progressText: nil,
-                iconSystemName: challenge.type.systemImage,
-                accent: AppTheme.Colors.cta,
-                state: .open
-            )
-        case .inProgress:
-            return HomeDailyFocusData(
-                title: challenge.type.title,
-                subtitle: "Halte deinen Streak am Leben.",
-                progressText: "\(challenge.currentProgress)/\(challenge.target)",
-                iconSystemName: challenge.type.systemImage,
-                accent: AppTheme.Colors.cta,
-                state: .inProgress
-            )
-        case .done:
-            return HomeDailyFocusData(
-                title: "Tagesziel erreicht",
-                subtitle: "Streak gesichert — gönn dir eine Bonusrunde.",
-                progressText: nil,
-                iconSystemName: "checkmark.seal.fill",
-                accent: AppTheme.Colors.success,
-                state: .done
-            )
-        }
-    }
-
-    /// Ziel für den Fokus-Tap. Offene/laufende Challenges führen zum
-    /// Haupt-Learning-Flow (Quiz = Default, weil jede Challenge-Variante
-    /// dort Progress macht), erfülltes Ziel öffnet den Progress-Hub.
-    private var dailyFocusTargetScreen: AppScreen {
-        guard let challenge = dailyChallengeStore.challenge else { return .quiz(nil) }
-        switch challenge.status {
-        case .open, .inProgress: return .quiz(nil)
-        case .done:              return .hearts
-        }
-    }
+    /// Tap-Ziel der Status-Card: der Quiz-Flow ist der sinnvollste Default-
+    /// Entry, weil jedes Modul-Setup ohnehin 1 Tap vom Home entfernt liegt
+    /// und Quiz die breiteste Action-Klasse erzeugt. Bewusst **keine**
+    /// harte Steuerung — der User kann Home jederzeit ignorieren und ein
+    /// anderes Modul aus dem Pager wählen.
+    private var statusCardTargetScreen: AppScreen { .quiz(nil) }
 
     // MARK: - Continue-Session mapping
     //
@@ -208,8 +174,15 @@ struct HomeView: View {
                 continueSession()
             }
         } else {
-            HomeDailyFocusCard(data: dailyFocusData) {
-                openHomeScreen(dailyFocusTargetScreen)
+            // Status-Card „Heute" (Feedback) statt der alten Fokus-Card
+            // (Ziel). Aktionen werden aus dem `DailyStatsStore` gezogen —
+            // Rollover passiert automatisch um 6 Uhr (konsistent zu
+            // Streak + DailyChallenge).
+            HomeStatusCard(
+                actionsToday: dailyStatsStore.actionsToday,
+                actionsSinceLastSession: dailyStatsStore.lastSessionDelta
+            ) {
+                openHomeScreen(statusCardTargetScreen)
             }
         }
     }
