@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct ElumiFooterFeastButton: View {
+    @Environment(\.appOpenGameHubAction) private var openGameHub
     @ObservedObject var feedbackPlayer: FeedbackPlayer
     @AppStorage(appArcadeCreditsKey) private var arcadeCredits = 0
-    @State private var showingArcadeGame = false
     @State private var activeSnackKind: ElumiSnackKind?
     @State private var snackFlightProgress: CGFloat = 0
     @State private var isMouthOpen = false
@@ -16,14 +16,11 @@ struct ElumiFooterFeastButton: View {
 
     var body: some View {
         Button {
-            // Instant-Switch ohne Slide-from-bottom — matcht die
-            // Navigation-Stack-Animationen, die in `AppNavigationCoordinator`
-            // ebenfalls deaktiviert sind.
-            var transaction = Transaction(animation: nil)
-            transaction.disablesAnimations = true
-            withTransaction(transaction) {
-                showingArcadeGame = true
-            }
+            // Navigation über Game Hub — Footer bleibt sichtbar,
+            // User kann bei Fehltap direkt zum nächsten Footer-Button.
+            // Das Start-Overlay der Arcade entfällt für diesen Einstieg;
+            // der „Spiel starten"-CTA lebt jetzt ausschließlich im Game Hub.
+            openGameHub?()
         } label: {
             ZStack {
                 if let activeSnackKind {
@@ -78,9 +75,6 @@ struct ElumiFooterFeastButton: View {
             .accessibilityLabel(Text("Elumi"))
         }
         .buttonStyle(.plain)
-        .fullScreenCover(isPresented: $showingArcadeGame) {
-            ElumiArcadeGameView(feedbackPlayer: feedbackPlayer)
-        }
     }
 
     private var snackOpacity: Double {

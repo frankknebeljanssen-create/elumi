@@ -145,6 +145,9 @@ struct ContentView: View {
                 .environment(\.appOpenScanAction, {
                     openScanScreen()
                 })
+                .environment(\.appOpenGameHubAction, {
+                    openGameHubScreen()
+                })
                 .environment(\.appUsesGlobalChrome, navigation.shouldShowGlobalChrome)
                 } // ← schließt Onboarding-Gate-else (NavigationStack-Branch)
             } else {

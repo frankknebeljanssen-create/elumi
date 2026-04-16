@@ -23,6 +23,13 @@ private struct AppOpenScanActionKey: EnvironmentKey {
     static let defaultValue: (() -> Void)? = nil
 }
 
+/// Zentrale Aktion, um den Game Hub zu öffnen — wird vom Elumi-Footer-
+/// Mascot-Button gerufen, damit dieser nicht mehr direkt in die Arcade
+/// springt, sondern über den Game Hub (mit sichtbarem Footer) einsteigt.
+private struct AppOpenGameHubActionKey: EnvironmentKey {
+    static let defaultValue: (() -> Void)? = nil
+}
+
 private struct AppUsesGlobalChromeKey: EnvironmentKey {
     static let defaultValue = false
 }
@@ -36,6 +43,11 @@ extension EnvironmentValues {
     var appOpenScanAction: (() -> Void)? {
         get { self[AppOpenScanActionKey.self] }
         set { self[AppOpenScanActionKey.self] = newValue }
+    }
+
+    var appOpenGameHubAction: (() -> Void)? {
+        get { self[AppOpenGameHubActionKey.self] }
+        set { self[AppOpenGameHubActionKey.self] = newValue }
     }
 
     var appUsesGlobalChrome: Bool {
