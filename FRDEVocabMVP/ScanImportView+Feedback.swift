@@ -30,9 +30,9 @@ extension ScanImportView {
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity)
         .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(
                     (scanToastIsWarning ? AppTheme.Colors.warning : AppTheme.Colors.success).opacity(0.25),
                     lineWidth: 1

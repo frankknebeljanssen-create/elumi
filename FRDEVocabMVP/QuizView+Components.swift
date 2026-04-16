@@ -24,21 +24,10 @@ var quizResultHero: some View {
 
 var quizSetupScreen: some View {
     ScrollView(showsIndicators: false) {
-        VStack(alignment: .leading, spacing: 8) {
-            ScreenHeaderCard(
-                style: sectionStyle,
-                title: "Quiz",
-                subtitle: "",
-                systemImage: "lightbulb.fill"
-            )
-
-            Button {
-                handleBackNavigation()
-            } label: {
-                Label("Zurück", systemImage: "arrow.left")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            // Kompakter Header analog zum Karteikarten-Setup —
+            // kleiner „< Zurück" links + zentrierter „Quiz"-Titel.
+            quizSetupHeader
 
             ListCategoryPickerView(
                 availableLists: availableQuizLists,
@@ -47,39 +36,19 @@ var quizSetupScreen: some View {
                 style: sectionStyle,
                 feedbackPlayer: feedbackPlayer,
                 summaryText: quizListSummary,
+                // Gleicher Listen-Label wie Training/Verbformen — so wirkt
+                // die Ausgewählte-Listen-Card über alle Module einheitlich
+                // („X Einträge" statt das Quiz-Default „X Karten").
+                itemLabel: "Einträge",
                 onSelectionChanged: { session.selectedListIDs = $0 }
             )
-            .padding(.bottom, AppTheme.Spacing.sm)
 
-            // Direction is set on Home screen
-
-            AppSurfaceCard(tint: sectionStyle.accent) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Fragen")
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-
-                    let options = QuizQuestionCountOption.allCases
-                    let rows = stride(from: 0, to: options.count, by: 2).map {
-                        Array(options[($0)..<min($0 + 2, options.count)])
-                    }
-                    VStack(spacing: 8) {
-                        ForEach(rows, id: \.first) { row in
-                            HStack(spacing: 8) {
-                                ForEach(row) { option in
-                                    quizCountButton(option)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            .padding(.horizontal, quizSetupCardInset)
+            quizQuestionCountCard
 
             if !canStartQuiz {
                 Text("Wähle mindestens eine Liste mit zwei Einträgen.")
                     .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .foregroundStyle(AppTheme.Colors.elumiBlue)
                     .padding(.horizontal, quizSetupCardInset)
             }
         }
@@ -87,17 +56,22 @@ var quizSetupScreen: some View {
         .padding(.bottom, AppTheme.Spacing.sm)
     }
     .safeAreaInset(edge: .bottom) {
-        Button {
-            startQuiz()
-        } label: {
-            Text(session.isPreparingQuiz ? "Quiz wird gestartet..." : "Quiz starten")
-                .frame(maxWidth: .infinity)
+        VStack(spacing: 6) {
+            // Master-Session-Setup-Bar — verbindlich über dem CTA.
+            // Keine Card, kein Rahmen: kompakte horizontale Zeile.
+            SessionGamificationBar(estimate: quizSessionEstimate)
+
+            Button {
+                startQuiz()
+            } label: {
+                Text(session.isPreparingQuiz ? "Quiz wird gestartet..." : "Quiz starten")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(AppPrimaryButtonStyle(color: canStartQuiz && !session.isPreparingQuiz ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled))
+            .disabled(!canStartQuiz || session.isPreparingQuiz)
+            .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 4)
         }
-        .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-        .disabled(!canStartQuiz || session.isPreparingQuiz)
-        .opacity(canStartQuiz && !session.isPreparingQuiz ? 1 : 0.55)
-        .padding(.horizontal, quizSetupCardInset)
-        .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 16)
+        .padding(.horizontal, AppLayout.screenPadding)
     }
     .padding(.horizontal, AppLayout.screenPadding)
     .padding(.top, AppLayout.contentTopPadding)
@@ -154,39 +128,97 @@ var quizDirectionCard: some View {
     .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
 }
 
+/// Kompakter Header für den Quiz-Setup-Screen — analog zum Karteikarten-Setup.
+/// Kleiner „< Zurück" links, zentrierter „Quiz"-Titel.
+var quizSetupHeader: some View {
+    ZStack {
+        Text("Quiz")
+            .font(.system(size: 28, weight: .black, design: .rounded))
+            .foregroundStyle(AppTheme.Colors.textPrimary)
+            .frame(maxWidth: .infinity, alignment: .center)
+
+        HStack {
+            Button {
+                handleBackNavigation()
+            } label: {
+                HStack(spacing: 2) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .semibold))
+                    Text("Zurück")
+                        .font(.system(size: 16, weight: .semibold))
+                }
+                .foregroundStyle(sectionStyle.accent)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
+        }
+    }
+    .padding(.horizontal, quizSetupCardInset)
+    .padding(.top, 4)
+    .padding(.bottom, 6)
+}
+
+/// „Anzahl Fragen" Card im neuen Setup-Stil. Header über `setupCardLabel`,
+/// Setup-Card-Hintergrund (#0F2D48 + Border), Buttons im Mastery-Look.
+var quizQuestionCountCard: some View {
+    VStack(alignment: .leading, spacing: 10) {
+        setupCardLabel("Anzahl Fragen")
+
+        let options = QuizQuestionCountOption.allCases
+        let rows = stride(from: 0, to: options.count, by: 2).map {
+            Array(options[($0)..<min($0 + 2, options.count)])
+        }
+        VStack(spacing: 6) {
+            ForEach(rows, id: \.first) { row in
+                HStack(spacing: 6) {
+                    ForEach(row) { option in
+                        quizCountButton(option)
+                    }
+                }
+            }
+        }
+    }
+    .frame(maxWidth: .infinity)
+    .padding(.horizontal, 18)
+    .padding(.vertical, 12)
+    .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
+}
+
 func quizCountButton(_ option: QuizQuestionCountOption) -> some View {
-    Button {
+    let isSelected = session.questionCountOption == option
+    return Button {
         withAnimation(.easeInOut(duration: 0.12)) {
             session.questionCountOption = option
         }
     } label: {
         Text(option.title)
             .font(.system(size: 18, weight: .bold, design: .rounded))
-            .foregroundStyle(session.questionCountOption == option ? .white : AppTheme.Colors.textPrimary)
+            .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
-            .frame(minHeight: 44)
-            .background(session.questionCountOption == option ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
-            .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
+            .frame(minHeight: 50)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(isSelected ? Color(hex: "#1A3A55") : Color(hex: "#1A2A40"))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(
+                        isSelected ? AppTheme.Colors.elumiBlue : Color(hex: "#243B55"),
+                        lineWidth: isSelected ? 1.5 : 1
+                    )
+            )
     }
     .buttonStyle(.plain)
 }
 
 var quizSessionScreen: some View {
     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-        ScreenHeaderCard(
-            style: sectionStyle,
-            title: "Quiz",
-            subtitle: "",
-            systemImage: "lightbulb.fill"
-        )
-
-        Button {
-            handleBackNavigation()
-        } label: {
-            Label("Zurück", systemImage: "arrow.left")
-                .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))
+        // Kompakter Header analog Karteikarten — kleiner „< Zurück" links,
+        // „Quiz"-Titel mittig. Zurück führt zur Setup-Card (handleBackNavigation),
+        // nicht raus zu Home. ScreenHeaderCard + großer Zurück-Button raus.
+        quizSetupHeader
 
         AppSurfaceCard(tint: sectionStyle.accent) {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
@@ -271,6 +303,9 @@ var quizResultScreen: some View {
 
                 }
 
+                // Richtig / Falsch als kompakte Stats-Zeile. XP wandert
+                // komplett in die `SessionSummaryView` darunter, damit beide
+                // Systeme nicht parallel dieselbe Zahl zeigen.
                 HStack(spacing: AppTheme.Spacing.sm) {
                     resultStatCard(
                         title: "Richtig",
@@ -281,11 +316,6 @@ var quizResultScreen: some View {
                         title: "Falsch",
                         value: "\(wrongCount)",
                         tint: AppTheme.Colors.warning
-                    )
-                    resultStatCard(
-                        title: "XP",
-                        value: "\(awardedXP)",
-                        tint: sectionStyle.accent
                     )
                 }
 
@@ -311,6 +341,14 @@ var quizResultScreen: some View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, AppTheme.Spacing.md)
         }
+
+        // Zentrale Session-Summary — gleiche Card wie Karteikarten/Training/
+        // Verbformen. Zeigt XP-Aufschlüsselung, Credits, Streak, Level-Progress.
+        // Die Elumi-Rewards oben bleiben als Quiz-spezifischer Celebration-Teil.
+        SessionSummaryView(
+            outcome: quizSessionOutcome ?? .empty,
+            progress: progressStore.progress
+        )
 
         if wrongCount > 0 {
             Button {

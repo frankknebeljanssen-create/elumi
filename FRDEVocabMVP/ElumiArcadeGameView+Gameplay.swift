@@ -186,6 +186,30 @@ extension ElumiArcadeGameView {
         }
     }
 
+    /// Sauberer Totalausstieg ohne Game-Over-Sound — genutzt beim X-Button
+    /// oder falls der Cover auf anderem Weg dismissed wird. Beendet ALLE
+    /// laufenden Sounds (BGM, Loops, Ambient) und den aktiven Spielzustand,
+    /// damit nach dem Verlassen sofort Stille herrscht.
+    func exitArcadeSilently() {
+        isPlaying = false
+        isGameOver = true
+        // Alle laufenden/Loop-Sounds stoppen
+        feedbackPlayer.sp.stop("saugloop")
+        feedbackPlayer.sp.stop("bgm_fischfang")
+        feedbackPlayer.stopBGM()
+        feedbackPlayer.stopJellyfishAmbient()
+        feedbackPlayer.stopAllFeedback()
+        // Power-Up / Spielzustand zurücksetzen
+        suctionEndsAt = nil
+        bonusPointsEndsAt = nil
+        slowMotionEndsAt = nil
+        activeSnacks = []
+        activeJellyfish = nil
+        activeTentacles = []
+        activeFish = []
+        elumiVisible = false
+    }
+
     func triggerFriendEaten() {
         triggerScreenShake()
         misses += 1

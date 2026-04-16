@@ -44,6 +44,14 @@ enum AppTheme {
         static let elumiMint = Color(hex: "#2EC4A9")
         static let elumiAmber = Color(hex: "#FFD166")
         static let elumiAmberDeep = Color(hex: "#B8832F")
+        // Sekundäre Akzent-Familie: weder Pink noch Amber. Genutzt für Links,
+        // Info-Texte (Subtitles wie „1 Liste · 60 Karten gesamt") und allgemein
+        // sekundäre Akzente. Hellblau, freundlich, klar erkennbar.
+        static let elumiBlue = Color(hex: "#5B9CF5")
+        // Setup-Card-Hintergrund + Border — etwas heller als die globale
+        // Surface, damit Cards auf dem Setup-Screen optisch abgesetzt sind.
+        static let setupCardBackground = Color(hex: "#0F2D48")
+        static let setupCardBorder = Color(hex: "#1A3A55")
 
         static let primary = elumiPinkDeep
         static let background = elumiMidnight
@@ -56,7 +64,13 @@ enum AppTheme {
 
         static let success = elumiMint
         static let error = elumiPinkDeep
-        static let cta = elumiAmberDeep
+        // Heller, sonniger Amber für alle CTAs und Card-Header — bessere
+        // Sichtbarkeit auf den blau-tönigen Card-Hintergründen. Schwarze
+        // Schrift auf CTA-Buttons (siehe `AppPrimaryButtonStyle`).
+        static let cta = elumiAmber
+        // Card-Section-Header (z. B. „Ausgewählte Listen", „Anzahl der
+        // Karten") nutzen denselben Ton — Single Source of Truth.
+        static let cardLabel = elumiAmber
         static let warning = elumiAmberDeep
 
         // ── Single Source of Truth: Modul-Farben ──
@@ -113,10 +127,13 @@ enum AppTheme {
     }
 
     enum Radius {
-        static let sm: CGFloat = 12
-        static let md: CGFloat = 16
-        static let lg: CGFloat = 20
-        static let xl: CGFloat = 24
+        // Systemweit reduziert: Cards 14pt, kleine Elemente (Chips, Badges,
+        // Buttons in Listen) 10pt. Größere visuelle Konsistenz und ein
+        // ruhigeres, weniger verspieltes Erscheinungsbild.
+        static let sm: CGFloat = 10
+        static let md: CGFloat = 14
+        static let lg: CGFloat = 14
+        static let xl: CGFloat = 18
         static let pill: CGFloat = 999
     }
 

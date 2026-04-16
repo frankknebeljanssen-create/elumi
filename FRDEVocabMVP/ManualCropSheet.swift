@@ -44,7 +44,7 @@ struct ManualCropSheet: View {
                         .mask(
                             Rectangle()
                                 .overlay(alignment: .topLeading) {
-                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                                         .frame(width: cropRect.width, height: cropRect.height)
                                         .offset(x: cropRect.minX, y: cropRect.minY)
                                         .blendMode(.destinationOut)
@@ -54,7 +54,7 @@ struct ManualCropSheet: View {
                         )
                         .allowsHitTesting(false)
 
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .stroke(accent, lineWidth: 3)
                         .frame(width: cropRect.width, height: cropRect.height)
                         .position(x: cropRect.midX, y: cropRect.midY)

@@ -2,14 +2,20 @@ import SwiftUI
 
 extension QuizView {
     var quizRootContent: some View {
-        Group {
-            if session.isShowingResult {
-                quizResultScreen
-            } else if session.questions.isEmpty {
-                quizSetupScreen
-            } else {
-                quizSessionScreen
+        ZStack(alignment: .top) {
+            Group {
+                if session.isShowingResult {
+                    quizResultScreen
+                } else if session.questions.isEmpty {
+                    quizSetupScreen
+                } else {
+                    quizSessionScreen
+                }
             }
+
+            // Combo-Toast-Overlay — zeigt bei 5/10/15/... richtigen Antworten
+            // in Folge einen kurzen Bonus-Hinweis. Blockiert keine Eingaben.
+            ComboToastOverlay()
         }
     }
 

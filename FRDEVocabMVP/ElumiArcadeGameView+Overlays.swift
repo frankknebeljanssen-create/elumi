@@ -91,137 +91,241 @@ private struct TrapezoidShape: Shape {
 }
 
 extension ElumiArcadeGameView {
+    // Phase 4 – Game Screen Start-Overlay (Redesign):
+    // Hierarchie klar: Credit-Status ist Hero → CTA ist Haupt-Aktion →
+    // Regeln sind einklappbar und nehmen keine visuelle Priorität mehr.
+    // Die Verbindung Lernen → Credits → Spiel wird explizit im Hero-Card
+    // und (wenn leer) im Empty-State kommuniziert.
     var startOverlay: some View {
         ZStack {
-            Color.black.opacity(0.28)
+            Color.black.opacity(0.32)
                 .ignoresSafeArea()
                 .allowsHitTesting(false)
 
-            VStack(spacing: 14) {
-                ElumiArcadeCharacter(
-                    mouthOpen: false,
-                    scale: 1.04,
-                    rotation: 0,
-                    sparkleBurst: true
-                )
-                .frame(width: 64, height: 64)
+            // Vertikale Zentrierung: ScrollView sitzt in einem VStack mit
+            // flexiblen Spacern — so bleibt das Card vertikal in der Mitte,
+            // selbst wenn die Regeln ausgeklappt werden. Bei sehr kleinen
+            // Geräten kann der User trotzdem scrollen, falls nötig.
+            GeometryReader { geo in
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 0)
 
-                Text("Elumi Spiel")
-                    .font(.system(size: 30, weight: .black, design: .rounded))
+                        VStack(spacing: 16) {
+                            ElumiArcadeCharacter(
+                                mouthOpen: false,
+                                scale: 1.04,
+                                rotation: 0,
+                                sparkleBurst: true
+                            )
+                            .frame(width: 64, height: 64)
+
+                            Text("Elumi Spiel")
+                                .font(.system(size: 28, weight: .black, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.textPrimary)
+
+                            startCreditHeroCard
+
+                            startCTASection
+
+                            startRulesDisclosure
+                        }
+                        .padding(.horizontal, 22)
+                        .padding(.vertical, 24)
+                        .frame(maxWidth: 340)
+                        .background(AppTheme.Colors.surface.opacity(0.96))
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .stroke(AppTheme.Colors.cta.opacity(0.22), lineWidth: 1)
+                        )
+                        .shadow(color: .black.opacity(0.28), radius: 22, x: 0, y: 12)
+                        .padding(.horizontal, 24)
+
+                        Spacer(minLength: 0)
+                    }
+                    .frame(minHeight: geo.size.height)
+                }
+            }
+        }
+        .transition(.opacity)
+    }
+
+    /// Credit-Hero: großer Credit-Wert + Verbindung zum Lernsystem.
+    /// Icon bewusst `circle.hexagongrid.fill` (gleiche Sprache wie in der
+    /// Home-Balanced-Bar), damit der User „Credits" über alle Screens
+    /// mit demselben Symbol wiedererkennt.
+    var startCreditHeroCard: some View {
+        let hasCredits = arcadeCredits >= ArcadeCreditSystem.gamesCost
+        return VStack(spacing: 10) {
+            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                Image(systemName: "circle.hexagongrid.fill")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(hasCredits ? AppTheme.Colors.cta : AppTheme.Colors.textSecondary)
+
+                Text("\(arcadeCredits)")
+                    .font(.system(size: 34, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .monospacedDigit()
 
-                VStack(alignment: .leading, spacing: 9) {
-                    // Zeile 1: Zieh Elumi + 3 Snack-Icons
-                    HStack(spacing: 8) {
-                        Text("Zieh Elumi zum Futter")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textPrimary)
-                        ElumiSnackIcon(.wuermchen, size: 18)
-                        ElumiSnackIcon(.wasserfloh, size: 20)
-                        ElumiSnackIcon(.algenkugel, size: 18)
-                    }
+                Text(arcadeCredits == 1 ? "Credit" : "Credits")
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
 
-                    // Zeile 2: 4 Leben + 4 Mini-Elumi
-                    HStack(spacing: 6) {
-                        Text("4 Leben")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textPrimary)
-                        ForEach(0..<4, id: \.self) { _ in
-                            ArcadeElumiAvatar(size: 18, withShadow: false)
-                        }
-                    }
+            HStack(spacing: 6) {
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                Text(hasCredits
+                    ? "1 Runde kostet \(ArcadeCreditSystem.gamesCost) Credit"
+                    : "Lernen bringt Credits — dann spielen")
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(AppTheme.Colors.secondarySurface)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(
+                    (hasCredits ? AppTheme.Colors.cta : AppTheme.Colors.border).opacity(hasCredits ? 0.35 : 1),
+                    lineWidth: 1
+                )
+        )
+    }
 
-                    Text("Verpasstes Futter = −1 Leben")
-                        .font(.system(size: 14, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-
-                    // Elumi-Freund + Text
+    /// CTA-Sektion: Haupt-Button „Spiel starten" (hat Credits) oder
+    /// „Lernen starten" (keine Credits → führt zurück zum Home).
+    var startCTASection: some View {
+        let hasCredits = arcadeCredits >= ArcadeCreditSystem.gamesCost
+        return VStack(spacing: 0) {
+            if hasCredits {
+                Button {
+                    arcadeCredits -= ArcadeCreditSystem.gamesCost
+                    startGame()
+                } label: {
                     HStack(spacing: 10) {
-                        ArcadeHazardElumiAvatar(size: 24)
-                        Text("Elumi-Freund fressen = −1 Leben")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.cyan)
-                    }
-
-                    Text("Bonus-Runde Fische fangen = +1 Extra Leben")
-                        .font(.system(size: 14, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-
-                    // Saugglocke (echtes Icon)
-                    HStack(spacing: 10) {
-                        ArcadeSuctionIconStandalone(size: 26)
-                        Text("Saugglocke: zieht Snacks heran")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textPrimary)
-                    }
-
-                    // Zeitlupe-Trank (echtes Icon)
-                    HStack(spacing: 10) {
-                        ArcadeSlowMotionIconStandalone(size: 26)
-                        Text("Zeitlupe-Trank: alles in Slow-Motion (5 Sek.)")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textPrimary)
-                    }
-                }
-                .padding(.horizontal, 4)
-
-                HStack(spacing: 6) {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(AppTheme.Colors.warning)
-                    Text("\(arcadeCredits) Credit\(arcadeCredits == 1 ? "" : "s")")
-                        .font(.system(size: 16, weight: .black, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.warning)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(AppTheme.Colors.warning.opacity(0.14))
-                .clipShape(Capsule())
-
-                if arcadeCredits >= ArcadeCreditSystem.gamesCost {
-                    Button {
-                        arcadeCredits -= ArcadeCreditSystem.gamesCost
-                        startGame()
-                    } label: {
-                        HStack(spacing: 10) {
-                            Image(systemName: "play.fill")
-                                .font(.system(size: 16, weight: .bold))
-                            Text("Los geht's!")
-                                .font(AppTheme.Typography.button)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 52)
-                    }
-                    .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-                } else {
-                    VStack(spacing: 6) {
-                        Text("Keine Credits")
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
-                        Text("Erst lernen, dann spielen!")
-                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.8))
+                        Image(systemName: "play.fill")
+                            .font(.system(size: 16, weight: .bold))
+                        Text("Spiel starten")
+                            .font(AppTheme.Typography.button)
                     }
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: 52)
-                    .background(AppTheme.Colors.secondarySurface)
-                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
+                }
+                .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+            } else {
+                Button {
+                    exitArcadeSilently()
+                    dismiss()
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "book.fill")
+                            .font(.system(size: 15, weight: .bold))
+                        Text("Lernen starten")
+                            .font(AppTheme.Typography.button)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 52)
+                }
+                .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+            }
+        }
+    }
+
+    /// Regeln einklappbar — Platz nicht mehr durch Gameplay-Regeln dominiert.
+    var startRulesDisclosure: some View {
+        VStack(spacing: 10) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.22)) {
+                    isShowingArcadeRules.toggle()
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Text(isShowingArcadeRules ? "Spielregeln ausblenden" : "Spielregeln anzeigen")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                    Image(systemName: isShowingArcadeRules ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 32)
+            }
+            .buttonStyle(.plain)
+
+            if isShowingArcadeRules {
+                arcadeRulesBlock
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+    }
+
+    /// Die alten Regel-Zeilen — gleicher Content, visuell entspannter (11/13pt,
+    /// kleinere Icons, engere Line-Height), damit sie in der Disclosure nicht
+    /// wieder den Raum dominieren.
+    var arcadeRulesBlock: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Text("Zieh Elumi zum Futter")
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                ElumiSnackIcon(.wuermchen, size: 16)
+                ElumiSnackIcon(.wasserfloh, size: 18)
+                ElumiSnackIcon(.algenkugel, size: 16)
+            }
+
+            HStack(spacing: 6) {
+                Text("4 Leben")
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                ForEach(0..<4, id: \.self) { _ in
+                    ArcadeElumiAvatar(size: 16, withShadow: false)
                 }
             }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 28)
-            .frame(maxWidth: 340)
-            .background(AppTheme.Colors.surface.opacity(0.96))
-            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
-            )
-            .shadow(color: .black.opacity(0.24), radius: 22, x: 0, y: 12)
-            .padding(.horizontal, 24)
-            .offset(y: 30)
+
+            Text("Verpasstes Futter = −1 Leben")
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+
+            HStack(spacing: 8) {
+                ArcadeHazardElumiAvatar(size: 20)
+                Text("Elumi-Freund fressen = −1 Leben")
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(.cyan)
+            }
+
+            Text("Bonus-Runde Fische fangen = +1 Extra Leben")
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+
+            HStack(spacing: 8) {
+                ArcadeSuctionIconStandalone(size: 22)
+                Text("Saugglocke: zieht Snacks heran")
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+            }
+
+            HStack(spacing: 8) {
+                ArcadeSlowMotionIconStandalone(size: 22)
+                Text("Zeitlupe-Trank: 5 Sek. Slow-Motion")
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+            }
         }
-        .transition(.opacity)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(AppTheme.Colors.secondarySurface.opacity(0.55))
+        )
     }
 
     var gameOverOverlay: some View {
@@ -279,6 +383,7 @@ extension ElumiArcadeGameView {
                 if arcadeCredits >= ArcadeCreditSystem.gamesCost {
                     HStack(spacing: 12) {
                         Button("Schließen") {
+                            exitArcadeSilently()
                             dismiss()
                         }
                         .buttonStyle(AppSecondaryButtonStyle())
@@ -292,17 +397,40 @@ extension ElumiArcadeGameView {
                         .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
                     }
 
-                    Text("\(arcadeCredits) Credit\(arcadeCredits == 1 ? "" : "s") übrig")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                    // Credit-Rest im gleichen Icon-Vokabular wie Start-Overlay
+                    // und Home-Balanced-Bar — konsistente Credit-Identität.
+                    HStack(spacing: 5) {
+                        Image(systemName: "circle.hexagongrid.fill")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(AppTheme.Colors.cta.opacity(0.85))
+                        Text("\(arcadeCredits) Credit\(arcadeCredits == 1 ? "" : "s") übrig")
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                    }
                 } else {
-                    Text("Keine Credits mehr — erst lernen!")
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.warning)
-                        .padding(.vertical, 4)
+                    // Empty-State: klarer Call-zum-Lernen, nicht nur Schließen.
+                    HStack(spacing: 6) {
+                        Image(systemName: "circle.hexagongrid.fill")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                        Text("0 Credits — Lernen bringt Credits")
+                            .font(.system(size: 13, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                    }
+                    .padding(.vertical, 4)
 
-                    Button("Schließen") {
+                    Button {
+                        exitArcadeSilently()
                         dismiss()
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "book.fill")
+                                .font(.system(size: 15, weight: .bold))
+                            Text("Lernen starten")
+                                .font(AppTheme.Typography.button)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 48)
                     }
                     .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
                 }
@@ -311,9 +439,9 @@ extension ElumiArcadeGameView {
             .padding(.vertical, 26)
             .frame(maxWidth: 344)
             .background(AppTheme.Colors.surface.opacity(0.96))
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .stroke(Color.white.opacity(0.08), lineWidth: 1)
             )
         }
@@ -374,10 +502,10 @@ extension ElumiArcadeGameView {
         .padding(.horizontal, 28)
         .padding(.vertical, 24)
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(AppTheme.Colors.secondarySurface.opacity(0.95))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .stroke(Color.cyan.opacity(0.3), lineWidth: 1.5)
                 )
         )
@@ -408,10 +536,10 @@ extension ElumiArcadeGameView {
         .padding(.horizontal, 28)
         .padding(.vertical, 24)
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(AppTheme.Colors.secondarySurface.opacity(0.95))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .stroke(Color.cyan.opacity(0.3), lineWidth: 1.5)
                 )
         )
@@ -497,9 +625,9 @@ extension ElumiArcadeGameView {
         .padding(.horizontal, 32)
         .padding(.vertical, 24)
         .background(AppTheme.Colors.surface.opacity(0.96))
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(AppTheme.Colors.warning.opacity(0.3), lineWidth: 1.5)
         )
         .shadow(color: AppTheme.Colors.warning.opacity(0.2), radius: 16, x: 0, y: 8)
@@ -523,7 +651,7 @@ extension ElumiArcadeGameView {
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
         .background(AppTheme.Colors.secondarySurface.opacity(0.7))
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     func arcadeRuleRow(icon: String, text: String, tint: Color? = nil, iconSize: CGFloat = 14) -> some View {

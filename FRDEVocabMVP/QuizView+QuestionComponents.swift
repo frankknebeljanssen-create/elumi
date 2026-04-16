@@ -366,9 +366,9 @@ extension QuizView {
                                     .frame(maxWidth: .infinity)
                                     .frame(minHeight: 52)
                                     .background(comboVerbBackground(pair.id))
-                                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        RoundedRectangle(cornerRadius: 10, style: .continuous)
                                             .stroke(comboVerbBorder(pair.id), lineWidth: comboSelectedVerbID == pair.id ? 2 : 1)
                                     )
                             }
@@ -408,9 +408,9 @@ extension QuizView {
                                     .frame(maxWidth: .infinity)
                                     .frame(minHeight: 52)
                                     .background(comboNounBackground(pair.id))
-                                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        RoundedRectangle(cornerRadius: 10, style: .continuous)
                                             .stroke(comboNounBorder(pair.id), lineWidth: 1)
                                     )
                             }

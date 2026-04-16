@@ -98,9 +98,12 @@ extension FlashcardsSessionController {
         let shouldPlayAchievement = sessionStore.remainingCount == 1
         pushCurrentFlashcardToHistory(revealingSolution: false, sessionStore: sessionStore)
 
+        // Gelöste Karte fliegt nach LINKS raus — konsistent mit der
+        // Swipe-Logik: links wischen = „weiter / gelöst", rechts wischen
+        // = „zurück". Negative Werte = links.
         withAnimation(.easeIn(duration: 0.22)) {
-            cardFlyOutOffset = 340
-            cardFlyOutRotation = 12
+            cardFlyOutOffset = -340
+            cardFlyOutRotation = -12
             cardFlyOutOpacity = 0.15
         }
 

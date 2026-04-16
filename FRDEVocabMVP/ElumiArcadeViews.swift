@@ -146,6 +146,11 @@ struct ElumiArcadeGameView: View {
     @ObservedObject var feedbackPlayer: FeedbackPlayer
     @AppStorage(appElumiArcadeHighScoreKey) var highScore = 0
     @AppStorage(appArcadeCreditsKey) var arcadeCredits = 0
+    /// Wenn `true`, wird das Start-Overlay übersprungen und das Spiel beginnt
+    /// direkt — Credit-Abzug und „Spiel starten"-CTA sind dann Aufgabe der
+    /// aufrufenden View (z. B. `GameHubView`). Default `false` bewahrt das
+    /// bisherige Verhalten für den Footer-Elumi-Quick-Launch.
+    var autoStart: Bool = false
 
     @State var gameSeed = UUID()
     @State var gameSize: CGSize = .zero
@@ -157,6 +162,10 @@ struct ElumiArcadeGameView: View {
     @State var misses = 0
     @State var isPlaying = false
     @State var isGameOver = false
+    // Hinweis: Initialwert des Overlays wird in der konsumierenden View
+    // `ElumiArcadeGameView+Layout.swift` via `.onAppear` je nach `autoStart`
+    // angepasst. Wir starten default mit dem Overlay, damit alte Call-Sites
+    // (Footer-Elumi) unverändert funktionieren.
     @State var showingStartOverlay = true
     @State var mouthOpen = false
     @State var characterScale: CGFloat = 1
@@ -199,6 +208,11 @@ struct ElumiArcadeGameView: View {
     @State var activeJellyfish: JellyfishState?
     @State var activeTentacles: [TentacleDropState] = []
     @State var jellyfishStingCount = 0
+
+    // Phase 4 – Start-Overlay: Spielregeln sind per Default eingeklappt,
+    // damit der CTA und der Credit-Status die primäre Aufmerksamkeit
+    // bekommen. Der User kann die Regeln bei Bedarf ausklappen.
+    @State var isShowingArcadeRules = false
 
     let maxMisses = 4
     let suctionDuration: TimeInterval = 4.6

@@ -26,7 +26,6 @@ struct TrainingView: View {
 
     @StateObject var session = TrainingSessionController()
     @State var lastResult: ScoreResult?
-    @State var trainingCorrectCount = 0
     @State var shouldEvaluateAfterStop = false
     @State var pendingFeedbackTask: DispatchWorkItem?
     @State var typedAnswer = ""
@@ -49,6 +48,14 @@ struct TrainingView: View {
     @StateObject var verbformsSession = VerbformsSessionController()
     @State var verbformsInflections: [VerbformsEngine.VerbInflections] = []
     @State var verbformsCountdown: Int? = nil
+
+    // Session-Summary-Outcomes — werden beim Reward-Vergeben gesetzt und
+    // steuern die Anzeige der zentralen `SessionSummaryView`. Für Training
+    // als Overlay (nach `handleTopBarBack`), für Verbformen ersetzt das
+    // Outcome den bisherigen Result-Screen komplett.
+    @State var trainingSessionOutcome: SessionRewardOutcome?
+    @State var verbformsSessionOutcome: SessionRewardOutcome?
+    @ObservedObject var progressStore = ProgressStore.shared
 
     // Verbformen Drag-and-Drop (Quiz-Stil: DragGesture + Frame-Tracking,
     // KEIN Long-Press wie bei `.draggable`)

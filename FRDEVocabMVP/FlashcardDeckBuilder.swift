@@ -22,7 +22,8 @@ enum FlashcardDeckBuilder {
                     id: item.id.uuidString,
                     french: item.french,
                     german: item.german,
-                    sourceLanguage: item.sourceLanguage
+                    sourceLanguage: item.sourceLanguage,
+                    cardType: item.cardType
                 )
             }
         )
@@ -57,7 +58,8 @@ enum FlashcardDeckBuilder {
                 id: item.id.uuidString,
                 french: item.french,
                 german: item.german,
-                sourceLanguage: item.sourceLanguage
+                sourceLanguage: item.sourceLanguage,
+                cardType: item.cardType
             )
         }
 

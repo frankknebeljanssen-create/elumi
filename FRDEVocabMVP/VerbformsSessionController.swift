@@ -64,6 +64,43 @@ final class VerbformsSessionController: ObservableObject {
     /// Round-Complete-Screen (Wiederholungsangebot + „Fertig").
     @Published var isShowingRoundComplete: Bool = false
 
+    // MARK: - Gamification (ProgressService-Kopplung)
+
+    /// Combo-Tracking für ProgressService-Bonus. Reset bei Session-Start
+    /// und bei falscher Antwort. Eine Session entspricht hier einer Runde
+    /// (bis `isShowingRoundComplete` bzw. `isFinished`).
+    var sessionCurrentCombo: Int = 0
+    var sessionLongestCombo: Int = 0
+    /// Anzahl richtig beantworteter Einheiten in der aktuellen Session.
+    var sessionCorrectCount: Int = 0
+    /// Anzahl falscher Antworten in der aktuellen Session.
+    var sessionWrongCount: Int = 0
+    /// Schutz vor doppelter Reward-Vergabe pro Session/Runde.
+    var sessionRewardConsumed: Bool = false
+
+    /// Buchhalter für Combo-Tracking — wird von `submitMC`, `submitTyping`
+    /// und `dropPronoun` aufgerufen. Falsche Antworten resetten die Combo,
+    /// richtige erhöhen sie.
+    func recordAnswer(correct: Bool) {
+        if correct {
+            sessionCurrentCombo += 1
+            sessionLongestCombo = max(sessionLongestCombo, sessionCurrentCombo)
+            sessionCorrectCount += 1
+            GamificationFeedbackPresenter.shared.noteComboProgress(currentCombo: sessionCurrentCombo)
+        } else {
+            sessionCurrentCombo = 0
+            sessionWrongCount += 1
+        }
+    }
+
+    func resetGamificationCounters() {
+        sessionCurrentCombo = 0
+        sessionLongestCombo = 0
+        sessionCorrectCount = 0
+        sessionWrongCount = 0
+        sessionRewardConsumed = false
+    }
+
     // MARK: - Matching: Shuffled Display Order
 
     /// Reihenfolge der 6 Pronomen-Chips im Grid — pro Runde neu gemischt,
@@ -134,6 +171,7 @@ final class VerbformsSessionController: ObservableObject {
         if speedRound {
             speedRoundTimeRemaining = 45
         }
+        resetGamificationCounters()
         advanceToNext()
     }
 
@@ -153,6 +191,7 @@ final class VerbformsSessionController: ObservableObject {
         if speedRound {
             speedRoundTimeRemaining = 45
         }
+        resetGamificationCounters()
         advanceToNextMatching()
     }
 
@@ -170,6 +209,7 @@ final class VerbformsSessionController: ObservableObject {
             isLocked = true
             if isCorrect { score += 1 }
             totalAsked += 1
+            recordAnswer(correct: isCorrect)
             DispatchQueue.main.asyncAfter(deadline: .now() + (isCorrect ? 0.3 : 0.6)) { [weak self] in
                 self?.nextSpeedRound()
             }
@@ -178,10 +218,15 @@ final class VerbformsSessionController: ObservableObject {
             isLocked = true
             if wrongOptions.isEmpty { score += 1 } // nur Punkt wenn beim ersten Versuch richtig
             totalAsked += 1
+            // Nur wenn beim ersten Versuch richtig → Combo zählt. Vorherige
+            // Wrong-Versuche haben die Combo ohnehin via `wrongOptions`-Pfad
+            // gebrochen; hier zählen wir den Erfolg als richtig.
+            recordAnswer(correct: wrongOptions.isEmpty)
         } else {
             // Normal: wrong → mark orange, keep trying
             wrongOptions.insert(option.lowercased())
             selectedOption = nil
+            recordAnswer(correct: false)
         }
     }
 
@@ -202,6 +247,7 @@ final class VerbformsSessionController: ObservableObject {
         }
         totalAsked += 1
         isLocked = true
+        recordAnswer(correct: isCorrect)
 
         // Speed round: auto-advance
         if isSpeedRound {
@@ -245,10 +291,12 @@ final class VerbformsSessionController: ObservableObject {
             usedPronouns.insert(pronoun)
             totalAsked += 1
             score += 1
+            recordAnswer(correct: true)
             if wrongFlashTarget == target { wrongFlashTarget = nil }
             return true
         } else {
             totalAsked += 1
+            recordAnswer(correct: false)
             wrongFlashTarget = target
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
                 guard let self, self.wrongFlashTarget == target else { return }
@@ -391,6 +439,7 @@ final class VerbformsSessionController: ObservableObject {
         totalAsked = 0
         completedRound = 1
         isShowingRoundComplete = false
+        resetGamificationCounters()
     }
 
     private func advanceToNext() {

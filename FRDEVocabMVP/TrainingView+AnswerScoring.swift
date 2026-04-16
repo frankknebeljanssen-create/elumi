@@ -32,6 +32,7 @@ extension TrainingView {
         } else {
             feedbackPlayer.playStudyError()
             session.incrementFailedAttempts()
+            session.recordAnswer(correct: false)
             lastResult = ScoreResult(
                 label: "Falsch 😕",
                 detail: "Bitte nochmal."
@@ -44,7 +45,7 @@ extension TrainingView {
 
     func handleCorrectAnswer() {
         feedbackPlayer.playStudySuccess()
-        trainingCorrectCount += 1
+        session.recordAnswer(correct: true)
         lastResult = ScoreResult(label: "Richtig 🙂", detail: "")
         scheduleNextCard()
     }

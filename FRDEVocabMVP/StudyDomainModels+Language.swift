@@ -204,6 +204,19 @@ enum TrainingMode: String, CaseIterable, Identifiable, Hashable {
         case .verbforms: return "✏️"
         }
     }
+
+    /// Sprachunabhängiger, stabiler Identifier für Persistenz-Keys (UserDefaults).
+    /// Separat vom anzeige-orientierten `rawValue`, damit UI-Umbenennungen keine
+    /// Datenverluste auslösen.
+    var storageKey: String {
+        switch self {
+        case .vocabulary: return "vocabulary"
+        case .nouns:      return "nouns"
+        case .articles:   return "articles"
+        case .verbs:      return "verbs"
+        case .verbforms:  return "verbforms"
+        }
+    }
 }
 
 enum CardType: String, CaseIterable, Identifiable, Codable {

@@ -93,9 +93,11 @@ extension TrainingView {
             session.isSpeedRound.toggle()
         } label: {
             HStack(spacing: 14) {
+                // Icon immer in Modul-Akzentfarbe — konsistent mit dem
+                // Listen-Icon in der „Ausgewählte Listen"-Card darüber.
                 Image(systemName: session.isSpeedRound ? "bolt.circle.fill" : "bolt.circle")
                     .font(.system(size: 32, weight: .bold))
-                    .foregroundStyle(session.isSpeedRound ? trainingActionTint : AppTheme.Colors.textSecondary)
+                    .foregroundStyle(trainingActionTint)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Speed Round")
@@ -192,7 +194,7 @@ extension TrainingView {
                             .minimumScaleFactor(0.8)
                             .foregroundStyle(session.selectedDictionaryLearningLevel == option ? .white : AppTheme.Colors.textPrimary)
                             .background(session.selectedDictionaryLearningLevel == option ? trainingActionTint : AppTheme.Colors.secondarySurface)
-                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                     }
                     .buttonStyle(.plain)
                 }
@@ -282,7 +284,7 @@ extension TrainingView {
                                 .font(.system(size: 18, weight: .semibold, design: .rounded))
                                 .foregroundStyle(session.cardType == item ? .white : AppTheme.Colors.textPrimary)
                                 .background(session.cardType == item ? trainingActionTint : AppTheme.Colors.secondarySurface)
-                                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                         }
                         .buttonStyle(.plain)
                     }
@@ -292,9 +294,11 @@ extension TrainingView {
                     session.isSpeedRound.toggle()
                 } label: {
                     HStack(spacing: 14) {
+                        // Icon immer in Modul-Akzentfarbe — konsistent mit dem
+                        // Listen-Icon in der „Ausgewählte Listen"-Card darüber.
                         Image(systemName: "flag.checkered")
                             .font(.system(size: 30, weight: .bold))
-                            .foregroundStyle(session.isSpeedRound ? trainingActionTint : AppTheme.Colors.textSecondary)
+                            .foregroundStyle(trainingActionTint)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Speed Round")

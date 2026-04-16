@@ -18,7 +18,7 @@ extension ScanImportView {
                             .font(AppTheme.Typography.button)
                             .foregroundStyle(importType == item ? .white : AppTheme.Colors.textPrimary)
                             .background(importType == item ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
-                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                     }
                     .buttonStyle(.plain)
                 }

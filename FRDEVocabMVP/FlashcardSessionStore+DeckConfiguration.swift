@@ -21,15 +21,21 @@ extension FlashcardSessionStore {
     }
 
     var masteredCount: Int {
-        session?.masteredCardCount ?? 0
+        session?.masteredCardCount(threshold: masteryThreshold) ?? 0
     }
 
     var almostMasteredCount: Int {
-        session?.almostMasteredCardCount ?? 0
+        session?.almostMasteredCardCount(threshold: masteryThreshold) ?? 0
     }
 
     var openCount: Int {
         totalCount - masteredCount - almostMasteredCount
+    }
+
+    /// Unique Karten im Stapel, die mind. 1× falsch beantwortet wurden —
+    /// für die rote Markierung im Fortschrittsbalken.
+    var wrongAnsweredCardCount: Int {
+        session?.wrongAnsweredCardCount(threshold: masteryThreshold) ?? 0
     }
 
     var remainingCount: Int {

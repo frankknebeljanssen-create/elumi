@@ -23,11 +23,11 @@ private struct ScanSelectionButtonCard: View {
         .padding(.vertical, 10)
         .background(
             ZStack {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(isSelected ? accent : AppTheme.Colors.secondarySurface)
 
                 if isSelected {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .fill(
                             LinearGradient(
                                 colors: [
@@ -42,13 +42,13 @@ private struct ScanSelectionButtonCard: View {
             }
         )
         .overlay {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(
                     isSelected ? Color.white.opacity(0.24) : AppTheme.Colors.border,
                     lineWidth: isSelected ? 1.5 : 1
                 )
         }
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .scaleEffect(isSelected ? 1.015 : 1)
         .shadow(
             color: isSelected ? accent.opacity(0.34) : .clear,

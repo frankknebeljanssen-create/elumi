@@ -30,6 +30,12 @@ extension TrainingView {
                     } else {
                         trainingSetupScreen
                     }
+                } else if let outcome = trainingSessionOutcome {
+                    // Nach einer beendeten Session zeigen wir die einheitliche
+                    // `SessionSummaryView` — gleiche Optik wie Karteikarten /
+                    // Verbformen. „Weiter" räumt das Outcome weg und gibt die
+                    // Setup-Card wieder frei.
+                    trainingSummaryScreen(outcome: outcome)
                 } else if session.isShowingSetup {
                     trainingSetupScreen
                 } else {
@@ -39,7 +45,35 @@ extension TrainingView {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .padding(.top, AppLayout.contentTopPadding)
             .padding(.bottom, usesGlobalChrome ? 0 : AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.lg)
+
+            // Combo-Toast-Overlay — liegt über allen Session-Screens und zeigt
+            // bei 5/10/15/... richtigen in Folge einen kurzen Bonus-Hinweis.
+            ComboToastOverlay()
         }
+    }
+
+    /// Zentrale Session-Summary für das Training-Modul (Vokabeln, Nomen,
+    /// Artikel, Verben, Speed-Rounds). Wird nach dem Reward-Hook angezeigt,
+    /// wenn die Session Fortschritt hatte. „Weiter" gibt das Outcome frei
+    /// und wechselt zurück zur Setup-Card.
+    func trainingSummaryScreen(outcome: SessionRewardOutcome) -> some View {
+        VStack(spacing: 16) {
+            trainingCompactHeader
+
+            SessionSummaryView(
+                outcome: outcome,
+                progress: progressStore.progress,
+                onContinue: {
+                    trainingSessionOutcome = nil
+                }
+            )
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, AppLayout.screenPadding)
+        .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 32)
+        .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private var sessionHeaderTitle: String {
@@ -52,23 +86,54 @@ extension TrainingView {
         }
     }
 
+    /// Kompakter Header für Training-Setup-Screens (alle Modi). Zurück führt
+    /// raus aus dem Training (dismiss → Home).
+    var trainingCompactHeader: some View {
+        trainingHeaderShared(onBack: { dismiss() })
+    }
+
+    /// Kompakter Header für Training-Session-Screens (während Übung). Zurück
+    /// führt zur Setup-Card zurück (handleTopBarBack), nicht raus zu Home.
+    var trainingSessionCompactHeader: some View {
+        trainingHeaderShared(onBack: { handleTopBarBack() })
+    }
+
+    /// Gemeinsame Header-Implementierung — kleiner „< Zurück" links in der
+    /// Modul-Akzentfarbe, Modul-Titel zentriert. Analog zu Karteikarten/Quiz.
+    /// `onBack` ist die jeweilige Aktion (Setup → Home; Session → Setup).
+    private func trainingHeaderShared(onBack: @escaping () -> Void) -> some View {
+        ZStack {
+            Text(sessionHeaderTitle)
+                .font(.system(size: 28, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .center)
+
+            HStack {
+                Button(action: onBack) {
+                    HStack(spacing: 2) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("Zurück")
+                            .font(.system(size: 16, weight: .semibold))
+                    }
+                    .foregroundStyle(trainingActionTint)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
+            }
+        }
+        .padding(.top, 4)
+        .padding(.bottom, 6)
+    }
+
     var trainingSessionScreen: some View {
         VStack(spacing: 8) {
-            ScreenHeaderCard(
-                style: sectionStyle,
-                title: sessionHeaderTitle,
-                subtitle: "",
-                systemImage: "waveform.circle.fill"
-            )
-
-            Button {
-                dismissTraining()
-            } label: {
-                Label("Zurück", systemImage: "arrow.left")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(AppSecondaryButtonStyle(tint: trainingActionTint))
-            .padding(.horizontal, trainingSessionCardInset)
+            // Kompakter Header analog Karteikarten — kleiner „< Zurück" links
+            // (führt zur Setup-Card, nicht raus zu Home), Modul-Titel mittig.
+            // ScreenHeaderCard + großer Zurück-Button entfernt.
+            trainingSessionCompactHeader
 
             // Progress counter for Nomen, Artikel, Verben
             if !session.isSpeedRound, (isNounMode || isArticleMode || isVerbMode), session.hasStartedTraining, !session.isShowingRoundComplete {
@@ -157,22 +222,10 @@ extension TrainingView {
 
     var trainingSetupScreen: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            ScreenHeaderCard(
-                style: sectionStyle,
-                title: sessionHeaderTitle,
-                subtitle: "",
-                systemImage: isVerbformsMode
-                    ? "text.line.first.and.arrowtriangle.forward"
-                    : "waveform.circle.fill"
-            )
-
-            Button {
-                dismiss()
-            } label: {
-                Label("Zurück", systemImage: "arrow.left")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(AppSecondaryButtonStyle(tint: trainingActionTint))
+            // Kompakter Header analog Karteikarten: kleiner „< Zurück" links,
+            // Modul-Titel zentriert. Großer Zurück-Button + ScreenHeaderCard
+            // entfernt — gibt Platz für die eigentlichen Setup-Karten.
+            trainingCompactHeader
 
             if session.trainingMode == .vocabulary {
                 // Vokabeln: 4 category cards
@@ -269,7 +322,7 @@ extension TrainingView {
 
             Text("Los geht's!")
                 .font(AppTheme.Typography.button)
-                .foregroundColor(.white)
+                .foregroundColor(.black)
                 .frame(maxWidth: .infinity)
                 .frame(minHeight: AppTheme.Layout.buttonHeight)
                 .background(
@@ -382,7 +435,7 @@ extension TrainingView {
             } label: {
                 Text("Weiter \u{2192} Runde \(session.completedRound + 1)")
                     .font(AppTheme.Typography.button)
-                    .foregroundColor(.white)
+                    .foregroundColor(.black)
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: 56)
                     .background(AppTheme.Colors.cta)
@@ -392,7 +445,7 @@ extension TrainingView {
             .padding(.horizontal, trainingSessionCardInset)
 
             Button {
-                dismissTraining()
+                handleTopBarBack()
             } label: {
                 Label("Zur\u{00FC}ck", systemImage: "arrow.left")
                     .frame(maxWidth: .infinity)
@@ -453,51 +506,62 @@ extension TrainingView {
             feedbackPlayer.playTabSwitch()
             verbformsListPickerActive = true
         } label: {
-            HStack(alignment: .center, spacing: 14) {
-                Image(systemName: "list.bullet.rectangle.fill")
-                    .font(.system(size: 32, weight: .bold))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            // Header GANZ links oben + HStack mit Icon, Listen, Stift-Pill —
+            // analog zum Karteikarten-Setup (siehe `setupListSelectionCard`).
+            VStack(alignment: .leading, spacing: 8) {
+                setupCardLabel("Ausgewählte Listen")
 
-                VStack(alignment: .leading, spacing: 4) {
-                    if hasSelection {
-                        ForEach(selectedLists.prefix(AppLayout.maxSelectableLists)) { list in
-                            Text(list.name)
-                                .font(.system(size: 17, weight: .bold, design: .rounded))
+                HStack(alignment: .center, spacing: 14) {
+                    Image(systemName: "list.bullet.rectangle.fill")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundStyle(trainingActionTint)
+                        .frame(width: 36, height: 36)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        if hasSelection {
+                            ForEach(selectedLists.prefix(AppLayout.maxSelectableLists)) { list in
+                                Text(list.name)
+                                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.7)
+                            }
+                            Button {
+                                feedbackPlayer.playTabSwitch()
+                                verbformsVerbDetailActive = true
+                            } label: {
+                                Text("\(verbformsCount) Verb\(verbformsCount == 1 ? "" : "en") gesamt")
+                                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                                    .foregroundStyle(AppTheme.Colors.elumiBlue)
+                                    .underline(true, color: AppTheme.Colors.elumiBlue.opacity(0.4))
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.top, 2)
+                        } else {
+                            Text("Keine Liste gewählt")
+                                .font(.system(size: 18, weight: .bold, design: .rounded))
                                 .foregroundStyle(AppTheme.Colors.textPrimary)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.7)
-                        }
-                        // Gesamt-Anzahl Verben über alle gewählten Listen
-                        Button {
-                            feedbackPlayer.playTabSwitch()
-                            verbformsVerbDetailActive = true
-                        } label: {
-                            Text("\(verbformsCount) Verb\(verbformsCount == 1 ? "" : "en") gesamt")
+                            Text("Tippe zum Auswählen")
                                 .font(.system(size: 13, weight: .medium, design: .rounded))
-                                .foregroundStyle(AppTheme.Colors.textSecondary)
-                                .underline(true, color: AppTheme.Colors.textSecondary.opacity(0.4))
+                                .foregroundStyle(AppTheme.Colors.elumiBlue)
                         }
-                        .buttonStyle(.plain)
-                        .padding(.top, 2)
-                    } else {
-                        Text("Keine Liste gewählt")
-                            .font(.system(size: 17, weight: .bold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textPrimary)
-                        Text("Tippe zum Auswählen")
-                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
                     }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                Image(systemName: "pencil.circle.fill")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(trainingActionTint)
+                    Image(systemName: "pencil")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(trainingActionTint)
+                        .frame(width: 32, height: 32)
+                        .background(
+                            Circle()
+                                .fill(trainingActionTint.opacity(0.18))
+                        )
+                }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 28)
-            .frame(maxWidth: .infinity, minHeight: 100)
-            .appCardBackground(sectionStyle, intensity: hasSelection ? 0.18 : 0.07, cornerRadius: AppLayout.largeCardCornerRadius)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity)
+            .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
         }
         .buttonStyle(.plain)
         .sheet(isPresented: $verbformsListPickerActive) {
@@ -592,66 +656,76 @@ extension TrainingView {
             feedbackPlayer.playTabSwitch()
             onTapPicker()
         } label: {
-            HStack(alignment: .center, spacing: 14) {
-                Image(systemName: "list.bullet.rectangle.fill")
-                    .font(.system(size: 32, weight: .bold))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            // Header GANZ links oben + HStack mit Icon, Listen, Stift-Pill —
+            // analog zum Karteikarten-Setup. Single Source of Truth: nutzt
+            // `setupCardLabel` und `appSetupCardBackground` aus AppViewModifiers.
+            VStack(alignment: .leading, spacing: 8) {
+                setupCardLabel("Ausgewählte Listen")
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Ausgewählte Listen")
-                        .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.cta)
-                        .textCase(.uppercase)
-                        .padding(.bottom, 2)
-                    if hasSelection {
-                        ForEach(selectedLists.prefix(AppLayout.maxSelectableLists)) { list in
-                            Text(list.name)
-                                .font(.system(size: 17, weight: .bold, design: .rounded))
-                                .foregroundStyle(AppTheme.Colors.textPrimary)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.7)
-                        }
-                        // Gesamt-Anzahl mit Listen-Anzahl-Prefix („3 Listen · 47 Verben gesamt").
-                        // Klickbar wenn Detail-Handler übergeben.
-                        let listsText = "\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n")"
-                        let summary = "\(listsText) · \(countValue) \(countLabel) gesamt"
-                        if let onTapCounter {
-                            Button {
-                                feedbackPlayer.playTabSwitch()
-                                onTapCounter()
-                            } label: {
+                HStack(alignment: .center, spacing: 14) {
+                    Image(systemName: "list.bullet.rectangle.fill")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundStyle(trainingActionTint)
+                        .frame(width: 36, height: 36)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        if hasSelection {
+                            ForEach(selectedLists.prefix(AppLayout.maxSelectableLists)) { list in
+                                Text(list.name)
+                                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.7)
+                            }
+                            // Gesamt-Summary in elumiBlue (Info-Token, konsistent
+                            // mit Karteikarten-Setup). Klickbar wenn Counter-
+                            // Handler übergeben.
+                            let listsText = "\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n")"
+                            let summary = "\(listsText) · \(countValue) \(countLabel) gesamt"
+                            if let onTapCounter {
+                                Button {
+                                    feedbackPlayer.playTabSwitch()
+                                    onTapCounter()
+                                } label: {
+                                    Text(summary)
+                                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                                        .foregroundStyle(AppTheme.Colors.elumiBlue)
+                                        .underline(true, color: AppTheme.Colors.elumiBlue.opacity(0.4))
+                                }
+                                .buttonStyle(.plain)
+                                .padding(.top, 2)
+                            } else {
                                 Text(summary)
                                     .font(.system(size: 13, weight: .medium, design: .rounded))
-                                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                                    .underline(true, color: AppTheme.Colors.textSecondary.opacity(0.4))
+                                    .foregroundStyle(AppTheme.Colors.elumiBlue)
+                                    .padding(.top, 2)
                             }
-                            .buttonStyle(.plain)
-                            .padding(.top, 2)
                         } else {
-                            Text(summary)
+                            Text("Keine Liste gewählt")
+                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.textPrimary)
+                            Text("Tippe zum Auswählen")
                                 .font(.system(size: 13, weight: .medium, design: .rounded))
-                                .foregroundStyle(AppTheme.Colors.textSecondary)
-                                .padding(.top, 2)
+                                .foregroundStyle(AppTheme.Colors.elumiBlue)
                         }
-                    } else {
-                        Text("Keine Liste gewählt")
-                            .font(.system(size: 17, weight: .bold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textPrimary)
-                        Text("Tippe zum Auswählen")
-                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
                     }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                Image(systemName: "pencil.circle.fill")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(trainingActionTint)
+                    // Stift in rundem Pill — dezent, konsistent mit Karteikarten.
+                    Image(systemName: "pencil")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(trainingActionTint)
+                        .frame(width: 32, height: 32)
+                        .background(
+                            Circle()
+                                .fill(trainingActionTint.opacity(0.18))
+                        )
+                }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 28)
-            .frame(maxWidth: .infinity, minHeight: 100)
-            .appCardBackground(sectionStyle, intensity: hasSelection ? 0.18 : 0.07, cornerRadius: AppLayout.largeCardCornerRadius)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity)
+            .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
         }
         .buttonStyle(.plain)
     }
@@ -732,86 +806,83 @@ extension TrainingView {
     }
 
     private var verbformsSetupOptions: some View {
-        // Tense-Selector im Speed-Round/Listen-Stil:
-        // Links Uhr-Icon (gleiche Größe + Farbe wie Listen-Icon), rechts daneben
-        // die 4 Tense-Buttons gleichmäßig in einer Reihe verteilt.
-        HStack(spacing: 14) {
+        // Zeit-Auswahl-Card im Karteikarten-Setup-Stil:
+        // Links das Uhr-Icon (Modul-Akzent, vertikal zentriert), rechts die
+        // 4 Tense-Buttons als 2x2-Raster. Buttons im Mastery-Look
+        // (#1A2A40 inaktiv / #1A3A55 + elumiBlue Border aktiv).
+        HStack(alignment: .center, spacing: 12) {
             Image(systemName: "clock.fill")
-                .font(.system(size: 32, weight: .bold))
-                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .font(.system(size: 28, weight: .bold))
+                .foregroundStyle(trainingActionTint)
+                .frame(width: 40, alignment: .center)
 
-            HStack(spacing: 6) {
+            let columns = [
+                GridItem(.flexible(), spacing: 6),
+                GridItem(.flexible(), spacing: 6)
+            ]
+            LazyVGrid(columns: columns, spacing: 6) {
                 ForEach(VerbformsTense.allCases) { tense in
-                    let isActive = tense.isAvailable
-                    let isSelected = verbformsSession.selectedTenses.contains(tense)
-                    Button {
-                        guard isActive else { return }
-                        if isSelected {
-                            if verbformsSession.selectedTenses.count > 1 {
-                                verbformsSession.selectedTenses.remove(tense)
-                            }
-                        } else {
-                            verbformsSession.selectedTenses.insert(tense)
-                        }
-                    } label: {
-                        Text(tense.rawValue)
-                            .font(.system(size: 11, weight: .bold, design: .rounded))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.6)
-                            .frame(maxWidth: .infinity)
-                            .frame(minHeight: 44)
-                            .foregroundStyle(
-                                isSelected
-                                    ? .white
-                                    : (isActive ? AppTheme.Colors.textPrimary : AppTheme.Colors.textSecondary)
-                            )
-                            .background(
-                                isSelected
-                                    ? trainingActionTint
-                                    : (isActive ? AppTheme.Colors.surface : AppTheme.Colors.surface.opacity(0.4))
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .stroke(
-                                        isSelected
-                                            ? trainingActionTint
-                                            : AppTheme.Colors.border.opacity(isActive ? 1.0 : 0.4),
-                                        lineWidth: 1
-                                    )
-                            )
-                            .opacity(isActive ? 1.0 : 0.45)
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!isActive)
+                    verbformsTenseButton(for: tense)
                 }
             }
+            .frame(maxWidth: .infinity)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 28)
-        .frame(maxWidth: .infinity, minHeight: 100)
-        .appCardBackground(sectionStyle, intensity: 0.18, cornerRadius: AppLayout.largeCardCornerRadius)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity)
+        .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
+    }
+
+    private func verbformsTenseButton(for tense: VerbformsTense) -> some View {
+        let isActive = tense.isAvailable
+        let isSelected = verbformsSession.selectedTenses.contains(tense)
+        return Button {
+            guard isActive else { return }
+            if isSelected {
+                if verbformsSession.selectedTenses.count > 1 {
+                    verbformsSession.selectedTenses.remove(tense)
+                }
+            } else {
+                verbformsSession.selectedTenses.insert(tense)
+            }
+        } label: {
+            Text(tense.rawValue)
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 44)
+                .foregroundStyle(.white)
+                .background(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(isSelected ? Color(hex: "#1A3A55") : Color(hex: "#1A2A40"))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .stroke(
+                            isSelected
+                                ? AppTheme.Colors.elumiBlue
+                                : Color(hex: "#243B55"),
+                            lineWidth: isSelected ? 1.5 : 1
+                        )
+                )
+                .opacity(isActive ? 1.0 : 0.45)
+        }
+        .buttonStyle(.plain)
+        .disabled(!isActive)
     }
 
     // MARK: - Verbformen Session Screen
 
     var verbformsSessionScreen: some View {
         VStack(spacing: 12) {
-            ScreenHeaderCard(
-                style: sectionStyle,
-                title: "Verbformen",
-                subtitle: "",
-                systemImage: "text.line.first.and.arrowtriangle.forward"
-            )
-
-            Button {
+            // Kompakter Header analog Karteikarten — Zurück resettet die
+            // Verbformen-Session und führt zurück zur Setup-Card, nicht raus
+            // zu Home. ScreenHeaderCard + großer Zurück-Button entfernt.
+            trainingHeaderShared {
                 verbformsSession.reset()
                 verbformsCountdown = nil
-            } label: {
-                Label("Zurück", systemImage: "arrow.left")
-                    .frame(maxWidth: .infinity)
             }
-            .buttonStyle(AppSecondaryButtonStyle(tint: trainingActionTint))
 
             if let countdown = verbformsCountdown {
                 // 3-2-1 Countdown
@@ -1014,7 +1085,7 @@ extension TrainingView {
             } label: {
                 Text(canContinue ? "Weiter" : "Noch \(remaining) zu lösen")
                     .font(AppTheme.Typography.button)
-                    .foregroundColor(canContinue ? .white : AppTheme.Colors.textSecondary)
+                    .foregroundColor(canContinue ? .black : AppTheme.Colors.textSecondary)
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: 56)
                     .background(canContinue ? AppTheme.Colors.cta : AppTheme.Colors.secondarySurface)
@@ -1067,7 +1138,7 @@ extension TrainingView {
             } label: {
                 Text("Weiter \u{2192} Runde \(verbformsSession.completedRound + 1)")
                     .font(AppTheme.Typography.button)
-                    .foregroundColor(.white)
+                    .foregroundColor(.black)
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: 56)
                     .background(AppTheme.Colors.cta)
@@ -1328,43 +1399,22 @@ extension TrainingView {
 
     // MARK: - Verbformen Result Screen
 
+    /// Verbformen-Result: einheitliche `SessionSummaryView` statt früher
+    /// separatem Score-Screen. Reward wird bei `onAppear` konsumiert und in
+    /// `verbformsSessionOutcome` gespeichert; die Summary zeigt XP-Breakdown,
+    /// Credits, Level-Progress analog Karteikarten.
     var verbformsResultScreen: some View {
         VStack(spacing: 16) {
-            ScreenHeaderCard(
-                style: sectionStyle,
-                title: "Verbformen",
-                subtitle: "",
-                systemImage: "text.line.first.and.arrowtriangle.forward"
+            trainingSessionCompactHeader
+
+            SessionSummaryView(
+                outcome: verbformsSessionOutcome ?? .empty,
+                progress: progressStore.progress,
+                onContinue: {
+                    verbformsSessionOutcome = nil
+                    verbformsSession.reset()
+                }
             )
-
-            VStack(spacing: 12) {
-                Text("Ergebnis")
-                    .font(.system(size: 24, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-
-                Text("\(verbformsSession.score) / \(verbformsSession.totalAsked)")
-                    .font(.system(size: 48, weight: .black, design: .rounded))
-                    .foregroundStyle(trainingActionTint)
-
-                let pct = verbformsSession.totalAsked > 0
-                    ? Int(Double(verbformsSession.score) / Double(verbformsSession.totalAsked) * 100)
-                    : 0
-                Text("\(pct)% richtig")
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 24)
-            .appCardBackground(sectionStyle, intensity: 0.11, cornerRadius: AppLayout.largeCardCornerRadius)
-
-            Button {
-                verbformsSession.reset()
-            } label: {
-                Label("Zurück", systemImage: "arrow.left")
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: AppTheme.Layout.buttonHeight)
-            }
-            .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
 
             Spacer(minLength: 0)
         }
@@ -1373,6 +1423,11 @@ extension TrainingView {
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(AppTheme.Colors.background.ignoresSafeArea())
+        .onAppear {
+            // Zentrale Reward-Vergabe für Verbformen (XP, Credits, Streak).
+            // `awardVerbformsXPIfNeeded` ist idempotent via `sessionRewardConsumed`.
+            awardVerbformsXPIfNeeded()
+        }
     }
 
     // MARK: - Verbformen Speed Round Bar
@@ -1558,7 +1613,7 @@ extension TrainingView {
             .dismissKeyboardOnTap()
             .toolbar(.hidden, for: .navigationBar)
             .appLocalChrome(enabled: !usesGlobalChrome) {
-                AppTopBar(onBack: { dismiss() }, onInfo: openInfo)
+                AppTopBar(onBack: { handleTopBarBack() }, onInfo: openInfo)
                     .padding(.horizontal, AppLayout.screenPadding)
                     .padding(.top, AppLayout.topBarInsetTop)
             } bottomBar: {

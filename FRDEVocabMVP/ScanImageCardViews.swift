@@ -33,9 +33,9 @@ struct ScanProgressOverlayCardView: View {
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity)
         .background(AppTheme.Colors.surface.opacity(0.97))
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(Color.white.opacity(0.08), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 4)
@@ -138,7 +138,7 @@ struct ScanSelectedImageCardView: View {
                     .frame(minHeight: 220, maxHeight: 320)
 
                 if isRecognizingImage {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .fill(Color.black.opacity(0.12))
 
                     // Scanner stripe animation
@@ -172,7 +172,7 @@ struct ScanSelectedImageCardView: View {
                     .transition(.scale(scale: 0.96).combined(with: .opacity))
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .buttonStyle(.plain)
         .appCardBackground(sectionStyle, intensity: 0.09)

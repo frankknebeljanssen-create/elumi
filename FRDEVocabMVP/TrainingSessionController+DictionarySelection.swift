@@ -154,7 +154,20 @@ extension TrainingSessionController {
 
     nonisolated static func hasFrenchArticle(_ text: String) -> Bool {
         let lower = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        return frenchArticles.contains(where: { lower.hasPrefix($0 + " ") || lower.hasPrefix($0 + "'") })
+        // Das Token ist selbst ein Artikel („le", „la", „les" …) → kein weiterer davor.
+        if frenchArticles.contains(lower) { return true }
+        for article in frenchArticles {
+            // Klassische Muster: „le chien", „la voiture", „l'ami".
+            if lower.hasPrefix(article + " ") || lower.hasPrefix(article + "'") {
+                return true
+            }
+            // Alternativ-Ausdrücke wie „le/la", „un|une" — das erste Segment ist
+            // bereits ein Artikel, also keinen weiteren voranstellen.
+            if lower.hasPrefix(article + "/") || lower.hasPrefix(article + "|") {
+                return true
+            }
+        }
+        return false
     }
 
     nonisolated static func determineFrenchArticle(_ item: VocabularyItem) -> String {

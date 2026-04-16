@@ -18,9 +18,9 @@ extension QuizView {
         awardedHearts = 0
         awardedWaterfloh = 0
         awardedAlgenkugel = 0
-        awardedXP = 0
         unlockedRewardLevels = []
         didPersistHearts = false
+        quizSessionOutcome = nil
         resetPerQuestionState()
     }
 
@@ -188,9 +188,13 @@ extension QuizView {
     }
 
     func prepareQuizRewards() {
+        // Nur noch für die Elumi-spezifischen Hearts-Rewards zuständig —
+        // der XP-Teil läuft vollständig über `ProgressService`. Die Bonus-
+        // XP aus dem alten System (Streak-Multiplier, Perfect-Bonus) würden
+        // sonst parallel zur neuen SessionSummaryView doppelt erscheinen.
         let rewardOutcome = computeElumiRewardOutcome(
             baseWorms: correctCount,
-            baseXP: correctCount * 5,
+            baseXP: 0,
             isPerfectLesson: isPerfectQuiz,
             currentXP: collectedXP,
             currentStreak: currentStreak,
@@ -201,18 +205,21 @@ extension QuizView {
         awardedHearts = rewardOutcome.worms
         awardedWaterfloh = rewardOutcome.waterfloh
         awardedAlgenkugel = rewardOutcome.algenkugel
-        awardedXP = rewardOutcome.xp
         unlockedRewardLevels = rewardOutcome.unlockedLevels
-        if totalRewardCount > 0 || awardedXP > 0 {
+        if totalRewardCount > 0 {
             feedbackPlayer.playStudyAchievement()
         }
     }
 
     func persistHeartsIfNeeded() {
         guard !didPersistHearts else { return }
+        // 1) Elumi-spezifische Rewards (Worms/Waterfloh/Algenkugel) bleiben
+        //    über die alte Reward-Engine — hängen an der Hearts-Sammlung
+        //    und Level-Unlock-Logik. `baseXP = 0` sperrt den parallelen
+        //    XP-Pfad; XP läuft ausschließlich über `ProgressService`.
         let rewardOutcome = computeElumiRewardOutcome(
             baseWorms: correctCount,
-            baseXP: correctCount * 5,
+            baseXP: 0,
             isPerfectLesson: isPerfectQuiz,
             currentXP: collectedXP,
             currentStreak: currentStreak,
@@ -223,29 +230,27 @@ extension QuizView {
         collectedWorms += rewardOutcome.worms
         collectedWaterfloh += rewardOutcome.waterfloh
         collectedAlgenkugel += rewardOutcome.algenkugel
-        let previousXP = collectedXP
-        collectedXP += rewardOutcome.xp
-        currentStreak = rewardOutcome.currentStreak
-        bestStreak = rewardOutcome.bestStreak
         lastRewardDayIndex = rewardOutcome.lastRewardDayIndex
         didPersistHearts = true
 
-        // XP milestone bonus credits
-        let xpBonusCredits = ArcadeCreditSystem.bonusCreditsFromXP(previousXP: previousXP, newXP: collectedXP)
-        if xpBonusCredits > 0 {
-            arcadeCredits += xpBonusCredits
-        }
-
-        // Arcade credits
-        let credits = ArcadeCreditSystem.creditsEarned(
-            totalQuestions: session.questions.count,
-            correctAnswers: correctCount,
-            wrongAnswers: wrongCount,
-            isPerfect: isPerfectQuiz
+        // 2) XP + Streak + Credits über den neuen zentralen ProgressService.
+        //    Single Source of Truth: konsistente Belohnung über alle Module.
+        guard !session.sessionRewardConsumed else { return }
+        let learningSession = LearningSession(
+            origin: .quiz,
+            correctCount: correctCount,
+            wrongCount: wrongCount,
+            longestCombo: session.sessionLongestCombo
         )
-        if credits > 0 {
-            arcadeCredits += credits
-        }
+        session.sessionRewardConsumed = true
+        let outcome = ProgressService.shared.record(session: learningSession)
+        quizSessionOutcome = outcome
+        // @AppStorage-Spiegel aktualisieren, damit Views die auf den Legacy-
+        // Keys lesen (z. B. HomeView) sofort reaktiv sind.
+        collectedXP = ProgressStore.shared.progress.totalXP
+        currentStreak = ProgressStore.shared.progress.currentStreak
+        bestStreak = ProgressStore.shared.progress.bestStreak
+        arcadeCredits = ProgressStore.shared.progress.arcadeCredits
     }
 
     func resetPerQuestionState() {
@@ -331,9 +336,9 @@ extension QuizView {
         awardedHearts = 0
         awardedWaterfloh = 0
         awardedAlgenkugel = 0
-        awardedXP = 0
         unlockedRewardLevels = []
         didPersistHearts = false
+        quizSessionOutcome = nil
         resetPerQuestionState()
     }
 
@@ -343,8 +348,15 @@ extension QuizView {
     }
 
     func handleBackNavigation() {
-        resetQuizToSetup()
-        dismiss()
+        // Im aktiven Abfragemodus zurück zur Listenauswahl/Setup-Card statt Home.
+        // Result-Screen und Setup-Screen dismissen weiterhin wie bisher.
+        let isInQuizSession = !session.questions.isEmpty && !session.isShowingResult
+        if isInQuizSession {
+            resetQuizToSetup()
+        } else {
+            resetQuizToSetup()
+            dismiss()
+        }
     }
 
 }

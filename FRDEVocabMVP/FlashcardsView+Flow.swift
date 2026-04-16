@@ -128,6 +128,12 @@ extension FlashcardsView {
 
     func handleFlashcardsAppear() {
         markFlashcardsOpenTiming("flashcards_view_on_appear")
+        // Zuletzt genutzte Karteikarten-Listen wiederherstellen, bevor der
+        // LaunchContext greift. Damit bleibt die Modul-spezifische Auswahl
+        // zwischen App-Besuchen erhalten (z. B. nach Modul-Wechsel zurückkehren).
+        if setup.selectedStackListIDs.isEmpty {
+            setup.restoreSelectedStackListIDs()
+        }
         applyLaunchContextIfNeeded()
         ensureStackSelectionValidity()
         refreshDictionaryStackListIfNeeded()
@@ -138,6 +144,13 @@ extension FlashcardsView {
             startFlashcardsFromSetup(autoplayPrompt: false)
         } else {
             syncSetupSelection()
+            // Nach Modul-Wechsel zurückgekehrt und es läuft noch eine gültige
+            // Session im Store? Direkt in die Karten-Ansicht statt Setup.
+            // So kann der User genau bei der Karte weitermachen, bei der er
+            // aufgehört hat (Home ↔ Karteikarten ohne Reset).
+            if setup.isShowingSetup, sessionStore.hasActiveSession, launchContext == nil {
+                setup.isShowingSetup = false
+            }
         }
         if sessionStore.hasActiveSession == false {
             speechController.stopRecording()

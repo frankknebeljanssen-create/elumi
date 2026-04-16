@@ -7,21 +7,86 @@ extension TrainingView {
         goHome()
     }
 
-    func dismissTraining() {
-        // Award XP for training session (2 XP per correct answer, not speed round)
-        if !session.isSpeedRound, trainingCorrectCount > 0 {
-            let earnedXP = trainingCorrectCount * 2
-            let previousXP = UserDefaults.standard.integer(forKey: appElumiXPKey)
-            let newXP = previousXP + earnedXP
-            UserDefaults.standard.set(newXP, forKey: appElumiXPKey)
-            let xpBonusCredits = ArcadeCreditSystem.bonusCreditsFromXP(previousXP: previousXP, newXP: newXP)
-            if xpBonusCredits > 0 {
-                arcadeCredits += xpBonusCredits
+    /// TopBar-/Session-Back-Verhalten: Im aktiven Abfragemodus (nach „Los geht's")
+    /// führt der Back-Button eine Ebene zurück zur Setup-/Listenauswahl-Card,
+    /// NICHT komplett nach Home. Bei Verbformen wird weiterhin dismissed — dort
+    /// gibt es eigene Reset/Setup-Flows und der User hat explizit gesagt, dass
+    /// das aktuelle Verhalten passt.
+    ///
+    /// XP/Credits werden gleich wie bei `dismissTraining()` vergeben, damit der
+    /// User nicht bestraft wird, wenn er zurück zum Setup springt statt zu Home.
+    func handleTopBarBack() {
+        let isInTrainingSession = !isVerbformsMode
+            && (session.hasStartedTraining || !session.isShowingSetup)
+        if isInTrainingSession {
+            awardTrainingXPIfNeeded()
+            resetTrainingSession()
+        } else {
+            // Auch im Verbformen-Flow: erst Reward (falls Fortschritt
+            // vorhanden), dann dismiss. `awardVerbformsXPIfNeeded` ist idempotent.
+            if isVerbformsMode {
+                awardVerbformsXPIfNeeded()
             }
+            dismiss()
         }
-        trainingCorrectCount = 0
+    }
+
+    func dismissTraining() {
+        awardTrainingXPIfNeeded()
         resetTrainingSession()
         dismiss()
+    }
+
+    /// Vergibt XP/Credits/Streak für die aktuelle Verbformen-Session über den
+    /// zentralen `ProgressService`. Schutz via `sessionRewardConsumed` verhindert
+    /// Mehrfach-Vergabe, wenn der Hook aus mehreren Back-Pfaden aufgerufen wird
+    /// (Result-Screen, TopBar-Back). Speed-Round läuft als eigene Origin.
+    ///
+    /// Das berechnete `SessionRewardOutcome` wird in `verbformsSessionOutcome`
+    /// abgelegt und ersetzt den bisherigen Zahlen-Result-Screen durch die
+    /// einheitliche `SessionSummaryView`.
+    func awardVerbformsXPIfNeeded() {
+        guard !verbformsSession.sessionRewardConsumed else { return }
+        let origin: LearningSession.Origin = verbformsSession.isSpeedRound ? .speedRound : .verbforms
+        let learningSession = LearningSession(
+            origin: origin,
+            correctCount: verbformsSession.sessionCorrectCount,
+            wrongCount: verbformsSession.sessionWrongCount,
+            longestCombo: verbformsSession.sessionLongestCombo
+        )
+        guard learningSession.correctCount > 0 || learningSession.wrongCount > 0 else { return }
+        verbformsSession.sessionRewardConsumed = true
+        let outcome = ProgressService.shared.record(session: learningSession)
+        verbformsSessionOutcome = outcome
+        arcadeCredits = ProgressStore.shared.progress.arcadeCredits
+    }
+
+    /// XP, Credits und Streak werden über den zentralen `ProgressService`
+    /// vergeben. Single Source of Truth, konsistent mit Karteikarten und Quiz.
+    /// Schutz via `sessionRewardConsumed` gegen Mehrfach-Vergabe bei
+    /// wiederholtem Aufruf aus verschiedenen Back-Pfaden.
+    ///
+    /// Das berechnete `SessionRewardOutcome` wird in `trainingSessionOutcome`
+    /// abgelegt und triggert die einheitliche `SessionSummaryView`. Diese zeigt
+    /// dem Nutzer XP-Aufschlüsselung, Credits, Level-Progress — analog zu den
+    /// Karteikarten.
+    func awardTrainingXPIfNeeded() {
+        guard !session.sessionRewardConsumed else { return }
+        // Speed Rounds fließen als eigene Origin; normales Training als
+        // `.training`. Das Session-Minimum unterscheidet sich (siehe
+        // `GamificationConfig.SessionMinimum`).
+        let origin: LearningSession.Origin = session.isSpeedRound ? .speedRound : .training
+        let learningSession = LearningSession(
+            origin: origin,
+            correctCount: session.sessionCorrectCount,
+            wrongCount: session.sessionWrongCount,
+            longestCombo: session.sessionLongestCombo
+        )
+        guard learningSession.correctCount > 0 || learningSession.wrongCount > 0 else { return }
+        session.sessionRewardConsumed = true
+        let outcome = ProgressService.shared.record(session: learningSession)
+        trainingSessionOutcome = outcome
+        arcadeCredits = ProgressStore.shared.progress.arcadeCredits
     }
 
     func applyLaunchContextIfNeeded() {

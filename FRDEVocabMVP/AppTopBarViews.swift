@@ -54,6 +54,7 @@ struct ScreenHeaderCard: View {
 
 struct AppTopBar: View {
     @Environment(\.appOpenAccountAction) private var globalOpenAccountAction
+    @ObservedObject private var profileStore = ProfileStore.shared
     @AppStorage(appDirectionKey) private var selectedDirectionRaw = Direction.frenchToGerman.rawValue
     var onBack: (() -> Void)? = nil
     var onInfo: (() -> Void)? = nil
@@ -155,14 +156,11 @@ struct AppTopBar: View {
             }
 
             if let resolvedAccountAction {
+                // Profil-Zugang: runder Avatar-Badge statt neutralem Icon.
+                // Zeigt Initialen, sobald ein Name gesetzt ist — sonst
+                // Personen-Icon. Sichtbar-aber-dezent, matcht Top-Bar-Look.
                 Button(action: resolvedAccountAction) {
-                    Image(systemName: "person.crop.circle.fill")
-                        .font(.system(size: 18, weight: .bold))
-                        .frame(width: 30, height: 30)
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .background(AppTheme.Colors.secondarySurface)
-                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.sm, style: .continuous))
-                        .accessibilityLabel(Text("Account"))
+                    ProfileAvatarBadge(store: profileStore, size: 30)
                 }
                 .buttonStyle(.plain)
             }

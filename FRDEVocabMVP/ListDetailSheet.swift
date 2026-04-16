@@ -140,7 +140,7 @@ struct ListDetailSheet: View {
                                 .frame(maxWidth: .infinity)
                             }
                             .padding(AppTheme.Spacing.sm)
-                            .appChipBackground(style, intensity: 0.08, cornerRadius: 18)
+                            .appChipBackground(style, intensity: 0.08, cornerRadius: 14)
                         }
                     }
                 }

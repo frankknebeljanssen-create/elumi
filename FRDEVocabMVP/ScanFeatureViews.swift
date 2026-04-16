@@ -556,14 +556,14 @@ struct ScanImportView: View {
                                             .frame(minHeight: 220, maxHeight: 320)
 
                                         if isRecognizingImage {
-                                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                            RoundedRectangle(cornerRadius: 14, style: .continuous)
                                                 .fill(Color.black.opacity(0.12))
 
                                             scanProgressPopupView
                                                 .padding(.horizontal, 18)
                                         }
                                     }
-                                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                                 }
                                 .buttonStyle(.plain)
                                 .appCardBackground(sectionStyle, intensity: 0.09)
@@ -1008,7 +1008,7 @@ struct ScanImportView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
 
             Text(hasAlternatePreparedImage ? "Prüfe kurz, ob der Zuschnitt stimmt. Danach startet die Analyse." : "Prüfe das Bild kurz. Danach startet die Analyse.")
                 .font(AppTheme.Typography.caption)
@@ -1104,11 +1104,11 @@ struct ScanImportView: View {
         .padding(.vertical, 10)
         .background(
             ZStack {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(isSelected ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
 
                 if isSelected {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .fill(
                             LinearGradient(
                                 colors: [
@@ -1123,13 +1123,13 @@ struct ScanImportView: View {
             }
         )
         .overlay {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(
                     isSelected ? Color.white.opacity(0.24) : AppTheme.Colors.border,
                     lineWidth: isSelected ? 1.5 : 1
                 )
         }
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .scaleEffect(isSelected ? 1.015 : 1)
         .shadow(
             color: isSelected ? sectionStyle.accent.opacity(0.34) : .clear,
@@ -1183,7 +1183,7 @@ struct ScanImportView: View {
                             .font(AppTheme.Typography.button)
                             .foregroundStyle(importType == item ? .white : AppTheme.Colors.textPrimary)
                             .background(importType == item ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
-                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                     }
                     .buttonStyle(.plain)
                 }
@@ -2879,9 +2879,9 @@ struct ScanImportView: View {
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity)
         .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(
                     (scanToastIsWarning ? AppTheme.Colors.warning : AppTheme.Colors.success).opacity(0.25),
                     lineWidth: 1
@@ -2955,9 +2955,9 @@ struct ScanImportView: View {
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity)
         .background(AppTheme.Colors.surface.opacity(0.97))
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(Color.white.opacity(0.08), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 4)
@@ -3168,7 +3168,7 @@ struct ManualCropSheet: View {
                         .mask(
                             Rectangle()
                                 .overlay(alignment: .topLeading) {
-                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                                         .frame(width: cropRect.width, height: cropRect.height)
                                         .offset(x: cropRect.minX, y: cropRect.minY)
                                         .blendMode(.destinationOut)
@@ -3178,7 +3178,7 @@ struct ManualCropSheet: View {
                         )
                         .allowsHitTesting(false)
 
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .stroke(accent, lineWidth: 3)
                         .frame(width: cropRect.width, height: cropRect.height)
                         .position(x: cropRect.midX, y: cropRect.midY)

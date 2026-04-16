@@ -12,6 +12,10 @@ extension TrainingSessionController {
         currentTrainingItem = nil
         preparedTrainingItems = []
         remainingTrainingItems = []
+        // Symmetrisch zu `VerbformsSessionController.reset()`: beim harten
+        // Session-Reset auch die Gamification-Counters weglegen, damit keine
+        // Altwerte in die nächste Session hineinbluten.
+        resetGamificationCounters()
     }
 
     func returnToSetup() {
@@ -36,6 +40,7 @@ extension TrainingSessionController {
         preparedTrainingItems = deck
         hasStartedTraining = true
         isShowingSetup = false
+        resetGamificationCounters()
         loadNextTrainingCard()
         return currentTrainingItem != nil
     }

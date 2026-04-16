@@ -2,87 +2,35 @@ import SwiftUI
 
 extension FlashcardsView {
     var flashcardCompletionCard: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "party.popper.fill")
-                .font(.system(size: 34, weight: .bold))
-                .foregroundStyle(AppTheme.Colors.warning)
-
-            Text("Stapel geschafft!")
-                .font(AppTheme.Typography.cardTitle)
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-
-            Text(flashcardCompletionMessage)
-                .font(AppTheme.Typography.body)
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-                .multilineTextAlignment(.center)
-
-            HStack(spacing: 10) {
-                flashcardCompletionStat(
-                    title: "Richtig",
-                    value: "\(flashcardCompletionCorrectCount)",
-                    color: AppTheme.Colors.success
-                )
-                flashcardCompletionStat(
-                    title: "Fehler",
-                    value: "\(flashcardCompletionWrongCount)",
-                    color: AppTheme.Colors.warning
-                )
-            }
-
-            let earnedXP = sessionStore.masteredCount * 2
-            let credits = ArcadeCreditSystem.flashcardCredits(
-                masteredCount: sessionStore.masteredCount,
-                totalCount: sessionStore.totalCount,
-                wrongCount: sessionStore.wrongCount
-            )
-
-            HStack(spacing: 10) {
-                if earnedXP > 0 {
-                    Text("+\(earnedXP) XP")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.success)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                        .background(AppTheme.Colors.success.opacity(0.15))
-                        .clipShape(Capsule())
-                }
-                if credits > 0 {
-                    Text("+\(credits) Credit\(credits > 1 ? "s" : "")")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.warning)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                        .background(AppTheme.Colors.warning.opacity(0.15))
-                        .clipShape(Capsule())
-                }
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, 18)
-        .padding(.vertical, 22)
-        .appCardBackground(sectionStyle, intensity: 0.12, cornerRadius: AppLayout.largeCardCornerRadius)
+        // Übergangs-Lösung: zeigt die neue `SessionSummaryView` mit dem
+        // Outcome aus `ProgressService.record(session:)` an. Reward-Vergabe
+        // findet einmal pro Session statt (Schutz via `sessionRewardConsumed`).
+        SessionSummaryView(
+            outcome: flashcardSessionOutcome ?? .empty,
+            progress: ProgressStore.shared.progress
+        )
         .onAppear {
-            // XP: 5 per mastered card
-            let earnedXP = sessionStore.masteredCount * 2
-            if earnedXP > 0 {
-                let previousXP = UserDefaults.standard.integer(forKey: appElumiXPKey)
-                let newXP = previousXP + earnedXP
-                UserDefaults.standard.set(newXP, forKey: appElumiXPKey)
-                let xpBonusCredits = ArcadeCreditSystem.bonusCreditsFromXP(previousXP: previousXP, newXP: newXP)
-                if xpBonusCredits > 0 {
-                    arcadeCredits += xpBonusCredits
-                }
-            }
-            // Arcade credits
-            let credits = ArcadeCreditSystem.flashcardCredits(
-                masteredCount: sessionStore.masteredCount,
-                totalCount: sessionStore.totalCount,
-                wrongCount: sessionStore.wrongCount
-            )
-            if credits > 0 {
-                arcadeCredits += credits
-            }
+            consumeFlashcardSessionReward()
         }
+    }
+
+    /// Berechnet die Reward einmalig bei Session-Ende (geschützt vor doppeltem
+    /// `onAppear`) und cached das Outcome für die UI-Anzeige.
+    func consumeFlashcardSessionReward() {
+        guard !sessionStore.sessionRewardConsumed else { return }
+        sessionStore.sessionRewardConsumed = true
+        let session = LearningSession(
+            origin: .flashcards,
+            correctCount: sessionStore.session?.correctCount ?? 0,
+            wrongCount: sessionStore.session?.wrongCount ?? 0,
+            longestCombo: sessionStore.sessionLongestCombo,
+            masteredCardCount: sessionStore.sessionMasteredThisRun
+        )
+        let outcome = ProgressService.shared.record(session: session)
+        flashcardSessionOutcome = outcome
+        // Mirror auf den Legacy-AppStorage-Wert, damit andere Views, die
+        // noch direkt `arcadeCredits` lesen, konsistent bleiben.
+        arcadeCredits = ProgressStore.shared.progress.arcadeCredits
     }
 
     func flashcardCompletionStat(title: String, value: String, color: Color) -> some View {
@@ -97,7 +45,7 @@ extension FlashcardsView {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
         .background(AppTheme.Colors.secondarySurface)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
     var flashcardCompletionCorrectCount: Int {

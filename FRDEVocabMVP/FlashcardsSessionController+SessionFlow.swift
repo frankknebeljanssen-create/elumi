@@ -165,17 +165,14 @@ extension FlashcardsSessionController {
 
         sessionStore.restoreSession(historyEntry.sessionState)
         syncDisplayedCard(with: sessionStore)
-        lastResult = historyEntry.lastResult
-        showingSolution = historyEntry.showingSolution
+        // Beim Zurück-Wischen IMMER mit der Frage-Seite anfangen — der
+        // History-Zustand (showingSolution / isFlashcardFlipped) wird
+        // bewusst verworfen, damit der User die vorherige Karte noch einmal
+        // selbst beantworten kann statt direkt die Lösung zu sehen.
+        lastResult = nil
+        showingSolution = false
+        isFlashcardFlipped = false
         resetCardFlyOut()
-
-        if historyEntry.isFlashcardFlipped {
-            withAnimation(.spring(response: 0.36, dampingFraction: 0.82)) {
-                isFlashcardFlipped = true
-            }
-        } else {
-            isFlashcardFlipped = false
-        }
     }
 }
 

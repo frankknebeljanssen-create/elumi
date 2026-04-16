@@ -9,6 +9,13 @@ final class AppRuntimeContainer: ObservableObject {
     @Published private(set) var listStore: VocabularyListStore?
     @Published private(set) var flashcardSessionStore: FlashcardSessionStore?
 
+    /// Referenz auf den App-weiten Singleton — die HomeView-Bar und Module
+    /// können den Store auch direkt via `ProgressStore.shared` lesen, aber
+    /// die explizite Container-Property macht die Abhängigkeit sichtbar.
+    let progressStore: ProgressStore = .shared
+    /// High-Level-Service für `record(session:)`. Single Source of Truth.
+    let progressService: ProgressService = .shared
+
     private let vocabularyListRepository = VocabularyListStoreRepository()
     private let flashcardSessionRepository = FlashcardSessionRepository()
     private var didBootstrapDependencies = false
@@ -18,9 +25,9 @@ final class AppRuntimeContainer: ObservableObject {
 
     init() {
         feedbackPlayer = FeedbackPlayer()
-
-        // Always reset to 3 starter credits (testing)
-        UserDefaults.standard.set(3, forKey: appArcadeCreditsKey)
+        // Hinweis: Die alte Test-Reset-Logik („immer 3 Credits beim Start")
+        // wurde entfernt. Ab jetzt lebt Credits-Verwaltung im ProgressStore
+        // und wird über echte Sessions verdient/ausgegeben.
     }
 
     var isHomeShellReady: Bool {

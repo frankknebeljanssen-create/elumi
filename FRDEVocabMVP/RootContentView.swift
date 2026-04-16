@@ -4,6 +4,7 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var runtime = AppRuntimeContainer()
     @StateObject private var navigation = AppNavigationCoordinator()
+    @ObservedObject private var profileStore = ProfileStore.shared
     @AppStorage(appDirectionKey) private var selectedDirectionRaw = Direction.frenchToGerman.rawValue
 
     private var navigationPathBinding: Binding<[AppScreen]> {
@@ -49,6 +50,11 @@ struct ContentView: View {
         navigation.openHeartsScreen()
     }
 
+    private func openGameHubScreen() {
+        runtime.feedbackPlayer?.playTabSwitch()
+        navigation.openGameHubScreen()
+    }
+
     @MainActor
     private func openScreenWhenReady(_ screen: AppScreen) {
         navigation.openScreenWhenReady(screen) {
@@ -61,7 +67,19 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             if let feedbackPlayer = runtime.feedbackPlayer {
-                NavigationStack(path: navigationPathBinding) {
+                // Onboarding-Gate: beim allerersten Start (oder nach
+                // Reset) zeigen wir den leichten Willkommens-Flow
+                // *statt* der NavigationStack-Home. Der Flag flippt
+                // atomar via ProfileStore.completeOnboarding, SwiftUI
+                // rendert dann die Home-Hierarchie.
+                if !profileStore.hasCompletedOnboarding {
+                    OnboardingView(
+                        profileStore: profileStore,
+                        feedbackPlayer: feedbackPlayer
+                    )
+                    .transition(.opacity)
+                } else {
+                    NavigationStack(path: navigationPathBinding) {
                     HomeView(
                         feedbackPlayer: feedbackPlayer,
                         openScreen: { openScreenWhenReady($0) },
@@ -108,10 +126,14 @@ struct ContentView: View {
                         AppBottomBar(
                             feedbackPlayer: feedbackPlayer,
                             onHome: { runtime.feedbackPlayer?.playTabSwitch(); navigation.goHome() },
-                            onFavorite: isHeartsScreenActive ? nil : { openHeartsScreen() },
+                            // Footer-Snack-Button (ehem. „Sammlung") öffnet jetzt den
+                            // Game Hub. Der Progress Hub bleibt über das Home-Board
+                            // erreichbar — klare Trennung „Footer = Spielen",
+                            // „Home-Board = Fortschritt".
+                            onFavorite: navigation.isGameHubScreenActive ? nil : { openGameHubScreen() },
                             onScan: navigation.isLexiconScreenActive ? nil : { openLexiconScreen() },
                             onSettings: isSettingsScreenActive ? nil : { openSettingsScreen() },
-                            isHeartsActive: isHeartsScreenActive,
+                            isHeartsActive: navigation.isGameHubScreenActive,
                             isScanActive: navigation.isLexiconScreenActive,
                             isSettingsActive: isSettingsScreenActive
                         )
@@ -124,6 +146,7 @@ struct ContentView: View {
                     openScanScreen()
                 })
                 .environment(\.appUsesGlobalChrome, navigation.shouldShowGlobalChrome)
+                } // ← schließt Onboarding-Gate-else (NavigationStack-Branch)
             } else {
                 AppTheme.Colors.background
                     .ignoresSafeArea()
@@ -140,6 +163,12 @@ struct ContentView: View {
         .onAppear {
             runtime.bootstrapDependenciesIfNeeded()
             runtime.feedbackPlayer?.playAppStart()
+            // Letzte-Nutzung-Zeitstempel pflegen, sobald ein Profil da ist.
+            // Robust gegen fehlendes Profil (Onboarding läuft noch) —
+            // touchLastActive() ist dann ein No-Op.
+            if profileStore.hasCompletedOnboarding {
+                profileStore.touchLastActive()
+            }
         }
     }
 

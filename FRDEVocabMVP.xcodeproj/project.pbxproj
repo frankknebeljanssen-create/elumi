@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C0F11A111A111A111A111111 /* GamificationConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1C01A111A111A111A111111 /* GamificationConfig.swift */; };
+		C0F21A111A111A111A111111 /* LearningSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2C01A111A111A111A111111 /* LearningSession.swift */; };
+		C0F31A111A111A111A111111 /* ProgressStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C01A111A111A111A111111 /* ProgressStore.swift */; };
+		C0F41A111A111A111A111111 /* ProgressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C01A111A111A111A111111 /* ProgressService.swift */; };
+		B88DDE296B824BCA8E9B5AA6 /* GamificationFeedbackPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71844DBDB0A8498D87F33E5B /* GamificationFeedbackPresenter.swift */; };
+		C0F51A111A111A111A111111 /* SessionSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C01A111A111A111A111111 /* SessionSummaryView.swift */; };
 		A00000000000000000000001 /* FRDEVocabMVPApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000011 /* FRDEVocabMVPApp.swift */; };
 		A00000000000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000012 /* ContentView.swift */; };
 		A00000000000000000000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000013 /* Assets.xcassets */; };
@@ -401,9 +407,31 @@
 		F43B1C102F878B100094BA73 /* FillBlankSentenceLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C0F2F878B100094BA73 /* FillBlankSentenceLoader.swift */; };
 		F43B1C082F86A7BA0094BA73 /* StandardVocabularyLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C072F86A7BA0094BA73 /* StandardVocabularyLoader.swift */; };
 		F458EED02F8770F9009A2683 /* ArcadeCreditSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F458EECF2F8770F9009A2683 /* ArcadeCreditSystem.swift */; };
+		D8F531550E0A4DF7B96CC21C /* SessionSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */; };
+		8641C62C7C85427FB59B365B /* SessionOptionsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9545925434E4BCBA46071F1 /* SessionOptionsComponents.swift */; };
+		721DFC0B52424F55A89930EB /* SessionSetupComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C5A4B8C09644DDA8E9DC8B5 /* SessionSetupComponents.swift */; };
+		F9234FB8ED6A4B12B93A988E /* SessionSetupEstimate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832B8E6EB6D8482D957CF256 /* SessionSetupEstimate.swift */; };
+		4FC0AFE2020E42DF8ADBDC59 /* VariableRewardEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 765EA90FF65349C1ADBD8D70 /* VariableRewardEngine.swift */; };
+		7FCB5FF760B64B1BB8AAFCCE /* FeedbackTiming.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4DE9771408424DBF4CA080 /* FeedbackTiming.swift */; };
+		637BA521C77B4EC8B8FB9AAC /* DailyChallengeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C3FB95BD334EE18408771B /* DailyChallengeStore.swift */; };
+		2CE2689FA4E34BCB9A22FCA9 /* DailyChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2D8AABD1A084A80A03C7C97 /* DailyChallenge.swift */; };
+		CE67839CC59144FDBF5F565C /* GameHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AF0AA02FEF444D2BD481B5B /* GameHubView.swift */; };
+		081CA03EE10F4E52B6653A75 /* ProgressHubComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F244E2378E0C4DF89CC561E1 /* ProgressHubComponents.swift */; };
+		0FDB94AE807C45B6B251DB2C /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D60E8751B6404310BA69583D /* ProfileView.swift */; };
+		AE2E9CF09D254EB88B2560F0 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF6D48598792426F80A5D511 /* OnboardingView.swift */; };
+		C39E800D461E4B3A84CA306E /* ProfileAvatarBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901A6A0D6B194C198EEE6882 /* ProfileAvatarBadge.swift */; };
+		EF1331233D8443888E1FAC22 /* Personalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A58F580B36740F78ED60FD0 /* Personalization.swift */; };
+		BBA6A1692A074A9BA79D994A /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F654EF57484ACA8C074FF2 /* ProfileStore.swift */; };
+		B2B53A9B62034F82BF7C110D /* LearnerProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7313B768D707425B9C3DA9DA /* LearnerProfile.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		F1C01A111A111A111A111111 /* GamificationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamificationConfig.swift; sourceTree = "<group>"; };
+		F2C01A111A111A111A111111 /* LearningSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearningSession.swift; sourceTree = "<group>"; };
+		F3C01A111A111A111A111111 /* ProgressStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressStore.swift; sourceTree = "<group>"; };
+		F4C01A111A111A111A111111 /* ProgressService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressService.swift; sourceTree = "<group>"; };
+		71844DBDB0A8498D87F33E5B /* GamificationFeedbackPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamificationFeedbackPresenter.swift; sourceTree = "<group>"; };
+		F5C01A111A111A111A111111 /* SessionSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionSummaryView.swift; sourceTree = "<group>"; };
 		A00000000000000000000010 /* FRDEVocabMVP.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = FRDEVocabMVP.app; path = myVoc.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00000000000000000000011 /* FRDEVocabMVPApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FRDEVocabMVPApp.swift; sourceTree = "<group>"; };
 		A00000000000000000000012 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -801,6 +829,22 @@
 		F43B1C0F2F878B100094BA73 /* FillBlankSentenceLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FillBlankSentenceLoader.swift; path = FRDEVocabMVP/FillBlankSentenceLoader.swift; sourceTree = "<group>"; };
 		F43B1C072F86A7BA0094BA73 /* StandardVocabularyLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StandardVocabularyLoader.swift; path = FRDEVocabMVP/StandardVocabularyLoader.swift; sourceTree = "<group>"; };
 		F458EECF2F8770F9009A2683 /* ArcadeCreditSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArcadeCreditSystem.swift; path = FRDEVocabMVP/ArcadeCreditSystem.swift; sourceTree = "<group>"; };
+		47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupScreen.swift; path = FRDEVocabMVP/SessionSetupScreen.swift; sourceTree = "<group>"; };
+		C9545925434E4BCBA46071F1 /* SessionOptionsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionOptionsComponents.swift; path = FRDEVocabMVP/SessionOptionsComponents.swift; sourceTree = "<group>"; };
+		1C5A4B8C09644DDA8E9DC8B5 /* SessionSetupComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupComponents.swift; path = FRDEVocabMVP/SessionSetupComponents.swift; sourceTree = "<group>"; };
+		832B8E6EB6D8482D957CF256 /* SessionSetupEstimate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupEstimate.swift; path = FRDEVocabMVP/SessionSetupEstimate.swift; sourceTree = "<group>"; };
+		765EA90FF65349C1ADBD8D70 /* VariableRewardEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VariableRewardEngine.swift; path = FRDEVocabMVP/VariableRewardEngine.swift; sourceTree = "<group>"; };
+		CA4DE9771408424DBF4CA080 /* FeedbackTiming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FeedbackTiming.swift; path = FRDEVocabMVP/FeedbackTiming.swift; sourceTree = "<group>"; };
+		54C3FB95BD334EE18408771B /* DailyChallengeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyChallengeStore.swift; path = FRDEVocabMVP/DailyChallengeStore.swift; sourceTree = "<group>"; };
+		B2D8AABD1A084A80A03C7C97 /* DailyChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyChallenge.swift; path = FRDEVocabMVP/DailyChallenge.swift; sourceTree = "<group>"; };
+		3AF0AA02FEF444D2BD481B5B /* GameHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GameHubView.swift; path = FRDEVocabMVP/GameHubView.swift; sourceTree = "<group>"; };
+		F244E2378E0C4DF89CC561E1 /* ProgressHubComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProgressHubComponents.swift; path = FRDEVocabMVP/ProgressHubComponents.swift; sourceTree = "<group>"; };
+		D60E8751B6404310BA69583D /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileView.swift; path = FRDEVocabMVP/ProfileView.swift; sourceTree = "<group>"; };
+		CF6D48598792426F80A5D511 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingView.swift; path = FRDEVocabMVP/OnboardingView.swift; sourceTree = "<group>"; };
+		901A6A0D6B194C198EEE6882 /* ProfileAvatarBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileAvatarBadge.swift; path = FRDEVocabMVP/ProfileAvatarBadge.swift; sourceTree = "<group>"; };
+		3A58F580B36740F78ED60FD0 /* Personalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Personalization.swift; path = FRDEVocabMVP/Personalization.swift; sourceTree = "<group>"; };
+		35F654EF57484ACA8C074FF2 /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileStore.swift; path = FRDEVocabMVP/ProfileStore.swift; sourceTree = "<group>"; };
+		7313B768D707425B9C3DA9DA /* LearnerProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearnerProfile.swift; path = FRDEVocabMVP/LearnerProfile.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -818,6 +862,22 @@
 			isa = PBXGroup;
 			children = (
 				F458EECF2F8770F9009A2683 /* ArcadeCreditSystem.swift */,
+				47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */,
+				C9545925434E4BCBA46071F1 /* SessionOptionsComponents.swift */,
+				1C5A4B8C09644DDA8E9DC8B5 /* SessionSetupComponents.swift */,
+				832B8E6EB6D8482D957CF256 /* SessionSetupEstimate.swift */,
+				765EA90FF65349C1ADBD8D70 /* VariableRewardEngine.swift */,
+				CA4DE9771408424DBF4CA080 /* FeedbackTiming.swift */,
+				54C3FB95BD334EE18408771B /* DailyChallengeStore.swift */,
+				B2D8AABD1A084A80A03C7C97 /* DailyChallenge.swift */,
+				3AF0AA02FEF444D2BD481B5B /* GameHubView.swift */,
+				F244E2378E0C4DF89CC561E1 /* ProgressHubComponents.swift */,
+				D60E8751B6404310BA69583D /* ProfileView.swift */,
+				CF6D48598792426F80A5D511 /* OnboardingView.swift */,
+				901A6A0D6B194C198EEE6882 /* ProfileAvatarBadge.swift */,
+				3A58F580B36740F78ED60FD0 /* Personalization.swift */,
+				35F654EF57484ACA8C074FF2 /* ProfileStore.swift */,
+				7313B768D707425B9C3DA9DA /* LearnerProfile.swift */,
 				F43B1C072F86A7BA0094BA73 /* StandardVocabularyLoader.swift */,
 
 				F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */,
@@ -1221,6 +1281,12 @@
 				A00000000000000000000093 /* FRDEKnowledgePool.sqlite */,
 
 				DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */,
+				F1C01A111A111A111A111111 /* GamificationConfig.swift */,
+				F2C01A111A111A111A111111 /* LearningSession.swift */,
+				F3C01A111A111A111A111111 /* ProgressStore.swift */,
+				F4C01A111A111A111A111111 /* ProgressService.swift */,
+				71844DBDB0A8498D87F33E5B /* GamificationFeedbackPresenter.swift */,
+				F5C01A111A111A111A111111 /* SessionSummaryView.swift */,
 			);
 			path = FRDEVocabMVP;
 			sourceTree = "<group>";
@@ -1352,7 +1418,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */,
+								C0F11A111A111A111A111111 /* GamificationConfig.swift in Sources */,
+				C0F21A111A111A111A111111 /* LearningSession.swift in Sources */,
+				C0F31A111A111A111A111111 /* ProgressStore.swift in Sources */,
+				C0F41A111A111A111A111111 /* ProgressService.swift in Sources */,
+				B88DDE296B824BCA8E9B5AA6 /* GamificationFeedbackPresenter.swift in Sources */,
+				C0F51A111A111A111A111111 /* SessionSummaryView.swift in Sources */,
+F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */,
 				F43B1C122F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift in Sources */,
 				DE208FC184184208BE875D1D /* ListCategoryPickerView.swift in Sources */,
 				F43B1C142F87C0100094BA73 /* ClaudeHaikuScanAIClient+Configuration.swift in Sources */,
@@ -1560,6 +1632,22 @@
 				A00000000000000000000168 /* AppNavigationCoordinator.swift in Sources */,
 				A00000000000000000000170 /* AppDestinationHost.swift in Sources */,
 				F458EED02F8770F9009A2683 /* ArcadeCreditSystem.swift in Sources */,
+				D8F531550E0A4DF7B96CC21C /* SessionSetupScreen.swift in Sources */,
+				8641C62C7C85427FB59B365B /* SessionOptionsComponents.swift in Sources */,
+				721DFC0B52424F55A89930EB /* SessionSetupComponents.swift in Sources */,
+				F9234FB8ED6A4B12B93A988E /* SessionSetupEstimate.swift in Sources */,
+				4FC0AFE2020E42DF8ADBDC59 /* VariableRewardEngine.swift in Sources */,
+				7FCB5FF760B64B1BB8AAFCCE /* FeedbackTiming.swift in Sources */,
+				637BA521C77B4EC8B8FB9AAC /* DailyChallengeStore.swift in Sources */,
+				2CE2689FA4E34BCB9A22FCA9 /* DailyChallenge.swift in Sources */,
+				CE67839CC59144FDBF5F565C /* GameHubView.swift in Sources */,
+				081CA03EE10F4E52B6653A75 /* ProgressHubComponents.swift in Sources */,
+				0FDB94AE807C45B6B251DB2C /* ProfileView.swift in Sources */,
+				AE2E9CF09D254EB88B2560F0 /* OnboardingView.swift in Sources */,
+				C39E800D461E4B3A84CA306E /* ProfileAvatarBadge.swift in Sources */,
+				EF1331233D8443888E1FAC22 /* Personalization.swift in Sources */,
+				BBA6A1692A074A9BA79D994A /* ProfileStore.swift in Sources */,
+				B2B53A9B62034F82BF7C110D /* LearnerProfile.swift in Sources */,
 				A00000000000000000000172 /* AppPersistenceSupport.swift in Sources */,
 				A00000000000000000000174 /* BuiltInVocabularyCatalog.swift in Sources */,
 				A00000000000000000000416 /* BuiltInVocabularyCatalog+FrenchData.swift in Sources */,

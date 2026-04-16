@@ -19,6 +19,9 @@ extension FlashcardsSetupController {
 
         sessionStore.selectedDeckID = customDeck.id
         sessionStore.selectedDirection = selectedSetupDirection
+        // Schwelle aus dem Setup an den Store durchreichen, damit `markCorrect`
+        // Karten nach 1, 2 oder 3 korrekten Antworten aus dem Stapel nimmt.
+        sessionStore.masteryThreshold = max(1, min(3, masteryThreshold))
         sessionStore.startOrResumeSession()
         clearLaunchScope()
         isShowingSetup = false

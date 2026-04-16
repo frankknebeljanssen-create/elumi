@@ -3,8 +3,10 @@ import UIKit
 
 enum AppLayout {
     static let screenPadding: CGFloat = AppTheme.Layout.screenPadding
-    static let cardCornerRadius: CGFloat = AppTheme.Radius.lg
-    static let largeCardCornerRadius: CGFloat = AppTheme.Radius.xl
+    // Card-Radien reduziert: ruhigeres Erscheinungsbild systemweit.
+    // Cards = 14pt, kleine Elemente = 10pt (siehe AppTheme.Radius).
+    static let cardCornerRadius: CGFloat = AppTheme.Radius.md
+    static let largeCardCornerRadius: CGFloat = AppTheme.Radius.md
     static let largeSelectionHeight: CGFloat = AppTheme.Layout.selectionHeight
     static let homeCardHeight: CGFloat = AppTheme.Layout.homeCardHeight
     static let homeWideCardHeight: CGFloat = AppTheme.Layout.wideCardHeight
@@ -17,11 +19,12 @@ enum AppLayout {
     static let contentTopPadding: CGFloat = AppTheme.Spacing.xl
 
     /// App-weite Obergrenze für Mehrfachauswahl von Vokabel-Listen
-    /// (Training, Flashcards, Verbformen). Mehr als 5 würden in den Card-Layouts
-    /// (Listen-Übersicht in der Setup-Card) den Bildschirm sprengen.
-    /// Hinweis: Limit auf 6 statt 5 gesetzt, damit auch nach internen Aggregate-
-    /// Removal-Schritten garantiert 5 Listen wählbar sind.
-    static let maxSelectableLists: Int = 6
+    /// App-weites Limit für gleichzeitig ausgewählte Listen — gilt für Training,
+    /// Karteikarten, Quiz und Verbformen. Mehr als 3 Listen verwirren in der
+    /// Praxis das Lernen (zu großer Misch-Pool). Single Source of Truth: alle
+    /// Picker prüfen gegen diesen Wert, alle Card-Übersichten verwenden ihn
+    /// als `prefix`-Limit.
+    static let maxSelectableLists: Int = 3
 }
 
 extension View {

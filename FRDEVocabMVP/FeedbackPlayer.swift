@@ -12,16 +12,44 @@ final class SoundPlayer {
     static let shared = SoundPlayer()
     private var players: [String: AVAudioPlayer] = [:]
 
+    /// Konfiguriert die Audio-Session für lauten Output über den Lautsprecher.
+    ///
+    /// Knackpunkt: Wenn der TTS-Speaker (`Speaker.swift`) zuvor lief, hat er
+    /// `.playAndRecord` gesetzt und beim Ende `setActive(false)` aufgerufen.
+    /// In dem Zustand routet iOS Audio standardmäßig zur Earpiece (winzig
+    /// leise) — der `.defaultToSpeaker` Override gilt nur, solange der
+    /// Speaker den setCategory-Call selbst macht.
+    ///
+    /// Lösung:
+    /// • Wenn Session aktuell auf `.playAndRecord` steht (Recording läuft
+    ///   evtl. noch oder wurde nur deaktiviert), explizit
+    ///   `overrideOutputAudioPort(.speaker)` setzen — das routet jeden
+    ///   weiteren Output zum lauten Speaker, OHNE die Recording-Pipeline
+    ///   zu beenden.
+    /// • Sonst: `.playback` setzen (geht von Haus aus über Speaker, ist die
+    ///   richtige Category für Vordergrund-Audio).
+    /// • Vor jedem Play `setActive(true)`, weil der Speaker die Session
+    ///   nach jedem Sprechakt deaktiviert.
     private func ensureAudioSession() {
-        if !isSessionActive {
-            do {
-                try AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default, options: [.mixWithOthers])
-                try AVAudioSession.sharedInstance().setActive(true)
-                isSessionActive = true
-            } catch {}
+        let session = AVAudioSession.sharedInstance()
+        do {
+            if session.category == .playAndRecord {
+                // Recording-Modus aktiv (oder kürzlich aktiv) → Output explizit
+                // auf Speaker zwingen, sonst spielt der Sound über die
+                // Earpiece und wirkt deutlich leiser als TTS.
+                try session.setActive(true)
+                try session.overrideOutputAudioPort(.speaker)
+            } else {
+                // Normaler Vordergrund-Audio-Pfad: laute Playback-Category.
+                if session.category != .playback {
+                    try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
+                }
+                try session.setActive(true)
+            }
+        } catch {
+            print("⚠️ [Sound] Audio-Session konnte nicht aktiviert werden: \(error)")
         }
     }
-    private var isSessionActive = false
 
     func play(_ name: String, volume: Float = 1.0) {
         guard let url = Bundle.main.url(forResource: "elumi_\(name)", withExtension: "wav") else {

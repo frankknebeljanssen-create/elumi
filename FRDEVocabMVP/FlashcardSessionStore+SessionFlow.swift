@@ -9,6 +9,7 @@ extension FlashcardSessionStore {
             return
         }
 
+        resetGamificationCounters()
         let ids = selectedDeck.cards.map(\.id)
         let firstID = ids.randomElement()
         session = FlashcardSessionState(
@@ -22,7 +23,17 @@ extension FlashcardSessionStore {
         )
     }
 
+    /// Setzt Combo-Tracking + Mastered-Counter zurück. Wird bei jedem
+    /// neuen Session-Start aufgerufen.
+    func resetGamificationCounters() {
+        sessionCurrentCombo = 0
+        sessionLongestCombo = 0
+        sessionMasteredThisRun = 0
+        sessionRewardConsumed = false
+    }
+
     func restartSession() {
+        resetGamificationCounters()
         let ids = selectedDeck.cards.map(\.id)
         session = FlashcardSessionState(
             deckID: selectedDeck.id,
@@ -52,9 +63,16 @@ extension FlashcardSessionStore {
         session.cardMastery[currentCardID] = mastery
         session.correctCount += 1
 
-        // Only remove from remaining if mastered (2+ consecutive correct)
-        if mastery.level == .mastered {
+        // Combo-Tracking für ProgressService (Combo-Bonus alle 5 in Folge).
+        sessionCurrentCombo += 1
+        sessionLongestCombo = max(sessionLongestCombo, sessionCurrentCombo)
+        GamificationFeedbackPresenter.shared.noteComboProgress(currentCombo: sessionCurrentCombo)
+
+        // Karte aus dem Stapel entfernen, wenn die konfigurierte Schwelle
+        // (1/2/3 richtige Antworten hintereinander) erreicht ist.
+        if mastery.consecutiveCorrect >= max(1, masteryThreshold) {
             session.remainingCardIDs.removeAll { $0 == currentCardID }
+            sessionMasteredThisRun += 1
         }
 
         if session.remainingCardIDs.isEmpty {
@@ -77,21 +95,42 @@ extension FlashcardSessionStore {
         session.cardMastery[currentCardID] = mastery
         session.wrongCount += 1
 
+        // Combo bricht ab — `sessionLongestCombo` bleibt erhalten.
+        sessionCurrentCombo = 0
+
         self.session = session
         chooseNextCard(avoiding: currentCardID)
     }
 
     func chooseNextCard(avoiding currentID: String?) {
         guard var session else { return }
+
+        // Aktuelle Karte in den „recent"-Puffer schieben, damit sie (und die
+        // letzten paar davor) bei der Zufallswahl gemieden wird. Bei kleinen
+        // Stapeln wird der Puffer entsprechend klein gehalten, sonst bleibt
+        // keine wählbare Karte übrig.
+        if let currentID {
+            recentCardIDs.removeAll { $0 == currentID }
+            recentCardIDs.append(currentID)
+        }
+        let maxRecent = max(1, min(4, session.remainingCardIDs.count - 1))
+        if recentCardIDs.count > maxRecent {
+            recentCardIDs.removeFirst(recentCardIDs.count - maxRecent)
+        }
+
+        let recentSet = Set(recentCardIDs)
+        let filtered = session.remainingCardIDs.filter { !recentSet.contains($0) }
         let candidates: [String]
-        if let currentID, session.remainingCardIDs.count > 1 {
-            let filtered = session.remainingCardIDs.filter { $0 != currentID }
-            candidates = filtered.isEmpty ? session.remainingCardIDs : filtered
+        if !filtered.isEmpty {
+            candidates = filtered
+        } else if let currentID, session.remainingCardIDs.count > 1 {
+            // Fallback: alles recent → wenigstens die unmittelbar aktuelle Karte meiden.
+            candidates = session.remainingCardIDs.filter { $0 != currentID }
         } else {
             candidates = session.remainingCardIDs
         }
 
-        session.currentCardID = candidates.randomElement()
+        session.currentCardID = candidates.randomElement() ?? session.remainingCardIDs.randomElement()
         self.session = session
     }
 

@@ -4,6 +4,15 @@ extension QuizSessionController {
     func completeCurrentQuestion(correct: Bool) {
         answeredResults.append(correct)
 
+        // Combo-Tracking für ProgressService-Bonus (alle 5 richtig in Folge).
+        if correct {
+            sessionCurrentCombo += 1
+            sessionLongestCombo = max(sessionLongestCombo, sessionCurrentCombo)
+            GamificationFeedbackPresenter.shared.noteComboProgress(currentCombo: sessionCurrentCombo)
+        } else {
+            sessionCurrentCombo = 0
+        }
+
         if currentQuestionIndex + 1 >= questions.count {
             if isLoadingRemainingQuestions {
                 currentQuestionIndex += 1
@@ -28,5 +37,9 @@ extension QuizSessionController {
         preparedQuestions = []
         plannedQuestionCount = 0
         isLoadingRemainingQuestions = false
+        // Combo-Tracking zurücksetzen, damit nächste Session sauber startet.
+        sessionCurrentCombo = 0
+        sessionLongestCombo = 0
+        sessionRewardConsumed = false
     }
 }

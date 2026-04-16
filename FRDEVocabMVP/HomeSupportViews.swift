@@ -37,6 +37,10 @@ struct HomeActionButton: View {
     let accentColor: Color
     let cardColor: Color
     var iconSize: CGFloat = 28
+    /// Optionaler Höhen-Override — der Default entspricht dem globalen
+    /// `homeCardHeight` (102pt). Wird von der Flashcards-Card im Home
+    /// genutzt, damit sie den Progress-Block oben nicht optisch bedrängt.
+    var minHeight: CGFloat = AppLayout.homeCardHeight
 
     var body: some View {
         VStack(spacing: 6) {
@@ -54,7 +58,7 @@ struct HomeActionButton: View {
         }
         .frame(maxWidth: .infinity)
         .padding(AppTheme.Spacing.sm)
-        .frame(maxWidth: .infinity, minHeight: AppLayout.homeCardHeight)
+        .frame(maxWidth: .infinity, minHeight: minHeight)
         .background {
             RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
                 .fill(AppTheme.Colors.surface)
@@ -193,10 +197,10 @@ struct FlashcardStackBadge: View {
     var body: some View {
         ZStack {
             ForEach(0..<visibleLayers, id: \.self) { index in
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .fill(index == 0 ? frontColor : Color(.secondarySystemBackground))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
                             .stroke(Color.primary.opacity(index == 0 ? 0.08 : 0.04), lineWidth: 1)
                     )
                     .frame(width: 64 - CGFloat(index * 4), height: 30 - CGFloat(index * 2))

@@ -5,50 +5,57 @@ struct FlashcardDeckCard: Identifiable, Codable, Equatable {
     let french: String
     let german: String
     let sourceLanguage: StudyLanguage
+    let cardType: CardType
 
-    init(id: String, french: String, german: String, sourceLanguage: StudyLanguage) {
+    init(id: String, french: String, german: String, sourceLanguage: StudyLanguage, cardType: CardType = .words) {
         self.id = id
         self.french = french
         self.german = german
         self.sourceLanguage = sourceLanguage
+        self.cardType = cardType
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, french, german, sourceLanguage, cardType
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(String.self, forKey: .id)
+        self.french = try container.decode(String.self, forKey: .french)
+        self.german = try container.decode(String.self, forKey: .german)
+        self.sourceLanguage = try container.decode(StudyLanguage.self, forKey: .sourceLanguage)
+        // Abwärtskompatibel: ältere Codings ohne cardType als Wörter behandeln.
+        self.cardType = try container.decodeIfPresent(CardType.self, forKey: .cardType) ?? .words
     }
 
     func card(for direction: Direction) -> FlashCard {
-        var displayFrench = french
-        // Add French article only for nouns (1-2 words), not for verbs/adjectives/adverbs
-        let trimmedFrench = french.trimmingCharacters(in: .whitespacesAndNewlines)
-        let frenchWords = trimmedFrench.split(separator: " ")
-        let wordCount = frenchWords.count
-        let isNonNoun = StandardVocabularyLoader.isNonNoun(trimmedFrench)
-
-        if sourceLanguage == .french,
-           wordCount <= 2,
-           !isNonNoun,
-           !TrainingSessionController.hasFrenchArticle(displayFrench) {
-            let article = TrainingSessionController.determineFrenchArticle(
-                VocabularyItem(rawFrench: french, rawGerman: german, cardType: .words, sourceLanguage: sourceLanguage)
-            )
-            if !article.isEmpty {
-                displayFrench = article.hasSuffix("'") ? "\(article)\(french)" : "\(article) \(french)"
-            }
-        }
-
+        // Karteikarten sind reine Render-Schicht — KEINE eigene Artikel-/Casing-
+        // Logik. Exakt die gleichen zentralen Display-Helfer wie Training/Quiz
+        // nutzen, damit ein Eintrag in allen Modi identisch dargestellt wird.
+        //
+        // `frenchStudyCardDisplayText` / `germanStudyCardDisplayText` sind die
+        // Single-Source-of-Truth: TextCasingRules, `isNonNoun`-Check,
+        // `leadingFrenchArticle`-Kurzschluss und Nomen-Artikel-Heuristik sind
+        // dort zentral gekapselt. Alles, was die Karteikarte früher selbst an
+        // Artikeln voranstellte (mit eigenen Pronoun-/Funktionswort-Listen),
+        // wurde entfernt.
         let studyFrench = frenchStudyCardDisplayText(
-            displayFrench,
+            french,
             matchingGerman: german,
-            cardType: .words,
+            cardType: cardType,
             sourceLanguage: sourceLanguage
         )
         let studyGerman = germanStudyCardDisplayText(
             german,
             matchingFrench: french,
-            cardType: .words
+            cardType: cardType
         )
         let synchronizedPair = synchronizedPairTerminalSentencePunctuation(
             source: studyFrench,
             target: studyGerman,
             sourceLanguage: sourceLanguage,
-            cardType: .words
+            cardType: cardType
         )
 
         switch direction {
@@ -90,6 +97,7 @@ struct FlashcardDeckCard: Identifiable, Codable, Equatable {
             )
         }
     }
+
 }
 
 struct FlashcardDeck: Identifiable, Equatable {
@@ -123,10 +131,19 @@ enum MasteryLevel: String, Codable {
 
 struct CardMastery: Codable, Equatable {
     var consecutiveCorrect: Int = 0
+    /// Sticky-Flag: Sobald eine Karte mind. einmal falsch beantwortet wurde,
+    /// bleibt `hasBeenWrong` true — auch wenn später richtig geantwortet wird.
+    /// Ermöglicht die rote „Problem"-Markierung im Fortschrittsbalken.
+    var hasBeenWrong: Bool = false
 
-    var level: MasteryLevel {
-        if consecutiveCorrect >= 2 { return .mastered }
-        if consecutiveCorrect == 1 { return .almostMastered }
+    /// Dynamischer Level-Lookup: `threshold` bestimmt, wann eine Karte aus dem
+    /// Stapel fällt. 1× richtig → direkt mastered. Bei 2×/3× gibt es eine
+    /// „fast"-Zwischen-Stufe für alle Karten, die schon mindestens einmal
+    /// richtig waren, aber die Schwelle noch nicht erreicht haben.
+    func level(threshold: Int) -> MasteryLevel {
+        let effective = max(1, threshold)
+        if consecutiveCorrect >= effective { return .mastered }
+        if consecutiveCorrect > 0 { return .almostMastered }
         return .open
     }
 
@@ -136,6 +153,23 @@ struct CardMastery: Codable, Equatable {
 
     mutating func markWrong() {
         consecutiveCorrect = 0
+        hasBeenWrong = true
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case consecutiveCorrect, hasBeenWrong
+    }
+
+    init(consecutiveCorrect: Int = 0, hasBeenWrong: Bool = false) {
+        self.consecutiveCorrect = consecutiveCorrect
+        self.hasBeenWrong = hasBeenWrong
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.consecutiveCorrect = try container.decodeIfPresent(Int.self, forKey: .consecutiveCorrect) ?? 0
+        // Abwärtskompatibel: ältere Session-Snapshots ohne Flag → false.
+        self.hasBeenWrong = try container.decodeIfPresent(Bool.self, forKey: .hasBeenWrong) ?? false
     }
 }
 
@@ -149,17 +183,34 @@ struct FlashcardSessionState: Codable, Equatable {
     var isCompleted: Bool
     var cardMastery: [String: CardMastery] = [:]
 
-    var masteredCardCount: Int {
-        cardMastery.values.filter { $0.level == .mastered }.count
+    /// Anzahl Karten, die bei dem gegebenen `threshold` schon aus dem Stapel
+    /// gefallen sind (consecutiveCorrect >= threshold).
+    func masteredCardCount(threshold: Int) -> Int {
+        cardMastery.values.filter { $0.level(threshold: threshold) == .mastered }.count
     }
 
-    var almostMasteredCardCount: Int {
-        cardMastery.values.filter { $0.level == .almostMastered }.count
+    /// Karten im Stapel, die schon einmal richtig waren, aber die Schwelle
+    /// noch nicht erreicht haben. Bei threshold = 1 gibt es keinen Zwischen-
+    /// Zustand → immer 0.
+    func almostMasteredCardCount(threshold: Int) -> Int {
+        cardMastery.values.filter { $0.level(threshold: threshold) == .almostMastered }.count
     }
 
-    var openCardCount: Int {
-        let totalTracked = cardMastery.count
-        let allCardCount = remainingCardIDs.count + masteredCardCount
-        return allCardCount - masteredCardCount - almostMasteredCardCount
+    /// Karten, die noch nicht richtig beantwortet wurden (consecutiveCorrect = 0).
+    func openCardCount(threshold: Int) -> Int {
+        let mastered = masteredCardCount(threshold: threshold)
+        let almost = almostMasteredCardCount(threshold: threshold)
+        let allCardCount = remainingCardIDs.count + mastered
+        return allCardCount - mastered - almost
+    }
+
+    /// Anzahl Karten, die mind. einmal falsch beantwortet wurden und noch im
+    /// Stapel sind (also nicht gemastered). Für die rote Problem-Markierung im
+    /// Fortschrittsbalken — `wrongCount` (globale Antwort-Summe) ist etwas
+    /// anderes und wird nur im Text-Label angezeigt.
+    func wrongAnsweredCardCount(threshold: Int) -> Int {
+        cardMastery.values.filter {
+            $0.hasBeenWrong && $0.level(threshold: threshold) != .mastered
+        }.count
     }
 }

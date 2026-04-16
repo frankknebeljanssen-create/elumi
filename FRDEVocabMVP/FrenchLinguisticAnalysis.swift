@@ -456,11 +456,28 @@ enum FrenchEntryAnalyzer {
         if tokens.count == 2, isFrenchArticleToken(tokens[0]), isLikelyNoun(tokens[1]) {
             return .singleWord
         }
+        // Artikel + beliebiges Wort → quasi immer ein Nomen-Ausdruck (auch wenn das
+        // Wort nicht im Lexikon ist). Nur ausnehmen, wenn Token[1] bekanntlich KEIN
+        // Nomen ist (z. B. seltener Fall substantiviertes Verb „le parler" — da würde
+        // das Wort aber als „verb" im Lexikon stehen).
+        if tokens.count == 2,
+           isFrenchArticleToken(tokens[0]),
+           !isKnownNonNounToken(tokens[1]) {
+            return .singleWord
+        }
 
         let endsWithSentencePunct = [".", "!", "?"].contains(where: { normalized.hasSuffix($0) })
         if endsWithSentencePunct && tokens.count >= 5 { return .sentence }
 
         return .phrase
+    }
+
+    /// Token ist im Lexikon als Verb/Adverb/Konjunktion/Präposition bekannt — also
+    /// KEIN Nomen. Wird genutzt, um „Artikel + Wort"-Fallback nicht zu übersteuern,
+    /// wenn das zweite Token klar funktional ist.
+    private static func isKnownNonNounToken(_ token: String) -> Bool {
+        guard let wc = StandardVocabularyLoader.wordClass(for: token) else { return false }
+        return ["verb", "adverb", "conjunction", "preposition", "pronoun"].contains(wc)
     }
 
     // MARK: - Lemma-Extraktion
@@ -499,6 +516,21 @@ enum FrenchEntryAnalyzer {
                 return (lemmas, isAuxiliaryOnly ? .medium : .high)
             }
             // Bei Phrase als Volltreffer kann es ein Hilfsverb sein — Confidence = medium.
+        }
+
+        // 2b) singleWord + „Artikel + unbekanntes Wort" → Nomen-Lemma synthetisieren
+        //     (z. B. „le garçon", wenn „garçon" noch nicht im Lexikon steht).
+        //     Nur wenn weder Volltreffer noch später ein Token-Match geliefert hat.
+        if displayType == .singleWord, lemmas.nouns.isEmpty, lemmas.verbs.isEmpty,
+           lemmas.adjectives.isEmpty, lemmas.adverbs.isEmpty {
+            let singleWordTokens = splitIntoTokens(normalized)
+            if singleWordTokens.count == 2,
+               isFrenchArticleToken(singleWordTokens[0]),
+               !isKnownNonNounToken(singleWordTokens[1]),
+               singleWordTokens[1].count >= 2 {
+                lemmas.nouns.append(singleWordTokens[1])
+                return (lemmas, .medium)
+            }
         }
 
         guard mode != .strict else {

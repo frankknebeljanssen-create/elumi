@@ -20,6 +20,13 @@ struct AppDestinationHost: View {
             quizDestination(launchContext: launchContext)
         case .hearts:
             heartsDestination
+        case .gameHub:
+            GameHubView(
+                feedbackPlayer: feedbackPlayer,
+                goHome: goHome,
+                openSettings: openSettings,
+                openInfo: openInfo
+            )
         case .lists(let launchContext):
             listsDestination(launchContext: launchContext)
         case .lexicon:
@@ -33,7 +40,10 @@ struct AppDestinationHost: View {
                 openInfo: openInfo
             )
         case .account:
-            AccountView(
+            // `.account`-Route zeigt jetzt die neue ProfileView — das
+            // alte AccountView.swift bleibt als Legacy-Datei im Repo,
+            // wird aber von nirgendwo mehr geöffnet.
+            ProfileView(
                 feedbackPlayer: feedbackPlayer,
                 goHome: goHome,
                 openSettings: openSettings,

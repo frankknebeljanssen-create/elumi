@@ -24,6 +24,13 @@ final class QuizSessionController: ObservableObject {
     var reusedCandidateIDs: Set<String> = []
     var lastMergedItemsRequest: MergeRequest?
 
+    /// Combo-Tracking für den ProgressService-Bonus (alle 5 richtig in Folge).
+    /// Reset bei `resetToSetup()` und bei falscher Antwort.
+    var sessionCurrentCombo: Int = 0
+    var sessionLongestCombo: Int = 0
+    /// Schutz gegen doppelte Reward-Vergabe — analog zum Flashcard-Flow.
+    var sessionRewardConsumed: Bool = false
+
     struct MergeRequest: Equatable {
         let listIDs: [UUID]
         let direction: Direction

@@ -9,117 +9,61 @@ struct HeartsView: View {
     @AppStorage(appElumiXPKey) var collectedXP = 0
     @AppStorage(appElumiCurrentStreakKey) var currentStreak = 0
     @AppStorage(appElumiBestStreakKey) var bestStreak = 0
-    @AppStorage(appFirstNameKey) var firstName = "Frank"
+    // Profilname wird zentral aus dem ProfileStore gelesen — kein eigener
+    // @AppStorage-Slot mehr, damit der Screen ohne Umwege reagiert, wenn
+    // der User seinen Namen im Profil ändert.
+    @ObservedObject var profileStore: ProfileStore = .shared
+    // Tagesaufgabe — wird im Lernstand-Strip als dezente Footer-Zeile
+    // eingeblendet, damit der Hub ohne eigene Mission-Sektion auskommt.
+    @ObservedObject var dailyChallengeStore: DailyChallengeStore = .shared
     @ObservedObject var feedbackPlayer: FeedbackPlayer
     @ObservedObject var listStore: VocabularyListStore
     let goHome: () -> Void
     let openSettings: () -> Void
     let sectionStyle: AppSectionStyle = .hearts
 
-    private let statColumns = [
-        GridItem(.flexible(), spacing: AppTheme.Spacing.xs),
-        GridItem(.flexible(), spacing: AppTheme.Spacing.xs)
-    ]
-
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.xxs) {
-                    Text("Sammlung")
-                        .font(AppTheme.Typography.largeTitle)
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
+            // Progress Hub — Phase 2 Redesign:
+            // Weg von „N kleine Einzelkarten gestapelt", hin zu *wenigen,
+            // klar getitelten Sektionen* mit einem dominanten Hero.
+            //
+            // Struktur:
+            //  1) Titel + personalisierter Untertitel
+            //  2) Hero (Level, XP, Progress, Meilenstein → in **einer** Karte)
+            //  3) Beute-Sektion (3 Währungen, eine Gruppe)
+            //  4) Lernstand-Sektion (Streak + Multiplier + Streak-Meilenstein)
+            //  5) Dein-Weg-Sektion (Level-Liste, eine Container-Karte mit Rows)
+            //
+            // Visueller Rhythmus: generös zwischen Sektionen (`Spacing.lg`),
+            // eng innerhalb (`10pt`). Kein doppeltes Card-Chrome mehr.
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+                progressHubHeader
 
-                    Text(introSubtitle)
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                progressHeroCard
+
+                VStack(alignment: .leading, spacing: 10) {
+                    ProgressSectionHeader(
+                        title: "Beute",
+                        subtitle: "Was du dir erspielt hast."
+                    )
+                    resourceStrip
                 }
 
-                heroCard
-
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                    Text("Beute")
-                        .font(AppTheme.Typography.cardTitle)
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-
-                    LazyVGrid(columns: statColumns, spacing: AppTheme.Spacing.sm) {
-                        statCard(
-                            title: "Würmchen",
-                            value: "\(collectedWorms)",
-                            subtitle: "Hauptwährung",
-                            snackKind: .wuermchen
-                        )
-
-                        statCard(
-                            title: "Wasserflöhe",
-                            value: "\(collectedWaterfloh)",
-                            subtitle: "Seltene Beute",
-                            snackKind: .wasserfloh
-                        )
-
-                        statCard(
-                            title: "Algenkugeln",
-                            value: "\(collectedAlgenkugel)",
-                            subtitle: "Legendäre Beute",
-                            snackKind: .algenkugel
-                        )
-
-                        statCard(
-                            title: "XP",
-                            value: "\(collectedXP)",
-                            subtitle: "Level-Fortschritt",
-                            systemImage: "sparkles"
-                        )
-                    }
+                VStack(alignment: .leading, spacing: 10) {
+                    ProgressSectionHeader(
+                        title: "Lernstand",
+                        subtitle: learningStandSubtitle
+                    )
+                    learningStandStrip
                 }
 
-                milestoneCard
-
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                    Text("Lernstand")
-                        .font(AppTheme.Typography.cardTitle)
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-
-                    LazyVGrid(columns: statColumns, spacing: AppTheme.Spacing.sm) {
-                        statCard(
-                            title: "Streak",
-                            value: "\(currentStreak)",
-                            subtitle: countLabel(currentStreak, singular: "Tag", plural: "Tage"),
-                            systemImage: "flame.fill"
-                        )
-
-                        statCard(
-                            title: "Multiplikator",
-                            value: String(format: "×%.1f", activeMultiplier),
-                            subtitle: "für Würmchen",
-                            systemImage: "bolt.fill"
-                        )
-
-                        statCard(
-                            title: "Eigene Listen",
-                            value: "\(listStore.customLists.count)",
-                            subtitle: countLabel(listStore.customLists.count, singular: "Liste", plural: "Listen"),
-                            systemImage: "list.bullet.rectangle.fill"
-                        )
-
-                        statCard(
-                            title: "Wortschatz",
-                            value: "\(totalWordsCount + totalPhrasesCount)",
-                            subtitle: "\(totalWordsCount) Wörter · \(totalPhrasesCount) Phrasen",
-                            systemImage: "sparkle.magnifyingglass"
-                        )
-                    }
-                }
-
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                    Text("Level")
-                        .font(AppTheme.Typography.cardTitle)
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-
-                    VStack(spacing: AppTheme.Spacing.sm) {
-                        ForEach(elumiLevelTiers) { tier in
-                            levelRow(for: tier)
-                        }
-                    }
+                VStack(alignment: .leading, spacing: 10) {
+                    ProgressSectionHeader(
+                        title: "Dein Weg",
+                        subtitle: "Erreicht · aktuell · kommt noch."
+                    )
+                    levelPathList
                 }
             }
             .padding(.horizontal, AppLayout.screenPadding)
@@ -137,13 +81,15 @@ struct HeartsView: View {
                 .padding(.horizontal, AppLayout.screenPadding)
                 .padding(.top, AppLayout.topBarInsetTop)
         } bottomBar: {
+            // Progress Hub ist nicht mehr der Footer-Favorite-Target — der
+            // Snack-Button öffnet jetzt den Game Hub. Daher `isHeartsActive: false`.
             AppBottomBar(
                 feedbackPlayer: feedbackPlayer,
                 onHome: { goHome() },
                 onFavorite: nil,
                 onScan: nil,
                 onSettings: { openSettings() },
-                isHeartsActive: true
+                isHeartsActive: false
             )
         }
     }

@@ -1,13 +1,29 @@
 import SwiftUI
 
+/// **Legacy** — nicht mehr via `.account`-Route geöffnet. Die aktive
+/// Profilansicht ist jetzt `ProfileView`. Diese Datei bleibt nur noch,
+/// damit externe Call-Sites (falls irgendwo ein Direkt-Aufruf übersehen
+/// wurde) nicht brechen. Kann bei der nächsten Aufräum-Runde entfernt
+/// werden — der Route-Host zeigt ausschließlich `ProfileView`.
 struct AccountView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.appUsesGlobalChrome) private var usesGlobalChrome
-    @AppStorage(appFirstNameKey) private var firstName = "Frank"
+    @ObservedObject private var profileStore = ProfileStore.shared
     @ObservedObject var feedbackPlayer: FeedbackPlayer
     let goHome: () -> Void
     let openSettings: () -> Void
     let openInfo: () -> Void
+    /// Backing-Binding, damit die alte Text-Field-UI mit minimalem Umbau
+    /// weiter funktioniert. Schreibt über den ProfileStore zurück.
+    private var firstNameBinding: Binding<String> {
+        Binding(
+            get: { profileStore.profile?.displayName ?? "" },
+            set: { newValue in
+                profileStore.update { $0.displayName = newValue }
+            }
+        )
+    }
+    private var firstName: String { profileStore.displayName }
     private let sectionStyle = AppSectionStyle.home
 
     var body: some View {
@@ -31,7 +47,7 @@ struct AccountView: View {
                 Text("Vorname")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
 
-                TextField("Frank", text: $firstName)
+                TextField("Dein Vorname", text: firstNameBinding)
                     .font(.system(size: 24, weight: .bold, design: .rounded))
                     .textFieldStyle(.plain)
                     .padding(.horizontal, 14)

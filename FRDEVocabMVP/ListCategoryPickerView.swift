@@ -62,7 +62,9 @@ struct ListCategoryPickerView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Ausgewählte Listen")
                     .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .foregroundStyle(AppTheme.Colors.cardLabel)
+                    .textCase(.uppercase)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                 if selectedLists.isEmpty {
                     Text("Keine Listen gewählt")
@@ -252,9 +254,9 @@ struct ListSelectionSheet: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .appCardBackground(style, intensity: isSelected ? 0.22 : 0.05, cornerRadius: 18)
+            .appCardBackground(style, intensity: isSelected ? 0.22 : 0.05, cornerRadius: 14)
             .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .stroke(isSelected ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
             )
         }
@@ -348,9 +350,9 @@ struct TrainingCategoryListSheet: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .appCardBackground(style, intensity: isSelected ? 0.22 : 0.05, cornerRadius: 18)
+            .appCardBackground(style, intensity: isSelected ? 0.22 : 0.05, cornerRadius: 14)
             .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .stroke(isSelected ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
             )
         }

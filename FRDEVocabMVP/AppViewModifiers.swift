@@ -84,4 +84,39 @@ extension View {
                 )
         }
     }
+
+    /// Setup-Card-Hintergrund (Karteikarten-Auswahl-Screen und analoge Setups).
+    /// Nutzt die zentralen Farb-Tokens `setupCardBackground` (#0F2D48) +
+    /// `setupCardBorder` (#1A3A55) — Single Source of Truth, sodass alle
+    /// Setup-Cards einheitlich aussehen, unabhängig vom Modul-Akzent.
+    func appSetupCardBackground(cornerRadius: CGFloat = AppTheme.Radius.lg) -> some View {
+        background {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(AppTheme.Colors.setupCardBackground)
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .stroke(AppTheme.Colors.setupCardBorder, lineWidth: 1)
+                )
+        }
+        .shadow(
+            color: AppTheme.Shadow.card.color,
+            radius: AppTheme.Shadow.card.radius,
+            x: AppTheme.Shadow.card.x,
+            y: AppTheme.Shadow.card.y
+        )
+    }
+}
+
+/// Globaler Section-Header-Label für Setup-Cards (z. B. „AUSGEWÄHLTE LISTEN",
+/// „ANZAHL DER KARTEN"). Single Source of Truth für app-weite Konsistenz.
+/// Spec: 10pt, weight 600, tracking 1.5, uppercase, linksbündig,
+/// Farbe `cardLabel` (= elumiAmber #FFD166).
+@ViewBuilder
+func setupCardLabel(_ text: String) -> some View {
+    Text(text)
+        .font(.system(size: 10, weight: .semibold, design: .rounded))
+        .tracking(1.5)
+        .foregroundStyle(AppTheme.Colors.cardLabel)
+        .textCase(.uppercase)
+        .frame(maxWidth: .infinity, alignment: .leading)
 }

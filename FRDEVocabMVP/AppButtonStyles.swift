@@ -6,7 +6,9 @@ struct AppPrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(AppTheme.Typography.button)
-            .foregroundStyle(Color.white)
+            // Schwarze Schrift — der CTA-Hintergrund (#FFD166, sonniger Amber)
+            // ist hell genug, dass weiße Schrift unleserlich wäre.
+            .foregroundStyle(Color.black)
             .frame(maxWidth: .infinity)
             .frame(minHeight: AppTheme.Layout.buttonHeight)
             .background(
@@ -15,7 +17,7 @@ struct AppPrimaryButtonStyle: ButtonStyle {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                    .stroke(Color.white.opacity(0.14), lineWidth: 1)
+                    .stroke(Color.black.opacity(0.10), lineWidth: 1)
             )
             .shadow(
                 color: AppTheme.Shadow.button.color,

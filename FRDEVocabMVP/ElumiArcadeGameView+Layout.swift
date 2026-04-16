@@ -131,6 +131,13 @@ extension ElumiArcadeGameView {
             )
             .onAppear {
                 gameSize = geometry.size
+                // AutoStart-Pfad: Credit-Abzug + CTA wurden schon vom
+                // aufrufenden `GameHubView` erledigt → Overlay überspringen
+                // und direkt starten.
+                if autoStart, showingStartOverlay {
+                    showingStartOverlay = false
+                    startGame()
+                }
             }
             .onChange(of: geometry.size) { _, newSize in
                 gameSize = newSize
@@ -141,7 +148,10 @@ extension ElumiArcadeGameView {
             await runGameLoops()
         }
         .onDisappear {
-            isPlaying = false
+            // Spiel endgültig beenden — egal auf welchem Weg der Cover
+            // dismissed wurde (X-Button, Footer-Wechsel, System-Geste).
+            // Musik, BGM, Loops und Ambient müssen zuverlässig verstummen.
+            exitArcadeSilently()
         }
     }
 
@@ -189,6 +199,10 @@ extension ElumiArcadeGameView {
             // Top row: close button, score, lives
             HStack(spacing: 0) {
                 Button {
+                    // Explizit: erst Audio + Spielzustand stoppen, dann dismiss.
+                    // `onDisappear` ruft das gleiche, aber dieser direkte Weg
+                    // sorgt dafür, dass es zuverlässig vor dem Cover-Close passiert.
+                    exitArcadeSilently()
                     dismiss()
                 } label: {
                     Image(systemName: "xmark")
@@ -196,7 +210,7 @@ extension ElumiArcadeGameView {
                         .frame(width: 32, height: 32)
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .background(AppTheme.Colors.surface.opacity(0.92))
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }
                 .buttonStyle(.plain)
 

@@ -50,11 +50,10 @@ enum VerbformsTense: String, CaseIterable, Identifiable {
         true // wird dynamisch geprüft
     }
 
-    /// Aktuell spielbar: Präsens + Imparfait. Futur und Passé composé bleiben
-    /// gedimmt („demnächst"), bis sie didaktisch sauber integriert sind.
-    var isAvailable: Bool {
-        self == .present || self == .imparfait
-    }
+    /// Alle vier Tempora sind spielbar. Die Engine erkennt Präsens, Imparfait,
+    /// Futur simple und Passé composé aus der Forms-Tabelle (siehe
+    /// `detectTenseFromSet`), und `groupFormsByTense` filtert inkonsistente Sets.
+    var isAvailable: Bool { true }
 }
 
 struct VerbformsQuestion: Identifiable {

@@ -80,8 +80,11 @@ struct AppBottomBar: View {
 
                 Spacer(minLength: 0)
 
+                // Menü-Icon: „Kreis mit drei Punkten" statt Zahnrad. Visuell
+                // weniger technisch-rigide und gleichzeitig ein etabliertes
+                // „mehr"-Symbol — führt weiterhin auf App-Einstellungen.
                 AppBottomBarIconButton(
-                    systemImage: isSettingsActive ? "gearshape.fill" : "gearshape",
+                    systemImage: isSettingsActive ? "ellipsis.circle.fill" : "ellipsis.circle",
                     accessibilityLabel: "Einstellungen",
                     action: onSettings,
                     isActive: isSettingsActive,

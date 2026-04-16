@@ -4,53 +4,38 @@ extension FlashcardsView {
     var flashcardPromptCard: some View {
         Group {
             if let currentFlashCard, sessionStore.hasActiveSession {
-                VStack(spacing: 10) {
-                    Text(progressText)
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                        .frame(maxWidth: .infinity, alignment: .center)
-
-                    masteryProgressBar
-                        .frame(height: 8)
-                        .clipShape(Capsule())
-                        .padding(.bottom, AppTheme.Spacing.sm)
-                }
-
-                ZStack(alignment: .bottomTrailing) {
-                        ZStack {
-                            flashcardFace(
-                                text: currentFlashCard.prompt,
-                                isAnswerSide: false,
-                                languageCode: currentFlashCard.promptLanguageCode,
-                                wordClassLabel: currentFlashCard.wordClassLabel(for: currentFlashCard.promptLanguageCode)
-                            )
-                            .opacity(interaction.isFlashcardFlipped ? 0 : 1)
-
-                            flashcardFace(
-                                text: currentFlashCard.answer,
-                                isAnswerSide: true,
-                                languageCode: currentFlashCard.answerLanguageCode,
-                                wordClassLabel: currentFlashCard.wordClassLabel(for: currentFlashCard.answerLanguageCode)
-                            )
-                            .opacity(interaction.isFlashcardFlipped ? 1 : 0)
-                            .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0), perspective: 0.72)
-                        }
-                        .rotation3DEffect(
-                            .degrees(interaction.isFlashcardFlipped ? 180 : 0),
-                            axis: (x: 0, y: 1, z: 0),
-                            perspective: 0.72
+                // Hinweis: progressText / masteryProgressBar wurden in den Header-
+                // Stats-Row (`flashcardStatsRow`) verschoben, damit die Karteikarte
+                // selbst optisch ruhig bleibt.
+                VStack(spacing: 6) {
+                    // Stack-Badge unten links/rechts entfernt — die Stats-Row
+                    // oben zeigt die gleichen Counts schon prominent.
+                    ZStack {
+                        flashcardFace(
+                            text: currentFlashCard.prompt,
+                            isAnswerSide: false,
+                            languageCode: currentFlashCard.promptLanguageCode,
+                            wordClassLabel: currentFlashCard.wordClassLabel(for: currentFlashCard.promptLanguageCode)
                         )
-                        .shadow(color: .black.opacity(0.08), radius: 14, x: 0, y: 8)
-                        .shadow(color: AppTheme.Shadow.card.color, radius: 14, x: 0, y: 8)
-                        .animation(.spring(response: 0.36, dampingFraction: 0.82), value: interaction.isFlashcardFlipped)
+                        .opacity(interaction.isFlashcardFlipped ? 0 : 1)
 
-                        FlashcardStackBadge(
-                            remainingCount: sessionStore.remainingCount,
-                            totalCount: sessionStore.totalCount
+                        flashcardFace(
+                            text: currentFlashCard.answer,
+                            isAnswerSide: true,
+                            languageCode: currentFlashCard.answerLanguageCode,
+                            wordClassLabel: currentFlashCard.wordClassLabel(for: currentFlashCard.answerLanguageCode)
                         )
-                        .padding(.trailing, 8)
-                        .padding(.bottom, 8)
+                        .opacity(interaction.isFlashcardFlipped ? 1 : 0)
+                        .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0), perspective: 0.72)
                     }
+                    .rotation3DEffect(
+                        .degrees(interaction.isFlashcardFlipped ? 180 : 0),
+                        axis: (x: 0, y: 1, z: 0),
+                        perspective: 0.72
+                    )
+                    .shadow(color: .black.opacity(0.08), radius: 14, x: 0, y: 8)
+                    .shadow(color: AppTheme.Shadow.card.color, radius: 14, x: 0, y: 8)
+                    .animation(.spring(response: 0.36, dampingFraction: 0.82), value: interaction.isFlashcardFlipped)
                     .frame(maxWidth: .infinity)
                     .frame(height: flashcardFaceHeight)
                     .contentShape(Rectangle())
@@ -66,6 +51,15 @@ extension FlashcardsView {
                             )
                         }
                     }
+                    // Drag-State + Rotation: Karte folgt dem Finger und kippt
+                    // leicht in Wischrichtung (max. ±8°).
+                    .offset(x: interaction.swipeDragOffset)
+                    .rotationEffect(.degrees(swipeRotationDegrees))
+                    .gesture(flashcardSwipeGesture)
+                    // KEIN globaler `.animation(value:)` — wir steuern alle
+                    // Bewegungen explizit (live folgen beim Drag, Spring-Back
+                    // und Fly-Out-/Slide-In bei Karten-Wechsel).
+                }
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.vertical, 4)
                 .offset(x: interaction.cardFlyOutOffset)
@@ -106,13 +100,17 @@ extension FlashcardsView {
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .center)
             } else if sessionStore.hasActiveSession {
+                // 2pt kleiner als `AppTheme.Typography.body` (14 statt 16),
+                // damit die „Antwort"-Card kompakter wirkt.
                 Text("Antwort")
-                    .font(AppTheme.Typography.body)
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                 Text(speechController.transcript.isEmpty ? "Noch nichts erkannt" : speechController.transcript)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(speechController.transcript.isEmpty ? AppTheme.Colors.textSecondary : AppTheme.Colors.textPrimary)
+                    // Idle: elumiBlue (Info-Token, konsistent mit Setup-Subtitles).
+                    // Aktiver Transcript: CTA-Amber (#FFD166) — neuer App-Akzent.
+                    .foregroundStyle(speechController.transcript.isEmpty ? AppTheme.Colors.elumiBlue : AppTheme.Colors.cta)
                     .lineLimit(2)
                     .minimumScaleFactor(0.7)
             } else {
@@ -135,34 +133,164 @@ extension FlashcardsView {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(minHeight: 46, alignment: .leading)
+        .frame(minHeight: 38, alignment: .leading)
         .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .appCardBackground(sectionStyle, intensity: 0.09)
+        .padding(.vertical, 6)
+        .appSetupCardBackground()
     }
 
     var masteryProgressBar: some View {
         GeometryReader { geo in
             let total = max(sessionStore.totalCount, 1)
-            let mastered = CGFloat(sessionStore.masteredCount) / CGFloat(total)
-            let almost = CGFloat(sessionStore.almostMasteredCount) / CGFloat(total)
             let width = geo.size.width
+            let masteredW = width * CGFloat(sessionStore.masteredCount) / CGFloat(total)
+            let almostW = width * CGFloat(sessionStore.almostMasteredCount) / CGFloat(total)
+            let wrongW = width * CGFloat(sessionStore.wrongAnsweredCardCount) / CGFloat(total)
 
             ZStack(alignment: .leading) {
-                // Background (open)
+                // Hintergrund: noch offene Karten (grau).
                 Capsule()
                     .fill(AppTheme.Colors.textSecondary.opacity(0.2))
 
-                // Almost mastered (yellow)
+                // Rote „Problem"-Markierung am rechten Rand — unique Karten,
+                // die mind. einmal falsch waren und noch im Stapel sind.
+                // Über den grauen Hintergrund gelegt, wird aber von den
+                // grünen/gelben Progress-Segmenten (links) überdeckt.
+                if wrongW > 0 {
+                    HStack(spacing: 0) {
+                        Spacer(minLength: 0)
+                        Capsule()
+                            .fill(AppTheme.Colors.error.opacity(0.75))
+                            .frame(width: wrongW)
+                    }
+                }
+
+                // Fast-sicher-Bereich (gelb) — Mastered + Almost.
                 Capsule()
                     .fill(AppTheme.Colors.warning.opacity(0.7))
-                    .frame(width: max(0, width * (mastered + almost)))
+                    .frame(width: max(0, masteredW + almostW))
 
-                // Mastered (green)
+                // Sicher (grün) — vollständig gemasterte Karten.
                 Capsule()
                     .fill(AppTheme.Colors.success)
-                    .frame(width: max(0, width * mastered))
+                    .frame(width: max(0, masteredW))
+            }
+        }
+    }
+
+    /// Swipe-Geste auf der Karteikarte. Karte folgt dem Finger; bei einer
+    /// horizontalen Bewegung > 50pt wird die Karte „weggewischt" und die
+    /// nächste/vorherige Karte angezeigt. Sonst springt sie zurück.
+    var flashcardSwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 8)
+            .onChanged { value in
+                guard isSessionReady else { return }
+                // Vertikale Drags ignorieren — verhindert Konflikte mit Scroll.
+                guard abs(value.translation.width) > abs(value.translation.height) else { return }
+                // Live ohne Animation, damit die Karte exakt am Finger klebt.
+                interaction.swipeDragOffset = value.translation.width
+            }
+            .onEnded { value in
+                guard isSessionReady else {
+                    withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
+                        interaction.swipeDragOffset = 0
+                    }
+                    return
+                }
+                let threshold: CGFloat = 50
+                let dx = value.translation.width
+
+                if dx <= -threshold {
+                    // Wisch nach links → nächste Karte
+                    triggerSwipeOut(direction: .left)
+                } else if dx >= threshold {
+                    // Wisch nach rechts → vorherige Karte
+                    triggerSwipeOut(direction: .right)
+                } else {
+                    // Zu kurz → Spring-Back zur Mitte
+                    withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
+                        interaction.swipeDragOffset = 0
+                    }
+                }
+            }
+    }
+
+    /// Rotations-Winkel proportional zur Drag-Distanz, gedeckelt auf ±8°.
+    /// Computed Property statt inline-Math, damit der Type-Check sauber bleibt.
+    var swipeRotationDegrees: Double {
+        let raw = Double(interaction.swipeDragOffset) / 28.0
+        return min(max(raw, -8), 8)
+    }
+
+    /// Wisch-Hinweis-Card — separat von `flashcardPromptCard`, damit sie nicht
+    /// vom Fly-Out-Modifier der Karte mitgezogen wird und das Layout sie
+    /// unabhängig zwischen Karte und Antwort-Block platzieren kann.
+    /// Verschwindet nach dem ersten Swipe (`hasSeenSwipeHint`).
+    @ViewBuilder
+    var flashcardSwipeHintCard: some View {
+        if !interaction.hasSeenSwipeHint, sessionStore.hasActiveSession {
+            HStack(spacing: 10) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 13, weight: .semibold))
+                Text("wischen")
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+            }
+            .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.7))
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity)
+            .appSetupCardBackground()
+            .transition(.opacity)
+        }
+    }
+
+    enum SwipeDirection { case left, right }
+
+    /// Animiert die Karte aus dem Bildschirm raus, gibt Haptic-Feedback und
+    /// triggert dann den Karten-Wechsel. Die NEUE Karte fliegt anschließend
+    /// von der gegenüberliegenden Seite hinein — Wisch nach links: aktuelle
+    /// Karte raus links, neue rein von rechts; Wisch nach rechts: aktuelle
+    /// raus rechts, neue (vorherige) rein von links.
+    func triggerSwipeOut(direction: SwipeDirection) {
+        // Haptic Feedback — bewusst leicht (light) für unauffällige Bestätigung.
+        let haptic = UIImpactFeedbackGenerator(style: .light)
+        haptic.impactOccurred()
+
+        interaction.markSwipeHintSeen()
+
+        let flyOut: CGFloat = direction == .left ? -500 : 500
+        let outDuration: TimeInterval = 0.22
+
+        withAnimation(.easeOut(duration: outDuration)) {
+            interaction.swipeDragOffset = flyOut
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + outDuration) {
+            // 1. Karten-Daten wechseln
+            switch direction {
+            case .left:
+                if isSessionReady { skipCard() }
+            case .right:
+                if canRestorePreviousFlashcard { restorePreviousFlashcard() }
+            }
+
+            // 2. Neue Karte SOFORT auf gegenüberliegende Seite teleportieren
+            //    (ohne Animation), damit der nachfolgende Slide-In sichtbar wird.
+            var instant = Transaction()
+            instant.disablesAnimations = true
+            withTransaction(instant) {
+                interaction.swipeDragOffset = -flyOut
+            }
+
+            // 3. Im nächsten RunLoop-Tick die neue Karte in die Mitte gleiten
+            //    lassen — easeOut wirkt natürlicher als spring fürs Slide-In.
+            DispatchQueue.main.async {
+                withAnimation(.easeOut(duration: 0.28)) {
+                    interaction.swipeDragOffset = 0
+                }
             }
         }
     }
 }
+

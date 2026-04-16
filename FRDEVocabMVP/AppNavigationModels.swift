@@ -5,7 +5,8 @@ enum AppScreen: Hashable {
     case train(TrainingLaunchContext?)
     case flashcards(FlashcardLaunchContext?)
     case quiz(QuizLaunchContext?)
-    case hearts
+    case hearts      // Progress Hub (Fortschritt) — reached via Home Board tap
+    case gameHub     // Game Hub (Reward + Spiel-Start) — reached via Footer-Snack
     case lists(ListLaunchContext?)
     case lexicon
     case scan

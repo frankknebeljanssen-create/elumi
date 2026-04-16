@@ -48,9 +48,12 @@ struct QuizView: View {
     @State var awardedHearts = 0
     @State var awardedWaterfloh = 0
     @State var awardedAlgenkugel = 0
-    @State var awardedXP = 0
     @State var unlockedRewardLevels: [ElumiLevelTier] = []
     @State var didPersistHearts = false
+    /// Outcome aus dem zentralen `ProgressService` — wird in `persistHeartsIfNeeded`
+    /// gesetzt und speist die `SessionSummaryView` im Ergebnis-Screen.
+    @State var quizSessionOutcome: SessionRewardOutcome?
+    @ObservedObject var progressStore = ProgressStore.shared
     @State var advanceTask: DispatchWorkItem?
     @State var typingInput = ""
     @State var typingLocked = false
@@ -92,6 +95,18 @@ struct QuizView: View {
         session.canStartQuiz
     }
 
+    /// Master-Session-Setup-Estimate für die Gamification-Bar.
+    /// Berechnet aus der aktuellen Quiz-Config (Fragenzahl) + zentralen Werten.
+    @MainActor
+    var quizSessionEstimate: SessionEstimate {
+        let config = SessionConfig(module: .quiz, itemCount: session.questionCountOption.rawValue)
+        return SessionSetupEstimator.estimate(
+            for: config,
+            progress: progressStore.progress,
+            dailyChallenge: DailyChallengeStore.shared.challenge
+        )
+    }
+
     var currentQuestion: QuizQuestion? {
         session.currentQuestion
     }
@@ -129,6 +144,9 @@ struct QuizView: View {
         }
     }
 
+    /// Fasst die Quiz-spezifischen Elumi-Rewards (Hearts-Sammlung) zusammen.
+    /// XP läuft jetzt ausschließlich über `SessionSummaryView` — wird hier
+    /// bewusst NICHT mehr dupliziert (sonst divergieren alte/neue Rechnung).
     var rewardSummaryText: String {
         var parts: [String] = []
 
@@ -140,9 +158,6 @@ struct QuizView: View {
         }
         if awardedAlgenkugel > 0 {
             parts.append("+\(awardedAlgenkugel) Algenkugeln")
-        }
-        if awardedXP > 0 {
-            parts.append("+\(awardedXP) XP")
         }
 
         return parts.isEmpty ? "Quiz beendet" : parts.joined(separator: " · ")

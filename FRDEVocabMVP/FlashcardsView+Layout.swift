@@ -28,6 +28,9 @@ extension FlashcardsView {
             ZStack(alignment: .top) {
                 flashcardsRootContent
                 flashcardTypedAnswerOverlay
+                // Combo-Toast-Overlay — zeigt bei 5/10/15/... richtigen Karten
+                // hintereinander einen kurzen Bonus-Hinweis.
+                ComboToastOverlay()
             }
         )
     }
@@ -90,12 +93,9 @@ extension FlashcardsView {
 
     var flashcardSessionScreen: some View {
         VStack(spacing: 0) {
-            ScreenHeaderCard(
-                style: sectionStyle,
-                title: "Karteikarten",
-                subtitle: "",
-                systemImage: "rectangle.stack.fill"
-            )
+            // Kompakter Header: kleiner „< Zurück" links + zentrierter Titel.
+            // Ersetzt die alte ScreenHeaderCard + den großen Zurück-Button.
+            flashcardSessionHeader
 
             if isFlashcardSessionCompleted {
                 Spacer().frame(height: AppTheme.Spacing.sm)
@@ -115,29 +115,6 @@ extension FlashcardsView {
                 .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
                 .padding(.horizontal, flashcardSessionCardInset)
             } else {
-                // Navigation
-                Spacer().frame(height: 4)
-
-                Button {
-                    handleBackNavigation()
-                } label: {
-                    Label("Zurück", systemImage: "arrow.left")
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 40)
-                        .font(AppTheme.Typography.button)
-                        .foregroundStyle(sectionStyle.accent)
-                        .background(
-                            RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                                .fill(AppTheme.Colors.secondarySurface)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                                .stroke(sectionStyle.accent.opacity(0.18), lineWidth: 1)
-                        )
-                }
-                .buttonStyle(.plain)
-                .padding(.horizontal, flashcardSessionCardInset)
-
                 if isWaitingToStart {
                     // "Zum Starten tippen" overlay
                     Spacer()
@@ -163,22 +140,41 @@ extension FlashcardsView {
 
                     Spacer()
                 } else {
-                    // Prompt Card
-                    Spacer().frame(height: AppTheme.Spacing.lg)
+                    // Reihenfolge (von oben nach unten):
+                    //   1. Kleiner fester Abstand zum Header
+                    //   2. Stats-Row (Kann ich / Offen / Nochmal)
+                    //   3. Karteikarte
+                    //   4. Wisch-Hinweis
+                    //   5. Antwort-Card (Spracherkennung)
+                    //   6. Mikro / Lautsprecher / Tastatur — bleiben am Footer
+                    //
+                    // Stats bleiben ÜBER der Karte. Mikro etc. sitzen am unteren
+                    // Rand für kurze Tap-Wege.
+                    Spacer().frame(height: AppTheme.Spacing.md)
+
+                    flashcardStatsRow
+                        .padding(.horizontal, flashcardSessionCardInset)
+
+                    Spacer().frame(height: AppTheme.Spacing.sm)
 
                     flashcardPromptCard
                         .padding(.horizontal, flashcardSessionCardInset)
 
-                    // Action Buttons
-                    Spacer().frame(height: AppTheme.Spacing.lg)
-
-                    flashcardActionButtons
+                    flashcardSwipeHintCard
                         .padding(.horizontal, flashcardSessionCardInset)
+                        .padding(.top, 6)
 
-                    // Response Card
-                    Spacer(minLength: AppTheme.Spacing.lg)
+                    Spacer().frame(height: AppTheme.Spacing.sm)
 
                     flashcardResponseCard
+                        .padding(.horizontal, flashcardSessionCardInset)
+
+                    // Größerer Abstand vor dem Action-Block, damit Antwort-
+                    // Card und Mikro/Lautsprecher/Tastatur klar voneinander
+                    // abgesetzt sind.
+                    Spacer().frame(height: 28)
+
+                    flashcardPrimaryActions
                         .padding(.horizontal, flashcardSessionCardInset)
                 }
             }
@@ -194,29 +190,25 @@ extension FlashcardsView {
         ScrollViewReader { proxy in
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                    ScreenHeaderCard(
-                        style: sectionStyle,
-                        title: "Karteikarten",
-                        subtitle: "",
-                        systemImage: "rectangle.stack.fill"
-                    )
-
-                    Button {
-                        handleBackNavigation()
-                    } label: {
-                        Label("Zurück", systemImage: "arrow.left")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))
+                    // Kompakter Header analog zum Session-Screen — kleiner
+                    // „< Zurück" links + zentrierter Karteikarten-Titel. Die
+                    // alte ScreenHeaderCard + großer Zurück-Button wurden
+                    // entfernt.
+                    flashcardSetupHeader
 
                     flashcardsListSelectionCard
-                        .padding(.bottom, AppTheme.Spacing.sm)
 
                     if isDictionarySelectedInStack {
                         flashcardDictionaryLevelCard
                     }
 
                     flashcardCountLimitCard
+
+                    flashcardMasteryThresholdCard
+
+                    flashcardHungerCard
+
+                    flashcardStatsTrioCard
 
                     Spacer(minLength: 0)
                 }
@@ -233,7 +225,8 @@ extension FlashcardsView {
                 }
                 .buttonStyle(AppPrimaryButtonStyle(color: canStartSetup ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled))
                 .disabled(!canStartSetup)
-                .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 16)
+                // Näher an den Footer rücken — vorher waren noch +16pt Luft.
+                .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 4)
             }
             .onChange(of: isCardCountFieldFocused) { _, isFocused in
                 guard isFocused else { return }
@@ -276,48 +269,56 @@ extension FlashcardsView {
             feedbackPlayer.playTabSwitch()
             stackListPickerActive = true
         } label: {
-            HStack(alignment: .center, spacing: 14) {
-                Image(systemName: "list.bullet.rectangle.fill")
-                    .font(.system(size: 32, weight: .bold))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            // Header GANZ links oben (linksbündig über allem) statt neben
+            // dem Icon. Konsistent mit den anderen Setup-Cards.
+            VStack(alignment: .leading, spacing: 8) {
+                flashcardSetupCardLabel("Ausgewählte Listen")
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Ausgewählte Listen")
-                        .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.cta)
-                        .textCase(.uppercase)
-                        .padding(.bottom, 2)
-                    if hasSelection {
-                        ForEach(selectedLists.prefix(AppLayout.maxSelectableLists)) { list in
-                            Text(list.name)
-                                .font(.system(size: 17, weight: .bold, design: .rounded))
-                                .foregroundStyle(AppTheme.Colors.textPrimary)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.7)
+                HStack(alignment: .center, spacing: 14) {
+                    Image(systemName: "list.bullet.rectangle.fill")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundStyle(sectionStyle.accent)
+                            .frame(width: 36, height: 36)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            if hasSelection {
+                                ForEach(selectedLists.prefix(AppLayout.maxSelectableLists)) { list in
+                                    Text(list.name)
+                                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.7)
+                                }
+                                Text("\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n") · \(totalCards) Karten gesamt")
+                                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                                    .foregroundStyle(AppTheme.Colors.elumiBlue)
+                                    .padding(.top, 2)
+                            } else {
+                                Text("Keine Liste gewählt")
+                                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                                Text("Tippe zum Auswählen")
+                                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                                    .foregroundStyle(AppTheme.Colors.elumiBlue)
+                            }
                         }
-                        Text("\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n") · \(totalCards) Karten gesamt")
-                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
-                            .padding(.top, 2)
-                    } else {
-                        Text("Keine Liste gewählt")
-                            .font(.system(size: 17, weight: .bold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textPrimary)
-                        Text("Tippe zum Auswählen")
-                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                        // Stift in rundem Pill — dezent, nicht zu dominant.
+                        Image(systemName: "pencil")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(sectionStyle.accent)
+                            .frame(width: 32, height: 32)
+                            .background(
+                                Circle()
+                                    .fill(sectionStyle.accent.opacity(0.18))
+                            )
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                Image(systemName: "pencil.circle.fill")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(sectionStyle.accent)
-            }
             .padding(.horizontal, 16)
-            .padding(.vertical, 28)
-            .frame(maxWidth: .infinity, minHeight: 100)
-            .appCardBackground(sectionStyle, intensity: hasSelection ? 0.18 : 0.07, cornerRadius: AppLayout.largeCardCornerRadius)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity)
+            .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
         }
         .buttonStyle(.plain)
         .sheet(isPresented: $stackListPickerActive) {

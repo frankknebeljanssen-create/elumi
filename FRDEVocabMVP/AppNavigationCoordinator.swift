@@ -40,6 +40,13 @@ final class AppNavigationCoordinator: ObservableObject {
         return false
     }
 
+    var isGameHubScreenActive: Bool {
+        if case .gameHub = currentScreen {
+            return true
+        }
+        return false
+    }
+
     var isScanScreenActive: Bool {
         if case .scan = currentScreen {
             return true
@@ -69,6 +76,11 @@ final class AppNavigationCoordinator: ObservableObject {
     func openHeartsScreen() {
         guard currentScreen != .hearts else { return }
         navigationPath.append(.hearts)
+    }
+
+    func openGameHubScreen() {
+        guard currentScreen != .gameHub else { return }
+        navigationPath.append(.gameHub)
     }
 
     func openLexiconScreen() {
