@@ -29,9 +29,14 @@ struct SettingsView: View {
 
                     Spacer(minLength: 0)
 
-                    Image(systemName: feedbackPlayer.areSoundsEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundStyle(sectionStyle.accent)
+                    // Cartoon-Lautsprecher toggelt zwischen „an" und „aus".
+                    // foregroundStyle entfällt — das SVG bringt eigene
+                    // Farbigkeit mit (Sound-an: bunt, Sound-aus: rote
+                    // Verbots-Markierung im SVG selbst).
+                    ElumiIconView(
+                        icon: feedbackPlayer.areSoundsEnabled ? .lautsprecherOn : .lautsprecherOff,
+                        size: 28
+                    )
                 }
 
                 Toggle(isOn: $feedbackPlayer.areSoundsEnabled) {
@@ -64,9 +69,8 @@ struct SettingsView: View {
 
                     Spacer(minLength: 0)
 
-                    Image(systemName: "person.crop.circle.fill")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundStyle(sectionStyle.accent)
+                    // Cartoon-Mein-Konto statt SF `person.crop.circle.fill`.
+                    ElumiIconView(icon: .meinKonto, size: 28)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(18)
@@ -88,9 +92,8 @@ struct SettingsView: View {
 
                     Spacer(minLength: 0)
 
-                    Image(systemName: "info.circle.fill")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundStyle(sectionStyle.accent)
+                    // Cartoon-Info statt SF `info.circle.fill`.
+                    ElumiIconView(icon: .info, size: 28)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(18)
@@ -186,9 +189,8 @@ struct SettingsView: View {
 
                 Spacer(minLength: 0)
 
-                Image(systemName: "gamecontroller.fill")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(sectionStyle.accent)
+                // Cartoon-Elumi-Spiel statt SF `gamecontroller.fill`.
+                ElumiIconView(icon: .elumiSpiel, size: 28)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(18)
