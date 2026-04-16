@@ -224,20 +224,25 @@ struct HomeView: View {
                     mainQuestion: "Was möchtest du heute lernen?"
                 )
 
-                // +10 pt Luft zwischen Header-Frage und dem Progress-Board
-                // — der Header „atmet" sichtbar, bevor die Werteleiste
-                // beginnt.
+                // Reihenfolge bewusst auf Flow optimiert: direkt nach
+                // dem Greeting kommt die **Primary Action** (Fokus /
+                // Continue). Die Status-Card mit Streak/Level/XP steht
+                // darunter als Kontext — sie ist wichtig, aber kein
+                // Handlungsimpuls.
+                //
+                // Fokus + Continue sind gemergt: es wird immer nur eine
+                // Karte gezeigt. Priorität: fortsetzbare Session → Continue,
+                // sonst → Daily-Fokus. So spart das Layout eine ganze
+                // Card-Höhe, ohne eine der beiden Funktionen aufzugeben.
+                focusOrContinueCard
+                    .padding(.top, 10)
+
+                // Progress-Board — sitzt **unter** der Fokus-Card, damit
+                // der Tagesimpuls oben dominiert und die Werteleiste als
+                // ruhiger Kontext folgt.
                 HomeProgressBoardCard(data: progressBoardData) {
                     openHomeScreen(.hearts)
                 }
-                .padding(.top, 10)
-
-                // Fokus + Continue sind **gemergt**: es wird immer nur
-                // eine Karte gezeigt. Priorität: wenn eine fortsetzbare
-                // Session existiert → Continue. Sonst → Daily-Fokus. So
-                // spart das Layout eine ganze Card-Höhe, ohne eine der
-                // beiden Funktionen aufzugeben.
-                focusOrContinueCard
 
                 // 25 pt Luft über dem Pager — die 8 Modul-Kacheln rücken
                 // gegenüber der Zwischenstufe (40 pt) nochmal 15 pt höher.
