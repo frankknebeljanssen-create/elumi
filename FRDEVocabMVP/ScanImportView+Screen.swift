@@ -565,8 +565,10 @@ extension ScanImportView {
                             // ─────── Schritt 1 — MODUS ───────
                             // Selection-Toggles (kein Navigations-Element).
                             // Tap ändert nur den Modus, User bleibt auf dem Screen.
+                            // +24pt Luft zum Header — schiebt den ganzen
+                            // Block nach unten, Header bleibt unverändert.
                             ScanSectionLabel(stepNumber: 1, title: "Wähle den Modus")
-                                .padding(.top, 8)
+                                .padding(.top, 28)
 
                             HStack(spacing: 12) {
                                 ScanModeSelectionCard(
