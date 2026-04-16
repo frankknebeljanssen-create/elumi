@@ -179,22 +179,46 @@ struct HomeView: View {
     // MARK: - Continue-Session mapping
     //
     // Der `LastSessionStore` folgt im nächsten Schritt. Bis dahin bleibt
-    // das Modell hier `nil` — die Card zeigt einen ruhigen Empty-State,
-    // ohne den Home-Flow zu reißen.
+    // das Modell hier `nil` — die Merge-Logik zeigt dann automatisch die
+    // Daily-Fokus-Karte.
     //
     // Sobald der Store existiert, wird `continueSessionData` aus ihm
-    // gefüllt — die View bleibt unverändert.
+    // gefüllt — die View bleibt unverändert, nur die Merge-Priorität
+    // greift.
     private var continueSessionData: HomeContinueSessionData? { nil }
 
     private func continueSession() {
         // Placeholder — Runde „Content-Logik" ergänzt den echten Re-Entry.
     }
 
+    // MARK: - Fokus + Continue Merge
+    //
+    // Spec: beide Cards werden nicht parallel gezeigt, sondern gemergt.
+    // Priorität:
+    //   • Continue, wenn eine fortsetzbare Session existiert (stärkerer
+    //     Impuls, klarer Re-Entry)
+    //   • sonst Daily-Fokus (Tagesimpuls)
+    // Ergebnis: immer **eine** Card — das Layout spart eine ganze
+    // Card-Höhe, der Screen bleibt fokussiert.
+
+    @ViewBuilder
+    private var focusOrContinueCard: some View {
+        if let continueData = continueSessionData {
+            HomeContinueSessionCard(data: continueData) {
+                continueSession()
+            }
+        } else {
+            HomeDailyFocusCard(data: dailyFocusData) {
+                openHomeScreen(dailyFocusTargetScreen)
+            }
+        }
+    }
+
     // MARK: - Body
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 10) {
                 HomeHeader(
                     greeting: Personalization.homeGreeting(for: profileStore.profile?.displayName),
                     mainQuestion: "Was möchtest du heute lernen?"
@@ -204,34 +228,51 @@ struct HomeView: View {
                     openHomeScreen(.hearts)
                 }
 
-                HomeDailyFocusCard(data: dailyFocusData) {
-                    openHomeScreen(dailyFocusTargetScreen)
-                }
+                // Fokus + Continue sind **gemergt**: es wird immer nur
+                // eine Karte gezeigt. Priorität: wenn eine fortsetzbare
+                // Session existiert → Continue. Sonst → Daily-Fokus. So
+                // spart das Layout eine ganze Card-Höhe, ohne eine der
+                // beiden Funktionen aufzugeben.
+                focusOrContinueCard
 
-                HomeContinueSessionCard(data: continueSessionData) {
-                    continueSession()
-                }
-
-                // Alle acht Modul-Kacheln als horizontaler Pager.
-                // Initial sichtbar: die ersten vier — per Swipe links/rechts
-                // kommen die weiteren vier (inkl. Listen).
+                // Pager rückt näher an den Fokus-Block heran, damit die
+                // obere Kachel-Reihe schon ohne Scroll sichtbar ist.
                 moduleSwipePager
-                    .padding(.top, 4)
-
-                // Globaler Lernrichtungs-Schalter — Spec-Spacing:
-                // Grid → Switch 16–20 pt (hier: 8 lokal + 12 VStack = 20),
-                // Switch → Footer 16 pt (8 lokal + 8 im homeFooterClearance).
-                LanguageDirectionSwitch(size: .regular) {
-                    feedbackPlayer.playToggle()
-                }
-                .padding(.top, 8)
-                .padding(.bottom, 8)
             }
             .padding(.horizontal, AppLayout.screenPadding)
             .padding(.top, AppLayout.contentTopPadding)
-            .padding(.bottom, homeFooterClearance)
+            .padding(.bottom, AppTheme.Spacing.sm)
             .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .center)
+        }
+        // Flags sind **fixed** über dem Footer — scrollen nicht weg,
+        // bleiben als globaler System-Schalter immer erreichbar. Der
+        // Inset verdrängt zusätzlich den ScrollView-Content, damit nichts
+        // darunter verschwindet.
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            LanguageDirectionSwitch(size: .regular) {
+                feedbackPlayer.playToggle()
+            }
+            .padding(.horizontal, AppLayout.screenPadding)
+            .padding(.top, 6)
+            .padding(.bottom, homeFooterClearance)
+            .background(
+                // Deckender Hintergrund, damit scrollender Content nicht
+                // hinter den Flags durchschimmert. Zusätzlich ein weicher
+                // Top-Gradient (8 pt), der den Abschluss zum ScrollView
+                // dezent ausfadet statt hart abzuschneiden.
+                ZStack(alignment: .top) {
+                    AppTheme.Colors.background
+                        .ignoresSafeArea(edges: .bottom)
+                    LinearGradient(
+                        colors: [AppTheme.Colors.background.opacity(0), AppTheme.Colors.background],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 12)
+                    .offset(y: -12)
+                }
+            )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .tint(sectionStyle.accent)
@@ -334,7 +375,8 @@ struct HomeView: View {
                 icon: .listen,
                 title: "Listen",
                 accent: moduleLists,
-                screen: .lists(nil)
+                screen: .lists(nil),
+                deemphasized: true // kein Lernmodul — visuell schwächer
             )
         }
         .padding(.bottom, 22)
@@ -345,14 +387,16 @@ struct HomeView: View {
         icon: HomeModuleIcon,
         title: String,
         accent: Color,
-        screen: AppScreen
+        screen: AppScreen,
+        deemphasized: Bool = false
     ) -> some View {
         HomeModuleTile(
             icon: icon,
             title: title,
             accent: accent,
             isPressed: pressedHomeScreen == screen,
-            onTap: { openHomeScreen(screen) }
+            onTap: { openHomeScreen(screen) },
+            deemphasized: deemphasized
         )
     }
 

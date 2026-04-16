@@ -43,16 +43,16 @@ struct HomeDailyFocusCard: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(alignment: .center, spacing: 12) {
+            HStack(alignment: .center, spacing: 11) {
                 iconBadge
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 1) {
                     Text(sectionLabel)
-                        .font(.system(size: 11, weight: .black, design: .rounded))
+                        .font(.system(size: 10, weight: .black, design: .rounded))
                         .foregroundStyle(sectionLabelColor)
 
                     Text(data.title)
-                        .font(.system(size: 17, weight: .black, design: .rounded))
+                        .font(.system(size: 15, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
@@ -60,7 +60,7 @@ struct HomeDailyFocusCard: View {
 
                     if let subtitle = data.subtitle, !subtitle.isEmpty {
                         Text(subtitle)
-                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .font(.system(size: 11, weight: .medium, design: .rounded))
                             .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.75))
                             .lineLimit(1)
                             .minimumScaleFactor(0.85)
@@ -68,17 +68,17 @@ struct HomeDailyFocusCard: View {
                     }
                 }
 
-                Spacer(minLength: 8)
+                Spacer(minLength: 6)
 
                 trailingAccessory
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(cardBackground)
             .overlay(cardBorder)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .shadow(color: AppTheme.Shadow.card.color.opacity(0.5), radius: 6, x: 0, y: 2)
+            .shadow(color: AppTheme.Shadow.card.color.opacity(0.5), radius: 5, x: 0, y: 2)
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
@@ -92,10 +92,10 @@ struct HomeDailyFocusCard: View {
             Circle()
                 .fill(data.accent.opacity(data.state == .done ? 0.22 : 0.16))
             Image(systemName: data.state == .done ? "checkmark" : data.iconSystemName)
-                .font(.system(size: 20, weight: .bold))
+                .font(.system(size: 17, weight: .bold))
                 .foregroundStyle(data.state == .done ? AppTheme.Colors.success : data.accent)
         }
-        .frame(width: 44, height: 44)
+        .frame(width: 38, height: 38)
     }
 
     @ViewBuilder

@@ -51,48 +51,48 @@ struct HomeContinueSessionCard: View {
 
     private func activeCard(data: HomeContinueSessionData) -> some View {
         Button(action: onContinue) {
-            HStack(spacing: 12) {
+            HStack(spacing: 11) {
                 iconBadge(data: data)
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 1) {
                     Text("Weiter lernen")
-                        .font(.system(size: 11, weight: .black, design: .rounded))
+                        .font(.system(size: 10, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.elumiMint)
 
                     Text(data.moduleTitle)
-                        .font(.system(size: 17, weight: .black, design: .rounded))
+                        .font(.system(size: 15, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
 
                     Text(data.subtitle)
-                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.75))
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
                 }
 
-                Spacer(minLength: 8)
+                Spacer(minLength: 6)
 
-                HStack(spacing: 6) {
+                HStack(spacing: 5) {
                     Text(data.ctaLabel)
-                        .font(.system(size: 13, weight: .black, design: .rounded))
+                        .font(.system(size: 12, weight: .black, design: .rounded))
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 11, weight: .black))
+                        .font(.system(size: 10, weight: .black))
                 }
                 .foregroundStyle(Color.black.opacity(0.9))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 7)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
                 .background(AppTheme.Colors.elumiMint)
                 .clipShape(Capsule())
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(cardBackground)
             .overlay(cardBorder)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .shadow(color: AppTheme.Shadow.card.color.opacity(0.4), radius: 6, x: 0, y: 2)
+            .shadow(color: AppTheme.Shadow.card.color.opacity(0.4), radius: 5, x: 0, y: 2)
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
@@ -104,7 +104,7 @@ struct HomeContinueSessionCard: View {
         ZStack {
             Circle()
                 .fill(AppTheme.Colors.elumiMint.opacity(0.18))
-                .frame(width: 44, height: 44)
+                .frame(width: 38, height: 38)
             Text("🚀")
                 .font(.system(size: 24))
         }

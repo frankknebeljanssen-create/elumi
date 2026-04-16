@@ -25,16 +25,27 @@ struct HomeModuleTile: View {
     let onTap: () -> Void
 
     var size: Size = .hero
+    /// Wenn `true`, wird die Kachel visuell schwächer gezeichnet — der
+    /// Akzent-Tint halbiert und der Titel rückt in den sekundären
+    /// Text-Ton. Gedacht für Organisations-Einträge (z. B. Listen),
+    /// die zwar mit im Grid laufen sollen, aber kein gleichwertiges
+    /// Lernmodul sind.
+    var deemphasized: Bool = false
 
     var body: some View {
         Button(action: onTap) {
             VStack(spacing: spec.iconTextSpacing) {
                 HomeModuleIconView(icon: icon, size: spec.iconSize)
                     .frame(height: spec.iconSize)
+                    .opacity(deemphasized ? 0.78 : 1)
 
                 Text(title)
                     .font(.system(size: spec.titleFontSize, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .foregroundStyle(
+                        deemphasized
+                            ? AppTheme.Colors.textSecondary
+                            : AppTheme.Colors.textPrimary
+                    )
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
@@ -46,7 +57,7 @@ struct HomeModuleTile: View {
             .overlay(cardBorder)
             .clipShape(RoundedRectangle(cornerRadius: spec.cornerRadius, style: .continuous))
             .shadow(
-                color: AppTheme.Shadow.card.color.opacity(isPressed ? 0.8 : spec.shadowOpacity),
+                color: AppTheme.Shadow.card.color.opacity(isPressed ? 0.8 : spec.shadowOpacity * (deemphasized ? 0.6 : 1.0)),
                 radius: isPressed ? spec.shadowRadius + 3 : spec.shadowRadius,
                 x: 0,
                 y: isPressed ? spec.shadowY + 1 : spec.shadowY
@@ -64,7 +75,7 @@ struct HomeModuleTile: View {
             .fill(AppTheme.Colors.surface)
             .overlay(
                 RoundedRectangle(cornerRadius: spec.cornerRadius, style: .continuous)
-                    .fill(accent.opacity(spec.accentTintOpacity))
+                    .fill(accent.opacity(spec.accentTintOpacity * (deemphasized ? 0.5 : 1.0)))
             )
     }
 

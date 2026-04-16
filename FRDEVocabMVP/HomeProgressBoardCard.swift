@@ -42,24 +42,24 @@ struct HomeProgressBoardCard: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(alignment: .center, spacing: 14) {
+            HStack(alignment: .center, spacing: 12) {
                 streakSegment
                 segmentDivider
                 levelSegment
                 segmentDivider
                 xpSegment
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
             .frame(maxWidth: .infinity)
             .background(cardBackground)
             .overlay(cardBorder)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .shadow(
                 color: AppTheme.Shadow.card.color.opacity(0.55),
-                radius: 8,
+                radius: 7,
                 x: 0,
-                y: 3
+                y: 2
             )
         }
         .buttonStyle(.plain)
@@ -153,7 +153,7 @@ struct HomeProgressBoardCard: View {
     private var segmentDivider: some View {
         Rectangle()
             .fill(AppTheme.Colors.textSecondary.opacity(0.18))
-            .frame(width: 1, height: 34)
+            .frame(width: 1, height: 28)
     }
 
     // MARK: - Chrome
