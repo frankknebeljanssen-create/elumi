@@ -115,18 +115,11 @@ struct ListCategoryPickerView: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .padding(.trailing, 32) // room for edit icon
-            .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(AppTheme.Colors.surface)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(selectedLists.isEmpty ? Color.clear : accent.opacity(0.08))
-                    )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(selectedLists.isEmpty ? AppTheme.Colors.border : accent.opacity(0.3), lineWidth: 1)
-            )
+            // Master-Session-Setup-Chrome — identisch mit
+            // `setupListSelectionCard` (Nomen/Artikel/Verben/Verbformen)
+            // und allen anderen Setup-Cards. Vorher war dieser Picker
+            // der einzige Außenseiter mit Surface-Fill + 14pt Radius.
+            .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
 
             // Edit icon — opens category picker
             Button {
