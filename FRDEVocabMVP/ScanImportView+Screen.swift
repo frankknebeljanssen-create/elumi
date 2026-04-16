@@ -602,9 +602,7 @@ extension ScanImportView {
                                 title: "Kamera",
                                 subtitle: "Foto aufnehmen",
                                 accent: sectionStyle.accent,
-                                isPriority: true,
-                                modeHint: "Scan als: \(activeScanMode.title)"
-                            ) {
+                                isPriority: true                            ) {
                                 guard !isRecognizingImage else { return }
                                 guard isCameraCaptureAvailable else { return }
                                 shouldAppendNextScan = false
@@ -616,9 +614,7 @@ extension ScanImportView {
                                 illustrationName: "ScanIconFotoAlbum",
                                 title: "Foto-Album",
                                 subtitle: "Bild auswählen",
-                                accent: sectionStyle.accent,
-                                modeHint: "Scan als: \(activeScanMode.title)"
-                            ) {
+                                accent: sectionStyle.accent                            ) {
                                 guard !isRecognizingImage else { return }
                                 shouldAppendNextScan = false
                                 selectedScanInputMethod = .library

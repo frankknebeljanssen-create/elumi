@@ -190,30 +190,21 @@ struct ScanModeSelectionCard: View {
             .background(
                 ZStack {
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        // Inaktiv minimal flacher als die Quelle-Cards —
-                        // setupCardBackground bleibt, aber durch einen
-                        // weißen 4%-Overlay wirken sie weniger "schwer".
                         .fill(AppTheme.Colors.setupCardBackground)
                     if isSelected {
-                        // Sanfter Accent-Wash statt voller Border-Ring
+                        // Selected-Signal NUR über Background-Tint —
+                        // kein Border-Wechsel, damit die Cards weniger
+                        // wie Action-Buttons und mehr wie Toggle-Tiles wirken.
                         RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(accent.opacity(0.08))
-                    } else {
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(Color.white.opacity(0.02))
+                            .fill(accent.opacity(0.16))
                     }
                 }
             )
             .overlay(
+                // Border bleibt konstant — keine visuelle Differenzierung
+                // mehr über die Outline. Ruhiger, weniger "Button"-Look.
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(
-                        // Border ist jetzt **sehr** subtil — keine "Debug-
-                        // Highlight"-Anmutung mehr. Hauptsignal: Checkmark.
-                        isSelected
-                            ? accent.opacity(0.15)
-                            : AppTheme.Colors.setupCardBorder,
-                        lineWidth: 1
-                    )
+                    .stroke(AppTheme.Colors.setupCardBorder, lineWidth: 1)
             )
             .animation(.easeOut(duration: 0.18), value: isSelected)
         }
@@ -264,39 +255,31 @@ struct ScanHeroCard: View {
 }
 
 /// Kombinierter Header-Block des Scan-Screens.
-/// Links: 3-stufige Typo-Hierarchie (Modul-Titel klein → Hauptfrage groß
-/// → Subtext sehr ruhig). Rechts: Maskottchen, leicht überlappend nach
-/// unten, dezente Bounce-Animation beim Erscheinen.
+/// Links: Hauptfrage groß + Subtext ruhig. Rechts: Maskottchen, das
+/// alle ~3.5 s kurz „zwinkert" (vertikal kompressed, wie ein Blinzeln).
 ///
-/// Wichtig (per Spec):
-///   • „Scan" ist NICHT der Fokus — die **Frage** ist der Hero-Text
-///   • Subtext: max. 70–80 % Opacity
-///   • Maskottchen rechts, größer als Text-Baseline, leicht versetzt
+/// Spec-Anpassung:
+///   • „Scan"-Modul-Tag entfernt — Frage ist die einzige Headline
+///   • Maskottchen näher am Text (geringer HStack-Spacing)
+///   • Periodisches Zwinkern statt Bounce-Entrance (deutlich sichtbar)
 struct ScanScreenHeader: View {
-    @State private var hasAppeared = false
+    @State private var blinkPhase: CGFloat = 1.0
 
     var body: some View {
-        HStack(alignment: .center, spacing: 14) {
+        HStack(alignment: .center, spacing: 4) {
             VStack(alignment: .leading, spacing: 0) {
-                Text("Scan")
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.65))
-
                 Text("Was möchtest du scannen?")
                     .font(.system(size: 26, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .multilineTextAlignment(.leading)
                     .lineLimit(2)
                     .minimumScaleFactor(0.85)
-                    .padding(.top, 7)
 
                 Text("Ich passe die Analyse automatisch an")
                     .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.55))
                     .padding(.top, 4)
             }
-            .opacity(hasAppeared ? 1 : 0)
-            .offset(x: hasAppeared ? 0 : -6)
 
             Spacer(minLength: 0)
 
@@ -304,17 +287,30 @@ struct ScanScreenHeader: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 88, height: 88)
-                // Leicht nach unten versetzt → überlappt minimal mit
-                // dem nächsten Block, wirkt „lebendig" verankert.
                 .offset(y: 10)
-                .scaleEffect(hasAppeared ? 1.0 : 0.85)
-                .rotationEffect(.degrees(hasAppeared ? 0 : -8))
+                // Zwinker-Effekt: vertikal kurz zusammengedrückt — sieht
+                // aus wie ein Blinzeln. Subtil, aber sichtbar.
+                .scaleEffect(x: 1.0, y: blinkPhase, anchor: .center)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.bottom, 6) // Platz für die Mascot-Überlappung
-        .onAppear {
-            withAnimation(.spring(response: 0.55, dampingFraction: 0.62).delay(0.08)) {
-                hasAppeared = true
+        .task {
+            // Periodisches Zwinkern alle ~3.5 Sekunden, mit kleiner
+            // Zufalls-Variation, damit's nicht zu mechanisch wirkt.
+            while !Task.isCancelled {
+                let interval = UInt64.random(in: 3_200...4_200) * 1_000_000
+                try? await Task.sleep(nanoseconds: interval)
+                await MainActor.run {
+                    withAnimation(.easeIn(duration: 0.09)) {
+                        blinkPhase = 0.18
+                    }
+                }
+                try? await Task.sleep(nanoseconds: 120_000_000)
+                await MainActor.run {
+                    withAnimation(.easeOut(duration: 0.18)) {
+                        blinkPhase = 1.0
+                    }
+                }
             }
         }
     }
