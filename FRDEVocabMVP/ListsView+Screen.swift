@@ -7,7 +7,8 @@ extension ListsView {
                 style: sectionStyle,
                 title: "Listen verwalten",
                 subtitle: "",
-                systemImage: "list.bullet.rectangle"
+                systemImage: "list.bullet.rectangle",
+                onBack: { dismiss() }
             )
 
             allListsCard

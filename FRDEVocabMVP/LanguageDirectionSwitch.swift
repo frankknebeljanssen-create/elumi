@@ -57,11 +57,15 @@ struct LanguageDirectionSwitch: View {
             .padding(.vertical, spec.verticalPadding)
             .frame(maxWidth: spec.expandsWidth ? .infinity : nil)
             .background(
-                Capsule()
+                // Kein Capsule mehr — gleiche Card-Rundung wie die
+                // restlichen Home-Cards (Progress-Board etc.), damit die
+                // Flag-Zeile visuell zum System gehört, nicht wie ein
+                // Sonder-Badge wirkt.
+                RoundedRectangle(cornerRadius: spec.cornerRadius, style: .continuous)
                     .fill(AppTheme.Colors.surface.opacity(0.55))
             )
             .overlay(
-                Capsule()
+                RoundedRectangle(cornerRadius: spec.cornerRadius, style: .continuous)
                     .strokeBorder(AppTheme.Colors.border.opacity(0.55), lineWidth: 1)
             )
             .animation(.easeOut(duration: 0.12), value: isPressed)
@@ -124,6 +128,10 @@ struct LanguageDirectionSwitch: View {
                 arrowSize: 14,
                 flagSpacing: 10,
                 horizontalPadding: 16, verticalPadding: 10,
+                // 16 pt — identisch zum Corner-Radius von Progress-Board
+                // und der Fokus/Continue-Card, damit die Flag-Card
+                // visuell zum System gehört.
+                cornerRadius: 16,
                 expandsWidth: true
             )
         case .compact:
@@ -132,6 +140,9 @@ struct LanguageDirectionSwitch: View {
                 arrowSize: 12,
                 flagSpacing: 8,
                 horizontalPadding: 12, verticalPadding: 6,
+                // Etwas kleinerer Radius für die Session-Setup-Variante —
+                // passt zur kompakteren Höhe.
+                cornerRadius: 12,
                 expandsWidth: false
             )
         }
@@ -145,6 +156,7 @@ struct LanguageDirectionSwitch: View {
         let flagSpacing: CGFloat
         let horizontalPadding: CGFloat
         let verticalPadding: CGFloat
+        let cornerRadius: CGFloat
         /// `true` → die Komponente spannt auf die verfügbare Breite (Home).
         /// `false` → sie dimensioniert sich nach Inhalt (Session-Setup-Zeile).
         let expandsWidth: Bool

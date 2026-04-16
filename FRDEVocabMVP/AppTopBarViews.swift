@@ -11,13 +11,33 @@ struct ScreenHeaderCard: View {
     var secondaryActionTitle: String? = nil
     var secondaryActionSystemImage: String = "gearshape.fill"
     var secondaryAction: (() -> Void)? = nil
+    /// Optionaler Back-Closure. Wenn gesetzt, erscheint links ein
+    /// dezenter „< "-Button im gleichen Stil wie der Session-Setup-
+    /// Header und der (unter globalChrome unsichtbare) `AppTopBar`.
+    /// So wird die Zurück-Navigation bei „normalen" Screens (Listen,
+    /// Lexikon, Info, Settings) sichtbar und konsistent — unabhängig
+    /// davon, ob das globale Chrome aktiv ist.
+    var onBack: (() -> Void)? = nil
 
     private var titleParts: [String] {
         subtitle.isEmpty ? [title] : [title, subtitle]
     }
 
     var body: some View {
-        HStack {
+        HStack(spacing: AppTheme.Spacing.sm) {
+            if let onBack {
+                Button(action: onBack) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .bold))
+                        .frame(width: 34, height: 34)
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .background(AppTheme.Colors.secondarySurface)
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.sm, style: .continuous))
+                        .accessibilityLabel(Text("Zurück"))
+                }
+                .buttonStyle(.plain)
+            }
+
             VStack(alignment: .leading, spacing: subtitle.isEmpty ? 0 : 4) {
                 Text(title)
                     .font(AppTheme.Typography.screenTitle)

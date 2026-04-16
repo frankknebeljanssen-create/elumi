@@ -224,9 +224,13 @@ struct HomeView: View {
                     mainQuestion: "Was möchtest du heute lernen?"
                 )
 
+                // +10 pt Luft zwischen Header-Frage und dem Progress-Board
+                // — der Header „atmet" sichtbar, bevor die Werteleiste
+                // beginnt.
                 HomeProgressBoardCard(data: progressBoardData) {
                     openHomeScreen(.hearts)
                 }
+                .padding(.top, 10)
 
                 // Fokus + Continue sind **gemergt**: es wird immer nur
                 // eine Karte gezeigt. Priorität: wenn eine fortsetzbare
@@ -235,9 +239,11 @@ struct HomeView: View {
                 // beiden Funktionen aufzugeben.
                 focusOrContinueCard
 
-                // Pager rückt näher an den Fokus-Block heran, damit die
-                // obere Kachel-Reihe schon ohne Scroll sichtbar ist.
+                // +30 pt zwischen Modul-Pager und den fixierten Flags —
+                // klare Trennung zwischen Lern-Modulen (Learning-Ebene)
+                // und dem globalen System-Schalter/Footer (Chrome-Ebene).
                 moduleSwipePager
+                    .padding(.bottom, 30)
             }
             .padding(.horizontal, AppLayout.screenPadding)
             .padding(.top, AppLayout.contentTopPadding)
@@ -255,7 +261,10 @@ struct HomeView: View {
             }
             .padding(.horizontal, AppLayout.screenPadding)
             .padding(.top, 6)
-            .padding(.bottom, homeFooterClearance)
+            // +5 pt Abstand zum Footer gegenüber vorher — die Flag-Card
+            // sitzt nicht mehr direkt auf der BottomBar, was den System-
+            // Schalter optisch von der Navigation trennt.
+            .padding(.bottom, homeFooterClearance + 5)
             .background(
                 // Deckender Hintergrund, damit scrollender Content nicht
                 // hinter den Flags durchschimmert. Zusätzlich ein weicher
