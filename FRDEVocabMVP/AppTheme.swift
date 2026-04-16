@@ -44,6 +44,17 @@ enum AppTheme {
         static let elumiMint = Color(hex: "#2EC4A9")
         static let elumiAmber = Color(hex: "#FFD166")
         static let elumiAmberDeep = Color(hex: "#B8832F")
+        // Semantisch getrenntes Alarm-Rot. Bewusst **nicht** `elumiPinkDeep`,
+        // damit Error/Validierungs-Feedback nicht mit der Vokabel-Modulfarbe
+        // verwechselt wird. Warm gehalten (kein kühles Material-Rot), aber
+        // sattiger/alarmierender als PinkDeep — klar als „etwas stimmt nicht"
+        // lesbar.
+        static let elumiErrorRed = Color(hex: "#E04456")
+        // Eigener Hearts-Ton (Leben/Herz-Semantik). War vorher an `error`
+        // gekoppelt — das führte dazu, dass jede Änderung an Error auch
+        // Hearts betraf und umgekehrt. Coral-warm, passend zur
+        // Warmton-Palette.
+        static let elumiHeartsRed = Color(hex: "#FF5A5F")
         // Sekundäre Akzent-Familie: weder Pink noch Amber. Genutzt für Links,
         // Info-Texte (Subtitles wie „1 Liste · 60 Karten gesamt") und allgemein
         // sekundäre Akzente. Hellblau, freundlich, klar erkennbar.
@@ -73,7 +84,11 @@ enum AppTheme {
         static let textDisabled = elumiRose.opacity(0.5)
 
         static let success = elumiMint
-        static let error = elumiPinkDeep
+        // Error ist jetzt eigenständig (warmes Signal-Rot `elumiErrorRed`),
+        // nicht mehr an `elumiPinkDeep` (= moduleVocabulary) gekoppelt.
+        // Semantik sauber: Vokabel-Identität und Fehler-Signal sind
+        // verschiedene Dinge.
+        static let error = elumiErrorRed
         // Heller, sonniger Amber für alle CTAs und Card-Header — bessere
         // Sichtbarkeit auf den blau-tönigen Card-Hintergründen. Schwarze
         // Schrift auf CTA-Buttons (siehe `AppPrimaryButtonStyle`).
@@ -95,6 +110,10 @@ enum AppTheme {
         static let moduleLists = Color(hex: "#57B8C9")           // Listen — Teal
         static let moduleScan = Color(hex: "#EF6C50")            // Scan — Coral
         static let moduleArcade = elumiPinkDeep                  // Arcade — Pink
+        // Hearts (Leben) bekommt einen eigenen Slot und hängt nicht mehr
+        // am `error`-Token. So können Error-Semantik und Hearts-Modul
+        // unabhängig voneinander geändert werden.
+        static let moduleHearts = elumiHeartsRed                 // Hearts — Coral-Rot
 
         // Legacy aliases
         static let modulePractice = moduleVocabulary

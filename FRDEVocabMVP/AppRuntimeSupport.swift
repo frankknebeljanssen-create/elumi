@@ -91,7 +91,7 @@ enum AppSectionStyle {
         case .quiz:
             return AppTheme.Colors.moduleQuiz
         case .hearts:
-            return AppTheme.Colors.error
+            return AppTheme.Colors.moduleHearts
         case .lists:
             return AppTheme.Colors.moduleSpecial
         case .scan:
