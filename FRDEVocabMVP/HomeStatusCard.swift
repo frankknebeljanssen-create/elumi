@@ -122,8 +122,15 @@ struct HomeStatusCard: View {
     // MARK: - Chrome
 
     private var cardBackground: some View {
+        // Home-Modul-Akzent additiv auf den Surface-Fill — Card liest sich
+        // jetzt als Teil des Home-Farbsystems, ohne dass Border/Shadow der
+        // Card ihre bewusst weiche Home-Optik verlieren.
         RoundedRectangle(cornerRadius: 16, style: .continuous)
             .fill(AppTheme.Colors.surface)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(AppSectionStyle.home.accent.opacity(AppTheme.CardIntensity.soft))
+            )
     }
 
     private var cardBorder: some View {

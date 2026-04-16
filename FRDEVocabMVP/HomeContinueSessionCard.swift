@@ -150,8 +150,15 @@ struct HomeContinueSessionCard: View {
         // aktiver und leerer Card die Card-Höhe nicht verändert.
         .frame(maxWidth: .infinity, minHeight: 80, alignment: .leading)
         .background(
+            // Leerer-Zustand: nur ein Hauch Home-Akzent (`.whisper`), damit
+            // die Card als inaktiver Slot der Home-Farbfamilie lesbar bleibt,
+            // ohne mit der aktiven Card zu konkurrieren.
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(AppTheme.Colors.surface.opacity(0.65))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(AppSectionStyle.home.accent.opacity(AppTheme.CardIntensity.whisper))
+                )
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -165,8 +172,15 @@ struct HomeContinueSessionCard: View {
     // MARK: - Chrome
 
     private var cardBackground: some View {
+        // Home-Modul-Akzent additiv auf den Surface-Fill — Card liest sich
+        // jetzt als Teil des Home-Farbsystems, ohne dass Border/Shadow der
+        // Card ihre bewusst weiche Home-Optik verlieren.
         RoundedRectangle(cornerRadius: 16, style: .continuous)
             .fill(AppTheme.Colors.surface)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(AppSectionStyle.home.accent.opacity(AppTheme.CardIntensity.soft))
+            )
     }
 
     private var cardBorder: some View {
