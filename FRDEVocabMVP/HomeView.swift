@@ -25,7 +25,10 @@ struct HomeView: View {
     let openAccount: () -> Void
     let replaySplash: () -> Void
 
-    @AppStorage(appDirectionKey) private var selectedDirectionRaw = Direction.frenchToGerman.rawValue
+    // Die Lernrichtung wird jetzt ausschließlich über den globalen
+    // `LanguageDirectionSwitch` gelesen/geschrieben — HomeView selbst
+    // beobachtet sie nicht mehr direkt. Die Komponente nutzt denselben
+    // `@AppStorage(appDirectionKey)`, alle anderen Module ebenfalls.
     @AppStorage(appElumiCurrentStreakKey) private var currentStreak = 0
     @AppStorage(appElumiXPKey) private var collectedXP = 0
     @AppStorage(appArcadeCreditsKey) private var arcadeCredits = 0
@@ -62,10 +65,6 @@ struct HomeView: View {
     /// PageTabView-Dots (~18). Konstante Höhe ist wichtig, damit die
     /// TabView in einer vertikalen ScrollView stabil bleibt.
     private let moduleSwipePagerHeight: CGFloat = 334
-
-    private var selectedDirection: Direction {
-        Direction(rawValue: selectedDirectionRaw) ?? .frenchToGerman
-    }
 
     // MARK: - Module color tokens (from AppTheme)
 
@@ -219,8 +218,14 @@ struct HomeView: View {
                 moduleSwipePager
                     .padding(.top, 4)
 
-                directionToggleRow
-                    .padding(.top, 2)
+                // Globaler Lernrichtungs-Schalter — Spec-Spacing:
+                // Grid → Switch 16–20 pt (hier: 8 lokal + 12 VStack = 20),
+                // Switch → Footer 16 pt (8 lokal + 8 im homeFooterClearance).
+                LanguageDirectionSwitch(size: .regular) {
+                    feedbackPlayer.playToggle()
+                }
+                .padding(.top, 8)
+                .padding(.bottom, 8)
             }
             .padding(.horizontal, AppLayout.screenPadding)
             .padding(.top, AppLayout.contentTopPadding)
@@ -351,39 +356,13 @@ struct HomeView: View {
         )
     }
 
-    // MARK: - Direction toggle
-
-    private var directionToggleRow: some View {
-        let isFrToDE = selectedDirection == .frenchToGerman
-        return Button {
-            feedbackPlayer.playToggle()
-            selectedDirectionRaw = isFrToDE
-                ? Direction.germanToFrench.rawValue
-                : Direction.frenchToGerman.rawValue
-        } label: {
-            HStack(spacing: 10) {
-                StraightFlagBadge(countryCode: isFrToDE ? "FR" : "DE", width: 36, height: 24, labelFontSize: 10)
-                Image(systemName: "arrow.right")
-                    .font(.system(size: 14, weight: .black))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                StraightFlagBadge(countryCode: isFrToDE ? "DE" : "FR", width: 36, height: 24, labelFontSize: 10)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
-            .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(AppTheme.Colors.surface.opacity(0.55))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .strokeBorder(AppTheme.Colors.border.opacity(0.55), lineWidth: 1)
-            )
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(isFrToDE ? "Richtung: Französisch nach Deutsch" : "Richtung: Deutsch nach Französisch")
-    }
-
-    // Version/Credit-Footer wurde entfernt — die Info ist unter
-    // Account/Info zu finden. Der `replaySplash`-Prop bleibt im Struct
-    // erhalten, damit die Aufruferseite nicht angefasst werden muss.
+    // Der lokale Flaggen-Toggle wurde durch den wiederverwendbaren
+    // `LanguageDirectionSwitch` (globaler System-Schalter) ersetzt — die
+    // Komponente liest/schreibt direkt auf `@AppStorage(appDirectionKey)`,
+    // dadurch bleibt der Home-Zustand automatisch mit Session-Setup und
+    // allen konsumierenden Modulen synchron.
+    //
+    // Version/Credit-Footer sind unter Account/Info verfügbar. Der
+    // `replaySplash`-Prop bleibt im Struct erhalten, damit die
+    // Aufruferseite nicht angefasst werden muss.
 }

@@ -8,9 +8,12 @@ import SwiftUI
 ///   2. Context-Slot (Standard: `SessionContextCard`; kann überschrieben
 ///      werden, z. B. wenn ein Modul mit `ListCategoryPickerView` arbeitet
 ///      oder einen eigenen Composer-Trigger braucht)
-///   3. `optionsContent` (modul-spezifisch, per `@ViewBuilder` übergeben)
-///   4. `SessionGamificationBar`
-///   5. `SessionPrimaryCTA`
+///   3. `SessionDirectionRow` — globale Lernrichtung, sichtbar und änderbar
+///      (System-Wahrheit, identisch zu Home; pro Modul opt-out möglich
+///      über `showsDirection: false`)
+///   4. `optionsContent` (modul-spezifisch, per `@ViewBuilder` übergeben)
+///   5. `SessionGamificationBar`
+///   6. `SessionPrimaryCTA`
 ///
 /// Zwei Initializer-Varianten:
 ///   • **Data-driven**: Modul liefert `SessionContextData` + `onEditContext`;
@@ -26,6 +29,11 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
     let estimate: SessionEstimate
     let primaryButtonTitle: String
     var isPrimaryEnabled: Bool = true
+    /// Sichtbarkeit der globalen Lernrichtung im Setup. Default `true` —
+    /// der Nutzer kann in jedem Modul sehen und ändern, in welche
+    /// Richtung gelernt wird. Für spezielle Screens, die den Schalter
+    /// nicht anzeigen sollen, auf `false` setzen.
+    var showsDirection: Bool = true
     let onBack: () -> Void
     let onStart: () -> Void
     @ViewBuilder let contextContent: () -> ContextContent
@@ -39,6 +47,7 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
         estimate: SessionEstimate,
         primaryButtonTitle: String,
         isPrimaryEnabled: Bool = true,
+        showsDirection: Bool = true,
         onBack: @escaping () -> Void,
         onStart: @escaping () -> Void,
         @ViewBuilder contextContent: @escaping () -> ContextContent,
@@ -49,6 +58,7 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
         self.estimate = estimate
         self.primaryButtonTitle = primaryButtonTitle
         self.isPrimaryEnabled = isPrimaryEnabled
+        self.showsDirection = showsDirection
         self.onBack = onBack
         self.onStart = onStart
         self.contextContent = contextContent
@@ -62,6 +72,9 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     contextContent()
+                    if showsDirection {
+                        SessionDirectionRow()
+                    }
                     optionsContent()
                 }
                 .padding(.horizontal, 16)
@@ -101,6 +114,7 @@ extension SessionSetupScreen where ContextContent == SessionContextCard {
         estimate: SessionEstimate,
         primaryButtonTitle: String,
         isPrimaryEnabled: Bool = true,
+        showsDirection: Bool = true,
         onBack: @escaping () -> Void,
         onEditContext: @escaping () -> Void,
         onStart: @escaping () -> Void,
@@ -112,6 +126,7 @@ extension SessionSetupScreen where ContextContent == SessionContextCard {
             estimate: estimate,
             primaryButtonTitle: primaryButtonTitle,
             isPrimaryEnabled: isPrimaryEnabled,
+            showsDirection: showsDirection,
             onBack: onBack,
             onStart: onStart,
             contextContent: { SessionContextCard(data: context, onEditTapped: onEditContext) },
