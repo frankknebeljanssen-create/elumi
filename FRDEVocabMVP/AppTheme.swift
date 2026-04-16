@@ -244,6 +244,30 @@ enum AppTheme {
     }
 }
 
+/// Semantische Aliase für globale Action-Farben. Klar getrennt von
+/// Modul-Identitätsfarben: Wenn eine View eine Primär-CTA, ein Erfolgs-
+/// Feedback, eine Warnung oder einen destruktiven Button zeigen will,
+/// referenziert sie hier — **nicht** direkt auf `AppTheme.Colors.cta`,
+/// `.success`, `.error` etc. So kann die Zuordnung später zentral
+/// verschoben werden (z. B. „alle destruktiven Actions zu Coral"),
+/// ohne dass Callsites angefasst werden müssen.
+///
+/// Zweck ist Semantik, nicht Farbmagie — heute zeigt jeder Slot auf
+/// den bereits vorhandenen Token aus `AppTheme.Colors`.
+enum ElumiActionStyle {
+    /// Primär-CTA: „Weiter", „Start", „Bestätigen". Heute: Amber.
+    static let primary: Color = AppTheme.Colors.cta
+    /// Positive Zustände: Erfolgs-Feedback, abgeschlossene Tasks. Mint.
+    static let success: Color = AppTheme.Colors.success
+    /// Hinweis / Achtung: Amber-Deep (anderer Ton als primary-Amber,
+    /// damit CTA und Warnung unterscheidbar bleiben).
+    static let warning: Color = AppTheme.Colors.warning
+    /// Zerstörend: Löschen, Abbrechen-mit-Verlust. Zeigt auf das seit
+    /// Commit „Farb-Semantik: Error entkoppeln" eigenständige
+    /// `elumiErrorRed` — nicht mehr `elumiPinkDeep`.
+    static let destructive: Color = AppTheme.Colors.error
+}
+
 enum AppModuleTone {
     case practice
     case special

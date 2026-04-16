@@ -91,6 +91,34 @@ extension View {
         }
     }
 
+    /// Kompletter Standard-Chip-Look für modul-assoziierte Pills
+    /// (Filter-Chips, Status-Badges, Kategorie-Tags). Fasst
+    /// Foreground-Color + Padding + Capsule-Background + Border in einem
+    /// Modifier zusammen — spart pro Chip ~5 Zeilen ad-hoc-Styling.
+    ///
+    /// Unterscheidet sich bewusst von `appChipBackground`:
+    /// - `appChipBackground` = **nur** Background + Border, Caller setzt
+    ///   Padding und Text-Color. Für Custom-Layouts.
+    /// - `moduleChipStyle` = **komplettes** Standard-Paket inkl.
+    ///   Capsule-Geometrie, Horizontal/Vertical-Padding und Text-Color.
+    ///   Für den typischen Modul-Tag-Use-Case.
+    ///
+    /// Font setzt der Caller selbst (Typographie liegt außerhalb dieser
+    /// Verantwortung).
+    func moduleChipStyle(_ section: AppSectionStyle) -> some View {
+        let style = section.style
+        return self
+            .foregroundStyle(style.chipText)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                Capsule().fill(style.chipBackground)
+            )
+            .overlay(
+                Capsule().stroke(AppTheme.Colors.border, lineWidth: 1)
+            )
+    }
+
     /// Setup-Card-Hintergrund (Karteikarten-Auswahl-Screen und analoge Setups).
     /// Nutzt die zentralen Farb-Tokens `setupCardBackground` (#0F2D48) +
     /// `setupCardBorder` (#1A3A55) — Single Source of Truth, sodass alle

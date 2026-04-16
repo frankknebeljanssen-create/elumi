@@ -100,4 +100,41 @@ enum AppSectionStyle {
             return AppTheme.Colors.moduleLexicon
         }
     }
+
+    /// Convenience-Fassade: bündelt die am häufigsten genutzten
+    /// abgeleiteten Modul-Farben (Accent, drei Standard-Tint-Intensitäten,
+    /// Chip-BG, Icon-/Progress-Farbe) in einem einzigen Value.
+    ///
+    /// Spart in Views die immer wiederkehrende Zeile
+    /// `style.accent.opacity(AppTheme.CardIntensity.soft)` — stattdessen
+    /// `style.style.tintSoft`. Die Werte werden aus `accent` und
+    /// `AppTheme.CardIntensity` **abgeleitet**, nicht neu definiert —
+    /// Single Source of Truth bleibt `AppTheme.Colors` + `CardIntensity`.
+    var style: ModuleStyle {
+        let base = accent
+        return ModuleStyle(
+            accent: base,
+            tintSoft: base.opacity(AppTheme.CardIntensity.soft),
+            tintMedium: base.opacity(AppTheme.CardIntensity.medium),
+            tintStrong: base.opacity(AppTheme.CardIntensity.strong),
+            chipBackground: base.opacity(AppTheme.CardIntensity.gentle),
+            chipText: AppTheme.Colors.textPrimary,
+            icon: base,
+            progress: base
+        )
+    }
+}
+
+/// Fertig berechnete Modul-Farbwerte für den breiten Masse-Fall (Cards
+/// in `soft`/`medium`/`strong`, Chip, Icon, Progress). Wird über
+/// `AppSectionStyle.style` erzeugt — nicht direkt instanziieren.
+struct ModuleStyle {
+    let accent: Color
+    let tintSoft: Color
+    let tintMedium: Color
+    let tintStrong: Color
+    let chipBackground: Color
+    let chipText: Color
+    let icon: Color
+    let progress: Color
 }
