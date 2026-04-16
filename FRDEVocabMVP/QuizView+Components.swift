@@ -23,12 +23,20 @@ var quizResultHero: some View {
 }
 
 var quizSetupScreen: some View {
-    ScrollView(showsIndicators: false) {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            // Kompakter Header analog zum Karteikarten-Setup —
-            // kleiner „< Zurück" links + zentrierter „Quiz"-Titel.
-            quizSetupHeader
-
+    // Migration auf das Master-Session-Setup-System:
+    //   • Header, Spacing, CTA kommen zentral aus `SessionSetupScreen`
+    //   • Listen-Card bleibt `ListCategoryPickerView` — wir wollen die POS-
+    //     Breakdown-Info + Multi-List-Anzeige nicht verlieren
+    //   • Fragen-Anzahl als generisches `OptionChipGrid` (funktional identisch)
+    SessionSetupScreen(
+        title: "Quiz",
+        accent: sectionStyle.accent,
+        estimate: quizSessionEstimate,
+        primaryButtonTitle: session.isPreparingQuiz ? "Quiz wird gestartet …" : "Quiz starten",
+        isPrimaryEnabled: canStartQuiz && !session.isPreparingQuiz,
+        onBack: { handleBackNavigation() },
+        onStart: { startQuiz() },
+        contextContent: {
             ListCategoryPickerView(
                 availableLists: availableQuizLists,
                 selectedListIDs: session.selectedListIDs,
@@ -36,47 +44,34 @@ var quizSetupScreen: some View {
                 style: sectionStyle,
                 feedbackPlayer: feedbackPlayer,
                 summaryText: quizListSummary,
-                // Gleicher Listen-Label wie Training/Verbformen — so wirkt
-                // die Ausgewählte-Listen-Card über alle Module einheitlich
-                // („X Einträge" statt das Quiz-Default „X Karten").
                 itemLabel: "Einträge",
                 onSelectionChanged: { session.selectedListIDs = $0 }
             )
-
-            quizQuestionCountCard
+        },
+        optionsContent: {
+            SessionOptionGroupCard(title: "ANZAHL FRAGEN") {
+                OptionChipGrid(
+                    options: QuizQuestionCountOption.allCases,
+                    title: { $0.title },
+                    selected: session.questionCountOption,
+                    accent: sectionStyle.accent,
+                    onSelect: { option in
+                        withAnimation(.easeInOut(duration: 0.12)) {
+                            session.questionCountOption = option
+                        }
+                    }
+                )
+            }
 
             if !canStartQuiz {
                 Text("Wähle mindestens eine Liste mit zwei Einträgen.")
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.elumiBlue)
-                    .padding(.horizontal, quizSetupCardInset)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .top)
-        .padding(.bottom, AppTheme.Spacing.sm)
-    }
-    .safeAreaInset(edge: .bottom) {
-        VStack(spacing: 14) {
-            // Master-Session-Setup-Bar — verbindlich über dem CTA.
-            SessionGamificationBar(estimate: quizSessionEstimate)
-
-            Button {
-                startQuiz()
-            } label: {
-                Text(session.isPreparingQuiz ? "Quiz wird gestartet..." : "Quiz starten")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(AppPrimaryButtonStyle(color: canStartQuiz && !session.isPreparingQuiz ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled))
-            .disabled(!canStartQuiz || session.isPreparingQuiz)
-            .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 4)
-        }
-        .padding(.horizontal, AppLayout.screenPadding)
-    }
-    .padding(.horizontal, AppLayout.screenPadding)
-    .padding(.top, AppLayout.contentTopPadding)
-    .padding(.bottom, AppLayout.screenPadding)
-    .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
-    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    )
+    .background(AppTheme.Colors.surface.ignoresSafeArea())
 }
 
 var quizDirectionCard: some View {
@@ -159,58 +154,10 @@ var quizSetupHeader: some View {
     .padding(.bottom, 6)
 }
 
-/// „Anzahl Fragen" Card im neuen Setup-Stil. Header über `setupCardLabel`,
-/// Setup-Card-Hintergrund (#0F2D48 + Border), Buttons im Mastery-Look.
-var quizQuestionCountCard: some View {
-    VStack(alignment: .leading, spacing: 10) {
-        setupCardLabel("Anzahl Fragen")
-
-        let options = QuizQuestionCountOption.allCases
-        let rows = stride(from: 0, to: options.count, by: 2).map {
-            Array(options[($0)..<min($0 + 2, options.count)])
-        }
-        VStack(spacing: 6) {
-            ForEach(rows, id: \.first) { row in
-                HStack(spacing: 6) {
-                    ForEach(row) { option in
-                        quizCountButton(option)
-                    }
-                }
-            }
-        }
-    }
-    .frame(maxWidth: .infinity)
-    .padding(.horizontal, 18)
-    .padding(.vertical, 12)
-    .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
-}
-
-func quizCountButton(_ option: QuizQuestionCountOption) -> some View {
-    let isSelected = session.questionCountOption == option
-    return Button {
-        withAnimation(.easeInOut(duration: 0.12)) {
-            session.questionCountOption = option
-        }
-    } label: {
-        Text(option.title)
-            .font(.system(size: 18, weight: .bold, design: .rounded))
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity)
-            .frame(minHeight: 50)
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(isSelected ? Color(hex: "#1A3A55") : Color(hex: "#1A2A40"))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(
-                        isSelected ? AppTheme.Colors.elumiBlue : Color(hex: "#243B55"),
-                        lineWidth: isSelected ? 1.5 : 1
-                    )
-            )
-    }
-    .buttonStyle(.plain)
-}
+// `quizQuestionCountCard` und `quizCountButton` wurden im Master-Session-
+// Setup-Umbau durch die generische `OptionChipGrid` im neuen
+// `SessionSetupScreen` ersetzt. Funktional identisch — selbe Options,
+// selber State, nur im einheitlichen Chip-Stil.
 
 var quizSessionScreen: some View {
     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
