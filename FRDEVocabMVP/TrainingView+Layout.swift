@@ -404,7 +404,7 @@ extension TrainingView {
                     .fill(AppTheme.Colors.surface)
                     .overlay(
                         RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
-                            .fill(trainingActionTint.opacity(0.06))
+                            .fill(trainingActionTint.opacity(AppTheme.CardIntensity.subtle))
                     )
             )
             .overlay(

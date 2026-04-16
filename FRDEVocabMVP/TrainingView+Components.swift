@@ -29,7 +29,7 @@ extension TrainingView {
                     .fill(AppTheme.Colors.surface)
                     .overlay(
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(hasSelected ? trainingActionTint.opacity(0.12) : trainingActionTint.opacity(0.04))
+                            .fill(hasSelected ? trainingActionTint.opacity(AppTheme.CardIntensity.medium) : trainingActionTint.opacity(AppTheme.CardIntensity.whisper))
                     )
             )
             .overlay(

@@ -146,7 +146,7 @@ extension ListsView {
                     .fill(AppTheme.Colors.surface)
                     .overlay(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(sectionStyle.accent.opacity(0.05))
+                            .fill(sectionStyle.accent.opacity(AppTheme.CardIntensity.whisper))
                     )
             )
             .overlay(

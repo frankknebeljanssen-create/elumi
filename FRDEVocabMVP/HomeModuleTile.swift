@@ -113,7 +113,7 @@ struct HomeModuleTile: View {
                 verticalPadding: 14,
                 minHeight: 148,
                 cornerRadius: 22,
-                accentTintOpacity: 0.11,
+                accentTintOpacity: AppTheme.CardIntensity.medium,
                 shadowOpacity: 0.7,
                 shadowRadius: 7,
                 shadowY: 3
@@ -126,7 +126,7 @@ struct HomeModuleTile: View {
                 verticalPadding: 8,
                 minHeight: 82,
                 cornerRadius: 16,
-                accentTintOpacity: 0.09,
+                accentTintOpacity: AppTheme.CardIntensity.soft,
                 shadowOpacity: 0.55,
                 shadowRadius: 5,
                 shadowY: 2
