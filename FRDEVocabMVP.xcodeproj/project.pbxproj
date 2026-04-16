@@ -407,6 +407,7 @@
 		F43B1C102F878B100094BA73 /* FillBlankSentenceLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C0F2F878B100094BA73 /* FillBlankSentenceLoader.swift */; };
 		F43B1C082F86A7BA0094BA73 /* StandardVocabularyLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C072F86A7BA0094BA73 /* StandardVocabularyLoader.swift */; };
 		F458EED02F8770F9009A2683 /* ArcadeCreditSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F458EECF2F8770F9009A2683 /* ArcadeCreditSystem.swift */; };
+		CFE5744DEEE44CA6A3320AEA /* ScanChoiceCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72C571C840B4169A98D8ABA /* ScanChoiceCard.swift */; };
 		D8F531550E0A4DF7B96CC21C /* SessionSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */; };
 		8641C62C7C85427FB59B365B /* SessionOptionsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9545925434E4BCBA46071F1 /* SessionOptionsComponents.swift */; };
 		721DFC0B52424F55A89930EB /* SessionSetupComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C5A4B8C09644DDA8E9DC8B5 /* SessionSetupComponents.swift */; };
@@ -829,6 +830,7 @@
 		F43B1C0F2F878B100094BA73 /* FillBlankSentenceLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FillBlankSentenceLoader.swift; path = FRDEVocabMVP/FillBlankSentenceLoader.swift; sourceTree = "<group>"; };
 		F43B1C072F86A7BA0094BA73 /* StandardVocabularyLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StandardVocabularyLoader.swift; path = FRDEVocabMVP/StandardVocabularyLoader.swift; sourceTree = "<group>"; };
 		F458EECF2F8770F9009A2683 /* ArcadeCreditSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArcadeCreditSystem.swift; path = FRDEVocabMVP/ArcadeCreditSystem.swift; sourceTree = "<group>"; };
+		B72C571C840B4169A98D8ABA /* ScanChoiceCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanChoiceCard.swift; path = FRDEVocabMVP/ScanChoiceCard.swift; sourceTree = "<group>"; };
 		47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupScreen.swift; path = FRDEVocabMVP/SessionSetupScreen.swift; sourceTree = "<group>"; };
 		C9545925434E4BCBA46071F1 /* SessionOptionsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionOptionsComponents.swift; path = FRDEVocabMVP/SessionOptionsComponents.swift; sourceTree = "<group>"; };
 		1C5A4B8C09644DDA8E9DC8B5 /* SessionSetupComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupComponents.swift; path = FRDEVocabMVP/SessionSetupComponents.swift; sourceTree = "<group>"; };
@@ -862,6 +864,7 @@
 			isa = PBXGroup;
 			children = (
 				F458EECF2F8770F9009A2683 /* ArcadeCreditSystem.swift */,
+				B72C571C840B4169A98D8ABA /* ScanChoiceCard.swift */,
 				47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */,
 				C9545925434E4BCBA46071F1 /* SessionOptionsComponents.swift */,
 				1C5A4B8C09644DDA8E9DC8B5 /* SessionSetupComponents.swift */,
@@ -1632,6 +1635,7 @@ F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */,
 				A00000000000000000000168 /* AppNavigationCoordinator.swift in Sources */,
 				A00000000000000000000170 /* AppDestinationHost.swift in Sources */,
 				F458EED02F8770F9009A2683 /* ArcadeCreditSystem.swift in Sources */,
+				CFE5744DEEE44CA6A3320AEA /* ScanChoiceCard.swift in Sources */,
 				D8F531550E0A4DF7B96CC21C /* SessionSetupScreen.swift in Sources */,
 				8641C62C7C85427FB59B365B /* SessionOptionsComponents.swift in Sources */,
 				721DFC0B52424F55A89930EB /* SessionSetupComponents.swift in Sources */,
