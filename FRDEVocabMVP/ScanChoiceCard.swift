@@ -29,25 +29,28 @@ struct ScanChoiceCard: View {
 
     var body: some View {
         Button {
-            // Sofortiges Feedback: visual press + haptic
             isPressed = true
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
-
-            // Kurze Verzögerung, dann Navigation — User soll die
-            // Bestätigung wahrnehmen, bevor der Screen wechselt.
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
                 isPressed = false
                 action()
             }
         } label: {
-            HStack(spacing: 16) {
+            HStack(spacing: 14) {
+                // Icon mit subtilem Glow im Pressed-State (statt rotem
+                // Outline-Ring auf der Card).
                 Image(illustrationName)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 68, height: 68)
                     .scaleEffect(isPressed ? 1.05 : 1.0)
-                    .brightness(isPressed ? 0.10 : 0)
-                    .shadow(color: .black.opacity(0.12), radius: 4, x: 0, y: 2)
+                    .brightness(isPressed ? 0.12 : 0)
+                    .shadow(
+                        color: isPressed ? accent.opacity(0.45) : .black.opacity(0.12),
+                        radius: isPressed ? 8 : 4,
+                        x: 0,
+                        y: 2
+                    )
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
@@ -57,8 +60,8 @@ struct ScanChoiceCard: View {
                         .minimumScaleFactor(0.85)
 
                     Text(subtitle)
-                        .font(.system(size: 14, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.7))
                         .lineLimit(2)
                         .minimumScaleFactor(0.85)
                 }
@@ -67,27 +70,44 @@ struct ScanChoiceCard: View {
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.5))
+                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.4))
             }
             .padding(.horizontal, isPriority ? 18 : 16)
             .padding(.vertical, isPriority ? 18 : 16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(AppTheme.Colors.setupCardBackground)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .fill(AppTheme.Colors.setupCardBackground)
+                    // Priority bekommt einen ganz subtilen Akzent-Tint
+                    // (nicht über die Outline) — führt den Blick ohne den
+                    // Look zu zerschneiden.
+                    if isPriority {
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            .fill(accent.opacity(0.06))
+                    }
+                    // Pressed → leichte Aufhellung der gesamten Card
+                    // (statt roter Outline). Brighter in einem ruhigen Stil.
+                    if isPressed {
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            .fill(Color.white.opacity(0.04))
+                    }
+                }
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .stroke(
-                        // Pressed → Akzent-Outline; Priority → leicht
-                        // stärkerer Border-Ton; Default → setupCardBorder.
-                        isPressed
-                            ? accent
-                            : (isPriority ? accent.opacity(0.40) : AppTheme.Colors.setupCardBorder),
-                        lineWidth: isPressed ? 2 : 1
+                        AppTheme.Colors.setupCardBorder,
+                        lineWidth: 1
                     )
             )
             .scaleEffect(isPressed ? 0.97 : 1.0)
+            .shadow(
+                color: isPressed ? .black.opacity(0.18) : .black.opacity(0.10),
+                radius: isPressed ? 10 : 6,
+                x: 0,
+                y: isPressed ? 5 : 3
+            )
             .animation(.easeOut(duration: 0.15), value: isPressed)
         }
         .buttonStyle(.plain)
@@ -103,7 +123,7 @@ struct ScanHeroCard: View {
     let accent: Color
 
     var body: some View {
-        HStack(alignment: .center, spacing: 14) {
+        HStack(alignment: .center, spacing: 18) {
             Image(mascotImageName)
                 .resizable()
                 .scaledToFit()
@@ -113,9 +133,11 @@ struct ScanHeroCard: View {
                 Text(title)
                     .font(.system(size: 17, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
+                // Subtitle kleiner + weniger Kontrast — wirkt ruhiger,
+                // Titel bekommt klaren Fokus.
                 Text(subtitle)
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.6))
             }
 
             Spacer(minLength: 0)

@@ -504,7 +504,13 @@ extension ScanImportView {
 
     @ViewBuilder
     var scanStatusMessageView: some View {
-        if !isRecognizingImage, !session.batchCompleted {
+        // Initial-Auswahl-State (keine Bild + keine Preview) bleibt clean —
+        // der Intro-Footer-Text war auf dem leeren Screen visuell „lost".
+        // Status erscheint erst, wenn tatsächlich gescannt wird oder
+        // eine Vorschau existiert.
+        if !isRecognizingImage,
+           !session.batchCompleted,
+           (selectedImage != nil || !previewPairs.isEmpty) {
             Text(importMessage)
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.textSecondary)
@@ -603,7 +609,6 @@ extension ScanImportView {
                             selectedScanInputMethod = .library
                             showingPhotoLibrary = true
                         }
-                        .padding(.bottom, 8)
 
                         // Progress overlay during batch
                         // (handled below as overlay)
