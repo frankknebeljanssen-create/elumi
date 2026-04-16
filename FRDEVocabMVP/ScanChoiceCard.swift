@@ -134,25 +134,14 @@ struct ScanHeroCard: View {
     }
 }
 
-/// Header-Block des neuen Scan-Screens — links-bündig, klare Hierarchie:
-/// Titel groß und fett, Frage mittel, Subtext sekundär.
+/// Header-Block des neuen Scan-Screens — links-bündig.
+/// Nur der Titel „Scan" — Frage + Subtext leben in der HeroCard
+/// darunter, daher hier bewusst keine Wiederholung.
 struct ScanScreenHeader: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("Scan")
-                .font(.system(size: 32, weight: .black, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-
-            Text("Was möchtest du scannen?")
-                .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-                .padding(.top, 8)
-
-            Text("Ich mache daraus eine Lerneinheit")
-                .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-                .padding(.top, 4)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        Text("Scan")
+            .font(.system(size: 32, weight: .black, design: .rounded))
+            .foregroundStyle(AppTheme.Colors.textPrimary)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
