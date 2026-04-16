@@ -524,12 +524,21 @@ extension TrainingView {
 
                     VStack(alignment: .leading, spacing: 2) {
                         if hasSelection {
+                            // Pro-Liste-Row: Name links + „X Einträge" rechts
+                            // — einheitlich mit `ListCategoryPickerView`, damit
+                            // Quiz/Vokabeln und Training visuell matchen.
                             ForEach(selectedLists.prefix(AppLayout.maxSelectableLists)) { list in
-                                Text(list.name)
-                                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.7)
+                                HStack(spacing: 0) {
+                                    Text(list.name)
+                                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.7)
+                                    Spacer(minLength: 4)
+                                    Text("\(list.items.count) Einträge")
+                                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                        .foregroundStyle(trainingActionTint)
+                                }
                             }
                             Button {
                                 feedbackPlayer.playTabSwitch()
@@ -675,12 +684,21 @@ extension TrainingView {
 
                     VStack(alignment: .leading, spacing: 2) {
                         if hasSelection {
+                            // Pro-Liste-Row: Name links + „X Einträge" rechts
+                            // — einheitlich mit `ListCategoryPickerView`, damit
+                            // Quiz/Vokabeln und Training visuell matchen.
                             ForEach(selectedLists.prefix(AppLayout.maxSelectableLists)) { list in
-                                Text(list.name)
-                                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.7)
+                                HStack(spacing: 0) {
+                                    Text(list.name)
+                                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.7)
+                                    Spacer(minLength: 4)
+                                    Text("\(list.items.count) Einträge")
+                                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                        .foregroundStyle(trainingActionTint)
+                                }
                             }
                             // Gesamt-Summary in elumiBlue (Info-Token, konsistent
                             // mit Karteikarten-Setup). Klickbar wenn Counter-

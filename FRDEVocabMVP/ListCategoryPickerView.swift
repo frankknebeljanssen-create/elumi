@@ -93,15 +93,22 @@ struct ListCategoryPickerView: View {
                             .font(.system(size: 12, weight: .semibold, design: .rounded))
                             .foregroundStyle(AppTheme.Colors.textSecondary)
                     }
+
+                    // Summary-Zeile — analog zu `setupListSelectionCard` im
+                    // Training. Einheitliches Format „X Listen · N Einträge
+                    // gesamt" über alle Module hinweg.
+                    let listsLabel = "\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n")"
+                    let totalItems = selectedLists.reduce(0) { $0 + $1.items.count }
+                    Text("\(listsLabel) · \(totalItems) \(itemLabel) gesamt")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(accent)
+                        .padding(.top, 2)
+
                     // Spacer-Lines, damit die Card auf 4-Zeilen-Höhe bleibt
                     if selectedLists.count == 1 {
                         Text(" ").font(.system(size: 13))
                         Text(" ").font(.system(size: 13))
-                        Text(" ").font(.system(size: 13))
                     } else if selectedLists.count == 2 {
-                        Text(" ").font(.system(size: 13))
-                        Text(" ").font(.system(size: 13))
-                    } else if selectedLists.count == 3 {
                         Text(" ").font(.system(size: 13))
                     }
 
