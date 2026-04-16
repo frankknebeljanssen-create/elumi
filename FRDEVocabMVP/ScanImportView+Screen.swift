@@ -569,10 +569,10 @@ extension ScanImportView {
                                 accent: sectionStyle.accent
                             )
 
-                            // ────────────── MODUS-Block ──────────────
+                            // ─────── Schritt 1 — MODUS ───────
                             // Selection-Toggles (kein Navigations-Element).
                             // Tap ändert nur den Modus, User bleibt auf dem Screen.
-                            ScanSectionLabel(title: "MODUS")
+                            ScanSectionLabel(stepNumber: 1, title: "Wähle den Modus")
                                 .padding(.top, 8)
 
                             HStack(spacing: 12) {
@@ -597,11 +597,12 @@ extension ScanImportView {
                                 }
                             }
 
-                            // ────────────── QUELLE-Block ──────────────
+                            // ─────── Schritt 2 — QUELLE ───────
                             // Action-Buttons. Tap startet Kamera/Galerie
-                            // mit dem aktuell gewählten Modus.
-                            ScanSectionLabel(title: "QUELLE")
-                                .padding(.top, 12)
+                            // mit dem aktuell gewählten Modus. +24pt Luft
+                            // zwischen den Blöcken — klarer Hierarchie-Bruch.
+                            ScanSectionLabel(stepNumber: 2, title: "Wähle die Quelle")
+                                .padding(.top, 24)
 
                             ScanChoiceCard(
                                 illustrationName: "ScanIconKamera",

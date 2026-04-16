@@ -56,26 +56,27 @@ struct ScanChoiceCard: View {
                         y: 2
                     )
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 3) {
+                    // Klare 3-stufige Typo-Hierarchie:
+                    //   Titel groß — Subtext mittel — Modus-Hint klein.
                     Text(title)
-                        .font(.system(size: isPriority ? 20 : 18, weight: .bold, design: .rounded))
+                        .font(.system(size: isPriority ? 22 : 20, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
 
                     Text(subtitle)
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.7))
                         .lineLimit(2)
                         .minimumScaleFactor(0.85)
 
-                    // Modus-Hint — gibt subtile Sicherheit, in welchem
-                    // Modus die KI gleich analysiert.
+                    // Modus-Hint — sehr subtil, nicht wie ein Tag.
                     if let modeHint, !modeHint.isEmpty {
                         Text(modeHint)
-                            .font(.system(size: 11, weight: .semibold, design: .rounded))
-                            .foregroundStyle(accent.opacity(0.85))
-                            .padding(.top, 2)
+                            .font(.system(size: 10, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.55))
+                            .padding(.top, 3)
                     }
                 }
 
@@ -131,11 +132,11 @@ struct ScanChoiceCard: View {
 /// reine Toggle-Selection (Vokabelliste / Freier Text). Tap ändert nur
 /// die Modus-Auswahl, der User bleibt auf dem Screen.
 ///
-/// Design:
-///   • aktiv: Accent-Border 1.5pt + 10%-Accent-Background-Tint
+/// Design (final, ruhig):
+///   • aktiv: dezenter Accent-Tint im Background (8%) + sehr subtiler
+///     Akzent-Border (15%-Opacity, 1pt) — Checkmark ist Hauptsignal
 ///   • inaktiv: setupCardBorder, ruhig
-///   • Checkmark-Indikator oben rechts wenn aktiv
-///   • KEIN Chevron, KEIN Shadow-Sprung
+///   • visuell flacher als die Quelle-Cards (kein Shadow)
 struct ScanModeSelectionCard: View {
     let illustrationName: String
     let title: String
@@ -144,9 +145,21 @@ struct ScanModeSelectionCard: View {
     let accent: Color
     let onTap: () -> Void
 
+    @State private var checkScale: CGFloat = 1.0
+
     var body: some View {
         Button {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            // Mini Spring auf den Checkmark beim Aktivieren — fühlt sich
+            // „lebendig" an, ohne den Stil zu brechen.
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.55)) {
+                checkScale = 1.25
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                withAnimation(.spring(response: 0.32, dampingFraction: 0.7)) {
+                    checkScale = 1.0
+                }
+            }
             onTap()
         } label: {
             VStack(alignment: .leading, spacing: 8) {
@@ -154,11 +167,12 @@ struct ScanModeSelectionCard: View {
                     Image(illustrationName)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 44, height: 44)
+                        .frame(width: 40, height: 40)
                     Spacer(minLength: 0)
                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                         .font(.system(size: 18, weight: .bold))
-                        .foregroundStyle(isSelected ? accent : AppTheme.Colors.textSecondary.opacity(0.4))
+                        .foregroundStyle(isSelected ? accent : AppTheme.Colors.textSecondary.opacity(0.35))
+                        .scaleEffect(isSelected ? checkScale : 1.0)
                 }
 
                 Text(title)
@@ -167,7 +181,7 @@ struct ScanModeSelectionCard: View {
 
                 Text(subtitle)
                     .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.7))
+                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.65))
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -176,18 +190,29 @@ struct ScanModeSelectionCard: View {
             .background(
                 ZStack {
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        // Inaktiv minimal flacher als die Quelle-Cards —
+                        // setupCardBackground bleibt, aber durch einen
+                        // weißen 4%-Overlay wirken sie weniger "schwer".
                         .fill(AppTheme.Colors.setupCardBackground)
                     if isSelected {
+                        // Sanfter Accent-Wash statt voller Border-Ring
                         RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(accent.opacity(0.10))
+                            .fill(accent.opacity(0.08))
+                    } else {
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(Color.white.opacity(0.02))
                     }
                 }
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .stroke(
-                        isSelected ? accent : AppTheme.Colors.setupCardBorder,
-                        lineWidth: isSelected ? 1.5 : 1
+                        // Border ist jetzt **sehr** subtil — keine "Debug-
+                        // Highlight"-Anmutung mehr. Hauptsignal: Checkmark.
+                        isSelected
+                            ? accent.opacity(0.15)
+                            : AppTheme.Colors.setupCardBorder,
+                        lineWidth: 1
                     )
             )
             .animation(.easeOut(duration: 0.18), value: isSelected)
@@ -215,11 +240,11 @@ struct ScanHeroCard: View {
                 Text(title)
                     .font(.system(size: 17, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
-                // Subtitle kleiner + weniger Kontrast — wirkt ruhiger,
-                // Titel bekommt klaren Fokus.
+                // Subtitle nochmal eine Stufe ruhiger — wirkt klar
+                // sekundär, Titel hat den Fokus für sich.
                 Text(subtitle)
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.6))
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.5))
             }
 
             Spacer(minLength: 0)
@@ -250,17 +275,23 @@ struct ScanScreenHeader: View {
     }
 }
 
-/// Kleines Sektions-Label (uppercase, tracking) für die Trennung
-/// „MODUS" / „QUELLE" im Scan-Screen.
+/// Sektions-Label im Scan-Screen — als Schritt-Indikator („1. Wähle …",
+/// „2. Wähle …"). Klarer als die alte technische „MODUS"/„QUELLE"-
+/// Überschrift, kommuniziert Flow-Reihenfolge.
 struct ScanSectionLabel: View {
+    let stepNumber: Int
     let title: String
 
     var body: some View {
-        Text(title)
-            .font(.system(size: 11, weight: .black, design: .rounded))
-            .tracking(1.4)
-            .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.7))
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 4)
+        HStack(spacing: 8) {
+            Text("\(stepNumber).")
+                .font(.system(size: 14, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.55))
+            Text(title)
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 4)
     }
 }
