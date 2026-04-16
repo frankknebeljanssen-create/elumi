@@ -141,7 +141,9 @@ struct LexiconView: View {
         }
         .safeAreaInset(edge: .top, spacing: 0) {
             stickyLexiconHeader
-                .padding(.top, AppLayout.contentTopPadding)
+                // Systemweites Top-Padding — Header sitzt auf derselben
+                // vertikalen Position wie im Quiz-Setup.
+                .padding(.top, AppLayout.screenHeaderTopPadding)
                 .padding(.bottom, AppTheme.Spacing.sm)
                 .background(AppTheme.Colors.surface.opacity(0.98))
         }

@@ -109,15 +109,18 @@ struct OptionChipGrid<Option: Hashable>: View {
                         }
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 76)
+                    // Etwas flacher als zuvor (76 → 62) — die Anzahl-
+                    // Fragen-Chips im Quiz-Setup wirken dadurch weniger
+                    // dominant. Inhalt sitzt weiterhin komfortabel.
+                    .frame(height: 62)
                     .background(
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .fill(isSelected
                                   ? accent.opacity(0.20)
                                   : Color.white.opacity(0.04))
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .stroke(isSelected
                                     ? accent
                                     : Color.white.opacity(0.06),

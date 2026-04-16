@@ -39,7 +39,9 @@ extension ListsView {
                 }
             }
             .padding(.horizontal, AppLayout.screenPadding)
-            .padding(.top, AppLayout.contentTopPadding)
+            // Systemweites Top-Padding für Screen-Header — Header sitzt
+            // damit auf derselben vertikalen Position wie im Quiz-Setup.
+            .padding(.top, AppLayout.screenHeaderTopPadding)
             .padding(.bottom, AppLayout.screenPadding)
             .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)

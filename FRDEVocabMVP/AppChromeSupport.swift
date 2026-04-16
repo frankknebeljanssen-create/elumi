@@ -26,6 +26,35 @@ enum AppLayout {
     /// Ändern → alle Header springen gemeinsam. Keine Local-Overrides.
     static let screenHeaderBottomPadding: CGFloat = 16
 
+    /// **Systemweites Top-Padding** vor dem Header-Block eines Screens.
+    /// Referenz ist die Quiz-/Session-Setup-Position: der Header sitzt
+    /// direkt am Screen-Top und hat intern nur 4 pt Atemraum zum Safe-
+    /// Area-Rand. Diese Konstante ersetzt `contentTopPadding` als
+    /// Top-Padding für Screens, die mit einem ScreenHeader-Block
+    /// beginnen — dadurch sitzen Header auf **jedem** Screen auf der
+    /// gleichen vertikalen Position.
+    static let screenHeaderTopPadding: CGFloat = 4
+
+    /// **Systemweite Corner-Radius für Primary-CTAs und die Gamification-
+    /// Bar** darüber — beide sollen identisch aussehen und dieselbe
+    /// Rundung wie die anderen Home-/Setup-Cards (Progress-Board,
+    /// Fokus-Card …) haben.
+    static let sessionCTARadius: CGFloat = 16
+
+    /// **Systemweites Bottom-Padding** unter dem Primary-CTA bis zum
+    /// Footer. Vorlage: Karteikarten-Setup. Wird in
+    /// `SessionSetupScreen` (Karteikarten, Quiz, Training-Setup) und
+    /// in Session-eigenen CTAs (Flashcards-Setup-CTA etc.) genutzt —
+    /// damit der Abstand zwischen CTA und Footer auf **jedem** Screen
+    /// exakt identisch ist.
+    static let sessionCTABottomClearance: CGFloat =
+        AppTheme.Layout.footerHeight + bottomBarInsetBottom + 14
+
+    /// **Systemweites Horizontal-Padding** für CTA + Gamification-Bar.
+    /// Garantiert, dass die Bar exakt dieselbe Breite wie der CTA
+    /// darunter hat.
+    static let sessionCTAHorizontalPadding: CGFloat = 16
+
     /// App-weite Obergrenze für Mehrfachauswahl von Vokabel-Listen
     /// App-weites Limit für gleichzeitig ausgewählte Listen — gilt für Training,
     /// Karteikarten, Quiz und Verbformen. Mehr als 3 Listen verwirren in der

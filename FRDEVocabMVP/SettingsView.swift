@@ -105,7 +105,9 @@ struct SettingsView: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, AppLayout.screenPadding)
-        .padding(.top, AppLayout.contentTopPadding)
+        // Systemweites Top-Padding — Header sitzt auf derselben
+        // vertikalen Position wie im Quiz-Setup.
+        .padding(.top, AppLayout.screenHeaderTopPadding)
         .padding(.bottom, AppLayout.screenPadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {

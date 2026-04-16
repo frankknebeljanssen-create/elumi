@@ -43,7 +43,9 @@ extension TrainingView {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .padding(.top, AppLayout.contentTopPadding)
+            // Systemweites Top-Padding — Header sitzt auf derselben
+            // vertikalen Position wie im Quiz-Setup (Vorlage).
+            .padding(.top, AppLayout.screenHeaderTopPadding)
             .padding(.bottom, usesGlobalChrome ? 0 : AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.lg)
 
             // Combo-Toast-Overlay — liegt über allen Session-Screens und zeigt

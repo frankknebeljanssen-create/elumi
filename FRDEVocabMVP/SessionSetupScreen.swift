@@ -85,19 +85,20 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
         }
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 14) {
+                // GamificationBar + CTA nutzen dasselbe Horizontal-Padding
+                // → garantiert identische Breite. Systemweite Konstante.
                 SessionGamificationBar(estimate: estimate)
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, AppLayout.sessionCTAHorizontalPadding)
 
                 SessionPrimaryCTA(
                     title: primaryButtonTitle,
                     isEnabled: isPrimaryEnabled,
                     action: onStart
                 )
-                .padding(.horizontal, 16)
-                // +14pt statt +4 — der Footer braucht etwas mehr Luft
-                // darüber, sonst ragt die Shadow-Edge der BottomBar leicht
-                // in den CTA rein.
-                .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 14)
+                .padding(.horizontal, AppLayout.sessionCTAHorizontalPadding)
+                // Systemweites Bottom-Padding bis zum Footer — auf
+                // **jedem** Setup-Screen identisch (Vorlage: Karteikarten).
+                .padding(.bottom, AppLayout.sessionCTABottomClearance)
             }
         }
     }

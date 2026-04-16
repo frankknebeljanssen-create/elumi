@@ -180,7 +180,8 @@ extension FlashcardsView {
             }
         }
         .padding(.horizontal, AppLayout.screenPadding)
-        .padding(.top, AppLayout.contentTopPadding)
+        // Systemweites Top-Padding — Header-Position wie Quiz-Setup.
+        .padding(.top, AppLayout.screenHeaderTopPadding)
         .padding(.bottom, AppTheme.Layout.footerHeight + flashcardBottomBarSpacing + AppTheme.Spacing.sm)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -250,7 +251,8 @@ extension FlashcardsView {
             }
         }
         .padding(.horizontal, AppLayout.screenPadding)
-        .padding(.top, AppLayout.contentTopPadding)
+        // Systemweites Top-Padding — Header-Position wie Quiz-Setup.
+        .padding(.top, AppLayout.screenHeaderTopPadding)
         .padding(.bottom, AppLayout.screenPadding)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)

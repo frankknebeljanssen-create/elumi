@@ -227,12 +227,14 @@ struct SessionGamificationBar: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 11)
         .frame(maxWidth: .infinity)
+        // Systemweite Corner-Radius — identisch zum Primary-CTA darunter,
+        // damit Bar + CTA wie ein zusammenhängendes Card-System wirken.
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RoundedRectangle(cornerRadius: AppLayout.sessionCTARadius, style: .continuous)
                 .fill(AppTheme.Colors.setupCardBackground)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RoundedRectangle(cornerRadius: AppLayout.sessionCTARadius, style: .continuous)
                 .stroke(AppTheme.Colors.setupCardBorder, lineWidth: 1)
         )
         .accessibilityElement(children: .combine)
@@ -293,8 +295,10 @@ struct SessionPrimaryCTA: View {
                 .foregroundStyle(isEnabled ? Color.black : AppTheme.Colors.textDisabled)
                 .frame(maxWidth: .infinity)
                 .frame(minHeight: 58)
+                // Systemweite Corner-Radius — identisch zu den Cards
+                // darüber (GamificationBar, Progress-Board, Fokus-Card).
                 .background(
-                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    RoundedRectangle(cornerRadius: AppLayout.sessionCTARadius, style: .continuous)
                         .fill(isEnabled ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled.opacity(0.3))
                 )
         }

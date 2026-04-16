@@ -56,18 +56,11 @@ struct LanguageDirectionSwitch: View {
             .padding(.horizontal, spec.horizontalPadding)
             .padding(.vertical, spec.verticalPadding)
             .frame(maxWidth: spec.expandsWidth ? .infinity : nil)
-            .background(
-                // Kein Capsule mehr — gleiche Card-Rundung wie die
-                // restlichen Home-Cards (Progress-Board etc.), damit die
-                // Flag-Zeile visuell zum System gehört, nicht wie ein
-                // Sonder-Badge wirkt.
-                RoundedRectangle(cornerRadius: spec.cornerRadius, style: .continuous)
-                    .fill(AppTheme.Colors.surface.opacity(0.55))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: spec.cornerRadius, style: .continuous)
-                    .strokeBorder(AppTheme.Colors.border.opacity(0.55), lineWidth: 1)
-            )
+            // Kein Background, kein Border — die Flaggen stehen nackt auf
+            // dem darunterliegenden Screen-/Card-Hintergrund, ohne eigene
+            // Mini-Card darum. `padding`/`frame` bleiben als Touch-Target
+            // und für das Zentrieren erhalten.
+            .contentShape(Rectangle())
             .animation(.easeOut(duration: 0.12), value: isPressed)
         }
         .buttonStyle(.plain)
@@ -174,16 +167,9 @@ struct SessionDirectionRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Richtung")
-                    .font(.system(size: 13, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                Text("Gilt für diese und alle künftigen Sessions.")
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.75))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.85)
-            }
+            Text("Richtung")
+                .font(.system(size: 15, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
 
             Spacer(minLength: 8)
 

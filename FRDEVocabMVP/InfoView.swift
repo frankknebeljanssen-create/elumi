@@ -151,7 +151,9 @@ struct InfoView: View {
                 .padding(14)
             }
             .padding(.horizontal, AppLayout.screenPadding)
-            .padding(.top, AppLayout.contentTopPadding)
+            // Systemweites Top-Padding — Header sitzt auf derselben
+            // vertikalen Position wie im Quiz-Setup.
+            .padding(.top, AppLayout.screenHeaderTopPadding)
             .padding(.bottom, AppLayout.screenPadding)
             .frame(maxWidth: .infinity, alignment: .top)
         }
