@@ -140,6 +140,24 @@ struct FlashcardsView: View {
         selectedCardCountForSetup > 0
     }
 
+    /// Master-Session-Setup-Estimate für die verpflichtende Gamification-Bar
+    /// oberhalb des Setup-CTA. itemCount = effektive Karten-Anzahl,
+    /// roundMultiplier = Mastery-Threshold (1×/2×/3× richtige Antworten
+    /// bevor die Karte aus dem Stapel fällt).
+    @MainActor
+    var flashcardsSessionEstimate: SessionEstimate {
+        let config = SessionConfig(
+            module: .flashcards,
+            itemCount: flashcardEffectiveCardCount,
+            roundMultiplier: setup.masteryThreshold
+        )
+        return SessionSetupEstimator.estimate(
+            for: config,
+            progress: progressStore.progress,
+            dailyChallenge: DailyChallengeStore.shared.challenge
+        )
+    }
+
     var showsSuccessOnlyMessage: Bool {
         interaction.lastResult?.label == "Korrekt! 🙂"
     }

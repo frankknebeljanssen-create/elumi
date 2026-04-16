@@ -206,9 +206,11 @@ extension FlashcardsView {
 
                     flashcardMasteryThresholdCard
 
-                    flashcardHungerCard
-
-                    flashcardStatsTrioCard
+                    // `flashcardHungerCard` + `flashcardStatsTrioCard` sind
+                    // mit der Master-Setup-Migration ersatzlos entfallen:
+                    // isoliertes Würmchen-Messaging und die Mini-Stat-Kacheln
+                    // werden jetzt durch die globale `SessionGamificationBar`
+                    // oberhalb des CTA abgedeckt.
 
                     Spacer(minLength: 0)
                 }
@@ -217,16 +219,20 @@ extension FlashcardsView {
             }
             .scrollDismissesKeyboard(.interactively)
             .safeAreaInset(edge: .bottom) {
-                Button {
-                    startFlashcardsFromSetup(autoplayPrompt: true)
-                } label: {
-                    Text("Los geht's!")
-                        .frame(maxWidth: .infinity)
+                VStack(spacing: 6) {
+                    // Master-Session-Setup-Bar — verbindlich über dem CTA.
+                    SessionGamificationBar(estimate: flashcardsSessionEstimate)
+
+                    Button {
+                        startFlashcardsFromSetup(autoplayPrompt: true)
+                    } label: {
+                        Text("Los geht's!")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(AppPrimaryButtonStyle(color: canStartSetup ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled))
+                    .disabled(!canStartSetup)
+                    .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 4)
                 }
-                .buttonStyle(AppPrimaryButtonStyle(color: canStartSetup ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled))
-                .disabled(!canStartSetup)
-                // Näher an den Footer rücken — vorher waren noch +16pt Luft.
-                .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 4)
             }
             .onChange(of: isCardCountFieldFocused) { _, isFocused in
                 guard isFocused else { return }

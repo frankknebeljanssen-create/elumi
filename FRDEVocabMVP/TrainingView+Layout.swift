@@ -320,6 +320,11 @@ extension TrainingView {
                     .frame(maxWidth: .infinity)
             }
 
+            // Master-Session-Setup-Bar — verbindlich über dem CTA.
+            // Keine Card, kein Rahmen: kompakte horizontale Zeile mit
+            // +XP · ~min · 🔥 Streak-Multi · Credit-Preview.
+            SessionGamificationBar(estimate: trainingSessionEstimate)
+
             Text("Los geht's!")
                 .font(AppTheme.Typography.button)
                 .foregroundColor(.black)

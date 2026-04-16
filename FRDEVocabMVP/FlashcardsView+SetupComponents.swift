@@ -290,84 +290,14 @@ extension FlashcardsView {
             : Swift.min(setup.selectedCardCount, max)
     }
 
-    /// „Ich hab Hunger"-Motivations-Card. Zeigt den Elumi-Avatar links und
-    /// einen kleinen Hinweis-Text mit aktueller Karten-Anzahl als Highlight.
-    var flashcardHungerCard: some View {
-        let totalCards = flashcardEffectiveCardCount
-        return HStack(alignment: .center, spacing: 12) {
-            ArcadeElumiAvatar(size: 56, withShadow: false)
-
-            (
-                Text("Ich hab Hunger! ")
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                +
-                Text("\(totalCards) Würmchen")
-                    .foregroundStyle(AppTheme.Colors.elumiAmber)
-                    .fontWeight(.bold)
-                +
-                Text(" warten auf mich. Fütter mich!")
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-            )
-            .font(.system(size: 14, weight: .medium, design: .rounded))
-            .multilineTextAlignment(.leading)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .frame(maxWidth: .infinity)
-        .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
-    }
-
-    /// Stat-Trio: Geschätzte Zeit, Streak-Bonus, Tage-Streak. 3-Spalten-Grid.
-    /// Geschätzte Zeit reagiert live auf:
-    ///   • Anzahl der Karten (Slider in der Anzahl-Card)
-    ///   • Mastery-Threshold (1× / 2× / 3× richtig) — höhere Schwelle
-    ///     bedeutet mehr Wiederholungen pro Karte → längere Sitzung.
-    /// Pacing: ~8 Sekunden pro Karte-Begegnung. Wir multiplizieren mit dem
-    /// Threshold, weil jede Karte erst nach N richtigen Antworten rausfällt
-    /// (in der Praxis braucht sie also mind. N Begegnungen, oft mehr).
-    var flashcardStatsTrioCard: some View {
-        let totalCards = max(flashcardEffectiveCardCount, 1)
-        let threshold = max(1, setup.masteryThreshold)
-        let totalEncounters = totalCards * threshold
-        let estMinutes = max(1, Int((Double(totalEncounters) * 8.0 / 60.0).rounded()))
-
-        return HStack(spacing: 8) {
-            flashcardSetupTrioTile(value: "~\(estMinutes) min", label: "Geschätzte Zeit")
-            flashcardSetupTrioTile(value: "x1.2", label: "Streak-Bonus")
-            flashcardSetupTrioTile(value: "3", label: "Tage-Streak")
-        }
-        .frame(maxWidth: .infinity)
-    }
-
-    /// Spec: BG #1A2A40, Border #243B55 1px, Radius 10pt, Padding 10pt.
-    /// Wert: 16pt/700 weiß, Label: 10pt #888888.
-    private func flashcardSetupTrioTile(value: String, label: String) -> some View {
-        VStack(spacing: 4) {
-            Text(value)
-                .font(.system(size: 16, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-
-            Text(label)
-                .font(.system(size: 10, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(hex: "#888888"))
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .minimumScaleFactor(0.8)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(10)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color(hex: "#1A2A40"))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(Color(hex: "#243B55"), lineWidth: 1)
-        )
-    }
+    // `flashcardHungerCard`, `flashcardStatsTrioCard` und
+    // `flashcardSetupTrioTile` wurden mit dem Master-Session-Setup-Umbau
+    // komplett entfernt:
+    //   • das isolierte „Ich hab Hunger"-Würmchen-Messaging fällt weg
+    //   • die Mini-Stats (Zeit-Schätzung, Streak-Multi, Streak-Tage) werden
+    //     jetzt über die globale `SessionGamificationBar` über dem CTA
+    //     abgedeckt — eine konsistente Preview für alle Setup-Screens
+    //     statt modulspezifischer Trio-Kacheln.
 
     /// Custom Slider mit klassischem runden Handle in der Modul-Akzentfarbe.
     /// Dünner Track + Tap+Drag auf der gesamten Track-Fläche.

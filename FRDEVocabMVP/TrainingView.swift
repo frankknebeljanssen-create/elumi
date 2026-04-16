@@ -126,6 +126,38 @@ struct TrainingView: View {
         return "\(selected.count) Listen"
     }
 
+    /// Master-Session-Setup-Estimate für die verpflichtende Gamification-Bar
+    /// oberhalb des Training-CTA. Item-Count = effektive aktive Items der
+    /// gewählten Liste(n). Modul variiert je nach Training-Typ, damit die
+    /// Dauer-Schätzung stimmt (Verbformen kürzer als Vokabel-Training,
+    /// Speed-Round nochmal deutlich kürzer).
+    @MainActor
+    var trainingSessionEstimate: SessionEstimate {
+        let items = activeItems.count
+        // In Verbformen / Speed-Round rechnet eine Session nicht durch alle
+        // Items, sondern durch eine Teilmenge. Als Preview-Schätzung kappen
+        // wir auf einen realistischen Session-Umfang — ProgressService liefert
+        // am Ende die exakten Werte, aber hier wollen wir Orientierung.
+        let estimatedItemCount: Int
+        let module: SessionConfig.Module
+        if isVerbformsMode {
+            module = session.isSpeedRound ? .speedRound : .verbforms
+            estimatedItemCount = session.isSpeedRound ? min(items, 20) : min(items, 12)
+        } else if session.isSpeedRound {
+            module = .speedRound
+            estimatedItemCount = min(items, 20)
+        } else {
+            module = .training
+            estimatedItemCount = min(items, 15)
+        }
+        let config = SessionConfig(module: module, itemCount: estimatedItemCount)
+        return SessionSetupEstimator.estimate(
+            for: config,
+            progress: progressStore.progress,
+            dailyChallenge: DailyChallengeStore.shared.challenge
+        )
+    }
+
     var trainingListCount: String {
         let ids = session.selectedTrainingListIDs
         if ids.isEmpty { return "" }
