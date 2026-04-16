@@ -92,6 +92,18 @@ struct LanguageDirectionSwitch: View {
     private func toggle() {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
 
+        // Sound-Feedback zum Richtungswechsel — zentral hier, damit der
+        // Klang auf **jedem** Screen (Home + alle Setup-Screens) spielt,
+        // ohne dass jede Aufruferseite explizit eine Sound-Closure
+        // verdrahten muss. Der Key ist identisch zu `FeedbackPlayer.
+        // areSoundsEnabled`, damit der globale Stummschalter greift.
+        let soundsEnabledKey = "FRDEVocabMVP.soundsEnabled.v1"
+        let soundsEnabled = UserDefaults.standard.object(forKey: soundsEnabledKey) == nil
+            || UserDefaults.standard.bool(forKey: soundsEnabledKey)
+        if soundsEnabled {
+            SoundPlayer.shared.play("toggle")
+        }
+
         // 1) Kompression anziehen — kurzer „Druck"-Effekt auf Flaggen + Pfeil.
         withAnimation(.easeOut(duration: 0.08)) {
             isPressed = true

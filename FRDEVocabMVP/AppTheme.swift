@@ -50,16 +50,22 @@ enum AppTheme {
         static let elumiBlue = Color(hex: "#5B9CF5")
         // Setup-Card-Hintergrund + Border — **identisch** zu den Home-Cards
         // (Progress-Board, Daily-Focus, Modul-Kacheln). Ein einziger
-        // Card-Look durch die App: `surface` (#101522 elumiNavy) als Fill
-        // + cremefarbener 12%-Border. Frühere Abweichung (#0F2D48 heller
-        // Setup-Tint) fiel visuell aus dem Raster und ist mit dem Master-
-        // Setup-Screen entfallen.
-        static let setupCardBackground = elumiNavy
+        // Card-Look durch die App: `surface` als Fill + cremefarbener
+        // 12%-Border. Frühere Abweichung (#0F2D48 heller Setup-Tint)
+        // fiel visuell aus dem Raster und ist mit dem Master-Setup-Screen
+        // entfallen.
+        static let setupCardBackground = surface
         static let setupCardBorder = elumiCream.opacity(0.12)
 
         static let primary = elumiPinkDeep
-        static let background = elumiMidnight
-        static let surface = elumiNavy
+        // Material-Semantik korrekt umgesetzt: `background` ist der
+        // **dunklere** App-Hintergrund (Y≈20.9), `surface` der
+        // **minimal hellere** Card-Fill (Y≈23.4). Naming-Quirk: die
+        // Farb-Tokens `elumiMidnight`/`elumiNavy` klingen umgekehrt,
+        // aber die tatsächlichen Hex-Werte stellen genau dieses Dunkel-
+        // zu-Hell-Gefälle her (Home-Pattern: Screen dunkel, Cards heller).
+        static let background = elumiNavy
+        static let surface = elumiMidnight
         static let secondarySurface = Color(hex: "#162133")
 
         static let textPrimary = elumiCream

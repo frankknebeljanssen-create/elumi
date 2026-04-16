@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <title>Eigene Listen</title>
+  <ellipse cx="36" cy="64" rx="24" ry="3" fill="#000000" opacity="0.25"/>
+  <rect x="14" y="14" width="40" height="46" rx="3" fill="#F5C4B3" stroke="#1A1A2E" stroke-width="2.5" transform="rotate(-4 34 37)"/>
+  <rect x="16" y="10" width="40" height="46" rx="3" fill="#FFF0E6" stroke="#1A1A2E" stroke-width="2.5"/>
+  <circle cx="24" cy="18" r="1.8" fill="#1A1A2E"/>
+  <line x1="30" y1="18" x2="48" y2="18" stroke="#1A1A2E" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="24" cy="26" r="1.8" fill="#1A1A2E"/>
+  <line x1="30" y1="26" x2="44" y2="26" stroke="#8899AA" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="24" cy="34" r="1.8" fill="#1A1A2E"/>
+  <line x1="30" y1="34" x2="46" y2="34" stroke="#8899AA" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="24" cy="42" r="1.8" fill="#1A1A2E"/>
+  <line x1="30" y1="42" x2="42" y2="42" stroke="#8899AA" stroke-width="2" stroke-linecap="round"/>
+  <path d="M44 8 L54 8 L54 24 L49 20 L44 24 Z" fill="#FF4D80" stroke="#1A1A2E" stroke-width="2.5" stroke-linejoin="round"/>
+  <circle cx="58" cy="52" r="10" fill="#FFB3BA" stroke="#1A1A2E" stroke-width="2.5"/>
+  <circle cx="54" cy="50" r="2" fill="#1A1A2E"/>
+  <circle cx="62" cy="50" r="2" fill="#1A1A2E"/>
+  <path d="M54 55 Q58 58 62 55" stroke="#FF4D80" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+</svg>

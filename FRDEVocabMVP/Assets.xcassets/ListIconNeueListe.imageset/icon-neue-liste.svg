@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <title>Neue Liste anlegen</title>
+  <ellipse cx="36" cy="64" rx="24" ry="3" fill="#000000" opacity="0.25"/>
+  <rect x="14" y="10" width="36" height="48" rx="3" fill="#FFF0E6" stroke="#1A1A2E" stroke-width="2.5"/>
+  <line x1="20" y1="22" x2="38" y2="22" stroke="#8899AA" stroke-width="1.8" stroke-linecap="round" opacity="0.4"/>
+  <line x1="20" y1="30" x2="44" y2="30" stroke="#8899AA" stroke-width="1.8" stroke-linecap="round" opacity="0.4"/>
+  <line x1="20" y1="38" x2="40" y2="38" stroke="#8899AA" stroke-width="1.8" stroke-linecap="round" opacity="0.4"/>
+  <line x1="20" y1="46" x2="42" y2="46" stroke="#8899AA" stroke-width="1.8" stroke-linecap="round" opacity="0.4"/>
+  <circle cx="52" cy="18" r="10" fill="#2EC4A9" stroke="#1A1A2E" stroke-width="2.5"/>
+  <line x1="52" y1="13" x2="52" y2="23" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="47" y1="18" x2="57" y2="18" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+  <g transform="rotate(45 44 42)">
+    <rect x="40" y="34" width="8" height="22" rx="1" fill="#FFD166" stroke="#1A1A2E" stroke-width="2"/>
+    <rect x="40" y="34" width="8" height="4" fill="#E24B4A" stroke="#1A1A2E" stroke-width="2"/>
+    <rect x="40" y="52" width="8" height="4" fill="#F5C4B3" stroke="#1A1A2E" stroke-width="2"/>
+    <polygon points="40,56 44,60 48,56" fill="#1A1A2E"/>
+  </g>
+</svg>

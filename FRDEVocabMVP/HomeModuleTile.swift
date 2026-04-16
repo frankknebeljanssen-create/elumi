@@ -31,6 +31,12 @@ struct HomeModuleTile: View {
     /// die zwar mit im Grid laufen sollen, aber kein gleichwertiges
     /// Lernmodul sind.
     var deemphasized: Bool = false
+    /// Optionaler Pixel-Offset nur für das Icon innerhalb der Kachel.
+    /// Default `.zero`. Wird genutzt, wenn ein einzelnes Asset (z. B.
+    /// der Karteikarten-Stapel) gegenüber den anderen Modul-Icons
+    /// leicht anders sitzen soll, ohne dass wir eine eigene Kachel-
+    /// Variante bauen.
+    var iconOffset: CGSize = .zero
 
     var body: some View {
         Button(action: onTap) {
@@ -38,6 +44,7 @@ struct HomeModuleTile: View {
                 HomeModuleIconView(icon: icon, size: spec.iconSize)
                     .frame(height: spec.iconSize)
                     .opacity(deemphasized ? 0.78 : 1)
+                    .offset(x: iconOffset.width, y: iconOffset.height)
 
                 Text(title)
                     .font(.system(size: spec.titleFontSize, weight: .black, design: .rounded))

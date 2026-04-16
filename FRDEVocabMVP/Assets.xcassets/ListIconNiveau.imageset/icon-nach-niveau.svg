@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <title>Nach Niveau</title>
+  <ellipse cx="36" cy="64" rx="26" ry="3" fill="#000000" opacity="0.25"/>
+  <rect x="8" y="44" width="18" height="16" rx="2" fill="#9FE1CB" stroke="#1A1A2E" stroke-width="2.5"/>
+  <rect x="26" y="32" width="18" height="28" rx="2" fill="#FFD166" stroke="#1A1A2E" stroke-width="2.5"/>
+  <rect x="44" y="18" width="18" height="42" rx="2" fill="#F0997B" stroke="#1A1A2E" stroke-width="2.5"/>
+  <circle cx="17" cy="52" r="5" fill="#FFFFFF" stroke="#1A1A2E" stroke-width="2"/>
+  <text x="17" y="55" text-anchor="middle" font-family="-apple-system, Helvetica" font-size="7" font-weight="800" fill="#0F6E56">A1</text>
+  <circle cx="35" cy="42" r="5" fill="#FFFFFF" stroke="#1A1A2E" stroke-width="2"/>
+  <text x="35" y="45" text-anchor="middle" font-family="-apple-system, Helvetica" font-size="7" font-weight="800" fill="#854F0B">B1</text>
+  <path d="M27 22 L35 14 L28 18 L35 10" stroke="#5B9CF5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0"/>
+  <circle cx="53" cy="28" r="5" fill="#FFFFFF" stroke="#1A1A2E" stroke-width="2"/>
+  <text x="53" y="31" text-anchor="middle" font-family="-apple-system, Helvetica" font-size="7" font-weight="800" fill="#993C1D">C1</text>
+  <polygon points="55,14 58,6 61,14" fill="#FFD166" stroke="#1A1A2E" stroke-width="1.8" stroke-linejoin="round"/>
+  <circle cx="58" cy="10" r="1" fill="#1A1A2E"/>
+</svg>

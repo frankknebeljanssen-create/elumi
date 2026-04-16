@@ -88,7 +88,10 @@ struct HomeContinueSessionCard: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 9)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            // +10 pt höher als der natürliche Inhalt (~56 pt) — synchron
+            // zum Progress-Board und zur Daily-Focus-Card. Padding (h 12 /
+            // v 9) bleibt identisch.
+            .frame(maxWidth: .infinity, minHeight: 66, alignment: .leading)
             .background(cardBackground)
             .overlay(cardBorder)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -143,7 +146,9 @@ struct HomeContinueSessionCard: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        // Empty-State ebenfalls +10 pt höher, damit der Wechsel zwischen
+        // aktiver und leerer Card die Card-Höhe nicht verändert.
+        .frame(maxWidth: .infinity, minHeight: 80, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(AppTheme.Colors.surface.opacity(0.65))

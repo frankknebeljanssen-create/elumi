@@ -32,14 +32,19 @@ extension ListsView {
                 // Home-Listen-Icon — identisch zur Listen-Kachel auf dem
                 // Home-Screen und zu den „Ausgewählte Listen"-Cards in den
                 // Session-Setups. Ein Icon für „Listen" durch die ganze App.
-                HomeModuleIconView(icon: .listen, size: 40)
+                // Icon etwas größer gesetzt (48 statt 40), damit es auf der
+                // Hero-Card „Alle Listen" mehr Präsenz bekommt.
+                HomeModuleIconView(icon: .listen, size: 48)
 
                 Text("Alle Listen")
                     .font(.system(size: 22, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
 
+                // +2 pt gegenüber der Caption-Default-Größe (12 → 14) —
+                // besser lesbar im größeren Card-Format, ohne den
+                // sekundären Charakter zu verlieren.
                 Text(countLabel(listStore.allLists.count, singular: "Liste", plural: "Listen"))
-                    .font(AppTheme.Typography.caption)
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
             .frame(maxWidth: .infinity)
@@ -61,7 +66,7 @@ extension ListsView {
             if !ownLists.isEmpty {
                 listsCategoryRow(
                     title: "Eigene Listen",
-                    systemImage: "person.fill",
+                    iconAsset: "ListIconEigene",
                     count: ownLists.count
                 ) {
                     listPickerFilter = .own
@@ -72,7 +77,7 @@ extension ListsView {
             if !levelLists.isEmpty {
                 listsCategoryRow(
                     title: "Nach Niveau",
-                    systemImage: "chart.bar.fill",
+                    iconAsset: "ListIconNiveau",
                     count: levelLists.count
                 ) {
                     listPickerFilter = .level
@@ -83,7 +88,7 @@ extension ListsView {
             if !topicLists.isEmpty {
                 listsCategoryRow(
                     title: "Nach Themen",
-                    systemImage: "tag.fill",
+                    iconAsset: "ListIconThemen",
                     count: topicLists.count
                 ) {
                     listPickerFilter = .topic
@@ -94,16 +99,19 @@ extension ListsView {
 
     private func listsCategoryRow(
         title: String,
-        systemImage: String,
+        iconAsset: String,
         count: Int,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(sectionStyle.accent)
-                    .frame(width: 32)
+                // Eigenständige SVG-Icons aus dem Catalog (nicht SF-Symbols).
+                // Bounding-Box 40pt hält den Text-Anker konsistent und gibt
+                // der Illustration genug Platz.
+                Image(iconAsset)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 40, height: 40)
 
                 Text(title)
                     .font(.system(size: 17, weight: .bold, design: .rounded))
@@ -121,6 +129,11 @@ extension ListsView {
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 20)
+            // +10 pt Höhe gegenüber dem natürlichen Inhalt (~68pt) — macht
+            // die Kategorie-Cards ruhiger und großzügiger, ohne das
+            // Padding zu verändern. Padding.horizontal 18 / vertical 20
+            // bleiben explizit identisch.
+            .frame(maxWidth: .infinity, minHeight: 78)
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(AppTheme.Colors.surface)
@@ -158,9 +171,19 @@ extension ListsView {
                 }
             } label: {
                 VStack(spacing: 8) {
-                    Image(systemName: showingCreateListForm ? "chevron.up.circle.fill" : "plus.circle.fill")
-                        .font(.system(size: 38, weight: .bold))
-                        .foregroundStyle(sectionStyle.accent)
+                    // Expandiert → Chevron-Up (klar als „schließen" lesbar).
+                    // Collapsed → neues SVG-Icon für „neue Liste", damit die
+                    // CTA-Ansicht visuell zur Listen-Welt gehört.
+                    if showingCreateListForm {
+                        Image(systemName: "chevron.up.circle.fill")
+                            .font(.system(size: 38, weight: .bold))
+                            .foregroundStyle(sectionStyle.accent)
+                    } else {
+                        Image("ListIconNeueListe")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 48, height: 48)
+                    }
                     Text("Neue Liste anlegen")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)

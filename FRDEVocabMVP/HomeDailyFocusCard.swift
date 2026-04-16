@@ -74,7 +74,10 @@ struct HomeDailyFocusCard: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 9)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            // +10 pt höher als der natürliche Inhalt (~56 pt) — synchron
+            // zum Progress-Board, damit die beiden oberen Status-Cards
+            // als ein Paar wirken. Padding (h 12 / v 9) bleibt identisch.
+            .frame(maxWidth: .infinity, minHeight: 66, alignment: .leading)
             .background(cardBackground)
             .overlay(cardBorder)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))

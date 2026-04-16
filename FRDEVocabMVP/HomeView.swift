@@ -239,11 +239,12 @@ struct HomeView: View {
                 // beiden Funktionen aufzugeben.
                 focusOrContinueCard
 
-                // +20 pt zusätzliche Luft über dem Pager (macht die
-                // Hero-Cards ruhiger), +30 pt Abstand nach unten zu den
-                // fixierten Flags (Trennung Lern- vs. Chrome-Ebene).
+                // +50 pt Luft über dem Pager (= frühere 20 pt + zusätzliche
+                // 30 pt, wodurch die 8 Modul-Kacheln sichtbar tiefer sitzen
+                // und die beiden Status-Cards oben dominieren dürfen).
+                // Unten bleiben 30 pt Abstand zur fixierten Flag-Leiste.
                 moduleSwipePager
-                    .padding(.top, 20)
+                    .padding(.top, 50)
                     .padding(.bottom, 30)
             }
             .padding(.horizontal, AppLayout.screenPadding)
@@ -257,9 +258,11 @@ struct HomeView: View {
         // Inset verdrängt zusätzlich den ScrollView-Content, damit nichts
         // darunter verschwindet.
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            LanguageDirectionSwitch(size: .regular) {
-                feedbackPlayer.playToggle()
-            }
+            // Sound + Haptik laufen jetzt in `LanguageDirectionSwitch.toggle()`
+            // selbst — der Richtungs-Toggle klingt damit auf jedem Screen
+            // (Home + alle Setup-Screens) gleich, ohne dass der jeweilige
+            // Aufrufer das Sound-Feedback separat verkabeln muss.
+            LanguageDirectionSwitch(size: .regular)
             .padding(.horizontal, AppLayout.screenPadding)
             .padding(.top, 6)
             // +5 pt Abstand zum Footer gegenüber vorher — die Flag-Card
@@ -334,7 +337,14 @@ struct HomeView: View {
                 icon: .karteikarten,
                 title: "Karteikarten",
                 accent: moduleFlashcards,
-                screen: .flashcards(nil)
+                screen: .flashcards(nil),
+                // Kartenstapel-Asset sitzt gegenüber dem restlichen Modul-
+                // Raster leicht asymmetrisch — daher 20 pt nach links und
+                // 10 pt nach unten geschoben, damit der visuelle Schwerpunkt
+                // der Karten-Illustration über der Kachel zentrierter wirkt.
+                // Gilt bewusst **nur** für die Karteikarten-Kachel; alle
+                // anderen Module bleiben bei `.zero` Offset.
+                iconOffset: CGSize(width: -20, height: 10)
             )
             moduleTile(
                 icon: .nomen,
@@ -398,7 +408,8 @@ struct HomeView: View {
         title: String,
         accent: Color,
         screen: AppScreen,
-        deemphasized: Bool = false
+        deemphasized: Bool = false,
+        iconOffset: CGSize = .zero
     ) -> some View {
         HomeModuleTile(
             icon: icon,
@@ -406,7 +417,8 @@ struct HomeView: View {
             accent: accent,
             isPressed: pressedHomeScreen == screen,
             onTap: { openHomeScreen(screen) },
-            deemphasized: deemphasized
+            deemphasized: deemphasized,
+            iconOffset: iconOffset
         )
     }
 

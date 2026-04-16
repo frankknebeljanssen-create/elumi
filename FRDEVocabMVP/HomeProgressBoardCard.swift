@@ -51,7 +51,11 @@ struct HomeProgressBoardCard: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
-            .frame(maxWidth: .infinity)
+            // +10 pt höher als die natürliche Content-Höhe (~61pt) — gibt
+            // dem Progress-Board oben mehr Gewicht, ohne das Padding zu
+            // ändern. Padding-Werte (horizontal 12 / vertical 10) bleiben
+            // unangetastet; die Card wächst nur über den minHeight-Frame.
+            .frame(maxWidth: .infinity, minHeight: 71)
             .background(cardBackground)
             .overlay(cardBorder)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
