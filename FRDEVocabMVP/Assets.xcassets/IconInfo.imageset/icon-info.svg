@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <title>Info</title>
+  <ellipse cx="36" cy="62" rx="22" ry="3" fill="#000000" opacity="0.25"/>
+  <circle cx="36" cy="36" r="24" fill="#5B9CF5" stroke="#1A1A2E" stroke-width="2.5"/>
+  <circle cx="36" cy="22" r="3.5" fill="#FFFFFF"/>
+  <rect x="32" y="30" width="8" height="22" rx="2" fill="#FFFFFF"/>
+</svg>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <title>Loesung</title>
+  <ellipse cx="36" cy="62" rx="22" ry="3" fill="#000000" opacity="0.25"/>
+  <g transform="rotate(-30 36 36)">
+    <circle cx="22" cy="36" r="12" fill="#FFD166" stroke="#1A1A2E" stroke-width="2.5"/>
+    <circle cx="22" cy="36" r="5" fill="#0F2D48" stroke="#1A1A2E" stroke-width="2"/>
+    <rect x="34" y="32" width="22" height="8" rx="1" fill="#FFD166" stroke="#1A1A2E" stroke-width="2.5"/>
+    <rect x="42" y="40" width="4" height="5" fill="#FFD166" stroke="#1A1A2E" stroke-width="2.5"/>
+    <rect x="50" y="40" width="4" height="7" fill="#FFD166" stroke="#1A1A2E" stroke-width="2.5"/>
+  </g>
+</svg>

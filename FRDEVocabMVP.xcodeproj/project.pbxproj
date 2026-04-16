@@ -418,6 +418,7 @@
 		A1B2C3D4E5F60708090A0C01 /* DailyStatsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */; };
 		4C49B8DF9320038C9966EF64 /* HomeProgressBoardCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE477CD1315E437F15BA91BD /* HomeProgressBoardCard.swift */; };
 		21539C42B3F8DFAF90B3E180 /* HomeModuleIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4908A2A5A962323D3A36B07 /* HomeModuleIcon.swift */; };
+		A1B2C3D4E5F60708091C0D01 /* AppIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708091C0D02 /* AppIcons.swift */; };
 		D8F531550E0A4DF7B96CC21C /* SessionSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */; };
 		8641C62C7C85427FB59B365B /* SessionOptionsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9545925434E4BCBA46071F1 /* SessionOptionsComponents.swift */; };
 		721DFC0B52424F55A89930EB /* SessionSetupComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C5A4B8C09644DDA8E9DC8B5 /* SessionSetupComponents.swift */; };
@@ -851,6 +852,7 @@
 		A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyStatsStore.swift; path = FRDEVocabMVP/DailyStatsStore.swift; sourceTree = "<group>"; };
 		DE477CD1315E437F15BA91BD /* HomeProgressBoardCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeProgressBoardCard.swift; path = FRDEVocabMVP/HomeProgressBoardCard.swift; sourceTree = "<group>"; };
 		C4908A2A5A962323D3A36B07 /* HomeModuleIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeModuleIcon.swift; path = FRDEVocabMVP/HomeModuleIcon.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708091C0D02 /* AppIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppIcons.swift; path = FRDEVocabMVP/AppIcons.swift; sourceTree = "<group>"; };
 		47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupScreen.swift; path = FRDEVocabMVP/SessionSetupScreen.swift; sourceTree = "<group>"; };
 		C9545925434E4BCBA46071F1 /* SessionOptionsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionOptionsComponents.swift; path = FRDEVocabMVP/SessionOptionsComponents.swift; sourceTree = "<group>"; };
 		1C5A4B8C09644DDA8E9DC8B5 /* SessionSetupComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupComponents.swift; path = FRDEVocabMVP/SessionSetupComponents.swift; sourceTree = "<group>"; };
@@ -895,6 +897,7 @@
 				A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */,
 				DE477CD1315E437F15BA91BD /* HomeProgressBoardCard.swift */,
 				C4908A2A5A962323D3A36B07 /* HomeModuleIcon.swift */,
+				A1B2C3D4E5F60708091C0D02 /* AppIcons.swift */,
 				47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */,
 				C9545925434E4BCBA46071F1 /* SessionOptionsComponents.swift */,
 				1C5A4B8C09644DDA8E9DC8B5 /* SessionSetupComponents.swift */,
@@ -1676,6 +1679,7 @@ F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */,
 				A1B2C3D4E5F60708090A0C01 /* DailyStatsStore.swift in Sources */,
 				4C49B8DF9320038C9966EF64 /* HomeProgressBoardCard.swift in Sources */,
 				21539C42B3F8DFAF90B3E180 /* HomeModuleIcon.swift in Sources */,
+				A1B2C3D4E5F60708091C0D01 /* AppIcons.swift in Sources */,
 				D8F531550E0A4DF7B96CC21C /* SessionSetupScreen.swift in Sources */,
 				8641C62C7C85427FB59B365B /* SessionOptionsComponents.swift in Sources */,
 				721DFC0B52424F55A89930EB /* SessionSetupComponents.swift in Sources */,

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <title>Mein Konto</title>
+  <ellipse cx="36" cy="64" rx="24" ry="3" fill="#000000" opacity="0.25"/>
+  <rect x="8" y="16" width="56" height="40" rx="4" fill="#FFF0E6" stroke="#1A1A2E" stroke-width="2.5"/>
+  <rect x="8" y="16" width="56" height="8" rx="4" fill="#FF4D80" stroke="#1A1A2E" stroke-width="2.5"/>
+  <path d="M8 24 L64 24" stroke="#1A1A2E" stroke-width="2.5"/>
+  <rect x="14" y="30" width="18" height="20" rx="2" fill="#FFB3BA" stroke="#1A1A2E" stroke-width="2"/>
+  <ellipse cx="23" cy="42" rx="6" ry="4.5" fill="#FFFFFF"/>
+  <circle cx="20" cy="40" r="2" fill="#1A1A2E"/>
+  <circle cx="26" cy="40" r="2" fill="#1A1A2E"/>
+  <line x1="38" y1="32" x2="58" y2="32" stroke="#8899AA" stroke-width="2" stroke-linecap="round"/>
+  <line x1="38" y1="38" x2="54" y2="38" stroke="#8899AA" stroke-width="2" stroke-linecap="round"/>
+  <line x1="38" y1="44" x2="56" y2="44" stroke="#FFD166" stroke-width="2" stroke-linecap="round"/>
+  <line x1="38" y1="50" x2="50" y2="50" stroke="#FFD166" stroke-width="2" stroke-linecap="round"/>
+</svg>

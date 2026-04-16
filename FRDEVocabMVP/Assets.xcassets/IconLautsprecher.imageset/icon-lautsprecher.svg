@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <title>Lautsprecher</title>
+  <ellipse cx="36" cy="62" rx="22" ry="3" fill="#000000" opacity="0.25"/>
+  <path d="M10 28 L22 28 L34 16 L34 56 L22 44 L10 44 Z" fill="#5B9CF5" stroke="#1A1A2E" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M42 26 Q48 32 48 36 Q48 40 42 46" stroke="#FFD166" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M50 20 Q58 28 58 36 Q58 44 50 52" stroke="#FFD166" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>

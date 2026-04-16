@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <title>Elumi Spiel</title>
+  <ellipse cx="36" cy="62" rx="24" ry="3" fill="#000000" opacity="0.25"/>
+  <path d="M20 24 C12 24 6 32 6 42 C6 50 10 56 16 56 C20 56 22 52 24 48 L48 48 C50 52 52 56 56 56 C62 56 66 50 66 42 C66 32 60 24 52 24 L20 24 Z" fill="#7F77DD" stroke="#1A1A2E" stroke-width="2.5" stroke-linejoin="round"/>
+  <rect x="14" y="36" width="12" height="4" rx="1" fill="#1A1A2E"/>
+  <rect x="18" y="32" width="4" height="12" rx="1" fill="#1A1A2E"/>
+  <circle cx="48" cy="34" r="3.5" fill="#E24B4A" stroke="#1A1A2E" stroke-width="2"/>
+  <circle cx="56" cy="42" r="3.5" fill="#FFD166" stroke="#1A1A2E" stroke-width="2"/>
+  <circle cx="48" cy="42" r="3.5" fill="#2EC4A9" stroke="#1A1A2E" stroke-width="2"/>
+  <circle cx="40" cy="42" r="3.5" fill="#5B9CF5" stroke="#1A1A2E" stroke-width="2"/>
+</svg>
