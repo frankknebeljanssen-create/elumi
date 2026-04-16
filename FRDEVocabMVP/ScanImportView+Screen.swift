@@ -581,7 +581,6 @@ extension ScanImportView {
                                 ScanModeSelectionCard(
                                     illustrationName: "ScanIconVokabelliste",
                                     title: "Vokabelliste",
-                                    subtitle: "Ich erkenne Wörter und Übersetzungen",
                                     isSelected: activeScanMode == .list,
                                     accent: sectionStyle.accent
                                 ) {
@@ -591,7 +590,6 @@ extension ScanImportView {
                                 ScanModeSelectionCard(
                                     illustrationName: "ScanIconFreierText",
                                     title: "Freier Text",
-                                    subtitle: "Ich analysiere ganze Sätze und Inhalte",
                                     isSelected: activeScanMode == .text,
                                     accent: sectionStyle.accent
                                 ) {
@@ -609,7 +607,6 @@ extension ScanImportView {
                             ScanChoiceCard(
                                 illustrationName: "ScanIconKamera",
                                 title: "Kamera",
-                                subtitle: "Foto aufnehmen",
                                 accent: sectionStyle.accent,
                                 isPriority: true                            ) {
                                 guard !isRecognizingImage else { return }
@@ -622,7 +619,6 @@ extension ScanImportView {
                             ScanChoiceCard(
                                 illustrationName: "ScanIconFotoAlbum",
                                 title: "Foto-Album",
-                                subtitle: "Bild auswählen",
                                 accent: sectionStyle.accent                            ) {
                                 guard !isRecognizingImage else { return }
                                 shouldAppendNextScan = false

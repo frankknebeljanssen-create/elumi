@@ -33,11 +33,11 @@ struct HomeStatusCard: View {
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Heute")
-                        .font(.system(size: 10, weight: .black, design: .rounded))
+                        .font(.system(size: 11, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.elumiPink)
 
                     Text(actionsLabel)
-                        .font(.system(size: 15, weight: .black, design: .rounded))
+                        .font(.system(size: 17, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)

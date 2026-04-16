@@ -20,7 +20,6 @@ import UIKit
 struct ScanChoiceCard: View {
     let illustrationName: String
     let title: String
-    let subtitle: String
     let accent: Color
     var isPriority: Bool = false
     /// Optionaler Hinweis am unteren Rand: zeigt den aktuell gewählten
@@ -57,18 +56,16 @@ struct ScanChoiceCard: View {
                     )
 
                 VStack(alignment: .leading, spacing: 3) {
-                    // Klare 3-stufige Typo-Hierarchie:
-                    //   Titel groß — Subtext mittel — Modus-Hint klein.
+                    // Zweistufige Typo-Hierarchie:
+                    //   Titel groß — Modus-Hint klein.
+                    // Der früher hier gestandene Subtext („Foto aufnehmen" /
+                    // „Bild auswählen") wurde entfernt — die Illustration
+                    // kommuniziert die Quelle bereits eindeutig, der
+                    // Subtext war Wiederholung.
                     Text(title)
-                        .font(.system(size: isPriority ? 22 : 20, weight: .bold, design: .rounded))
+                        .font(.system(size: isPriority ? 24 : 22, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.85)
-
-                    Text(subtitle)
-                        .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.7))
-                        .lineLimit(2)
                         .minimumScaleFactor(0.85)
 
                     // Modus-Hint — sehr subtil, nicht wie ein Tag.
@@ -140,7 +137,6 @@ struct ScanChoiceCard: View {
 struct ScanModeSelectionCard: View {
     let illustrationName: String
     let title: String
-    let subtitle: String
     let isSelected: Bool
     let accent: Color
     let onTap: () -> Void
@@ -175,15 +171,13 @@ struct ScanModeSelectionCard: View {
                         .scaleEffect(isSelected ? checkScale : 1.0)
                 }
 
+                // Subtext („Ich erkenne Wörter …" / „Ich analysiere ganze
+                // Sätze …") wurde bewusst entfernt — die Illustration +
+                // Titel genügen für den Modus-Switch, der Zusatzsatz hat
+                // die Card überfrachtet.
                 Text(title)
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
-
-                Text(subtitle)
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.65))
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
