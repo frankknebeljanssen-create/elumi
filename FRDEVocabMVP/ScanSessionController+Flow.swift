@@ -23,7 +23,7 @@ extension ScanSessionController {
         selectedImage = state.previewImage
         selectedImageSourcePath = state.sourcePath
         scanEvalSuiteReport = nil
-        importMessage = "Bild prüfen und dann analysieren."
+        importMessage = ""
     }
 
     func prepareForRescanDisplay() {

@@ -18,9 +18,22 @@ enum HomeModuleIcon: String, CaseIterable, Hashable {
     /// Listen ist **kein** gleichwertiges Lernmodul. Wird nur in der
     /// Organisations-Zeile verwendet, nicht im Haupt-Grid.
     case listen
+    /// Akzente — Modul für französische Akzente (é, è, ê, ç).
+    case akzente
+    /// Scan — Funktion (kein reines Lernmodul), aber jetzt als
+    /// reguläre Home-Tile auf Seite 3 zusammen mit Listen.
+    case scan
 
-    /// Asset-Name im Catalog.
+    /// Asset-Name im Catalog. Geht **immer** durch
+    /// `AppIconRegistry.resolved(...)`, damit der globale Set-Schalter
+    /// (Set A vs. Set B) automatisch greift — keine Mischzustände.
     var assetName: String {
+        AppIconRegistry.resolved(baseAssetName)
+    }
+
+    /// Set-A-Basisname (ohne Resolver). Set-B-Pendant ist immer
+    /// `<baseAssetName>B` im Asset-Catalog.
+    private var baseAssetName: String {
         switch self {
         case .karteikarten: return "HomeIconKarteikarten"
         case .nomen:         return "HomeIconNomen"
@@ -30,6 +43,8 @@ enum HomeModuleIcon: String, CaseIterable, Hashable {
         case .vokabeln:      return "HomeIconVokabeln"
         case .quiz:          return "HomeIconQuiz"
         case .listen:        return "HomeIconListen"
+        case .akzente:       return "HomeIconAkzente"
+        case .scan:          return "HomeIconScan"
         }
     }
 
@@ -45,8 +60,15 @@ enum HomeModuleIcon: String, CaseIterable, Hashable {
         case .vokabeln:      return "Vokabeln"
         case .quiz:          return "Quiz"
         case .listen:        return "Listen"
+        case .akzente:       return "Akzente"
+        case .scan:          return "Scan"
         }
     }
+
+    /// Fallback-Glyph für Icons, die noch kein Asset haben. Aktuell
+    /// nicht mehr genutzt — alle Icons haben reale Assets im Catalog.
+    /// Bleibt als Hook für zukünftige Module, deren Asset noch fehlt.
+    var fallbackGlyph: String? { nil }
 }
 
 /// Einheitliche Render-Komponente für ein Modul-Icon. Immer als Image-Asset,
@@ -57,12 +79,33 @@ struct HomeModuleIconView: View {
     /// Side-length der Bounding-Box. Default 64 — entspricht der Design-
     /// Spec (64–72 pt im Modul-Grid).
     var size: CGFloat = 64
+    /// Tint, der nur für Fallback-Glyph-Icons (ohne Asset) genutzt wird.
+    /// Normale Assets bringen ihren eigenen Stil mit.
+    var glyphTint: Color = AppTheme.Colors.textPrimary
+
+    /// **Live-Switch-Gate**: das `@AppStorage` zwingt SwiftUI, den View-
+    /// Body neu zu evaluieren, sobald der User den Icon-Stil in den
+    /// Settings ändert. Ohne diese Property würde nur der erste Render
+    /// das aktuelle Set sehen — Settings-Wechsel wären erst nach
+    /// App-Neustart sichtbar.
+    @AppStorage(AppIconRegistry.storageKey) private var iconSetRaw: String = AppIconSet.a.rawValue
 
     var body: some View {
-        Image(icon.assetName)
-            .resizable()
-            .scaledToFit()
-            .frame(width: size, height: size)
-            .accessibilityLabel(icon.defaultTitle)
+        if let glyph = icon.fallbackGlyph {
+            // Fallback-Rendering für Icons ohne Asset (z. B. Akzente — bis
+            // das Final-Icon geliefert wird). Text-basiert, gleiche Bounding-
+            // Box wie ein echtes Asset — Layout-kompatibel.
+            Text(glyph)
+                .font(.system(size: size * 0.78, weight: .black, design: .rounded))
+                .foregroundStyle(glyphTint)
+                .frame(width: size, height: size)
+                .accessibilityLabel(icon.defaultTitle)
+        } else {
+            Image(icon.assetName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: size, height: size)
+                .accessibilityLabel(icon.defaultTitle)
+        }
     }
 }

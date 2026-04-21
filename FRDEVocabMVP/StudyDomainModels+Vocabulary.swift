@@ -1,5 +1,23 @@
 import Foundation
 
+/// Gender-/Sing-Plu-Variant eines Vokabel-Eintrags. Wird vom
+/// `VocabDualFormMerger` zusammen mit der Haupt-Form gespeichert,
+/// damit „ami" (m) und „amie" (f) als **ein** Datensatz mit zwei
+/// Varianten existieren — besser als zwei unabhängige Items, weil
+/// die Zuordnung zum Wortpaar erhalten bleibt (Artikel-Training
+/// nutzt das z. B. für m/f-Übungen).
+///
+/// Codable-kompatibel und optional auf `VocabularyItem` — Bestands-
+/// Daten ohne Variants decodieren weiterhin sauber (default nil).
+struct VocabGenderVariant: Codable, Equatable, Hashable {
+    /// Französische Form (z. B. „ami" oder „amie" oder „école"/„écoles").
+    var french: String
+    /// Deutsche Übersetzung (z. B. „Freund", „Freundin").
+    var german: String
+    /// Genus-/Numerus-Kürzel: „m" / „f" / „n" / „pl".
+    var tag: String
+}
+
 struct VocabularyItem: Identifiable, Codable, Equatable {
     var id = UUID()
     var french: String
@@ -11,6 +29,31 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
     var sourceLanguage: StudyLanguage = .french
     var wordClass: String? = nil
 
+    /// Optionale Variants (Gender-Paar oder Singular/Plural). Default
+    /// nil für alle Alt-Einträge — Codable-backward-compatible.
+    var variants: [VocabGenderVariant]? = nil
+
+    /// „Primäre" Lernform für Analytics, Training-Selektion und
+    /// Lexikon-Lookups. Wenn Variants vorhanden sind (Gender-Paar
+    /// oder Sing/Plu), nehmen wir die **erste** Variante als
+    /// kanonische Form — bei Gender-Paaren ist das per Konvention
+    /// die maskuline Form (siehe `VocabDualFormMerger
+    /// .identifyMascFemPair`), bei Sing/Plu die Singular-Form.
+    ///
+    /// AP6: Der Helper ist bewusst **nicht** UI-relevant —
+    /// List/Review rendern weiterhin das `french`-Feld (das bereits
+    /// die kombinierte Display-Form „ami / amie" hält). Wird
+    /// stattdessen von Training/Lexikon/Analytics benutzt, die auf
+    /// **einer** Grundform operieren wollen.
+    var primaryForm: String {
+        variants?.first?.french ?? french
+    }
+
+    /// Analog für die deutsche Übersetzung.
+    var primaryTranslation: String {
+        variants?.first?.german ?? german
+    }
+
     init(
         id: UUID = UUID(),
         french: String,
@@ -20,7 +63,8 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
         cardType: CardType,
         level: VocabularyLevel? = nil,
         sourceLanguage: StudyLanguage = .french,
-        wordClass: String? = nil
+        wordClass: String? = nil,
+        variants: [VocabGenderVariant]? = nil
     ) {
         self.id = id
         self.french = sourceDisplayText(french, sourceLanguage: sourceLanguage)
@@ -31,6 +75,7 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
         self.level = level
         self.sourceLanguage = sourceLanguage
         self.wordClass = wordClass
+        self.variants = variants
     }
 
     /// Raw init that skips text processing — for pre-processed data (GPT translations)
@@ -40,7 +85,8 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
         cardType: CardType,
         level: VocabularyLevel? = nil,
         sourceLanguage: StudyLanguage = .french,
-        wordClass: String? = nil
+        wordClass: String? = nil,
+        variants: [VocabGenderVariant]? = nil
     ) {
         self.id = UUID()
         self.french = french
@@ -51,6 +97,7 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
         self.level = level
         self.sourceLanguage = sourceLanguage
         self.wordClass = wordClass
+        self.variants = variants
     }
 
     init(

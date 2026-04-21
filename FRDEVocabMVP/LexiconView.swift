@@ -15,9 +15,40 @@ struct LexiconView: View {
     @StateObject private var model = LexiconViewModel()
     @FocusState private var isSearchFieldFocused: Bool
     @State private var lexiconFilterMode: LexiconFilterMode = .both
+    /// Zweite Filter-Achse: Wortart. Ergänzt die Richtungs-Filter-Zeile
+    /// darüber — beide Filter wirken zusammen (Logik-AND). Default `.all`,
+    /// damit das Wörterbuch per Default das volle Ergebnisset zeigt.
+    @State private var wordClassFilter: WordClassFilter = .all
 
     enum LexiconFilterMode: String, CaseIterable {
         case both, frenchToGerman, germanToFrench
+    }
+
+    /// Wortart-Filter für die Ergebnisliste. Die Kategorien mappen wir aus
+    /// dem vorhandenen `LexiconWordClassMarker`:
+    ///   • `.nouns`   ← `.noun`
+    ///   • `.verbs`   ← `.verb`
+    ///   • `.others`  ← `.adjective`, `.phrase` oder `nil` (alles ohne
+    ///                  eindeutige Nomen-/Verb-Klassifikation)
+    /// So müssen wir keine neue Wortklassen-Logik parallel aufbauen und
+    /// bleiben konsistent mit dem Detail-Sheet, das den gleichen Marker
+    /// anzeigt.
+    enum WordClassFilter: String, CaseIterable, Identifiable {
+        case all
+        case nouns
+        case verbs
+        case others
+
+        var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .all: return "Alle"
+            case .nouns: return "Nomen"
+            case .verbs: return "Verben"
+            case .others: return "Sonstige"
+            }
+        }
     }
 
     private var selectedLexiconDirection: Direction {
@@ -57,14 +88,39 @@ struct LexiconView: View {
     }
 
     private var allEntries: [PreparedLexiconEntry] {
-        let entries = model.allEntries
+        // Erste Achse: Richtungs-Filter (FR-only, DE-only, beide).
+        let directionFiltered: [PreparedLexiconEntry]
         switch lexiconFilterMode {
         case .both:
-            return entries
+            directionFiltered = model.allEntries
         case .frenchToGerman:
-            return entries.filter { $0.displayCountryCode == "FR" }
+            directionFiltered = model.allEntries.filter { $0.displayCountryCode == "FR" }
         case .germanToFrench:
-            return entries.filter { $0.displayCountryCode == "DE" }
+            directionFiltered = model.allEntries.filter { $0.displayCountryCode == "DE" }
+        }
+
+        // Zweite Achse: Wortart-Filter (Alle / Nomen / Verben / Sonstige).
+        // Default `.all` → keine zusätzliche Reduktion. Bei spezifischer
+        // Wortart filtern wir über den vorhandenen `lexiconWordClassMarker`
+        // — so ist die Klassifikation synchron zu dem, was auch im
+        // Detail-Sheet als Label angezeigt wird.
+        guard wordClassFilter != .all else { return directionFiltered }
+        return directionFiltered.filter { entry in
+            let marker = model.lexiconWordClassMarker(for: entry)
+            switch wordClassFilter {
+            case .all:
+                return true
+            case .nouns:
+                return marker == .noun
+            case .verbs:
+                return marker == .verb
+            case .others:
+                // Alles, was nicht eindeutig Nomen oder Verb ist — inkl.
+                // Adjektive, Phrasen und unklassifizierte Einträge. So
+                // verschwindet nichts aus der Suche, auch wenn wir die
+                // Wortart nicht eindeutig bestimmen können.
+                return marker != .noun && marker != .verb
+            }
         }
     }
 
@@ -180,9 +236,21 @@ struct LexiconView: View {
                 }
             )
         }
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                isSearchFieldFocused = true
+        // Passive Suche (bewusst kein Auto-Fokus beim Erscheinen):
+        // Screen öffnet ruhig, Footer bleibt stabil, Tastatur erscheint
+        // erst bei Tap ins Suchfeld. Der User entscheidet — das ist
+        // konsistent mit unserem „freie Wahl"-Prinzip und vermeidet das
+        // Layout-Springen, das beim Erzwungenen Fokus auftrat.
+        .toolbar {
+            // „Fertig"-Button nur sichtbar, während die Tastatur offen
+            // ist — schneller Exit ohne dass der User außerhalb tappen muss.
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Fertig") {
+                    isSearchFieldFocused = false
+                }
+                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                .foregroundStyle(sectionStyle.accent)
             }
         }
         .task(id: model.searchText) {
@@ -230,11 +298,53 @@ struct LexiconView: View {
                 searchFocus: $isSearchFieldFocused
             )
 
+            // Wortart-Filter direkt unter der Suchleiste — refiniert das
+            // Ergebnisset nach Nomen / Verben / Sonstiges. Sitzt bewusst
+            // zwischen Suchzeile und Richtungs-Filter: „Was zeigen wir"
+            // (Wortart) gehört logisch zur Suche, „In welche Richtung
+            // zeigen wir es" (FR/DE) ist die darauffolgende Konfiguration.
+            wordClassFilterRow
+
             lexiconDirectionCard
         }
         .frame(maxWidth: .infinity, alignment: .top)
         .padding(.bottom, 2)
         .background(AppTheme.Colors.surface)
+    }
+
+    /// Horizontale Chip-Zeile: Alle / Nomen / Verben / Sonstige.
+    /// Visuelle Höhe und Card-Umrahmung sind **identisch** zu
+    /// `lexiconDirectionCard` (selbes `minHeight: 44`, selbe Card-Padding
+    /// `horizontal 4 / vertical 8`, selber `appCardBackground(…)`),
+    /// damit die beiden Filter-Zeilen im Sticky-Header zu einer
+    /// konsistenten Einheit verschmelzen — Wortart-Filter oben, Richtungs-
+    /// Filter direkt darunter, beide im selben optischen Rhythmus.
+    private var wordClassFilterRow: some View {
+        HStack(spacing: 8) {
+            ForEach(WordClassFilter.allCases) { option in
+                let isSelected = wordClassFilter == option
+                Button {
+                    withAnimation(.easeInOut(duration: 0.12)) {
+                        wordClassFilter = option
+                    }
+                } label: {
+                    Text(option.title)
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 44)
+                        .foregroundStyle(isSelected ? .white : AppTheme.Colors.textPrimary)
+                        .background(isSelected ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Wortart-Filter \(option.title)")
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 4)
+        .padding(.vertical, 8)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
     private var lexiconDirectionCard: some View {

@@ -20,12 +20,20 @@ struct AppDestinationHost: View {
             quizDestination(launchContext: launchContext)
         case .hearts:
             heartsDestination
+        case .lernstatus:
+            LernstatusView(
+                feedbackPlayer: feedbackPlayer,
+                goHome: goHome,
+                openSettings: openSettings
+            )
         case .gameHub:
             GameHubView(
                 feedbackPlayer: feedbackPlayer,
+                listStore: runtime.listStore,
                 goHome: goHome,
                 openSettings: openSettings,
-                openInfo: openInfo
+                openInfo: openInfo,
+                navigate: navigate
             )
         case .arcade(let autoStart):
             // Arcade als echte Navigation-Destination — Footer bleibt
@@ -38,6 +46,11 @@ struct AppDestinationHost: View {
             lexiconDestination
         case .scan:
             scanDestination
+        case .accents(let launchContext):
+            // Akzent-Modul — nutzt den runtime.listStore für die Listen-
+            // Auswahl, analog zu Quiz/Train. Bei Erst-Start kann der
+            // Store noch laden → Loader-Screen mit ensure-Call.
+            accentsDestination(launchContext: launchContext)
         case .settings:
             SettingsView(
                 feedbackPlayer: feedbackPlayer,
@@ -59,6 +72,18 @@ struct AppDestinationHost: View {
                 feedbackPlayer: feedbackPlayer,
                 goHome: goHome,
                 openSettings: openSettings
+            )
+        case .trophy:
+            // Pokal-Tab — sammelt die ausführlichen Status-Cards, die
+            // früher dominant auf Home lagen (Streak, Level/XP,
+            // Lernstatus). Home zeigt jetzt nur eine kompakte Status-
+            // Card; Detail lebt hier.
+            TrophyView(
+                feedbackPlayer: feedbackPlayer,
+                goHome: goHome,
+                openSettings: openSettings,
+                openInfo: openInfo,
+                navigate: navigate
             )
         }
     }
@@ -207,6 +232,24 @@ struct AppDestinationHost: View {
             )
         } else {
             loadingDestinationView("Wörterbuch wird vorbereitet") {
+                await runtime.ensureListDrivenDependenciesReady()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func accentsDestination(launchContext: AccentsLaunchContext?) -> some View {
+        if let listStore = runtime.listStore, let speaker = runtime.speaker {
+            AccentsEntryView(
+                listStore: listStore,
+                feedbackPlayer: feedbackPlayer,
+                speaker: speaker,
+                goHome: goHome,
+                openSettings: openSettings,
+                launchContext: launchContext
+            )
+        } else {
+            loadingDestinationView("Akzente wird vorbereitet") {
                 await runtime.ensureListDrivenDependenciesReady()
             }
         }

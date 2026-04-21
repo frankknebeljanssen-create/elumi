@@ -543,11 +543,24 @@ extension QuizView {
         return "circle.fill"
     }
 
+    /// Prüft, ob dieses Card-Rendering (prompt-side ODER answer-side)
+    /// gerade als falsch geflasht werden soll. Seitenspezifisch —
+    /// `flashingPromptID` gilt **nur** fürs Prompt-Kartensatz,
+    /// `flashingAnswerID` **nur** fürs Answer-Kartensatz.
+    /// Fix gegen den Bug, dass bei einem falschen Drop ZWEI zusätzliche
+    /// Karten (Prompt-Shadow des Answers + Answer-Shadow des Prompts)
+    /// mit rot geleuchtet sind, weil `pair.id` auf beiden Seiten geteilt ist.
+    private func isFlashingWrong(_ pairID: UUID, isAnswerSide: Bool) -> Bool {
+        isAnswerSide
+            ? pairID == flashingAnswerID
+            : pairID == flashingPromptID
+    }
+
     func matchingBackground(for pairID: UUID, isAnswerSide: Bool = false) -> Color {
         if matchedPairIDs.contains(pairID) {
             return AppTheme.Colors.success.opacity(0.18)
         }
-        if pairID == flashingPromptID || pairID == flashingAnswerID {
+        if isFlashingWrong(pairID, isAnswerSide: isAnswerSide) {
             return AppTheme.Colors.error.opacity(0.2)
         }
         if !isAnswerSide, pairID == draggingPromptID {
@@ -566,7 +579,7 @@ extension QuizView {
         if matchedPairIDs.contains(pairID) {
             return AppTheme.Colors.success
         }
-        if pairID == flashingPromptID || pairID == flashingAnswerID {
+        if isFlashingWrong(pairID, isAnswerSide: isAnswerSide) {
             return AppTheme.Colors.error
         }
         if !isAnswerSide, pairID == draggingPromptID {
@@ -585,7 +598,7 @@ extension QuizView {
         if matchedPairIDs.contains(pairID) {
             return AppTheme.Colors.success.opacity(0.7)
         }
-        if pairID == flashingPromptID || pairID == flashingAnswerID {
+        if isFlashingWrong(pairID, isAnswerSide: isAnswerSide) {
             return AppTheme.Colors.error.opacity(0.75)
         }
         if !isAnswerSide, pairID == draggingPromptID {
@@ -604,7 +617,7 @@ extension QuizView {
         if !isAnswerSide, pairID == draggingPromptID {
             return 2
         }
-        if matchedPairIDs.contains(pairID) || pairID == flashingPromptID || pairID == flashingAnswerID {
+        if matchedPairIDs.contains(pairID) || isFlashingWrong(pairID, isAnswerSide: isAnswerSide) {
             return 1.6
         }
         return 1
@@ -614,7 +627,7 @@ extension QuizView {
         if matchedPairIDs.contains(pairID) {
             return AppTheme.Colors.success.opacity(0.18)
         }
-        if pairID == flashingPromptID || pairID == flashingAnswerID {
+        if isFlashingWrong(pairID, isAnswerSide: isAnswerSide) {
             return AppTheme.Colors.error.opacity(0.18)
         }
         if !isAnswerSide, pairID == draggingPromptID {

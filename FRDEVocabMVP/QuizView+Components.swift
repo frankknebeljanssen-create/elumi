@@ -56,6 +56,9 @@ var quizSetupScreen: some View {
                     selected: session.questionCountOption,
                     accent: sectionStyle.accent,
                     onSelect: { option in
+                        // User-Request: Tap-Sound fehlte. Systemweiter
+                        // Toggle-Sound wie in anderen Setup-Chips.
+                        feedbackPlayer.playTabSwitch()
                         withAnimation(.easeInOut(duration: 0.12)) {
                             session.questionCountOption = option
                         }
@@ -285,41 +288,31 @@ var quizResultScreen: some View {
         // Zentrale Session-Summary — gleiche Card wie Karteikarten/Training/
         // Verbformen. Zeigt XP-Aufschlüsselung, Credits, Streak, Level-Progress.
         // Die Elumi-Rewards oben bleiben als Quiz-spezifischer Celebration-Teil.
+        //
+        // Session-End Lücke 2 (Option A): Primary+Secondary CTA einheitlich zu
+        // Training / Verbformen / Karteikarten. Die früheren drei Außen-Buttons
+        // („Falsche anzeigen", „Nochmal", „Zurück") sind bewusst entfernt — die
+        // Summary-Card trägt den gesamten Session-Abschluss allein. Primary
+        // („Weiter lernen") setzt die Summary zurück und zeigt die Setup-Card;
+        // Secondary („Zur Startseite") verlässt das Quiz-Modul komplett.
+        //
+        // `showingWrongAnswers` / `wrongAnswersSheet` bleiben vorerst als
+        // (inaktiver) Code — sie werden nicht mehr getriggert, aber der
+        // Modul-interne State ist unabhängig davon. Eine spätere Cleanup-
+        // Runde kann den Sheet + den Presenter entfernen, sobald das neue
+        // Pattern freigegeben ist.
         SessionSummaryView(
             outcome: quizSessionOutcome ?? .empty,
-            progress: progressStore.progress
-        )
-
-        if wrongCount > 0 {
-            Button {
-                showingWrongAnswers = true
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 16, weight: .bold))
-                    Text("Falsche anzeigen (\(wrongCount))")
-                }
-                .frame(maxWidth: .infinity)
+            progress: progressStore.progress,
+            primaryCTALabel: "Weiter lernen",
+            onPrimaryCTA: {
+                resetQuizToSetup()
+            },
+            secondaryCTALabel: "Zur Startseite",
+            onSecondaryCTA: {
+                dismissToHome()
             }
-            .buttonStyle(AppSecondaryButtonStyle(tint: AppTheme.Colors.error))
-        }
-
-        Button {
-            resetQuizToSetup()
-            startQuiz()
-        } label: {
-            Text("Nochmal")
-                .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-
-        Button {
-            handleBackNavigation()
-        } label: {
-            Label("Zurück", systemImage: "arrow.left")
-                .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))
+        )
     }
     .padding(.horizontal, AppLayout.screenPadding)
     .padding(.top, AppLayout.contentTopPadding)

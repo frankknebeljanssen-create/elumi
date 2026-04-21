@@ -30,6 +30,19 @@ struct AppBottomBarIconButton: View {
     }
 }
 
+/// Footer-Button für den **Game Hub**. Der Name „SnackButton" ist
+/// historisch (früher Sammlung/Herzchen-Snacks); semantisch zeigt dieser
+/// Button jetzt **verfügbare Spiele** und führt in den Game Hub.
+///
+/// Icon-Wechsel `trophy.fill` → `gamecontroller.fill` (User-Request):
+/// Pokal signalisiert Auszeichnung/Sammlung, aber der Button öffnet
+/// spielbare Sessions. Der Controller ist das klare, etablierte Symbol
+/// für „Spielen" — keine Verwechslungsgefahr mehr mit Progress/Streak-
+/// Rewards, die auf dem Home-Progress-Board sitzen.
+///
+/// Der `kind`-Parameter bleibt erhalten (wird von Call-Sites noch
+/// übergeben), ist aber ohne visuellen Effekt — kein Snack-Asset mehr
+/// sichtbar. Entfernen würde Call-Sites brechen, also weiches Deprecate.
 struct AppBottomBarSnackButton: View {
     let accessibilityLabel: String
     let action: (() -> Void)?
@@ -42,7 +55,7 @@ struct AppBottomBarSnackButton: View {
             action?()
         } label: {
             ZStack(alignment: .topTrailing) {
-                Image(systemName: "trophy.fill")
+                Image(systemName: "gamecontroller.fill")
                     .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(AppTheme.Colors.warning)
                     .frame(width: 38, height: 38)

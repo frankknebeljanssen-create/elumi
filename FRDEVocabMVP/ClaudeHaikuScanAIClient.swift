@@ -113,14 +113,18 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         do {
             var scanResult = try JSONDecoder().decode(OpenAIScanSchemaResponse.self, from: Data(jsonText.utf8))
             scanResult.entries = scanResult.entries.map { Self.postProcessEntry($0) }
-            return scanResult.toPayload()
+            // Safety-Netz: AI-Echo-im-Target scrubben und dual-form
+            // Einträge („l'ami/l'amie") splitten. Spec-konform und
+            // unabhängig davon, ob der System-Prompt bereits richtig
+            // gefolgt wurde.
+            return ScanAIPostProcessor.apply(to: scanResult.toPayload())
         } catch {
             // If truncated, try to salvage partial JSON by closing brackets
             if envelope.wasTruncated {
                 if var salvaged = Self.salvageTruncatedJSON(jsonText) {
                     salvaged.entries = salvaged.entries.map { Self.postProcessEntry($0) }
                     print("📡 [Scan] 🩹 Salvaged truncated JSON (\(salvaged.entries.count) entries)")
-                    return salvaged.toPayload()
+                    return ScanAIPostProcessor.apply(to: salvaged.toPayload())
                 }
             }
             print("📡 [Scan] ❌ JSON decode failed: \(error)")
@@ -185,7 +189,6 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
     /// Post-process decoded entries to fix systematic AI errors
     static func postProcessEntry(_ entry: OpenAIScanSchemaResponse.Entry) -> OpenAIScanSchemaResponse.Entry {
         var e = entry
-        let before = e.target
         // Force-lowercase non-nouns (und, sich, sind, von, der, die, das...)
         e.target = forceGermanLowercase(e.target)
 
@@ -436,6 +439,14 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         Erfinde KEINE Wörter, Übersetzungen oder Einträge die nicht im Bild sind.
         Im Zweifel lieber einen Eintrag weglassen als einen falschen erfinden.
 
+        **NIEMALS die französische Quellform als deutsche Übersetzung ausgeben.**
+        Wenn du die deutsche Übersetzung nicht erkennst oder dir unsicher bist:
+        - target: "" (leer lassen) und is_importable: false
+        - NIEMALS den französischen Text in das "target"-Feld schreiben
+        - NIEMALS OCR-Müll als Übersetzung ausgeben
+        Beispiel falsch: source="le chat", target="le chat" — NEIN
+        Beispiel richtig bei Unsicherheit: source="le chat", target="", is_importable=false, confidence=0.3
+
         REGEL 10 – Apostrophe und Elision (HÄUFIGSTER FEHLER!):
         Wenn du im Bild "l'ami" oder "l'amie" siehst:
         - l'ami → Übersetzung: "der Freund"
@@ -471,12 +482,21 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         "mon ami" → "mein Freund" (NICHT "mein ln", NICHT "mein l'n")
         "mon amie" → "meine Freundin" (NICHT "meine ln")
         Übersetze den GESAMTEN Ausdruck — nicht nur Teile davon.
-        Bei männlich/weiblich Paaren mit "/" im Bild:
-        "l'ami/l'amie" → source: "l'ami/l'amie", target: "der Freund/die Freundin"
-        "mon ami/mon amie" → source: "mon ami/mon amie", target: "mein Freund/meine Freundin"
-        "le copain/la copine" → source: "le copain/la copine", target: "der Kumpel/die Kumpelin"
-        WICHTIG: Beide Teile EINZELN übersetzen! ami=Freund, amie=Freundin. NIEMALS "ln" schreiben!
-        NIEMALS "mon ami mon amie" ohne "/" — übernimm das "/" aus dem Bild.
+
+        **BEI MÄNNLICH/WEIBLICH-PAAREN MIT "/" IM BILD: IMMER ZWEI SEPARATE EINTRÄGE ERZEUGEN!**
+        Vorher wurde das als ein Eintrag mit Schrägstrich ausgegeben, das soll
+        jetzt **aufgeteilt** werden, damit jede Form einzeln lernbar ist.
+        "l'ami/l'amie" im Bild → zwei Einträge:
+           1. source: "l'ami",  target: "der Freund"
+           2. source: "l'amie", target: "die Freundin"
+        "mon ami/mon amie" im Bild → zwei Einträge:
+           1. source: "mon ami",  target: "mein Freund"
+           2. source: "mon amie", target: "meine Freundin"
+        "le copain/la copine" im Bild → zwei Einträge:
+           1. source: "le copain", target: "der Kumpel"
+           2. source: "la copine", target: "die Kumpelin"
+        WICHTIG: Beide Teile als ZWEI SEPARATE entries-Objekte ausgeben.
+        NIEMALS "ln"/"l'n" schreiben. NIEMALS die source mit "/" zusammenlassen.
 
         REGEL 13 – Eigennamen korrekt schreiben:
         Namen werden mit großem Anfangsbuchstaben und kleinen Folgebuchstaben geschrieben:

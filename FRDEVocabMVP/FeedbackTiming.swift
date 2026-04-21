@@ -27,6 +27,14 @@ enum FeedbackTiming {
     /// → Streak → XP-Credits. Reihenfolge = emotionale Priorität.
     static let rewardChipStagger: [TimeInterval] = [0.15, 0.25, 0.40, 0.55]
 
+    /// Wann der CTA-Footer („Weiter lernen"/„Spiel starten") nach dem
+    /// Erscheinen der Summary sichtbar wird. Bewusst NACH der Progress-
+    /// Bar und den Reward-Chips — der User soll erst das Ergebnis
+    /// wahrnehmen und dann erst auf den CTA zugreifen. Verhindert, dass
+    /// man aus Reflex „Weiter" drückt, ohne die Belohnung zu sehen.
+    static let ctaRevealDelay: TimeInterval = 1.3
+    static let ctaRevealDuration: TimeInterval = 0.35
+
     /// Kleines Aufflackern auf Hero-Events (Level-Up, Streak-Milestone).
     static let heroPulseDelay: TimeInterval = 0.45
     static let heroPulseDuration: TimeInterval = 0.9

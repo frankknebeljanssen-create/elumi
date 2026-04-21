@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <title>Eigene Listen</title>
+  <ellipse cx="44" cy="88" rx="32" ry="5" fill="#000" opacity="0.25"/>
+  <!-- back page -->
+  <g transform="rotate(-5 36 46)">
+    <rect x="10" y="16" width="52" height="64" rx="8" fill="#CC3068"/>
+    <rect x="10" y="12" width="52" height="64" rx="8" fill="#FFF8F0"/>
+    <rect x="10" y="12" width="52" height="64" rx="8" fill="none" stroke="#1A1A2E" stroke-width="2.5"/>
+  </g>
+  <!-- front page -->
+  <rect x="14" y="10" width="52" height="64" rx="8" fill="#CC3068"/>
+  <rect x="14" y="6" width="52" height="64" rx="8" fill="#FFF8F0"/>
+  <rect x="14" y="6" width="52" height="64" rx="8" fill="none" stroke="#1A1A2E" stroke-width="2.5"/>
+  <path d="M20 12 Q40 8 60 12" stroke="#FFF" stroke-width="4" stroke-linecap="round" opacity="0.25"/>
+  <!-- list items with outlines -->
+  <circle cx="24" cy="24" r="2.5" fill="#1A1A2E"/>
+  <rect x="30" y="22" width="28" height="4" rx="2" fill="#FFB3C8" stroke="#1A1A2E" stroke-width="1"/>
+  <circle cx="24" cy="36" r="2.5" fill="#1A1A2E"/>
+  <rect x="30" y="34" width="22" height="4" rx="2" fill="#FFB3C8" stroke="#1A1A2E" stroke-width="1"/>
+  <circle cx="24" cy="48" r="2.5" fill="#1A1A2E"/>
+  <rect x="30" y="46" width="26" height="4" rx="2" fill="#FFB3C8" stroke="#1A1A2E" stroke-width="1"/>
+  <!-- bookmark -->
+  <path d="M50 0 L62 0 L62 26 L56 20 L50 26 Z" fill="#FF4D80" stroke="#1A1A2E" stroke-width="2"/>
+  <!-- Elumi face badge -->
+  <circle cx="74" cy="62" r="15" fill="#CC3068"/>
+  <circle cx="74" cy="58" r="15" fill="#FFB3BA"/>
+  <circle cx="74" cy="58" r="15" fill="none" stroke="#1A1A2E" stroke-width="2.5"/>
+  <circle cx="70" cy="56" r="2.8" fill="#1A1A2E"/>
+  <circle cx="78" cy="56" r="2.8" fill="#1A1A2E"/>
+  <circle cx="69" cy="54" r="1" fill="#FFF" opacity="0.6"/>
+  <circle cx="77" cy="54" r="1" fill="#FFF" opacity="0.6"/>
+  <path d="M71 62 Q74 65 77 62" stroke="#1A1A2E" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <circle cx="66" cy="50" r="1.5" fill="#FFF" opacity="0.3"/>
+</svg>

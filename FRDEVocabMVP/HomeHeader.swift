@@ -11,32 +11,30 @@ import SwiftUI
 /// (Progress Board, Daily Fokus, Weiterlernen) liefern den Kontext.
 struct HomeHeader: View {
     let greeting: String
-    let mainQuestion: String
     var mascotImageName: String = "SplashCharacter"
-    /// 65 pt — ~10 % kleiner als der vorherige Wert (72). Der Mascot
-    /// bleibt klar erkennbar, gibt dem Greeting-Block aber noch
-    /// deutlicher den Vorrang; außerdem kürzt sich der Header vertikal
-    /// nochmal etwas.
-    private static let mascotSize: CGFloat = 65
+    /// 58 pt — zwei Schritte: ~10 % kleiner als der vorherige Wert (65),
+    /// um nochmal ein wenig Luft aus dem Header zu nehmen und der
+    /// Salut-Zeile den Vorrang zu geben.
+    private static let mascotSize: CGFloat = 58
 
     @State private var blinkStartDate: Date = .now
 
     var body: some View {
         HStack(alignment: .center, spacing: 8) {
             VStack(alignment: .leading, spacing: 1) {
+                // Greeting („Salut Franki") auf **27 pt** (+2 nach User-
+                // Wunsch; vorher 25). Dominiert den Header deutlicher,
+                // nachdem der Mascot auf 58 pt geschrumpft ist.
+                // `offset(y: -10)` rückt **nur** die Salut-Baseline
+                // 10 pt höher. HStack-Höhe bleibt vom Mascot definiert,
+                // alle nachfolgenden Cards sitzen unverändert an ihrer
+                // bisherigen Y-Position.
                 Text(greeting)
-                    .font(.system(size: 13, weight: .black, design: .rounded))
+                    .font(.system(size: 27, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.elumiPink)
                     .lineLimit(1)
                     .minimumScaleFactor(0.9)
-
-                Text(mainQuestion)
-                    .font(.system(size: 21, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.85)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .offset(y: -10)
             }
 
             Spacer(minLength: 0)
@@ -52,11 +50,13 @@ struct HomeHeader: View {
                 )
                 .frame(width: Self.mascotSize, height: Self.mascotSize)
             }
-            // 20 pt optisch nach links — der Mascot sitzt dadurch bewusst
-            // ein Stück von der rechten Screen-Kante weg. Offset statt
-            // Padding, damit weder der Header-Rahmen noch der Text-Block
-            // links davon ihre Position ändern.
-            .offset(x: -20)
+            // 20 pt optisch nach links (= Abstand zur rechten Screen-Kante)
+            // plus `y: -10` — User-Wunsch: „alles außer Salut 10 pt nach
+            // oben". Die Salut-Zeile bleibt an ihrer Baseline, der Mascot
+            // rutscht als einziges Header-Element 10 pt höher und die
+            // darunterliegenden Cards folgen (via reduziertem Top-Padding
+            // auf `focusOrContinueCard` in `HomeView`).
+            .offset(x: -20, y: -10)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .task {

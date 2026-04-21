@@ -154,6 +154,12 @@ struct SessionContextCard: View {
                 Spacer(minLength: 0)
 
                 Button(action: onEditTapped) {
+                    // `frame(maxHeight: .infinity)` stellt sicher, dass
+                    // das Pill exakt vertikal in der HStack-Höhe zentriert
+                    // sitzt, auch wenn die Content-VStack mehrzeilig ist
+                    // (Titel + Subtitle + optional Detail). HStack-Center-
+                    // Alignment allein reichte bei asymmetrischen
+                    // Paddings nicht.
                     Image(systemName: "pencil")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(data.accentColor)
@@ -161,6 +167,7 @@ struct SessionContextCard: View {
                         .background(
                             Circle().fill(data.accentColor.opacity(0.14))
                         )
+                        .frame(maxHeight: .infinity)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(Text("Auswahl bearbeiten"))
@@ -174,107 +181,81 @@ struct SessionContextCard: View {
 
 // MARK: - SessionGamificationBar
 //
-// DIE verbindliche Preview-Zeile über dem CTA. Master-Design-Regeln:
-// keine Card, kein Rahmen — flache horizontale Zeile mit 4 Metriken.
-// Die Bar wird nur mit `SessionEstimate` gefüttert — die View macht
-// keinerlei eigene Rechnung.
+// Systemweite Preview-Zeile über dem CTA — **neue Reduzierung** (V2):
+// nur noch **XP + Dauer**, keine Credits, keine Streak-Multiplier, keine
+// Sparkle-Icons mehr. Diese Werte gehören in andere Kontexte:
+//
+//    Kontext         Inhalt
+//    ──────────────  ────────────────
+//    Setup Screen    XP + Dauer        ← diese Bar
+//    Session-Ende    XP + Reward       (Summary/Reward-Screen)
+//    Game Screen     Credits           (Arcade-Hub / Reward-Panel)
+//
+// Visuell: klar abgehobene Card auf `setupCardBackground`, großzügige
+// Innenabstände, exakt vertikal zentrierte Inhalte. Ein Bullet-Separator
+// zwischen XP und Dauer — kein Divider, keine Icons pro Wert.
+//
+// API stabil: `init(estimate:)` bleibt, Call-Sites müssen nichts ändern.
+// Nicht genutzte Felder des `SessionEstimate` werden schlicht ignoriert.
 
 struct SessionGamificationBar: View {
     let estimate: SessionEstimate
 
     var body: some View {
-        HStack(spacing: 0) {
-            GamificationMetric(
-                icon: "sparkles",
-                value: "+\(estimate.estimatedXP)",
-                label: "XP",
-                isPrimary: true
-            )
-            .frame(maxWidth: .infinity)
+        // Inhalt zentriert in der Bar — kein `maxHeight: .infinity` auf
+        // den Kindern (würde die Bar vertikal ins Unendliche ausdehnen).
+        // `HStack(alignment: .center)` zentriert die drei gleich großen
+        // Texte bereits sauber gegeneinander.
+        HStack(alignment: .center, spacing: 12) {
+            // Font identisch zum CTA „Los geht's!" darunter:
+            // `AppTheme.Typography.button` = 17 pt, bold, rounded.
+            // Alle drei Texte (XP, Bullet, Minuten) teilen dieselbe
+            // Typo — Weiß für XP (Hauptwert), Secondary-Farbe für
+            // Bullet und Minuten (dezenter, aber gleich groß/bold).
+            Text("+\(estimate.estimatedXP) XP")
+                .font(AppTheme.Typography.button)
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+                .monospacedDigit()
 
             if let minutes = estimate.estimatedMinutes {
-                metricDivider
-                GamificationMetric(
-                    icon: "clock",
-                    value: "~\(minutes)",
-                    label: "min"
-                )
-                .frame(maxWidth: .infinity)
-            }
+                Text("·")
+                    .font(AppTheme.Typography.button)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
 
-            if let streakText = estimate.streakMultiplierText {
-                metricDivider
-                GamificationMetric(
-                    icon: "flame.fill",
-                    value: streakText,
-                    label: "Bonus",
-                    iconTint: Color(hex: "#FF9F40")
-                )
-                .frame(maxWidth: .infinity)
-            }
-
-            if let creditText = estimate.estimatedCreditsText {
-                metricDivider
-                GamificationMetric(
-                    icon: "circle.hexagongrid.fill",
-                    value: creditText,
-                    label: "Credit",
-                    iconTint: AppTheme.Colors.elumiBlue
-                )
-                .frame(maxWidth: .infinity)
+                Text("~\(minutes) min")
+                    .font(AppTheme.Typography.button)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .monospacedDigit()
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 11)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
         .frame(maxWidth: .infinity)
-        // Systemweite Corner-Radius — identisch zum Primary-CTA darunter,
-        // damit Bar + CTA wie ein zusammenhängendes Card-System wirken.
+        // Corner-Radius jetzt **identisch** zum CTA darunter
+        // (`AppLayout.sessionCTARadius`). Bar + CTA lesen sich dadurch
+        // als zusammenhängendes Card-Duo.
         .background(
             RoundedRectangle(cornerRadius: AppLayout.sessionCTARadius, style: .continuous)
+                // setupCardBackground + leichte weiße Aufhellung —
+                // die Bar hebt sich dadurch spürbar vom dunklen
+                // Screen-Background ab, ohne die bestehende Farbfamilie
+                // zu verlassen.
                 .fill(AppTheme.Colors.setupCardBackground)
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppLayout.sessionCTARadius, style: .continuous)
+                        .fill(Color.white.opacity(0.06))
+                )
         )
         .overlay(
             RoundedRectangle(cornerRadius: AppLayout.sessionCTARadius, style: .continuous)
                 .stroke(AppTheme.Colors.setupCardBorder, lineWidth: 1)
         )
+        .shadow(color: Color.black.opacity(0.28), radius: 7, x: 0, y: 3)
+        // Fix-Size vertikal — die Bar bleibt exakt so hoch wie ihr Inhalt
+        // + Padding. Verhindert unbegrenztes Ausdehnen in flex-Containern.
+        .fixedSize(horizontal: false, vertical: true)
         .accessibilityElement(children: .combine)
-    }
-
-    /// Dezenter vertikaler Trennstrich zwischen den Metriken.
-    /// Nicht über die volle Höhe — trennt, ohne zu zerschneiden.
-    private var metricDivider: some View {
-        Rectangle()
-            .fill(AppTheme.Colors.textSecondary.opacity(0.16))
-            .frame(width: 1, height: 26)
-    }
-}
-
-/// Einzelne Metrik in der Gamification-Bar. Icon + fetter Wert + kleines Label.
-/// `isPrimary` → Wert in größerer Bold-Type (für den XP-Eintrag).
-struct GamificationMetric: View {
-    let icon: String
-    let value: String
-    let label: String
-    var isPrimary: Bool = false
-    var iconTint: Color = AppTheme.Colors.textSecondary
-
-    var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 5) {
-            Image(systemName: icon)
-                .font(.system(size: isPrimary ? 13 : 11, weight: .semibold))
-                .foregroundStyle(iconTint)
-                .alignmentGuide(.firstTextBaseline) { $0[.bottom] - 2 }
-
-            Text(value)
-                .font(.system(size: isPrimary ? 17 : 15, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-                .monospacedDigit()
-
-            Text(label)
-                .font(.system(size: 12, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-        }
-        .lineLimit(1)
+        .accessibilityLabel("\(estimate.estimatedXP) XP, etwa \(estimate.estimatedMinutes ?? 0) Minuten")
     }
 }
 
@@ -285,22 +266,49 @@ struct GamificationMetric: View {
 
 struct SessionPrimaryCTA: View {
     let title: String
+    /// Optionale Subline unter dem Haupttitel. Wird genutzt für
+    /// kontextualisierte Setup-Screens (z. B. Vokabeln-Setup zeigt
+    /// „Viel Erfolg beim Lernen!" als freundliche Motiv-Zeile). `nil` =
+    /// klassischer Single-Line-CTA (Default, ändert nichts an der
+    /// bestehenden Optik für alle anderen Setup-Screens).
+    var subtitle: String? = nil
     var isEnabled: Bool = true
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            Text(title)
-                .font(.system(size: 20, weight: .black, design: .rounded))
-                .foregroundStyle(isEnabled ? Color.black : AppTheme.Colors.textDisabled)
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: 58)
-                // Systemweite Corner-Radius — identisch zu den Cards
-                // darüber (GamificationBar, Progress-Board, Fokus-Card).
-                .background(
-                    RoundedRectangle(cornerRadius: AppLayout.sessionCTARadius, style: .continuous)
-                        .fill(isEnabled ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled.opacity(0.3))
-                )
+            VStack(spacing: 2) {
+                Text(title)
+                    .font(.system(size: 20, weight: .black, design: .rounded))
+                    .foregroundStyle(isEnabled ? Color.black : AppTheme.Colors.textDisabled)
+
+                if let subtitle, !subtitle.isEmpty {
+                    HStack(spacing: 6) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 11, weight: .bold))
+                        Text(subtitle)
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    }
+                    .foregroundStyle(isEnabled ? Color.black.opacity(0.62) : AppTheme.Colors.textDisabled)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            // minHeight: 58 → **53** pt (−5 pt global, User-Request „CTA
+            // Los geht's / Quiz starten usw — überall 5p weniger Höhe,
+            // Größe nicht Position"). Gilt für **alle** Session-Setup-
+            // Screens (Karteikarten, Quiz, Training/Vokabeln/Nomen/
+            // Artikel/Verben/Verbformen) — der CTA wird system-weit
+            // kompakter, ohne dass Titel-Font oder Corner-Radius
+            // angetastet werden. Mit Subline wächst der Button weiterhin
+            // organisch durch den VStack-Content (+ das Subtitle-Padding).
+            .frame(minHeight: 53)
+            .padding(.vertical, subtitle == nil ? 0 : 6)
+            // Systemweite Corner-Radius — identisch zu den Cards
+            // darüber (GamificationBar, Progress-Board, Fokus-Card).
+            .background(
+                RoundedRectangle(cornerRadius: AppLayout.sessionCTARadius, style: .continuous)
+                    .fill(isEnabled ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled.opacity(0.3))
+            )
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)

@@ -4,26 +4,67 @@ extension ElumiArcadeGameView {
     func spawnSnack() {
         let roll = Double.random(in: 0...1)
         let config = ArcadeRoundConfig(round: round)
+        let now = gameClock
 
-        // Never spawn power-ups while one of the same type is on screen or active
+        // **Einheitliche Power-Up-Dichtekontrolle** (User-Spec
+        // „Power-Up Spawn Balancing"): zentrale Gate-Prüfung, bevor
+        // die probabilistische Typ-Wahl läuft. Verhindert Spam (max.
+        // ein Power-Up pro 6s), verbietet Multi-on-Screen, respektiert
+        // Per-Typ-Mindestabstände (Bubble 11s, Sauger 9s, Trank 14s).
+        let powerUpsOnScreen = activeSnacks.filter { snack in
+            ArcadePowerUps.type(for: snack.kind) != nil
+        }.count
+        let mayConsiderPowerUp = powerUpSpawnGate.mayConsiderPowerUp(
+            now: now,
+            powerUpsOnScreen: powerUpsOnScreen
+        ) && !isAnyPowerUpActive(at: now)
+
+        // Kompatibilitäts-Blocker — falls der Spawn-Gate (aus welchem
+        // Grund auch immer) den Schutz nicht greift, halten wir die
+        // alten Kind-spezifischen Blocker als zweite Verteidigungslinie.
         let suctionBlocked = activeSnacks.contains { $0.kind == .saugglocke } || hasActiveSuction()
         let potionBlocked = activeSnacks.contains { $0.kind == .slowMotionPotion } || hasActiveSlowMotion()
+        let shieldBlocked = activeSnacks.contains { $0.kind == .shieldBubble } || hasActiveShieldBubble()
 
         // Guarantee at least 1 suction per round (after 1/3 of snacks caught)
         let thirdCount = config.snacksRequired / 3
-        let forceSuction = !roundSuctionSpawned && roundCatchCount >= thirdCount && !suctionBlocked
+        let forceSuction = !roundSuctionSpawned && roundCatchCount >= thirdCount
+            && !suctionBlocked && mayConsiderPowerUp
+            && powerUpSpawnGate.mayConsider(type: .vacuum, now: now)
 
         let kind: ElumiArcadeDropKind
         if forceSuction {
             kind = .saugglocke
             roundSuctionSpawned = true
-        } else if roll < config.slowMotionPotionChance, !potionBlocked {
+            powerUpSpawnGate.registerSpawn(type: .vacuum, at: now)
+        } else if mayConsiderPowerUp,
+                  powerUpSpawnGate.mayConsider(type: .shieldBubble, now: now),
+                  !shieldBlocked,
+                  roll < ArcadePowerUps.config(for: .shieldBubble).spawnWeight {
+            // Schutz-Bubble — selten, aber verlässlich. Hat erste
+            // Priorität im Power-Up-Roll, weil sie der neueste Typ
+            // ist und im frühen Slice-Status noch nicht unter-
+            // repräsentiert sein soll.
+            kind = .shieldBubble
+            powerUpSpawnGate.registerSpawn(type: .shieldBubble, at: now)
+        } else if mayConsiderPowerUp,
+                  powerUpSpawnGate.mayConsider(type: .slowMotion, now: now),
+                  !potionBlocked,
+                  roll < config.slowMotionPotionChance {
             kind = .slowMotionPotion
-        } else if roll < config.slowMotionPotionChance + config.bonusChance {
+            powerUpSpawnGate.registerSpawn(type: .slowMotion, at: now)
+        } else if mayConsiderPowerUp,
+                  powerUpSpawnGate.mayConsider(type: .bonusPoints, now: now),
+                  roll < config.slowMotionPotionChance + config.bonusChance {
             kind = .bonusblase
-        } else if roll < config.slowMotionPotionChance + config.bonusChance + config.suctionChance, !suctionBlocked {
+            powerUpSpawnGate.registerSpawn(type: .bonusPoints, at: now)
+        } else if mayConsiderPowerUp,
+                  powerUpSpawnGate.mayConsider(type: .vacuum, now: now),
+                  !suctionBlocked,
+                  roll < config.slowMotionPotionChance + config.bonusChance + config.suctionChance {
             kind = .saugglocke
             roundSuctionSpawned = true
+            powerUpSpawnGate.registerSpawn(type: .vacuum, at: now)
         } else if roll < config.slowMotionPotionChance + config.bonusChance + config.suctionChance + config.falseElumiChance {
             kind = .falseElumi
         } else {
@@ -32,17 +73,37 @@ extension ElumiArcadeGameView {
 
         let querschlaegerChance = config.querschlaegerChance
         let isQuerschlaeger = kind.isSnack && Double.random(in: 0...1) < querschlaegerChance
-        let wobbleAmp = isQuerschlaeger
-            ? CGFloat.random(in: config.querschlaegerAmplitude)
-            : CGFloat.random(in: 0.01...0.05)
-        let wobbleFreq = isQuerschlaeger
-            ? Double.random(in: config.querschlaegerFrequency)
-            : Double.random(in: 1.4...3.1)
+        // **Sauger-Fall** (User-Entscheidung): Saugglocke fällt
+        // komplett gerade, kein Wobble. Spec „muss gerade runterkommen
+        // und sich dann auf Elumis Kopf setzen" — für das Landen auf
+        // dem Kopf ist senkrechter Fall entscheidend, damit der User
+        // sich auf die X-Position konzentrieren kann.
+        let wobbleAmp: CGFloat
+        let wobbleFreq: Double
+        if kind == .saugglocke {
+            wobbleAmp = 0
+            wobbleFreq = 0
+        } else if isQuerschlaeger {
+            wobbleAmp = CGFloat.random(in: config.querschlaegerAmplitude)
+            wobbleFreq = Double.random(in: config.querschlaegerFrequency)
+        } else {
+            wobbleAmp = CGFloat.random(in: 0.01...0.05)
+            wobbleFreq = Double.random(in: 1.4...3.1)
+        }
 
-        // Power-ups fall slower (easier to catch)
-        let fallDuration = kind == .slowMotionPotion
-            ? config.fallDuration * 1.3
-            : config.fallDuration
+        // Power-ups fall slower (easier to catch). Schutz-Bubble hat
+        // eine besonders lange „Lebensdauer" — sie soll im oberen
+        // Drittel stehen bleiben und dem User Zeit geben, sie bewusst
+        // zu erreichen (Spawn-Position-Logik in Motion.swift).
+        let fallDuration: Double
+        switch kind {
+        case .slowMotionPotion:
+            fallDuration = config.fallDuration * 1.3
+        case .shieldBubble:
+            fallDuration = 7.0
+        default:
+            fallDuration = config.fallDuration
+        }
 
         activeSnacks.append(
             ElumiArcadeSnackState(
@@ -59,26 +120,206 @@ extension ElumiArcadeGameView {
             )
         )
 
-        // Shimmer sound when a power-up spawns
-        if kind == .slowMotionPotion || kind == .bonusblase || kind == .saugglocke {
-            feedbackPlayer.playPowerUpSpawn()
+        // Spawn-Sound über zentrales SFX-Hook-System. Typ-spezifische
+        // Assets werden in `ArcadeSFX` getauscht, sobald sie
+        // vorliegen — hier keine weiteren Änderungen nötig.
+        if let type = ArcadePowerUps.type(for: kind) {
+            arcadeSFX?.fire(.spawn, for: type, at: gameClock)
         }
     }
 
+    /// Ist aktuell **irgendein** Power-Up aktiv? Genutzt vom Spawn-Gate,
+    /// um „ein Power-Up gleichzeitig"-Regel aus der User-Spec zu
+    /// erzwingen (auch wenn's auf dem Screen keine Drops gibt, aber der
+    /// Aktiv-Zustand von vorher noch läuft).
+    func isAnyPowerUpActive(at date: Date) -> Bool {
+        return hasActiveSuction(at: date)
+            || hasActiveBonusPoints(at: date)
+            || hasActiveSlowMotion(at: date)
+            || hasActiveShieldBubble(at: date)
+    }
+
+    // MARK: - Ambient Sea-Creature Event (Fish/Shark)
+
+    /// Rollt einmal pro Runde nach ~5 s aktiven Gameplays auf ein
+    /// Ambient-Event. Reine Visuals — kein Gameplay-Impact, keine
+    /// Kollisionen. Zweck: dem Stage Dynamik geben, Unterwasser-Feeling.
+    ///
+    /// Trigger-Bedingungen:
+    ///   • noch nicht in dieser Runde gefeuert
+    ///   • noch keines aktiv auf dem Screen
+    ///   • Runden-Zeit ≥ 5 s (User hatte Zeit, ins Spiel zu kommen)
+    ///   • ~20 % Wahrscheinlichkeit pro Tick-Check (pro 33 ms Game-Loop),
+    ///     rolling until fires → garantiert einmal pro Runde spätestens
+    ///     nach weiteren ~1.5 s Spieleinsatz.
+    func tickAmbientSeaCreature(at date: Date) {
+        // Schon gefeuert → nichts zu tun bis Runden-Reset.
+        guard !ambientEventFiredThisRound else { return }
+        // Aktives Event läuft noch → nichts tun.
+        guard ambientSeaCreature == nil else { return }
+        // Mindest-Startzeit in Runde abwarten (grob: seit 5 snacks
+        // catched). Alternativ schauen wir auf roundCatchCount.
+        guard roundCatchCount >= 3 else { return }
+        // Probabilistisch: ~2 % pro Tick = bei 30 Hz Game-Loop alle
+        // ~1.5 s ein Event. Zusammen mit Streak-Bedingung bekommen
+        // User in jeder Runde das Event ungefähr zwischen Sekunde 5-15.
+        guard Double.random(in: 0...1) < 0.02 else { return }
+
+        spawnAmbientSeaCreature(at: date)
+    }
+
+    /// Erzeugt ein neues Ambient-Ereignis. Hai **nur** im mittleren
+    /// Rundenfenster (ca. 10–25 s nach Rundenstart, approximiert via
+    /// `roundCatchCount` 6–18 bei ~1.5 s/Catch). Außerhalb des Fensters
+    /// kommt statt Hai immer der Fisch-Schwarm — Hai ist das seltene
+    /// Premium-Event, das sich lohnen muss. Fisch-Schwarm kann
+    /// jederzeit kommen.
+    func spawnAmbientSeaCreature(at date: Date) {
+        let catches = roundCatchCount
+        let sharkEligible = (catches >= 6 && catches <= 18)
+        let isShark = sharkEligible && Double.random(in: 0...1) < 0.40
+        let kind: AmbientSeaCreatureState.Kind = isShark ? .shark : .fishSchool
+        // Hai langsamer + majestätischer; Fisch-Schwarm flinker.
+        let speed = isShark ? Double.random(in: 8.0...11.0) : Double.random(in: 4.0...6.0)
+        let creature = AmbientSeaCreatureState(
+            kind: kind,
+            spawnedAt: date,
+            fromLeft: Bool.random(),
+            normalizedY: CGFloat.random(in: 0.25...0.55),
+            speed: speed,
+            wobblePhase: Double.random(in: 0...(.pi * 2))
+        )
+        ambientSeaCreature = creature
+        ambientEventFiredThisRound = true
+        // **Sound-Hook-Platzhalter** (User-Spec: „Splash /
+        // Wasserbewegung / leises whoosh"): sobald das Audio-Asset
+        // vorliegt, hier `feedbackPlayer.playSharkWhoosh()` oder
+        // `feedbackPlayer.playFishSplash()` einbauen. Aktuell
+        // stumm, damit das Event rein visuell bleibt.
+        #if DEBUG
+        print("🐟 [AmbientEvent] \(kind): from=\(creature.fromLeft ? "left" : "right"), y=\(creature.normalizedY), duration=\(speed)s (sharkEligible=\(sharkEligible))")
+        #endif
+
+        // Nach Crossing + kleinem Puffer remove. Dauer = speed,
+        // Puffer = 0.5 s, damit die Kreatur ganz off-screen ist.
+        let lifetime = speed + 0.5
+        let myId = creature.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + lifetime) {
+            if self.ambientSeaCreature?.id == myId {
+                self.ambientSeaCreature = nil
+            }
+        }
+    }
+
+    /// Reset beim Rundenwechsel — frischer Roll in der neuen Runde.
+    func resetAmbientEventForNewRound() {
+        ambientEventFiredThisRound = false
+    }
+
     func startGame() {
-        guard showingStartOverlay else { return }
+        // **Bug-Fix** (User-Report „Elumi nicht mehr sichtbar im Arcade-
+        // Spiel"): vorher hat `guard showingStartOverlay else { return }`
+        // den AutoStart-Pfad gekillt, weil der aufrufende `onAppear` das
+        // Overlay bereits auf `false` gesetzt hatte, BEVOR er `startGame()`
+        // rief — die guard schnappte zu, `elumiVisible` blieb auf `false`,
+        // Elumi unsichtbar.
+        //
+        // Neu: idempotent via `elumiVisible` — wenn der Character bereits
+        // sichtbar ist (Spiel läuft), keine Aktion. Sonst regulärer
+        // Start-Pfad, egal ob aus Overlay-Tap oder AutoStart.
+        guard !elumiVisible else { return }
         feedbackPlayer.playLaunch()
         showingStartOverlay = false
         withAnimation(.spring(response: 0.35, dampingFraction: 0.65)) {
             elumiVisible = true
         }
         gameSeed = UUID()
+        consumeArcadeTestModusQueue()
+        // **Arcade-Musik** (Phase „Arcade Music"): pro Run einen
+        // neuen Track, alternierend aus der Rotation. ArcadeMusicPlayer
+        // nutzt die gleiche `SoundPlayer`-Infrastruktur wie die SFX
+        // und der Word-Runner — keine parallelen Audio-Systeme.
+        ArcadeMusicPlayer.shared.startNewRun()
+    }
+
+    /// Liest die Testmodus-Arcade-Flags aus UserDefaults und löst die
+    /// entsprechenden Runtime-Aktionen aus. Wird beim Start jeder
+    /// Arcade-Session einmal konsumiert (Flags werden dabei NICHT
+    /// gelöscht — User kann mehrere Starts mit derselben Queue machen,
+    /// bis er sie bewusst in Settings aus-toggeled).
+    ///
+    /// Für Test/Demo — auch in Release-Builds verfügbar, damit
+    /// Familien-Tester und TestFlight-User ohne Xcode-Zugriff
+    /// Power-Ups direkt ausprobieren können. Side-Effect-frei
+    /// (nur visuelle/temporäre In-Game-Effekte, kein Save-State).
+    func consumeArcadeTestModusQueue() {
+        let defaults = UserDefaults.standard
+        let now = Date()
+        if defaults.bool(forKey: appArcadeTestModusQueueShieldBubbleKey) {
+            print("🛠 [Arcade Testmodus] force-spawn shield bubble via queue")
+            powerUpRuntime.activateOrCreate(
+                type: .shieldBubble,
+                at: now,
+                durationOverride: shieldBubbleDuration
+            )
+            shieldBubbleEndsAt = now.addingTimeInterval(shieldBubbleDuration)
+        }
+        if defaults.bool(forKey: appArcadeTestModusQueueVacuumKey) {
+            print("🛠 [Arcade Testmodus] force-spawn vacuum via queue")
+            activateSuction(at: now)
+        }
+        if defaults.bool(forKey: appArcadeTestModusQueueAmbientFishKey) {
+            print("🛠 [Arcade Testmodus] force fish event via queue")
+            powerUpRuntime.debugForceAmbientEvent(type: .fish, durationSeconds: 5.0, at: now)
+            // Auch die Legacy-Ambient-State setzen, damit die View-
+            // Schicht (die noch den alten Pfad nutzt) ebenfalls ein
+            // sichtbares Event hat.
+            spawnAmbientSeaCreatureAsType(.fishSchool, at: now)
+        }
+        if defaults.bool(forKey: appArcadeTestModusQueueAmbientSharkKey) {
+            print("🛠 [Arcade Testmodus] force shark event via queue")
+            powerUpRuntime.debugForceAmbientEvent(type: .shark, durationSeconds: 8.0, at: now)
+            spawnAmbientSeaCreatureAsType(.shark, at: now)
+        }
+    }
+
+    /// Hilfs-Spawn für Testmodus: erzwingt einen bestimmten Typ
+    /// (Fisch/Hai), ohne den Random-Selection-Pfad in
+    /// `spawnAmbientSeaCreature` zu durchlaufen. Garantiert, dass der
+    /// User wirklich das sieht, was er in Settings getoggled hat.
+    private func spawnAmbientSeaCreatureAsType(
+        _ kind: AmbientSeaCreatureState.Kind,
+        at date: Date
+    ) {
+        let isShark = kind == .shark
+        let speed = isShark ? Double.random(in: 8.0...11.0) : Double.random(in: 4.0...6.0)
+        let creature = AmbientSeaCreatureState(
+            kind: kind,
+            spawnedAt: date,
+            fromLeft: Bool.random(),
+            normalizedY: CGFloat.random(in: 0.25...0.55),
+            speed: speed,
+            wobblePhase: Double.random(in: 0...(.pi * 2))
+        )
+        ambientSeaCreature = creature
+        ambientEventFiredThisRound = true
+        let lifetime = speed + 0.5
+        let myId = creature.id
+        DispatchQueue.main.asyncAfter(deadline: .now() + lifetime) {
+            if self.ambientSeaCreature?.id == myId {
+                self.ambientSeaCreature = nil
+            }
+        }
     }
 
     func restartGame() {
         showingStartOverlay = false
         elumiVisible = true
         gameSeed = UUID()
+        // Restart rotiert auf den nächsten Track, wie beim normalen
+        // Run-Start — jeder Run bekommt frische Musik, sodass
+        // „Nochmal" sich klanglich wie ein neuer Versuch anfühlt.
+        ArcadeMusicPlayer.shared.startNewRun()
     }
 
     func triggerCatchAnimation() {
@@ -117,6 +358,16 @@ extension ElumiArcadeGameView {
     func hasActiveSlowMotion(at date: Date = Date()) -> Bool {
         guard let slowMotionEndsAt else { return false }
         return slowMotionEndsAt > date
+    }
+
+    func hasActiveShieldBubble(at date: Date = Date()) -> Bool {
+        guard let shieldBubbleEndsAt else { return false }
+        return shieldBubbleEndsAt > date
+    }
+
+    func shieldBubbleSecondsRemaining(at date: Date = Date()) -> Int {
+        guard let shieldBubbleEndsAt else { return 0 }
+        return max(0, Int(ceil(shieldBubbleEndsAt.timeIntervalSince(date))))
     }
 
     func suctionSecondsRemaining(at date: Date = Date()) -> Int {
@@ -166,6 +417,44 @@ extension ElumiArcadeGameView {
         feedbackPlayer.playAchievement()
     }
 
+    /// Aktiviert die Schutz-Bubble um den Spieler für
+    /// `shieldBubbleDuration` Sekunden. Während dieser Zeit:
+    ///   • `falseElumi`-Treffer → kein Leben-Verlust, kein Banner
+    ///   • Snack-Collection → **keine** Punkte (per Spec: „sammelt
+    ///     während aktiv auch keine Punkte")
+    ///   • Power-Up-Pickups bleiben funktional (Sauger etc. darf
+    ///     aufgenommen werden — die Bubble blockt nur Damage + Points)
+    ///
+    /// Der Aktiv-Zustand wird am Ende automatisch durch Zeit-Ablauf
+    /// beendet — kein expliziter Cleanup nötig, weil
+    /// `hasActiveShieldBubble(at:)` nur den Timer prüft.
+    func activateShieldBubble(at date: Date) {
+        withAnimation(.spring(response: 0.2, dampingFraction: 0.5)) {
+            shieldBubbleDockScale = 1.18
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.14) {
+            withAnimation(.spring(response: 0.32, dampingFraction: 0.7)) {
+                shieldBubbleDockScale = 1.0
+            }
+        }
+        shieldBubbleEndsAt = date.addingTimeInterval(shieldBubbleDuration)
+        // **Runtime-Sync**: parallel zum Timestamp wird die formale
+        // State-Machine aktualisiert. Der Drop war `.idle`/`.spawning`,
+        // wir transitionieren direkt in `.active` mit der Shield-Dauer.
+        powerUpRuntime.activateOrCreate(
+            type: .shieldBubble,
+            at: date,
+            durationOverride: shieldBubbleDuration
+        )
+        showComboBanner("Schutz-Bubble aktiviert")
+        // Sound-Events über zentrale Hook: Pickup-Sound feuert sofort
+        // beim Einsammeln, Activate separat — beide werden aktuell
+        // vom gleichen Achievement-Sound serviced, bis dedizierte
+        // Assets vorliegen (siehe `ArcadeSFX.handlePickup/Activate`).
+        arcadeSFX?.fire(.pickup, for: .shieldBubble, at: date)
+        arcadeSFX?.fire(.activate, for: .shieldBubble, at: date)
+    }
+
     func endGame() {
         isGameOver = true
         isPlaying = false
@@ -174,10 +463,21 @@ extension ElumiArcadeGameView {
         feedbackPlayer.sp.stop("bgm_fischfang")
         feedbackPlayer.stopBGM()
         feedbackPlayer.playGameOver()
+        // Arcade-Musik weich ausfaden (nicht hart abreißen); der
+        // Game-Over-SFX liegt darüber ungestört, weil die Fade-Dauer
+        // (~0.8 s) deutlich kürzer ist als der Game-Over-Jingle.
+        ArcadeMusicPlayer.shared.fadeOut()
         // Clear power-up state
         suctionEndsAt = nil
         bonusPointsEndsAt = nil
         slowMotionEndsAt = nil
+        shieldBubbleEndsAt = nil
+        shieldBubbleRippleAt = nil
+        ambientSeaCreature = nil
+        ambientEventFiredThisRound = false
+        arcadeSFX?.reset()
+        powerUpSpawnGate.reset()
+        powerUpRuntime.hardReset()
         // Clear all snacks from screen
         activeSnacks = []
         // Hide Elumi
@@ -199,10 +499,20 @@ extension ElumiArcadeGameView {
         feedbackPlayer.stopBGM()
         feedbackPlayer.stopJellyfishAmbient()
         feedbackPlayer.stopAllFeedback()
+        // Arcade-Musik sofort abbrechen — der Silent-Exit soll
+        // wirklich still sein (kein nachhängender Fade).
+        ArcadeMusicPlayer.shared.stopArcadeMusic()
         // Power-Up / Spielzustand zurücksetzen
         suctionEndsAt = nil
         bonusPointsEndsAt = nil
         slowMotionEndsAt = nil
+        shieldBubbleEndsAt = nil
+        shieldBubbleRippleAt = nil
+        ambientSeaCreature = nil
+        ambientEventFiredThisRound = false
+        arcadeSFX?.reset()
+        powerUpSpawnGate.reset()
+        powerUpRuntime.hardReset()
         activeSnacks = []
         activeJellyfish = nil
         activeTentacles = []
@@ -211,11 +521,48 @@ extension ElumiArcadeGameView {
     }
 
     func triggerFriendEaten() {
+        // **Schutz-Bubble-Check**: während aktiv darf kein Leben
+        // verloren werden (User-Spec). Wir blockieren den Damage-Pfad
+        // komplett + zeigen stattdessen einen Schutz-Bounce (Dock-
+        // Scale-Impuls) + einen expandierenden Ripple-Kreis, damit
+        // der User den Block klar visuell wahrnimmt.
+        if hasActiveShieldBubble() {
+            triggerShieldBubbleImpact(at: gameClock)
+            return
+        }
         triggerScreenShake()
         misses += 1
         feedbackPlayer.playSnackMiss()
         showComboBanner("Elumi-Freund! −1 Leben", duration: 1500)
         resetCombo()
+    }
+
+    /// Zentraler Kollisions-Impuls für die aktive Schutz-Bubble:
+    /// Scale-Bounce + Ripple-Trigger. Wird sowohl von `triggerFriendEaten`
+    /// als auch von der Snack-Block-Branch in `updateGame` aufgerufen.
+    ///
+    /// **Spam-Schutz**: Debouncing — Ripple/Bounce nur wenn seit dem
+    /// letzten Event mindestens 120 ms vergangen sind. Verhindert,
+    /// dass mehrere gleichzeitige Snack-Kollisionen in einem Frame
+    /// die Bubble völlig zappeln lassen.
+    func triggerShieldBubbleImpact(at date: Date) {
+        if let last = shieldBubbleRippleAt,
+           date.timeIntervalSince(last) < 0.12 {
+            return
+        }
+        shieldBubbleRippleAt = date
+        withAnimation(.spring(response: 0.15, dampingFraction: 0.5)) {
+            shieldBubbleDockScale = 1.12
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.75)) {
+                shieldBubbleDockScale = 1.0
+            }
+        }
+        // Ripple-Sound über zentrales SFX-Hook-System. Debouncing
+        // (0.15 s) innerhalb von `ArcadeSFX` verhindert Spam bei
+        // schnellen Kollisions-Salven.
+        arcadeSFX?.fire(.collision, for: .shieldBubble, at: date)
     }
 
     func activateSlowMotion(at date: Date) {
@@ -322,6 +669,15 @@ extension ElumiArcadeGameView {
             round += 1
             roundCatchCount = 0
             roundSuctionSpawned = false
+            // Ambient-Event Reset bei Rundenwechsel — neuer Roll in
+            // der neuen Runde, sodass jede Runde ihre eigene Chance
+            // auf einen Fisch/Hai bekommt.
+            resetAmbientEventForNewRound()
+            ambientSeaCreature = nil
+            // Runtime: nur Ambient-Lock freigeben, Power-Up-Cooldowns
+            // bleiben (wir geben dem User nicht bei jedem Rundenwechsel
+            // einen frischen Cooldown-Reset für Power-Ups).
+            powerUpRuntime.resetForNewRound()
             roundBannerPhase = 1
             readyBlinkVisible = true
             showingRoundBanner = true
@@ -373,6 +729,10 @@ extension ElumiArcadeGameView {
         bonusRoundWaitingForTap = true
         feedbackPlayer.stopBGM()
         feedbackPlayer.playPowerUpSpawn()
+        // **Fish-Event-Musik**: weicher Wechsel vom Arcade-Track auf
+        // das Fish-Theme. Der Übergang läuft asynchron im Player
+        // (Fade-Out ~0.6 s → Fade-In) — hier nur Signal setzen.
+        ArcadeMusicPlayer.shared.enterFishEvent()
     }
 
     func handleBonusRoundTap() {
@@ -482,6 +842,9 @@ extension ElumiArcadeGameView {
         feedbackPlayer.stopJellyfishAmbient()
         feedbackPlayer.sp.stop("bgm_fischfang")
         feedbackPlayer.startBGM()
+        // Fish-Theme ausfaden, zurück zum Arcade-Track, der beim
+        // Eintritt ins Event lief.
+        ArcadeMusicPlayer.shared.exitFishEvent()
 
         // Reset Elumi to bottom rail (normal game mode position)
         elumiY = 0.5
@@ -603,6 +966,28 @@ extension ElumiArcadeGameView {
                 continue
             }
 
+            if snack.kind == .shieldBubble {
+                if isCatchable && horizontalDistance <= 34 {
+                    activateShieldBubble(at: now)
+                    triggerCatchAnimation()
+                    continue
+                }
+
+                if progress >= 1.04 {
+                    continue
+                }
+
+                survivors.append(snack)
+                continue
+            }
+
+            // **Shield-Bubble-Policy Phase 2** (User-Revision
+            // „Snacks weiterhin einsammelbar"): Snacks werden auch
+            // während des Shields regulär gesammelt. Nur Damage-
+            // Kontakte (falseElumi → triggerFriendEaten mit
+            // Shield-Guard) werden weiterhin sanft abgelenkt. Damit
+            // der Shield sich wertvoll anfühlt — nicht als Blockade,
+            // sondern als Stärkung.
             if isInSuctionBeam || (isCatchable && horizontalDistance <= 34) {
                 earnedPoints += pointsForCaughtSnack(snack, at: now)
                 caughtSnackCount += 1
@@ -654,6 +1039,11 @@ extension ElumiArcadeGameView {
 
         // ── Jellyfish update ──
         updateJellyfish(now: now)
+        tickAmbientSeaCreature(at: now)
+        // **Runtime-Tick** — zentraler State-Machine-Update für alle
+        // Power-Ups. Schreibt `.active` → `.ending` → `.consumed`
+        // fort und entfernt erledigte Instanzen automatisch.
+        powerUpRuntime.tick(at: now)
 
         if misses >= maxMisses && !bonusRoundWaitingForTap {
             gameOverTitle = "Game Over"

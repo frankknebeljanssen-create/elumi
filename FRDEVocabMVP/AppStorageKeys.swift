@@ -28,6 +28,14 @@ let appQuizSelectedListIDsKey = "quiz.selectedListIDs.v1"
 let appFlashcardsSelectedListIDsKey = "flashcards.selectedListIDs.v1"
 let appFlashcardsMasteryThresholdKey = "flashcards.masteryThreshold.v1"
 
+// MARK: - Gameplay Settings
+// Zentraler Key für die globale Speed-Round-Dauer — einziger Wahrheits-
+// zustand appweit. Alle Module (Training, Verbformen, Akzente, …) lesen
+// über `SpeedRoundSettings.currentSeconds` bzw. direkt via @AppStorage.
+// Wert ist der Roh-Int aus `SpeedRoundDuration.rawValue` (Sekunden).
+// Die Konstante lebt zusätzlich in `SpeedRoundSettings.swift`, damit
+// Call-Sites dort auch ohne Import dieses Files klarkommen.
+
 /// Pro-Modul-Key für die zuletzt ausgewählten Trainings-Listen. Jeder TrainingMode
 /// merkt sich seine eigene Listenauswahl, damit beim Wechsel zwischen Modulen
 /// (z. B. von Vokabeln zu Verben und zurück) die jeweils letzte Auswahl wieder

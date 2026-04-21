@@ -48,9 +48,16 @@ extension TrainingView {
             .padding(.top, AppLayout.screenHeaderTopPadding)
             .padding(.bottom, usesGlobalChrome ? 0 : AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.lg)
 
-            // Combo-Toast-Overlay — liegt über allen Session-Screens und zeigt
-            // bei 5/10/15/... richtigen in Folge einen kurzen Bonus-Hinweis.
+            // Combo-Toast-Overlay — liegt über allen Session-Screens und
+            // zeigt bei erreichter Streak-Schwelle (3/5/10, siehe
+            // `FeedbackConfig`) einen abgestuften Toast.
             ComboToastOverlay()
+            // Milestone-Overlay — größere, seltenere Momente
+            // (Session-Ende, Wort-Mastered). Zweite Z-Ebene, damit es
+            // visuell über dem Streak-Toast liegt, falls beide zufällig
+            // gleichzeitig feuern (passiert durch den Cooldown praktisch
+            // nicht, der Overlay ist trotzdem sauber getrennt).
+            MilestoneOverlayView()
         }
     }
 
@@ -65,8 +72,13 @@ extension TrainingView {
             SessionSummaryView(
                 outcome: outcome,
                 progress: progressStore.progress,
-                onContinue: {
+                primaryCTALabel: "Weiter lernen",
+                onPrimaryCTA: {
                     trainingSessionOutcome = nil
+                },
+                secondaryCTALabel: "Zur Startseite",
+                onSecondaryCTA: {
+                    dismissToHome()
                 }
             )
 
@@ -76,6 +88,18 @@ extension TrainingView {
         .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 32)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .onAppear {
+            // Zentraler Hard-Stop für die Training-Session, sobald die
+            // globale Summary sichtbar wird: TTS + Speech-Recognition +
+            // pending Feedback-Tasks + Speed-Round-Timer werden abge-
+            // räumt. Guard gegen „App liest/hört noch unter dem Summary
+            // weiter". Bereits laufende `awardTrainingXPIfNeeded` ist
+            // idempotent via `session.sessionRewardConsumed`.
+            runtimeSpeaker?.stop()
+            speechController?.stopRecording()
+            cancelPendingFeedback()
+            stopSpeedRoundTimer()
+        }
     }
 
     private var sessionHeaderTitle: String {
@@ -168,6 +192,15 @@ extension TrainingView {
                 if isArticleMode {
                     articleButtons
                         .padding(.horizontal, trainingSessionCardInset)
+                } else if isNounChoiceMode {
+                    // Nomen-Wortauswahl: 8er-Grid statt Mikrofon. Identische
+                    // Struktur wie der Verb-MC-Zweig — nur andere MC-State-
+                    // Variablen (`nounMC*`). Für Speed Round / Speech bleibt
+                    // der Standard-Flow unverändert (isNounChoiceMode ist
+                    // dort per Definition false).
+                    Spacer().frame(height: AppTheme.Spacing.xs)
+                    nounMCCard
+                        .padding(.horizontal, trainingSessionCardInset)
                 } else if isVerbMode {
                     Spacer().frame(height: AppTheme.Spacing.xs)
                     verbMCCard
@@ -223,12 +256,31 @@ extension TrainingView {
         // Listen-Auswahl-Varianten (5 Modi × unterschiedliche Cards) leben
         // weiter in contextContent. Options (Dictionary-Level, Speed-Round,
         // Hints, Verbformen-Tense-Picker) kommen in optionsContent darunter.
-        SessionSetupScreen(
+        //
+        // Vokabel-spezifische CTA-Behandlung (Clean-UX-Umbau):
+        //   • CTA-Titel spiegelt den gewählten Modus wider
+        //     („Vokabeltraining starten" / „Speed Round starten").
+        //   • Keine Subline — die frühere „Viel Erfolg beim Lernen!"-
+        //     Zeile ist pro User-Request raus. Der CTA bleibt damit
+        //     als single-line-Button, so wie in allen anderen Modulen.
+        //   • `showsGamificationBar: false` — die XP/Zeit/Credits-Zeile
+        //     sitzt jetzt inline in der Speed-Round-Mode-Card.
+        // Alle anderen Module behalten das klassische „Los geht's!" + Bar.
+        let isVocabMode = (session.trainingMode == .vocabulary)
+        // Vokabeln hat nach dem Struktur-Refactor kein Speed Round mehr
+        // → CTA ist immer „Vokabeltraining starten". Alle anderen Module
+        // behalten „Los geht's!".
+        let ctaTitle: String = isVocabMode ? "Vokabeltraining starten" : "Los geht's!"
+        let ctaSubtitle: String? = nil
+
+        return SessionSetupScreen(
             title: sessionHeaderTitle,
             accent: trainingActionTint,
             estimate: trainingSessionEstimate,
-            primaryButtonTitle: "Los geht's!",
+            primaryButtonTitle: ctaTitle,
+            primarySubtitle: ctaSubtitle,
             isPrimaryEnabled: isVerbformsMode ? verbformsCanStart : canStartTraining,
+            showsGamificationBar: !isVocabMode,
             onBack: { dismiss() },
             onStart: {
                 if isVerbformsMode {
@@ -300,81 +352,483 @@ extension TrainingView {
 
     /// Options-Slot: alles, was **unter** der Richtungs-Zeile liegen soll.
     /// Modul-spezifisch:
-    ///   • Vokabeln: Kategorie-Grid („Was möchtest Du trainieren?").
+    ///   • Vokabeln: zweistufige Entscheidungs-Architektur
+    ///     („Was möchtest du trainieren?" → Training/Speed-Round-Mode-Cards,
+    ///     dann „Wie möchtest du trainieren?" → Detail-Grid). Ersetzt die
+    ///     frühere flache Optionsliste + den separaten Speed-Round-Toggle.
+    ///   • Nomen: zusätzliche Entscheidungs-Ebene „Wie möchtest du
+    ///     antworten?" (Spracheingabe / Wortauswahl) steht **über** dem
+    ///     Speed-Round-Toggle. Reihenfolge: Answer-Mode → Speed Round →
+    ///     (Gamification-Bar aus dem äußeren `SessionSetupScreen`).
+    ///     Speed Round ignoriert den Answer-Mode (eigene Antwort-
+    ///     Mechanik), die Answer-Mode-Auswahl definiert den Default
+    ///     fürs normale Training.
     ///   • Verbformen: Tense-Picker (Zeitformen).
-    ///   • alle Modi: Dictionary-Level-Card (konditional), Speed-Round-
-    ///     Toggle und Start-Hints.
+    ///   • alle Modi außer Vokabeln: Dictionary-Level-Card (konditional),
+    ///     Speed-Round-Toggle und Start-Hints.
     @ViewBuilder
     private var trainingSetupOptionsContent: some View {
         if session.trainingMode == .vocabulary {
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                Text("Was möchtest Du trainieren?")
-                    .font(.system(size: 20, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
+            vocabularySetupOptions
+        } else {
+            // Drill-Module (Nomen / Artikel / Verben / Verbformen) haben
+            // jetzt alle **dieselbe** Grundstruktur:
+            //   1. Modus-Block („Was möchtest du machen?" → Training /
+            //      Speed Round)
+            //   2. Detail-Optionen **nur** wenn Training aktiv
+            //      (Verbformen: Tense-Picker · Nomen: Antwort-Modus ·
+            //       Artikel / Verben: keine zusätzlichen Details).
+            //   3. Start-Hints bei fehlender Konfiguration.
+            // Speed Round ist **kein** eigener Button und kein
+            // standalone Toggle mehr, sondern eine Modus-Wahl.
+            drillModeSection
 
-                LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
-                    trainingCategoryCard(
-                        category: .topic,
-                        title: "Nach Themen",
-                        systemImage: "tag.fill",
-                        subtitle: "\(topicListCount) Listen"
-                    )
-                    trainingCategoryCard(
-                        category: .level,
-                        title: "Nach Niveau",
-                        systemImage: "chart.bar.fill",
-                        subtitle: "\(levelListCount) Listen"
-                    )
-                    trainingCategoryCard(
-                        category: .own,
-                        title: "Eigene Listen",
-                        systemImage: "person.fill",
-                        subtitle: "\(ownListCount) Listen"
-                    )
-                    trainingCategoryCard(
-                        category: .all,
-                        title: "Ganzes Wörterbuch",
-                        systemImage: "book.fill",
-                        subtitle: "Alle Einträge"
-                    )
+            if !session.isSpeedRound {
+                if session.trainingMode == .verbforms {
+                    verbformsSetupOptions
+                }
+
+                if isDictionaryTrainingSelected {
+                    dictionaryTrainingLevelCard
+                }
+
+                if session.trainingMode == .nouns {
+                    nounAnswerModeSection
                 }
             }
-        }
 
-        if session.trainingMode == .verbforms {
-            verbformsSetupOptions
-        }
+            if !canStartTraining && !isVerbformsMode {
+                Text(startHintText)
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
 
-        if isDictionaryTrainingSelected {
-            dictionaryTrainingLevelCard
-        }
-
-        speedRoundToggle
-
-        if !canStartTraining && !isVerbformsMode {
-            Text(startHintText)
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-        }
-
-        if isVerbformsMode && !verbformsCanStart {
-            Text(verbformsStartHint)
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
+            if isVerbformsMode && !verbformsCanStart {
+                Text(verbformsStartHint)
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+            }
         }
     }
 
+    // MARK: - Nomen Answer-Mode Section
+    //
+    // Sekundäre Entscheidungs-Ebene im Nomen-Setup: „Wie möchtest du
+    // antworten?". Zwei Cards side-by-side, beide mit Nomen-Akzent
+    // (sectionStyle.accent ≈ grün). Deutlich ruhiger als die Speed-Round-
+    // Card darüber — Hierarchie-Signal „sekundäre Entscheidung".
+    //
+    // `session.nounAnswerMode` (`.speech` / `.choice`) ist schon in der
+    // Session verdrahtet. Wortauswahl ist architektonisch vorbereitet,
+    // die konkrete 8er-Grid-Matching-Logik wird in einer Folge-PR
+    // implementiert. Aktuell startet auch bei `.choice` das bestehende
+    // Speech-Training (kein Breakage, nur UI-State).
+
+    private var nounAnswerModeSection: some View {
+        // Sublines pro User-Request komplett raus („Wähle die Eingabeform"
+        // als Section-Subline, „Sprich das richtige Wort ein" auf der
+        // Speech-Card, „Wähle aus 8 Wörtern" auf der Choice-Card). Der
+        // Header trägt jetzt nur noch den Titel, die Cards nur noch
+        // Icon + Titel — dieselbe Reduktionsstufe wie die Vokabel-Detail-
+        // Cards. Die Bedeutung erschließt sich aus Icon (Mikrofon /
+        // Grid) + Titel, eine Erklär-Zeile ist redundant.
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Wie möchtest du antworten?")
+                .font(.system(size: 18, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            HStack(alignment: .top, spacing: 10) {
+                nounAnswerModeCard(
+                    mode: .speech,
+                    title: "Spracheingabe",
+                    systemImage: "mic.fill"
+                )
+                nounAnswerModeCard(
+                    mode: .choice,
+                    title: "Wortauswahl",
+                    // SF-Symbol `square.grid.2x2.fill` — Grid-Icon passt
+                    // zur 8er-Auswahl-Mechanik (Grid-Layout im Session-
+                    // Screen). Gleiche Strichstärke wie die anderen Icons
+                    // im Setup.
+                    systemImage: "square.grid.2x2.fill"
+                )
+            }
+        }
+    }
+
+    /// Eine der zwei Nomen-Answer-Mode-Cards. Visuell analog zu den
+    /// Vokabel-Modus-Cards (Icon-Puck oben-zentriert, Titel mittig),
+    /// aber ruhiger im Gewicht: kleinere Schrift, kleinere Icon-Puck-
+    /// Größe, kein Shadow. Aktive Card bekommt einen kräftigeren Tint-Fill
+    /// + sichtbaren Border in Modul-Akzent.
     @ViewBuilder
-    private func trainingCategoryCard(
+    private func nounAnswerModeCard(
+        mode: NounAnswerMode,
+        title: String,
+        systemImage: String
+    ) -> some View {
+        let isSelected = (session.nounAnswerMode == mode)
+
+        Button {
+            feedbackPlayer.playTabSwitch()
+            session.nounAnswerMode = mode
+        } label: {
+            VStack(alignment: .center, spacing: 8) {
+                ZStack {
+                    Circle()
+                        .fill(trainingActionTint.opacity(isSelected ? 0.28 : 0.14))
+                    Image(systemName: systemImage)
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(trainingActionTint)
+                }
+                .frame(width: 38, height: 38)
+                .padding(.top, 2)
+
+                Text(title)
+                    .font(.system(size: 15, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+                    .frame(maxWidth: .infinity)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 11)
+            // Nach dem Subline-Wegfall fallen ~14 pt Content weg — die
+            // gemeinsame `minHeight` rutscht entsprechend von 110 auf
+            // **92 pt**. Die beiden Cards bleiben exakt gleich hoch,
+            // nur insgesamt kompakter, passend zur reduzierten
+            // Inhalts-Zeile (nur noch Icon + Titel).
+            .frame(maxWidth: .infinity, minHeight: 92, alignment: .top)
+            .background(
+                RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
+                    .fill(AppTheme.Colors.surface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
+                            .fill(trainingActionTint.opacity(isSelected ? AppTheme.CardIntensity.medium : AppTheme.CardIntensity.subtle))
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
+                    .stroke(
+                        isSelected ? trainingActionTint : AppTheme.Colors.border.opacity(0.7),
+                        lineWidth: isSelected ? 2 : 1
+                    )
+            )
+            // Kein Shadow — Answer-Mode-Cards sind sekundäre Ebene,
+            // visuell flacher als die Speed-Round-Card darüber.
+            .animation(.easeOut(duration: 0.15), value: isSelected)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(title)
+        .accessibilityValue(isSelected ? "ausgewählt" : "nicht ausgewählt")
+    }
+
+    // MARK: - Vokabel-Setup: zweistufige Entscheidungs-Architektur
+    //
+    // Umbau nach User-Brief „Vokabeln Screen clean UX":
+    //   1. Haupt-Entscheidung: Trainingsmodus (Vokabeltraining vs Speed Round)
+    //      → zwei gleichgroße, visuell prominente Cards mit Akzent-Tint,
+    //      Speed-Round-Card trägt XP/Dauer/Credits inline (ersetzt die
+    //      frühere zentrale Gamification-Bar unten).
+    //   2. Sekundäre Entscheidung: Detail-Auswahl (Themen / Niveau /
+    //      Eigene / Wörterbuch) → 2×2-Grid mit gleichem Modul-Akzent,
+    //      aber deutlich ruhiger (flacheres Card-BG, kein Shadow,
+    //      kleineres Icon) — sekundäre Hierarchie-Stufe.
+    // Bei Speed-Round-Modus wird das Detail-Grid visuell abgedimmt
+    // (Opacity 0.45) — bleibt sichtbar, damit das Layout nicht springt,
+    // wirkt aber inaktiv, weil Speed Round keine Detail-Kategorie braucht.
+
+    @ViewBuilder
+    private var vocabularySetupOptions: some View {
+        // Struktur-Refactor TYPE 3 (Flow Modul): Vokabeln hat **kein**
+        // Speed Round mehr. Die frühere `vocabularyModeSection` (Training
+        // vs Speed Round) ist entfernt — der Vokabeln-Flow ist jetzt
+        // ausschließlich Training mit Detail-Auswahl (Themen/Niveau/
+        // Eigene/Wörterbuch). CTA-Label + Session-Logik behandeln
+        // `isSpeedRound` für diesen Mode implizit als false.
+        //
+        // Spacing zwischen Detail-Grid und Dictionary-Level-Card nutzt
+        // `setupMainSectionSpacing` — systemweit mit allen anderen
+        // Modul-Setups abgestimmt.
+        VStack(alignment: .leading, spacing: AppLayout.setupMainSectionSpacing) {
+            vocabularyDetailSection
+
+            // Dictionary-Level-Card bleibt konditional — wenn der Nutzer
+            // „Ganzes Wörterbuch" aktiviert, erscheint die Level-Picker-
+            // Card aus dem bestehenden System.
+            if isDictionaryTrainingSelected {
+                dictionaryTrainingLevelCard
+            }
+
+            if !canStartTraining {
+                Text(startHintText)
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
+    // Ehemalige `vocabularyModeSection` (Vokabeltraining vs Speed Round
+    // für das Vokabeln-Modul) wurde mit dem Speed-Round-Cleanup des
+    // Flow-Moduls Vokabeln entfernt. Die Modus-Auswahl für die Drill-
+    // Module läuft über `drillModeSection` weiter unten.
+
+    /// Systemweiter Modus-Block für die Drill-Module (Nomen, Artikel,
+    /// Verben, Verbformen). Zeigt das Paar [Training] [Speed Round]
+    /// und schreibt die Auswahl in `session.isSpeedRound` — ersetzt
+    /// den früheren standalone `speedRoundToggle`.
+    private var drillModeSection: some View {
+        VStack(alignment: .leading, spacing: AppLayout.setupHeadlineToContentSpacing) {
+            vocabularySectionTitle(
+                title: "Was möchtest du machen?",
+                subtitle: nil
+            )
+
+            HStack(alignment: .top, spacing: AppLayout.setupDetailBlockSpacing) {
+                drillModeCard(
+                    isSpeedRound: false,
+                    title: "Training",
+                    subtitle: "Gezielt üben und behalten",
+                    systemImage: "book.fill"
+                )
+                drillModeCard(
+                    isSpeedRound: true,
+                    title: SpeedRoundTerminology.name,
+                    // Subtitle liest die globale Dauer aus den Settings —
+                    // „20 Sekunden Tempo", „30 Sekunden Tempo" usw.
+                    subtitle: SpeedRoundTerminology.subtitle(forSeconds: speedRoundDurationSeconds),
+                    systemImage: "bolt.fill"
+                )
+            }
+        }
+    }
+
+    /// Section 2 — Sekundäre Entscheidung: Detail-Kategorie.
+    ///
+    /// Titel + Subline pro User-Request komplett entfernt („Wie möchtest
+    /// du trainieren?" und die zugehörige Subline sind raus). Das 2×2-
+    /// Grid steht jetzt headerless direkt unter den Modus-Cards — die
+    /// Hierarchie bleibt erhalten (Modus-Cards sind visuell prominenter
+    /// als die Detail-Cards), aber der Screen wird insgesamt ruhiger
+    /// und die Section-Trennung läuft rein über Spacing + Card-Gewicht,
+    /// nicht mehr über einen zweiten Section-Titel. Die VStack-Hülle
+    /// bleibt erhalten, damit der Rhythmus zu den anderen Sektionen
+    /// stabil bleibt.
+    private var vocabularyDetailSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            LazyVGrid(
+                columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)],
+                spacing: 10
+            ) {
+                vocabularyDetailCard(
+                    category: .topic,
+                    title: "Nach Themen",
+                    systemImage: "tag.fill"
+                )
+                vocabularyDetailCard(
+                    category: .level,
+                    title: "Nach Niveau",
+                    systemImage: "chart.bar.fill"
+                )
+                vocabularyDetailCard(
+                    category: .own,
+                    title: "Eigene Listen",
+                    systemImage: "person.fill"
+                )
+                // „Ganzes Wörterbuch" → „Wörterbuch" (User-Request:
+                // „Ganzes weglassen, nur Wörterbuch schreiben"). Die
+                // Card verweist weiterhin auf denselben All-in-One-
+                // Listen-Pool — nur das Label wird kompakter.
+                vocabularyDetailCard(
+                    category: .all,
+                    title: "Wörterbuch",
+                    systemImage: "book.fill"
+                )
+            }
+        }
+    }
+
+    /// Section-Header — Titel + optionale Subline. Vereinheitlicht den Look
+    /// beider Vokabel-Setup-Sektionen (Modus + Detail). Subline ist
+    /// optional: ist sie `nil`, rendert nur der Titel — so kann die
+    /// Modus-Sektion ohne Subline auskommen, die Detail-Sektion aber
+    /// weiterhin die kurze Orientierungszeile mitnehmen.
+    private func vocabularySectionTitle(title: String, subtitle: String?) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.system(size: 20, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+            if let subtitle, !subtitle.isEmpty {
+                Text(subtitle)
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// Eine der zwei Haupt-Modus-Cards (Vokabeltraining / Speed Round).
+    /// Speed-Round-Card blendet zusätzlich eine kompakte XP/Zeit/Credits-
+    /// Zeile ein (ersetzt die frühere Gamification-Bar am Screen-Bottom).
+    ///
+    /// `subtitle` ist optional — die Speed-Round-Card nutzt `nil`, weil
+    /// die Mini-Metriken inline (+XP/Zeit/Credits) das Speed-Versprechen
+    /// konkreter tragen als Marketing-Prosa. Die Vokabeltraining-Card
+    /// behält ihre Subline („Gezielt lernen und behalten"), um den
+    /// Kontrast zwischen den beiden Modi sichtbar zu machen.
+    @ViewBuilder
+    /// Modus-Card für Drill-Module — schlankere Variante der früheren
+    /// `vocabularyModeCard` ohne die Vokabeln-spezifischen Inline-
+    /// Metriken. Tap setzt `session.isSpeedRound` und spielt Tap-Sound.
+    /// Layout: Icon-Puck oben, Titel + optionaler Subtext darunter.
+    /// Beide Cards bekommen dieselbe Min-Höhe, damit der Modus-Block
+    /// über alle Drill-Module identisch aussieht.
+    private func drillModeCard(
+        isSpeedRound: Bool,
+        title: String,
+        subtitle: String?,
+        systemImage: String
+    ) -> some View {
+        let isSelected = (session.isSpeedRound == isSpeedRound)
+
+        return Button {
+            feedbackPlayer.playTabSwitch()
+            session.isSpeedRound = isSpeedRound
+        } label: {
+            VStack(alignment: .leading, spacing: 10) {
+                ZStack {
+                    Circle()
+                        .fill(trainingActionTint.opacity(isSelected ? 0.28 : 0.16))
+                    Image(systemName: systemImage)
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundStyle(trainingActionTint)
+                }
+                .frame(width: 44, height: 44)
+                .padding(.top, 4)
+                .frame(maxWidth: .infinity, alignment: .center)
+
+                VStack(alignment: .center, spacing: 4) {
+                    Text(title)
+                        .font(.system(size: 18, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.8)
+                        .frame(maxWidth: .infinity)
+
+                    if let subtitle, !subtitle.isEmpty {
+                        // Subtitle auf **1 Zeile** begrenzt + Scale-Down —
+                        // garantiert, dass die Training-Card (längere
+                        // Subline) und die Speed-Round-Card (kürzere) die
+                        // **gleiche** Höhe haben. Vorher wrappte die
+                        // längere auf 2 Zeilen und wuchs über den
+                        // minHeight hinaus — die kürzere blieb dagegen
+                        // auf Min-Höhe, dadurch wirkten sie unterschiedlich.
+                        Text(subtitle)
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 14)
+            // minHeight angehoben (120 → 130) — puffert auch bei
+            // Font-Skalierung (Accessibility-Settings) beide Varianten
+            // auf identische Höhe, ohne dass eine über-/unterlaufen kann.
+            .frame(maxWidth: .infinity, minHeight: 130, alignment: .top)
+            .background(vocabularyModeCardBackground(isSelected: isSelected))
+            .overlay(vocabularyModeCardBorder(isSelected: isSelected))
+            .shadow(
+                color: Color.black.opacity(isSelected ? 0.28 : 0.18),
+                radius: isSelected ? 8 : 5,
+                x: 0,
+                y: isSelected ? 4 : 2
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : .isButton)
+    }
+
+    // Legacy `vocabularyModeCard` (inkl. Speed-Round-Inline-Metriken)
+    // wurde beim Flow-Modul-Refactor Vokabeln komplett abgelöst — die
+    // aktuelle `drillModeCard` oben deckt alle Drill-Module ab. Der
+    // frühere Stub wurde entfernt, um Dead-Code + Warn-Noise zu
+    // vermeiden.
+
+    /// Inline-Mini-Metriken für die Speed-Round-Card. Zeigt XP/Dauer/
+    /// Credits als eine Zeile „+225 XP · ~3 min · +4". Holt die Werte aus
+    /// `speedRoundPreviewEstimate` (immer Speed-Round-Annahme, unabhängig
+    /// vom aktuell gewählten Modus — so weiß der Nutzer, was ihn erwartet,
+    /// wenn er Speed Round tappt).
+    private var vocabularySpeedRoundInlineMetrics: some View {
+        let estimate = speedRoundPreviewEstimate
+        var parts: [String] = []
+        if estimate.expectedXP > 0 {
+            parts.append("+\(estimate.expectedXP) XP")
+        }
+        if let minutes = estimate.estimatedMinutes {
+            parts.append("~\(minutes) min")
+        }
+        if let credits = estimate.estimatedCreditsText {
+            parts.append("\(credits)")
+        }
+        let text = parts.isEmpty ? " " : parts.joined(separator: "  ·  ")
+
+        return Text(text)
+            .font(.system(size: 11, weight: .semibold, design: .rounded))
+            .foregroundStyle(AppTheme.Colors.textSecondary)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .frame(maxWidth: .infinity)
+    }
+
+    private func vocabularyModeCardBackground(isSelected: Bool) -> some View {
+        RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
+            .fill(AppTheme.Colors.surface)
+            .overlay(
+                RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
+                    .fill(trainingActionTint.opacity(isSelected ? AppTheme.CardIntensity.medium : AppTheme.CardIntensity.gentle))
+            )
+    }
+
+    private func vocabularyModeCardBorder(isSelected: Bool) -> some View {
+        RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
+            .stroke(
+                isSelected ? trainingActionTint : AppTheme.Colors.border,
+                lineWidth: isSelected ? 2 : 1
+            )
+    }
+
+    /// Sekundäre Detail-Card (eine von vier im 2×2-Grid). Visuell deutlich
+    /// ruhiger als die Modus-Cards: kleineres Icon, kein Shadow, reduzierter
+    /// Tint — damit die Hierarchie (Modus-Entscheidung > Detail) liest.
+    @ViewBuilder
+    private func vocabularyDetailCard(
         category: ListPickerCategory,
         title: String,
-        systemImage: String,
-        subtitle: String
+        systemImage: String
     ) -> some View {
-        // Subtitle wird absichtlich nicht angezeigt — nur Icon + Titel,
-        // Card etwas flacher (vertikales Padding 14 → 10).
+        // Sublines sind pro User-Request komplett raus:
+        //   • „Strukturiert lernen" (Themen)
+        //   • „Dein passendes Level" (Niveau)
+        //   • „Deine erstellten Listen" (Eigene)
+        //   • „Alle Vokabeln" (Wörterbuch)
+        // Die Cards tragen jetzt nur noch Titel + Icon — keine zweite
+        // Text-Ebene mehr. Die Beschreibung/Beispiele (was genau hinter
+        // „Themen" / „Niveau" steckt) liefert das anschließende Picker-
+        // Sheet, nicht die Startcard. Parameter `subtitle` ist gestrichen,
+        // weil kein Call-Site sie noch setzt.
         Button {
             feedbackPlayer.playTabSwitch()
             if category == .all {
@@ -385,20 +839,39 @@ extension TrainingView {
                 listPickerCategory = category
             }
         } label: {
-            VStack(spacing: 6) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(trainingActionTint)
-                    .frame(height: 28)
+            HStack(alignment: .center, spacing: 10) {
+                // Icon-Puck — kleiner als bei den Modus-Cards (36 vs 44) und
+                // links angeordnet, damit die Card sich als „Listen-Row"
+                // liest, nicht als Haupt-Action.
+                ZStack {
+                    Circle()
+                        .fill(trainingActionTint.opacity(0.14))
+                    Image(systemName: systemImage)
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(trainingActionTint)
+                }
+                .frame(width: 32, height: 32)
 
+                // Title-Font: 13 → **14** pt (+1, User-Request „weiße
+                // Schrift in den 4 Cards alle +1 p"). Bleibt `.bold`,
+                // bleibt `.rounded` — die Cards lesen sich dadurch
+                // minimal kräftiger, ohne visuell zu springen. Subline
+                // fällt weg, deshalb nutzt der Titel jetzt die ganze
+                // Card-Höhe allein.
                 Text(title)
-                    .font(.system(size: 15, weight: .black, design: .rounded))
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.6))
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, minHeight: 58, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
                     .fill(AppTheme.Colors.surface)
@@ -409,10 +882,13 @@ extension TrainingView {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
-                    .stroke(AppTheme.Colors.border, lineWidth: 1)
+                    .stroke(AppTheme.Colors.border.opacity(0.7), lineWidth: 1)
             )
+            // Absichtlich KEIN Shadow — sekundäre Cards sollen flacher wirken
+            // als die Modus-Cards darüber (Hierarchie-Signal).
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(title)
     }
 
     // MARK: - Round Complete View
@@ -526,21 +1002,17 @@ extension TrainingView {
 
                     VStack(alignment: .leading, spacing: 2) {
                         if hasSelection {
-                            // Pro-Liste-Row: Name links + „X Einträge" rechts
-                            // — einheitlich mit `ListCategoryPickerView`, damit
-                            // Quiz/Vokabeln und Training visuell matchen.
+                            // Pro-Liste-Row: nur der Name. Die frühere „X Einträge"-
+                            // Zahl rechts ist raus — die Gesamt-Summary
+                            // („N Verben gesamt") darunter sagt das gleiche und
+                            // in kompakter. Doppelung entfernt, Card wirkt ruhiger.
                             ForEach(selectedLists.prefix(AppLayout.maxSelectableLists)) { list in
-                                HStack(spacing: 0) {
-                                    Text(list.name)
-                                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.7)
-                                    Spacer(minLength: 4)
-                                    Text("\(list.items.count) Einträge")
-                                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-                                        .foregroundStyle(trainingActionTint)
-                                }
+                                Text(list.name)
+                                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.7)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             Button {
                                 feedbackPlayer.playTabSwitch()
@@ -564,14 +1036,19 @@ extension TrainingView {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
+                    // Systemweit: Stift-Pill 16/38, vertikal mittig
+                    // durch äußeren `frame(maxHeight: .infinity)` —
+                    // HStack-Center allein reichte nicht, wenn die
+                    // VStack nebenan asymmetrisches Padding hat.
                     Image(systemName: "pencil")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(trainingActionTint)
-                        .frame(width: 32, height: 32)
+                        .frame(width: 38, height: 38)
                         .background(
                             Circle()
                                 .fill(trainingActionTint.opacity(0.18))
                         )
+                        .frame(maxHeight: .infinity)
                 }
             }
             .padding(.horizontal, 16)
@@ -687,21 +1164,17 @@ extension TrainingView {
 
                     VStack(alignment: .leading, spacing: 2) {
                         if hasSelection {
-                            // Pro-Liste-Row: Name links + „X Einträge" rechts
-                            // — einheitlich mit `ListCategoryPickerView`, damit
-                            // Quiz/Vokabeln und Training visuell matchen.
+                            // Pro-Liste-Row: nur der Name. Die frühere „X Einträge"-
+                            // Zahl rechts ist raus — die Gesamt-Summary
+                            // („N Liste(n) · M … gesamt") darunter sagt das gleiche
+                            // in kompakter. Doppelung entfernt, Card wirkt ruhiger.
                             ForEach(selectedLists.prefix(AppLayout.maxSelectableLists)) { list in
-                                HStack(spacing: 0) {
-                                    Text(list.name)
-                                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.7)
-                                    Spacer(minLength: 4)
-                                    Text("\(list.items.count) Einträge")
-                                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-                                        .foregroundStyle(trainingActionTint)
-                                }
+                                Text(list.name)
+                                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.7)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             // Gesamt-Summary in elumiBlue (Info-Token, konsistent
                             // mit Karteikarten-Setup). Klickbar wenn Counter-
@@ -738,14 +1211,19 @@ extension TrainingView {
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                     // Stift in rundem Pill — dezent, konsistent mit Karteikarten.
+                    // Systemweit: Stift-Pill 16/38, vertikal mittig
+                    // durch äußeren `frame(maxHeight: .infinity)` —
+                    // HStack-Center allein reichte nicht, wenn die
+                    // VStack nebenan asymmetrisches Padding hat.
                     Image(systemName: "pencil")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(trainingActionTint)
-                        .frame(width: 32, height: 32)
+                        .frame(width: 38, height: 38)
                         .background(
                             Circle()
                                 .fill(trainingActionTint.opacity(0.18))
                         )
+                        .frame(maxHeight: .infinity)
                 }
             }
             .padding(.horizontal, 16)
@@ -1436,9 +1914,14 @@ extension TrainingView {
             SessionSummaryView(
                 outcome: verbformsSessionOutcome ?? .empty,
                 progress: progressStore.progress,
-                onContinue: {
+                primaryCTALabel: "Weiter lernen",
+                onPrimaryCTA: {
                     verbformsSessionOutcome = nil
                     verbformsSession.reset()
+                },
+                secondaryCTALabel: "Zur Startseite",
+                onSecondaryCTA: {
+                    dismissToHome()
                 }
             )
 
@@ -1453,62 +1936,27 @@ extension TrainingView {
             // Zentrale Reward-Vergabe für Verbformen (XP, Credits, Streak).
             // `awardVerbformsXPIfNeeded` ist idempotent via `sessionRewardConsumed`.
             awardVerbformsXPIfNeeded()
+            // Session hart stoppen — TTS + Speech-Recognition dürfen
+            // nach Summary-Erscheinen nicht weiterlaufen. Timer ist
+            // bereits durch `finishSpeedRound()` invalidiert.
+            runtimeSpeaker?.stop()
+            speechController?.stopRecording()
         }
     }
 
     // MARK: - Verbformen Speed Round Bar
 
     private var verbformsSpeedRoundBar: some View {
-        let isUrgent = verbformsSession.speedRoundTimeRemaining <= 10
-
-        return VStack(spacing: 8) {
-            HStack(alignment: .firstTextBaseline) {
-                Image(systemName: "bolt.fill")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundStyle(isUrgent ? AppTheme.Colors.error : AppTheme.Colors.warning)
-
-                Text("\(verbformsSession.score)")
-                    .font(.system(size: 28, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.success)
-                Text("richtig")
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-
-                Spacer()
-
-                Text("\(verbformsSession.speedRoundTimeRemaining)")
-                    .font(.system(size: 36, weight: .black, design: .rounded))
-                    .foregroundStyle(isUrgent ? AppTheme.Colors.error : AppTheme.Colors.warning)
-                    .monospacedDigit()
-                    .scaleEffect(isUrgent ? 1.1 : 1.0)
-                    .animation(.easeInOut(duration: 0.3), value: verbformsSession.speedRoundTimeRemaining)
-                Text("s")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-            }
-
-            GeometryReader { geo in
-                let progress = CGFloat(verbformsSession.speedRoundTimeRemaining) / 45.0
-                ZStack(alignment: .leading) {
-                    Capsule().fill(AppTheme.Colors.textSecondary.opacity(0.2))
-                    Capsule()
-                        .fill(isUrgent ? AppTheme.Colors.error : AppTheme.Colors.warning)
-                        .frame(width: max(0, geo.size.width * progress))
-                        .animation(.linear(duration: 1.0), value: verbformsSession.speedRoundTimeRemaining)
-                }
-            }
-            .frame(height: 10)
-            .clipShape(Capsule())
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .appCardBackground(sectionStyle, intensity: isUrgent ? AppTheme.CardIntensity.strong : AppTheme.CardIntensity.soft)
-        .overlay(
-            RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                .stroke(isUrgent ? AppTheme.Colors.error.opacity(verbformsSession.speedRoundTimeRemaining % 2 == 0 ? 0.8 : 0.3) : Color.clear, lineWidth: isUrgent ? 2 : 0)
+        // Zentrale `SpeedRoundTimerCard` — teilt Look + Verhalten mit
+        // Training und Akzente. Alle Änderungen an Urgency-Farben,
+        // Progress-Balken oder Puls-Effekt passieren an genau einer
+        // Stelle (`SpeedRoundTimerCard.swift`) und greifen hier mit.
+        SpeedRoundTimerCard(
+            remainingSeconds: verbformsSession.speedRoundTimeRemaining,
+            totalSeconds: verbformsSession.speedRoundTotalSeconds,
+            correctCount: verbformsSession.score,
+            sectionStyle: sectionStyle
         )
-        .opacity(isUrgent ? (verbformsSession.speedRoundTimeRemaining % 2 == 0 ? 1.0 : 0.7) : 1.0)
-        .animation(.easeInOut(duration: 0.4), value: verbformsSession.speedRoundTimeRemaining)
     }
 
     // MARK: - Verbformen Start
@@ -1679,13 +2127,20 @@ extension TrainingView {
             }
             .onChange(of: session.currentTrainingItem) { _, newItem in
                 // Pragmatischer Fix gegen „Lösungswort fehlt in Runde 2":
-                // Sobald sich die aktuelle Trainingskarte ändert, im Verben-MC
-                // die Optionen (Lösung + frische Distraktoren) KOMPLETT neu
-                // aufbauen und die Selection/Lock-State zurücksetzen.
-                guard isVerbMode, newItem != nil else { return }
-                verbMCSelected = nil
-                verbMCLocked = false
-                prepareVerbMCOptions()
+                // Sobald sich die aktuelle Trainingskarte ändert, im Verben-
+                // bzw. Nomen-Wortauswahl-MC die Optionen (Lösung + frische
+                // Distraktoren) KOMPLETT neu aufbauen und die Selection/
+                // Lock-State zurücksetzen.
+                guard newItem != nil else { return }
+                if isVerbMode {
+                    verbMCSelected = nil
+                    verbMCLocked = false
+                    prepareVerbMCOptions()
+                } else if isNounChoiceMode {
+                    nounMCSelected = nil
+                    nounMCLocked = false
+                    prepareNounMCOptions()
+                }
             }
             .onChange(of: session.selectedDictionaryLearningLevel) { _, _ in
                 handleDictionaryLearningLevelChange()

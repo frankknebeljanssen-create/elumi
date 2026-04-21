@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <title>Neue Liste</title>
+  <ellipse cx="44" cy="88" rx="32" ry="5" fill="#000" opacity="0.25"/>
+  <!-- paper shadow + main -->
+  <rect x="12" y="16" width="52" height="64" rx="8" fill="#CC3068"/>
+  <rect x="12" y="10" width="52" height="64" rx="8" fill="#FFF8F0"/>
+  <rect x="12" y="10" width="52" height="64" rx="8" fill="none" stroke="#1A1A2E" stroke-width="2.5"/>
+  <path d="M18 16 Q38 12 58 16" stroke="#FFF" stroke-width="4" stroke-linecap="round" opacity="0.2"/>
+  <!-- content lines -->
+  <rect x="20" y="24" width="28" height="4" rx="2" fill="#FFB3C8" stroke="#1A1A2E" stroke-width="1"/>
+  <rect x="20" y="34" width="36" height="4" rx="2" fill="#FFB3C8" stroke="#1A1A2E" stroke-width="1"/>
+  <rect x="20" y="44" width="30" height="4" rx="2" fill="#FFB3C8" stroke="#1A1A2E" stroke-width="1"/>
+  <rect x="20" y="54" width="34" height="4" rx="2" fill="#FFB3C8" stroke="#1A1A2E" stroke-width="1"/>
+  <!-- pencil -->
+  <g transform="translate(58 48) rotate(30)">
+    <rect x="0" y="0" width="10" height="32" rx="2" fill="#8B5A00"/>
+    <rect x="0" y="-2" width="10" height="32" rx="2" fill="#FFD166"/>
+    <rect x="0" y="-2" width="10" height="32" rx="2" fill="none" stroke="#1A1A2E" stroke-width="2"/>
+    <rect x="0" y="-2" width="10" height="6" rx="2" fill="#FF4D80" stroke="#1A1A2E" stroke-width="1.5"/>
+    <polygon points="0,30 5,36 10,30" fill="#FFF8F0" stroke="#1A1A2E" stroke-width="1.5"/>
+    <rect x="0" y="0" width="10" height="3" rx="1" fill="#FFE89A" opacity="0.4"/>
+  </g>
+  <!-- plus badge -->
+  <circle cx="76" cy="16" r="13" fill="#1A6B4A"/>
+  <circle cx="76" cy="14" r="13" fill="#2EC4A9"/>
+  <circle cx="76" cy="14" r="13" fill="none" stroke="#1A1A2E" stroke-width="2.5"/>
+  <path d="M70 8 Q76 6 82 8" stroke="#5EDCBA" stroke-width="3" stroke-linecap="round" opacity="0.3"/>
+  <circle cx="70" cy="8" r="1.5" fill="#FFF" opacity="0.3"/>
+  <line x1="76" y1="7" x2="76" y2="21" stroke="#FFF" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="69" y1="14" x2="83" y2="14" stroke="#FFF" stroke-width="3.5" stroke-linecap="round"/>
+</svg>

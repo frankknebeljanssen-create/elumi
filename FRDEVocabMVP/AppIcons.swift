@@ -47,8 +47,16 @@ enum ElumiIcon: String, CaseIterable, Hashable {
     /// Settings-Toggle-Kontext.
     case lautsprecherOff
 
-    /// Asset-Name im Catalog.
+    /// Asset-Name im Catalog. Geht **immer** durch
+    /// `AppIconRegistry.resolved(...)`, damit der globale Set-Schalter
+    /// (Set A vs. Set B) automatisch greift.
     var assetName: String {
+        AppIconRegistry.resolved(baseAssetName)
+    }
+
+    /// Set-A-Basisname (ohne Resolver). Set-B-Pendant ist immer
+    /// `<baseAssetName>B` im Asset-Catalog.
+    private var baseAssetName: String {
         switch self {
         case .mikrofon:          return "IconMikrofon"
         case .tastatur:          return "IconTastatur"
@@ -95,6 +103,9 @@ struct ElumiIconView: View {
     /// Side-length der Bounding-Box. Default 28 — gängige Größe für
     /// Action-Buttons in Training und Settings-Rows.
     var size: CGFloat = 28
+
+    /// **Live-Switch-Gate** für Set A ↔ Set B. Siehe `HomeModuleIconView`.
+    @AppStorage(AppIconRegistry.storageKey) private var iconSetRaw: String = AppIconSet.a.rawValue
 
     var body: some View {
         Image(icon.assetName)

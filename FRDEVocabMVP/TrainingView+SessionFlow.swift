@@ -87,6 +87,11 @@ extension TrainingView {
         let outcome = ProgressService.shared.record(session: learningSession)
         trainingSessionOutcome = outcome
         arcadeCredits = ProgressStore.shared.progress.arcadeCredits
+        // Session ist abgeschlossen → Resume-Snapshot verwerfen. Ohne
+        // diesen Cleanup würde der User beim nächsten Setup in eine
+        // scheinbar „laufende" Runde zurückgeworfen, obwohl er gerade die
+        // Summary gesehen hat.
+        session.clearResumeSnapshot()
     }
 
     func applyLaunchContextIfNeeded() {
@@ -151,19 +156,42 @@ extension TrainingView {
 
     func startSpeedRoundTimer() {
         session.speedRoundScore = 0
-        session.speedRoundTimeRemaining = 45
+        // Speed-Round-Dauer kommt aus der globalen Settings-Einstellung
+        // (`SpeedRoundSettings.currentSeconds`). Default ist
+        // `SpeedRoundDuration.defaultDuration`, der User kann in den
+        // Settings zwischen allen `SpeedRoundDuration`-Cases wählen.
+        let duration = SpeedRoundSettings.currentSeconds
+        session.speedRoundTimeRemaining = duration
+        session.speedRoundTotalSeconds = duration
         session.speedRoundTimer?.invalidate()
         session.speedRoundTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak session] _ in
             Task { @MainActor in
-                guard let session else { return }
+                guard let session, session.speedRoundTimer != nil else { return }
                 session.speedRoundTimeRemaining -= 1
                 if session.speedRoundTimeRemaining <= 5, session.speedRoundTimeRemaining > 0 {
                     self.feedbackPlayer.playToggle()
                 }
                 if session.speedRoundTimeRemaining <= 0 {
                     self.feedbackPlayer.playRoundClear()
+                    // Zentraler Finalize-Hook bei Ablauf der Speed Round:
+                    //   1. Timer invalidieren (verhindert Nachläufer-Ticks)
+                    //   2. Speaker stumm + Speech-Recognition stoppen
+                    //      (TTS darf nach Summary-Start nicht weiterlaufen,
+                    //       Mikrofon-Listening darf keine Eingaben mehr
+                    //       produzieren)
+                    //   3. Noch ausstehenden Auto-Advance abbrechen
+                    //   4. `awardTrainingXPIfNeeded()` setzt
+                    //      `trainingSessionOutcome` → die View-Branch in
+                    //      `trainingRootContent` wechselt **ausschließlich**
+                    //      zur globalen `SessionSummaryView`. Die frühere
+                    //      Inline-Speed-Round-Completion-Card wird durch
+                    //      denselben Mechanismus maskiert.
                     session.speedRoundTimer?.invalidate()
                     session.speedRoundTimer = nil
+                    self.runtimeSpeaker?.stop()
+                    self.speechController?.stopRecording()
+                    self.cancelPendingFeedback()
+                    self.awardTrainingXPIfNeeded()
                 }
             }
         }
@@ -213,6 +241,14 @@ extension TrainingView {
         }
         if isVerbMode {
             prepareVerbMCOptions()
+            return
+        }
+        if isNounChoiceMode {
+            // Nomen-Wortauswahl: MC-Optionen für die erste Karte aufbauen —
+            // KEINE TTS-Ansprache, User antwortet per Tap. `prepareNounMCOptions`
+            // wird bei jedem Karten-Wechsel via `onChange(currentTrainingItem)`
+            // erneut aufgerufen (siehe Layout-onChange).
+            prepareNounMCOptions()
             return
         }
         speakCurrentPromptAfterScreenUpdate(initialDelay: 0.12)

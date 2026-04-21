@@ -568,6 +568,22 @@ extension ScanImportView {
                             // die separate ScanHeroCard (war redundant).
                             ScanScreenHeader()
                                 .padding(.top, 4)
+                        } else {
+                            // **Feature A — ScanModeBadge im Review-State**:
+                            // Sobald ein Bild vorliegt oder Preview-Paare
+                            // existieren, zeigt das Badge oben, in welchem
+                            // Modus der aktuelle Scan läuft. Wichtig weil
+                            // das Review-Layout für Liste und Freitext
+                            // leicht unterschiedlich ist und der User
+                            // jederzeit sehen soll, welchen Pfad er nimmt.
+                            HStack {
+                                ScanModeBadge(mode: activeScanMode, variant: .card)
+                                Spacer()
+                            }
+                            .padding(.top, 4)
+                        }
+
+                        if isOnChoiceScreen {
 
                             // ─────── Schritt 1 — MODUS ───────
                             // Selection-Toggles (kein Navigations-Element).
@@ -580,7 +596,7 @@ extension ScanImportView {
                             HStack(spacing: 12) {
                                 ScanModeSelectionCard(
                                     illustrationName: "ScanIconVokabelliste",
-                                    title: "Vokabelliste",
+                                    title: "Vokabeln",
                                     isSelected: activeScanMode == .list,
                                     accent: sectionStyle.accent
                                 ) {

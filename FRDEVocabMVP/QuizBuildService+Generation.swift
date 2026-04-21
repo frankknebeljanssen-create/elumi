@@ -15,7 +15,7 @@ extension QuizBuildService {
             densityMultiplier: 8
         )
         let candidates = makeQuizCandidates(from: candidateSourceItems, direction: direction)
-        var questions = generateQuestions(
+        let questions = generateQuestions(
             from: candidates,
             count: count,
             excludingCandidateIDs: excludingCandidateIDs,

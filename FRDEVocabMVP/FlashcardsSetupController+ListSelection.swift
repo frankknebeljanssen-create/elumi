@@ -13,11 +13,6 @@ extension FlashcardsSetupController {
             }
         }
 
-        let builtInMatches = listStore.builtInList.items.contains { item in
-            item.sourceLanguage == selectedAppDirection.sourceLanguage &&
-            (preferredCardType == nil || item.cardType == preferredCardType)
-        }
-
         var lists: [VocabularyList] = []
         lists.append(contentsOf: matchingPracticeLists)
         lists.append(contentsOf: StandardVocabularyLoader.levelLists)

@@ -7,6 +7,19 @@ extension FlashcardsView {
         setupCardLabel(text)
     }
 
+    /// Etwas größere Label-Variante speziell für die Mechanik-Cards
+    /// „Anzahl der Karten" + „Karte fällt raus nach" (+2 pt gegenüber
+    /// dem Standard-Setup-Label). Wird nur dort genutzt — der globale
+    /// `setupCardLabel` bleibt unverändert.
+    func flashcardSetupCardLabelLarge(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: 12, weight: .semibold, design: .rounded))
+            .tracking(1.5)
+            .foregroundStyle(AppTheme.Colors.cardLabel)
+            .textCase(.uppercase)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     var flashcardDictionaryLevelCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Lernniveau")
@@ -155,7 +168,7 @@ extension FlashcardsView {
         let progress = maxCards > minSlider ? CGFloat(displayCount - minSlider) / CGFloat(maxCards - minSlider) : 1.0
 
         return VStack(alignment: .leading, spacing: 8) {
-            flashcardSetupCardLabel("Anzahl der Karten")
+            flashcardSetupCardLabelLarge("Anzahl der Karten")
 
             // Kompakte Inline-Zeile: links die große rote Zahl, daneben der
             // kleine Mini-Stapel (in derselben roten Farbe), dann der Slider.
@@ -204,7 +217,10 @@ extension FlashcardsView {
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 18)
-        .padding(.vertical, 12)
+        // User-Request: Card ist 10 pt höher → +5 pt oben, +5 pt unten
+        // (12 → 17). Icon/Slider/Position sind unverändert, nur die
+        // innere Luft wurde großzügiger.
+        .padding(.vertical, 17)
         .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
@@ -219,7 +235,7 @@ extension FlashcardsView {
             (3, "Gründlich")
         ]
         return VStack(alignment: .leading, spacing: 10) {
-            flashcardSetupCardLabel("Karte fällt raus nach")
+            flashcardSetupCardLabelLarge("Karte fällt raus nach")
 
             HStack(spacing: 6) {
                 ForEach(labels, id: \.count) { entry in
@@ -228,11 +244,15 @@ extension FlashcardsView {
                         setup.masteryThreshold = entry.count
                     } label: {
                         VStack(spacing: 2) {
+                            // User-Request: 1x/2x/3x und Schnell/Normal/
+                            // Gründlich um 1 pt größer — zieht die
+                            // Mechanik-Card optisch in eine Reihe mit
+                            // dem größeren Label darüber.
                             Text("\(entry.count)x")
-                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                                .font(.system(size: 19, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
                             Text(entry.label)
-                                .font(.system(size: 11, weight: .medium, design: .rounded))
+                                .font(.system(size: 12, weight: .medium, design: .rounded))
                                 .foregroundStyle(Color(hex: "#888888"))
                         }
                         .frame(maxWidth: .infinity)
@@ -255,7 +275,8 @@ extension FlashcardsView {
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 18)
-        .padding(.vertical, 12)
+        // Analog zur „Anzahl der Karten"-Card: 10 pt höher (12 → 17).
+        .padding(.vertical, 17)
         .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
     }
 

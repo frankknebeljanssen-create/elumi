@@ -35,6 +35,17 @@ struct ProfileView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                // Systemweiter Header: Back-Chevron links, Titel mittig.
+                // Einheitlich zu Settings / Lernstatus / Listen / Akzente.
+                ScreenHeaderCard(
+                    style: sectionStyle,
+                    title: "Profil",
+                    subtitle: "",
+                    systemImage: nil,
+                    onBack: { dismiss() },
+                    centeredTitle: true
+                )
+
                 profileHero
 
                 if isEditing {

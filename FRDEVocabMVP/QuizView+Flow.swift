@@ -13,6 +13,9 @@ extension QuizView {
 
     func startQuiz() {
         print("🧩 [Quiz] startQuiz called, candidates=\(session.cachedCandidates.count), prepared=\(session.preparedQuestions.count)")
+        // Launch-Sound beim Session-Start — systemweit identisch zum
+        // Speed-Round-Start in Verbformen.
+        feedbackPlayer.playLaunch()
         session.syncSelectedLists(availableLists: availableQuizLists)
         session.startQuiz(direction: selectedAppDirection)
         awardedHearts = 0
@@ -151,9 +154,15 @@ extension QuizView {
                 self.selectedAnswerID = nil
                 hoveredAnswerID = nil
 
+                // Wenn alle Paare gelegt sind, zur nächsten Frage weiter.
+                // **Nicht** scheduleAdvance nutzen — ein nachfolgender
+                // Gesten-Cancel (oder ein erneuter scheduleAdvance-Call
+                // aus einem drag-released-Event) hätte sonst den
+                // finalen Complete-Call weggecancelt → Screen blieb
+                // stehen. Direkter asyncAfter-Call ist unkündbar.
                 if matchedPairIDs.count == question.pairs.count {
                     let isCorrect = !matchingHadMistake
-                    scheduleAdvance(after: 0.72) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.72) {
                         completeCurrentQuestion(correct: isCorrect)
                     }
                 }

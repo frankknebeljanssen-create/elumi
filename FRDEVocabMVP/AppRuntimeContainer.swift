@@ -24,7 +24,14 @@ final class AppRuntimeContainer: ObservableObject {
     private var homePreparationTask: Task<Void, Never>?
 
     init() {
-        feedbackPlayer = FeedbackPlayer()
+        let player = FeedbackPlayer()
+        feedbackPlayer = player
+        // `FeedbackEngine` bekommt einen globalen Player — dadurch können
+        // alle Streak-/Milestone-Events zentral ertönen, ohne dass jede
+        // Call-Site den Player durchreichen muss. Der Engine hält eine
+        // `weak`-Referenz; wenn der Container den Player später ersetzt
+        // (z. B. nach Permission-Wechsel), reicht `attach` erneut.
+        FeedbackEngine.shared.attach(feedbackPlayer: player)
         // Hinweis: Die alte Test-Reset-Logik („immer 3 Credits beim Start")
         // wurde entfernt. Ab jetzt lebt Credits-Verwaltung im ProgressStore
         // und wird über echte Sessions verdient/ausgegeben.
@@ -36,7 +43,11 @@ final class AppRuntimeContainer: ObservableObject {
 
     func ensureHomeShellDependenciesReady() {
         if feedbackPlayer == nil {
-            feedbackPlayer = FeedbackPlayer()
+            let player = FeedbackPlayer()
+            feedbackPlayer = player
+            // Bei Re-Creation den Engine erneut attachen — sonst hält
+            // er eine nil-weak-Ref auf den alten Player.
+            FeedbackEngine.shared.attach(feedbackPlayer: player)
         }
     }
 
@@ -58,6 +69,20 @@ final class AppRuntimeContainer: ObservableObject {
         speechController = SpeechController()
         speaker = Speaker()
         print("⏱ [Bootstrap] listStore + speech + speaker created instantly")
+        // **Spielstand-Sichtprüfung beim Bootstrap**: Bei jedem App-
+        // Start sehen wir auf einen Blick, was an persistierten Daten
+        // geladen wurde. Wichtig für die User-Frage „bleibt mein
+        // Spielstand erhalten?". Wenn die Zahlen nach einem Build
+        // unerwartet auf 0 stehen, ist die Sandbox vom Simulator/
+        // Device weggewechselt — kein Code-seitiger Auto-Reset.
+        let progress = ProgressStore.shared.progress
+        let stats = DailyStatsStore.shared
+        print("📦 [Bootstrap] persisted state — " +
+              "XP=\(progress.totalXP) " +
+              "streakCurrent=\(progress.currentStreak) " +
+              "streakBest=\(progress.bestStreak) " +
+              "credits=\(progress.arcadeCredits) " +
+              "actionsToday=\(stats.actionsToday)")
 
         // Phase 2: Load custom lists in background, update store when ready
         listWarmupTask?.cancel()
@@ -100,12 +125,24 @@ final class AppRuntimeContainer: ObservableObject {
             print("⏱ [Warmup:Flashcard] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
         }
 
-        // Prewarm lexicon in background so dictionary opens instantly
-        Task.detached(priority: .utility) {
-            let start = CFAbsoluteTimeGetCurrent()
-            DataStoreLexiconSupport.prewarmCuratedLexiconEntries()
-            print("⏱ [Warmup:Lexikon] prewarm: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
-        }
+        // Lexicon-Prewarm entfernt: der alte Task.detached hat im
+        // Hintergrund ~11 s verbraucht (`[CuratedLexicon]
+        // enrichMissingGenderInfo: 6758ms` + `internalLexiconEntries:
+        // 3876ms`). Die teure `enrichMissingGenderInfo`-Pass wird
+        // **ausschließlich** vom Lexicon-View (Wörterbuch-Browser) und
+        // dessen Suche konsumiert — Home, Training, Flashcards, Quiz
+        // und Artikel-Modus (nutzt separates `StandardVocabularyLoader`-
+        // Gender-Backend) kommen ohne sie aus.
+        //
+        // Stattdessen läuft der Compute jetzt **lazy** beim ersten
+        // Öffnen des Lexicon-Views: die statische
+        // `curatedInternalLexiconEntries`-Property initialisiert sich
+        // on-demand, und `LexiconViewModel.reloadEntries(...)` hat
+        // bereits den Async-Pfad mit `isLoadingLexiconEntries`-Spinner
+        // — der User bekommt also auf der ersten Öffnung eine klare
+        // Ladestand-Anzeige statt eines kryptischen ~11 s-Bootstrap-
+        // Stalls. Folge-Öffnungen sind instant (Swift cached den
+        // statischen Let).
     }
 
     func ensureDependenciesReady(markFlashcardsOpenTiming: ((String) -> Void)? = nil) async {

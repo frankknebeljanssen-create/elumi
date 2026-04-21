@@ -109,6 +109,7 @@ enum AppTheme {
         static let moduleLexicon = Color(hex: "#E879F9")         // Wörterbuch — Fuchsia
         static let moduleLists = Color(hex: "#57B8C9")           // Listen — Teal
         static let moduleScan = Color(hex: "#EF6C50")            // Scan — Coral
+        static let moduleAccents = Color(hex: "#F43F5E")         // Akzente — Rose (distinct from Vocab-Pink und Hearts-Red, passt thematisch zu „Akzenten")
         static let moduleArcade = elumiPinkDeep                  // Arcade — Pink
         // Hearts (Leben) bekommt einen eigenen Slot und hängt nicht mehr
         // am `error`-Token. So können Error-Semantik und Hearts-Modul

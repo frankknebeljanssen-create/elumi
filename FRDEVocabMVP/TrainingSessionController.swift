@@ -24,7 +24,27 @@ final class TrainingSessionController: ObservableObject {
     private var isRestoringSelectedListIDs = false
     @Published var isSpeedRound = false
     @Published var speedRoundScore = 0
-    @Published var speedRoundTimeRemaining: Int = 60
+    // Speed-Round-Dauer kommt appweit aus `SpeedRoundSettings`. Init-Wert
+    // ist Fallback bis zum ersten Timer-Start (siehe
+    // `TrainingView+SessionFlow.startSpeedRoundTimer`).
+    @Published var speedRoundTimeRemaining: Int = SpeedRoundSettings.currentSeconds
+    /// Gesamtdauer dieser Speed-Round — gecacht damit die UI die
+    /// Progress-Normierung stabil halten kann, auch wenn sich die
+    /// Settings während der Runde ändern.
+    @Published var speedRoundTotalSeconds: Int = SpeedRoundSettings.currentSeconds
+
+    /// Antwort-Eingabeform für Nomen-Modus (nur dort im UI sichtbar).
+    /// `.speech` = Spracheingabe (aktueller Default, sprich das korrekte
+    /// Wort ein). `.choice` = Wortauswahl (Auswahlgrid mit 8 Optionen;
+    /// die konkrete Matching-Logik ist noch nicht verdrahtet — dieser
+    /// State bereitet die Architektur vor, damit Speech/Choice später
+    /// als zwei Input-Layer auf einen gemeinsamen Trainings-Kern
+    /// aufsetzen können, siehe `NounAnswerMode`).
+    ///
+    /// Speed Round bleibt orthogonal zu diesem Modus — bei
+    /// `isSpeedRound == true` wird der Answer-Mode ignoriert (Speed
+    /// Round fährt seine eigene Antwort-Mechanik).
+    @Published var nounAnswerMode: NounAnswerMode = .speech
     var speedRoundTimer: Timer?
     @Published var currentTrainingItem: VocabularyItem?
     @Published var hasStartedTraining = false
@@ -46,11 +66,22 @@ final class TrainingSessionController: ObservableObject {
     var dictionaryTrainingLoadGeneration = 0
     var loadedDictionaryContext: DictionaryTrainingLoadContext?
 
-    /// Combo-Tracking für ProgressService-Bonus. Reset bei Session-Start
-    /// und bei falscher Antwort. Eine Session entspricht hier einer Runde
-    /// (bis `isShowingRoundComplete`).
-    var sessionCurrentCombo: Int = 0
-    var sessionLongestCombo: Int = 0
+    /// Combo-Tracking für ProgressService-Bonus. Läuft über den
+    /// zentralen `SessionStreak` (siehe `SessionStreak.swift`) — damit
+    /// gilt **appweit** dieselbe Regel: Serie bricht bei jeder falschen
+    /// Antwort und auch bei „erst nach Retry richtig" ab. Toast-Auslöser
+    /// ist dieselbe Zahl wie die Reward-Combo.
+    // Nicht `private(set)` — Mutation passiert aus File-Extensions
+    // (z. B. `+SessionFlow` ruft `resetGamificationCounters`, was
+    // `streak.reset()` setzt).
+    var streak = SessionStreak()
+
+    /// Kompatibilitäts-Shim: externe Call-Sites (`LearningSession`-Builder,
+    /// UI-Anzeige) lesen weiterhin `sessionCurrentCombo` / `sessionLongestCombo`.
+    /// Schreiben geht ausschließlich über `recordAnswer` → `streak`.
+    var sessionCurrentCombo: Int { streak.current }
+    var sessionLongestCombo: Int { streak.longest }
+
     /// Anzahl richtig beantworteter Einheiten in der aktuellen Runde.
     var sessionCorrectCount: Int = 0
     /// Anzahl falscher Antworten in der aktuellen Runde.
@@ -59,25 +90,144 @@ final class TrainingSessionController: ObservableObject {
     var sessionRewardConsumed: Bool = false
 
     /// Zählt eine Antwort für Combo + Reward-Logik. Wird vom Training-
-    /// Answer-Flow aufgerufen.
-    func recordAnswer(correct: Bool) {
+    /// Answer-Flow aufgerufen. `firstAttempt == false` → die laufende Serie
+    /// wird wie bei einer falschen Antwort zurückgesetzt (Details siehe
+    /// `SessionStreak.recordAnswer`).
+    func recordAnswer(correct: Bool, firstAttempt: Bool = true) {
+        // Lernstatus-Signal: bevor die Combo/Session-Counter fortgeschrieben
+        // werden, das aktuelle Trainings-Item (`currentTrainingItem`) in den
+        // globalen Per-Item-Store melden. Funktioniert sowohl für `.vocabulary`
+        // als auch für die spezialisierten Modi (Nomen, Artikel, Verben) —
+        // alle arbeiten auf demselben `VocabularyItem`-Objekt.
+        if let item = currentTrainingItem {
+            ItemLearningStatusRecorder.record(
+                french: item.french,
+                german: item.german,
+                cardType: item.cardType,
+                correct: correct
+            )
+        }
+
+        // Serie & Toast laufen zentral über `SessionStreak`.
+        streak.recordAnswer(correct: correct, firstAttempt: firstAttempt)
+
         if correct {
-            sessionCurrentCombo += 1
-            sessionLongestCombo = max(sessionLongestCombo, sessionCurrentCombo)
             sessionCorrectCount += 1
-            GamificationFeedbackPresenter.shared.noteComboProgress(currentCombo: sessionCurrentCombo)
         } else {
-            sessionCurrentCombo = 0
             sessionWrongCount += 1
         }
+
+        // Nach jeder Antwort Resume-Snapshot aktualisieren, damit
+        // selbst ein harter App-Kill den Fortschritt nicht verliert.
+        persistResumeSnapshotIfEligible()
     }
 
     func resetGamificationCounters() {
-        sessionCurrentCombo = 0
-        sessionLongestCombo = 0
+        streak.reset()
         sessionCorrectCount = 0
         sessionWrongCount = 0
         sessionRewardConsumed = false
+    }
+
+    // MARK: - Resume-Snapshot
+
+    /// Speichert den aktuellen Session-Zustand für späteren Resume —
+    /// außer im **Speed-Round-Modus**, wo Fortsetzen fachlich nicht
+    /// sinnvoll ist (Timer-basierte Runde, nach Unterbrechung verfälscht).
+    /// Wird nach jeder Antwort + beim Karten-Wechsel aufgerufen.
+    func persistResumeSnapshotIfEligible() {
+        guard hasStartedTraining, !isSpeedRound else {
+            // Speed Round → kein Snapshot. Falls ein alter Snapshot noch
+            // liegt: jetzt aufräumen (sonst würde er beim nächsten normalen
+            // Start unpassend greifen).
+            return
+        }
+        guard !preparedTrainingItems.isEmpty else { return }
+
+        let listIDs = Array(selectedTrainingListIDs)
+        let state = TrainingSessionResumeState(
+            trainingModeRaw: trainingMode.storageKey,
+            directionRaw: direction.rawValue,
+            cardTypeRaw: cardType.rawValue,
+            selectedListIDs: listIDs,
+            preparedItems: preparedTrainingItems,
+            remainingItems: remainingTrainingItems,
+            currentItem: currentTrainingItem,
+            failedAttemptsOnCurrentCard: failedAttemptsOnCurrentCard,
+            completedRound: completedRound,
+            sessionCorrectCount: sessionCorrectCount,
+            sessionWrongCount: sessionWrongCount,
+            streak: streak,
+            configFingerprint: TrainingSessionResumeStore.fingerprint(
+                mode: trainingMode.storageKey,
+                direction: direction.rawValue,
+                cardType: cardType.rawValue,
+                selectedListIDs: listIDs
+            ),
+            lastUpdatedEpoch: Date().timeIntervalSince1970
+        )
+        // Debounced Background-Write — Hot-Path (pro Antwort + pro
+        // Karten-Wechsel) ist nicht mehr Main-Thread-blockierend.
+        TrainingSessionResumeStore.scheduleSave(state)
+    }
+
+    /// Löscht den Resume-Snapshot — bei Session-Abschluss (Summary
+    /// erreicht), Reset, oder inkompatiblem Re-Setup.
+    func clearResumeSnapshot() {
+        TrainingSessionResumeStore.clear()
+    }
+
+    /// Versucht, eine laufende Session aus dem Snapshot wiederherzustellen.
+    /// Nur erfolgreich, wenn der aktuelle Setup-Fingerprint zum Snapshot
+    /// passt (gleicher Modus, Direction, CardType, gleiche Listen-Auswahl).
+    /// Gibt `true` zurück, wenn ein kompatibler Snapshot geladen wurde und
+    /// die Session direkt startet — der Caller überspringt dann seinen
+    /// normalen Deck-Build.
+    @discardableResult
+    func tryRestoreResumeSnapshot(
+        expectedMode: TrainingMode,
+        expectedDirection: Direction,
+        expectedCardType: CardType,
+        expectedListIDs: [UUID]
+    ) -> Bool {
+        guard let snapshot = TrainingSessionResumeStore.load() else { return false }
+
+        let expectedFP = TrainingSessionResumeStore.fingerprint(
+            mode: expectedMode.storageKey,
+            direction: expectedDirection.rawValue,
+            cardType: expectedCardType.rawValue,
+            selectedListIDs: expectedListIDs
+        )
+        guard snapshot.configFingerprint == expectedFP else {
+            // Setup hat sich geändert → Snapshot ist nicht mehr passend.
+            // Stumm verwerfen, der Caller startet eine frische Session.
+            TrainingSessionResumeStore.clear()
+            return false
+        }
+        guard !snapshot.preparedItems.isEmpty else {
+            TrainingSessionResumeStore.clear()
+            return false
+        }
+
+        // State zurückspielen — Reihenfolge wichtig: erst die Queues,
+        // dann Counter, zuletzt `currentTrainingItem` (damit die UI nicht
+        // zwischen alten und neuen Items pendelt).
+        preparedTrainingItems = snapshot.preparedItems
+        remainingTrainingItems = snapshot.remainingItems
+        currentTrainingItem = snapshot.currentItem
+            ?? snapshot.remainingItems.first
+            ?? snapshot.preparedItems.first
+        failedAttemptsOnCurrentCard = snapshot.failedAttemptsOnCurrentCard
+        completedRound = max(1, snapshot.completedRound)
+        sessionCorrectCount = snapshot.sessionCorrectCount
+        sessionWrongCount = snapshot.sessionWrongCount
+        streak = snapshot.streak
+        sessionRewardConsumed = false
+        hasStartedTraining = true
+        isShowingSetup = false
+        isShowingRoundComplete = false
+        isSpeedRound = false
+        return true
     }
 
     func restoreSelectedListIDs() {

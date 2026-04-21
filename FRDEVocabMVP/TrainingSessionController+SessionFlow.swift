@@ -16,6 +16,11 @@ extension TrainingSessionController {
         // Session-Reset auch die Gamification-Counters weglegen, damit keine
         // Altwerte in die nächste Session hineinbluten.
         resetGamificationCounters()
+        // Harter Reset → auch Resume-Snapshot verwerfen. Wenn der Nutzer
+        // „Fertig" drückt oder die Session regulär beendet, soll beim
+        // nächsten Setup nichts mehr im Persistence-Ordner liegen, das
+        // unbemerkt weiterlaufen würde.
+        clearResumeSnapshot()
     }
 
     func returnToSetup() {
@@ -27,6 +32,34 @@ extension TrainingSessionController {
         launchContext: TrainingLaunchContext?,
         selectedAppDirection: Direction
     ) -> Bool {
+        // Session-Resume: erst prüfen, ob ein kompatibler Snapshot
+        // vorliegt. Speed Round wird hier ausgelassen — Timer-basierte
+        // Runden haben kein sinnvolles Fortsetzen; der Snapshot-Pfad
+        // selbst schreibt in Speed Round ohnehin nichts raus.
+        //
+        // Launch-Context (z. B. Tap auf eine spezifische Liste von der
+        // Home-Kachel) **umgeht** den Resume. Wir sehen das als explizite
+        // Absicht des Nutzers, eine neue, kontextspezifische Session zu
+        // starten. Ohne Launch-Context (Start aus dem Training-Setup)
+        // greift der Resume.
+        // `selectedAppDirection` (globaler @AppStorage-Wert) ist die
+        // Wahrheits-Direction — lokaler `direction`-State auf dem
+        // Controller wird nicht überall gepflegt. Wir schreiben ihn
+        // einmal hier synchron, damit Save/Resume konsistent bleiben.
+        direction = selectedAppDirection
+
+        if launchContext == nil, !isSpeedRound {
+            let restored = tryRestoreResumeSnapshot(
+                expectedMode: trainingMode,
+                expectedDirection: selectedAppDirection,
+                expectedCardType: cardType,
+                expectedListIDs: Array(selectedTrainingListIDs)
+            )
+            if restored {
+                return currentTrainingItem != nil
+            }
+        }
+
         let deck = buildTrainingDeck(
             listStore: listStore,
             launchContext: launchContext,
@@ -41,6 +74,10 @@ extension TrainingSessionController {
         hasStartedTraining = true
         isShowingSetup = false
         resetGamificationCounters()
+        // Frische Session startet mit leerem Resume-Snapshot — ein
+        // eventuell noch liegender Snapshot von einer früheren
+        // Konfiguration wird weggeräumt.
+        clearResumeSnapshot()
         loadNextTrainingCard()
         return currentTrainingItem != nil
     }
@@ -71,6 +108,10 @@ extension TrainingSessionController {
         }
 
         currentTrainingItem = remainingTrainingItems.removeFirst()
+        // Snapshot auf jeden Karten-Wechsel aktualisieren — so trifft
+        // der User beim Resume immer die **nächste** offene Karte, nie
+        // eine bereits beantwortete.
+        persistResumeSnapshotIfEligible()
     }
 
     func continueNextRound() {

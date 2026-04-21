@@ -21,6 +21,10 @@ struct QuizCandidate: Identifiable, Hashable {
     let answerLeadingArticle: String?
     let answerInitial: String
     let isPhrase: Bool
+    /// CEFR- bzw. `VocabularyLevel`-Raw — wird für das Distraktor-Gating
+    /// genutzt (A1-Prompt bekommt keinen C2-Distraktor). `nil` für Einträge
+    /// ohne Level-Info (Custom-Listen ohne gesetztes Level).
+    let level: String?
 }
 
 enum QuizQuestionKind {

@@ -29,6 +29,9 @@ struct ScanChoiceCard: View {
     let action: () -> Void
 
     @State private var isPressed = false
+    /// Live-Switch-Gate für Set A ↔ Set B. Triggert Re-Render bei
+    /// Settings-Wechsel.
+    @AppStorage(AppIconRegistry.storageKey) private var iconSetRaw: String = AppIconSet.a.rawValue
 
     var body: some View {
         Button {
@@ -42,7 +45,7 @@ struct ScanChoiceCard: View {
             HStack(spacing: 14) {
                 // Icon mit subtilem Glow im Pressed-State (statt rotem
                 // Outline-Ring auf der Card).
-                Image(illustrationName)
+                Image(appIcon: illustrationName)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 68, height: 68)
@@ -142,6 +145,8 @@ struct ScanModeSelectionCard: View {
     let onTap: () -> Void
 
     @State private var checkScale: CGFloat = 1.0
+    /// Live-Switch-Gate für Set A ↔ Set B.
+    @AppStorage(AppIconRegistry.storageKey) private var iconSetRaw: String = AppIconSet.a.rawValue
 
     var body: some View {
         Button {
@@ -160,7 +165,7 @@ struct ScanModeSelectionCard: View {
         } label: {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .center, spacing: 0) {
-                    Image(illustrationName)
+                    Image(appIcon: illustrationName)
                         .resizable()
                         .scaledToFit()
                         .frame(width: 40, height: 40)
@@ -265,11 +270,6 @@ struct ScanScreenHeader: View {
                     .multilineTextAlignment(.leading)
                     .lineLimit(2)
                     .minimumScaleFactor(0.85)
-
-                Text("Ich passe die Analyse automatisch an")
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.55))
-                    .padding(.top, 4)
             }
 
             Spacer(minLength: 0)
@@ -318,10 +318,10 @@ struct ScanSectionLabel: View {
     var body: some View {
         HStack(spacing: 8) {
             Text("\(stepNumber).")
-                .font(.system(size: 14, weight: .black, design: .rounded))
+                .font(.system(size: 18, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.55))
             Text(title)
-                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .font(.system(size: 18, weight: .bold, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

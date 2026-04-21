@@ -33,7 +33,7 @@ struct HomeStatusCard: View {
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Heute")
-                        .font(.system(size: 11, weight: .black, design: .rounded))
+                        .font(.system(size: 13, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.elumiPink)
 
                     Text(actionsLabel)
@@ -45,7 +45,7 @@ struct HomeStatusCard: View {
 
                     if actionsSinceLastSession > 0 {
                         Text("+\(actionsSinceLastSession) seit letzter Session")
-                            .font(.system(size: 11, weight: .medium, design: .rounded))
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
                             .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.75))
                             .lineLimit(1)
                             .minimumScaleFactor(0.85)
@@ -57,11 +57,13 @@ struct HomeStatusCard: View {
                 heroNumber
             }
             .padding(.horizontal, 12)
-            .padding(.vertical, 9)
-            // +10 pt höher als der natürliche Inhalt — synchron zum
-            // Progress-Board und zur (alten) Fokus-Card. Padding (h 12 /
-            // v 9) bleibt identisch, damit Status-Card und Progress-Board
-            // als Paar wirken.
+            .padding(.vertical, 7)
+            // −5 pt Höhe gegenüber vorher (User-Request): vertikales
+            // Padding 9 → 7 und minHeight 71 → 66. Die Content-Elemente
+            // (Icon 38×38, Textblock, Hero-Zahl 28 pt) bleiben
+            // unverändert — nur die Luft oben/unten schrumpft. Synchron
+            // zur `HomeProgressBoardCard`, damit beide Cards weiterhin
+            // als visuelles Paar mit identischer Höhe wirken.
             .frame(maxWidth: .infinity, minHeight: 66, alignment: .leading)
             .background(cardBackground)
             .overlay(cardBorder)
@@ -100,12 +102,13 @@ struct HomeStatusCard: View {
 
     // MARK: - Text helpers
 
-    /// Deutsche Singular-/Plural-Form — 1 Aktion vs. N Aktionen. Bei 0 zeigt
-    /// die Zeile „Noch keine Aktionen", damit die Card beim ersten Tages-
-    /// Start nicht wie „0 Aktionen" (kühl-defekt) klingt.
+    /// Deutsche Singular-/Plural-Form — 1 Aktion vs. N Aktionen. Bei 0
+    /// zeigt die Zeile „Heute noch nichts gemacht" (User-Wunsch:
+    /// freundlicher als das alte „Noch keine Aktionen", weniger
+    /// statisch-formal).
     private var actionsLabel: String {
         switch actionsToday {
-        case 0:  return "Noch keine Aktionen"
+        case 0:  return "Heute noch nichts gemacht"
         case 1:  return "1 Aktion"
         default: return "\(actionsToday) Aktionen"
         }

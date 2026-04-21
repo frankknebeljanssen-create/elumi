@@ -1,13 +1,36 @@
 import Foundation
 
 struct FlashCard: Identifiable, Equatable {
-    let id = UUID()
+    // `let id: UUID` statt `let id = UUID()` — symmetrisch zur Konvention
+    // der Quiz-Domain-Models (`QuizMultipleChoiceQuestion` & Co.) nach dem
+    // Codable-Refactor. Wenn `FlashCard` je persistiert oder kopiert wird,
+    // bleibt die ID über Init-Grenzen hinweg stabil; der Default-Parameter
+    // verhindert, dass Call-Sites angepasst werden müssen.
+    let id: UUID
     let prompt: String
     let answer: String
     let promptLanguageCode: String
     let answerLanguageCode: String
     let category: String
     let wordClass: String?
+
+    init(
+        id: UUID = UUID(),
+        prompt: String,
+        answer: String,
+        promptLanguageCode: String,
+        answerLanguageCode: String,
+        category: String,
+        wordClass: String? = nil
+    ) {
+        self.id = id
+        self.prompt = prompt
+        self.answer = answer
+        self.promptLanguageCode = promptLanguageCode
+        self.answerLanguageCode = answerLanguageCode
+        self.category = category
+        self.wordClass = wordClass
+    }
 
     /// Word class label localized for the given language code
     func wordClassLabel(for languageCode: String) -> String? {
@@ -217,6 +240,28 @@ enum TrainingMode: String, CaseIterable, Identifiable, Hashable {
         case .verbforms:  return "verbforms"
         }
     }
+}
+
+/// Antwort-Eingabeform im **Nomen-Modus** — bereitet die Architektur
+/// für zwei alternative Input-Layer vor, die auf denselben Trainings-
+/// Kern aufsetzen:
+///
+///   • `.speech`  – User spricht das gesuchte Wort ein (aktueller Default,
+///                  schon vollständig verdrahtet über `SpeechController`).
+///   • `.choice`  – User wählt aus einem 8er-Grid von Vorschlägen (1 korrekt,
+///                  7 Distraktoren). Die eigentliche Matching-Logik ist
+///                  **noch nicht** implementiert — dieser Case existiert,
+///                  damit die Setup-UI ihn schon jetzt anbieten kann und
+///                  die spätere Erweiterung kein UI-Refactor mehr braucht.
+///
+/// Orthogonal zu `TrainingSessionController.isSpeedRound`: im Speed-Round-
+/// Modus wird der Answer-Mode ignoriert — Speed Round hat seine eigene
+/// Antwort-Mechanik (schnelle Abfolge, keine 8er-Auswahl).
+enum NounAnswerMode: String, CaseIterable, Identifiable, Hashable, Codable {
+    case speech = "Spracheingabe"
+    case choice = "Wortauswahl"
+
+    var id: String { rawValue }
 }
 
 enum CardType: String, CaseIterable, Identifiable, Codable {

@@ -11,23 +11,77 @@ struct ManualCropSheet: View {
     @State private var dragStartRect: CGRect?
     @State private var lastImageFrame: CGRect = .zero
 
+    /// **Rotations-Counter** (Anzahl 90°-CW-Schritte). 0…3.
+    /// 0 = Original, 1 = 90°, 2 = 180°, 3 = 270°.
+    @State private var rotationSteps: Int = 0
+    /// **Feinrotation** in Grad — User-Slider für minimal schiefe
+    /// Captures (z. B. wenn das Buch ganz leicht schief gehalten wurde).
+    /// Bereich −15…+15 °. Wird **zusätzlich** zur 90°-Step-Rotation
+    /// angewandt: Gesamtwinkel = `rotationSteps × 90 + fineRotation`.
+    @State private var fineRotation: Double = 0
+    /// Cache-Key des aktuell gerenderten `rotatedImageCache`.
+    /// Zwingt Re-Render nur, wenn sich Steps ODER Fine-Winkel geändert
+    /// haben — nicht bei jedem View-Update.
+    @State private var rotatedImageCache: UIImage? = nil
+    @State private var lastRenderedRotationKey: String? = nil
+
     private let minimumCropSize: CGFloat = 80
+    /// Maximaler Slider-Bereich für die Feinrotation (±).
+    private let maxFineRotationDegrees: Double = 15
+
+    /// Effektives Bild nach Rotation. Das gesamte Sheet (Vorschau,
+    /// Crop, Apply) arbeitet auf diesem Image.
+    private var displayImage: UIImage { rotatedImageCache ?? image }
 
     var body: some View {
         VStack(spacing: AppTheme.Spacing.md) {
-            Text("Zuschneiden")
-                .font(AppTheme.Typography.cardTitle)
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.top, 12)
+            HStack {
+                // **Drehen-Button** (User-Wunsch): rotiert das Bild
+                // 90° im Uhrzeigersinn. Crop-Rect wird zurückgesetzt,
+                // weil sich Bild-Aspect-Ratio ändert.
+                Button {
+                    rotate90CW()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "rotate.right")
+                            .font(.system(size: 15, weight: .semibold))
+                        Text("Drehen")
+                            .font(AppTheme.Typography.button)
+                    }
+                    .foregroundStyle(accent)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule().fill(accent.opacity(0.14))
+                    )
+                    .overlay(
+                        Capsule().stroke(accent.opacity(0.45), lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Bild drehen")
+
+                Spacer()
+
+                Text("Zuschneiden")
+                    .font(AppTheme.Typography.cardTitle)
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+
+                Spacer()
+
+                // Symmetrie-Filler — Drehen-Button ist links, hier
+                // halten wir die Mittel-Headline visuell zentriert.
+                Color.clear.frame(width: 86, height: 28)
+            }
+            .padding(.top, 12)
 
             GeometryReader { geometry in
-                let imageFrame = fittedImageFrame(for: image.size, in: geometry.size)
+                let imageFrame = fittedImageFrame(for: displayImage.size, in: geometry.size)
 
                 ZStack {
                     Color.clear
 
-                    Image(uiImage: image)
+                    Image(uiImage: displayImage)
                         .resizable()
                         .scaledToFit()
                         .frame(width: geometry.size.width, height: geometry.size.height)
@@ -35,6 +89,14 @@ struct ManualCropSheet: View {
                             initializeCropRectIfNeeded(imageFrame: imageFrame)
                         }
                         .onChange(of: geometry.size) { _, _ in
+                            initializeCropRectIfNeeded(imageFrame: imageFrame, force: true)
+                        }
+                        .onChange(of: rotationSteps) { _, _ in
+                            updateRotatedImage()
+                            initializeCropRectIfNeeded(imageFrame: imageFrame, force: true)
+                        }
+                        .onChange(of: fineRotation) { _, _ in
+                            updateRotatedImage()
                             initializeCropRectIfNeeded(imageFrame: imageFrame, force: true)
                         }
 
@@ -105,6 +167,37 @@ struct ManualCropSheet: View {
                 }
             }
 
+            // **Fein-Rotations-Slider** (User-Wunsch: „minimal
+            // korrigieren"). ±15 ° um den 90°-Step herum. Reset-Tap
+            // auf den Wert-Label setzt zurück auf 0.
+            VStack(spacing: 4) {
+                HStack {
+                    Image(systemName: "rotate.left")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                    Slider(
+                        value: $fineRotation,
+                        in: -maxFineRotationDegrees...maxFineRotationDegrees,
+                        step: 0.5
+                    )
+                    .tint(accent)
+                    Image(systemName: "rotate.right")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                    Button {
+                        fineRotation = 0
+                    } label: {
+                        Text(String(format: "%+.1f°", fineRotation))
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .foregroundStyle(fineRotation == 0 ? AppTheme.Colors.textSecondary : accent)
+                            .frame(minWidth: 56)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Feinrotation zurücksetzen")
+                }
+                .padding(.horizontal, 4)
+            }
+
             Text("Zieh den Rahmen oder die Ecken, damit nur die Buchseite übrig bleibt.")
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.textSecondary)
@@ -124,7 +217,7 @@ struct ManualCropSheet: View {
 
                 HStack(spacing: 12) {
                     Button("Übernehmen") {
-                        if let cropped = croppedImage(from: image, imageFrame: lastImageFrame, cropRect: cropRect) {
+                        if let cropped = croppedImage(from: displayImage, imageFrame: lastImageFrame, cropRect: cropRect) {
                             onApply(cropped, false)
                         } else {
                             onCancel()
@@ -133,7 +226,7 @@ struct ManualCropSheet: View {
                     .buttonStyle(AppSecondaryButtonStyle(tint: AppTheme.Colors.textPrimary))
 
                     Button("Übernehmen + Analysieren") {
-                        if let cropped = croppedImage(from: image, imageFrame: lastImageFrame, cropRect: cropRect) {
+                        if let cropped = croppedImage(from: displayImage, imageFrame: lastImageFrame, cropRect: cropRect) {
                             onApply(cropped, true)
                         } else {
                             onCancel()
@@ -270,6 +363,63 @@ struct ManualCropSheet: View {
             return CGPoint(x: rect.minX, y: rect.maxY)
         case .bottomRight:
             return CGPoint(x: rect.maxX, y: rect.maxY)
+        }
+    }
+
+    /// Rotiert das Quellbild um weitere 90° im Uhrzeigersinn.
+    /// Crop-Rect wird per `onChange(of: rotationSteps)` automatisch
+    /// zurückgesetzt; das gerenderte Cache-Image baut `updateRotatedImage()`.
+    private func rotate90CW() {
+        rotationSteps = (rotationSteps + 1) % 4
+    }
+
+    /// (Re-)Rendert `rotatedImageCache` basierend auf
+    /// `rotationSteps` + `fineRotation`. Idempotent — wenn der
+    /// Rotation-Key gleich bleibt, passiert nichts.
+    private func updateRotatedImage() {
+        let key = "\(rotationSteps)|\(fineRotation)"
+        guard key != lastRenderedRotationKey else { return }
+        lastRenderedRotationKey = key
+
+        if rotationSteps == 0, fineRotation == 0 {
+            rotatedImageCache = nil
+            return
+        }
+        let totalDegrees = Double(rotationSteps) * 90.0 + fineRotation
+        rotatedImageCache = ManualCropSheet.rotated(image, byDegrees: totalDegrees)
+    }
+
+    /// Rotiert ein UIImage um beliebige Grade im Uhrzeigersinn.
+    /// Liefert ein neues UIImage mit Pixel-Rotation (`imageOrientation
+    /// = .up`). Bei Nicht-90°-Vielfachen wird die Output-Canvas auf
+    /// die Bounding-Box des rotierten Rechtecks erweitert; freie Ecken
+    /// bleiben transparent (Crop-Tool kann sie der User dann
+    /// rauscroppen).
+    private static func rotated(_ image: UIImage, byDegrees degrees: Double) -> UIImage {
+        guard let cg = image.cgImage else { return image }
+        let radians = CGFloat(degrees) * .pi / 180
+
+        let srcW = CGFloat(cg.width)
+        let srcH = CGFloat(cg.height)
+        // Bounding-Box des rotierten Rechtecks
+        let rotatedBox = CGRect(x: 0, y: 0, width: srcW, height: srcH)
+            .applying(CGAffineTransform(rotationAngle: radians))
+        let outW = abs(rotatedBox.width)
+        let outH = abs(rotatedBox.height)
+
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = image.scale
+        format.opaque = false
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: outW, height: outH), format: format)
+        return renderer.image { ctx in
+            let cgCtx = ctx.cgContext
+            cgCtx.translateBy(x: outW / 2, y: outH / 2)
+            cgCtx.rotate(by: radians)
+            cgCtx.translateBy(x: -srcW / 2, y: -srcH / 2)
+            // CG y-axis flippen für upright drawing.
+            cgCtx.translateBy(x: 0, y: srcH)
+            cgCtx.scaleBy(x: 1, y: -1)
+            cgCtx.draw(cg, in: CGRect(x: 0, y: 0, width: srcW, height: srcH))
         }
     }
 

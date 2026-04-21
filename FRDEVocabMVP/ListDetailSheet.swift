@@ -61,8 +61,12 @@ struct ListDetailSheet: View {
                             //   Zeile 3: Infinitiv links (falls Verb) · Wortart + Icons rechts
                             VStack(alignment: .leading, spacing: 4) {
                                 // ─── Zeile 1: Französisch ─────────────────────────
-                                // displayFrench ergänzt bei Nomen den Artikel (le/la/l') falls fehlend.
-                                Text(FrenchLemmaFormatter.displayFrench(for: item))
+                                // displayFrenchWithGender ergänzt bei Nomen Artikel + Genus-
+                                // Annotation („le muesli (m)") und rekonstruiert bei
+                                // erkannten Pluralformen die Singularform („les grains"
+                                // → „le grain (m)"). Für Nicht-Nomen identisch mit
+                                // displayFrench(for:).
+                                Text(FrenchLemmaFormatter.displayFrenchWithGender(for: item))
                                     .font(AppTheme.Typography.cardTitle)
                                     .foregroundStyle(AppTheme.Colors.textPrimary)
                                     .lineLimit(1)
@@ -108,6 +112,23 @@ struct ListDetailSheet: View {
                                         .padding(.vertical, 3)
                                         .background(labelColor.opacity(0.14))
                                         .clipShape(Capsule())
+
+                                    // Genus-Pill direkt rechts daneben — nur für Nomen
+                                    // und nur wenn wir ein Gender auflösen konnten
+                                    // (User-Wunsch „dahinter müsste Genus-Pill kommen").
+                                    // Farbe rezykliert die Home-Akzentfarbe, damit sich
+                                    // die beiden Pills klar voneinander abheben, ohne
+                                    // visuell aufdringlich zu wirken.
+                                    if let genus = genusLabel(for: item) {
+                                        Text(genus)
+                                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                                            .foregroundStyle(AppSectionStyle.home.accent)
+                                            .lineLimit(1)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 3)
+                                            .background(AppSectionStyle.home.accent.opacity(0.14))
+                                            .clipShape(Capsule())
+                                    }
 
                                     // Rechts: Edit + Trash (nur für eigene Listen) — mit klarem Abstand
                                     if !list.isBuiltIn {
@@ -175,14 +196,152 @@ struct ListDetailSheet: View {
 
     /// Zentrale App-Bezeichnung (FrenchLemmaFormatter.wordClassLabel).
     /// Single Source of Truth — gleiche Logik überall, inkl. Pronomen/Präposition/Interjektion.
+    ///
+    /// **Kontext-Refinement** (TODO 3): für ambigue französische
+    /// Kurz-Tokens (`le`, `la`, `les`, `l'`) entscheidet der
+    /// `VocabContextClassifier` anhand der deutschen Übersetzung, ob
+    /// das Wort hier als Artikel (DE: „der/die/das/…") oder Pronomen
+    /// (DE: „ihn/sie/es/…") auftritt. Nur wenn sich das Ergebnis von
+    /// der gespeicherten `wordClass` unterscheidet, überschreiben wir
+    /// das Label — sonst bleibt die Analyzer-Kaskade unverändert.
+    ///
+    /// Typischer Anwendungsfall: Altdaten aus früheren Prompt-
+    /// Versionen, bei denen das LLM „le" fälschlich immer als „Artikel"
+    /// gekennzeichnet hat, auch wo die DE-Übersetzung eindeutig
+    /// Pronomen ist („le" → „ihn").
     private func displayWordClass(for item: VocabularyItem) -> String {
-        FrenchLemmaFormatter.wordClassLabel(for: item)
+        let storedLower = item.wordClass?.lowercased() ?? ""
+        if let refined = VocabContextClassifier.refinedWordClass(
+            french: item.french,
+            german: item.german,
+            storedWordClass: item.wordClass
+        ), refined.rawValue != storedLower {
+            return FrenchLemmaFormatter.germanWordClassName(refined.rawValue)
+        }
+        return FrenchLemmaFormatter.wordClassLabel(for: item)
     }
 
     /// Optionaler Lemma-Hinweis in Klammern hinter dem französischen Text.
     private func lemmaHint(for item: VocabularyItem) -> String? {
         let result = FrenchListStatisticsAggregator.cachedAnalyze(item.french)
         return FrenchLemmaFormatter.makeLemmaHint(from: result)
+    }
+
+    /// Kurzer Genus-Text für die Pill neben der Wortart-Pill. Nil für
+    /// Nicht-Nomen oder wenn **definitiv kein** Gender auflösbar ist.
+    ///
+    /// Variants-aware: wenn das Item `variants` hat (Gender-Paar oder
+    /// Singular/Plural), liefern wir ein kombiniertes Label wie
+    /// „m/f" oder „sg/pl". So bleibt die Pill für die gemergten
+    /// Einträge aussagekräftig.
+    ///
+    /// Resolver-Kaskade (User-Feedback: „Prüfung muss exakter sein —
+    /// ich sehe Genus-Angaben aber nicht bei allen Nomen"):
+    ///   1. DB-Lookup auf originalen Eintrag
+    ///   2. DB-Lookup auf bare (ohne Artikel)
+    ///   3. DB-Lookup auf rekonstruierte Singular-Form (wenn Plural)
+    ///   4. Heuristik via `frenchGenderInfo` (Suffix-Regeln, Head-Override)
+    ///   5. **Fallback** über die deutsche Übersetzung: „der X" → m,
+    ///      „die X" → f. „das X" wird bewusst nicht auf Französisch
+    ///      gemappt (FR hat kein Neutrum, die Zuordnung wäre Rate-
+    ///      spiel).
+    ///
+    /// Diese Kaskade deckt deutlich mehr Custom-List-Einträge ab,
+    /// ohne die Zuverlässigkeit zu opfern.
+    private func genusLabel(for item: VocabularyItem) -> String? {
+        // 0) Variants-Shortcut — wenn der Merger Varianten gesetzt hat,
+        //    lesen wir das Label direkt aus den Tags. Spart alle Lookups.
+        if let variants = item.variants, !variants.isEmpty {
+            let tags = variants.map(\.tag)
+            // Gender-Paar (m/f)
+            if Set(tags) == Set(["m", "f"]) { return "m/f" }
+            // Singular/Plural
+            if Set(tags) == Set(["sg", "pl"]) { return "sg/pl" }
+            // Fallback: erste beide Tags
+            if tags.count >= 2 { return "\(tags[0])/\(tags[1])" }
+            return tags[0]
+        }
+
+        // Nur bei Nomen — Verben/Adjektive/Adverbien haben kein Genus.
+        let result = FrenchListStatisticsAggregator.cachedAnalyze(item.french)
+        let storedIsNoun = (item.wordClass?.lowercased() == "noun")
+        let resolvedIsNoun = (result.primaryPos == .noun)
+        guard storedIsNoun || resolvedIsNoun else { return nil }
+
+        // 1) DB-Lookup auf originalen Eintrag (zuverlässig).
+        if let direct = SupplementalFreeDictLexicon.sourceOnlyGender(for: item.french) {
+            return genderPillText(from: direct)
+        }
+
+        // 2) Bare (ohne Artikel) versuchen — falls der Eintrag einen
+        //    Artikel enthält, den die DB-Variante nicht findet.
+        let base = strippingLeadingFrenchArticle(from: item.french)
+        let probe = base.isEmpty ? item.french : base
+        if !base.isEmpty,
+           let bareDirect = SupplementalFreeDictLexicon.sourceOnlyGender(for: base) {
+            return genderPillText(from: bareDirect)
+        }
+
+        // 3) Wenn der Eintrag Plural ist: Singular-Form rekonstruieren,
+        //    daran erneut DB-Lookup probieren.
+        if let singularCandidate = FrenchLemmaFormatter.naiveSingularizeFrenchNoun(probe),
+           let singularGender = SupplementalFreeDictLexicon.sourceOnlyGender(for: singularCandidate) {
+            return genderPillText(from: singularGender)
+        }
+
+        // 4) Heuristik via `frenchGenderInfo`.
+        if let info = frenchGenderInfo(for: probe, cardType: .words) {
+            switch info.gender {
+            case .masculine: return "m"
+            case .feminine:  return "f"
+            case .neuter:    return "n"
+            case .plural:    return "pl"
+            }
+        }
+
+        // 5) Fallback: deutsche Übersetzung anschauen. Artikel-
+        //    Prefix → Gender ableiten. `das X` wird nicht gemappt,
+        //    weil Neutrum im Französischen nicht existiert.
+        let germanLower = item.german.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        if germanLower.hasPrefix("der ") || germanLower.hasPrefix("ein ") {
+            return "m"
+        }
+        if germanLower.hasPrefix("die ") || germanLower.hasPrefix("eine ") {
+            // „die X" ist im Deutschen auch Plural-Form — wenn die
+            // französische Seite offensichtlich Singular ist, mappen
+            // wir nach feminin. Bei „les X"/Plural bewusst nicht
+            // überschreiben (wäre falsch).
+            let frLower = item.french.lowercased()
+            if !frLower.hasPrefix("les ") && !frLower.hasPrefix("des ") {
+                return "f"
+            }
+        }
+
+        // 6) Echte Heuristik übers `germanGenderInfo` — nutzt die
+        //    selbe Logik, die auch die App-internen Lexikon-Einträge
+        //    anreichert. Wenn das eine Feminine/Masculine-Zuordnung
+        //    liefert, übernehmen wir es als letzten Versuch.
+        if !item.german.isEmpty,
+           let germanInfo = germanGenderInfo(for: item.german, cardType: .words) {
+            switch germanInfo.gender {
+            case .masculine: return "m"
+            case .feminine:  return "f"
+            case .neuter:    break  // keine verlässliche FR-Zuordnung
+            case .plural:    break
+            }
+        }
+
+        return nil
+    }
+
+    private func genderPillText(from dbLetter: String) -> String? {
+        switch dbLetter {
+        case "m":  return "m"
+        case "f":  return "f"
+        case "n":  return "n"
+        case "pl": return "pl"
+        default:    return nil
+        }
     }
 
     /// Ist dieser Eintrag ein ECHTES Verb (Einzelwort-Verb)?

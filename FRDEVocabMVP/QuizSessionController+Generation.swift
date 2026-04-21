@@ -62,6 +62,20 @@ extension QuizSessionController {
     }
 
     func startQuiz(direction: Direction) {
+        // Resume: wenn ein kompatibler Snapshot liegt, direkt fortsetzen
+        // und den gesamten Kandidaten/Generate-Pfad überspringen. Nur
+        // ausgeführt, wenn noch keine Fragen im Controller geladen sind
+        // (Schutz gegen doppelten Resume bei mehrfachem onAppear).
+        if questions.isEmpty,
+           tryRestoreResumeSnapshot(
+               expectedDirection: direction,
+               expectedListIDs: selectedListIDs,
+               expectedCount: questionCountOption
+           ) {
+            print("🧩 [Quiz] resumed from snapshot, questions=\(questions.count), index=\(currentQuestionIndex)")
+            return
+        }
+
         let candidates = cachedCandidates
         print("🧩 [Quiz] session.startQuiz candidates=\(candidates.count)")
         guard candidates.count >= 2 else {
@@ -164,6 +178,9 @@ extension QuizSessionController {
         currentQuestionIndex = 0
         answeredResults = []
         isShowingResult = false
+        // Frisch generierte Runde → Snapshot initial speichern, damit
+        // schon nach Frage 0 ein Resume-Zustand auf der Platte liegt.
+        persistResumeSnapshotIfEligible()
     }
 
     func applyInitialQuizQuestions(_ generatedQuestions: [QuizQuestion], plannedQuestionCount: Int) {
@@ -173,6 +190,7 @@ extension QuizSessionController {
         currentQuestionIndex = 0
         answeredResults = []
         isShowingResult = false
+        persistResumeSnapshotIfEligible()
     }
 
     func appendPreparedQuizQuestions(_ generatedQuestions: [QuizQuestion]) {

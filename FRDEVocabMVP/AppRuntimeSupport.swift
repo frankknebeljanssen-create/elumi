@@ -71,6 +71,7 @@ enum AppSectionStyle {
     case lists
     case scan
     case lexicon
+    case accents
 
     var accent: Color {
         switch self {
@@ -98,6 +99,8 @@ enum AppSectionStyle {
             return AppTheme.Colors.moduleScan
         case .lexicon:
             return AppTheme.Colors.moduleLexicon
+        case .accents:
+            return AppTheme.Colors.moduleAccents
         }
     }
 

@@ -79,20 +79,18 @@ struct ListCategoryPickerView: View {
 
                     VStack(alignment: .leading, spacing: 2) {
                         if hasSelection {
-                            // Pro-Liste-Row: Name links + „N Einträge" rechts —
-                            // selber Rhythmus wie in den Training-Cards.
+                            // Pro-Liste-Row: nur der Listen-Name. Der
+                            // frühere Right-Side-Badge mit „N Einträge"
+                            // in Accent-Farbe wurde entfernt — die
+                            // Summary-Zeile unten weist die Gesamtzahl
+                            // in Blau aus, doppelte Info war redundant.
                             ForEach(selectedLists.prefix(AppLayout.maxSelectableLists)) { list in
-                                HStack(spacing: 0) {
-                                    Text(list.name)
-                                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.7)
-                                    Spacer(minLength: 4)
-                                    Text("\(list.items.count) \(itemLabel)")
-                                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-                                        .foregroundStyle(accent)
-                                }
+                                Text(list.name)
+                                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.7)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                             }
 
                             // Summary-Zeile — einheitliches Format
@@ -112,15 +110,23 @@ struct ListCategoryPickerView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                    // Stift in rundem Pill — dezent, nicht zu dominant.
+                    // Stift in rundem Pill — Größe 16/38. Der äußere
+                    // `frame(maxHeight: .infinity)` stellt sicher, dass
+                    // der Pill in der vollen HStack-Höhe zentriert sitzt,
+                    // auch wenn die VStack nebenan durch Padding oder
+                    // mehrzeiliger Content eine asymmetrische Höhen-
+                    // verteilung hat (`HStack(alignment: .center)` allein
+                    // reichte nicht, weil die Summary-Zeile `padding(.top, 2)`
+                    // den Optischen Mittelpunkt verschob).
                     Image(systemName: "pencil")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(accent)
-                        .frame(width: 32, height: 32)
+                        .frame(width: 38, height: 38)
                         .background(
                             Circle()
                                 .fill(accent.opacity(0.18))
                         )
+                        .frame(maxHeight: .infinity)
                 }
             }
             .padding(.horizontal, 16)

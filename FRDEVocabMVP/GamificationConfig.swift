@@ -14,29 +14,43 @@ enum GamificationConfig {
 
     // MARK: - XP
     //
-    // Phase-6-Tuning: XP-Werte leicht nachgezogen, damit Sessions sich
-    // wertiger anfühlen — gleichzeitig bleibt die Basis bei 10 XP pro
-    // richtiger Antwort, damit kein Modul plötzlich viel besser ist.
+    // **Balancing-Phase 7** (User-Spec „XP langsamer und realistischer"):
+    // die bisherigen Werte (10 Basis, 25 Combo, 75 Flawless, 20 Mastery)
+    // haben in Verbindung mit dem neuen `xpPerBonusCredit = 250` dazu
+    // geführt, dass Spiele trotz angehobener XP-Schwelle noch zu dicht
+    // entstehen — eine 15-Fragen-Session konnte bereits 200+ XP
+    // erzeugen. Wir senken die Basis um ~50 % und skalieren die Boni
+    // anteilig nach unten, damit jede Quelle weiterhin spürbar bleibt,
+    // ohne dass ein Spiel pro Session automatisch heraus fällt.
 
     /// Basis-XP pro richtig beantworteter Lerneinheit. Gilt für alle Module
     /// gleich — Karteikarte richtig, Quizfrage richtig, Verbform richtig usw.
-    static let xpPerCorrectAnswer = 10
+    ///
+    /// **Phase 7**: 10 → 5 (−50 %).
+    static let xpPerCorrectAnswer = 5
 
     /// Combo-Bonus alle N richtigen Antworten in Folge (innerhalb einer Session).
-    /// Phase-6: Bonus von 20 → 25 leicht angehoben, damit Combos emotional
-    /// stärker belohnt werden, ohne Farming zu provozieren (Schwelle bleibt 5).
+    ///
+    /// **Phase 7**: 25 → 15. Combos bleiben emotional eine Belohnung
+    /// (3-fache Basis pro 5er-Kette), fluten das XP-Konto aber nicht mehr.
     static let xpComboThreshold = 5
-    static let xpComboBonus = 25
+    static let xpComboBonus = 15
 
     /// Pauschal-Bonus für eine fehlerfrei abgeschlossene Session.
-    /// Phase-6: 50 → 75 — „Fehlerfrei" soll sich spürbar lohnen.
-    static let xpFlawlessSessionBonus = 75
+    ///
+    /// **Phase 7**: 75 → 40. Mit 5 XP/Antwort entspricht 40 jetzt
+    /// ~8 zusätzlichen Antworten — ein „ganzer Session-Teil extra"-Gefühl,
+    /// ohne dass Flawless allein bereits ein Spiel (250 XP) pro Session
+    /// rechtfertigt.
+    static let xpFlawlessSessionBonus = 40
 
     /// Bonus pro Karte, die in Karteikarten endgültig gemeistert wurde
     /// (also `consecutiveCorrect ≥ masteryThreshold` erreicht hat). Belohnt
     /// gründliches Lernen — gleicht Karteikarten gegen schnellere Modi aus.
-    /// Phase-6: 15 → 20 (Mastery ist aufwändig, soll spürbar lohnen).
-    static let xpMasteredCardBonus = 20
+    ///
+    /// **Phase 7**: 20 → 10. Passt zur halbierten Basis, behält die Mastery-
+    /// „zählt doppelt"-Aussage (2× Basis pro gemeisterter Karte).
+    static let xpMasteredCardBonus = 10
 
     /// Tagesabschluss-Bonus — **nicht mehr direkt genutzt** seit Phase 5.
     /// Wird jetzt vom `DailyChallengeStore` als Challenge-Reward vergeben
@@ -45,28 +59,36 @@ enum GamificationConfig {
     /// `DailyChallenge.reward.xp`-Struktur.
     static let xpDailyCompletionBonus = 50
 
-    // MARK: - Level Curve (progressive, Phase 6)
+    // MARK: - Level Curve (progressive, Phase 7)
     //
-    // Bewusst *nicht* linear: frühe Level geben ein schnelles
-    // Erfolgsmoment, spätere Level belohnen echtes Dranbleiben. Die
-    // konkrete Kurve steht zentral **genau hier** — wer rebalancen will,
-    // ändert nichts außer diese Funktion.
+    // **Phase 7 Rebalancing** (User-Spec): Kurve leicht gestreckt, damit
+    // Level mit der halbierten XP-Basis (5 statt 10 XP/Antwort) echt
+    // wertvoller bleiben. Frühe Level bleiben schnell („erstes Level-Up
+    // nach wenigen Minuten"), späte Level strecken sich deutlich.
+    //
+    // Neue Delta-Kurve (XP-Kosten L→L+1):
+    //   L1→L2:  100    (kleiner Einstieg)
+    //   L2→L3:  180
+    //   L3→L4:  300
+    //   L4→L5:  450
+    //   L5→L6:  650
+    //   L6→L7:  850
+    //   Lx→Lx+1 (x≥6): +200 pro weiterem Level
     //
     // Kumulierte XP zum Erreichen von Level L:
-    //   L1: 0       (Start)
-    //   L2: 100
-    //   L3: 250
-    //   L4: 470
-    //   L5: 770
-    //   L6: 1150
-    //   L7: 1620
-    //   L8: 2180
-    //   Lx (x≥5): L5-Stand + Summe(300 + 80·(i−4)) für i=5…x−1
+    //   L1:    0    (Start)
+    //   L2:    100
+    //   L3:    280
+    //   L4:    580
+    //   L5:   1030
+    //   L6:   1680
+    //   L7:   2530
+    //   L8:   3580
+    //   …
     //
-    // Das fühlt sich früh motivierend an (erstes Level-Up nach wenigen
-    // Minuten, 10 richtige Quizantworten), später bleibt das Level-Up
-    // ein Moment ohne Frust. Die Werte sind bewusst „rund" — leicht
-    // merkbar und einfach in der Kopfrechnung.
+    // Mit xpPerCorrectAnswer = 5 entspricht Level 6 damit ~336 richtigen
+    // Antworten über alle Sessions hinweg — erreichbar über 2-4 Wochen
+    // regelmäßiger Nutzung, nicht an einem Nachmittag.
 
     /// XP, um vom aktuellen Level ins nächste zu kommen. Einziger Ort
     /// zum Rebalancen der Kurve.
@@ -74,13 +96,15 @@ enum GamificationConfig {
         switch currentLevel {
         case ..<1: return 0
         case 1: return 100
-        case 2: return 150
-        case 3: return 220
-        case 4: return 300
+        case 2: return 180
+        case 3: return 300
+        case 4: return 450
+        case 5: return 650
         default:
-            // Ab Level 5 linearer Zuwachs von 80 XP pro Level → grind
-            // bleibt moderat, ohne dass Level irrelevant werden.
-            return 300 + (currentLevel - 4) * 80
+            // Ab Level 6: +200 XP pro Level. Step-Funktion bewusst
+            // linear — keine exponentielle Explosion, aber spürbar
+            // länger pro Level.
+            return 650 + (currentLevel - 5) * 200
         }
     }
 
@@ -126,22 +150,40 @@ enum GamificationConfig {
         return min(1.0, Double(into) / Double(span))
     }
 
-    /// Credits-Belohnung pro Level-Up.
-    static let creditsPerLevelUp = 5
+    /// Credits-Belohnung pro Level-Up (= „Spiele").
+    ///
+    /// **Balancing-Review**: Level-Ups sind selten (Level 1→2 nach
+    /// ~100 XP, spätere Levels brauchen 300+ XP). Frühere 5 Spiele pro
+    /// Level-Up waren großzügig, passten aber zur alten 20-XP-Rate.
+    /// Jetzt mit 250 XP = 1 Spiel wirkt 5 inflationär — **reduziert
+    /// auf 3**. Erste Level-Ups fühlen sich weiterhin belohnend an
+    /// (3 ganze Spiele), die Summe über mehrere Level-Ups bleibt
+    /// aber im motivierenden, nicht überflutenden Rahmen.
+    static let creditsPerLevelUp = 3
 
     // MARK: - Credits
 
-    /// XP → Credits Konvertierung: alle N XP gibt es 1 Bonus-Credit.
-    /// Macht Lernen zur primären Credit-Quelle (das Spiel verbraucht nur).
-    static let xpPerBonusCredit = 100
+    /// XP → Spiel-Konvertierung: alle N XP gibt es 1 Bonus-Spiel.
+    /// **Von 100 auf 250 erhöht** (Game-Loop-Spec: „200–300 XP → 1 Spiel").
+    /// Damit gibt nicht jede Session ein Spiel, Spiele bleiben Belohnung,
+    /// kein Dauerzustand. Singuläre Wahrheits-Konstante für diese
+    /// Rate — `ArcadeCreditSystem.xpPerCredit` delegiert hierher.
+    static let xpPerBonusCredit = 250
 
-    /// Credits-Bonus bei Streak-Meilensteinen.
-    /// Key = erreichter Streak-Tag, Value = Credits-Bonus (einmalig).
+    /// Credits-Bonus (= „Spiele") bei Streak-Meilensteinen.
+    /// Key = erreichter Streak-Tag, Value = Spiele-Bonus (einmalig).
+    ///
+    /// **Balancing-Review (deutliche Reduktion)**: vorher 2 / 5 / 10 / 25
+    /// — im Zusammenspiel mit Daily-Challenge (+1/Tag) und Level-Up-
+    /// Bonus addierten sich die Quellen zu einem Überfluss, der dem
+    /// Game-Loop-Prinzip „Spiel = Belohnung, kein Dauerbestand"
+    /// widersprach. Neu: 1 / 2 / 4 / 8 — ca. halbiert, Meilenstein
+    /// bleibt spürbar, ohne das System zu fluten.
     static let creditsForStreakMilestones: [Int: Int] = [
-        3:  2,
-        7:  5,
-        14: 10,
-        30: 25
+        3:  1,
+        7:  2,
+        14: 4,
+        30: 8
     ]
 
     // MARK: - Session-Schwellen (modulübergreifend)

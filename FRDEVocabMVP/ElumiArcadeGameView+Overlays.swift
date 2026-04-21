@@ -2,6 +2,13 @@ import SwiftUI
 
 extension ElumiArcadeGameView {
     func suctionBeam(at date: Date, in size: CGSize) -> some View {
+        // **Unified-PowerUp-Palette** (User-Spec): Sauger bekommt die
+        // offizielle Vacuum-Farbfamilie #A78BFA/#E9D5FF/#C4B5FD —
+        // signalisiert „magnetisch, besonders, leicht technisch" und
+        // hebt den Sauger visuell klar von der Schutz-Bubble (blau-
+        // türkis) ab. Vorher war der Beam gemischt primary/warning
+        // (gelb-blau), was nicht zum einheitlichen System passte.
+        let cfg = ArcadePowerUps.config(for: .vacuum)
         let pulse = 0.94 + (0.08 * CGFloat(sin(date.timeIntervalSinceReferenceDate * 9)))
         let topWidth = suctionBeamHalfWidth * 2.55 * pulse
         let bottomWidth = topWidth * 0.25
@@ -21,15 +28,17 @@ extension ElumiArcadeGameView {
         }()
 
         return ZStack {
-            // Trapezoid shape: narrow at bottom (Elumi), wide at top
+            // Trapezoid shape: narrow at bottom (Elumi), wide at top.
+            // Primary → Secondary-Gradient für den magnetisch-lichten
+            // Look.
             TrapezoidShape(topWidth: topWidth, bottomWidth: bottomWidth)
                 .fill(
                     LinearGradient(
                         colors: [
-                            AppTheme.Colors.primary.opacity(0.14),
-                            AppTheme.Colors.warning.opacity(0.22),
-                            AppTheme.Colors.primary.opacity(0.08),
-                            AppTheme.Colors.warning.opacity(0.04)
+                            cfg.primaryColor.opacity(0.18),
+                            cfg.accentColor.opacity(0.25),
+                            cfg.primaryColor.opacity(0.10),
+                            cfg.secondaryColor.opacity(0.06)
                         ],
                         startPoint: .top,
                         endPoint: .bottom
@@ -42,7 +51,7 @@ extension ElumiArcadeGameView {
                     LinearGradient(
                         colors: [
                             Color.white.opacity(0.16),
-                            AppTheme.Colors.warning.opacity(0.12),
+                            cfg.accentColor.opacity(0.14),
                             Color.white.opacity(0.06)
                         ],
                         startPoint: .top,
@@ -61,8 +70,34 @@ extension ElumiArcadeGameView {
                 }
             }
 
+            // **Sog-Wellen** (User-Spec „horizontale, leicht gebogene
+            // Wellenlinien, bewegen sich Richtung Sauger"): konzentrisch
+            // nach OBEN (Richtung Elumi) animierte Wellen, damit das
+            // Auge sofort die Fließrichtung liest.
+            suctionWavesOverlay(
+                accent: cfg.accentColor,
+                topWidth: topWidth,
+                bottomWidth: bottomWidth,
+                beamHeight: beamHeight,
+                date: date
+            )
+
+            // **Partikel** (User-Spec „kleine Partikel fließen
+            // Richtung Sauger"): deterministisch seeded, damit sie
+            // bei Frame-N keine Re-Layout-Kosten verursachen. 12
+            // Partikel reichen für den Effekt ohne Performance-
+            // Einschnitt (mobile 60fps stabil).
+            suctionParticlesOverlay(
+                primary: cfg.primaryColor,
+                accent: cfg.accentColor,
+                topWidth: topWidth,
+                bottomWidth: bottomWidth,
+                beamHeight: beamHeight,
+                date: date
+            )
+
             TrapezoidShape(topWidth: topWidth, bottomWidth: bottomWidth)
-                .stroke(AppTheme.Colors.warning.opacity(0.35), lineWidth: 1.8)
+                .stroke(cfg.primaryColor.opacity(0.42), lineWidth: 1.8)
         }
         .frame(width: topWidth, height: beamHeight)
         .scaleEffect(x: 1, y: beamProgress, anchor: .bottom)
@@ -70,6 +105,90 @@ extension ElumiArcadeGameView {
         .position(x: elumiPositionX(in: size.width), y: beamHeight / 2)
         .blendMode(.screen)
         .allowsHitTesting(false)
+    }
+
+    /// Konzentrische horizontale Wellenlinien, die Richtung Sauger
+    /// (nach oben) wandern. Verstärkt das „Sog"-Gefühl visuell.
+    @ViewBuilder
+    fileprivate func suctionWavesOverlay(
+        accent: Color,
+        topWidth: CGFloat,
+        bottomWidth: CGFloat,
+        beamHeight: CGFloat,
+        date: Date
+    ) -> some View {
+        let t = date.timeIntervalSinceReferenceDate
+        // 4 Wellen-Linien, jede mit eigenem Phasen-Offset. Die
+        // y-Koordinate jedes Streifens wandert von unten (1.0) nach
+        // oben (0.0) und spawnt dann neu → Fließbewegung.
+        ForEach(0..<4, id: \.self) { index in
+            let phaseOffset = Double(index) * 0.25
+            let rawProgress = (t * 0.55 + phaseOffset).truncatingRemainder(dividingBy: 1.0)
+            // 1.0 = unten (Saugglocken-Basis), 0.0 = oben
+            // (Sauger-Spitze). Anker-Progress anpassen an
+            // Trapezoid-Geometrie:
+            let lineY = (1.0 - CGFloat(rawProgress)) * beamHeight - beamHeight / 2
+            let widthAtY = bottomWidth + (topWidth - bottomWidth) * CGFloat(1.0 - rawProgress)
+            // Fade-In beim Spawn, Fade-Out kurz vor Ziel
+            let fade: Double = {
+                if rawProgress < 0.15 { return rawProgress / 0.15 }
+                if rawProgress > 0.85 { return (1.0 - rawProgress) / 0.15 }
+                return 1.0
+            }()
+            Capsule()
+                .fill(accent.opacity(0.42 * fade))
+                .frame(width: widthAtY * 0.55, height: 2.0)
+                .offset(y: lineY)
+        }
+    }
+
+    /// Deterministisch gesetzte Partikel, die den Beam hinauffliegen.
+    /// Jedes Partikel hat einen festen Lane-Offset + seeded Phase, damit
+    /// sie bei Re-Layout nicht „springen", sondern stabil animieren.
+    @ViewBuilder
+    fileprivate func suctionParticlesOverlay(
+        primary: Color,
+        accent: Color,
+        topWidth: CGFloat,
+        bottomWidth: CGFloat,
+        beamHeight: CGFloat,
+        date: Date
+    ) -> some View {
+        let t = date.timeIntervalSinceReferenceDate
+        ForEach(0..<12, id: \.self) { index in
+            // Seeded Lane: gleichmäßig zwischen −0.45 und +0.45.
+            let laneFraction = CGFloat(index % 6) / 5.0 - 0.5
+            // Verschiedene Geschwindigkeiten — User-Spec-Punkt.
+            let speed = 0.6 + Double(index % 3) * 0.25
+            let phase = Double(index) * 0.0833
+            let rawProgress = (t * speed + phase).truncatingRemainder(dividingBy: 1.0)
+            let progress = CGFloat(rawProgress)
+            // Y-Pos: bewegt sich von unten nach oben (Sog).
+            let particleY = (1.0 - progress) * beamHeight - beamHeight / 2
+            // X-Pos: Intensitätszone — näher am Sauger (oben) werden
+            // Partikel Richtung Mitte gesaugt. Verzerrungseffekt: je
+            // höher, desto kleiner der Lane-Offset.
+            let widthAtY = bottomWidth + (topWidth - bottomWidth) * (1.0 - progress)
+            let xOffset = widthAtY * laneFraction * (1.0 - progress * 0.6)
+            // Fade am Rand.
+            let fade: Double = {
+                if rawProgress < 0.08 { return rawProgress / 0.08 }
+                if rawProgress > 0.92 { return (1.0 - rawProgress) / 0.08 }
+                return 1.0
+            }()
+            Circle()
+                .fill(
+                    index.isMultiple(of: 2)
+                        ? accent.opacity(0.85 * fade)
+                        : primary.opacity(0.70 * fade)
+                )
+                .frame(
+                    width: 3.5 - CGFloat(index % 3) * 0.6,
+                    height: 3.5 - CGFloat(index % 3) * 0.6
+                )
+                .offset(x: xOffset, y: particleY)
+                .blur(radius: 0.4)
+        }
     }
 
 }

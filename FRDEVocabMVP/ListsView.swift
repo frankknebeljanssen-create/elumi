@@ -11,6 +11,10 @@ struct ListsView: View {
     let openInfo: () -> Void
     let sectionStyle: AppSectionStyle = .lists
 
+    /// Live-Switch-Gate für Icon-Set A ↔ B. Triggert Re-Render bei
+    /// Settings-Wechsel ohne App-Neustart.
+    @AppStorage(AppIconRegistry.storageKey) var iconSetRaw: String = AppIconSet.a.rawValue
+
     @State var newListName = ""
     @State var newListCollectionPreset: ListCollectionPreset = .schoolbook
     @State var editableListName = ""

@@ -1039,6 +1039,184 @@ enum FrenchLemmaFormatter {
         return base.prefix(1).uppercased() + base.dropFirst()
     }
 
+    /// Französischer Eintrag display-ready **mit Genus-Annotation**.
+    ///
+    /// Unterschied zu `displayFrench(for:)`:
+    ///   • Bei Nomen wird hinter dem Eintrag das Genus in Klammern
+    ///     gesetzt — „le muesli (m)", „la maison (f)", „das Haus (n)".
+    ///   • Wenn der Eintrag als Plural gespeichert ist und wir eine
+    ///     eindeutige Singularform rekonstruieren können (über
+    ///     Suffix-Regeln + DB-Verifikation), zeigen wir statt
+    ///     „les grains (pl)" die Singularform „le grain (m)" — das
+    ///     ist didaktisch wertvoller beim Vokabeln lernen.
+    ///
+    /// Für Nicht-Nomen (Verben, Adjektive, Phrasen) identisch mit
+    /// `displayFrench(for:)`.
+    static func displayFrenchWithGender(for item: VocabularyItem) -> String {
+        let result = FrenchListStatisticsAggregator.cachedAnalyze(item.french)
+        let storedIsNoun = (item.wordClass?.lowercased() == "noun")
+        let resolvedIsNoun = (result.primaryPos == .noun)
+        guard storedIsNoun || resolvedIsNoun else { return displayFrench(for: item) }
+
+        // Singleword + kurze Noun-Phrases (Determiner + Nomen) sind
+        // beide gültige Targets für Artikel-/Genus-Anreicherung.
+        // Vorher galt strikt `displayType == .singleWord` — das hat
+        // „mon ami", „une voiture", „le chat" etc. ausgeschlossen,
+        // weil das technisch 2-3 Wörter sind.
+        let allowedForAnnotation: Bool = {
+            if result.displayType == .singleWord { return true }
+            // Kurze Phrasen (2-3 Wörter), die wie ein Nomen behandelt
+            // werden. Trennwort muss typisch ein Determiner sein.
+            let words = item.french.split(separator: " ")
+            if words.count <= 3,
+               storedIsNoun || resolvedIsNoun {
+                return true
+            }
+            return false
+        }()
+        guard allowedForAnnotation else { return displayFrench(for: item) }
+
+        // Rohe Basis ohne Artikel.
+        let raw = TextCasingRules.applyFrench(item.french)
+        let stripped = strippingLeadingFrenchArticle(from: raw)
+        guard !stripped.isEmpty else { return displayFrench(for: item) }
+
+        // Singular-Rekonstruktion: nur wenn
+        //   1. der Eintrag mit „les " beginnt ODER
+        //   2. Suffix-Regel erkennt Plural UND DB kennt eine
+        //      plausible Singularform.
+        let (displayBase, genderLetter) = resolveSingularFormAndGender(
+            rawWithArticle: raw,
+            bare: stripped,
+            item: item
+        )
+
+        // Artikel bestimmen (auf dem potenziell singularisierten Base).
+        let article: String = {
+            switch genderLetter {
+            case "m": return "le"
+            case "f": return "la"
+            case "pl": return "les"
+            default:  return "le" // Fallback — sollte selten greifen
+            }
+        }()
+
+        // Elision („l'école", „l'hôtel").
+        let elisionVowels: Set<Character> = ["a", "e", "i", "o", "u", "h",
+                                              "\u{00E0}", "\u{00E2}", "\u{00E4}",
+                                              "\u{00E9}", "\u{00E8}", "\u{00EA}", "\u{00EB}",
+                                              "\u{00EE}", "\u{00EF}",
+                                              "\u{00F4}", "\u{00F6}",
+                                              "\u{00F9}", "\u{00FB}", "\u{00FC}"]
+        let withArticle: String = {
+            if (article == "le" || article == "la"),
+               let first = displayBase.first,
+               elisionVowels.contains(Character(first.lowercased())) {
+                return "l'\(displayBase)"
+            }
+            return "\(article) \(displayBase)"
+        }()
+
+        // Annotation: (m) / (f) / (n) / (pl). Leeres Gender → keine
+        // Annotation, statt eines leeren Klammer-Paars.
+        if let g = genderLetter, !g.isEmpty {
+            return "\(withArticle) (\(g))"
+        }
+        return withArticle
+    }
+
+    /// Versuch, eine Singularform zu rekonstruieren — und dabei
+    /// gleichzeitig das Genus zu ermitteln.
+    ///
+    /// Rückgabe: (Display-Base, Gender-Letter). Display-Base ist
+    /// entweder die singularisierte Form (wenn DB-verifiziert) oder
+    /// die ursprüngliche Base.
+    private static func resolveSingularFormAndGender(
+        rawWithArticle: String,
+        bare: String,
+        item: VocabularyItem
+    ) -> (display: String, gender: String?) {
+        let lower = rawWithArticle.lowercased()
+        let explicitlyPlural = lower.hasPrefix("les ") || lower.hasPrefix("des ")
+
+        // 1) Direkter DB-Lookup auf Original — wenn Gender nicht „pl"
+        //    ist, ist das Ding schon Singular. Kein Singularisieren
+        //    nötig.
+        if let directGender = SupplementalFreeDictLexicon.sourceOnlyGender(for: item.french),
+           directGender != "pl" {
+            return (bare, directGender)
+        }
+
+        // 2) Wenn der Eintrag offensichtlich Plural ist oder die
+        //    DB „pl" sagt, versuchen wir zu singularisieren.
+        let dbSaysPlural = (SupplementalFreeDictLexicon.sourceOnlyGender(for: item.french) == "pl")
+        if explicitlyPlural || dbSaysPlural,
+           let candidate = naiveSingularizeFrenchNoun(bare) {
+            // Verifizieren: existiert die Singularform in der DB?
+            if let verifiedGender = SupplementalFreeDictLexicon.sourceOnlyGender(for: candidate),
+               verifiedGender != "pl" {
+                return (candidate, verifiedGender)
+            }
+            // DB kennt den Kandidaten nicht → Heuristik-Gender
+            if let info = frenchGenderInfo(for: candidate, cardType: .words) {
+                switch info.gender {
+                case .masculine: return (candidate, "m")
+                case .feminine:  return (candidate, "f")
+                case .neuter:    return (candidate, "n")
+                case .plural:    break
+                }
+            }
+            // Keine Bestätigung — Singularform trotzdem anzeigen, aber
+            // ohne zuverlässiges Gender.
+            return (candidate, nil)
+        }
+
+        // 3) Fallback: Original behalten. Gender via Heuristik.
+        if let info = frenchGenderInfo(for: bare, cardType: .words) {
+            switch info.gender {
+            case .masculine: return (bare, "m")
+            case .feminine:  return (bare, "f")
+            case .neuter:    return (bare, "n")
+            case .plural:    return (bare, "pl")
+            }
+        }
+        // Kein Gender-Hinweis verfügbar.
+        return (bare, nil)
+    }
+
+    /// Suffix-Regeln für französische Pluralform → Singular.
+    ///
+    /// Reihenfolge ist wichtig (längste/spezifischste Endung zuerst):
+    ///   • „eaux" → „eau"   (bateaux → bateau, gâteaux → gâteau)
+    ///   • „aux"  → „al"    (journaux → journal, chevaux → cheval)
+    ///   • „eux"  → „eu"    (neveux → neveu, cheveux → cheveu)
+    ///   • „x"    → „"      (bijoux → bijou, cailloux → caillou)
+    ///   • „s"    → „"      (grains → grain, tables → table)
+    ///
+    /// Kein „intelligenter" Fallback — wenn keine Regel greift,
+    /// nil zurück. Der Caller verifiziert das Ergebnis mit der DB.
+    static func naiveSingularizeFrenchNoun(_ plural: String) -> String? {
+        guard plural.count >= 3 else { return nil }
+        let lower = plural.lowercased()
+
+        if lower.hasSuffix("eaux") {
+            return String(plural.dropLast()) // „x" weg → „…eau"
+        }
+        if lower.hasSuffix("aux") {
+            return String(plural.dropLast(3)) + "al"
+        }
+        if lower.hasSuffix("eux") {
+            return String(plural.dropLast()) // „x" weg → „…eu"
+        }
+        if lower.hasSuffix("x") {
+            return String(plural.dropLast())
+        }
+        if lower.hasSuffix("s") {
+            return String(plural.dropLast())
+        }
+        return nil
+    }
+
     /// Französischer Artikel für ein Nomen ermitteln — DB-Gender zuerst,
     /// dann Heuristiken (Suffix-Regeln, German-Artikel-Rückschluss).
     private static func frenchArticle(forNoun base: String, item: VocabularyItem) -> String? {

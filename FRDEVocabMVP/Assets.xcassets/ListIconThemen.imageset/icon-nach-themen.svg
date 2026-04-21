@@ -1,19 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" fill="none">
+<svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" fill="none">
   <title>Nach Themen</title>
-  <ellipse cx="36" cy="64" rx="26" ry="3" fill="#000000" opacity="0.25"/>
-  <path d="M8 20 L8 54 C8 56 10 58 12 58 L60 58 C62 58 64 56 64 54 L64 22 C64 20 62 18 60 18 L28 18 L24 14 L12 14 C10 14 8 16 8 18 Z" fill="#D4A055" stroke="#1A1A2E" stroke-width="2.5" stroke-linejoin="round"/>
-  <path d="M8 24 L64 24 L64 54 C64 56 62 58 60 58 L12 58 C10 58 8 56 8 54 Z" fill="#FFD166" stroke="#1A1A2E" stroke-width="2.5" stroke-linejoin="round"/>
-  <rect x="14" y="30" width="16" height="8" rx="2" fill="#FF4D80" stroke="#1A1A2E" stroke-width="2"/>
-  <circle cx="17" cy="34" r="1.2" fill="#FFFFFF"/>
-  <rect x="32" y="30" width="16" height="8" rx="2" fill="#2EC4A9" stroke="#1A1A2E" stroke-width="2"/>
-  <circle cx="35" cy="34" r="1.2" fill="#FFFFFF"/>
-  <rect x="14" y="42" width="16" height="8" rx="2" fill="#5B9CF5" stroke="#1A1A2E" stroke-width="2"/>
-  <circle cx="17" cy="46" r="1.2" fill="#FFFFFF"/>
-  <rect x="32" y="42" width="16" height="8" rx="2" fill="#A78BFA" stroke="#1A1A2E" stroke-width="2"/>
-  <circle cx="35" cy="46" r="1.2" fill="#FFFFFF"/>
-  <rect x="50" y="30" width="12" height="8" rx="2" fill="#F0997B" stroke="#1A1A2E" stroke-width="2"/>
-  <circle cx="53" cy="34" r="1.2" fill="#FFFFFF"/>
-  <rect x="50" y="42" width="12" height="8" rx="2" fill="#FFCE00" stroke="#1A1A2E" stroke-width="2"/>
-  <circle cx="53" cy="46" r="1.2" fill="#FFFFFF"/>
+  <path d="M10 30 L34 30 L40 24 L86 24 Q86 28 86 30" fill="#E8EEF5" stroke-linejoin="round"/>
+  <path d="M10 30 L34 30 L40 24 L86 24 Q86 28 86 30" fill="none" stroke="#4A5A6B" stroke-width="2.5" stroke-linejoin="round"/>
+  <rect x="10" y="30" width="76" height="48" rx="5" fill="#FFFFFF"/>
+  <rect x="10" y="30" width="76" height="48" rx="5" fill="none" stroke="#4A5A6B" stroke-width="2.5"/>
+  <rect x="20" y="44" width="28" height="9" rx="2" fill="#4A7FB8"/>
+  <rect x="52" y="44" width="28" height="9" rx="2" fill="#C99530"/>
+  <rect x="20" y="59" width="28" height="9" rx="2" fill="#C99530"/>
+  <rect x="52" y="59" width="28" height="9" rx="2" fill="#4A7FB8"/>
 </svg>

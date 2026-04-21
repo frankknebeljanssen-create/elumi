@@ -67,6 +67,11 @@ struct SessionSummaryView: View {
     /// rampt auf den tatsächlichen `progress.levelProgress`-Wert.
     @State private var animatedLevelProgress: Double = 0
 
+    /// CTA erscheint erst, wenn die Reward-Animationen durchgelaufen sind.
+    /// Verhindert den Reflex-Tap „Weiter" direkt nach Session-Ende —
+    /// siehe `FeedbackTiming.ctaRevealDelay`.
+    @State private var ctaVisible = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             // Reihenfolge (Phase 9.1 Spec):
@@ -117,6 +122,15 @@ struct SessionSummaryView: View {
                 .delay(FeedbackTiming.progressBarAnimationDelay)) {
                 animatedLevelProgress = progress.levelProgress
             }
+
+            // CTA erscheint als Letztes — erst nachdem der User die
+            // Belohnung wahrgenommen hat. Timing zentral in `FeedbackTiming`.
+            withAnimation(
+                .easeOut(duration: FeedbackTiming.ctaRevealDuration)
+                .delay(FeedbackTiming.ctaRevealDelay)
+            ) {
+                ctaVisible = true
+            }
         }
         // Phase 3.5: XP-Hochzähler — Timer-basiert auf `totalXP` hochrampen.
         // Kleine Sessions (≤ 10 XP) überspringen den Ramp, sonst wirkt's
@@ -147,18 +161,27 @@ struct SessionSummaryView: View {
         VStack(alignment: .leading, spacing: 4) {
             setupCardLabel(outcome.session.origin.displayName)
 
-            // Ergebnis-Headline (Phase 3.5): wenn vom Modul übergeben,
-            // zeigt sie die modul-spezifische Ergebnis-Kurzform, z. B.
-            // „8 von 10 richtig". Fallback bleibt „Session geschafft".
+            // Ergebnis-Headline (Phase 3.5):
+            //   1. Explizit via `resultHeadline`-Parameter (Call-Site-Override)
+            //   2. Fallback: `outcome.session.resultHeadline` — modul-spezifisch,
+            //      zentral in `LearningSession` gepflegt, damit jede Summary
+            //      automatisch Spec-konform ist ohne Call-Site-Boilerplate.
+            //
+            // Analog für das Rating:
+            //   1. Explizit via `performanceRating`
+            //   2. `outcome.session.accuracyRating` (Sehr stark / Stark / …)
+            //   3. `isFlawless` → „Fehlerfrei!" (Success-Ton, emotional stärker)
+            let effectiveHeadline = resultHeadline ?? outcome.session.resultHeadline
+            let effectiveRating = performanceRating ?? outcome.session.accuracyRating
             HStack(spacing: 8) {
-                Text(resultHeadline ?? "Session geschafft")
+                Text(effectiveHeadline)
                     .font(.system(size: 22, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
 
-                if let performanceRating {
-                    performanceBadge(text: performanceRating, tint: AppTheme.Colors.cta)
+                if let effectiveRating {
+                    performanceBadge(text: effectiveRating, tint: AppTheme.Colors.cta)
                 } else if outcome.session.isFlawless {
                     performanceBadge(text: "Fehlerfrei!", tint: AppTheme.Colors.success)
                 }
@@ -241,12 +264,29 @@ struct SessionSummaryView: View {
 
     /// True, wenn mindestens **ein** Reward-Chip gezeigt würde — sonst
     /// sparen wir uns den Divider + die leere Section.
+    ///
+    /// `showsStreakActive` deckt den Spec-Fall „Streak bleibt aktiv" ab
+    /// (Session OHNE Streak-Steigerung, aber laufende Streak vorhanden):
+    /// der User soll sehen, dass seine Kette heute schon gesichert ist,
+    /// auch wenn diese konkrete Session den Counter nicht mehr bewegt.
     private var hasRewards: Bool {
         outcome.totalCredits > 0
             || outcome.leveledUp
             || outcome.streakIncreasedToday
             || outcome.dailyBonusXP > 0
             || outcome.variableReward.hasBonus
+            || showsStreakActive
+    }
+
+    /// „Streak bleibt aktiv"-Signal: nur wenn diese Session die Streak
+    /// nicht hochgesetzt hat (etwa weil die Tagesaufgabe heute bereits
+    /// erfüllt war), aber noch eine laufende Kette existiert. Ein laufender
+    /// Milestone-Chip würde bereits die Aufmerksamkeit binden — dann
+    /// sparen wir uns den Zusatz.
+    private var showsStreakActive: Bool {
+        !outcome.streakIncreasedToday
+            && progress.currentStreak > 0
+            && outcome.creditsFromStreakMilestone == 0
     }
 
     private var xpBreakdown: some View {
@@ -311,10 +351,16 @@ struct SessionSummaryView: View {
                 )
             }
             if outcome.leveledUp {
+                // Level-Up-Chip nutzt den **Level-Namen** aus
+                // `LevelProgression` (User-Spec: Bedeutung statt Zahl).
+                // „Entdecker erreicht" statt „Level 3 erreicht" —
+                // emotional stärker, ohne das System zu verändern.
+                // Credit-Reward als „+N Spiele", konsistent zum
+                // Footer-Badge + GameHub-Hero.
                 rewardChip(
                     icon: "arrow.up.circle.fill",
-                    title: "Level \(outcome.newLevel) erreicht",
-                    subtitle: "+\(outcome.creditsFromLevelUp) Credits",
+                    title: "\(LevelProgression.name(forLevel: outcome.newLevel)) erreicht",
+                    subtitle: "+\(Self.gamesWording(outcome.creditsFromLevelUp))",
                     color: AppTheme.Colors.cta,
                     isHero: true,
                     animationDelay: FeedbackTiming.rewardChipStagger[1]
@@ -325,17 +371,34 @@ struct SessionSummaryView: View {
                     icon: "flame.fill",
                     title: "\(outcome.newStreak) Tage Streak",
                     subtitle: outcome.creditsFromStreakMilestone > 0
-                        ? "+\(outcome.creditsFromStreakMilestone) Credits · Meilenstein!"
+                        ? "+\(Self.gamesWording(outcome.creditsFromStreakMilestone)) · Meilenstein!"
                         : "weiter so",
                     color: Color(hex: "#FF9F40"),
                     isHero: outcome.creditsFromStreakMilestone > 0 && !outcome.leveledUp,
                     animationDelay: FeedbackTiming.rewardChipStagger[2]
                 )
+            } else if showsStreakActive {
+                // „Streak bleibt aktiv" — Anti-Verlustmoment: die Kette ist
+                // heute bereits gesichert, die Session ist ein Zusatz. Dezent
+                // gefärbt (nicht hero), damit der Chip die Wahrnehmung nicht
+                // stiehlt, aber den User in der Gewohnheit bestärkt.
+                rewardChip(
+                    icon: "flame",
+                    title: "\(progress.currentStreak) Tage Streak aktiv",
+                    subtitle: "Heute bereits gesichert",
+                    color: Color(hex: "#FF9F40"),
+                    isHero: false,
+                    animationDelay: FeedbackTiming.rewardChipStagger[2]
+                )
             }
             if outcome.creditsFromXP > 0 {
+                // Gleiches Wortschatz-Mapping wie beim Level-Up-Chip:
+                // „Credits" → „Spiele" (Singular/Plural), Icon auf
+                // Gamecontroller, damit Footer/Game-Hub/Session-End
+                // dasselbe visuelle Vokabular sprechen.
                 rewardChip(
-                    icon: "circle.hexagongrid.fill",
-                    title: "+\(outcome.creditsFromXP) Credits",
+                    icon: "gamecontroller.fill",
+                    title: "+\(Self.gamesWording(outcome.creditsFromXP))",
                     subtitle: "aus XP-Meilensteinen",
                     color: AppTheme.Colors.elumiBlue,
                     isHero: false,
@@ -367,14 +430,24 @@ struct SessionSummaryView: View {
     }
 
     /// Untertitel für den „Tagesaufgabe erledigt"-Chip. Faltet XP + ggf.
-    /// Credit in einem lesbaren Satz zusammen.
+    /// Spiele in einem lesbaren Satz zusammen.
     private var dailyChallengeRewardSubtitle: String {
         let xpPart = "+\(outcome.dailyBonusXP) XP"
         if outcome.creditsFromDailyChallenge > 0 {
-            let creditWord = outcome.creditsFromDailyChallenge == 1 ? "Credit" : "Credits"
-            return "\(xpPart) · +\(outcome.creditsFromDailyChallenge) \(creditWord)"
+            return "\(xpPart) · +\(Self.gamesWording(outcome.creditsFromDailyChallenge))"
         }
         return xpPart
+    }
+
+    /// User-facing Wortschatz „Credit" → „Spiel" (Single Source of Truth
+    /// für Session-End, Footer-Badge, GameHub-Hero). `arcadeCredits` und
+    /// `creditsFromXP` bleiben technisch „Credits" (DB-Schicht), aber in
+    /// der Anzeige nennen wir sie konsistent „Spiel/Spiele", damit Footer-
+    /// Icon (Gamepad), Game-Hub-Titel und Session-End-Chip dieselbe
+    /// Sprache sprechen. Nutzt die Tatsache, dass
+    /// `ArcadeCreditSystem.gamesCost == 1` → 1 Credit = 1 Spiel.
+    static func gamesWording(_ count: Int) -> String {
+        count == 1 ? "1 Spiel" : "\(count) Spiele"
     }
 
     /// Reward-Chip — kompakte Zeile; bei `isHero` größer (stärkere Hintergrund-
@@ -484,31 +557,40 @@ struct SessionSummaryView: View {
 
     @ViewBuilder
     private var ctaFooter: some View {
-        if let primary = onPrimaryCTA {
-            VStack(spacing: 8) {
-                Button(action: primary) {
-                    Text(primaryCTALabel ?? "Weiter lernen")
+        // Hülle, die Opacity + Offset + Tap-Sperre bündelt — solange
+        // `ctaVisible == false` ist der Footer unsichtbar UND nicht
+        // antippbar. Das verhindert, dass ein flinker User die
+        // Reward-Animation wegklickt, bevor sie gelaufen ist.
+        Group {
+            if let primary = onPrimaryCTA {
+                VStack(spacing: 8) {
+                    Button(action: primary) {
+                        Text(primaryCTALabel ?? "Weiter lernen")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+
+                    if let secondary = onSecondaryCTA, let label = secondaryCTALabel {
+                        Button(action: secondary) {
+                            Text(label)
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(AppSecondaryButtonStyle(tint: AppTheme.Colors.cta))
+                    }
+                }
+                .padding(.top, 4)
+            } else if let onContinue {
+                Button(action: onContinue) {
+                    Text("Weiter")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-
-                if let secondary = onSecondaryCTA, let label = secondaryCTALabel {
-                    Button(action: secondary) {
-                        Text(label)
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(AppSecondaryButtonStyle(tint: AppTheme.Colors.cta))
-                }
+                .padding(.top, 4)
             }
-            .padding(.top, 4)
-        } else if let onContinue {
-            Button(action: onContinue) {
-                Text("Weiter")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-            .padding(.top, 4)
         }
+        .opacity(ctaVisible ? 1 : 0)
+        .offset(y: ctaVisible ? 0 : 8)
+        .allowsHitTesting(ctaVisible)
     }
 
     private var divider: some View {

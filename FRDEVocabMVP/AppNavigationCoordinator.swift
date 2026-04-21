@@ -116,6 +116,19 @@ final class AppNavigationCoordinator: ObservableObject {
         return false
     }
 
+    /// Pokal-Tab-Navigation. Der Tab sammelt die ausführlichen
+    /// Status-Cards (Streak, Level/XP, Lernstatus) — auf Home leben
+    /// nach dem Rebuild nur noch die kompakten Versionen.
+    func openTrophyScreen() {
+        guard currentScreen != .trophy else { return }
+        navigateInstant { navigationPath.append(.trophy) }
+    }
+
+    var isTrophyScreenActive: Bool {
+        if case .trophy = currentScreen { return true }
+        return false
+    }
+
     func openScreenWhenReady(_ screen: AppScreen, onWillNavigate: (() -> Void)? = nil) {
         guard currentScreen != screen else { return }
         onWillNavigate?()

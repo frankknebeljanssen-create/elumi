@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <title>Vokabelliste</title>
+  <rect x="14" y="22" width="68" height="52" rx="5" fill="#FFFFFF"/>
+  <rect x="14" y="22" width="68" height="52" rx="5" fill="none" stroke="#4A5A6B" stroke-width="2.5"/>
+  <line x1="48" y1="22" x2="48" y2="74" stroke="#4A5A6B" stroke-width="1.5" opacity="0.3"/>
+  <rect x="22" y="34" width="18" height="3" rx="1.5" fill="#4A7FB8"/>
+  <rect x="56" y="34" width="22" height="3" rx="1.5" fill="#C99530"/>
+  <rect x="22" y="46" width="20" height="3" rx="1.5" fill="#4A7FB8"/>
+  <rect x="56" y="46" width="16" height="3" rx="1.5" fill="#C99530"/>
+  <rect x="22" y="58" width="16" height="3" rx="1.5" fill="#4A7FB8"/>
+  <rect x="56" y="58" width="20" height="3" rx="1.5" fill="#C99530"/>
+</svg>

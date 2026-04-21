@@ -2,10 +2,22 @@ import Foundation
 
 /// Credits earned from learning activities, spent to play the Arcade game.
 ///
-/// Earning:
-/// - Perfect/Complete session = 3 credits
-/// - Good effort (>50% correct) = 2 credits
-/// - At least tried (any activity) = 1 credit
+/// **Game Loop Philosophy (User-Spec):**
+/// Spiel ist eine **Belohnung** für Lernen, kein Standard-Nebenprodukt.
+/// Nicht jede Session gibt ein Spiel — Spiele entstehen über:
+///   • seltenere XP-Meilensteine (`xpPerCredit = 250`, also ca. jede
+///     zweite bis dritte Session ein Spiel),
+///   • Level-Ups (Pauschal-Bonus pro Level),
+///   • Streak-Milestones (nach 3/7/14/30 Tagen Streak),
+///   • Daily-Challenge-Abschluss (pro abgeschlossener Challenge),
+///   • seltene Variable-Reward-Events.
+///
+/// Die Session-basierte 1–3-Credit-Logik (`creditsEarned`, `speedRoundCredits`,
+/// `flashcardCredits`) bleibt als API bestehen, wird im aktuellen
+/// ProgressService aber **nicht** direkt auf die Balance geschrieben —
+/// stattdessen kommen Credits über `bonusCreditsFromXP` und die oben
+/// genannten Event-Quellen. Das entspricht der Spec „NICHT jede
+/// Session gibt ein Spiel".
 ///
 /// Spending:
 /// - 1 credit = 1 Arcade game (3 lives)
@@ -66,8 +78,12 @@ enum ArcadeCreditSystem {
     /// Cost to play one arcade game
     static let gamesCost = 1
 
-    /// XP threshold for earning a bonus credit
-    static let xpPerCredit = 20
+    /// XP-Schwelle pro verdientem Spiel. Delegiert an die zentrale
+    /// `GamificationConfig.xpPerBonusCredit` (Single-Source-of-Truth),
+    /// damit ProgressService, SessionSetupEstimate, GameHub und alle
+    /// weiteren Reader **denselben** Wert sehen. Änderung dort — hier
+    /// automatisch mit.
+    static var xpPerCredit: Int { GamificationConfig.xpPerBonusCredit }
 
     /// Check if XP milestone crossed, return bonus credits earned
     static func bonusCreditsFromXP(previousXP: Int, newXP: Int) -> Int {

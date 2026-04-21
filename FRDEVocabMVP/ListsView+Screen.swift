@@ -112,7 +112,7 @@ extension ListsView {
                 // Eigenständige SVG-Icons aus dem Catalog (nicht SF-Symbols).
                 // Bounding-Box 46pt — etwas größer als vorher (40), damit die
                 // Kategorie-Illustrationen auch in der Row sichtbar „atmen".
-                Image(iconAsset)
+                Image(appIcon: iconAsset)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 46, height: 46)
@@ -189,7 +189,7 @@ extension ListsView {
                         // Icon synchron zum Alle-Listen-Icon gewachsen
                         // (48 → 54), damit beide Hero-Icons auf dem Screen
                         // dieselbe Gewichtung haben.
-                        Image("ListIconNeueListe")
+                        Image(appIcon: "ListIconNeueListe")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 54, height: 54)

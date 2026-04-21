@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="96" height="44" viewBox="0 26 96 44" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <title>Sprachrichtung DE FR</title>
+  <rect x="8" y="30" width="30" height="36" rx="5" fill="#C99530"/>
+  <rect x="8" y="30" width="30" height="36" rx="5" fill="none" stroke="#8B6A20" stroke-width="2.5"/>
+  <text x="23" y="54" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif" font-size="14" font-weight="800" fill="#FFFFFF">DE</text>
+  <path d="M42 42 L54 42" stroke="#C99530" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M49 37 L54 42 L49 47" stroke="#C99530" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M54 54 L42 54" stroke="#C99530" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M47 49 L42 54 L47 59" stroke="#C99530" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <rect x="58" y="30" width="30" height="36" rx="5" fill="#4A7FB8"/>
+  <rect x="58" y="30" width="30" height="36" rx="5" fill="none" stroke="#2A4F78" stroke-width="2.5"/>
+  <text x="73" y="54" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif" font-size="14" font-weight="800" fill="#FFFFFF">FR</text>
+</svg>

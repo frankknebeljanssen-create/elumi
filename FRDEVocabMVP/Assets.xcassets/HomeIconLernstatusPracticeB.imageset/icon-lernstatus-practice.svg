@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <title>Lernstatus Practice</title>
+  <ellipse cx="48" cy="88" rx="30" ry="5" fill="#000" opacity="0.25"/>
+  <circle cx="48" cy="50" r="34" fill="#8B5A00"/>
+  <circle cx="48" cy="44" r="34" fill="#FFD166"/>
+  <circle cx="48" cy="44" r="34" fill="none" stroke="#1A1A2E" stroke-width="2.8"/>
+  <path d="M22 28 Q38 18 58 26" stroke="#FFE89A" stroke-width="5" stroke-linecap="round" opacity="0.3"/>
+  <circle cx="22" cy="28" r="2" fill="#FFF" opacity="0.3"/>
+  <circle cx="48" cy="44" r="22" fill="none" stroke="#E8A020" stroke-width="3"/>
+  <circle cx="48" cy="44" r="12" fill="none" stroke="#E8A020" stroke-width="3"/>
+  <circle cx="48" cy="44" r="4" fill="#FF4D80" stroke="#1A1A2E" stroke-width="2"/>
+  <path d="M68 24 L52 40" stroke="#1A1A2E" stroke-width="3" stroke-linecap="round"/>
+  <path d="M62 18 L70 18 L70 26" stroke="#1A1A2E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

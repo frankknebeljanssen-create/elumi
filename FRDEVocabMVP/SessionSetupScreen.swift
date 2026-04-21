@@ -28,12 +28,24 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
     let accent: Color
     let estimate: SessionEstimate
     let primaryButtonTitle: String
+    /// Optionale Subline unter dem Start-Button. Default `nil` — klassisch
+    /// single-line, so bleibt jede andere Setup-Hülle visuell unberührt.
+    /// Genutzt vom Vokabel-Setup („Viel Erfolg beim Lernen!"), da dessen
+    /// Gamification-Bar in die Speed-Round-Card integriert ist und der CTA
+    /// dadurch optisch kürzer wirkt — die Subline gibt ihm Wärme zurück.
+    var primarySubtitle: String? = nil
     var isPrimaryEnabled: Bool = true
     /// Sichtbarkeit der globalen Lernrichtung im Setup. Default `true` —
     /// der Nutzer kann in jedem Modul sehen und ändern, in welche
     /// Richtung gelernt wird. Für spezielle Screens, die den Schalter
     /// nicht anzeigen sollen, auf `false` setzen.
     var showsDirection: Bool = true
+    /// Sichtbarkeit der Gamification-Bar über dem CTA. Default `true` —
+    /// Karteikarten/Quiz/Training(Nomen/Artikel/Verben/Verbformen) zeigen
+    /// die Bar weiterhin. Auf `false` setzen, wenn die Metriken woanders
+    /// im Screen integriert sind (Vokabel-Setup: XP/Zeit/Credits stecken
+    /// in der Speed-Round-Mode-Card, die zentrale Bar wäre redundant).
+    var showsGamificationBar: Bool = true
     let onBack: () -> Void
     let onStart: () -> Void
     @ViewBuilder let contextContent: () -> ContextContent
@@ -46,8 +58,10 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
         accent: Color,
         estimate: SessionEstimate,
         primaryButtonTitle: String,
+        primarySubtitle: String? = nil,
         isPrimaryEnabled: Bool = true,
         showsDirection: Bool = true,
+        showsGamificationBar: Bool = true,
         onBack: @escaping () -> Void,
         onStart: @escaping () -> Void,
         @ViewBuilder contextContent: @escaping () -> ContextContent,
@@ -57,8 +71,10 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
         self.accent = accent
         self.estimate = estimate
         self.primaryButtonTitle = primaryButtonTitle
+        self.primarySubtitle = primarySubtitle
         self.isPrimaryEnabled = isPrimaryEnabled
         self.showsDirection = showsDirection
+        self.showsGamificationBar = showsGamificationBar
         self.onBack = onBack
         self.onStart = onStart
         self.contextContent = contextContent
@@ -88,14 +104,19 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
             .scrollDismissesKeyboard(.interactively)
         }
         .safeAreaInset(edge: .bottom) {
-            VStack(spacing: 14) {
+            // Spacing Gamification-Bar ↔ CTA über zentrale Konstante —
+            // alle Setup-Screens rendern mit demselben Rhythmus.
+            VStack(spacing: AppLayout.gamificationBarToCTASpacing) {
                 // GamificationBar + CTA nutzen dasselbe Horizontal-Padding
                 // → garantiert identische Breite. Systemweite Konstante.
-                SessionGamificationBar(estimate: estimate)
-                    .padding(.horizontal, AppLayout.sessionCTAHorizontalPadding)
+                if showsGamificationBar {
+                    SessionGamificationBar(estimate: estimate)
+                        .padding(.horizontal, AppLayout.sessionCTAHorizontalPadding)
+                }
 
                 SessionPrimaryCTA(
                     title: primaryButtonTitle,
+                    subtitle: primarySubtitle,
                     isEnabled: isPrimaryEnabled,
                     action: onStart
                 )

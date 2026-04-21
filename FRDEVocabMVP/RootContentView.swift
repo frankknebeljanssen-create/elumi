@@ -100,6 +100,24 @@ struct ContentView: View {
                             navigate: { nextScreen in navigation.navigationPath.append(nextScreen) },
                             markFlashcardsOpenTiming: markFlashcardsOpenTiming
                         )
+                        // **Direkt auf die Destination** dieselben
+                        // Environment-Closures anbinden, die auch
+                        // außen am NavigationStack gesetzt sind.
+                        // SwiftUI propagiert Environment zwar auch
+                        // über `navigationDestination`, aber es gab
+                        // User-Reports über „Footer-Buttons außer
+                        // Einstellungen reagieren nicht beim ersten
+                        // Öffnen einer Route — funktionieren nach
+                        // Re-Entry". Das deutet auf einen
+                        // First-Push-Env-Timing-Quirk hin. Die
+                        // redundante Anwendung hier stellt sicher,
+                        // dass env-fallback-Buttons (Kamera,
+                        // Wörterbuch, Spiele) IMMER die richtigen
+                        // Closures sehen.
+                        .environment(\.appOpenScanAction, { openScanScreen() })
+                        .environment(\.appOpenLexiconAction, { openLexiconScreen() })
+                        .environment(\.appOpenGameHubAction, { openGameHubScreen() })
+                        .environment(\.appOpenAccountAction, { navigation.navigationPath.append(.account) })
                     }
                     .onAppear {
                         let currentDirection = Direction(rawValue: selectedDirectionRaw) ?? .frenchToGerman
@@ -127,14 +145,23 @@ struct ContentView: View {
                             feedbackPlayer: feedbackPlayer,
                             onHome: { runtime.feedbackPlayer?.playTabSwitch(); navigation.goHome() },
                             // Footer-Snack-Button (ehem. „Sammlung") öffnet jetzt den
-                            // Game Hub. Der Progress Hub bleibt über das Home-Board
+                            // Game Hub. Der Progress Hub bleibt über den Pokal-Tab
                             // erreichbar — klare Trennung „Footer = Spielen",
-                            // „Home-Board = Fortschritt".
+                            // „Pokal = Fortschritt".
                             onFavorite: navigation.isGameHubScreenActive ? nil : { openGameHubScreen() },
                             onScan: navigation.isLexiconScreenActive ? nil : { openLexiconScreen() },
                             onSettings: isSettingsScreenActive ? nil : { openSettingsScreen() },
+                            // **Pokal-Tab** (Home-Rebuild): tappable im
+                            // globalen Footer überall in der App. Auf
+                            // dem Pokal-Screen selbst entfällt die Action
+                            // (kein Re-Push), Icon bleibt aktiv markiert.
+                            onTrophy: navigation.isTrophyScreenActive ? nil : {
+                                runtime.feedbackPlayer?.playTabSwitch()
+                                navigation.openTrophyScreen()
+                            },
                             isHeartsActive: navigation.isGameHubScreenActive,
                             isScanActive: navigation.isLexiconScreenActive,
+                            isTrophyActive: navigation.isTrophyScreenActive,
                             isSettingsActive: isSettingsScreenActive
                         )
                     }
@@ -144,6 +171,9 @@ struct ContentView: View {
                 })
                 .environment(\.appOpenScanAction, {
                     openScanScreen()
+                })
+                .environment(\.appOpenLexiconAction, {
+                    openLexiconScreen()
                 })
                 .environment(\.appOpenGameHubAction, {
                     openGameHubScreen()

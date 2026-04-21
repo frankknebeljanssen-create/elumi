@@ -40,8 +40,17 @@ struct HomeModuleTile: View {
 
     var body: some View {
         Button(action: onTap) {
+            // `Spacer`-Einrahmung erzwingt vertikale Zentrierung, auch
+            // wenn die Tiles durch gleich großes Row-Sizing (LazyVGrid)
+            // mehr Höhe bekommen als der Content braucht. Ohne die
+            // Spacer saß das Icon-Text-Paar bei manchen Kacheln am oberen
+            // Rand, weil das Default-Alignment der äußeren Frame-Slack
+            // nicht zuverlässig greift, sobald andere Layout-Knoten
+            // (Pager-Höhe, Row-Max-Height) zwischen den Tiles mischen.
             VStack(spacing: spec.iconTextSpacing) {
-                HomeModuleIconView(icon: icon, size: spec.iconSize)
+                Spacer(minLength: 0)
+
+                HomeModuleIconView(icon: icon, size: spec.iconSize, glyphTint: accent)
                     .frame(height: spec.iconSize)
                     .opacity(deemphasized ? 0.78 : 1)
                     .offset(x: iconOffset.width, y: iconOffset.height)
@@ -56,8 +65,15 @@ struct HomeModuleTile: View {
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
+                    // User-Request: Texte in den Kacheln etwas nach oben,
+                    // Icons bleiben an der Stelle. Reiner visueller
+                    // Offset — verändert weder Layout-Höhe noch Icon-
+                    // Position (Icon-Anker bleibt über dem VStack-Spacing).
+                    .offset(y: -5)
+
+                Spacer(minLength: 0)
             }
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.horizontal, 6)
             .padding(.vertical, spec.verticalPadding)
             .frame(maxWidth: .infinity, minHeight: spec.minHeight)
@@ -100,18 +116,30 @@ struct HomeModuleTile: View {
     private var spec: Spec {
         switch size {
         case .hero:
-            // Hero-Kachel: Icon bewusst etwas größer (72 → 84), während
-            // Titel-Font (16 pt) und `minHeight` (148 pt) unverändert
-            // bleiben — die Kachel wächst nicht, das Icon bekommt nur mehr
-            // Präsenz. `iconTextSpacing` bleibt bei 10 pt, weil der
-            // Footer-Text dadurch automatisch näher an die Unterkante rückt
-            // (gewollt — Icon ist der primäre Anker).
+            // Hero-Kachel: Icon-Größen-Progression 72 → 84 → **104 pt**.
+            // Dritter Schritt: die neuen SVG-Icons haben einen größeren
+            // Content-Anteil in ihrer Bounding-Box, deshalb wirken sie bei
+            // gleicher Pixelgröße optisch kleiner als die alten Cartoon-
+            // PNGs — daher die klare Erhöhung auf 104.
+            //
+            // `minHeight` 148 → 143 → **138** (zwei × −5 pt, User-
+            // Request): Kacheln werden insgesamt 10 pt kompakter,
+            // ohne dass Icons oder Titel-Font schrumpfen. Die verlorene
+            // Höhe wird über die internen Abstände zurückgewonnen:
+            //   • `iconTextSpacing` 10 → 8 → 5 (−2 / −3)
+            //   • `verticalPadding`  6 → 4 → 3 (−2 / −1)
+            // Summe Content: 104 + 5 Spacing + ~22 Titel + 6 Padding
+            // = 137 pt → passt exakt in die 138-pt-Kachel (1 pt Puffer).
+            // Pager-Höhe (380) bleibt unverändert → Kachel-**Position**
+            // wandert **nicht**, nur die Größe reduziert sich; der frei
+            // werdende Platz summiert sich am Grid-Bottom, wo die Page-
+            // Dots sitzen — deren Y-Position bleibt ebenfalls stabil.
             return Spec(
-                iconSize: 84,
-                iconTextSpacing: 10,
-                titleFontSize: 16,
-                verticalPadding: 14,
-                minHeight: 148,
+                iconSize: 104,
+                iconTextSpacing: 5,
+                titleFontSize: 18,
+                verticalPadding: 3,
+                minHeight: 138,
                 cornerRadius: 22,
                 accentTintOpacity: AppTheme.CardIntensity.medium,
                 shadowOpacity: 0.7,

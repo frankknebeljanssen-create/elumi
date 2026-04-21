@@ -74,6 +74,37 @@ enum AppLayout {
     /// Picker prüfen gegen diesen Wert, alle Card-Übersichten verwenden ihn
     /// als `prefix`-Limit.
     static let maxSelectableLists: Int = 3
+
+    // MARK: - Setup-Screen Vertical Rhythm
+    //
+    // Systemweite Spacing-Tokens für Modul-Setup-Screens (Karteikarten,
+    // Quiz, Training, Akzente, Vokabeln, Verbformen). Alle Setup-Screens
+    // nutzen dieselben Block-Abstände — Änderungen an einer Stelle
+    // springen über alle Module synchron durch. Keine Local-Overrides.
+    //
+    // Rhythmus (von oben nach unten):
+    //   Header → Ausgewählte Listen → Sprachrichtung → Hauptblock →
+    //   Detail-Block → Gamification-Bar → CTA
+    //
+    // - `sessionContextToDirectionSpacing` existiert bereits oben
+    //   (Listen ↔ Sprachrichtung, 20 pt).
+    // - `setupMainSectionSpacing`: Abstand zwischen den Haupt-Blöcken
+    //   (Sprachrichtung → Hauptblock → Detail → Gamification). Wert =
+    //   `AppTheme.Spacing.md` (16 pt).
+    // - `setupDetailBlockSpacing`: enger interner Abstand zwischen
+    //   Detail-Unter-Sektionen (z. B. zwei Parameter-Cards untereinander).
+    //   Wert = `AppTheme.Spacing.sm` (12 pt).
+    // - `setupHeadlineToContentSpacing`: Abstand zwischen einer Section-
+    //   Headline (z. B. „Was möchtest du machen?") und ihrem Content.
+    //   Wert = 10 pt (der in den Drill-Modulen bereits in Benutzung ist).
+    // - `gamificationBarToCTASpacing`: Abstand Gamification-Bar → CTA.
+    //   Wird vom SessionSetupScreen gerendert; kompakt, damit die beiden
+    //   als Card-Duo gelesen werden. Wert = 10 pt.
+
+    static let setupMainSectionSpacing: CGFloat = AppTheme.Spacing.md
+    static let setupDetailBlockSpacing: CGFloat = AppTheme.Spacing.sm
+    static let setupHeadlineToContentSpacing: CGFloat = 10
+    static let gamificationBarToCTASpacing: CGFloat = 10
 }
 
 extension View {

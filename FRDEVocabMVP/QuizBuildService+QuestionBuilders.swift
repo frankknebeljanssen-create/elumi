@@ -186,6 +186,17 @@ extension QuizBuildService {
     }
 
     // MARK: - Fill-in-the-Blanks (from pre-generated sentences)
+    //
+    // Design-Entscheidung (#7 aus Review): Hier läuft **kein**
+    // `MCDistractorFilter`. FillBlank-Distraktoren sind kuratierte
+    // **Funktionswörter** (Artikel, Präpositionen, Pronomen) — siehe
+    // `FillBlankSentences.tsv` → Spalte `distractors`. Sie sind
+    // didaktisch genau auf das jeweilige Blank-Wort und den
+    // grammatischen Kontext zugeschnitten (z. B. `le / un / la / du`
+    // bei einem Blank-Wort `le`). `MCDistractorFilter` operiert auf
+    // Content-Wörtern (Nomen/Verben) mit Level-Bucket/Länge — die
+    // beiden Distraktor-Modelle liegen bewusst orthogonal zueinander,
+    // eine Vereinheitlichung würde hier die Qualität senken, nicht heben.
 
     static func nextFillBlanksQuestion(
         items: [VocabularyItem],
@@ -238,8 +249,6 @@ extension QuizBuildService {
             guard !frenchRaw.isEmpty, !germanRaw.isEmpty else { continue }
 
             let isFrToDE = direction == .frenchToGerman
-            let promptRaw = isFrToDE ? frenchRaw : germanRaw
-            let answerRaw = isFrToDE ? germanRaw : frenchRaw
             let promptLang = isFrToDE ? "fr-FR" : "de-DE"
             let answerLang = isFrToDE ? "de-DE" : "fr-FR"
             let category = item.cardType.categoryName
@@ -285,7 +294,12 @@ extension QuizBuildService {
                     answerHasArticle: hasArticle,
                     answerLeadingArticle: leadingGermanArticle(in: answer),
                     answerInitial: answerKey.split(separator: " ").dropFirst(hasArticle ? 1 : 0).first.map { String($0.prefix(1)) } ?? String(answerKey.prefix(1)),
-                    isPhrase: category == CardType.phrases.categoryName
+                    isPhrase: category == CardType.phrases.categoryName,
+                    // Level durchreichen für das Distraktor-Niveau-Gating.
+                    // `VocabularyLevel.rawValue` ist auf Deutsch (Anfänger/
+                    // Mittel/Fortgeschritten); `MCDistractorFilter.LevelBucket`
+                    // versteht auch diese Strings.
+                    level: item.level?.rawValue
                 )
             )
         }
@@ -357,7 +371,31 @@ extension QuizBuildService {
             $0.isPhrase == correctCandidate.isPhrase
         }
 
-        let scoringPool = exactStructurePool.count >= 3 ? exactStructurePool : candidates
+        // Level-Gating: aus dem strukturell passenden Pool zuerst die
+        // Kandidaten im **gleichen Level-Bucket** wie die korrekte
+        // Antwort versuchen (A1/A2 = .basic, B1/B2 = .intermediate,
+        // C1/C2 = .advanced). Erst wenn dort zu wenig Treffer → Fallback
+        // auf den vollen Struktur-Pool, dann auf alle Kandidaten. Das
+        // verhindert „Portfolio" als Distraktor bei „Auto" ohne den
+        // bestehenden Scoring-Kern zu brechen.
+        let correctBucket = MCDistractorFilter.LevelBucket.bucket(for: correctCandidate.level)
+        let levelMatchedPool: [QuizCandidate]
+        if let correctBucket {
+            levelMatchedPool = exactStructurePool.filter {
+                MCDistractorFilter.LevelBucket.bucket(for: $0.level) == correctBucket
+            }
+        } else {
+            levelMatchedPool = []
+        }
+
+        let scoringPool: [QuizCandidate]
+        if levelMatchedPool.count >= 3 {
+            scoringPool = levelMatchedPool
+        } else if exactStructurePool.count >= 3 {
+            scoringPool = exactStructurePool
+        } else {
+            scoringPool = candidates
+        }
 
         let coarseRanked = scoringPool.compactMap { candidate -> (QuizCandidate, Double)? in
             guard candidate.id != correctCandidate.id else { return nil }
@@ -448,6 +486,25 @@ extension QuizBuildService {
 
         if candidate.promptWordCount == correctCandidate.promptWordCount {
             score += 0.7
+        }
+
+        // Level-Match-Bonus — greift nur, wenn beide Kandidaten ein
+        // erkennbares Level haben. Zweistufig: exakt-selber-Bucket (+2.5)
+        // oder Nachbar-Bucket (+0.8). Falls die Pools bereits nach
+        // Level gefiltert wurden (siehe `bestDistractors`), addiert der
+        // Bonus nur noch die feinere Ordnung zwischen gleich-gebucketen.
+        if let candidateBucket = MCDistractorFilter.LevelBucket.bucket(for: candidate.level),
+           let correctBucket = MCDistractorFilter.LevelBucket.bucket(for: correctCandidate.level) {
+            if candidateBucket == correctBucket {
+                score += 2.5
+            } else if correctBucket.neighbors.contains(candidateBucket) {
+                score += 0.8
+            } else {
+                // Ferne Buckets (A1 vs C2) werden aktiv abgestraft —
+                // Fallback-Kaskade darf sie nur zulassen, wenn gar nichts
+                // Passendes übrig bleibt.
+                score -= 2.0
+            }
         }
 
         return score

@@ -73,6 +73,28 @@ enum ScanMode: String, CaseIterable, Identifiable {
             return "Mach ein Foto oder wähle ein Bild mit freiem Text."
         }
     }
+
+    // MARK: - Badge (ScanModeBadge)
+
+    /// Kurztext für das Mode-Badge in den Scan-Screens.
+    /// Vollständiger als `shortTitle` („Liste") aber kompakter als
+    /// `title` („Vokabelliste") — kommuniziert das Verb „scannen",
+    /// damit der User weiß, was hier passiert.
+    var badgeTitle: String {
+        switch self {
+        case .list: return "Vokabeln scannen"
+        case .text: return "Freier Text scannen"
+        }
+    }
+
+    /// SF-Symbol fürs Badge-Icon. Spiegelt die Semantik — ein
+    /// Listen-Icon für die Vokabelliste, ein Text-Icon für Freitext.
+    var badgeSystemImage: String {
+        switch self {
+        case .list: return "list.bullet.rectangle"
+        case .text: return "text.alignleft"
+        }
+    }
 }
 
 struct ImportPreviewPair: Identifiable, Equatable {

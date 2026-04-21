@@ -33,7 +33,7 @@ private struct AmbientScreenWormPass {
             return [0.18, 0.24, 0.86, 0.9]
         case .lexicon:
             return [0.2, 0.86]
-        case .home, .train, .trainNouns, .trainArticles, .trainVerbs, .trainVerbforms, .flashcards, .quiz:
+        case .home, .train, .trainNouns, .trainArticles, .trainVerbs, .trainVerbforms, .flashcards, .quiz, .accents:
             return [0.18, 0.84]
         }
     }

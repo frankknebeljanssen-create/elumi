@@ -85,6 +85,19 @@ final class DailyChallengeStore: ObservableObject {
         return nil
     }
 
+    /// Generiert eine frische Challenge für heute und verwirft den
+    /// letzten Completion-Outcome. Wird vom `GameStateResetService`
+    /// (User-sichtbar) und `DebugResetService` (DEBUG) aufgerufen —
+    /// `#if DEBUG`-Wrapper entfernt, damit der produktive Reset-Pfad
+    /// in Release läuft. Name-Harmonisierung analog zu `DailyStatsStore`.
+    func reset() {
+        let today = GamificationConfig.currentDayIndex
+        let fresh = Self.generateChallenge(dayIndex: today)
+        challenge = fresh
+        lastCompletionOutcome = nil
+        persist()
+    }
+
     // MARK: - Generation
 
     /// Deterministische Rotation basierend auf dem Day-Index. Jeder Tag

@@ -17,6 +17,57 @@ enum StandardVocabularyLoader {
 
     static let allEntries: [Entry] = loadEntries()
 
+    /// Vorgefilterter Pool für Distraktoren im Verb-Training (Verb-MC).
+    /// `prepareVerbMCOptions` wird bei jedem Karten-Wechsel aufgerufen —
+    /// ohne diesen Cache läuft der `wordClass == "verb"`-Filter bei einer
+    /// 3000-Eintrag-Master-Liste pro Karte einmal über alle Einträge.
+    /// Statischer `let` bedeutet: genau **einmal** pro App-Start berechnet.
+    static let verbEntries: [Entry] = allEntries.filter {
+        $0.wordClass == "verb" && !$0.target.isEmpty && !$0.sourceDisplay.isEmpty
+    }
+
+    /// Analog zu `verbEntries` — für den Nomen-MC-Distraktor-Pool.
+    /// `prepareNounMCOptions` nutzt denselben O(1)-Zugriff.
+    static let nounEntries: [Entry] = allEntries.filter {
+        $0.wordClass == "noun" && !$0.target.isEmpty && !$0.sourceDisplay.isEmpty
+    }
+
+    /// Lookup-Tabelle Französisch-Lemma → Genus (Roh-String aus DB: „m",
+    /// „f", gelegentlich auch leere Einträge = keine Aussage). Wird vom
+    /// `ArticleModeClassifier` als schnellster Weg genutzt, um für einen
+    /// Lernkern das Genus zu bestimmen, **bevor** die teureren
+    /// Supplemental-Lexikon-Lookups angestoßen werden.
+    ///
+    /// Wir pflegen zwei Keys pro Eintrag: die Rohform (z. B. „la maison")
+    /// UND die Artikel-gestrippte Form („maison"). Damit trifft der
+    /// Lookup egal ob der Lernkern schon sauber extrahiert ist oder
+    /// ausnahmsweise mit führendem Artikel reinkommt.
+    static let frenchGenderMap: [String: String] = {
+        var map: [String: String] = [:]
+        for entry in allEntries where entry.wordClass == "noun" && !entry.gender.isEmpty {
+            let key = entry.sourceDisplay.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !key.isEmpty else { continue }
+            map[key] = entry.gender
+            // `strippingLeadingFrenchArticle` ist die appweite Artikel-Strip-
+            // Funktion (siehe `LexiconGenderUtilities+Articles.swift`) — sie
+            // kennt auch die langen Formen („de la", „à l'"). Für den
+            // Classifier reicht die Standardform; die Variante hier
+            // indiziert zusätzlich die Artikel-gestrippte Version.
+            let stripped = strippingLeadingFrenchArticle(from: key)
+            if stripped != key, !stripped.isEmpty {
+                map[stripped] = entry.gender
+            }
+        }
+        return map
+    }()
+
+    /// Convenience-Accessor mit case-insensitiver Normalisierung. `nil`
+    /// wenn kein Genus bekannt.
+    nonisolated static func frenchGender(for lemma: String) -> String? {
+        let key = lemma.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        return frenchGenderMap[key]
+    }
+
     static let vocabularyItems: [VocabularyItem] = {
         var seen = Set<String>()
         return allEntries.compactMap { entry -> VocabularyItem? in

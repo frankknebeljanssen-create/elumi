@@ -95,16 +95,38 @@ extension TrainingSessionController {
             case .vocabulary:
                 return item.cardType == cardType
             case .nouns:
+                // System-Regel (Nomen/Artikel): reine Artikel-Tokens
+                // („le", „la", „les", „le/la" …) dürfen NICHT im Pool
+                // landen — sie sind weder Nomen noch sinnvolle Abfrage-
+                // Einträge. Greift **vor** den beiden Inklusions-Checks,
+                // damit ein als „noun" falsch klassifizierter Artikel
+                // nicht über die resolved-Word-Class-Abkürzung doch
+                // wieder hereinkommt.
+                if Self.isPureFrenchArticle(item.french) { return false }
                 // Zentrale Auflösung: Wort-Nomen UND Nomen-Phrasen (z.B. „la maison blanche").
                 if StandardVocabularyLoader.resolvedWordClass(forItem: item) == "noun" {
                     return true
                 }
                 return item.cardType == .words && Self.hasFrenchArticle(item.french)
             case .articles:
-                if StandardVocabularyLoader.resolvedWordClass(forItem: item) == "noun" {
-                    return true
-                }
-                return item.cardType == .words && Self.hasFrenchArticle(item.french)
+                // Der Artikel-Modus läuft seit der Single-Source-Umstellung
+                // **ausschließlich** über den `ArticleModeClassifier` (siehe
+                // `ArticleModeClassifier.swift`). Der Classifier ist die
+                // einzige Instanz, die bestimmt, ob ein Eintrag überhaupt
+                // abfragbar ist — er kickt:
+                //   • reine Artikel („le", „la", „le/la"),
+                //   • Possessiv-/Demonstrativ-Phrasen ohne erkennbaren Kern,
+                //   • Nicht-Nomen (Adverbien, Interjektionen, Verben …),
+                //   • Einträge mit unbestimmbarem Genus,
+                //   • Phrasen (`cardType == .phrases`).
+                // So kann später in der UI der Prompt (`articlePromptText`)
+                // und die erwartete Antwort (`correctArticle`) denselben
+                // Classifier konsultieren und sich nicht widersprechen.
+                //
+                // Wichtig: Die `.articles`-Regelung bleibt **strikt lokal**
+                // in diesem Case — alle anderen Trainingsmodi und der
+                // Karteikartenmodus sind nicht betroffen.
+                return ArticleModeClassifier.classify(item).estValidePourExerciceArticle
             case .verbs:
                 return false  // siehe Spezialpfad oben
             case .verbforms:
@@ -168,6 +190,41 @@ extension TrainingSessionController {
             }
         }
         return false
+    }
+
+    /// `true` genau dann, wenn `text` **ausschließlich** aus einem oder
+    /// mehreren französischen Artikeln besteht — ohne anschließendes Nomen.
+    ///
+    /// Erkennt die drei typischen Formen:
+    ///   • reines Einzel-Token („le", „la", „les", „un", „une", „du", …)
+    ///   • Slash-Kombinationen („le/la", „un/une")
+    ///   • Pipe-Kombinationen („le|la")
+    ///
+    /// Genutzt als **System-Regel in Nomen/Artikel-Modus**: reine Artikel-
+    /// Einträge sind im Trainings-Pool unbrauchbar — „welcher Artikel
+    /// gehört zu 'le'?" ist nonsense. Der Filter in `activeItems(…)`
+    /// schließt solche Items sauber aus, ohne den restlichen Noun-Pool zu
+    /// verkleinern.
+    ///
+    /// Unterschied zu `hasFrenchArticle(_:)`: dort gibt „le/la"
+    /// historisch auch `true` zurück, weil der Prefix-Match greift — wir
+    /// wollten aber gerade diese Einträge hier **ausschließen**, also
+    /// braucht es den strengeren Pure-Match.
+    nonisolated static func isPureFrenchArticle(_ text: String) -> Bool {
+        let lower = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !lower.isEmpty else { return false }
+        // Direktes Einzel-Token (z. B. „le", „la", „les", „un").
+        if frenchArticles.contains(lower) { return true }
+        // Kombinationen via „/" oder „|" — jedes Segment muss selbst ein
+        // Artikel sein, damit die Gesamt-Form als „reiner Artikel"
+        // gilt. Ist nur ein Segment kein Artikel („le chien/la chienne"),
+        // greift diese Regel nicht und das Item bleibt im Pool.
+        let separators = CharacterSet(charactersIn: "/|")
+        let parts = lower
+            .components(separatedBy: separators)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        guard parts.count >= 2 else { return false }
+        return parts.allSatisfy { frenchArticles.contains($0) }
     }
 
     nonisolated static func determineFrenchArticle(_ item: VocabularyItem) -> String {

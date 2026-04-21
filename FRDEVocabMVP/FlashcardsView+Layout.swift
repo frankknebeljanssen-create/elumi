@@ -28,9 +28,11 @@ extension FlashcardsView {
             ZStack(alignment: .top) {
                 flashcardsRootContent
                 flashcardTypedAnswerOverlay
-                // Combo-Toast-Overlay — zeigt bei 5/10/15/... richtigen Karten
-                // hintereinander einen kurzen Bonus-Hinweis.
+                // Combo-Toast-Overlay (Streak-Moments 3/5/10, siehe
+                // `FeedbackConfig`) + Milestone-Overlay (seltene, größere
+                // Momente wie Session-Ende).
                 ComboToastOverlay()
+                MilestoneOverlayView()
             }
         )
     }
@@ -223,9 +225,15 @@ extension FlashcardsView {
                             flashcardDictionaryLevelCard
                         }
 
-                        flashcardCountLimitCard
-
-                        flashcardMasteryThresholdCard
+                        // User-Request: etwas größerer Spacing zwischen
+                        // „Anzahl der Karten" und „Karte fällt raus nach".
+                        // Default-Spacing (AppTheme.Spacing.md = 16 pt)
+                        // wurde ersetzt durch lokale 22 pt — deutlich
+                        // ruhigere Trennung der beiden Mechanik-Cards.
+                        VStack(alignment: .leading, spacing: 22) {
+                            flashcardCountLimitCard
+                            flashcardMasteryThresholdCard
+                        }
 
                         // `flashcardHungerCard` + `flashcardStatsTrioCard` sind
                         // mit der Master-Setup-Migration ersatzlos entfallen:
@@ -251,6 +259,19 @@ extension FlashcardsView {
                     // hatte zusätzliches `screenPadding` von 16 pt, der Button
                     // nur die äußere `screenPadding` des Screen-VStacks — Bar
                     // war dadurch 32 pt schmaler als der Button.
+                    //
+                    // Bottom-Padding MUSS `AppLayout.sessionCTABottomClearance`
+                    // nutzen — pro User-Request „CTA muss in jedem Screen das
+                    // gleiche Padding zum Footer haben und alle müssen exakt
+                    // gleich groß sein". Früher standen hier `footerHeight +
+                    // bottomBarInsetBottom + 4` (= 58 pt) — 10 pt weniger als
+                    // Quiz / Training-Setup (dort: `sessionCTABottomClearance`
+                    // = footerHeight + bottomBarInsetBottom + 14 = 68 pt).
+                    // Der Karteikarten-CTA wirkte dadurch näher am Footer als
+                    // die anderen Module. Die Vereinheitlichung auf die System-
+                    // Konstante hebt ihn um 10 pt an und bringt ihn auf
+                    // exakt die gleiche Distanz zum Footer wie alle anderen
+                    // Setup-Screens.
                     VStack(spacing: 14) {
                         SessionGamificationBar(estimate: flashcardsSessionEstimate)
 
@@ -260,7 +281,7 @@ extension FlashcardsView {
                         ) {
                             startFlashcardsFromSetup(autoplayPrompt: true)
                         }
-                        .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 4)
+                        .padding(.bottom, AppLayout.sessionCTABottomClearance)
                     }
                 }
                 .onChange(of: isCardCountFieldFocused) { _, isFocused in

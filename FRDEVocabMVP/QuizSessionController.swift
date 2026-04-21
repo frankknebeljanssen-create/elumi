@@ -4,8 +4,13 @@ import SwiftUI
 @MainActor
 final class QuizSessionController: ObservableObject {
     @Published var selectedListIDs: Set<UUID> = [] {
-        didSet { persistSelectedListIDs() }
+        didSet { scheduleListIDsPersistence() }
     }
+
+    /// Debounce-Token für `persistSelectedListIDs`. Bei Multi-Select
+    /// (mehrere Listen schnell antippen) kollabiert das 5–6 UserDefaults-
+    /// Writes auf einen — verhindert kleine Tap-Laggs im Quiz-Setup.
+    private var pendingListIDsPersist: DispatchWorkItem?
     @Published var questionCountOption: QuizQuestionCountOption = .five
     @Published var questions: [QuizQuestion] = []
     @Published var cachedMergedItems: [VocabularyItem] = []
@@ -25,9 +30,16 @@ final class QuizSessionController: ObservableObject {
     var lastMergedItemsRequest: MergeRequest?
 
     /// Combo-Tracking für den ProgressService-Bonus (alle 5 richtig in Folge).
-    /// Reset bei `resetToSetup()` und bei falscher Antwort.
-    var sessionCurrentCombo: Int = 0
-    var sessionLongestCombo: Int = 0
+    /// Reset bei `resetToSetup()` und bei falscher Antwort. Läuft zentral
+    /// über `SessionStreak` (siehe `SessionStreak.swift`) — Matching/Fill-
+    /// Blanks nutzen bereits „any mistake"-Flags, d. h. `firstAttempt` wird
+    /// hier implizit über das aufrufende `completeCurrentQuestion` transportiert.
+    // Nicht `private(set)` — der Antwort-Pfad lebt in
+    // `QuizSessionController+Progress.swift` (eigene File-Extension) und
+    // muss den Streak mutieren können.
+    var streak = SessionStreak()
+    var sessionCurrentCombo: Int { streak.current }
+    var sessionLongestCombo: Int { streak.longest }
     /// Schutz gegen doppelte Reward-Vergabe — analog zum Flashcard-Flow.
     var sessionRewardConsumed: Bool = false
 
@@ -46,5 +58,21 @@ final class QuizSessionController: ObservableObject {
     private func persistSelectedListIDs() {
         guard let data = try? JSONEncoder().encode(selectedListIDs) else { return }
         UserDefaults.standard.set(data, forKey: appQuizSelectedListIDsKey)
+    }
+
+    /// Debounce-Wrapper für `persistSelectedListIDs`. Der eigentliche
+    /// UserDefaults-Write läuft auf einer Utility-Queue (150 ms
+    /// debounce), ohne den Main-Thread zu blockieren. Snapshot der IDs
+    /// wird **beim Planen** genommen, damit der spätere Task auf einem
+    /// konsistenten Wert arbeitet.
+    private func scheduleListIDsPersistence() {
+        pendingListIDsPersist?.cancel()
+        let snapshot = selectedListIDs
+        let item = DispatchWorkItem {
+            guard let data = try? JSONEncoder().encode(snapshot) else { return }
+            UserDefaults.standard.set(data, forKey: appQuizSelectedListIDsKey)
+        }
+        pendingListIDsPersist = item
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.15, execute: item)
     }
 }

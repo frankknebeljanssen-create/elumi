@@ -24,9 +24,25 @@ struct GameHubView: View {
     @AppStorage(appArcadeCreditsKey) private var arcadeCredits = 0
     @ObservedObject private var progressStore = ProgressStore.shared
     @ObservedObject var feedbackPlayer: FeedbackPlayer
+    /// Optional — wird vom AppDestinationHost durchgereicht. Nur
+    /// nötig für den Word-Runner-DEBUG-Eintrag (Live-Tasks aus
+    /// echter Liste); GameHub selbst zeigt keine Listen-Daten.
+    var listStore: VocabularyListStore? = nil
     let goHome: () -> Void
     let openSettings: () -> Void
     let openInfo: () -> Void
+    /// Navigations-Router, vom AppDestinationHost durchgereicht.
+    /// Aktuell nur genutzt, um aus dem Word-Runner-Empty-State direkt
+    /// auf die Listen-Auswahl zu springen (Cover schließen + push).
+    var navigate: ((AppScreen) -> Void)? = nil
+
+    // MARK: - Dev Shortcuts (nur DEBUG)
+    //
+    // Word Runner (Phase 2+3) hat noch keine eigene Credit-/Session-
+    // Integration. Damit wir ihn testen können, ohne die Arcade-Route
+    // umzubiegen, bekommt der Hub eine Kurztaste unten:
+    // ein Tap öffnet ihn als FullScreenCover, Close schließt's wieder.
+    @State private var showWordRunner: Bool = false
 
     private let sectionStyle: AppSectionStyle = .hearts
     private let livesPerCredit = 4   // sichtbare Credit → Leben Zuordnung
@@ -47,6 +63,14 @@ struct GameHubView: View {
                 heroBlock
                 ctaBlock
                 rewardExplainerBlock
+                // `wordRunnerDevShortcut` war kurz `#if DEBUG`-gated,
+                // aber dieses Projekt setzt `SWIFT_ACTIVE_COMPILATION_
+                // CONDITIONS` nirgendwo → die Swift-DEBUG-Flag greift
+                // nicht, Karte wäre unsichtbar. Bis die Flag im Projekt
+                // eingetragen ist, bleibt die Karte immer sichtbar —
+                // Label „DEBUG · Phase 2/3 Prototype" macht den Status
+                // am Sprachlabel kenntlich.
+                wordRunnerDevShortcut
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, AppLayout.screenPadding)
@@ -54,6 +78,19 @@ struct GameHubView: View {
             .padding(.bottom, AppTheme.Spacing.xxl)
             .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .top)
+        }
+        .fullScreenCover(isPresented: $showWordRunner) {
+            WordRunnerGameView(
+                listStore: listStore,
+                onClose: { showWordRunner = false },
+                onGoToLists: {
+                    // Cover zuerst schließen, dann navigieren — sonst
+                    // konkurriert der SwiftUI-Push mit der FullScreen-
+                    // Cover-Dismiss-Animation.
+                    showWordRunner = false
+                    navigate?(.lists(nil))
+                }
+            )
         }
         .tint(sectionStyle.accent)
         .appAmbientWormBackground(sectionStyle)
@@ -82,22 +119,24 @@ struct GameHubView: View {
             Text("Spielen")
                 .font(AppTheme.Typography.largeTitle)
                 .foregroundStyle(AppTheme.Colors.textPrimary)
-
-            Text("Setze deine Credits ein.")
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.textSecondary)
         }
     }
 
     // MARK: - Hero Block
 
-    /// Großer Credit-Stand als visueller Anker. Keine Navigation, keine
+    /// Großer Spiele-Stand als visueller Anker. Keine Navigation, keine
     /// sekundären Aktionen in diesem Block — er ist die **Identität**
-    /// des Screens: „Du hast X Credits verdient."
+    /// des Screens: „Du hast X Spiele verdient."
+    ///
+    /// Wortschatz-Harmonisierung (User-Request „Footer-Icon-Semantik"):
+    /// Footer-Badge, Hero-Label und Session-End nennen alle dasselbe
+    /// „Spiele"-Konzept — `arcadeCredits` ist technisch weiterhin
+    /// „Credits" (DB-Key), für den User aber durchgängig „Spiele".
+    /// `gamesCost == 1` → Credits = Spiele, daher direkt übertragbar.
     private var heroBlock: some View {
         VStack(spacing: 14) {
             HStack(alignment: .firstTextBaseline, spacing: 14) {
-                Image(systemName: "circle.hexagongrid.fill")
+                Image(systemName: "gamecontroller.fill")
                     .font(.system(size: 36, weight: .bold))
                     .foregroundStyle(hasCredits ? AppTheme.Colors.cta : AppTheme.Colors.textSecondary)
 
@@ -108,21 +147,21 @@ struct GameHubView: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
 
-                Text(arcadeCredits == 1 ? "Credit" : "Credits")
+                Text(arcadeCredits == 1 ? "Spiel" : "Spiele")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
 
                 Spacer(minLength: 0)
             }
 
-            // Meta-Zeile 1: Credit → Leben Zuordnung. Ruhiges Icon-+-Text.
+            // Meta-Zeile 1: Spiel → Leben Zuordnung. Ruhiges Icon-+-Text.
             heroMetaRow(
                 systemImage: "heart.fill",
                 tint: AppTheme.Colors.error.opacity(0.85),
-                text: "1 Credit = \(livesPerCredit) Leben"
+                text: "1 Spiel = \(livesPerCredit) Leben"
             )
 
-            // Meta-Zeile 2: Kontext — *warum* hat der User Credits?
+            // Meta-Zeile 2: Kontext — *warum* hat der User Spiele?
             heroMetaRow(
                 systemImage: "sparkles",
                 tint: AppTheme.Colors.cta,
@@ -172,22 +211,24 @@ struct GameHubView: View {
                 }
                 .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
 
-                Text("\(ArcadeCreditSystem.gamesCost) Credit wird verwendet")
+                Text(ArcadeCreditSystem.gamesCost == 1
+                    ? "1 Spiel wird verwendet"
+                    : "\(ArcadeCreditSystem.gamesCost) Spiele werden verwendet")
                     .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             } else {
                 Button {
                     // Empty-State-CTA führt zurück in den Lernbereich.
-                    // Dismiss Navigation-Stack zurück zu Home — der User
-                    // startet dort die nächste Lernsession und verdient
-                    // sich die ersten Credits.
+                    // Wortlaut nach Game-Loop-Spec: „Verdiene Spiele
+                    // durch Lernen" — klares Signal, warum man den
+                    // Game Hub gerade verlässt.
                     feedbackPlayer.playTabSwitch()
                     goHome()
                 } label: {
                     HStack(spacing: 10) {
                         Image(systemName: "book.fill")
                             .font(.system(size: 16, weight: .bold))
-                        Text("Lerne, um Credits zu verdienen")
+                        Text("Verdiene Spiele durch Lernen")
                             .font(.system(size: 16, weight: .black, design: .rounded))
                     }
                     .frame(maxWidth: .infinity)
@@ -195,9 +236,11 @@ struct GameHubView: View {
                 }
                 .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
 
-                Text("Credits entstehen beim Lernen.")
+                Text("Du hast keine Spiele — spiel eine Runde Lernen, um welche zu verdienen.")
                     .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
             }
         }
     }
@@ -217,46 +260,49 @@ struct GameHubView: View {
 
     // MARK: - Reward Explainer
     //
-    // Kurze, überschaubare Drei-Punkt-Liste: „So kommst du an Credits."
-    // Bewusst keine Zahlen-Tabelle, keine ausführliche Formel-Erklärung —
-    // das bleibt dem Progress Hub / Session End vorbehalten.
+    // Kurze, überschaubare Vier-Punkt-Liste: „So verdienst du Spiele."
+    // Wortschatz appweit konsistent („Spiele" statt „Credits" — siehe
+    // Footer-Badge, Hero-Label, Session-End-Chips). Zahlen gespiegelt
+    // aus den zentralen Konstanten (`GamificationConfig`).
 
     private var rewardExplainerBlock: some View {
         VStack(alignment: .leading, spacing: 10) {
             ProgressSectionHeader(
-                title: "So verdienst du Credits",
+                title: "So verdienst du Spiele",
                 subtitle: nil
             )
 
             VStack(spacing: 0) {
-                // Tagesaufgabe zuerst — direktester Weg zu Credits,
-                // passt zur „Retention-Engine" aus Phase 5.
+                // Tagesaufgabe zuerst — direktester Weg zu einem Spiel,
+                // passt zur „Retention-Engine".
                 rewardExplainerRow(
                     systemImage: "sparkles",
                     tint: AppTheme.Colors.cta,
                     title: "Tagesaufgabe erledigen",
-                    subtitle: "täglich +1 Credit + XP-Reward"
+                    subtitle: "täglich +1 Spiel + XP"
                 )
                 rewardExplainerDivider
                 rewardExplainerRow(
                     systemImage: "text.bubble.fill",
                     tint: AppTheme.Colors.elumiBlue,
                     title: "Lernen",
-                    subtitle: "\(xpPerCredit) XP = 1 Credit"
+                    subtitle: "\(xpPerCredit) XP = 1 Spiel"
                 )
                 rewardExplainerDivider
                 rewardExplainerRow(
                     systemImage: "flame.fill",
                     tint: Color(hex: "#FF9F40"),
                     title: "Streak halten",
-                    subtitle: "Tage in Folge bringen Bonus-Credits"
+                    subtitle: "Tage in Folge bringen Bonus-Spiele"
                 )
                 rewardExplainerDivider
                 rewardExplainerRow(
                     systemImage: "star.fill",
                     tint: sectionStyle.accent,
                     title: "Level aufsteigen",
-                    subtitle: "+\(GamificationConfig.creditsPerLevelUp) Credits pro neuem Level"
+                    subtitle: GamificationConfig.creditsPerLevelUp == 1
+                        ? "+1 Spiel pro neuem Level"
+                        : "+\(GamificationConfig.creditsPerLevelUp) Spiele pro neuem Level"
                 )
             }
             .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.subtle)
@@ -295,5 +341,45 @@ struct GameHubView: View {
             .fill(AppTheme.Colors.border.opacity(0.4))
             .frame(height: 1)
             .padding(.leading, 58)
+    }
+
+    // MARK: - Word Runner Dev-Shortcut
+    //
+    // Sichtbar unten auf dem Hub, deutlich als Debug markiert.
+    // Verbraucht **keine** Credits, hängt nicht an Session/Progress —
+    // reiner Tester-Zugang, damit wir den Runner-Prototyp ohne
+    // Credit-Farming anspielen können. Wird in Phase 4+ durch die
+    // reguläre Spiel-Auswahl ersetzt.
+    private var wordRunnerDevShortcut: some View {
+        Button {
+            showWordRunner = true
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "figure.run")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.elumiPink)
+                    .frame(width: 32, height: 32)
+                    .background(
+                        Circle().fill(AppTheme.Colors.elumiPink.opacity(0.18))
+                    )
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Word Runner")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                    Text("DEBUG · Phase 2/3 Prototype")
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 11)
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.plain)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.subtle)
     }
 }

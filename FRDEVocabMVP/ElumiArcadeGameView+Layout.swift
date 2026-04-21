@@ -37,6 +37,42 @@ extension ElumiArcadeGameView {
                                 .position(tentaclePosition(for: tentacle, at: context.date, in: geometry.size))
                         }
 
+                        // Ambient Sea-Creature (Fish-School / Shark) —
+                        // rein visuell, gleitet einmal pro Runde durch.
+                        // Niedriger Z-Index (vor Background, hinter
+                        // Snacks + Elumi), damit es atmosphärisch
+                        // wirkt, aber Gameplay nicht verdeckt.
+                        //
+                        // **Fade-Out** (User-Spec „sauber aus dem Screen
+                        // schwimmen, nicht abrupt"): in den letzten
+                        // 20 % der Crossing-Zeit fadet die Kreatur
+                        // linear von 1.0 → 0.0. Kombiniert mit dem
+                        // natürlichen Off-Screen-Exit wirkt sie sanft
+                        // verblassend statt hart verschwindend.
+                        if let creature = ambientSeaCreature {
+                            let elapsed = context.date.timeIntervalSince(creature.spawnedAt)
+                            let fadeProgress: Double = {
+                                let fadeStart = creature.speed * 0.80
+                                guard elapsed >= fadeStart else { return 0 }
+                                let fadeWindow = creature.speed - fadeStart
+                                guard fadeWindow > 0 else { return 0 }
+                                return min(1, (elapsed - fadeStart) / fadeWindow)
+                            }()
+                            let verticalVel = ambientSeaCreatureVerticalVelocity(
+                                for: creature,
+                                at: context.date
+                            )
+                            AmbientSeaCreatureView(
+                                creature: creature,
+                                now: context.date,
+                                verticalVelocity: verticalVel
+                            )
+                                .position(ambientSeaCreaturePosition(for: creature, at: context.date, in: geometry.size))
+                                .allowsHitTesting(false)
+                                .opacity(1.0 - fadeProgress)
+                                .zIndex(-1)
+                        }
+
                         ElumiArcadeCharacter(
                             mouthOpen: mouthOpen,
                             scale: characterScale,
@@ -56,6 +92,55 @@ extension ElumiArcadeGameView {
                                     .allowsHitTesting(false)
                             }
                         }
+                        .overlay {
+                            // **Schutz-Bubble Aktiv-Zustand**: weiche
+                            // Seifenblasen-Hülle um den Spieler.
+                            // Rendert sich direkt als Overlay auf den
+                            // Character, skaliert mit `shieldBubbleDockScale`
+                            // (Pickup-Impuls + Kollisions-Bounces). Nur
+                            // sichtbar, solange der Aktiv-Timer läuft.
+                            if hasActiveShieldBubble(at: context.date) {
+                                shieldBubbleActiveOverlay(at: context.date)
+                                    .scaleEffect(shieldBubbleDockScale)
+                                    .allowsHitTesting(false)
+                                    .transition(.scale(scale: 0.5).combined(with: .opacity))
+                            }
+                        }
+                        .overlay(alignment: .top) {
+                            // **Sauger-Andock-Zustand**: Während der
+                            // Sauger aktiv ist, sitzt das Trichter-
+                            // Power-Up sichtbar über Elumi's Kopf
+                            // (zentriert, leicht schwebend). Signalisiert
+                            // User-Spec „Illumi + Sauger = ein System".
+                            // Der eigentliche Saugstrahl läuft weiterhin
+                            // als separates Overlay (`suctionBeam` in
+                            // Layout.swift davor).
+                            if hasActiveSuction(at: context.date) {
+                                ArcadeSaugerFunnel(
+                                    size: 42,
+                                    animationDate: context.date,
+                                    energyIntensity: 1.2,
+                                    phase: .docked
+                                )
+                                .scaleEffect(suctionDockScale)
+                                .offset(y: -58)
+                                .allowsHitTesting(false)
+                                // **Dock-Transition von oben** (User-
+                                // Spec: „gerade runterkommen und sich
+                                // dann auf Elumis Kopf setzen"). Der
+                                // Sauger materialisiert ~48 pt über
+                                // seiner Ruheposition und sinkt in
+                                // Position — wirkt wie das Landen
+                                // auf Elumis Kopf nach dem Einsammeln.
+                                .transition(
+                                    .move(edge: .top)
+                                        .combined(with: .scale(scale: 0.6))
+                                        .combined(with: .opacity)
+                                )
+                            }
+                        }
+                        .animation(.spring(response: 0.35, dampingFraction: 0.65), value: hasActiveSuction())
+                        .animation(.easeInOut(duration: 0.2), value: hasActiveShieldBubble())
                         .position(
                             x: elumiPositionX(in: geometry.size.width),
                             y: elumiPositionY(in: geometry.size.height)
@@ -131,6 +216,12 @@ extension ElumiArcadeGameView {
             )
             .onAppear {
                 gameSize = geometry.size
+                // Zentrale Sound-Hook einmalig initialisieren, falls
+                // noch nicht gesetzt (first-mount). Wird beim nächsten
+                // Mount reused via `@State`.
+                if arcadeSFX == nil {
+                    arcadeSFX = ArcadeSFX(feedbackPlayer: feedbackPlayer)
+                }
                 // AutoStart-Pfad: Credit-Abzug + CTA wurden schon vom
                 // aufrufenden `GameHubView` erledigt → Overlay überspringen,
                 // direkt starten und Immersive-Mode aktivieren (Footer weg).

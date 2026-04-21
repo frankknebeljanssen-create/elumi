@@ -23,9 +23,15 @@ final class VerbformsSessionController: ObservableObject {
     // Available tenses (loaded from DB)
     @Published var availableTenses: Set<VerbformsTense> = [.present]
 
-    // Speed Round
+    // Speed Round — Dauer kommt appweit aus `SpeedRoundSettings`
+    // (Einstellung im globalen SettingsView, Default
+    // `SpeedRoundDuration.defaultDuration`). Der Init-Wert hier ist nur
+    // Fallback bis zum ersten Timer-Start.
     @Published var isSpeedRound: Bool = false
-    @Published var speedRoundTimeRemaining: Int = 45
+    @Published var speedRoundTimeRemaining: Int = SpeedRoundSettings.currentSeconds
+    /// Die für die aktuelle Speed-Round-Runde gewählte Gesamtdauer —
+    /// für die UI-Normalisierung (Progress-Bar = remaining / total).
+    @Published private(set) var speedRoundTotalSeconds: Int = SpeedRoundSettings.currentSeconds
     var speedRoundTimer: Timer?
 
     var isSpeedRoundTimerExpired: Bool {
@@ -68,9 +74,16 @@ final class VerbformsSessionController: ObservableObject {
 
     /// Combo-Tracking für ProgressService-Bonus. Reset bei Session-Start
     /// und bei falscher Antwort. Eine Session entspricht hier einer Runde
-    /// (bis `isShowingRoundComplete` bzw. `isFinished`).
-    var sessionCurrentCombo: Int = 0
-    var sessionLongestCombo: Int = 0
+    /// (bis `isShowingRoundComplete` bzw. `isFinished`). Läuft zentral über
+    /// `SessionStreak`; `submitMC` prüft bereits „wrongOptions empty?" und
+    /// bricht die Serie über einen expliziten `recordAnswer(correct: false)`
+    /// auf jeden Fehl-Tap ab — `firstAttempt` wird hier deshalb nicht extra
+    /// übergeben, die Serie ist zum Zeitpunkt des Retry-Correct ohnehin 0.
+    // Nicht `private(set)` — der restliche Verbformen-Code (File-Intern
+    // + sonst keine externen Mutations) nutzt denselben Streak.
+    var streak = SessionStreak()
+    var sessionCurrentCombo: Int { streak.current }
+    var sessionLongestCombo: Int { streak.longest }
     /// Anzahl richtig beantworteter Einheiten in der aktuellen Session.
     var sessionCorrectCount: Int = 0
     /// Anzahl falscher Antworten in der aktuellen Session.
@@ -82,20 +95,34 @@ final class VerbformsSessionController: ObservableObject {
     /// und `dropPronoun` aufgerufen. Falsche Antworten resetten die Combo,
     /// richtige erhöhen sie.
     func recordAnswer(correct: Bool) {
+        // Lernstatus-Signal: die Verbform-Frage identifiziert das
+        // Verb-Lemma über `infinitive` (französisch) und zeigt optional
+        // die deutsche Übersetzung als Hint. Für das Per-Item-Tracking
+        // aggregieren wir auf **Verb-Lemma-Ebene** — alle Flexionen
+        // eines Verbs fließen in denselben Lernstatus-Eintrag. `cardType`
+        // ist hier immer `.words` (Verben sind keine Phrasen, und ein
+        // eigener `CardType.verbs` existiert im Projekt nicht — die
+        // Wortart „Verb" lebt in `VocabularyItem.wordClass: String?`).
+        if let question = currentQuestion {
+            ItemLearningStatusRecorder.record(
+                french: question.infinitive,
+                german: question.translation,
+                cardType: .words,
+                correct: correct
+            )
+        }
+
+        streak.recordAnswer(correct: correct)
+
         if correct {
-            sessionCurrentCombo += 1
-            sessionLongestCombo = max(sessionLongestCombo, sessionCurrentCombo)
             sessionCorrectCount += 1
-            GamificationFeedbackPresenter.shared.noteComboProgress(currentCombo: sessionCurrentCombo)
         } else {
-            sessionCurrentCombo = 0
             sessionWrongCount += 1
         }
     }
 
     func resetGamificationCounters() {
-        sessionCurrentCombo = 0
-        sessionLongestCombo = 0
+        streak.reset()
         sessionCorrectCount = 0
         sessionWrongCount = 0
         sessionRewardConsumed = false
@@ -169,7 +196,9 @@ final class VerbformsSessionController: ObservableObject {
         self.isFinished = false
         self.isSpeedRound = speedRound
         if speedRound {
-            speedRoundTimeRemaining = 45
+            let duration = SpeedRoundSettings.currentSeconds
+            speedRoundTimeRemaining = duration
+            speedRoundTotalSeconds = duration
         }
         resetGamificationCounters()
         advanceToNext()
@@ -189,7 +218,9 @@ final class VerbformsSessionController: ObservableObject {
         self.completedRound = 1
         self.isShowingRoundComplete = false
         if speedRound {
-            speedRoundTimeRemaining = 45
+            let duration = SpeedRoundSettings.currentSeconds
+            speedRoundTimeRemaining = duration
+            speedRoundTotalSeconds = duration
         }
         resetGamificationCounters()
         advanceToNextMatching()
@@ -383,8 +414,17 @@ final class VerbformsSessionController: ObservableObject {
 
     private func nextSpeedRound() {
         guard isSpeedRound, !isSpeedRoundTimerExpired else { return }
-        // Generate a new question on the fly for endless speed round
-        if let newQ = VerbformsEngine.generateQuestions(from: allInflections, tenses: selectedTenses, count: 1).first {
+        // Speed Round: das aktuelle Verb beim Generieren der nächsten
+        // Frage explizit ausschließen, damit nicht dieselbe Infinitiv-
+        // Form zweimal in Folge vorkommt. Wenn nur EIN Verb im Pool ist,
+        // fällt die Engine automatisch auf den vollen Pool zurück.
+        let previousLemma = currentQuestion?.infinitive
+        if let newQ = VerbformsEngine.generateQuestions(
+            from: allInflections,
+            tenses: selectedTenses,
+            count: 1,
+            excludingInfinitive: previousLemma
+        ).first {
             questions.append(newQ)
             questionIndex = questions.count - 1
             advanceToNext()
@@ -399,7 +439,13 @@ final class VerbformsSessionController: ObservableObject {
     }
 
     func startSpeedRoundTimer(feedbackPlayer: FeedbackPlayer) {
-        speedRoundTimeRemaining = 45
+        // Timer-Länge aus der globalen Einstellung. Snapshot in
+        // `speedRoundTotalSeconds`, damit die UI-Normalisierung (Progress)
+        // stabil bleibt, auch wenn der User mitten in der Runde in die
+        // Settings wechseln würde.
+        let duration = SpeedRoundSettings.currentSeconds
+        speedRoundTimeRemaining = duration
+        speedRoundTotalSeconds = duration
         speedRoundTimer?.invalidate()
         speedRoundTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             Task { @MainActor in

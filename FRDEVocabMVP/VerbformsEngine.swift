@@ -349,16 +349,29 @@ enum VerbformsEngine {
     static func generateQuestions(
         from inflections: [VerbInflections],
         tenses: Set<VerbformsTense>,
-        count: Int = 20
+        count: Int = 20,
+        excludingInfinitive: String? = nil
     ) -> [VerbformsQuestion] {
         guard !inflections.isEmpty, !tenses.isEmpty else { return [] }
+
+        // Wenn wir ein Verb **ausschließen** sollen (weil wir im Speed
+        // Round gerade dieses Verb hatten und nicht zweimal in Folge das-
+        // selbe Verb bringen wollen), versuchen wir zuerst aus dem
+        // gefilterten Pool zu ziehen. Nur wenn der Pool leer wäre (User
+        // hat eine Liste mit nur einem Verb), fallen wir auf die volle
+        // Liste zurück.
+        let filteredInflections: [VerbInflections] = {
+            guard let exclude = excludingInfinitive?.lowercased() else { return inflections }
+            let pool = inflections.filter { $0.infinitive.lowercased() != exclude }
+            return pool.isEmpty ? inflections : pool
+        }()
 
         var questions: [VerbformsQuestion] = []
         let persons = VerbformsPerson.allCases
 
         for _ in 0..<(count * 3) { // try more to reach count
             guard questions.count < count else { break }
-            guard let verb = inflections.randomElement() else { continue }
+            guard let verb = filteredInflections.randomElement() else { continue }
 
             // Pick a random tense from the selected ones that this verb actually has
             let availableTenses = tenses.filter { tense in

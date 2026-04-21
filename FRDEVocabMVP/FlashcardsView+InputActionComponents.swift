@@ -74,7 +74,9 @@ extension FlashcardsView {
                             // Idle: Cartoon-Mikrofon statt mic.fill. Kein
                             // foregroundStyle — das SVG bringt seine
                             // Farbigkeit selbst mit.
-                            ElumiIconView(icon: .mikrofon, size: 32)
+                            // Mikrofon-Icon vergrößert (32 → 48 pt) auf
+                            // User-Wunsch — Card-Höhe bleibt 54 pt.
+                            ElumiIconView(icon: .mikrofon, size: 48)
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -100,13 +102,19 @@ extension FlashcardsView {
                     let isPlayingTTS = speaker.isSpeaking
                     Group {
                         if isPlayingTTS {
-                            ElumiIconView(icon: .lautsprecher, size: 32)
+                            // Lautsprecher-Icon auf 48 pt vergrößert —
+                            // Card-Höhe unverändert bei 54 pt, Icon füllt
+                            // die Card jetzt deutlich präsenter.
+                            ElumiIconView(icon: .lautsprecher, size: 48)
                                 .frame(maxWidth: .infinity)
                                 .frame(minHeight: actionButtonHeight)
                                 .background(AppTheme.Colors.warning)
                                 .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
                         } else {
-                            ElumiIconView(icon: .lautsprecher, size: 32)
+                            // Lautsprecher-Icon auf 48 pt vergrößert —
+                            // Card-Höhe unverändert bei 54 pt, Icon füllt
+                            // die Card jetzt deutlich präsenter.
+                            ElumiIconView(icon: .lautsprecher, size: 48)
                                 .frame(maxWidth: .infinity)
                                 .frame(minHeight: actionButtonHeight)
                                 .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium)
@@ -127,7 +135,9 @@ extension FlashcardsView {
                 // (sectionStyle.accent statt secondarySurface), der Icon-
                 // Look bleibt konstant — das SVG bringt eigene Farbigkeit
                 // mit und reagiert nicht auf foregroundStyle.
-                ElumiIconView(icon: .tastatur, size: 32)
+                // Tastatur-Icon auf 48 pt — parallel zu Mikrofon und
+                // Lautsprecher. Card-Höhe bleibt bei 54 pt unverändert.
+                ElumiIconView(icon: .tastatur, size: 48)
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: actionButtonHeight)
                     .background(interaction.showingTypedAnswerInput ? sectionStyle.accent : AppTheme.Colors.secondarySurface)

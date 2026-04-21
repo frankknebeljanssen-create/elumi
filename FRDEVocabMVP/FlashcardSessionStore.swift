@@ -43,10 +43,15 @@ final class FlashcardSessionStore: ObservableObject {
 
     /// Live-Combo: Anzahl direkt aufeinanderfolgender richtiger Antworten in
     /// der aktuellen Session. Reset bei `markWrong()` und Session-Restart.
-    /// Wird vom `ProgressService` für den Combo-Bonus ausgelesen.
-    var sessionCurrentCombo: Int = 0
-    /// Höchster Combo-Wert, der in dieser Session erreicht wurde.
-    var sessionLongestCombo: Int = 0
+    /// Wird vom `ProgressService` für den Combo-Bonus ausgelesen. Läuft
+    /// zentral über `SessionStreak` — Karteikarten haben pro Karte genau
+    /// einen Antwort-Tap, `firstAttempt` ist deshalb immer `true`.
+    // Nicht `private(set)`, damit Extensions (in separaten Files) den
+    // Streak mutieren dürfen — Antwort-Pfad lebt in
+    // `FlashcardSessionStore+SessionFlow.swift`.
+    var streak = SessionStreak()
+    var sessionCurrentCombo: Int { streak.current }
+    var sessionLongestCombo: Int { streak.longest }
     /// Anzahl der Karten, die in dieser Session NEU gemastered wurden
     /// (also gerade jetzt aus dem Stapel fielen). Für die Mastery-XP-Vergabe.
     var sessionMasteredThisRun: Int = 0

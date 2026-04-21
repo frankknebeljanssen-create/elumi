@@ -50,11 +50,12 @@ struct HomeProgressBoardCard: View {
                 xpSegment
             }
             .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            // +10 pt höher als die natürliche Content-Höhe (~61pt) — gibt
-            // dem Progress-Board oben mehr Gewicht, ohne das Padding zu
-            // ändern. Padding-Werte (horizontal 12 / vertical 10) bleiben
-            // unangetastet; die Card wächst nur über den minHeight-Frame.
+            // −5 pt Höhe gegenüber vorher (User-Request): vertikales
+            // Padding 10 → 8 und minHeight 76 → 71. Content (Streak-
+            // Icon, Level-Wert, XP-Balken) bleibt; nur die Luft oben/
+            // unten schrumpft. Synchron zur `HomeStatusCard`, damit
+            // beide Cards weiterhin dieselbe Höhe haben.
+            .padding(.vertical, 8)
             .frame(maxWidth: .infinity, minHeight: 71)
             .background(cardBackground)
             .overlay(cardBorder)
@@ -75,22 +76,40 @@ struct HomeProgressBoardCard: View {
     // MARK: - Segments
 
     private var streakSegment: some View {
-        HStack(alignment: .center, spacing: 8) {
-            Image(systemName: "flame.fill")
-                .font(.system(size: 22, weight: .bold))
-                .foregroundStyle(Color(hex: "#FF9F40"))
-            // „Streak"-Label jetzt **mittig unter der Tageszahl** statt
-            // links-bündig — dadurch wirkt der Block als kompakter Tages-
-            // Wert (Zahl dominant, Label als zentrierte Caption darunter).
-            // Label zusätzlich 3 pt größer (10 → 13), damit die Hierarchie
-            // Zahl/Label weniger extrem gestaffelt ist.
-            VStack(alignment: .center, spacing: 1) {
-                Text("\(data.streakDays) \(data.streakDays == 1 ? "Tag" : "Tage")")
-                    .font(.system(size: 15, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .monospacedDigit()
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
+        // Parität zum Icon-Layout der Status-Card darüber („Heute"):
+        // Flame-Glyph auf 17 pt (= sparkles-Glyph-Größe), in einen 38×38-
+        // Icon-Badge gesetzt und linksbündig mit der VStack nebenan —
+        // dadurch landen „X Tage" / „Streak" auf **derselben X-Position**
+        // wie „Heute" / „X Aktionen" in der Status-Card. Beide Cards
+        // lesen sich jetzt als Paar mit konsistenter linker Kante.
+        HStack(alignment: .center, spacing: 11) {
+            ZStack {
+                Circle()
+                    .fill(Color(hex: "#FF9F40").opacity(0.16))
+                Image(systemName: "flame.fill")
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundStyle(Color(hex: "#FF9F40"))
+            }
+            .frame(width: 38, height: 38)
+
+            VStack(alignment: .leading, spacing: 1) {
+                // Zahl + „Tag/Tage" getrennt gerendert, damit die
+                // Gewichtung feiner steuerbar ist (User-Wunsch Pokal-
+                // Tab: Streak-Zahl +2 pt, Tag/Tage +1 pt gegenüber der
+                // vorigen Baseline). Baseline-Alignment bindet beide
+                // an derselben Grundlinie, damit die Zahl gut lesbar
+                // dominieren darf, ohne dass „Tage" visuell abhängt.
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text("\(data.streakDays)")
+                        .font(.system(size: 18, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .monospacedDigit()
+                    Text(data.streakDays == 1 ? "Tag" : "Tage")
+                        .font(.system(size: 17, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                }
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
                 Text("Streak")
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.elumiPink)
@@ -101,23 +120,19 @@ struct HomeProgressBoardCard: View {
     }
 
     private var levelSegment: some View {
+        // „Noch X XP bis …"-Hint entfernt — durch den linksbündigen Streak-
+        // Block wird der verfügbare Platz ohnehin knapper, und der
+        // Goal-Hint wiederholt sich mit dem Progress-Hub. „Level X" auf
+        // 15 pt (+1 pt) angehoben, damit das verbleibende Label nicht
+        // gegenüber „X Tage" (15 pt) und „X XP" (15 pt) zurückfällt.
         VStack(alignment: .leading, spacing: 5) {
             Text("Level \(data.level)")
-                .font(.system(size: 14, weight: .black, design: .rounded))
+                .font(.system(size: 15, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
                 .monospacedDigit()
                 .lineLimit(1)
                 .minimumScaleFactor(0.85)
             progressBar(progress: data.levelProgress)
-            if let hint = data.goalHint, !hint.isEmpty {
-                // „Noch xxx XP bis …"-Hint 1 pt größer (10 → 11), damit die
-                // Zeile nicht unter der Progress-Bar verschwindet.
-                Text(hint)
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.9))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -146,20 +161,19 @@ struct HomeProgressBoardCard: View {
     }
 
     private var xpSegment: some View {
-        // „Gesamt"-Label jetzt **mittig unter der XP-Zahl** statt trailing-
-        // bündig — spiegelt das neue Streak-Layout links und macht den
-        // rechten Block symmetrisch. Label zusätzlich 2 pt größer (10 →
-        // 12), damit „Gesamt" nicht zu fein unter der dominanten Zahl
-        // sitzt.
+        // User-Request: „Gesamt"-Label weg. Stattdessen XP-Zahl und „XP"-
+        // Label auf **zwei Zeilen** stapeln, Font +2 pt — die XP-Zahl
+        // wirkt dadurch prominenter, das Unit-Label „XP" ersetzt das
+        // frühere „Gesamt" als zweite Zeile.
         VStack(alignment: .center, spacing: 1) {
-            Text("\(data.totalXP) XP")
-                .font(.system(size: 15, weight: .black, design: .rounded))
+            Text("\(data.totalXP)")
+                .font(.system(size: 17, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
                 .monospacedDigit()
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
-            Text("Gesamt")
-                .font(.system(size: 12, weight: .bold, design: .rounded))
+            Text("XP")
+                .font(.system(size: 15, weight: .bold, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.elumiPink)
                 .tracking(0.4)
         }

@@ -80,6 +80,20 @@ final class DailyStatsStore: ObservableObject {
         persist()
     }
 
+    /// Setzt alle Tages-Werte auf 0 und den Day-Index auf heute.
+    /// Wird vom `GameStateResetService` (User-sichtbarer „Spielstand
+    /// zurücksetzen"-Button) und vom `DebugResetService` (DEBUG-Dev-
+    /// Card) aufgerufen — `#if DEBUG`-Wrapper wurde entfernt, damit
+    /// der produktive Reset-Pfad die Methode im Release-Build
+    /// aufrufen kann. Name von `resetForDebugging` → `reset`, weil
+    /// die Methode nicht mehr nur für Debug genutzt wird.
+    func reset() {
+        dayIndex = GamificationConfig.currentDayIndex
+        actionsToday = 0
+        lastSessionDelta = 0
+        persist()
+    }
+
     // MARK: - Persistence
 
     private func load() {

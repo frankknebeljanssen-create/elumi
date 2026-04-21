@@ -5,6 +5,10 @@ struct TrainingView: View {
     @Environment(\.appUsesGlobalChrome) var usesGlobalChrome
     @AppStorage(appDirectionKey) var selectedAppDirectionRaw = Direction.frenchToGerman.rawValue
     @AppStorage(appArcadeCreditsKey) var arcadeCredits = 0
+    /// Globale Speed-Round-Dauer — liest aus dem gemeinsamen App-Storage-
+    /// Key, den auch Verbformen / Akzente / Settings nutzen. Änderungen
+    /// in den Settings aktualisieren die Setup-Card-Subtitle live.
+    @AppStorage(appSpeedRoundDurationKey) var speedRoundDurationSeconds: Int = SpeedRoundDuration.defaultDuration.rawValue
     @ObservedObject var listStore: VocabularyListStore
     let runtimeSpeechController: SpeechController?
     let runtimeSpeaker: Speaker?
@@ -42,6 +46,14 @@ struct TrainingView: View {
     @State var verbMCSelected: String?
     @State var verbMCLocked = false
     @State var showingVerbTranslation = false
+    // Nomen-Modus „Wortauswahl" — analog zum Verben-MC-Grid, aber
+    // Distraktoren werden aus `wordClass == "noun"` gezogen. Aktiv nur,
+    // wenn `session.nounAnswerMode == .choice` und Speed Round aus ist
+    // (siehe `isNounChoiceMode`). Speech-Pfad (ohne Wortauswahl) bleibt
+    // unverändert — keiner dieser States wird dann je mit Wert belegt.
+    @State var nounMCOptions: [String] = []
+    @State var nounMCSelected: String?
+    @State var nounMCLocked = false
     @State var listPickerCategory: ListPickerCategory?
 
     // Verbformen
@@ -55,6 +67,21 @@ struct TrainingView: View {
     // Outcome den bisherigen Result-Screen komplett.
     @State var trainingSessionOutcome: SessionRewardOutcome?
     @State var verbformsSessionOutcome: SessionRewardOutcome?
+
+    /// Zentrale Session-End-Prüfung — wahr, sobald
+    ///   (a) die Speed-Round-Zeit abgelaufen ist **und** eine Speed Round
+    ///       tatsächlich lief, oder
+    ///   (b) bereits ein Outcome erzeugt wurde (Summary sichtbar).
+    /// Wird von allen MC-Submit-Handlern als Guard verwendet, damit
+    /// verzögerte Tap-Events oder Race Conditions zwischen Timer-Ende
+    /// und letzter Antwort keine State-Mutationen mehr durchlassen.
+    var isTrainingSessionEnded: Bool {
+        if trainingSessionOutcome != nil { return true }
+        if session.isSpeedRound && session.hasStartedTraining && session.speedRoundTimeRemaining <= 0 {
+            return true
+        }
+        return false
+    }
     @ObservedObject var progressStore = ProgressStore.shared
 
     // Verbformen Drag-and-Drop (Quiz-Stil: DragGesture + Frame-Tracking,
@@ -158,6 +185,24 @@ struct TrainingView: View {
         )
     }
 
+    /// Speed-Round-Preview-Estimate — **immer** mit Speed-Round-Annahme
+    /// gerechnet, unabhängig vom aktuell gewählten Modus. Wird im Vokabel-
+    /// Setup inline in der „Speed Round"-Mode-Card angezeigt („+225 XP ·
+    /// ~3 min · +4"), damit der Nutzer schon **vor** dem Modus-Wechsel
+    /// sieht, was ihn bei Speed Round erwartet. Ersetzt die globale
+    /// Gamification-Bar am Screen-Bottom, die für den Vokabel-Setup
+    /// wegfällt.
+    @MainActor
+    var speedRoundPreviewEstimate: SessionEstimate {
+        let items = activeItems.count
+        let config = SessionConfig(module: .speedRound, itemCount: min(items, 20))
+        return SessionSetupEstimator.estimate(
+            for: config,
+            progress: progressStore.progress,
+            dailyChallenge: DailyChallengeStore.shared.challenge
+        )
+    }
+
     var trainingListCount: String {
         let ids = session.selectedTrainingListIDs
         if ids.isEmpty { return "" }
@@ -202,12 +247,24 @@ struct TrainingView: View {
 
     var articlePromptText: String? {
         guard isArticleMode, let item = session.currentTrainingItem else { return nil }
-        return TrainingSessionController.strippingFrenchArticle(from: item.french)
+        // Prompt zeigt den **Lernkern** aus dem `ArticleModeClassifier`.
+        // „mon ami" → „ami", „la fille" → „fille". So entsteht nie eine
+        // sprachlich falsche Kombination wie „le mon ami". Wenn der
+        // Classifier den Eintrag als ungültig markiert, sind wir hier
+        // nicht — der `.articles`-Item-Filter (siehe
+        // `TrainingSessionController+DictionarySelection.swift`) hält
+        // ungültige Items erst gar nicht in den Trainings-Pool hinein.
+        return ArticleModeClassifier.classify(item).noyauLexical
     }
 
     var correctArticle: String? {
         guard isArticleMode, let item = session.currentTrainingItem else { return nil }
-        return TrainingSessionController.determineFrenchArticle(item)
+        // Erwartete Antwort kommt **aus dem Classifier** — nicht mehr aus
+        // `determineFrenchArticle(item)` direkt. Der Classifier berechnet
+        // die Antwort auf Basis des Lernkerns + Genus + Vokal-Anfang; das
+        // alte `determineFrenchArticle` würde bei „mon ami" den Rohtext
+        // verwerten und je nach Fallback-Pfad eine falsche Antwort bauen.
+        return ArticleModeClassifier.classify(item).reponseAttendueArticle
     }
 
     var isVerbMode: Bool {
@@ -249,6 +306,22 @@ struct TrainingView: View {
     }
 
     var verbCorrectAnswer: String {
+        guard let item = session.currentTrainingItem else { return "" }
+        let isFRtoDe = selectedAppDirection == .frenchToGerman || selectedAppDirection == .englishToGerman
+        return isFRtoDe ? item.german : item.french
+    }
+
+    /// `true`, wenn das Nomen-Modul gerade im 8er-Wortauswahl-Grid läuft.
+    /// Orthogonal zu Speed Round — dort greift die eigene Antwort-Mechanik,
+    /// nicht der MC-Grid. Außerhalb von Nomen immer `false`.
+    var isNounChoiceMode: Bool {
+        isNounMode && session.nounAnswerMode == .choice && !session.isSpeedRound
+    }
+
+    /// Lösungswort im Wortauswahl-Modus — identisch zur Logik in
+    /// `verbCorrectAnswer`, aber getrennt gehalten für die klarere
+    /// Trennung der Module. Pro Richtung wird die Ziel-Sprache genommen.
+    var nounCorrectAnswer: String {
         guard let item = session.currentTrainingItem else { return "" }
         let isFRtoDe = selectedAppDirection == .frenchToGerman || selectedAppDirection == .englishToGerman
         return isFRtoDe ? item.german : item.french

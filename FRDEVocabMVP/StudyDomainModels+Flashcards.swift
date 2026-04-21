@@ -182,6 +182,13 @@ struct FlashcardSessionState: Codable, Equatable {
     var wrongCount: Int
     var isCompleted: Bool
     var cardMastery: [String: CardMastery] = [:]
+    /// Streak-Snapshot für Session-Resume — ohne diesen würde ein
+    /// unterbrochener und fortgesetzter Flashcard-Durchlauf den Combo-
+    /// Zähler auf 0 zurücksetzen, obwohl der User gerade 4× in Folge
+    /// richtig beantwortet hat. Default-Instanz auf Snapshot-Ebene,
+    /// damit alte persistierte JSON-Dumps (ohne dieses Feld) weiter
+    /// dekodieren (siehe `init(from:)`).
+    var streak: SessionStreak = SessionStreak()
 
     /// Anzahl Karten, die bei dem gegebenen `threshold` schon aus dem Stapel
     /// gefallen sind (consecutiveCorrect >= threshold).
@@ -212,5 +219,53 @@ struct FlashcardSessionState: Codable, Equatable {
         cardMastery.values.filter {
             $0.hasBeenWrong && $0.level(threshold: threshold) != .mastered
         }.count
+    }
+
+    // MARK: - Codable (abwärtskompatibel)
+
+    private enum CodingKeys: String, CodingKey {
+        case deckID, direction, remainingCardIDs, currentCardID
+        case correctCount, wrongCount, isCompleted, cardMastery
+        case streak
+    }
+
+    init(
+        deckID: String,
+        direction: Direction,
+        remainingCardIDs: [String],
+        currentCardID: String?,
+        correctCount: Int,
+        wrongCount: Int,
+        isCompleted: Bool,
+        cardMastery: [String: CardMastery] = [:],
+        streak: SessionStreak = SessionStreak()
+    ) {
+        self.deckID = deckID
+        self.direction = direction
+        self.remainingCardIDs = remainingCardIDs
+        self.currentCardID = currentCardID
+        self.correctCount = correctCount
+        self.wrongCount = wrongCount
+        self.isCompleted = isCompleted
+        self.cardMastery = cardMastery
+        self.streak = streak
+    }
+
+    /// Abwärtskompatibler Decode: ältere Session-Snapshots haben kein
+    /// `streak`-Feld (wurde erst mit dem zentralen `SessionStreak`-
+    /// Refactor eingeführt). Fehlt es, bekommt der Restore einen frischen
+    /// Streak — die laufende Serie beginnt sauber bei 0, der User verliert
+    /// nur den Live-Combo-Stand, nicht die Session selbst.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.deckID = try container.decode(String.self, forKey: .deckID)
+        self.direction = try container.decode(Direction.self, forKey: .direction)
+        self.remainingCardIDs = try container.decode([String].self, forKey: .remainingCardIDs)
+        self.currentCardID = try container.decodeIfPresent(String.self, forKey: .currentCardID)
+        self.correctCount = try container.decode(Int.self, forKey: .correctCount)
+        self.wrongCount = try container.decode(Int.self, forKey: .wrongCount)
+        self.isCompleted = try container.decode(Bool.self, forKey: .isCompleted)
+        self.cardMastery = try container.decodeIfPresent([String: CardMastery].self, forKey: .cardMastery) ?? [:]
+        self.streak = try container.decodeIfPresent(SessionStreak.self, forKey: .streak) ?? SessionStreak()
     }
 }

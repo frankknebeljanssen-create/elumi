@@ -122,8 +122,10 @@ extension FlashcardsView {
                 }
             }
 
+            // User-Request: Labels „Kann ich / Offen / Nochmal" +2 pt
+            // (11 → 13) — besser lesbar, ohne die Tile-Breite zu sprengen.
             Text(label)
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
                 .foregroundStyle(color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)

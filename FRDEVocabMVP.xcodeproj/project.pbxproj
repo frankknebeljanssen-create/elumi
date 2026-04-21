@@ -7,12 +7,47 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C0F11A111A111A111A111111 /* GamificationConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1C01A111A111A111A111111 /* GamificationConfig.swift */; };
-		C0F21A111A111A111A111111 /* LearningSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2C01A111A111A111A111111 /* LearningSession.swift */; };
-		C0F31A111A111A111A111111 /* ProgressStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C01A111A111A111A111111 /* ProgressStore.swift */; };
-		C0F41A111A111A111A111111 /* ProgressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C01A111A111A111A111111 /* ProgressService.swift */; };
-		B88DDE296B824BCA8E9B5AA6 /* GamificationFeedbackPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71844DBDB0A8498D87F33E5B /* GamificationFeedbackPresenter.swift */; };
-		C0F51A111A111A111A111111 /* SessionSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C01A111A111A111A111111 /* SessionSummaryView.swift */; };
+		009819BB54954EAEBB5DEC28 /* Sounds/elumi_cardflip.wav in Resources */ = {isa = PBXBuildFile; fileRef = 804F29773536414EAD31D9BF /* Sounds/elumi_cardflip.wav */; };
+		0539D34CCB4C4C24AE08BF34 /* Sounds/elumi_cardright.wav in Resources */ = {isa = PBXBuildFile; fileRef = 95A777457F104E90B5FA1898 /* Sounds/elumi_cardright.wav */; };
+		081CA03EE10F4E52B6653A75 /* ProgressHubComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F244E2378E0C4DF89CC561E1 /* ProgressHubComponents.swift */; };
+		0956E1BD7D8A4C2CA60FF949 /* Sounds/elumi_streak.wav in Resources */ = {isa = PBXBuildFile; fileRef = 427B3F68D7FB4FBFA24DBD17 /* Sounds/elumi_streak.wav */; };
+		0FDB94AE807C45B6B251DB2C /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D60E8751B6404310BA69583D /* ProfileView.swift */; };
+		114BC2757EED4D78B9EFADEA /* Sounds/elumi_tabswitch.wav in Resources */ = {isa = PBXBuildFile; fileRef = F2F037219E904D3680DD724E /* Sounds/elumi_tabswitch.wav */; };
+		13634FD082AA43DEB7699146 /* Sounds/elumi_highscore.wav in Resources */ = {isa = PBXBuildFile; fileRef = A2097A8DB27E4BDC957255A8 /* Sounds/elumi_highscore.wav */; };
+		15E1874FDAE047E4AEC3DA6D /* Sounds/elumi_gamestart.wav in Resources */ = {isa = PBXBuildFile; fileRef = 41F9D99E7DF54754980496C7 /* Sounds/elumi_gamestart.wav */; };
+		19D3201DD0C84E8A83C2242D /* Sounds/elumi_slowmostart.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2E74EDA8D2904AA7A3E9F688 /* Sounds/elumi_slowmostart.wav */; };
+		1D667A9B8D984D1CB42D8942 /* Sounds/elumi_shieldactivate.wav in Resources */ = {isa = PBXBuildFile; fileRef = DADBA6D5B4FF4413839CBF0D /* Sounds/elumi_shieldactivate.wav */; };
+		21539C42B3F8DFAF90B3E180 /* HomeModuleIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4908A2A5A962323D3A36B07 /* HomeModuleIcon.swift */; };
+		26325168A6B64B9399DCD543 /* LexiconTextUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1FD5616CFA427DBAB4CE9D /* LexiconTextUtility.swift */; };
+		2C02BD11DC6C449AA1D5BFFE /* Sounds/elumi_appstart.wav in Resources */ = {isa = PBXBuildFile; fileRef = 9BA6DD9690D14C3F966AECF7 /* Sounds/elumi_appstart.wav */; };
+		2CE2689FA4E34BCB9A22FCA9 /* DailyChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2D8AABD1A084A80A03C7C97 /* DailyChallenge.swift */; };
+		3F17F900156649F1B56821CA /* Sounds/elumi_tentacle_drop.wav in Resources */ = {isa = PBXBuildFile; fileRef = C796DD66D33845D482971B80 /* Sounds/elumi_tentacle_drop.wav */; };
+		4074D78EE22D43E2986ACBF0 /* Sounds/elumi_correct.wav in Resources */ = {isa = PBXBuildFile; fileRef = 97C3C5F1DA8C491FA5BB2809 /* Sounds/elumi_correct.wav */; };
+		44D622B2824546FFBDFF7083 /* Sounds/elumi_powerupspawn.wav in Resources */ = {isa = PBXBuildFile; fileRef = 550C14FD7EDE4E0C8426E5C0 /* Sounds/elumi_powerupspawn.wav */; };
+		495F17EE7BAD4C4E9518D9CE /* Sounds/elumi_jellyfish_appear.wav in Resources */ = {isa = PBXBuildFile; fileRef = 997E13571F014504A8CCFE9C /* Sounds/elumi_jellyfish_appear.wav */; };
+		4A2F5E28015042B8897FAD67 /* Sounds/elumi_stackcomplete.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3CC12181E32D4557B70AA0CF /* Sounds/elumi_stackcomplete.wav */; };
+		4C49B8DF9320038C9966EF64 /* HomeProgressBoardCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE477CD1315E437F15BA91BD /* HomeProgressBoardCard.swift */; };
+		4FC0AFE2020E42DF8ADBDC59 /* VariableRewardEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 765EA90FF65349C1ADBD8D70 /* VariableRewardEngine.swift */; };
+		50F57B704E604DE98AD4FA51 /* Sounds/elumi_quizcomplete.wav in Resources */ = {isa = PBXBuildFile; fileRef = 21594A50F0B744E68ED245F2 /* Sounds/elumi_quizcomplete.wav */; };
+		535BC11A38424C789F12B637 /* Sounds/elumi_saugend.wav in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDD993CDA84C048277CCF7 /* Sounds/elumi_saugend.wav */; };
+		54A069E941A24FAA8F5763B6 /* Sounds/elumi_gameover.wav in Resources */ = {isa = PBXBuildFile; fileRef = 6DC3E67A0E5B47A6A21D7589 /* Sounds/elumi_gameover.wav */; };
+		55916C8754034661BBD48F46 /* FRDEMasterLexicon.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */; };
+		58A13D20DB064DC3A1CFBDDD /* Sounds/elumi_tentacle_sting.wav in Resources */ = {isa = PBXBuildFile; fileRef = 14D6AA0E2F7547C58EFD2C7B /* Sounds/elumi_tentacle_sting.wav */; };
+		616E2C714CE745070CD98CBB /* AppBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77D1F5E4FBCC08EBB9C7AFB9 /* AppBackButton.swift */; };
+		637BA521C77B4EC8B8FB9AAC /* DailyChallengeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C3FB95BD334EE18408771B /* DailyChallengeStore.swift */; };
+		6A9A9076F4D245A9AF3530F5 /* Sounds/elumi_levelup.wav in Resources */ = {isa = PBXBuildFile; fileRef = 6D35D1BF6D2D4C5093A40F4E /* Sounds/elumi_levelup.wav */; };
+		721DFC0B52424F55A89930EB /* SessionSetupComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C5A4B8C09644DDA8E9DC8B5 /* SessionSetupComponents.swift */; };
+		729A713080B546A1B10C5ACA /* Sounds/elumi_toggle.wav in Resources */ = {isa = PBXBuildFile; fileRef = 32C43DE8F494458D929C4AE1 /* Sounds/elumi_toggle.wav */; };
+		7D3B0E4411A243619FB50261 /* Sounds/elumi_saugstart.wav in Resources */ = {isa = PBXBuildFile; fileRef = F9E9A871DD9141F488C32488 /* Sounds/elumi_saugstart.wav */; };
+		7FCB5FF760B64B1BB8AAFCCE /* FeedbackTiming.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4DE9771408424DBF4CA080 /* FeedbackTiming.swift */; };
+		82DF25EBA98C4C9094BC3EFD /* Sounds/elumi_cardwrong.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1607A964426A474FA6D8367C /* Sounds/elumi_cardwrong.wav */; };
+		8480D2B78B0940FF8334A168 /* Sounds/elumi_scanprocess.wav in Resources */ = {isa = PBXBuildFile; fileRef = 8B3E6DF30BBB4EC3812B0DB2 /* Sounds/elumi_scanprocess.wav */; };
+		85741A1459CD46F8B2D57ADA /* Sounds/elumi_bonusbubble.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1EA2312346DD411E87EFE74C /* Sounds/elumi_bonusbubble.wav */; };
+		8641C62C7C85427FB59B365B /* SessionOptionsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9545925434E4BCBA46071F1 /* SessionOptionsComponents.swift */; };
+		910F1CC9A7444B38971AC68C /* Sounds/elumi_jellyfish_ambient.wav in Resources */ = {isa = PBXBuildFile; fileRef = ED6E2620B526439EA130ADE9 /* Sounds/elumi_jellyfish_ambient.wav */; };
+		9522ABC182EA4ED19082A0A4 /* Sounds/elumi_error.wav in Resources */ = {isa = PBXBuildFile; fileRef = 749B020AED184C828FDAFB6C /* Sounds/elumi_error.wav */; };
+		99AE414AD9F8468D8DF3007D /* Sounds/elumi_wrong.wav in Resources */ = {isa = PBXBuildFile; fileRef = F5A9F51ED0654E5F94E00A68 /* Sounds/elumi_wrong.wav */; };
+		9B14BFA58530E8E1A5226DA7 /* HomeContinueSessionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B52D4534719D39C429A3514 /* HomeContinueSessionCard.swift */; };
 		A00000000000000000000001 /* FRDEVocabMVPApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000011 /* FRDEVocabMVPApp.swift */; };
 		A00000000000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000012 /* ContentView.swift */; };
 		A00000000000000000000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000013 /* Assets.xcassets */; };
@@ -22,8 +57,6 @@
 		A00000000000000000000038 /* ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000039 /* ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav */; };
 		A00000000000000000000090 /* FRDEKnowledgePool.tsv in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000091 /* FRDEKnowledgePool.tsv */; };
 		A00000000000000000000092 /* FRDEKnowledgePool.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000093 /* FRDEKnowledgePool.sqlite */; };
-
-		55916C8754034661BBD48F46 /* FRDEMasterLexicon.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */; };
 		A00000000000000000000096 /* ScanModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000100 /* ScanModels.swift */; };
 		A00000000000000000000097 /* ScanProviders.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000101 /* ScanProviders.swift */; };
 		A00000000000000000000098 /* ScanEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000102 /* ScanEngine.swift */; };
@@ -102,11 +135,6 @@
 		A00000000000000000000246 /* OpenAIScanSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000247 /* OpenAIScanSchema.swift */; };
 		A00000000000000000000248 /* FlashcardsView+Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000249 /* FlashcardsView+Components.swift */; };
 		A00000000000000000000250 /* TrainingView+Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000251 /* TrainingView+Components.swift */; };
-		TC00000000000000000000001 /* TextCasingRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = TC00000000000000000000002 /* TextCasingRules.swift */; };
-		FA00000000000000000000001 /* FrenchLinguisticAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00000000000000000000002 /* FrenchLinguisticAnalysis.swift */; };
-		PB00000000000000000000001 /* POSBreakdownComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = PB00000000000000000000002 /* POSBreakdownComponents.swift */; };
-		VF00000000000000000000001 /* VerbformsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = VF00000000000000000000002 /* VerbformsEngine.swift */; };
-		VF00000000000000000000003 /* VerbformsSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = VF00000000000000000000004 /* VerbformsSessionController.swift */; };
 		A00000000000000000000252 /* QuizView+Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000253 /* QuizView+Components.swift */; };
 		A00000000000000000000254 /* LexiconGenderModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000255 /* LexiconGenderModels.swift */; };
 		A00000000000000000000256 /* OfflineFrenchGermanKnowledgePool.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000257 /* OfflineFrenchGermanKnowledgePool.swift */; };
@@ -327,46 +355,6 @@
 		A00000000000000000000704 /* TrainingView+AnswerScoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000705 /* TrainingView+AnswerScoring.swift */; };
 		A00000000000000000000706 /* FeedbackPlayer+Playback.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000707 /* FeedbackPlayer+Playback.swift */; };
 		A00000000000000000000708 /* FeedbackPlayer+Buffers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000709 /* FeedbackPlayer+Buffers.swift */; };
-		26325168A6B64B9399DCD543 /* LexiconTextUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1FD5616CFA427DBAB4CE9D /* LexiconTextUtility.swift */; };
-		99AE414AD9F8468D8DF3007D /* elumi_wrong.wav in Resources */ = {isa = PBXBuildFile; fileRef = F5A9F51ED0654E5F94E00A68 /* elumi_wrong.wav */; };
-		729A713080B546A1B10C5ACA /* elumi_toggle.wav in Resources */ = {isa = PBXBuildFile; fileRef = 32C43DE8F494458D929C4AE1 /* elumi_toggle.wav */; };
-		114BC2757EED4D78B9EFADEA /* elumi_tabswitch.wav in Resources */ = {isa = PBXBuildFile; fileRef = F2F037219E904D3680DD724E /* elumi_tabswitch.wav */; };
-		0956E1BD7D8A4C2CA60FF949 /* elumi_streak.wav in Resources */ = {isa = PBXBuildFile; fileRef = 427B3F68D7FB4FBFA24DBD17 /* elumi_streak.wav */; };
-		4A2F5E28015042B8897FAD67 /* elumi_stackcomplete.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3CC12181E32D4557B70AA0CF /* elumi_stackcomplete.wav */; };
-		A32AEA7409624035B7BCEB16 /* elumi_snackmiss.wav in Resources */ = {isa = PBXBuildFile; fileRef = 08593D8836594A859D387AE8 /* elumi_snackmiss.wav */; };
-		FDAE5763D9AB4A198F799CCB /* elumi_snackcatch.wav in Resources */ = {isa = PBXBuildFile; fileRef = 985C1E62789347B8A53B860F /* elumi_snackcatch.wav */; };
-		19D3201DD0C84E8A83C2242D /* elumi_slowmostart.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2E74EDA8D2904AA7A3E9F688 /* elumi_slowmostart.wav */; };
-		DC356E5E6E7D471787978C2E /* elumi_slowmoend.wav in Resources */ = {isa = PBXBuildFile; fileRef = 8469BB0E7D1B47FE81099689 /* elumi_slowmoend.wav */; };
-		1D667A9B8D984D1CB42D8942 /* elumi_shieldactivate.wav in Resources */ = {isa = PBXBuildFile; fileRef = DADBA6D5B4FF4413839CBF0D /* elumi_shieldactivate.wav */; };
-		D771E6C94B97489EAC3CCA37 /* elumi_shieldabsorb.wav in Resources */ = {isa = PBXBuildFile; fileRef = CB93664F8123410AB10D5D2F /* elumi_shieldabsorb.wav */; };
-		D2C31485B1D74864B812D0D8 /* elumi_scanstart.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3EC276513665498B94332747 /* elumi_scanstart.wav */; };
-		BFB7270E17924A98985159AE /* elumi_scandone.wav in Resources */ = {isa = PBXBuildFile; fileRef = BAC62D87FEAD413F90BCE57C /* elumi_scandone.wav */; };
-		58A13D20DB064DC3A1CFBDDD /* elumi_tentacle_sting.wav in Resources */ = {isa = PBXBuildFile; fileRef = 14D6AA0E2F7547C58EFD2C7B /* elumi_tentacle_sting.wav */; };
-		3F17F900156649F1B56821CA /* elumi_tentacle_drop.wav in Resources */ = {isa = PBXBuildFile; fileRef = C796DD66D33845D482971B80 /* elumi_tentacle_drop.wav */; };
-		495F17EE7BAD4C4E9518D9CE /* elumi_jellyfish_appear.wav in Resources */ = {isa = PBXBuildFile; fileRef = 997E13571F014504A8CCFE9C /* elumi_jellyfish_appear.wav */; };
-		910F1CC9A7444B38971AC68C /* elumi_jellyfish_ambient.wav in Resources */ = {isa = PBXBuildFile; fileRef = ED6E2620B526439EA130ADE9 /* elumi_jellyfish_ambient.wav */; };
-		8480D2B78B0940FF8334A168 /* elumi_scanprocess.wav in Resources */ = {isa = PBXBuildFile; fileRef = 8B3E6DF30BBB4EC3812B0DB2 /* elumi_scanprocess.wav */; };
-		7D3B0E4411A243619FB50261 /* elumi_saugstart.wav in Resources */ = {isa = PBXBuildFile; fileRef = F9E9A871DD9141F488C32488 /* elumi_saugstart.wav */; };
-		DA57C4C566AF4DB3B5CC281D /* elumi_saugloop.wav in Resources */ = {isa = PBXBuildFile; fileRef = 51677781801E491EAEA0C07A /* elumi_saugloop.wav */; };
-		535BC11A38424C789F12B637 /* elumi_saugend.wav in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDD993CDA84C048277CCF7 /* elumi_saugend.wav */; };
-		B4758C33858646B6A402E9E2 /* elumi_roundclear.wav in Resources */ = {isa = PBXBuildFile; fileRef = 5F6AA0B1D09C4B26B5544537 /* elumi_roundclear.wav */; };
-		50F57B704E604DE98AD4FA51 /* elumi_quizcomplete.wav in Resources */ = {isa = PBXBuildFile; fileRef = 21594A50F0B744E68ED245F2 /* elumi_quizcomplete.wav */; };
-		44D622B2824546FFBDFF7083 /* elumi_powerupspawn.wav in Resources */ = {isa = PBXBuildFile; fileRef = 550C14FD7EDE4E0C8426E5C0 /* elumi_powerupspawn.wav */; };
-		E627ACD904664767B834476C /* elumi_listaction.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCE42C2B2A954601BA1CC327 /* elumi_listaction.wav */; };
-		6A9A9076F4D245A9AF3530F5 /* elumi_levelup.wav in Resources */ = {isa = PBXBuildFile; fileRef = 6D35D1BF6D2D4C5093A40F4E /* elumi_levelup.wav */; };
-		13634FD082AA43DEB7699146 /* elumi_highscore.wav in Resources */ = {isa = PBXBuildFile; fileRef = A2097A8DB27E4BDC957255A8 /* elumi_highscore.wav */; };
-		15E1874FDAE047E4AEC3DA6D /* elumi_gamestart.wav in Resources */ = {isa = PBXBuildFile; fileRef = 41F9D99E7DF54754980496C7 /* elumi_gamestart.wav */; };
-		54A069E941A24FAA8F5763B6 /* elumi_gameover.wav in Resources */ = {isa = PBXBuildFile; fileRef = 6DC3E67A0E5B47A6A21D7589 /* elumi_gameover.wav */; };
-		A8E9010B4F0C46149D900BCF /* elumi_favstar.wav in Resources */ = {isa = PBXBuildFile; fileRef = 9D22BEAA0CCF43968F2ECD5A /* elumi_favstar.wav */; };
-		9522ABC182EA4ED19082A0A4 /* elumi_error.wav in Resources */ = {isa = PBXBuildFile; fileRef = 749B020AED184C828FDAFB6C /* elumi_error.wav */; };
-		4074D78EE22D43E2986ACBF0 /* elumi_correct.wav in Resources */ = {isa = PBXBuildFile; fileRef = 97C3C5F1DA8C491FA5BB2809 /* elumi_correct.wav */; };
-		BFBC9A0F8FA14ED791E9E103 /* elumi_combo.wav in Resources */ = {isa = PBXBuildFile; fileRef = 777D26688D2246308F41248B /* elumi_combo.wav */; };
-		82DF25EBA98C4C9094BC3EFD /* elumi_cardwrong.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1607A964426A474FA6D8367C /* elumi_cardwrong.wav */; };
-		0539D34CCB4C4C24AE08BF34 /* elumi_cardright.wav in Resources */ = {isa = PBXBuildFile; fileRef = 95A777457F104E90B5FA1898 /* elumi_cardright.wav */; };
-		009819BB54954EAEBB5DEC28 /* elumi_cardflip.wav in Resources */ = {isa = PBXBuildFile; fileRef = 804F29773536414EAD31D9BF /* elumi_cardflip.wav */; };
-		85741A1459CD46F8B2D57ADA /* elumi_bonusbubble.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1EA2312346DD411E87EFE74C /* elumi_bonusbubble.wav */; };
-		2C02BD11DC6C449AA1D5BFFE /* elumi_appstart.wav in Resources */ = {isa = PBXBuildFile; fileRef = 9BA6DD9690D14C3F966AECF7 /* elumi_appstart.wav */; };
-		A92FD19A63604A98AC7A62D8 /* elumi_bgm_fischfang.wav in Resources */ = {isa = PBXBuildFile; fileRef = 7F3CEFA2774C4CC9871729D2 /* elumi_bgm_fischfang.wav */; };
 		A00000000000000000000712 /* ListsView+Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000713 /* ListsView+Screen.swift */; };
 		A00000000000000000000714 /* ListsView+Sections.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000715 /* ListsView+Sections.swift */; };
 		A00000000000000000000716 /* ListsView+Presentations.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000717 /* ListsView+Presentations.swift */; };
@@ -397,54 +385,196 @@
 		A00000000000000000000766 /* FlashcardsSessionController+AnswerFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000767 /* FlashcardsSessionController+AnswerFlow.swift */; };
 		A00000000000000000000768 /* FlashcardsView+PromptResponseComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000769 /* FlashcardsView+PromptResponseComponents.swift */; };
 		A00000000000000000000770 /* FlashcardsView+InputActionComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000771 /* FlashcardsView+InputActionComponents.swift */; };
-
-		F43B1C0A2F877A000094BA73 /* VerbNounPairs.tsv in Resources */ = {isa = PBXBuildFile; fileRef = F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */; };
-		F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C0B2F877A100094BA73 /* VerbNounPairLoader.swift */; };
-		F43B1C122F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C112F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift */; };
-		DE208FC184184208BE875D1D /* ListCategoryPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10CDA22DCE1454195172B47 /* ListCategoryPickerView.swift */; };
-		F43B1C142F87C0100094BA73 /* ClaudeHaikuScanAIClient+Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C132F87C0100094BA73 /* ClaudeHaikuScanAIClient+Configuration.swift */; };
-		F43B1C0E2F878B000094BA73 /* FillBlankSentences.tsv in Resources */ = {isa = PBXBuildFile; fileRef = F43B1C0D2F878B000094BA73 /* FillBlankSentences.tsv */; };
-		F43B1C102F878B100094BA73 /* FillBlankSentenceLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C0F2F878B100094BA73 /* FillBlankSentenceLoader.swift */; };
-		F43B1C082F86A7BA0094BA73 /* StandardVocabularyLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C072F86A7BA0094BA73 /* StandardVocabularyLoader.swift */; };
-		F458EED02F8770F9009A2683 /* ArcadeCreditSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F458EECF2F8770F9009A2683 /* ArcadeCreditSystem.swift */; };
-		CFE5744DEEE44CA6A3320AEA /* ScanChoiceCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72C571C840B4169A98D8ABA /* ScanChoiceCard.swift */; };
-		616E2C714CE745070CD98CBB /* AppBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77D1F5E4FBCC08EBB9C7AFB9 /* AppBackButton.swift */; };
-		D8F389FE7E57642F1343E575 /* LanguageDirectionSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6021AB9E4ED9043B2F3F7F /* LanguageDirectionSwitch.swift */; };
-		C47F82F44E4D2996A8137382 /* HomeModuleTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFF72E63A11B7B8AD28A969B /* HomeModuleTile.swift */; };
-		A5E02C81EAD95B48BD32C1C4 /* HomeHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FEDD84AF0BD7AE57209A819 /* HomeHeader.swift */; };
-		9B14BFA58530E8E1A5226DA7 /* HomeContinueSessionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B52D4534719D39C429A3514 /* HomeContinueSessionCard.swift */; };
-		F430601DADA83D05822596D0 /* HomeDailyFocusCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7E48C7D56DE47BA8A612FB2 /* HomeDailyFocusCard.swift */; };
 		A1B2C3D4E5F60708090A0B01 /* HomeStatusCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0B02 /* HomeStatusCard.swift */; };
 		A1B2C3D4E5F60708090A0C01 /* DailyStatsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */; };
-		4C49B8DF9320038C9966EF64 /* HomeProgressBoardCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE477CD1315E437F15BA91BD /* HomeProgressBoardCard.swift */; };
-		21539C42B3F8DFAF90B3E180 /* HomeModuleIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4908A2A5A962323D3A36B07 /* HomeModuleIcon.swift */; };
+		A1B2C3D4E5F60708090A0E02 /* ItemLearningStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0E01 /* ItemLearningStatus.swift */; };
+		A1B2C3D4E5F60708090A0E04 /* ItemLearningStatusStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0E03 /* ItemLearningStatusStore.swift */; };
+		A1B2C3D4E5F60708090A0E06 /* ItemLearningStatusRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0E05 /* ItemLearningStatusRecorder.swift */; };
+		A1B2C3D4E5F60708090A0E08 /* HomeLernstatusCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0E07 /* HomeLernstatusCard.swift */; };
+		A1B2C3D4E5F60708090A0E0A /* LernstatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0E09 /* LernstatusView.swift */; };
 		A1B2C3D4E5F60708091C0D01 /* AppIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708091C0D02 /* AppIcons.swift */; };
-		D8F531550E0A4DF7B96CC21C /* SessionSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */; };
-		8641C62C7C85427FB59B365B /* SessionOptionsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9545925434E4BCBA46071F1 /* SessionOptionsComponents.swift */; };
-		721DFC0B52424F55A89930EB /* SessionSetupComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C5A4B8C09644DDA8E9DC8B5 /* SessionSetupComponents.swift */; };
-		F9234FB8ED6A4B12B93A988E /* SessionSetupEstimate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832B8E6EB6D8482D957CF256 /* SessionSetupEstimate.swift */; };
-		4FC0AFE2020E42DF8ADBDC59 /* VariableRewardEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 765EA90FF65349C1ADBD8D70 /* VariableRewardEngine.swift */; };
-		7FCB5FF760B64B1BB8AAFCCE /* FeedbackTiming.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4DE9771408424DBF4CA080 /* FeedbackTiming.swift */; };
-		637BA521C77B4EC8B8FB9AAC /* DailyChallengeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C3FB95BD334EE18408771B /* DailyChallengeStore.swift */; };
-		2CE2689FA4E34BCB9A22FCA9 /* DailyChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2D8AABD1A084A80A03C7C97 /* DailyChallenge.swift */; };
-		CE67839CC59144FDBF5F565C /* GameHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AF0AA02FEF444D2BD481B5B /* GameHubView.swift */; };
-		081CA03EE10F4E52B6653A75 /* ProgressHubComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F244E2378E0C4DF89CC561E1 /* ProgressHubComponents.swift */; };
-		0FDB94AE807C45B6B251DB2C /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D60E8751B6404310BA69583D /* ProfileView.swift */; };
+		FE12345678901234567890A1 /* AppIconRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890A2 /* AppIconRegistry.swift */; };
+		FE12345678901234567890B1 /* ScanTuning.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890B2 /* ScanTuning.swift */; };
+		FE12345678901234567890C1 /* WordRunnerGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890C2 /* WordRunnerGameView.swift */; };
+		FE12345678901234567890D1 /* WordRunnerModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890D2 /* WordRunnerModels.swift */; };
+		FE12345678901234567890E1 /* WordRunnerTaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890E2 /* WordRunnerTaskProvider.swift */; };
+		FE12345678901234567890F1 /* WordRunnerSpawner.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890F2 /* WordRunnerSpawner.swift */; };
+		FE1234567890123456789001 /* WordRunnerGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789002 /* WordRunnerGame.swift */; };
+		FE1234567890123456789011 /* WordRunnerMusicPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789012 /* WordRunnerMusicPlayer.swift */; };
+		FE1234567890123456789021 /* Sounds/runner_theme_01.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789022 /* Sounds/runner_theme_01.mp3 */; };
+		FE1234567890123456789031 /* Sounds/runner_theme_02.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789032 /* Sounds/runner_theme_02.mp3 */; };
+		FE1234567890123456789041 /* ArcadeMusicPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789042 /* ArcadeMusicPlayer.swift */; };
+		FE1234567890123456789051 /* Sounds/arcade_theme_01.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789052 /* Sounds/arcade_theme_01.mp3 */; };
+		FE1234567890123456789061 /* Sounds/arcade_theme_02.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789062 /* Sounds/arcade_theme_02.mp3 */; };
+		FE1234567890123456789071 /* Sounds/fish_theme_01.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789072 /* Sounds/fish_theme_01.mp3 */; };
+		FE1234567890123456789081 /* MusicCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789082 /* MusicCatalog.swift */; };
+		FE1234567890123456789091 /* TrophyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789092 /* TrophyView.swift */; };
+		FE12345678901234567890AA /* HomeCompactStatusCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890AB /* HomeCompactStatusCard.swift */; };
+		FE12345678901234567890BA /* HomeHeroLearningSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890BB /* HomeHeroLearningSection.swift */; };
+		FE12345678901234567890CA /* HomeMoreExercisesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890CB /* HomeMoreExercisesSection.swift */; };
+		FE12345678901234567890DA /* HomeToolsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890DB /* HomeToolsSection.swift */; };
+		FE12345678901234567890EA /* HomePopCardStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890EB /* HomePopCardStyle.swift */; };
+		FE12345678901234567890FA /* LiveListRunnerTaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890FB /* LiveListRunnerTaskProvider.swift */; };
+		FE12345678901234567891AA /* WordRunnerSFXPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567891AB /* WordRunnerSFXPlayer.swift */; };
+		FE12345678901234567891BA /* sfx/sfx_lane.wav in Resources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567891BB /* sfx/sfx_lane.wav */; };
+		FE12345678901234567891CA /* sfx/sfx_correct.wav in Resources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567891CB /* sfx/sfx_correct.wav */; };
+		FE12345678901234567891DA /* sfx/sfx_wrong.wav in Resources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567891DB /* sfx/sfx_wrong.wav */; };
+		FE12345678901234567891EA /* sfx/sfx_life_loss.wav in Resources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567891EB /* sfx/sfx_life_loss.wav */; };
+		FE12345678901234567891FA /* sfx/sfx_pickup.wav in Resources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567891FB /* sfx/sfx_pickup.wav */; };
+		FE12345678901234567892AA /* sfx/sfx_boost.wav in Resources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567892AB /* sfx/sfx_boost.wav */; };
+		A1B2C3D4E5F60708091C0D03 /* DebugResetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708091C0D04 /* DebugResetService.swift */; };
+		A32AEA7409624035B7BCEB16 /* Sounds/elumi_snackmiss.wav in Resources */ = {isa = PBXBuildFile; fileRef = 08593D8836594A859D387AE8 /* Sounds/elumi_snackmiss.wav */; };
+		A5E02C81EAD95B48BD32C1C4 /* HomeHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FEDD84AF0BD7AE57209A819 /* HomeHeader.swift */; };
+		A8E9010B4F0C46149D900BCF /* Sounds/elumi_favstar.wav in Resources */ = {isa = PBXBuildFile; fileRef = 9D22BEAA0CCF43968F2ECD5A /* Sounds/elumi_favstar.wav */; };
+		A92FD19A63604A98AC7A62D8 /* Sounds/elumi_bgm_fischfang.wav in Resources */ = {isa = PBXBuildFile; fileRef = 7F3CEFA2774C4CC9871729D2 /* Sounds/elumi_bgm_fischfang.wav */; };
+		AA11BB22CC33DD44EE55FF66 /* SessionStreak.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF67 /* SessionStreak.swift */; };
+		AA11BB22CC33DD44EE55FF68 /* SpeedRoundSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF69 /* SpeedRoundSettings.swift */; };
+		AA11BB22CC33DD44EE55FF70 /* MCDistractorFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF71 /* MCDistractorFilter.swift */; };
+		AA11BB22CC33DD44EE55FF72 /* TrainingSessionResume.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF73 /* TrainingSessionResume.swift */; };
+		AA11BB22CC33DD44EE55FF74 /* AccentSessionResume.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF75 /* AccentSessionResume.swift */; };
+		AA11BB22CC33DD44EE55FF76 /* QuizSessionResume.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF77 /* QuizSessionResume.swift */; };
+		AA11BB22CC33DD44EE55FF78 /* ArticleModeClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF79 /* ArticleModeClassifier.swift */; };
+		AA11BB22CC33DD44EE55FF7A /* ArticleModeClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF7B /* ArticleModeClassifierTests.swift */; };
+		AA11BB22CC33DD44EE55FF7C /* FeedbackConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF7D /* FeedbackConfig.swift */; };
+		AA11BB22CC33DD44EE55FF7E /* FeedbackEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF7F /* FeedbackEngine.swift */; };
+		AA11BB22CC33DD44EE55FF80 /* SpeedRoundTimerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF81 /* SpeedRoundTimerCard.swift */; };
+		AA11BB22CC33DD44EE55FF82 /* GameStateResetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF83 /* GameStateResetService.swift */; };
+		AA11BB22CC33DD44EE55FF84 /* LevelProgression.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF85 /* LevelProgression.swift */; };
 		AE2E9CF09D254EB88B2560F0 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF6D48598792426F80A5D511 /* OnboardingView.swift */; };
-		C39E800D461E4B3A84CA306E /* ProfileAvatarBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901A6A0D6B194C198EEE6882 /* ProfileAvatarBadge.swift */; };
-		EF1331233D8443888E1FAC22 /* Personalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A58F580B36740F78ED60FD0 /* Personalization.swift */; };
-		BBA6A1692A074A9BA79D994A /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F654EF57484ACA8C074FF2 /* ProfileStore.swift */; };
 		B2B53A9B62034F82BF7C110D /* LearnerProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7313B768D707425B9C3DA9DA /* LearnerProfile.swift */; };
+		B4758C33858646B6A402E9E2 /* Sounds/elumi_roundclear.wav in Resources */ = {isa = PBXBuildFile; fileRef = 5F6AA0B1D09C4B26B5544537 /* Sounds/elumi_roundclear.wav */; };
+		B88DDE296B824BCA8E9B5AA6 /* GamificationFeedbackPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71844DBDB0A8498D87F33E5B /* GamificationFeedbackPresenter.swift */; };
+		BBA6A1692A074A9BA79D994A /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F654EF57484ACA8C074FF2 /* ProfileStore.swift */; };
+		BFB7270E17924A98985159AE /* Sounds/elumi_scandone.wav in Resources */ = {isa = PBXBuildFile; fileRef = BAC62D87FEAD413F90BCE57C /* Sounds/elumi_scandone.wav */; };
+		BFBC9A0F8FA14ED791E9E103 /* Sounds/elumi_combo.wav in Resources */ = {isa = PBXBuildFile; fileRef = 777D26688D2246308F41248B /* Sounds/elumi_combo.wav */; };
+		C0F11A111A111A111A111111 /* GamificationConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1C01A111A111A111A111111 /* GamificationConfig.swift */; };
+		C0F21A111A111A111A111111 /* LearningSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2C01A111A111A111A111111 /* LearningSession.swift */; };
+		C0F31A111A111A111A111111 /* ProgressStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C01A111A111A111A111111 /* ProgressStore.swift */; };
+		C0F41A111A111A111A111111 /* ProgressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C01A111A111A111A111111 /* ProgressService.swift */; };
+		C0F51A111A111A111A111111 /* SessionSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C01A111A111A111A111111 /* SessionSummaryView.swift */; };
+		C39E800D461E4B3A84CA306E /* ProfileAvatarBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901A6A0D6B194C198EEE6882 /* ProfileAvatarBadge.swift */; };
+		C47F82F44E4D2996A8137382 /* HomeModuleTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFF72E63A11B7B8AD28A969B /* HomeModuleTile.swift */; };
+		CE67839CC59144FDBF5F565C /* GameHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AF0AA02FEF444D2BD481B5B /* GameHubView.swift */; };
+		CFE5744DEEE44CA6A3320AEA /* ScanChoiceCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72C571C840B4169A98D8ABA /* ScanChoiceCard.swift */; };
+		D2C31485B1D74864B812D0D8 /* Sounds/elumi_scanstart.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3EC276513665498B94332747 /* Sounds/elumi_scanstart.wav */; };
+		D771E6C94B97489EAC3CCA37 /* Sounds/elumi_shieldabsorb.wav in Resources */ = {isa = PBXBuildFile; fileRef = CB93664F8123410AB10D5D2F /* Sounds/elumi_shieldabsorb.wav */; };
+		D8F389FE7E57642F1343E575 /* LanguageDirectionSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6021AB9E4ED9043B2F3F7F /* LanguageDirectionSwitch.swift */; };
+		D8F531550E0A4DF7B96CC21C /* SessionSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */; };
+		DA57C4C566AF4DB3B5CC281D /* Sounds/elumi_saugloop.wav in Resources */ = {isa = PBXBuildFile; fileRef = 51677781801E491EAEA0C07A /* Sounds/elumi_saugloop.wav */; };
+		DC356E5E6E7D471787978C2E /* Sounds/elumi_slowmoend.wav in Resources */ = {isa = PBXBuildFile; fileRef = 8469BB0E7D1B47FE81099689 /* Sounds/elumi_slowmoend.wav */; };
+		DE208FC184184208BE875D1D /* FRDEVocabMVP/ListCategoryPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10CDA22DCE1454195172B47 /* FRDEVocabMVP/ListCategoryPickerView.swift */; };
+		E627ACD904664767B834476C /* Sounds/elumi_listaction.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCE42C2B2A954601BA1CC327 /* Sounds/elumi_listaction.wav */; };
+		EF1331233D8443888E1FAC22 /* Personalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A58F580B36740F78ED60FD0 /* Personalization.swift */; };
+		F430601DADA83D05822596D0 /* HomeDailyFocusCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7E48C7D56DE47BA8A612FB2 /* HomeDailyFocusCard.swift */; };
+		F43B1C082F86A7BA0094BA73 /* StandardVocabularyLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C072F86A7BA0094BA73 /* StandardVocabularyLoader.swift */; };
+		F43B1C0A2F877A000094BA73 /* VerbNounPairs.tsv in Resources */ = {isa = PBXBuildFile; fileRef = F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */; };
+		F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C0B2F877A100094BA73 /* VerbNounPairLoader.swift */; };
+		F43B1C0E2F878B000094BA73 /* FillBlankSentences.tsv in Resources */ = {isa = PBXBuildFile; fileRef = F43B1C0D2F878B000094BA73 /* FillBlankSentences.tsv */; };
+		F43B1C102F878B100094BA73 /* FillBlankSentenceLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C0F2F878B100094BA73 /* FillBlankSentenceLoader.swift */; };
+		F43B1C122F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C112F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift */; };
+		F43B1C142F87C0100094BA73 /* ClaudeHaikuScanAIClient+Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43B1C132F87C0100094BA73 /* ClaudeHaikuScanAIClient+Configuration.swift */; };
+		F451513F2F93C391006C8818 /* File.txt in Resources */ = {isa = PBXBuildFile; fileRef = F451513E2F93C391006C8818 /* File.txt */; };
+		F458EED02F8770F9009A2683 /* ArcadeCreditSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F458EECF2F8770F9009A2683 /* ArcadeCreditSystem.swift */; };
+		F9234FB8ED6A4B12B93A988E /* SessionSetupEstimate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832B8E6EB6D8482D957CF256 /* SessionSetupEstimate.swift */; };
+		FA00000000000000000000001 /* FrenchLinguisticAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00000000000000000000002 /* FrenchLinguisticAnalysis.swift */; };
+		FDAE5763D9AB4A198F799CCB /* Sounds/elumi_snackcatch.wav in Resources */ = {isa = PBXBuildFile; fileRef = 985C1E62789347B8A53B860F /* Sounds/elumi_snackcatch.wav */; };
+		FEDEA1000000000000000001 /* FreierTextModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA1000000000000000002 /* FreierTextModels.swift */; };
+		FEDEA1000000000000000003 /* FreierTextClaudeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA1000000000000000004 /* FreierTextClaudeClient.swift */; };
+		FEDEA1000000000000000005 /* FreierTextEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA1000000000000000006 /* FreierTextEntryView.swift */; };
+		FEDEA1000000000000000007 /* FreierTextProcessingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA1000000000000000008 /* FreierTextProcessingView.swift */; };
+		FEDEA1000000000000000009 /* FreierTextResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA100000000000000000A /* FreierTextResultView.swift */; };
+		FEDEA100000000000000000B /* SaveNewListSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA100000000000000000C /* SaveNewListSheet.swift */; };
+		FEDEA100000000000000000D /* FreierTextSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA100000000000000000E /* FreierTextSummaryView.swift */; };
+		FEDEA11000000000000000A1 /* SmartDocumentProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA11000000000000000A2 /* SmartDocumentProcessor.swift */; };
+		FEDEA12000000000000000B1 /* SmartScannerSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA12000000000000000B2 /* SmartScannerSession.swift */; };
+		FEDEA13000000000000000C1 /* RectangleTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA13000000000000000C2 /* RectangleTracker.swift */; };
+		FEDEA14000000000000000D1 /* SmartScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA14000000000000000D2 /* SmartScannerView.swift */; };
+		FEDEA15000000000000000E1 /* ImageQualityAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA15000000000000000E2 /* ImageQualityAnalyzer.swift */; };
+		FEDEA15100000000000000E3 /* ImageEnhancer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA15100000000000000E4 /* ImageEnhancer.swift */; };
+		FEDEA15200000000000000E5 /* ImageCropper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA15200000000000000E6 /* ImageCropper.swift */; };
+		FEDEA16000000000000000F1 /* ScanCoordinateMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA16000000000000000F2 /* ScanCoordinateMapper.swift */; };
+		FEDEA17000000000001A001 /* ScanCaptureProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA17000000000001A002 /* ScanCaptureProfile.swift */; };
+		FEDEA18000000000001B001 /* ScanCaptureMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA18000000000001B002 /* ScanCaptureMachine.swift */; };
+		FEDEA19000000000001C001 /* AutoCaptureController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA19000000000001C002 /* AutoCaptureController.swift */; };
+		FEDEA1A000000000001D001 /* FocusExposureController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA1A000000000001D002 /* FocusExposureController.swift */; };
+		FEDEA1B000000000001E001 /* SmartTextRegionDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA1B000000000001E002 /* SmartTextRegionDetector.swift */; };
+		FEDEA1C000000000001F001 /* ScanImageEnhancer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA1C000000000001F002 /* ScanImageEnhancer.swift */; };
+		FEDEA1D00000000000020001 /* ScanAIPostProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA1D00000000000020002 /* ScanAIPostProcessor.swift */; };
+		FEDEA1E00000000000021001 /* VocabularyListDualFormMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA1E00000000000021002 /* VocabularyListDualFormMigration.swift */; };
+		FEDEA1F00000000000022001 /* VocabDualFormSplitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA1F00000000000022002 /* VocabDualFormSplitter.swift */; };
+		FEDEA20000000000000001A1 /* AccentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20000000000000001A2 /* AccentModels.swift */; };
+		FEDEA20000000000000002A1 /* AccentWordCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20000000000000002A2 /* AccentWordCatalog.swift */; };
+		FEDEA20000000000000003A1 /* AccentContentBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20000000000000003A2 /* AccentContentBuilder.swift */; };
+		FEDEA20000000000000004A1 /* AccentSessionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20000000000000004A2 /* AccentSessionEngine.swift */; };
+		FEDEA20000000000000005A1 /* AccentsEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20000000000000005A2 /* AccentsEntryView.swift */; };
+		FEDEA20000000000000006A1 /* AccentsSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20000000000000006A2 /* AccentsSessionView.swift */; };
+		FEDEA20000000000000007A1 /* AccentsLearningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20000000000000007A2 /* AccentsLearningView.swift */; };
+		FEDEA20000000000000008A1 /* AccentsResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20000000000000008A2 /* AccentsResultView.swift */; };
+		FEDEA20100000000000023001 /* VocabDualFormMerger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20100000000000023002 /* VocabDualFormMerger.swift */; };
+		FEDEA20200000000000024001 /* VocabContextClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20200000000000024002 /* VocabContextClassifier.swift */; };
+		FEDEA20300000000000025001 /* AttentionRegionTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20300000000000025002 /* AttentionRegionTracker.swift */; };
+		FEDEA20300000000000026001 /* ScanSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20300000000000026002 /* ScanSettings.swift */; };
+		FEDEA20300000000000027001 /* ScanFocusMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20300000000000027002 /* ScanFocusMode.swift */; };
+		FEDEA20300000000000028001 /* ScanModeBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20300000000000028002 /* ScanModeBadge.swift */; };
+		FEDEA20300000000000029001 /* ArcadePowerUps.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20300000000000029002 /* ArcadePowerUps.swift */; };
+		FEDEA20300000000000030001 /* ArcadeSFX.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20300000000000030002 /* ArcadeSFX.swift */; };
+		FEDEA20300000000000031001 /* GermanAbbreviationExpander.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20300000000000031002 /* GermanAbbreviationExpander.swift */; };
+		FEDEA20300000000000032001 /* ArcadePowerUpRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20300000000000032002 /* ArcadePowerUpRuntime.swift */; };
+		FEDEA210000000000000011 /* AccentsSessionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA210000000000000012 /* AccentsSessionHeader.swift */; };
+		FEDEA22000000000000001A1 /* AccentAdaptiveStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA22000000000000001A2 /* AccentAdaptiveStore.swift */; };
+		PB00000000000000000000001 /* POSBreakdownComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = PB00000000000000000000002 /* POSBreakdownComponents.swift */; };
+		TC00000000000000000000001 /* TextCasingRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = TC00000000000000000000002 /* TextCasingRules.swift */; };
+		VF00000000000000000000001 /* VerbformsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = VF00000000000000000000002 /* VerbformsEngine.swift */; };
+		VF00000000000000000000003 /* VerbformsSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = VF00000000000000000000004 /* VerbformsSessionController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		F1C01A111A111A111A111111 /* GamificationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamificationConfig.swift; sourceTree = "<group>"; };
-		F2C01A111A111A111A111111 /* LearningSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearningSession.swift; sourceTree = "<group>"; };
-		F3C01A111A111A111A111111 /* ProgressStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressStore.swift; sourceTree = "<group>"; };
-		F4C01A111A111A111A111111 /* ProgressService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressService.swift; sourceTree = "<group>"; };
+		08593D8836594A859D387AE8 /* Sounds/elumi_snackmiss.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_snackmiss.wav; sourceTree = "<group>"; };
+		0BBDD993CDA84C048277CCF7 /* Sounds/elumi_saugend.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_saugend.wav; sourceTree = "<group>"; };
+		14D6AA0E2F7547C58EFD2C7B /* Sounds/elumi_tentacle_sting.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_tentacle_sting.wav; sourceTree = "<group>"; };
+		1607A964426A474FA6D8367C /* Sounds/elumi_cardwrong.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_cardwrong.wav; sourceTree = "<group>"; };
+		1C5A4B8C09644DDA8E9DC8B5 /* SessionSetupComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupComponents.swift; path = FRDEVocabMVP/SessionSetupComponents.swift; sourceTree = "<group>"; };
+		1EA2312346DD411E87EFE74C /* Sounds/elumi_bonusbubble.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_bonusbubble.wav; sourceTree = "<group>"; };
+		21594A50F0B744E68ED245F2 /* Sounds/elumi_quizcomplete.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_quizcomplete.wav; sourceTree = "<group>"; };
+		2E74EDA8D2904AA7A3E9F688 /* Sounds/elumi_slowmostart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_slowmostart.wav; sourceTree = "<group>"; };
+		32C43DE8F494458D929C4AE1 /* Sounds/elumi_toggle.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_toggle.wav; sourceTree = "<group>"; };
+		35F654EF57484ACA8C074FF2 /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileStore.swift; path = FRDEVocabMVP/ProfileStore.swift; sourceTree = "<group>"; };
+		3A58F580B36740F78ED60FD0 /* Personalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Personalization.swift; path = FRDEVocabMVP/Personalization.swift; sourceTree = "<group>"; };
+		3AF0AA02FEF444D2BD481B5B /* GameHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GameHubView.swift; path = FRDEVocabMVP/GameHubView.swift; sourceTree = "<group>"; };
+		3B52D4534719D39C429A3514 /* HomeContinueSessionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeContinueSessionCard.swift; path = FRDEVocabMVP/HomeContinueSessionCard.swift; sourceTree = "<group>"; };
+		3C6021AB9E4ED9043B2F3F7F /* LanguageDirectionSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LanguageDirectionSwitch.swift; path = FRDEVocabMVP/LanguageDirectionSwitch.swift; sourceTree = "<group>"; };
+		3CC12181E32D4557B70AA0CF /* Sounds/elumi_stackcomplete.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_stackcomplete.wav; sourceTree = "<group>"; };
+		3EC276513665498B94332747 /* Sounds/elumi_scanstart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_scanstart.wav; sourceTree = "<group>"; };
+		41F9D99E7DF54754980496C7 /* Sounds/elumi_gamestart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_gamestart.wav; sourceTree = "<group>"; };
+		427B3F68D7FB4FBFA24DBD17 /* Sounds/elumi_streak.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_streak.wav; sourceTree = "<group>"; };
+		47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupScreen.swift; path = FRDEVocabMVP/SessionSetupScreen.swift; sourceTree = "<group>"; };
+		4C1FD5616CFA427DBAB4CE9D /* LexiconTextUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LexiconTextUtility.swift; sourceTree = "<group>"; };
+		51677781801E491EAEA0C07A /* Sounds/elumi_saugloop.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_saugloop.wav; sourceTree = "<group>"; };
+		54C3FB95BD334EE18408771B /* DailyChallengeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyChallengeStore.swift; path = FRDEVocabMVP/DailyChallengeStore.swift; sourceTree = "<group>"; };
+		550C14FD7EDE4E0C8426E5C0 /* Sounds/elumi_powerupspawn.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_powerupspawn.wav; sourceTree = "<group>"; };
+		5F6AA0B1D09C4B26B5544537 /* Sounds/elumi_roundclear.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_roundclear.wav; sourceTree = "<group>"; };
+		6D35D1BF6D2D4C5093A40F4E /* Sounds/elumi_levelup.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_levelup.wav; sourceTree = "<group>"; };
+		6DC3E67A0E5B47A6A21D7589 /* Sounds/elumi_gameover.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_gameover.wav; sourceTree = "<group>"; };
+		6FEDD84AF0BD7AE57209A819 /* HomeHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeHeader.swift; path = FRDEVocabMVP/HomeHeader.swift; sourceTree = "<group>"; };
 		71844DBDB0A8498D87F33E5B /* GamificationFeedbackPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamificationFeedbackPresenter.swift; sourceTree = "<group>"; };
-		F5C01A111A111A111A111111 /* SessionSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionSummaryView.swift; sourceTree = "<group>"; };
-		A00000000000000000000010 /* FRDEVocabMVP.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = FRDEVocabMVP.app; path = myVoc.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7313B768D707425B9C3DA9DA /* LearnerProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearnerProfile.swift; path = FRDEVocabMVP/LearnerProfile.swift; sourceTree = "<group>"; };
+		749B020AED184C828FDAFB6C /* Sounds/elumi_error.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_error.wav; sourceTree = "<group>"; };
+		765EA90FF65349C1ADBD8D70 /* VariableRewardEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VariableRewardEngine.swift; path = FRDEVocabMVP/VariableRewardEngine.swift; sourceTree = "<group>"; };
+		777D26688D2246308F41248B /* Sounds/elumi_combo.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_combo.wav; sourceTree = "<group>"; };
+		77D1F5E4FBCC08EBB9C7AFB9 /* AppBackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppBackButton.swift; path = FRDEVocabMVP/AppBackButton.swift; sourceTree = "<group>"; };
+		7F3CEFA2774C4CC9871729D2 /* Sounds/elumi_bgm_fischfang.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_bgm_fischfang.wav; sourceTree = "<group>"; };
+		804F29773536414EAD31D9BF /* Sounds/elumi_cardflip.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_cardflip.wav; sourceTree = "<group>"; };
+		832B8E6EB6D8482D957CF256 /* SessionSetupEstimate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupEstimate.swift; path = FRDEVocabMVP/SessionSetupEstimate.swift; sourceTree = "<group>"; };
+		8469BB0E7D1B47FE81099689 /* Sounds/elumi_slowmoend.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_slowmoend.wav; sourceTree = "<group>"; };
+		8B3E6DF30BBB4EC3812B0DB2 /* Sounds/elumi_scanprocess.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_scanprocess.wav; sourceTree = "<group>"; };
+		901A6A0D6B194C198EEE6882 /* ProfileAvatarBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileAvatarBadge.swift; path = FRDEVocabMVP/ProfileAvatarBadge.swift; sourceTree = "<group>"; };
+		95A777457F104E90B5FA1898 /* Sounds/elumi_cardright.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_cardright.wav; sourceTree = "<group>"; };
+		97C3C5F1DA8C491FA5BB2809 /* Sounds/elumi_correct.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_correct.wav; sourceTree = "<group>"; };
+		985C1E62789347B8A53B860F /* Sounds/elumi_snackcatch.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_snackcatch.wav; sourceTree = "<group>"; };
+		997E13571F014504A8CCFE9C /* Sounds/elumi_jellyfish_appear.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_jellyfish_appear.wav; sourceTree = "<group>"; };
+		9BA6DD9690D14C3F966AECF7 /* Sounds/elumi_appstart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_appstart.wav; sourceTree = "<group>"; };
+		9D22BEAA0CCF43968F2ECD5A /* Sounds/elumi_favstar.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_favstar.wav; sourceTree = "<group>"; };
+		A00000000000000000000010 /* myVoc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = myVoc.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00000000000000000000011 /* FRDEVocabMVPApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FRDEVocabMVPApp.swift; sourceTree = "<group>"; };
 		A00000000000000000000012 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A00000000000000000000013 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -456,8 +586,6 @@
 		A00000000000000000000039 /* ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav; sourceTree = "<group>"; };
 		A00000000000000000000091 /* FRDEKnowledgePool.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; path = FRDEKnowledgePool.tsv; sourceTree = "<group>"; };
 		A00000000000000000000093 /* FRDEKnowledgePool.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = FRDEKnowledgePool.sqlite; sourceTree = "<group>"; };
-
-		DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = FRDEMasterLexicon.sqlite; sourceTree = "<group>"; };
 		A00000000000000000000100 /* ScanModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanModels.swift; sourceTree = "<group>"; };
 		A00000000000000000000101 /* ScanProviders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanProviders.swift; sourceTree = "<group>"; };
 		A00000000000000000000102 /* ScanEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanEngine.swift; sourceTree = "<group>"; };
@@ -535,11 +663,6 @@
 		A00000000000000000000245 /* AIScanProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIScanProvider.swift; sourceTree = "<group>"; };
 		A00000000000000000000247 /* OpenAIScanSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIScanSchema.swift; sourceTree = "<group>"; };
 		A00000000000000000000249 /* FlashcardsView+Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsView+Components.swift"; sourceTree = "<group>"; };
-		VF00000000000000000000002 /* VerbformsEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerbformsEngine.swift; sourceTree = "<group>"; };
-		TC00000000000000000000002 /* TextCasingRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextCasingRules.swift; sourceTree = "<group>"; };
-		FA00000000000000000000002 /* FrenchLinguisticAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrenchLinguisticAnalysis.swift; sourceTree = "<group>"; };
-		PB00000000000000000000002 /* POSBreakdownComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = POSBreakdownComponents.swift; sourceTree = "<group>"; };
-		VF00000000000000000000004 /* VerbformsSessionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerbformsSessionController.swift; sourceTree = "<group>"; };
 		A00000000000000000000251 /* TrainingView+Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrainingView+Components.swift"; sourceTree = "<group>"; };
 		A00000000000000000000253 /* QuizView+Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "QuizView+Components.swift"; sourceTree = "<group>"; };
 		A00000000000000000000255 /* LexiconGenderModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LexiconGenderModels.swift; sourceTree = "<group>"; };
@@ -761,46 +884,6 @@
 		A00000000000000000000705 /* TrainingView+AnswerScoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrainingView+AnswerScoring.swift"; sourceTree = "<group>"; };
 		A00000000000000000000707 /* FeedbackPlayer+Playback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FeedbackPlayer+Playback.swift"; sourceTree = "<group>"; };
 		A00000000000000000000709 /* FeedbackPlayer+Buffers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FeedbackPlayer+Buffers.swift"; sourceTree = "<group>"; };
-		4C1FD5616CFA427DBAB4CE9D /* LexiconTextUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LexiconTextUtility.swift"; sourceTree = "<group>"; };
-		F5A9F51ED0654E5F94E00A68 /* elumi_wrong.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_wrong.wav"; sourceTree = "<group>"; };
-		32C43DE8F494458D929C4AE1 /* elumi_toggle.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_toggle.wav"; sourceTree = "<group>"; };
-		F2F037219E904D3680DD724E /* elumi_tabswitch.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_tabswitch.wav"; sourceTree = "<group>"; };
-		427B3F68D7FB4FBFA24DBD17 /* elumi_streak.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_streak.wav"; sourceTree = "<group>"; };
-		3CC12181E32D4557B70AA0CF /* elumi_stackcomplete.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_stackcomplete.wav"; sourceTree = "<group>"; };
-		08593D8836594A859D387AE8 /* elumi_snackmiss.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_snackmiss.wav"; sourceTree = "<group>"; };
-		985C1E62789347B8A53B860F /* elumi_snackcatch.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_snackcatch.wav"; sourceTree = "<group>"; };
-		2E74EDA8D2904AA7A3E9F688 /* elumi_slowmostart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_slowmostart.wav"; sourceTree = "<group>"; };
-		8469BB0E7D1B47FE81099689 /* elumi_slowmoend.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_slowmoend.wav"; sourceTree = "<group>"; };
-		DADBA6D5B4FF4413839CBF0D /* elumi_shieldactivate.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_shieldactivate.wav"; sourceTree = "<group>"; };
-		CB93664F8123410AB10D5D2F /* elumi_shieldabsorb.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_shieldabsorb.wav"; sourceTree = "<group>"; };
-		3EC276513665498B94332747 /* elumi_scanstart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_scanstart.wav"; sourceTree = "<group>"; };
-		BAC62D87FEAD413F90BCE57C /* elumi_scandone.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_scandone.wav"; sourceTree = "<group>"; };
-		14D6AA0E2F7547C58EFD2C7B /* elumi_tentacle_sting.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_tentacle_sting.wav"; sourceTree = "<group>"; };
-		C796DD66D33845D482971B80 /* elumi_tentacle_drop.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_tentacle_drop.wav"; sourceTree = "<group>"; };
-		997E13571F014504A8CCFE9C /* elumi_jellyfish_appear.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_jellyfish_appear.wav"; sourceTree = "<group>"; };
-		ED6E2620B526439EA130ADE9 /* elumi_jellyfish_ambient.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_jellyfish_ambient.wav"; sourceTree = "<group>"; };
-		8B3E6DF30BBB4EC3812B0DB2 /* elumi_scanprocess.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_scanprocess.wav"; sourceTree = "<group>"; };
-		F9E9A871DD9141F488C32488 /* elumi_saugstart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_saugstart.wav"; sourceTree = "<group>"; };
-		51677781801E491EAEA0C07A /* elumi_saugloop.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_saugloop.wav"; sourceTree = "<group>"; };
-		0BBDD993CDA84C048277CCF7 /* elumi_saugend.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_saugend.wav"; sourceTree = "<group>"; };
-		5F6AA0B1D09C4B26B5544537 /* elumi_roundclear.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_roundclear.wav"; sourceTree = "<group>"; };
-		21594A50F0B744E68ED245F2 /* elumi_quizcomplete.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_quizcomplete.wav"; sourceTree = "<group>"; };
-		550C14FD7EDE4E0C8426E5C0 /* elumi_powerupspawn.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_powerupspawn.wav"; sourceTree = "<group>"; };
-		CCE42C2B2A954601BA1CC327 /* elumi_listaction.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_listaction.wav"; sourceTree = "<group>"; };
-		6D35D1BF6D2D4C5093A40F4E /* elumi_levelup.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_levelup.wav"; sourceTree = "<group>"; };
-		A2097A8DB27E4BDC957255A8 /* elumi_highscore.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_highscore.wav"; sourceTree = "<group>"; };
-		41F9D99E7DF54754980496C7 /* elumi_gamestart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_gamestart.wav"; sourceTree = "<group>"; };
-		6DC3E67A0E5B47A6A21D7589 /* elumi_gameover.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_gameover.wav"; sourceTree = "<group>"; };
-		9D22BEAA0CCF43968F2ECD5A /* elumi_favstar.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_favstar.wav"; sourceTree = "<group>"; };
-		749B020AED184C828FDAFB6C /* elumi_error.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_error.wav"; sourceTree = "<group>"; };
-		97C3C5F1DA8C491FA5BB2809 /* elumi_correct.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_correct.wav"; sourceTree = "<group>"; };
-		777D26688D2246308F41248B /* elumi_combo.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_combo.wav"; sourceTree = "<group>"; };
-		1607A964426A474FA6D8367C /* elumi_cardwrong.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_cardwrong.wav"; sourceTree = "<group>"; };
-		95A777457F104E90B5FA1898 /* elumi_cardright.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_cardright.wav"; sourceTree = "<group>"; };
-		804F29773536414EAD31D9BF /* elumi_cardflip.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_cardflip.wav"; sourceTree = "<group>"; };
-		1EA2312346DD411E87EFE74C /* elumi_bonusbubble.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_bonusbubble.wav"; sourceTree = "<group>"; };
-		9BA6DD9690D14C3F966AECF7 /* elumi_appstart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_appstart.wav"; sourceTree = "<group>"; };
-		7F3CEFA2774C4CC9871729D2 /* elumi_bgm_fischfang.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/elumi_bgm_fischfang.wav"; sourceTree = "<group>"; };
 		A00000000000000000000713 /* ListsView+Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListsView+Screen.swift"; sourceTree = "<group>"; };
 		A00000000000000000000715 /* ListsView+Sections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListsView+Sections.swift"; sourceTree = "<group>"; };
 		A00000000000000000000717 /* ListsView+Presentations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListsView+Presentations.swift"; sourceTree = "<group>"; };
@@ -831,44 +914,143 @@
 		A00000000000000000000767 /* FlashcardsSessionController+AnswerFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsSessionController+AnswerFlow.swift"; sourceTree = "<group>"; };
 		A00000000000000000000769 /* FlashcardsView+PromptResponseComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsView+PromptResponseComponents.swift"; sourceTree = "<group>"; };
 		A00000000000000000000771 /* FlashcardsView+InputActionComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsView+InputActionComponents.swift"; sourceTree = "<group>"; };
-
-		F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; name = VerbNounPairs.tsv; path = FRDEVocabMVP/VerbNounPairs.tsv; sourceTree = "<group>"; };
-		F43B1C0B2F877A100094BA73 /* VerbNounPairLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VerbNounPairLoader.swift; path = FRDEVocabMVP/VerbNounPairLoader.swift; sourceTree = "<group>"; };
-		F43B1C112F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClaudeHaikuScanAIClient.swift; path = FRDEVocabMVP/ClaudeHaikuScanAIClient.swift; sourceTree = "<group>"; };
-		B10CDA22DCE1454195172B47 /* ListCategoryPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FRDEVocabMVP/ListCategoryPickerView.swift; sourceTree = SOURCE_ROOT; };
-		F43B1C132F87C0100094BA73 /* ClaudeHaikuScanAIClient+Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ClaudeHaikuScanAIClient+Configuration.swift"; path = "FRDEVocabMVP/ClaudeHaikuScanAIClient+Configuration.swift"; sourceTree = "<group>"; };
-		F43B1C0D2F878B000094BA73 /* FillBlankSentences.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; name = FillBlankSentences.tsv; path = FRDEVocabMVP/FillBlankSentences.tsv; sourceTree = "<group>"; };
-		F43B1C0F2F878B100094BA73 /* FillBlankSentenceLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FillBlankSentenceLoader.swift; path = FRDEVocabMVP/FillBlankSentenceLoader.swift; sourceTree = "<group>"; };
-		F43B1C072F86A7BA0094BA73 /* StandardVocabularyLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StandardVocabularyLoader.swift; path = FRDEVocabMVP/StandardVocabularyLoader.swift; sourceTree = "<group>"; };
-		F458EECF2F8770F9009A2683 /* ArcadeCreditSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArcadeCreditSystem.swift; path = FRDEVocabMVP/ArcadeCreditSystem.swift; sourceTree = "<group>"; };
-		B72C571C840B4169A98D8ABA /* ScanChoiceCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanChoiceCard.swift; path = FRDEVocabMVP/ScanChoiceCard.swift; sourceTree = "<group>"; };
-		77D1F5E4FBCC08EBB9C7AFB9 /* AppBackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppBackButton.swift; path = FRDEVocabMVP/AppBackButton.swift; sourceTree = "<group>"; };
-		3C6021AB9E4ED9043B2F3F7F /* LanguageDirectionSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LanguageDirectionSwitch.swift; path = FRDEVocabMVP/LanguageDirectionSwitch.swift; sourceTree = "<group>"; };
-		FFF72E63A11B7B8AD28A969B /* HomeModuleTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeModuleTile.swift; path = FRDEVocabMVP/HomeModuleTile.swift; sourceTree = "<group>"; };
-		6FEDD84AF0BD7AE57209A819 /* HomeHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeHeader.swift; path = FRDEVocabMVP/HomeHeader.swift; sourceTree = "<group>"; };
-		3B52D4534719D39C429A3514 /* HomeContinueSessionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeContinueSessionCard.swift; path = FRDEVocabMVP/HomeContinueSessionCard.swift; sourceTree = "<group>"; };
-		D7E48C7D56DE47BA8A612FB2 /* HomeDailyFocusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeDailyFocusCard.swift; path = FRDEVocabMVP/HomeDailyFocusCard.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0B02 /* HomeStatusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeStatusCard.swift; path = FRDEVocabMVP/HomeStatusCard.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyStatsStore.swift; path = FRDEVocabMVP/DailyStatsStore.swift; sourceTree = "<group>"; };
-		DE477CD1315E437F15BA91BD /* HomeProgressBoardCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeProgressBoardCard.swift; path = FRDEVocabMVP/HomeProgressBoardCard.swift; sourceTree = "<group>"; };
-		C4908A2A5A962323D3A36B07 /* HomeModuleIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeModuleIcon.swift; path = FRDEVocabMVP/HomeModuleIcon.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0E01 /* ItemLearningStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatus.swift; path = FRDEVocabMVP/ItemLearningStatus.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0E03 /* ItemLearningStatusStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatusStore.swift; path = FRDEVocabMVP/ItemLearningStatusStore.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0E05 /* ItemLearningStatusRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatusRecorder.swift; path = FRDEVocabMVP/ItemLearningStatusRecorder.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0E07 /* HomeLernstatusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeLernstatusCard.swift; path = FRDEVocabMVP/HomeLernstatusCard.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0E09 /* LernstatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LernstatusView.swift; path = FRDEVocabMVP/LernstatusView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708091C0D02 /* AppIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppIcons.swift; path = FRDEVocabMVP/AppIcons.swift; sourceTree = "<group>"; };
-		47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupScreen.swift; path = FRDEVocabMVP/SessionSetupScreen.swift; sourceTree = "<group>"; };
-		C9545925434E4BCBA46071F1 /* SessionOptionsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionOptionsComponents.swift; path = FRDEVocabMVP/SessionOptionsComponents.swift; sourceTree = "<group>"; };
-		1C5A4B8C09644DDA8E9DC8B5 /* SessionSetupComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupComponents.swift; path = FRDEVocabMVP/SessionSetupComponents.swift; sourceTree = "<group>"; };
-		832B8E6EB6D8482D957CF256 /* SessionSetupEstimate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupEstimate.swift; path = FRDEVocabMVP/SessionSetupEstimate.swift; sourceTree = "<group>"; };
-		765EA90FF65349C1ADBD8D70 /* VariableRewardEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VariableRewardEngine.swift; path = FRDEVocabMVP/VariableRewardEngine.swift; sourceTree = "<group>"; };
-		CA4DE9771408424DBF4CA080 /* FeedbackTiming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FeedbackTiming.swift; path = FRDEVocabMVP/FeedbackTiming.swift; sourceTree = "<group>"; };
-		54C3FB95BD334EE18408771B /* DailyChallengeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyChallengeStore.swift; path = FRDEVocabMVP/DailyChallengeStore.swift; sourceTree = "<group>"; };
+		FE12345678901234567890A2 /* AppIconRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppIconRegistry.swift; path = FRDEVocabMVP/AppIconRegistry.swift; sourceTree = "<group>"; };
+		FE12345678901234567890B2 /* ScanTuning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanTuning.swift; path = FRDEVocabMVP/ScanTuning.swift; sourceTree = "<group>"; };
+		FE12345678901234567890C2 /* WordRunnerGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerGameView.swift; path = FRDEVocabMVP/WordRunnerGameView.swift; sourceTree = "<group>"; };
+		FE12345678901234567890D2 /* WordRunnerModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerModels.swift; path = FRDEVocabMVP/WordRunnerModels.swift; sourceTree = "<group>"; };
+		FE12345678901234567890E2 /* WordRunnerTaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerTaskProvider.swift; path = FRDEVocabMVP/WordRunnerTaskProvider.swift; sourceTree = "<group>"; };
+		FE12345678901234567890F2 /* WordRunnerSpawner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerSpawner.swift; path = FRDEVocabMVP/WordRunnerSpawner.swift; sourceTree = "<group>"; };
+		FE1234567890123456789002 /* WordRunnerGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerGame.swift; path = FRDEVocabMVP/WordRunnerGame.swift; sourceTree = "<group>"; };
+		FE1234567890123456789012 /* WordRunnerMusicPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerMusicPlayer.swift; path = FRDEVocabMVP/WordRunnerMusicPlayer.swift; sourceTree = "<group>"; };
+		FE1234567890123456789022 /* Sounds/runner_theme_01.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/runner_theme_01.mp3; sourceTree = "<group>"; };
+		FE1234567890123456789032 /* Sounds/runner_theme_02.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/runner_theme_02.mp3; sourceTree = "<group>"; };
+		FE1234567890123456789042 /* ArcadeMusicPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArcadeMusicPlayer.swift; path = FRDEVocabMVP/ArcadeMusicPlayer.swift; sourceTree = "<group>"; };
+		FE1234567890123456789052 /* Sounds/arcade_theme_01.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/arcade_theme_01.mp3; sourceTree = "<group>"; };
+		FE1234567890123456789062 /* Sounds/arcade_theme_02.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/arcade_theme_02.mp3; sourceTree = "<group>"; };
+		FE1234567890123456789072 /* Sounds/fish_theme_01.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/fish_theme_01.mp3; sourceTree = "<group>"; };
+		FE1234567890123456789082 /* MusicCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MusicCatalog.swift; path = FRDEVocabMVP/MusicCatalog.swift; sourceTree = "<group>"; };
+		FE1234567890123456789092 /* TrophyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrophyView.swift; path = FRDEVocabMVP/TrophyView.swift; sourceTree = "<group>"; };
+		FE12345678901234567890AB /* HomeCompactStatusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeCompactStatusCard.swift; path = FRDEVocabMVP/HomeCompactStatusCard.swift; sourceTree = "<group>"; };
+		FE12345678901234567890BB /* HomeHeroLearningSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeHeroLearningSection.swift; path = FRDEVocabMVP/HomeHeroLearningSection.swift; sourceTree = "<group>"; };
+		FE12345678901234567890CB /* HomeMoreExercisesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeMoreExercisesSection.swift; path = FRDEVocabMVP/HomeMoreExercisesSection.swift; sourceTree = "<group>"; };
+		FE12345678901234567890DB /* HomeToolsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeToolsSection.swift; path = FRDEVocabMVP/HomeToolsSection.swift; sourceTree = "<group>"; };
+		FE12345678901234567890EB /* HomePopCardStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomePopCardStyle.swift; path = FRDEVocabMVP/HomePopCardStyle.swift; sourceTree = "<group>"; };
+		FE12345678901234567890FB /* LiveListRunnerTaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LiveListRunnerTaskProvider.swift; path = FRDEVocabMVP/LiveListRunnerTaskProvider.swift; sourceTree = "<group>"; };
+		FE12345678901234567891AB /* WordRunnerSFXPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerSFXPlayer.swift; path = FRDEVocabMVP/WordRunnerSFXPlayer.swift; sourceTree = "<group>"; };
+		FE12345678901234567891BB /* Sounds/sfx/sfx_lane.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_lane.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_lane.wav; sourceTree = SOURCE_ROOT; };
+		FE12345678901234567891CB /* Sounds/sfx/sfx_correct.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_correct.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_correct.wav; sourceTree = SOURCE_ROOT; };
+		FE12345678901234567891DB /* Sounds/sfx/sfx_wrong.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_wrong.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_wrong.wav; sourceTree = SOURCE_ROOT; };
+		FE12345678901234567891EB /* Sounds/sfx/sfx_life_loss.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_life_loss.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_life_loss.wav; sourceTree = SOURCE_ROOT; };
+		FE12345678901234567891FB /* Sounds/sfx/sfx_pickup.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_pickup.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_pickup.wav; sourceTree = SOURCE_ROOT; };
+		FE12345678901234567892AB /* Sounds/sfx/sfx_boost.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_boost.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_boost.wav; sourceTree = SOURCE_ROOT; };
+		A1B2C3D4E5F60708091C0D04 /* DebugResetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DebugResetService.swift; path = FRDEVocabMVP/DebugResetService.swift; sourceTree = "<group>"; };
+		A2097A8DB27E4BDC957255A8 /* Sounds/elumi_highscore.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_highscore.wav; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF67 /* SessionStreak.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStreak.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF69 /* SpeedRoundSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedRoundSettings.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF71 /* MCDistractorFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCDistractorFilter.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF73 /* TrainingSessionResume.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionResume.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF75 /* AccentSessionResume.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentSessionResume.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF77 /* QuizSessionResume.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizSessionResume.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF79 /* ArticleModeClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticleModeClassifier.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF7B /* ArticleModeClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticleModeClassifierTests.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF7D /* FeedbackConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackConfig.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF7F /* FeedbackEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackEngine.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF81 /* SpeedRoundTimerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedRoundTimerCard.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF83 /* GameStateResetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStateResetService.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF85 /* LevelProgression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelProgression.swift; sourceTree = "<group>"; };
+		B10CDA22DCE1454195172B47 /* FRDEVocabMVP/ListCategoryPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FRDEVocabMVP/ListCategoryPickerView.swift; sourceTree = SOURCE_ROOT; };
 		B2D8AABD1A084A80A03C7C97 /* DailyChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyChallenge.swift; path = FRDEVocabMVP/DailyChallenge.swift; sourceTree = "<group>"; };
-		3AF0AA02FEF444D2BD481B5B /* GameHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GameHubView.swift; path = FRDEVocabMVP/GameHubView.swift; sourceTree = "<group>"; };
-		F244E2378E0C4DF89CC561E1 /* ProgressHubComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProgressHubComponents.swift; path = FRDEVocabMVP/ProgressHubComponents.swift; sourceTree = "<group>"; };
-		D60E8751B6404310BA69583D /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileView.swift; path = FRDEVocabMVP/ProfileView.swift; sourceTree = "<group>"; };
+		B72C571C840B4169A98D8ABA /* ScanChoiceCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanChoiceCard.swift; path = FRDEVocabMVP/ScanChoiceCard.swift; sourceTree = "<group>"; };
+		BAC62D87FEAD413F90BCE57C /* Sounds/elumi_scandone.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_scandone.wav; sourceTree = "<group>"; };
+		C4908A2A5A962323D3A36B07 /* HomeModuleIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeModuleIcon.swift; path = FRDEVocabMVP/HomeModuleIcon.swift; sourceTree = "<group>"; };
+		C796DD66D33845D482971B80 /* Sounds/elumi_tentacle_drop.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_tentacle_drop.wav; sourceTree = "<group>"; };
+		C9545925434E4BCBA46071F1 /* SessionOptionsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionOptionsComponents.swift; path = FRDEVocabMVP/SessionOptionsComponents.swift; sourceTree = "<group>"; };
+		CA4DE9771408424DBF4CA080 /* FeedbackTiming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FeedbackTiming.swift; path = FRDEVocabMVP/FeedbackTiming.swift; sourceTree = "<group>"; };
+		CB93664F8123410AB10D5D2F /* Sounds/elumi_shieldabsorb.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_shieldabsorb.wav; sourceTree = "<group>"; };
+		CCE42C2B2A954601BA1CC327 /* Sounds/elumi_listaction.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_listaction.wav; sourceTree = "<group>"; };
 		CF6D48598792426F80A5D511 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingView.swift; path = FRDEVocabMVP/OnboardingView.swift; sourceTree = "<group>"; };
-		901A6A0D6B194C198EEE6882 /* ProfileAvatarBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileAvatarBadge.swift; path = FRDEVocabMVP/ProfileAvatarBadge.swift; sourceTree = "<group>"; };
-		3A58F580B36740F78ED60FD0 /* Personalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Personalization.swift; path = FRDEVocabMVP/Personalization.swift; sourceTree = "<group>"; };
-		35F654EF57484ACA8C074FF2 /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileStore.swift; path = FRDEVocabMVP/ProfileStore.swift; sourceTree = "<group>"; };
-		7313B768D707425B9C3DA9DA /* LearnerProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearnerProfile.swift; path = FRDEVocabMVP/LearnerProfile.swift; sourceTree = "<group>"; };
+		D60E8751B6404310BA69583D /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileView.swift; path = FRDEVocabMVP/ProfileView.swift; sourceTree = "<group>"; };
+		D7E48C7D56DE47BA8A612FB2 /* HomeDailyFocusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeDailyFocusCard.swift; path = FRDEVocabMVP/HomeDailyFocusCard.swift; sourceTree = "<group>"; };
+		DADBA6D5B4FF4413839CBF0D /* Sounds/elumi_shieldactivate.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_shieldactivate.wav; sourceTree = "<group>"; };
+		DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = FRDEMasterLexicon.sqlite; sourceTree = "<group>"; };
+		DE477CD1315E437F15BA91BD /* HomeProgressBoardCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeProgressBoardCard.swift; path = FRDEVocabMVP/HomeProgressBoardCard.swift; sourceTree = "<group>"; };
+		ED6E2620B526439EA130ADE9 /* Sounds/elumi_jellyfish_ambient.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_jellyfish_ambient.wav; sourceTree = "<group>"; };
+		F1C01A111A111A111A111111 /* GamificationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamificationConfig.swift; sourceTree = "<group>"; };
+		F244E2378E0C4DF89CC561E1 /* ProgressHubComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProgressHubComponents.swift; path = FRDEVocabMVP/ProgressHubComponents.swift; sourceTree = "<group>"; };
+		F2C01A111A111A111A111111 /* LearningSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearningSession.swift; sourceTree = "<group>"; };
+		F2F037219E904D3680DD724E /* Sounds/elumi_tabswitch.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_tabswitch.wav; sourceTree = "<group>"; };
+		F3C01A111A111A111A111111 /* ProgressStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressStore.swift; sourceTree = "<group>"; };
+		F43B1C072F86A7BA0094BA73 /* StandardVocabularyLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StandardVocabularyLoader.swift; path = FRDEVocabMVP/StandardVocabularyLoader.swift; sourceTree = "<group>"; };
+		F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; name = VerbNounPairs.tsv; path = FRDEVocabMVP/VerbNounPairs.tsv; sourceTree = "<group>"; };
+		F43B1C0B2F877A100094BA73 /* VerbNounPairLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VerbNounPairLoader.swift; path = FRDEVocabMVP/VerbNounPairLoader.swift; sourceTree = "<group>"; };
+		F43B1C0D2F878B000094BA73 /* FillBlankSentences.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; name = FillBlankSentences.tsv; path = FRDEVocabMVP/FillBlankSentences.tsv; sourceTree = "<group>"; };
+		F43B1C0F2F878B100094BA73 /* FillBlankSentenceLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FillBlankSentenceLoader.swift; path = FRDEVocabMVP/FillBlankSentenceLoader.swift; sourceTree = "<group>"; };
+		F43B1C112F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClaudeHaikuScanAIClient.swift; path = FRDEVocabMVP/ClaudeHaikuScanAIClient.swift; sourceTree = "<group>"; };
+		F43B1C132F87C0100094BA73 /* ClaudeHaikuScanAIClient+Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ClaudeHaikuScanAIClient+Configuration.swift"; path = "FRDEVocabMVP/ClaudeHaikuScanAIClient+Configuration.swift"; sourceTree = "<group>"; };
+		F451513E2F93C391006C8818 /* File.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = File.txt; sourceTree = "<group>"; };
+		F458EECF2F8770F9009A2683 /* ArcadeCreditSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArcadeCreditSystem.swift; path = FRDEVocabMVP/ArcadeCreditSystem.swift; sourceTree = "<group>"; };
+		F4C01A111A111A111A111111 /* ProgressService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressService.swift; sourceTree = "<group>"; };
+		F5A9F51ED0654E5F94E00A68 /* Sounds/elumi_wrong.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_wrong.wav; sourceTree = "<group>"; };
+		F5C01A111A111A111A111111 /* SessionSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionSummaryView.swift; sourceTree = "<group>"; };
+		F9E9A871DD9141F488C32488 /* Sounds/elumi_saugstart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_saugstart.wav; sourceTree = "<group>"; };
+		FA00000000000000000000002 /* FrenchLinguisticAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrenchLinguisticAnalysis.swift; sourceTree = "<group>"; };
+		FEDEA1000000000000000002 /* FreierTextModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreierTextModels.swift; sourceTree = "<group>"; };
+		FEDEA1000000000000000004 /* FreierTextClaudeClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreierTextClaudeClient.swift; sourceTree = "<group>"; };
+		FEDEA1000000000000000006 /* FreierTextEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreierTextEntryView.swift; sourceTree = "<group>"; };
+		FEDEA1000000000000000008 /* FreierTextProcessingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreierTextProcessingView.swift; sourceTree = "<group>"; };
+		FEDEA100000000000000000A /* FreierTextResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreierTextResultView.swift; sourceTree = "<group>"; };
+		FEDEA100000000000000000C /* SaveNewListSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveNewListSheet.swift; sourceTree = "<group>"; };
+		FEDEA100000000000000000E /* FreierTextSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreierTextSummaryView.swift; sourceTree = "<group>"; };
+		FEDEA11000000000000000A2 /* SmartDocumentProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartDocumentProcessor.swift; sourceTree = "<group>"; };
+		FEDEA12000000000000000B2 /* SmartScannerSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartScannerSession.swift; sourceTree = "<group>"; };
+		FEDEA13000000000000000C2 /* RectangleTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RectangleTracker.swift; sourceTree = "<group>"; };
+		FEDEA14000000000000000D2 /* SmartScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartScannerView.swift; sourceTree = "<group>"; };
+		FEDEA15000000000000000E2 /* ImageQualityAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageQualityAnalyzer.swift; sourceTree = "<group>"; };
+		FEDEA15100000000000000E4 /* ImageEnhancer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEnhancer.swift; sourceTree = "<group>"; };
+		FEDEA15200000000000000E6 /* ImageCropper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCropper.swift; sourceTree = "<group>"; };
+		FEDEA16000000000000000F2 /* ScanCoordinateMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanCoordinateMapper.swift; sourceTree = "<group>"; };
+		FEDEA17000000000001A002 /* ScanCaptureProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanCaptureProfile.swift; sourceTree = "<group>"; };
+		FEDEA18000000000001B002 /* ScanCaptureMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanCaptureMachine.swift; sourceTree = "<group>"; };
+		FEDEA19000000000001C002 /* AutoCaptureController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoCaptureController.swift; sourceTree = "<group>"; };
+		FEDEA1A000000000001D002 /* FocusExposureController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusExposureController.swift; sourceTree = "<group>"; };
+		FEDEA1B000000000001E002 /* SmartTextRegionDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartTextRegionDetector.swift; sourceTree = "<group>"; };
+		FEDEA1C000000000001F002 /* ScanImageEnhancer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanImageEnhancer.swift; sourceTree = "<group>"; };
+		FEDEA1D00000000000020002 /* ScanAIPostProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanAIPostProcessor.swift; sourceTree = "<group>"; };
+		FEDEA1E00000000000021002 /* VocabularyListDualFormMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyListDualFormMigration.swift; sourceTree = "<group>"; };
+		FEDEA1F00000000000022002 /* VocabDualFormSplitter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabDualFormSplitter.swift; sourceTree = "<group>"; };
+		FEDEA20000000000000001A2 /* AccentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentModels.swift; sourceTree = "<group>"; };
+		FEDEA20000000000000002A2 /* AccentWordCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentWordCatalog.swift; sourceTree = "<group>"; };
+		FEDEA20000000000000003A2 /* AccentContentBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentContentBuilder.swift; sourceTree = "<group>"; };
+		FEDEA20000000000000004A2 /* AccentSessionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentSessionEngine.swift; sourceTree = "<group>"; };
+		FEDEA20000000000000005A2 /* AccentsEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentsEntryView.swift; sourceTree = "<group>"; };
+		FEDEA20000000000000006A2 /* AccentsSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentsSessionView.swift; sourceTree = "<group>"; };
+		FEDEA20000000000000007A2 /* AccentsLearningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentsLearningView.swift; sourceTree = "<group>"; };
+		FEDEA20000000000000008A2 /* AccentsResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentsResultView.swift; sourceTree = "<group>"; };
+		FEDEA20100000000000023002 /* VocabDualFormMerger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabDualFormMerger.swift; sourceTree = "<group>"; };
+		FEDEA20200000000000024002 /* VocabContextClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabContextClassifier.swift; sourceTree = "<group>"; };
+		FEDEA20300000000000025002 /* AttentionRegionTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttentionRegionTracker.swift; sourceTree = "<group>"; };
+		FEDEA20300000000000026002 /* ScanSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanSettings.swift; sourceTree = "<group>"; };
+		FEDEA20300000000000027002 /* ScanFocusMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanFocusMode.swift; sourceTree = "<group>"; };
+		FEDEA20300000000000028002 /* ScanModeBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanModeBadge.swift; sourceTree = "<group>"; };
+		FEDEA20300000000000029002 /* ArcadePowerUps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadePowerUps.swift; sourceTree = "<group>"; };
+		FEDEA20300000000000030002 /* ArcadeSFX.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadeSFX.swift; sourceTree = "<group>"; };
+		FEDEA20300000000000031002 /* GermanAbbreviationExpander.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GermanAbbreviationExpander.swift; sourceTree = "<group>"; };
+		FEDEA20300000000000032002 /* ArcadePowerUpRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadePowerUpRuntime.swift; sourceTree = "<group>"; };
+		FEDEA210000000000000012 /* AccentsSessionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentsSessionHeader.swift; sourceTree = "<group>"; };
+		FEDEA22000000000000001A2 /* AccentAdaptiveStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentAdaptiveStore.swift; sourceTree = "<group>"; };
+		FFF72E63A11B7B8AD28A969B /* HomeModuleTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeModuleTile.swift; path = FRDEVocabMVP/HomeModuleTile.swift; sourceTree = "<group>"; };
+		PB00000000000000000000002 /* POSBreakdownComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = POSBreakdownComponents.swift; sourceTree = "<group>"; };
+		TC00000000000000000000002 /* TextCasingRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextCasingRules.swift; sourceTree = "<group>"; };
+		VF00000000000000000000002 /* VerbformsEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerbformsEngine.swift; sourceTree = "<group>"; };
+		VF00000000000000000000004 /* VerbformsSessionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerbformsSessionController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -885,6 +1067,7 @@
 		A00000000000000000000030 = {
 			isa = PBXGroup;
 			children = (
+				F451513E2F93C391006C8818 /* File.txt */,
 				F458EECF2F8770F9009A2683 /* ArcadeCreditSystem.swift */,
 				B72C571C840B4169A98D8ABA /* ScanChoiceCard.swift */,
 				77D1F5E4FBCC08EBB9C7AFB9 /* AppBackButton.swift */,
@@ -896,8 +1079,38 @@
 				A1B2C3D4E5F60708090A0B02 /* HomeStatusCard.swift */,
 				A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */,
 				DE477CD1315E437F15BA91BD /* HomeProgressBoardCard.swift */,
+				A1B2C3D4E5F60708090A0E01 /* ItemLearningStatus.swift */,
+				A1B2C3D4E5F60708090A0E03 /* ItemLearningStatusStore.swift */,
+				A1B2C3D4E5F60708090A0E05 /* ItemLearningStatusRecorder.swift */,
+				A1B2C3D4E5F60708090A0E07 /* HomeLernstatusCard.swift */,
+				A1B2C3D4E5F60708090A0E09 /* LernstatusView.swift */,
 				C4908A2A5A962323D3A36B07 /* HomeModuleIcon.swift */,
 				A1B2C3D4E5F60708091C0D02 /* AppIcons.swift */,
+				FE12345678901234567890A2 /* AppIconRegistry.swift */,
+				FE12345678901234567890B2 /* ScanTuning.swift */,
+				FE12345678901234567890C2 /* WordRunnerGameView.swift */,
+				FE12345678901234567890D2 /* WordRunnerModels.swift */,
+				FE12345678901234567890E2 /* WordRunnerTaskProvider.swift */,
+				FE12345678901234567890F2 /* WordRunnerSpawner.swift */,
+				FE1234567890123456789002 /* WordRunnerGame.swift */,
+				FE1234567890123456789012 /* WordRunnerMusicPlayer.swift */,
+				FE1234567890123456789042 /* ArcadeMusicPlayer.swift */,
+				FE1234567890123456789082 /* MusicCatalog.swift */,
+				FE1234567890123456789092 /* TrophyView.swift */,
+				FE12345678901234567890AB /* HomeCompactStatusCard.swift */,
+				FE12345678901234567890BB /* HomeHeroLearningSection.swift */,
+				FE12345678901234567890CB /* HomeMoreExercisesSection.swift */,
+				FE12345678901234567890DB /* HomeToolsSection.swift */,
+				FE12345678901234567890EB /* HomePopCardStyle.swift */,
+				FE12345678901234567890FB /* LiveListRunnerTaskProvider.swift */,
+				FE12345678901234567891AB /* WordRunnerSFXPlayer.swift */,
+				FE12345678901234567891BB /* sfx/sfx_lane.wav */,
+				FE12345678901234567891CB /* sfx/sfx_correct.wav */,
+				FE12345678901234567891DB /* sfx/sfx_wrong.wav */,
+				FE12345678901234567891EB /* sfx/sfx_life_loss.wav */,
+				FE12345678901234567891FB /* sfx/sfx_pickup.wav */,
+				FE12345678901234567892AB /* sfx/sfx_boost.wav */,
+				A1B2C3D4E5F60708091C0D04 /* DebugResetService.swift */,
 				47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */,
 				C9545925434E4BCBA46071F1 /* SessionOptionsComponents.swift */,
 				1C5A4B8C09644DDA8E9DC8B5 /* SessionSetupComponents.swift */,
@@ -915,11 +1128,10 @@
 				35F654EF57484ACA8C074FF2 /* ProfileStore.swift */,
 				7313B768D707425B9C3DA9DA /* LearnerProfile.swift */,
 				F43B1C072F86A7BA0094BA73 /* StandardVocabularyLoader.swift */,
-
 				F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */,
 				F43B1C0B2F877A100094BA73 /* VerbNounPairLoader.swift */,
 				F43B1C112F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift */,
-				B10CDA22DCE1454195172B47 /* ListCategoryPickerView.swift */,
+				B10CDA22DCE1454195172B47 /* FRDEVocabMVP/ListCategoryPickerView.swift */,
 				F43B1C132F87C0100094BA73 /* ClaudeHaikuScanAIClient+Configuration.swift */,
 				F43B1C0D2F878B000094BA73 /* FillBlankSentences.tsv */,
 				F43B1C0F2F878B100094BA73 /* FillBlankSentenceLoader.swift */,
@@ -1088,45 +1300,50 @@
 				A00000000000000000000707 /* FeedbackPlayer+Playback.swift */,
 				A00000000000000000000709 /* FeedbackPlayer+Buffers.swift */,
 				4C1FD5616CFA427DBAB4CE9D /* LexiconTextUtility.swift */,
-				F5A9F51ED0654E5F94E00A68 /* elumi_wrong.wav */,
-				32C43DE8F494458D929C4AE1 /* elumi_toggle.wav */,
-				F2F037219E904D3680DD724E /* elumi_tabswitch.wav */,
-				427B3F68D7FB4FBFA24DBD17 /* elumi_streak.wav */,
-				3CC12181E32D4557B70AA0CF /* elumi_stackcomplete.wav */,
-				08593D8836594A859D387AE8 /* elumi_snackmiss.wav */,
-				985C1E62789347B8A53B860F /* elumi_snackcatch.wav */,
-				2E74EDA8D2904AA7A3E9F688 /* elumi_slowmostart.wav */,
-				8469BB0E7D1B47FE81099689 /* elumi_slowmoend.wav */,
-				DADBA6D5B4FF4413839CBF0D /* elumi_shieldactivate.wav */,
-				CB93664F8123410AB10D5D2F /* elumi_shieldabsorb.wav */,
-				3EC276513665498B94332747 /* elumi_scanstart.wav */,
-				BAC62D87FEAD413F90BCE57C /* elumi_scandone.wav */,
-				14D6AA0E2F7547C58EFD2C7B /* elumi_tentacle_sting.wav */,
-				C796DD66D33845D482971B80 /* elumi_tentacle_drop.wav */,
-				997E13571F014504A8CCFE9C /* elumi_jellyfish_appear.wav */,
-				ED6E2620B526439EA130ADE9 /* elumi_jellyfish_ambient.wav */,
-				8B3E6DF30BBB4EC3812B0DB2 /* elumi_scanprocess.wav */,
-				F9E9A871DD9141F488C32488 /* elumi_saugstart.wav */,
-				51677781801E491EAEA0C07A /* elumi_saugloop.wav */,
-				0BBDD993CDA84C048277CCF7 /* elumi_saugend.wav */,
-				5F6AA0B1D09C4B26B5544537 /* elumi_roundclear.wav */,
-				21594A50F0B744E68ED245F2 /* elumi_quizcomplete.wav */,
-				550C14FD7EDE4E0C8426E5C0 /* elumi_powerupspawn.wav */,
-				CCE42C2B2A954601BA1CC327 /* elumi_listaction.wav */,
-				6D35D1BF6D2D4C5093A40F4E /* elumi_levelup.wav */,
-				A2097A8DB27E4BDC957255A8 /* elumi_highscore.wav */,
-				41F9D99E7DF54754980496C7 /* elumi_gamestart.wav */,
-				6DC3E67A0E5B47A6A21D7589 /* elumi_gameover.wav */,
-				9D22BEAA0CCF43968F2ECD5A /* elumi_favstar.wav */,
-				749B020AED184C828FDAFB6C /* elumi_error.wav */,
-				97C3C5F1DA8C491FA5BB2809 /* elumi_correct.wav */,
-				777D26688D2246308F41248B /* elumi_combo.wav */,
-				1607A964426A474FA6D8367C /* elumi_cardwrong.wav */,
-				95A777457F104E90B5FA1898 /* elumi_cardright.wav */,
-				804F29773536414EAD31D9BF /* elumi_cardflip.wav */,
-				1EA2312346DD411E87EFE74C /* elumi_bonusbubble.wav */,
-				9BA6DD9690D14C3F966AECF7 /* elumi_appstart.wav */,
-				7F3CEFA2774C4CC9871729D2 /* elumi_bgm_fischfang.wav */,
+				F5A9F51ED0654E5F94E00A68 /* Sounds/elumi_wrong.wav */,
+				32C43DE8F494458D929C4AE1 /* Sounds/elumi_toggle.wav */,
+				F2F037219E904D3680DD724E /* Sounds/elumi_tabswitch.wav */,
+				427B3F68D7FB4FBFA24DBD17 /* Sounds/elumi_streak.wav */,
+				3CC12181E32D4557B70AA0CF /* Sounds/elumi_stackcomplete.wav */,
+				08593D8836594A859D387AE8 /* Sounds/elumi_snackmiss.wav */,
+				FE1234567890123456789022 /* Sounds/runner_theme_01.mp3 */,
+				FE1234567890123456789032 /* Sounds/runner_theme_02.mp3 */,
+				FE1234567890123456789052 /* Sounds/arcade_theme_01.mp3 */,
+				FE1234567890123456789062 /* Sounds/arcade_theme_02.mp3 */,
+				FE1234567890123456789072 /* Sounds/fish_theme_01.mp3 */,
+				985C1E62789347B8A53B860F /* Sounds/elumi_snackcatch.wav */,
+				2E74EDA8D2904AA7A3E9F688 /* Sounds/elumi_slowmostart.wav */,
+				8469BB0E7D1B47FE81099689 /* Sounds/elumi_slowmoend.wav */,
+				DADBA6D5B4FF4413839CBF0D /* Sounds/elumi_shieldactivate.wav */,
+				CB93664F8123410AB10D5D2F /* Sounds/elumi_shieldabsorb.wav */,
+				3EC276513665498B94332747 /* Sounds/elumi_scanstart.wav */,
+				BAC62D87FEAD413F90BCE57C /* Sounds/elumi_scandone.wav */,
+				14D6AA0E2F7547C58EFD2C7B /* Sounds/elumi_tentacle_sting.wav */,
+				C796DD66D33845D482971B80 /* Sounds/elumi_tentacle_drop.wav */,
+				997E13571F014504A8CCFE9C /* Sounds/elumi_jellyfish_appear.wav */,
+				ED6E2620B526439EA130ADE9 /* Sounds/elumi_jellyfish_ambient.wav */,
+				8B3E6DF30BBB4EC3812B0DB2 /* Sounds/elumi_scanprocess.wav */,
+				F9E9A871DD9141F488C32488 /* Sounds/elumi_saugstart.wav */,
+				51677781801E491EAEA0C07A /* Sounds/elumi_saugloop.wav */,
+				0BBDD993CDA84C048277CCF7 /* Sounds/elumi_saugend.wav */,
+				5F6AA0B1D09C4B26B5544537 /* Sounds/elumi_roundclear.wav */,
+				21594A50F0B744E68ED245F2 /* Sounds/elumi_quizcomplete.wav */,
+				550C14FD7EDE4E0C8426E5C0 /* Sounds/elumi_powerupspawn.wav */,
+				CCE42C2B2A954601BA1CC327 /* Sounds/elumi_listaction.wav */,
+				6D35D1BF6D2D4C5093A40F4E /* Sounds/elumi_levelup.wav */,
+				A2097A8DB27E4BDC957255A8 /* Sounds/elumi_highscore.wav */,
+				41F9D99E7DF54754980496C7 /* Sounds/elumi_gamestart.wav */,
+				6DC3E67A0E5B47A6A21D7589 /* Sounds/elumi_gameover.wav */,
+				9D22BEAA0CCF43968F2ECD5A /* Sounds/elumi_favstar.wav */,
+				749B020AED184C828FDAFB6C /* Sounds/elumi_error.wav */,
+				97C3C5F1DA8C491FA5BB2809 /* Sounds/elumi_correct.wav */,
+				777D26688D2246308F41248B /* Sounds/elumi_combo.wav */,
+				1607A964426A474FA6D8367C /* Sounds/elumi_cardwrong.wav */,
+				95A777457F104E90B5FA1898 /* Sounds/elumi_cardright.wav */,
+				804F29773536414EAD31D9BF /* Sounds/elumi_cardflip.wav */,
+				1EA2312346DD411E87EFE74C /* Sounds/elumi_bonusbubble.wav */,
+				9BA6DD9690D14C3F966AECF7 /* Sounds/elumi_appstart.wav */,
+				7F3CEFA2774C4CC9871729D2 /* Sounds/elumi_bgm_fischfang.wav */,
 				A00000000000000000000151 /* AppStores.swift */,
 				A00000000000000000000335 /* StudyStoreSupport.swift */,
 				A00000000000000000000337 /* VocabularyListStore.swift */,
@@ -1315,14 +1532,70 @@
 				A00000000000000000000039 /* ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav */,
 				A00000000000000000000091 /* FRDEKnowledgePool.tsv */,
 				A00000000000000000000093 /* FRDEKnowledgePool.sqlite */,
-
 				DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */,
 				F1C01A111A111A111A111111 /* GamificationConfig.swift */,
 				F2C01A111A111A111A111111 /* LearningSession.swift */,
 				F3C01A111A111A111A111111 /* ProgressStore.swift */,
 				F4C01A111A111A111A111111 /* ProgressService.swift */,
 				71844DBDB0A8498D87F33E5B /* GamificationFeedbackPresenter.swift */,
+				AA11BB22CC33DD44EE55FF67 /* SessionStreak.swift */,
+				AA11BB22CC33DD44EE55FF69 /* SpeedRoundSettings.swift */,
+				AA11BB22CC33DD44EE55FF71 /* MCDistractorFilter.swift */,
+				AA11BB22CC33DD44EE55FF73 /* TrainingSessionResume.swift */,
+				AA11BB22CC33DD44EE55FF75 /* AccentSessionResume.swift */,
+				AA11BB22CC33DD44EE55FF77 /* QuizSessionResume.swift */,
+				AA11BB22CC33DD44EE55FF79 /* ArticleModeClassifier.swift */,
+				AA11BB22CC33DD44EE55FF7B /* ArticleModeClassifierTests.swift */,
+				AA11BB22CC33DD44EE55FF7D /* FeedbackConfig.swift */,
+				AA11BB22CC33DD44EE55FF7F /* FeedbackEngine.swift */,
+				AA11BB22CC33DD44EE55FF81 /* SpeedRoundTimerCard.swift */,
+				AA11BB22CC33DD44EE55FF83 /* GameStateResetService.swift */,
+				AA11BB22CC33DD44EE55FF85 /* LevelProgression.swift */,
 				F5C01A111A111A111A111111 /* SessionSummaryView.swift */,
+				FEDEA1000000000000000002 /* FreierTextModels.swift */,
+				FEDEA1000000000000000004 /* FreierTextClaudeClient.swift */,
+				FEDEA1000000000000000006 /* FreierTextEntryView.swift */,
+				FEDEA1000000000000000008 /* FreierTextProcessingView.swift */,
+				FEDEA100000000000000000A /* FreierTextResultView.swift */,
+				FEDEA100000000000000000E /* FreierTextSummaryView.swift */,
+				FEDEA100000000000000000C /* SaveNewListSheet.swift */,
+				FEDEA11000000000000000A2 /* SmartDocumentProcessor.swift */,
+				FEDEA12000000000000000B2 /* SmartScannerSession.swift */,
+				FEDEA13000000000000000C2 /* RectangleTracker.swift */,
+				FEDEA20300000000000025002 /* AttentionRegionTracker.swift */,
+				FEDEA20300000000000026002 /* ScanSettings.swift */,
+				FEDEA20300000000000027002 /* ScanFocusMode.swift */,
+				FEDEA20300000000000028002 /* ScanModeBadge.swift */,
+				FEDEA20300000000000029002 /* ArcadePowerUps.swift */,
+				FEDEA20300000000000030002 /* ArcadeSFX.swift */,
+				FEDEA20300000000000031002 /* GermanAbbreviationExpander.swift */,
+				FEDEA20300000000000032002 /* ArcadePowerUpRuntime.swift */,
+				FEDEA14000000000000000D2 /* SmartScannerView.swift */,
+				FEDEA15000000000000000E2 /* ImageQualityAnalyzer.swift */,
+				FEDEA15100000000000000E4 /* ImageEnhancer.swift */,
+				FEDEA15200000000000000E6 /* ImageCropper.swift */,
+				FEDEA16000000000000000F2 /* ScanCoordinateMapper.swift */,
+				FEDEA17000000000001A002 /* ScanCaptureProfile.swift */,
+				FEDEA18000000000001B002 /* ScanCaptureMachine.swift */,
+				FEDEA19000000000001C002 /* AutoCaptureController.swift */,
+				FEDEA1A000000000001D002 /* FocusExposureController.swift */,
+				FEDEA1B000000000001E002 /* SmartTextRegionDetector.swift */,
+				FEDEA1C000000000001F002 /* ScanImageEnhancer.swift */,
+				FEDEA1D00000000000020002 /* ScanAIPostProcessor.swift */,
+				FEDEA1E00000000000021002 /* VocabularyListDualFormMigration.swift */,
+				FEDEA1F00000000000022002 /* VocabDualFormSplitter.swift */,
+				FEDEA20100000000000023002 /* VocabDualFormMerger.swift */,
+				FEDEA20200000000000024002 /* VocabContextClassifier.swift */,
+				FEDEA20000000000000001A2 /* AccentModels.swift */,
+				FEDEA20000000000000002A2 /* AccentWordCatalog.swift */,
+				FEDEA20000000000000003A2 /* AccentContentBuilder.swift */,
+				FEDEA20000000000000004A2 /* AccentSessionEngine.swift */,
+				FEDEA20000000000000005A2 /* AccentsEntryView.swift */,
+				FEDEA210000000000000012 /* AccentsSessionHeader.swift */,
+				FEDEA22000000000000001A2 /* AccentAdaptiveStore.swift */,
+				FEDEA20000000000000006A2 /* AccentsSessionView.swift */,
+				FEDEA20000000000000007A2 /* AccentsLearningView.swift */,
+				FEDEA20000000000000008A2 /* AccentsResultView.swift */,
 			);
 			path = FRDEVocabMVP;
 			sourceTree = "<group>";
@@ -1330,7 +1603,7 @@
 		A00000000000000000000032 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A00000000000000000000010 /* FRDEVocabMVP.app */,
+				A00000000000000000000010 /* myVoc.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1352,7 +1625,7 @@
 			);
 			name = FRDEVocabMVP;
 			productName = FRDEVocabMVP;
-			productReference = A00000000000000000000010 /* FRDEVocabMVP.app */;
+			productReference = A00000000000000000000010 /* myVoc.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -1400,50 +1673,60 @@
 				A00000000000000000000038 /* ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav in Resources */,
 				A00000000000000000000090 /* FRDEKnowledgePool.tsv in Resources */,
 				A00000000000000000000092 /* FRDEKnowledgePool.sqlite in Resources */,
-
 				55916C8754034661BBD48F46 /* FRDEMasterLexicon.sqlite in Resources */,
-
 				F43B1C0A2F877A000094BA73 /* VerbNounPairs.tsv in Resources */,
 				F43B1C0E2F878B000094BA73 /* FillBlankSentences.tsv in Resources */,
-				A92FD19A63604A98AC7A62D8 /* elumi_bgm_fischfang.wav in Resources */,
-				2C02BD11DC6C449AA1D5BFFE /* elumi_appstart.wav in Resources */,
-				85741A1459CD46F8B2D57ADA /* elumi_bonusbubble.wav in Resources */,
-				009819BB54954EAEBB5DEC28 /* elumi_cardflip.wav in Resources */,
-				0539D34CCB4C4C24AE08BF34 /* elumi_cardright.wav in Resources */,
-				82DF25EBA98C4C9094BC3EFD /* elumi_cardwrong.wav in Resources */,
-				BFBC9A0F8FA14ED791E9E103 /* elumi_combo.wav in Resources */,
-				4074D78EE22D43E2986ACBF0 /* elumi_correct.wav in Resources */,
-				9522ABC182EA4ED19082A0A4 /* elumi_error.wav in Resources */,
-				A8E9010B4F0C46149D900BCF /* elumi_favstar.wav in Resources */,
-				54A069E941A24FAA8F5763B6 /* elumi_gameover.wav in Resources */,
-				15E1874FDAE047E4AEC3DA6D /* elumi_gamestart.wav in Resources */,
-				13634FD082AA43DEB7699146 /* elumi_highscore.wav in Resources */,
-				6A9A9076F4D245A9AF3530F5 /* elumi_levelup.wav in Resources */,
-				E627ACD904664767B834476C /* elumi_listaction.wav in Resources */,
-				44D622B2824546FFBDFF7083 /* elumi_powerupspawn.wav in Resources */,
-				50F57B704E604DE98AD4FA51 /* elumi_quizcomplete.wav in Resources */,
-				B4758C33858646B6A402E9E2 /* elumi_roundclear.wav in Resources */,
-				535BC11A38424C789F12B637 /* elumi_saugend.wav in Resources */,
-				DA57C4C566AF4DB3B5CC281D /* elumi_saugloop.wav in Resources */,
-				7D3B0E4411A243619FB50261 /* elumi_saugstart.wav in Resources */,
-				BFB7270E17924A98985159AE /* elumi_scandone.wav in Resources */,
-				58A13D20DB064DC3A1CFBDDD /* elumi_tentacle_sting.wav in Resources */,
-				3F17F900156649F1B56821CA /* elumi_tentacle_drop.wav in Resources */,
-				495F17EE7BAD4C4E9518D9CE /* elumi_jellyfish_appear.wav in Resources */,
-				910F1CC9A7444B38971AC68C /* elumi_jellyfish_ambient.wav in Resources */,
-				8480D2B78B0940FF8334A168 /* elumi_scanprocess.wav in Resources */,
-				D2C31485B1D74864B812D0D8 /* elumi_scanstart.wav in Resources */,
-				D771E6C94B97489EAC3CCA37 /* elumi_shieldabsorb.wav in Resources */,
-				1D667A9B8D984D1CB42D8942 /* elumi_shieldactivate.wav in Resources */,
-				DC356E5E6E7D471787978C2E /* elumi_slowmoend.wav in Resources */,
-				19D3201DD0C84E8A83C2242D /* elumi_slowmostart.wav in Resources */,
-				FDAE5763D9AB4A198F799CCB /* elumi_snackcatch.wav in Resources */,
-				A32AEA7409624035B7BCEB16 /* elumi_snackmiss.wav in Resources */,
-				4A2F5E28015042B8897FAD67 /* elumi_stackcomplete.wav in Resources */,
-				0956E1BD7D8A4C2CA60FF949 /* elumi_streak.wav in Resources */,
-				114BC2757EED4D78B9EFADEA /* elumi_tabswitch.wav in Resources */,
-				729A713080B546A1B10C5ACA /* elumi_toggle.wav in Resources */,
-				99AE414AD9F8468D8DF3007D /* elumi_wrong.wav in Resources */,
+				A92FD19A63604A98AC7A62D8 /* Sounds/elumi_bgm_fischfang.wav in Resources */,
+				2C02BD11DC6C449AA1D5BFFE /* Sounds/elumi_appstart.wav in Resources */,
+				85741A1459CD46F8B2D57ADA /* Sounds/elumi_bonusbubble.wav in Resources */,
+				009819BB54954EAEBB5DEC28 /* Sounds/elumi_cardflip.wav in Resources */,
+				0539D34CCB4C4C24AE08BF34 /* Sounds/elumi_cardright.wav in Resources */,
+				82DF25EBA98C4C9094BC3EFD /* Sounds/elumi_cardwrong.wav in Resources */,
+				BFBC9A0F8FA14ED791E9E103 /* Sounds/elumi_combo.wav in Resources */,
+				4074D78EE22D43E2986ACBF0 /* Sounds/elumi_correct.wav in Resources */,
+				9522ABC182EA4ED19082A0A4 /* Sounds/elumi_error.wav in Resources */,
+				A8E9010B4F0C46149D900BCF /* Sounds/elumi_favstar.wav in Resources */,
+				54A069E941A24FAA8F5763B6 /* Sounds/elumi_gameover.wav in Resources */,
+				15E1874FDAE047E4AEC3DA6D /* Sounds/elumi_gamestart.wav in Resources */,
+				13634FD082AA43DEB7699146 /* Sounds/elumi_highscore.wav in Resources */,
+				6A9A9076F4D245A9AF3530F5 /* Sounds/elumi_levelup.wav in Resources */,
+				E627ACD904664767B834476C /* Sounds/elumi_listaction.wav in Resources */,
+				44D622B2824546FFBDFF7083 /* Sounds/elumi_powerupspawn.wav in Resources */,
+				50F57B704E604DE98AD4FA51 /* Sounds/elumi_quizcomplete.wav in Resources */,
+				B4758C33858646B6A402E9E2 /* Sounds/elumi_roundclear.wav in Resources */,
+				535BC11A38424C789F12B637 /* Sounds/elumi_saugend.wav in Resources */,
+				DA57C4C566AF4DB3B5CC281D /* Sounds/elumi_saugloop.wav in Resources */,
+				F451513F2F93C391006C8818 /* File.txt in Resources */,
+				7D3B0E4411A243619FB50261 /* Sounds/elumi_saugstart.wav in Resources */,
+				BFB7270E17924A98985159AE /* Sounds/elumi_scandone.wav in Resources */,
+				58A13D20DB064DC3A1CFBDDD /* Sounds/elumi_tentacle_sting.wav in Resources */,
+				3F17F900156649F1B56821CA /* Sounds/elumi_tentacle_drop.wav in Resources */,
+				495F17EE7BAD4C4E9518D9CE /* Sounds/elumi_jellyfish_appear.wav in Resources */,
+				910F1CC9A7444B38971AC68C /* Sounds/elumi_jellyfish_ambient.wav in Resources */,
+				8480D2B78B0940FF8334A168 /* Sounds/elumi_scanprocess.wav in Resources */,
+				D2C31485B1D74864B812D0D8 /* Sounds/elumi_scanstart.wav in Resources */,
+				D771E6C94B97489EAC3CCA37 /* Sounds/elumi_shieldabsorb.wav in Resources */,
+				1D667A9B8D984D1CB42D8942 /* Sounds/elumi_shieldactivate.wav in Resources */,
+				DC356E5E6E7D471787978C2E /* Sounds/elumi_slowmoend.wav in Resources */,
+				19D3201DD0C84E8A83C2242D /* Sounds/elumi_slowmostart.wav in Resources */,
+				FDAE5763D9AB4A198F799CCB /* Sounds/elumi_snackcatch.wav in Resources */,
+				A32AEA7409624035B7BCEB16 /* Sounds/elumi_snackmiss.wav in Resources */,
+				FE1234567890123456789021 /* Sounds/runner_theme_01.mp3 in Resources */,
+				FE1234567890123456789031 /* Sounds/runner_theme_02.mp3 in Resources */,
+				FE1234567890123456789051 /* Sounds/arcade_theme_01.mp3 in Resources */,
+				FE1234567890123456789061 /* Sounds/arcade_theme_02.mp3 in Resources */,
+				FE1234567890123456789071 /* Sounds/fish_theme_01.mp3 in Resources */,
+				FE12345678901234567891BA /* sfx/sfx_lane.wav in Resources */,
+				FE12345678901234567891CA /* sfx/sfx_correct.wav in Resources */,
+				FE12345678901234567891DA /* sfx/sfx_wrong.wav in Resources */,
+				FE12345678901234567891EA /* sfx/sfx_life_loss.wav in Resources */,
+				FE12345678901234567891FA /* sfx/sfx_pickup.wav in Resources */,
+				FE12345678901234567892AA /* sfx/sfx_boost.wav in Resources */,
+				4A2F5E28015042B8897FAD67 /* Sounds/elumi_stackcomplete.wav in Resources */,
+				0956E1BD7D8A4C2CA60FF949 /* Sounds/elumi_streak.wav in Resources */,
+				114BC2757EED4D78B9EFADEA /* Sounds/elumi_tabswitch.wav in Resources */,
+				729A713080B546A1B10C5ACA /* Sounds/elumi_toggle.wav in Resources */,
+				99AE414AD9F8468D8DF3007D /* Sounds/elumi_wrong.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1454,15 +1737,28 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-								C0F11A111A111A111A111111 /* GamificationConfig.swift in Sources */,
+				C0F11A111A111A111A111111 /* GamificationConfig.swift in Sources */,
 				C0F21A111A111A111A111111 /* LearningSession.swift in Sources */,
 				C0F31A111A111A111A111111 /* ProgressStore.swift in Sources */,
 				C0F41A111A111A111A111111 /* ProgressService.swift in Sources */,
 				B88DDE296B824BCA8E9B5AA6 /* GamificationFeedbackPresenter.swift in Sources */,
+				AA11BB22CC33DD44EE55FF66 /* SessionStreak.swift in Sources */,
+				AA11BB22CC33DD44EE55FF68 /* SpeedRoundSettings.swift in Sources */,
+				AA11BB22CC33DD44EE55FF70 /* MCDistractorFilter.swift in Sources */,
+				AA11BB22CC33DD44EE55FF72 /* TrainingSessionResume.swift in Sources */,
+				AA11BB22CC33DD44EE55FF74 /* AccentSessionResume.swift in Sources */,
+				AA11BB22CC33DD44EE55FF76 /* QuizSessionResume.swift in Sources */,
+				AA11BB22CC33DD44EE55FF78 /* ArticleModeClassifier.swift in Sources */,
+				AA11BB22CC33DD44EE55FF7A /* ArticleModeClassifierTests.swift in Sources */,
+				AA11BB22CC33DD44EE55FF7C /* FeedbackConfig.swift in Sources */,
+				AA11BB22CC33DD44EE55FF7E /* FeedbackEngine.swift in Sources */,
+				AA11BB22CC33DD44EE55FF80 /* SpeedRoundTimerCard.swift in Sources */,
+				AA11BB22CC33DD44EE55FF82 /* GameStateResetService.swift in Sources */,
+				AA11BB22CC33DD44EE55FF84 /* LevelProgression.swift in Sources */,
 				C0F51A111A111A111A111111 /* SessionSummaryView.swift in Sources */,
-F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */,
+				F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */,
 				F43B1C122F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift in Sources */,
-				DE208FC184184208BE875D1D /* ListCategoryPickerView.swift in Sources */,
+				DE208FC184184208BE875D1D /* FRDEVocabMVP/ListCategoryPickerView.swift in Sources */,
 				F43B1C142F87C0100094BA73 /* ClaudeHaikuScanAIClient+Configuration.swift in Sources */,
 				F43B1C102F878B100094BA73 /* FillBlankSentenceLoader.swift in Sources */,
 				A00000000000000000000001 /* FRDEVocabMVPApp.swift in Sources */,
@@ -1639,7 +1935,6 @@ F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */,
 				A00000000000000000000386 /* FeedbackPlayer.swift in Sources */,
 				A00000000000000000000706 /* FeedbackPlayer+Playback.swift in Sources */,
 				A00000000000000000000708 /* FeedbackPlayer+Buffers.swift in Sources */,
-				B44AC0E115594918B192C1D1 /* FeedbackPlayer+BGM.swift in Sources */,
 				A00000000000000000000150 /* AppStores.swift in Sources */,
 				A00000000000000000000334 /* StudyStoreSupport.swift in Sources */,
 				A00000000000000000000336 /* VocabularyListStore.swift in Sources */,
@@ -1678,8 +1973,32 @@ F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */,
 				A1B2C3D4E5F60708090A0B01 /* HomeStatusCard.swift in Sources */,
 				A1B2C3D4E5F60708090A0C01 /* DailyStatsStore.swift in Sources */,
 				4C49B8DF9320038C9966EF64 /* HomeProgressBoardCard.swift in Sources */,
+				A1B2C3D4E5F60708090A0E02 /* ItemLearningStatus.swift in Sources */,
+				A1B2C3D4E5F60708090A0E04 /* ItemLearningStatusStore.swift in Sources */,
+				A1B2C3D4E5F60708090A0E06 /* ItemLearningStatusRecorder.swift in Sources */,
+				A1B2C3D4E5F60708090A0E08 /* HomeLernstatusCard.swift in Sources */,
+				A1B2C3D4E5F60708090A0E0A /* LernstatusView.swift in Sources */,
 				21539C42B3F8DFAF90B3E180 /* HomeModuleIcon.swift in Sources */,
 				A1B2C3D4E5F60708091C0D01 /* AppIcons.swift in Sources */,
+				FE12345678901234567890A1 /* AppIconRegistry.swift in Sources */,
+				FE12345678901234567890B1 /* ScanTuning.swift in Sources */,
+				FE12345678901234567890C1 /* WordRunnerGameView.swift in Sources */,
+				FE12345678901234567890D1 /* WordRunnerModels.swift in Sources */,
+				FE12345678901234567890E1 /* WordRunnerTaskProvider.swift in Sources */,
+				FE12345678901234567890F1 /* WordRunnerSpawner.swift in Sources */,
+				FE1234567890123456789001 /* WordRunnerGame.swift in Sources */,
+				FE1234567890123456789011 /* WordRunnerMusicPlayer.swift in Sources */,
+				FE1234567890123456789041 /* ArcadeMusicPlayer.swift in Sources */,
+				FE1234567890123456789081 /* MusicCatalog.swift in Sources */,
+				FE1234567890123456789091 /* TrophyView.swift in Sources */,
+				FE12345678901234567890AA /* HomeCompactStatusCard.swift in Sources */,
+				FE12345678901234567890BA /* HomeHeroLearningSection.swift in Sources */,
+				FE12345678901234567890CA /* HomeMoreExercisesSection.swift in Sources */,
+				FE12345678901234567890DA /* HomeToolsSection.swift in Sources */,
+				FE12345678901234567890EA /* HomePopCardStyle.swift in Sources */,
+				FE12345678901234567890FA /* LiveListRunnerTaskProvider.swift in Sources */,
+				FE12345678901234567891AA /* WordRunnerSFXPlayer.swift in Sources */,
+				A1B2C3D4E5F60708091C0D03 /* DebugResetService.swift in Sources */,
 				D8F531550E0A4DF7B96CC21C /* SessionSetupScreen.swift in Sources */,
 				8641C62C7C85427FB59B365B /* SessionOptionsComponents.swift in Sources */,
 				721DFC0B52424F55A89930EB /* SessionSetupComponents.swift in Sources */,
@@ -1831,7 +2150,51 @@ F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */,
 				A00000000000000000000746 /* ScanImportView+RepairDependencies.swift in Sources */,
 				A00000000000000000000748 /* ScanImportView+SessionBindings.swift in Sources */,
 				A00000000000000000000750 /* ScanImportView+ViewBindings.swift in Sources */,
-				26325168A6B64B9399DCD543 /* LexiconTextUtility.swift in Sources */
+				26325168A6B64B9399DCD543 /* LexiconTextUtility.swift in Sources */,
+				FEDEA1000000000000000001 /* FreierTextModels.swift in Sources */,
+				FEDEA1000000000000000003 /* FreierTextClaudeClient.swift in Sources */,
+				FEDEA1000000000000000005 /* FreierTextEntryView.swift in Sources */,
+				FEDEA1000000000000000007 /* FreierTextProcessingView.swift in Sources */,
+				FEDEA1000000000000000009 /* FreierTextResultView.swift in Sources */,
+				FEDEA100000000000000000D /* FreierTextSummaryView.swift in Sources */,
+				FEDEA100000000000000000B /* SaveNewListSheet.swift in Sources */,
+				FEDEA11000000000000000A1 /* SmartDocumentProcessor.swift in Sources */,
+				FEDEA12000000000000000B1 /* SmartScannerSession.swift in Sources */,
+				FEDEA13000000000000000C1 /* RectangleTracker.swift in Sources */,
+				FEDEA20300000000000025001 /* AttentionRegionTracker.swift in Sources */,
+				FEDEA20300000000000026001 /* ScanSettings.swift in Sources */,
+				FEDEA20300000000000027001 /* ScanFocusMode.swift in Sources */,
+				FEDEA20300000000000028001 /* ScanModeBadge.swift in Sources */,
+				FEDEA20300000000000029001 /* ArcadePowerUps.swift in Sources */,
+				FEDEA20300000000000030001 /* ArcadeSFX.swift in Sources */,
+				FEDEA20300000000000031001 /* GermanAbbreviationExpander.swift in Sources */,
+				FEDEA20300000000000032001 /* ArcadePowerUpRuntime.swift in Sources */,
+				FEDEA14000000000000000D1 /* SmartScannerView.swift in Sources */,
+				FEDEA15000000000000000E1 /* ImageQualityAnalyzer.swift in Sources */,
+				FEDEA15100000000000000E3 /* ImageEnhancer.swift in Sources */,
+				FEDEA15200000000000000E5 /* ImageCropper.swift in Sources */,
+				FEDEA16000000000000000F1 /* ScanCoordinateMapper.swift in Sources */,
+				FEDEA17000000000001A001 /* ScanCaptureProfile.swift in Sources */,
+				FEDEA18000000000001B001 /* ScanCaptureMachine.swift in Sources */,
+				FEDEA19000000000001C001 /* AutoCaptureController.swift in Sources */,
+				FEDEA1A000000000001D001 /* FocusExposureController.swift in Sources */,
+				FEDEA1B000000000001E001 /* SmartTextRegionDetector.swift in Sources */,
+				FEDEA1C000000000001F001 /* ScanImageEnhancer.swift in Sources */,
+				FEDEA1D00000000000020001 /* ScanAIPostProcessor.swift in Sources */,
+				FEDEA1E00000000000021001 /* VocabularyListDualFormMigration.swift in Sources */,
+				FEDEA1F00000000000022001 /* VocabDualFormSplitter.swift in Sources */,
+				FEDEA20100000000000023001 /* VocabDualFormMerger.swift in Sources */,
+				FEDEA20200000000000024001 /* VocabContextClassifier.swift in Sources */,
+				FEDEA20000000000000001A1 /* AccentModels.swift in Sources */,
+				FEDEA20000000000000002A1 /* AccentWordCatalog.swift in Sources */,
+				FEDEA20000000000000003A1 /* AccentContentBuilder.swift in Sources */,
+				FEDEA20000000000000004A1 /* AccentSessionEngine.swift in Sources */,
+				FEDEA20000000000000005A1 /* AccentsEntryView.swift in Sources */,
+				FEDEA210000000000000011 /* AccentsSessionHeader.swift in Sources */,
+				FEDEA22000000000000001A1 /* AccentAdaptiveStore.swift in Sources */,
+				FEDEA20000000000000006A1 /* AccentsSessionView.swift in Sources */,
+				FEDEA20000000000000007A1 /* AccentsLearningView.swift in Sources */,
+				FEDEA20000000000000008A1 /* AccentsResultView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1927,6 +2290,7 @@ F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */,
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;

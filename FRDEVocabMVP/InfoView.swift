@@ -8,23 +8,32 @@ struct InfoView: View {
     let openSettings: () -> Void
     private let sectionStyle: AppSectionStyle = .home
 
+    /// Reserviert Platz für die global gerenderte Bottom-Bar. Ohne diese
+    /// Clearance steckt die unterste Info-Card (und der Copyright-Block)
+    /// hinter dem Footer — der Screen wirkt dann wie „schon am Ende",
+    /// obwohl die letzten Cards nur abgeschnitten sind. Ergebnis: der
+    /// User konnte scrollen, kam aber nicht unten an, weil nichts mehr
+    /// visible reservierte, dass es weiter geht.
+    private var footerClearance: CGFloat {
+        usesGlobalChrome
+            ? AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.lg
+            : AppTheme.Spacing.lg
+    }
+
     var body: some View {
-        ScrollView(showsIndicators: false) {
+        ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 14) {
+                // Systemweiter Header: Back-Chevron links, Titel mittig.
+                // Der frühere separate „Zurück"-Button unter dem Header
+                // ist entfallen — der Back-Chevron im Header ersetzt ihn.
                 ScreenHeaderCard(
                     style: sectionStyle,
                     title: "Info",
                     subtitle: "",
-                    systemImage: "info.circle.fill"
+                    systemImage: nil,
+                    onBack: { dismiss() },
+                    centeredTitle: true
                 )
-
-                Button {
-                    dismiss()
-                } label: {
-                    Label("Zur\u{00FC}ck", systemImage: "arrow.left")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))
 
                 colorInfoCard(
                     title: "Karteikarten",
@@ -88,7 +97,10 @@ struct InfoView: View {
                     lines: [
                         "Alle Vokabeln aus deinen Listen üben.",
                         "Sprechen oder Tippen — du entscheidest.",
-                        "Speed Round: 45 Sekunden Countdown!"
+                        // Dauer kommt aus der globalen Settings-Einstellung —
+                        // Info-Zeile bleibt damit automatisch korrekt, wenn
+                        // der User die Dauer auf 20/30/60 s stellt.
+                        "\(SpeedRoundTerminology.name): \(SpeedRoundSettings.currentLabel) Countdown!"
                     ]
                 )
 
@@ -154,9 +166,19 @@ struct InfoView: View {
             // Systemweites Top-Padding — Header sitzt auf derselben
             // vertikalen Position wie im Quiz-Setup.
             .padding(.top, AppLayout.screenHeaderTopPadding)
-            .padding(.bottom, AppLayout.screenPadding)
-            .frame(maxWidth: .infinity, alignment: .top)
+            // Bottom-Padding = Footer-Clearance (siehe `footerClearance`).
+            // Ersetzt das bisherige flache `screenPadding`, das zu klein
+            // war, um die unterste Card komplett über der Bottom-Bar zu
+            // halten → der User empfand den Screen als „endet dort",
+            // was dem Symptom „lässt sich nicht scrollen" entsprach.
+            .padding(.bottom, footerClearance)
+            .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .top)
+            .frame(maxWidth: .infinity, alignment: .center)
         }
+        // `ignoresSafeArea(.keyboard)` verhindert, dass die ScrollView
+        // ihre Höhe ändert, wenn irgendwo in der App die Tastatur
+        // animiert hoch-/runterfährt — stabilisiert das Scroll-Verhalten.
+        .scrollContentBackground(.hidden)
         .tint(sectionStyle.accent)
         .appAmbientWormBackground(sectionStyle)
         .toolbar(.hidden, for: .navigationBar)

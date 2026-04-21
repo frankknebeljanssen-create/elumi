@@ -25,7 +25,19 @@ extension FeedbackPlayer {
 
     func playQuizCorrect() { playIfEnabled("correct") }
     func playStudySuccess() { playIfEnabled("correct") }
-    func playStudyError() { playIfEnabled("wrong") }
+    /// Sanft, deutlich leiser. User-Prinzip (Gamification-Auftrag):
+    /// Fehler nicht bestrafen, nur sanft lenken. Lautstärke zentral
+    /// aus `FeedbackConfig.negativeSoundVolume` — wenn später komplett
+    /// stumm gewünscht ist, reicht das Flag `negativeSoundEnabled = false`
+    /// und die Call-Site muss nichts ändern (siehe `playSoftError`).
+    func playStudyError() {
+        guard FeedbackConfig.negativeSoundEnabled else { return }
+        playIfEnabled("wrong", volume: FeedbackConfig.negativeSoundVolume)
+    }
+    /// Expliziter Alias für Call-Sites, die klar machen wollen, dass sie
+    /// den **weichen** Error-Ton wollen. Verhalten = `playStudyError`,
+    /// nur anders benannt für selbst-dokumentierende Aufrufe.
+    func playSoftError() { playStudyError() }
     func playStudyAchievement() { playIfEnabled("quizcomplete") }
     func playStreak() { playIfEnabled("streak") }
     func playLevelUp() { playIfEnabled("levelup") }

@@ -26,8 +26,7 @@ extension FlashcardSessionStore {
     /// Setzt Combo-Tracking + Mastered-Counter zurück. Wird bei jedem
     /// neuen Session-Start aufgerufen.
     func resetGamificationCounters() {
-        sessionCurrentCombo = 0
-        sessionLongestCombo = 0
+        streak.reset()
         sessionMasteredThisRun = 0
         sessionRewardConsumed = false
     }
@@ -51,11 +50,30 @@ extension FlashcardSessionStore {
               restoredSession.direction == selectedDirection else { return }
 
         session = restoredSession
+        // Streak aus dem Snapshot in den in-memory-Tracker zurückspielen —
+        // ohne diesen Schritt startet die fortgesetzte Session mit Combo 0,
+        // obwohl der User gerade 4× in Folge richtig beantwortet hat.
+        streak = restoredSession.streak
         ensureValidSession()
     }
 
     func markCorrect() {
         guard var session, let currentCardID = session.currentCardID else { return }
+
+        // Lernstatus-Signal: **vor** der Session-Mutation aus der
+        // aktuellen Karte ziehen. `currentCard` resolv't über den noch
+        // nicht überschriebenen `session.currentCardID`. Die Direction
+        // spielt hier **keine** Rolle für den Store-Schlüssel (der basiert
+        // rein auf french/german/cardType), muss also nicht mit übergeben
+        // werden — der Store aggregiert automatisch über beide Richtungen.
+        if let card = currentCard {
+            ItemLearningStatusRecorder.record(
+                french: card.french,
+                german: card.german,
+                cardType: card.cardType,
+                correct: true
+            )
+        }
 
         // Update mastery
         var mastery = session.cardMastery[currentCardID] ?? CardMastery()
@@ -64,9 +82,14 @@ extension FlashcardSessionStore {
         session.correctCount += 1
 
         // Combo-Tracking für ProgressService (Combo-Bonus alle 5 in Folge).
-        sessionCurrentCombo += 1
-        sessionLongestCombo = max(sessionLongestCombo, sessionCurrentCombo)
-        GamificationFeedbackPresenter.shared.noteComboProgress(currentCombo: sessionCurrentCombo)
+        // Karteikarten haben pro Karte genau einen Antwort-Tap — deshalb
+        // ist `firstAttempt` hier immer `true` und wird über den Default
+        // der Convenience-API mitgenommen.
+        streak.recordCorrect()
+        // Streak-Snapshot in die `FlashcardSessionState` schreiben, damit
+        // ein Resume den Combo-Stand nicht verliert. Persistiert
+        // automatisch über den `didSet` auf `session`.
+        session.streak = streak
 
         // Karte aus dem Stapel entfernen, wenn die konfigurierte Schwelle
         // (1/2/3 richtige Antworten hintereinander) erreicht ist.
@@ -89,14 +112,30 @@ extension FlashcardSessionStore {
     func markWrong() {
         guard var session, let currentCardID = session.currentCardID else { return }
 
+        // Lernstatus-Signal (Gegenstück zu `markCorrect`): siehe dort für
+        // die Rationale. Für das Tracking ist es wichtig, dass genau
+        // **ein** Signal pro Antwort läuft — hier der Wrong-Path.
+        if let card = currentCard {
+            ItemLearningStatusRecorder.record(
+                french: card.french,
+                german: card.german,
+                cardType: card.cardType,
+                correct: false
+            )
+        }
+
         // Reset mastery to open
         var mastery = session.cardMastery[currentCardID] ?? CardMastery()
         mastery.markWrong()
         session.cardMastery[currentCardID] = mastery
         session.wrongCount += 1
 
-        // Combo bricht ab — `sessionLongestCombo` bleibt erhalten.
-        sessionCurrentCombo = 0
+        // Combo bricht ab — `longest` bleibt in `streak` erhalten.
+        streak.recordWrong()
+        // Auch bei falschen Antworten den Snapshot aktualisieren, damit
+        // ein Resume den Reset auf 0 widerspiegelt (sonst könnte der
+        // alte Combo-Stand nach Unterbrechung wieder sichtbar werden).
+        session.streak = streak
 
         self.session = session
         chooseNextCard(avoiding: currentCardID)

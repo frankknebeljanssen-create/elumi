@@ -2,7 +2,10 @@ import SwiftUI
 
 extension TrainingView {
     func speakCurrentPrompt() {
-        guard !isArticleMode, !isVerbMode else { return }
+        // Nomen-Wortauswahl: kein TTS — die Vorlage wird still gezeigt,
+        // der User wählt aus dem 8er-Grid. (Im Speech-Pfad bleibt die
+        // bisherige Ansprache des Prompts erhalten.)
+        guard !isArticleMode, !isVerbMode, !isNounChoiceMode else { return }
         guard let currentCard else {
             return
         }
@@ -48,11 +51,35 @@ extension TrainingView {
     }
 
     func submitVerbMC(_ option: String) {
-        guard !verbMCLocked, session.currentTrainingItem != nil else { return }
+        // Session-Ende-Guard: wenn die Speed-Round-Zeit abgelaufen ist
+        // oder ein Summary bereits vergeben wurde (`trainingSessionOutcome`
+        // gesetzt), darf nichts mehr durchrutschen — auch wenn die
+        // Button-Card noch kurz auf dem Screen ist, bevor der Summary-
+        // Wechsel greift.
+        guard !verbMCLocked,
+              session.currentTrainingItem != nil,
+              !isTrainingSessionEnded else { return }
         let isSpeed = session.isSpeedRound && session.speedRoundTimeRemaining > 0
         verbMCLocked = true
         verbMCSelected = option
         let isCorrect = option.lowercased() == verbCorrectAnswer.lowercased()
+
+        // Lernstatus-Hook (FIX): Der MC-Button-Pfad bei Verben ging bisher
+        // nie durch `evaluateResponse` und hat deshalb **nie** ein Signal
+        // an den `ItemLearningStatusStore` geschickt. Recording muss an
+        // den tatsächlichen Bewertungszeitpunkt — genau hier, sofort nach
+        // Berechnung von `isCorrect`. Werte kommen aus
+        // `session.currentTrainingItem`, das durch die Guard-Zeile
+        // sichergestellt ist (wird nie mid-flight auf nil gedreht).
+        //
+        // `firstAttempt` entscheidet, ob diese Antwort die Streak-Serie
+        // verlängert oder (wie eine falsche Antwort) auf 0 zurücksetzt —
+        // so wird die Nutzererwartung "5x in ununterbrochener Folge"
+        // auch bei Retries korrekt abgebildet.
+        session.recordAnswer(
+            correct: isCorrect,
+            firstAttempt: session.failedAttemptsOnCurrentCard == 0
+        )
 
         if isCorrect {
             feedbackPlayer.playStudySuccess()
@@ -97,23 +124,32 @@ extension TrainingView {
         let isAnswerGerman = isFRtoDe
 
         // Verb-Training trainiert NUR Infinitive (siehe activeItems Filter in
-        // TrainingSessionController+DictionarySelection). Distraktoren sind also
-        // ebenfalls Infinitive — same form as correct answer.
-        let allVerbOptions: [String] = StandardVocabularyLoader.allEntries
-            .filter { $0.wordClass == "verb" && !$0.target.isEmpty && !$0.sourceDisplay.isEmpty }
-            .map { isAnswerGerman ? $0.target : $0.sourceDisplay }
+        // TrainingSessionController+DictionarySelection). Distraktor-Pool sind
+        // ebenfalls Infinitive — selbe Form wie die korrekte Antwort. Der
+        // `MCDistractorFilter` filtert den Pool dann nach Level-Bucket,
+        // Wortanzahl und Länge, damit bei „aimer" nicht plötzlich
+        // „portefeuille" als Distraktor auftaucht.
+        //
+        // Pool-Source `verbEntries` ist ein **statisch einmal gefilterter**
+        // Cache (siehe `StandardVocabularyLoader`) — die O(n)-Filterung
+        // läuft **nicht** bei jedem Karten-Wechsel, sondern exakt einmal
+        // pro App-Start.
+        let candidatePool: [MCDistractorFilter.Candidate] = StandardVocabularyLoader.verbEntries
+            .map { entry in
+                MCDistractorFilter.Candidate(
+                    display: isAnswerGerman ? entry.target : entry.sourceDisplay,
+                    level: entry.level,
+                    topic: entry.topic
+                )
+            }
 
-        // Dedup case-insensitive, schließe correctAnswer aus (nur ein Treffer in options)
-        var seenKeys: Set<String> = [correctKey]
-        var pool: [String] = []
-        for candidate in allVerbOptions {
-            let k = candidate.lowercased()
-            if seenKeys.contains(k) { continue }
-            seenKeys.insert(k)
-            pool.append(candidate)
-        }
+        let distractors = MCDistractorFilter.pickDistractors(
+            correctAnswer: correctAnswer,
+            correctLevel: item.level?.rawValue, // Fallback — kann nil sein (Custom-Listen)
+            from: candidatePool,
+            count: 7
+        )
 
-        let distractors = Array(pool.shuffled().prefix(7))
         var options = [correctAnswer] + distractors
         // SAFETY: garantiert, dass correctAnswer IMMER in den Optionen enthalten ist
         // (schützt vor Edge-Cases, z.B. leerem Pool).
@@ -124,11 +160,133 @@ extension TrainingView {
         verbMCOptions = options
     }
 
+    // MARK: - Nomen Wortauswahl (Wortauswahl-Modus)
+    //
+    // Mechanisch eine 1:1-Klon-Kopie des Verben-MC-Flows: 8 Optionen
+    // (1 Lösung + 7 Distraktoren), Tap sperrt die Karte, Grün/Rot-Feedback,
+    // Auto-Advance nach 0.3s (Speed Round) bzw. 1.0–1.2s (normal). Die
+    // Trennung (eigene `nounMC*`-States statt Shared mit Verben) ist bewusst:
+    // Verben-Modul trainiert Infinitive auf einem geschärften Pool (nur
+    // `wordClass == "verb"`), Nomen braucht einen anderen Distraktor-Pool
+    // (`wordClass == "noun"`). Ein gemeinsamer State wäre zu leaky und
+    // würde Cross-Module-Resets erzwingen.
+
+    func submitNounMC(_ option: String) {
+        guard !nounMCLocked,
+              session.currentTrainingItem != nil,
+              !isTrainingSessionEnded else { return }
+        let isSpeed = session.isSpeedRound && session.speedRoundTimeRemaining > 0
+        nounMCLocked = true
+        nounMCSelected = option
+        let isCorrect = option.lowercased() == nounCorrectAnswer.lowercased()
+
+        // Lernstatus-Hook (FIX): Bei Nomen-Wortauswahl fehlte bisher der
+        // Recording-Call — nur der Spracheingabe-Pfad rief `evaluateResponse`
+        // an. Dadurch gingen alle MC-Button-Taps an der Persistenz vorbei.
+        // Analog zum Verben-Fix sofort nach `isCorrect`.
+        // `firstAttempt`: siehe Kommentar in `submitVerbMC`.
+        session.recordAnswer(
+            correct: isCorrect,
+            firstAttempt: session.failedAttemptsOnCurrentCard == 0
+        )
+
+        if isCorrect {
+            feedbackPlayer.playStudySuccess()
+            if isSpeed { session.speedRoundScore += 1 }
+            scheduleFeedbackTask(after: isSpeed ? 0.3 : 1.2) {
+                nounMCSelected = nil
+                nounMCLocked = false
+                loadNextTrainingCard()
+                prepareNounMCOptions()
+            }
+        } else {
+            feedbackPlayer.playStudyError()
+            session.incrementFailedAttempts()
+            let maxAttempts = isSpeed ? 3 : 999
+            let shouldSkip = session.failedAttemptsOnCurrentCard >= maxAttempts
+            scheduleFeedbackTask(after: isSpeed ? 0.3 : 1.0) {
+                nounMCSelected = nil
+                nounMCLocked = false
+                if shouldSkip {
+                    loadNextTrainingCard()
+                    prepareNounMCOptions()
+                }
+            }
+        }
+    }
+
+    func prepareNounMCOptions() {
+        guard let item = session.currentTrainingItem else {
+            nounMCOptions = []
+            return
+        }
+        let isFRtoDe = selectedAppDirection == .frenchToGerman || selectedAppDirection == .englishToGerman
+        // Original-Schreibweise (Nomen-Großschreibung) beibehalten — der Vergleich
+        // läuft per .lowercased(), die Anzeige aber kapitalisiert.
+        let correctAnswer = (isFRtoDe ? item.german : item.french)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !correctAnswer.isEmpty else {
+            nounMCOptions = []
+            return
+        }
+        let correctKey = correctAnswer.lowercased()
+        let isAnswerGerman = isFRtoDe
+
+        // Distraktor-Pool: alle Lexikon-Einträge mit `wordClass == "noun"`.
+        // Filter läuft über `MCDistractorFilter` — derselbe Pfad wie bei
+        // Verben, damit bei „der Tisch" keine Phrasen oder C1-Wörter wie
+        // „das Mikrofon im Besprechungsraum" mehr auftauchen.
+        //
+        // Pool-Source `nounEntries` ist statisch einmal gefiltert (siehe
+        // `StandardVocabularyLoader`) — O(1)-Zugriff pro Karten-Wechsel.
+        let candidatePool: [MCDistractorFilter.Candidate] = StandardVocabularyLoader.nounEntries
+            .map { entry in
+                MCDistractorFilter.Candidate(
+                    display: isAnswerGerman ? entry.target : entry.sourceDisplay,
+                    level: entry.level,
+                    topic: entry.topic
+                )
+            }
+
+        let distractors = MCDistractorFilter.pickDistractors(
+            correctAnswer: correctAnswer,
+            correctLevel: item.level?.rawValue,
+            from: candidatePool,
+            count: 7
+        )
+
+        var options = [correctAnswer] + distractors
+        // SAFETY: Lösung muss IMMER in den Optionen enthalten sein — schützt
+        // vor Edge-Cases (z. B. leerer Pool → correctAnswer würde sonst fehlen).
+        if !options.contains(where: { $0.lowercased() == correctKey }) {
+            options.append(correctAnswer)
+        }
+        options.shuffle()
+        nounMCOptions = options
+    }
+
     func submitArticle(_ article: String) {
-        guard !articleLocked, let correctArticle else { return }
+        guard !articleLocked,
+              let correctArticle,
+              !isTrainingSessionEnded else { return }
         let isSpeed = session.isSpeedRound && session.speedRoundTimeRemaining > 0
         articleLocked = true
         let isCorrect = article.lowercased() == correctArticle.lowercased()
+
+        // Lernstatus-Hook (FIX): Artikel-Buttons gingen bisher
+        // komplett an der Lernstatus-Persistenz vorbei — kein einziger
+        // Tap wurde im `ItemLearningStatusStore` abgelegt. Recording
+        // sofort nach Bewertung, damit alle Artikel-Übungen zuverlässig
+        // im Home + Detail-Screen auftauchen. Für den Call brauchen wir
+        // `session.currentTrainingItem`, was beim Laden der Artikel-Karte
+        // via `loadNextTrainingCard()` bereits gesetzt ist.
+        // `firstAttempt`: siehe Kommentar in `submitVerbMC`.
+        if session.currentTrainingItem != nil {
+            session.recordAnswer(
+                correct: isCorrect,
+                firstAttempt: session.failedAttemptsOnCurrentCard == 0
+            )
+        }
 
         if isCorrect {
             feedbackPlayer.playStudySuccess()
@@ -173,8 +331,10 @@ extension TrainingView {
     }
 
     func beginAutomaticListeningIfNeeded() {
-        // Don't auto-listen in article or verb mode
-        guard !isArticleMode, !isVerbMode else { return }
+        // Don't auto-listen in article/verb mode, and — analog — nicht im
+        // Nomen-Wortauswahl-Modus: dort antwortet der User durch Tap auf
+        // die Grid-Option, nicht per Spracheingabe.
+        guard !isArticleMode, !isVerbMode, !isNounChoiceMode else { return }
 
         let started = session.hasStartedTraining
         let hasCard = currentCard != nil

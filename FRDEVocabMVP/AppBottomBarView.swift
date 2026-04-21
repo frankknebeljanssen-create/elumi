@@ -2,16 +2,32 @@ import SwiftUI
 
 struct AppBottomBar: View {
     @Environment(\.appOpenScanAction) private var globalOpenScanAction
+    @Environment(\.appOpenLexiconAction) private var globalOpenLexiconAction
     @AppStorage(appQuizHeartsKey) private var collectedHearts = 0
+    /// Verfügbare Arcade-Credits = verfügbare Spiele (da
+    /// `ArcadeCreditSystem.gamesCost == 1`). Die Footer-Badge zeigt
+    /// jetzt diesen Wert statt der früheren Hearts-Sammlung —
+    /// konsistent zum Game-Hub, wo Credits ebenfalls als „Spiele"
+    /// dargestellt werden.
+    @AppStorage(appArcadeCreditsKey) private var arcadeCredits = 0
     @ObservedObject var feedbackPlayer: FeedbackPlayer
     let onHome: () -> Void
     let onFavorite: (() -> Void)?
     let onScan: (() -> Void)?  // Now used for Lexicon (historical name)
     let onSettings: (() -> Void)?
-    var onScanCamera: (() -> Void)? = nil  // New: actual Scan/camera action
+    var onScanCamera: (() -> Void)? = nil  // Legacy: vorher Scan-Button im Footer.
+                                            // Bleibt als Param erhalten, weil
+                                            // andere Screens (Lists/Quiz/etc.)
+                                            // ihn noch befüllen — Footer rendert
+                                            // ihn aber nicht mehr.
+    /// **Pokal-Tab** (Home-Rebuild): ersetzt den alten Scan-Button im
+    /// Footer. Führt zu `AppScreen.trophy` mit den ausführlichen
+    /// Status-Cards (Streak, Level/XP, Lernstatus).
+    var onTrophy: (() -> Void)? = nil
     var isHeartsActive: Bool = false
     var isScanActive: Bool = false  // Now isLexiconActive
     var isScanCameraActive: Bool = false
+    var isTrophyActive: Bool = false
     var isSettingsActive: Bool = false
 
     private var homeTint: Color { Color(hex: "#78C8FF") }
@@ -19,11 +35,17 @@ struct AppBottomBar: View {
         AppTheme.Colors.warning
     }
     private var scanTint: Color { Color(hex: "#FF9F40") }
+    private var trophyTint: Color { Color(hex: "#FFC857") }
     private var lexiconTint: Color { AppTheme.Colors.moduleLexicon }
     private var settingsTint: Color { Color(hex: "#B38DFF") }
 
+    /// Action für den Wörterbuch-Button. Vorher fiel das auf
+    /// `globalOpenScanAction` zurück, wenn `onScan` nil war — das
+    /// öffnete den Scanner statt das Wörterbuch (Bug-Report aus dem
+    /// Lists-Screen-Footer). Jetzt saubere Trennung: eigener
+    /// Lexicon-Env-Key als Fallback.
     private var resolvedScanAction: (() -> Void)? {
-        onScan ?? globalOpenScanAction
+        onScan ?? globalOpenLexiconAction
     }
 
     var body: some View {
@@ -50,22 +72,32 @@ struct AppBottomBar: View {
 
                 Spacer(minLength: 0)
 
+                // Footer-Button „Spiele" — führt in den Game Hub.
+                // Badge zeigt Anzahl verfügbarer Spiele (=
+                // `arcadeCredits`, da 1 Spiel = 1 Credit kostet).
+                // Label „Spiele" einheitlich zum Game-Hub-Hero-Text und
+                // zur Session-End-Integration („+1 Spiel").
                 AppBottomBarSnackButton(
-                    accessibilityLabel: "Sammlung",
+                    accessibilityLabel: "Spiele",
                     action: onFavorite,
                     isActive: isHeartsActive,
                     kind: elumiSnackKind(for: collectedHearts),
-                    badgeText: collectedHearts > 0 ? "\(collectedHearts)" : nil
+                    badgeText: arcadeCredits > 0 ? "\(arcadeCredits)" : nil
                 )
 
                 Spacer(minLength: 0)
 
+                // **Pokal-Tab** (Home-Rebuild Phase): ersetzt den
+                // bisherigen Scan-Button im Footer. Scan ist nicht
+                // mehr im Footer; er bleibt als Hero-Tool auf Home
+                // und über `appOpenScanAction`-Env weiterhin global
+                // aufrufbar — nur eben nicht mehr im Footer.
                 AppBottomBarIconButton(
-                    systemImage: "camera.viewfinder",
-                    accessibilityLabel: "Scan",
-                    action: onScanCamera ?? globalOpenScanAction,
-                    isActive: isScanCameraActive,
-                    foregroundColor: scanTint
+                    systemImage: isTrophyActive ? "trophy.fill" : "trophy",
+                    accessibilityLabel: "Pokal",
+                    action: onTrophy,
+                    isActive: isTrophyActive,
+                    foregroundColor: trophyTint
                 )
 
                 Spacer(minLength: 0)

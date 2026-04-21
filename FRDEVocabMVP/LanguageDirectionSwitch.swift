@@ -26,6 +26,9 @@ struct LanguageDirectionSwitch: View {
     }
 
     @AppStorage(appDirectionKey) private var selectedDirectionRaw = Direction.frenchToGerman.rawValue
+    /// Live-Switch-Gate für Icon-Set A ↔ B. Triggert Re-Render bei
+    /// Settings-Wechsel, damit das Asset sofort tauscht (ohne Neustart).
+    @AppStorage(AppIconRegistry.storageKey) private var iconSetRaw: String = AppIconSet.a.rawValue
 
     /// Kompressions-Flag für die Tap-Animation (Scale-Down bei Tap,
     /// Snap-Back nach ~100 ms). Lebt pro Komponente — zwei Instanzen
@@ -43,25 +46,28 @@ struct LanguageDirectionSwitch: View {
         let spec = spec(for: size)
 
         Button(action: toggle) {
-            HStack(spacing: spec.flagSpacing) {
-                flag(code: isFrToDE ? "FR" : "DE", spec: spec)
-
-                Image(systemName: "arrow.right")
-                    .font(.system(size: spec.arrowSize, weight: .black))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .scaleEffect(isPressed ? 0.9 : 1.0)
-
-                flag(code: isFrToDE ? "DE" : "FR", spec: spec)
-            }
-            .padding(.horizontal, spec.horizontalPadding)
-            .padding(.vertical, spec.verticalPadding)
-            .frame(maxWidth: spec.expandsWidth ? .infinity : nil)
-            // Kein Background, kein Border — die Flaggen stehen nackt auf
-            // dem darunterliegenden Screen-/Card-Hintergrund, ohne eigene
-            // Mini-Card darum. `padding`/`frame` bleiben als Touch-Target
-            // und für das Zentrieren erhalten.
-            .contentShape(Rectangle())
-            .animation(.easeOut(duration: 0.12), value: isPressed)
+            // Ein einziges Asset pro Richtung — FR→DE nutzt `IconLanguageToggle`
+            // (FR-Flagge links, blau), DE→FR nutzt `IconLanguageToggleReverse`
+            // (DE-Flagge links, gold). Beide Icons enthalten bereits die beiden
+            // Flaggen + die bidirektionalen Pfeile — die frühere manuelle
+            // Komposition (zwei `StraightFlagBadge` + SF-Symbol dazwischen) ist
+            // dadurch entfallen. `.id(…)` triggert beim Richtungswechsel eine
+            // saubere Image-Transition, analog zum alten `.id(code)`-Pattern.
+            Image(appIcon: isFrToDE ? "IconLanguageToggle" : "IconLanguageToggleReverse")
+                .resizable()
+                .scaledToFit()
+                .frame(height: spec.iconHeight)
+                .scaleEffect(isPressed ? 0.9 : 1.0)
+                .id(isFrToDE ? "icon-fr-de" : "icon-de-fr")
+                .padding(.horizontal, spec.horizontalPadding)
+                .padding(.vertical, spec.verticalPadding)
+                .frame(maxWidth: spec.expandsWidth ? .infinity : nil)
+                // Kein Background, kein Border — das Icon steht nackt auf
+                // dem darunterliegenden Screen-/Card-Hintergrund, ohne eigene
+                // Mini-Card darum. `padding`/`frame` bleiben als Touch-Target
+                // und für das Zentrieren erhalten.
+                .contentShape(Rectangle())
+                .animation(.easeOut(duration: 0.12), value: isPressed)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(
@@ -69,22 +75,6 @@ struct LanguageDirectionSwitch: View {
                 ? "Lernrichtung Französisch nach Deutsch. Zum Umschalten tippen."
                 : "Lernrichtung Deutsch nach Französisch. Zum Umschalten tippen."
         )
-    }
-
-    // MARK: - Sub-Views
-
-    private func flag(code: String, spec: Spec) -> some View {
-        StraightFlagBadge(
-            countryCode: code,
-            width: spec.flagWidth,
-            height: spec.flagHeight,
-            labelFontSize: spec.flagLabelSize
-        )
-        .scaleEffect(isPressed ? 0.88 : 1.0)
-        // Symmetric id-Transition sorgt dafür, dass SwiftUI die Flaggen
-        // beim Swap als „austauschend" behandelt — keine Text-/Farb-
-        // Zwischenschritte.
-        .id(code)
     }
 
     // MARK: - Toggle
@@ -128,49 +118,61 @@ struct LanguageDirectionSwitch: View {
     private func spec(for size: Size) -> Spec {
         switch size {
         case .regular:
+            // SVG-ViewBox ist auf den Content-Bereich getrimmt (96×44 px
+            // statt 96×96) — der gerenderte Frame ist jetzt identisch mit
+            // der sichtbaren Fahnen-/Pfeil-Komposition, kein vertikaler
+            // Leerraum mehr innerhalb des Bildes. Dadurch wirkt das Icon
+            // bei gleicher Höhe wesentlich dichter; der alte 56-pt-Wert
+            // wäre mit dem getrimmten Asset optisch fast doppelt so groß.
+            // iconHeight: 32 → 28 → 24 → **20** pt (−15 % nach User-
+            // Request „fr-de de-fr icon überall bisschen kleiner").
+            // 20 pt bleibt gut lesbar und rückt den Home-Switch näher an
+            // das visuelle Gewicht der umliegenden Chips, statt als
+            // eigene Schwergewichts-Zeile zu wirken.
             return Spec(
-                flagWidth: 40, flagHeight: 26, flagLabelSize: 10,
-                arrowSize: 14,
-                flagSpacing: 10,
-                horizontalPadding: 16, verticalPadding: 10,
-                // 16 pt — identisch zum Corner-Radius von Progress-Board
-                // und der Fokus/Continue-Card, damit die Flag-Card
-                // visuell zum System gehört.
-                cornerRadius: 16,
+                iconHeight: 20,
+                horizontalPadding: 16,
+                verticalPadding: 4,
                 expandsWidth: true
             )
         case .compact:
+            // Kompakt-Variante (Session-Setup-Zeile): nach User-Feedback
+            // („etwas größer, aber der riesige Abstand oben/unten muss
+            // weg") wurde die SVG-ViewBox von 96×96 auf 96×44 getrimmt —
+            // dadurch entfällt der bislang sichtbare 25-pt-Leerraum
+            // ober- und unterhalb der Flaggen, der aus dem quadratischen
+            // Canvas resultierte. iconHeight: 52 → 44 → 38 → **32** pt
+            // (−15 % nach User-Request „fr-de de-fr icon überall bisschen
+            // kleiner"). Der Setup-Switch rückt damit als Setting-
+            // Element näher an die Ausgewählte-Listen-Card darüber,
+            // ohne seine Lesbarkeit zu verlieren.
             return Spec(
-                flagWidth: 30, flagHeight: 20, flagLabelSize: 9,
-                arrowSize: 12,
-                flagSpacing: 8,
-                horizontalPadding: 12, verticalPadding: 6,
-                // Etwas kleinerer Radius für die Session-Setup-Variante —
-                // passt zur kompakteren Höhe.
-                cornerRadius: 12,
+                iconHeight: 32,
+                horizontalPadding: 12,
+                verticalPadding: 2,
                 expandsWidth: false
             )
         }
     }
 
     private struct Spec {
-        let flagWidth: CGFloat
-        let flagHeight: CGFloat
-        let flagLabelSize: CGFloat
-        let arrowSize: CGFloat
-        let flagSpacing: CGFloat
+        /// Feste Rendering-Höhe des Assets. Breite ergibt sich automatisch
+        /// (`.scaledToFit()` auf einem 96×96-Frame).
+        let iconHeight: CGFloat
         let horizontalPadding: CGFloat
         let verticalPadding: CGFloat
-        let cornerRadius: CGFloat
         /// `true` → die Komponente spannt auf die verfügbare Breite (Home).
         /// `false` → sie dimensioniert sich nach Inhalt (Session-Setup-Zeile).
         let expandsWidth: Bool
     }
 }
 
-/// Gemeinsame Zeile für das Session-Setup — Label „Richtung" links +
-/// kompakter Switch rechts. Der Switch ist funktional identisch zur
-/// Home-Instanz (derselbe globale State), nur kleiner gerendert.
+/// Gemeinsame Zeile für das Session-Setup — **nur noch** das Flaggen-Icon,
+/// mittig und **freistehend**. Nach User-Feedback ist der frühere
+/// Card-Hintergrund (`SessionCardBackground`) entfernt: das neue Asset trägt
+/// beide Flaggen + bidirektionale Pfeile in sich und wirkt als eigenständiges
+/// Symbol, nicht als Button-Kachel. Dadurch liest sich die Zeile ruhiger und
+/// gibt den Nachbar-Cards („Ausgewählte Listen" etc.) optisches Gewicht.
 ///
 /// Absichtlich **keine** eigene State-Logik: die Komponente ist reiner
 /// Layout-Wrapper um den `LanguageDirectionSwitch`.
@@ -178,25 +180,15 @@ struct SessionDirectionRow: View {
     var onToggle: (() -> Void)? = nil
 
     var body: some View {
-        HStack(spacing: 12) {
-            Text("Richtung")
-                .font(.system(size: 15, weight: .black, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-
-            Spacer(minLength: 8)
-
-            LanguageDirectionSwitch(size: .compact, onToggle: onToggle)
-        }
-        .padding(.horizontal, 16)
-        // Kompakte Richtungs-Card: vertikales Padding systemweit um 5 pt
-        // reduziert (12 → 7), damit die Zeile nicht wie ein fetter Button,
-        // sondern wie ein schlanker Kontext-Wert neben „Ausgewählte Listen"
-        // wirkt. Gilt auf **allen** Setup-Screens (Karteikarten, Quiz,
-        // Nomen, Artikel, Verben, Verbformen, Vokabeln).
-        .padding(.vertical, 7)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(SessionCardBackground(cornerRadius: 18))
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("Lernrichtung")
+        LanguageDirectionSwitch(size: .compact, onToggle: onToggle)
+            // Zentriert in der verfügbaren Breite — das Asset dimensioniert
+            // sich selbst, kein Card-Wrapper mehr drumherum. Keine eigene
+            // vertikale Padding mehr: der Spacing-Rhythmus zu den
+            // benachbarten Setup-Cards kommt bereits aus dem umgebenden
+            // `VStack(spacing:)`. Zusätzliche 8 pt oben+unten liessen die
+            // Flaggen optisch aus der Zeile „herausfallen".
+            .frame(maxWidth: .infinity, alignment: .center)
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Lernrichtung")
     }
 }

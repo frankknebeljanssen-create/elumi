@@ -6,14 +6,21 @@ enum AppScreen: Hashable {
     case flashcards(FlashcardLaunchContext?)
     case quiz(QuizLaunchContext?)
     case hearts      // Progress Hub (Fortschritt) — reached via Home Board tap
+    case lernstatus  // Lernstatus-Detail (cross-modular per-Vokabel) — reached via HomeLernstatusCard tap
     case gameHub     // Game Hub (Reward + Spiel-Start) — reached via Footer-Snack
     case arcade(autoStart: Bool)  // Das eigentliche Spiel — Start-Overlay oder Direkt-Start
     case lists(ListLaunchContext?)
     case lexicon
     case scan
+    case accents(AccentsLaunchContext?)   // Akzent-Modul (é, è, ê, ç)
     case settings
     case account
     case info
+    /// **Pokal-Tab** (Footer): sammelt die ausführlichen Status-/
+    /// Fortschritts-Cards (Streak, Level/XP, Lernstatus), die früher
+    /// dominant auf Home lagen. Home zeigt nur noch eine kompakte
+    /// Status-Card; Detail-Ansichten leben hier.
+    case trophy
 }
 
 private struct AppOpenAccountActionKey: EnvironmentKey {
@@ -21,6 +28,15 @@ private struct AppOpenAccountActionKey: EnvironmentKey {
 }
 
 private struct AppOpenScanActionKey: EnvironmentKey {
+    static let defaultValue: (() -> Void)? = nil
+}
+
+/// Zentrale Aktion, um den Lexikon-Screen (Wörterbuch-Button im Footer)
+/// zu öffnen. Vorher war der Wörterbuch-Button fälschlich auf
+/// `appOpenScanAction` gefallen, wenn kein expliziter Callback vorlag —
+/// Ergebnis: Tap auf „Wörterbuch" öffnete den Scanner statt das
+/// Lexikon. Dieser eigene Environment-Key räumt das sauber auf.
+private struct AppOpenLexiconActionKey: EnvironmentKey {
     static let defaultValue: (() -> Void)? = nil
 }
 
@@ -56,6 +72,11 @@ extension EnvironmentValues {
     var appOpenScanAction: (() -> Void)? {
         get { self[AppOpenScanActionKey.self] }
         set { self[AppOpenScanActionKey.self] = newValue }
+    }
+
+    var appOpenLexiconAction: (() -> Void)? {
+        get { self[AppOpenLexiconActionKey.self] }
+        set { self[AppOpenLexiconActionKey.self] = newValue }
     }
 
     var appOpenGameHubAction: (() -> Void)? {

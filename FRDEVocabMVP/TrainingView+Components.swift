@@ -88,91 +88,23 @@ extension TrainingView {
         .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
-    var speedRoundToggle: some View {
-        Button {
-            session.isSpeedRound.toggle()
-        } label: {
-            HStack(spacing: 14) {
-                // Icon immer in Modul-Akzentfarbe — konsistent mit dem
-                // Listen-Icon in der „Ausgewählte Listen"-Card darüber.
-                Image(systemName: session.isSpeedRound ? "bolt.circle.fill" : "bolt.circle")
-                    .font(.system(size: 32, weight: .bold))
-                    .foregroundStyle(trainingActionTint)
+    // Ehemaliger `speedRoundToggle` (standalone Card mit bolt-Icon und
+    // Checkmark) wurde durch den systemweiten `drillModeSection`
+    // ersetzt — siehe `TrainingView+Layout.swift`. Speed Round ist jetzt
+    // kein separater Toggle mehr, sondern eine Modus-Option im
+    // [Training] [Speed Round]-Paar der Drill-Module.
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Speed Round")
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                    Text("45 Sekunden")
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                }
-
-                Spacer()
-
-                Image(systemName: session.isSpeedRound ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(session.isSpeedRound ? trainingActionTint : AppTheme.Colors.textDisabled)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 28)
-            .frame(maxWidth: .infinity, minHeight: 100)
-            .appCardBackground(sectionStyle, intensity: session.isSpeedRound ? AppTheme.CardIntensity.bold : AppTheme.CardIntensity.subtle, cornerRadius: AppLayout.largeCardCornerRadius)
-        }
-        .buttonStyle(.plain)
-    }
-
+    /// Speed-Round-Timer-Card. Delegiert an die zentrale
+    /// `SpeedRoundTimerCard` — Legacy-Methode bleibt als thin-wrapper
+    /// erhalten, damit bestehende Call-Sites im Training-Layout nicht
+    /// angetastet werden müssen.
     var speedRoundTimerBar: some View {
-        let isUrgent = session.speedRoundTimeRemaining <= 10
-
-        return VStack(spacing: 8) {
-            HStack(alignment: .firstTextBaseline) {
-                Image(systemName: "bolt.fill")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundStyle(isUrgent ? AppTheme.Colors.error : AppTheme.Colors.warning)
-
-                Text("\(session.speedRoundScore)")
-                    .font(.system(size: 28, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.success)
-                Text("richtig")
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-
-                Spacer()
-
-                Text("\(session.speedRoundTimeRemaining)")
-                    .font(.system(size: 36, weight: .black, design: .rounded))
-                    .foregroundStyle(isUrgent ? AppTheme.Colors.error : AppTheme.Colors.warning)
-                    .monospacedDigit()
-                    .scaleEffect(isUrgent ? 1.1 : 1.0)
-                    .animation(.easeInOut(duration: 0.3), value: session.speedRoundTimeRemaining)
-                Text("s")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-            }
-
-            GeometryReader { geo in
-                let progress = CGFloat(session.speedRoundTimeRemaining) / 45.0
-                ZStack(alignment: .leading) {
-                    Capsule().fill(AppTheme.Colors.textSecondary.opacity(0.2))
-                    Capsule()
-                        .fill(isUrgent ? AppTheme.Colors.error : AppTheme.Colors.warning)
-                        .frame(width: max(0, geo.size.width * progress))
-                        .animation(.linear(duration: 1.0), value: session.speedRoundTimeRemaining)
-                }
-            }
-            .frame(height: 10)
-            .clipShape(Capsule())
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .appCardBackground(sectionStyle, intensity: isUrgent ? AppTheme.CardIntensity.strong : AppTheme.CardIntensity.soft)
-        .overlay(
-            RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                .stroke(isUrgent ? AppTheme.Colors.error.opacity(session.speedRoundTimeRemaining % 2 == 0 ? 0.8 : 0.3) : Color.clear, lineWidth: isUrgent ? 2 : 0)
+        SpeedRoundTimerCard(
+            remainingSeconds: session.speedRoundTimeRemaining,
+            totalSeconds: session.speedRoundTotalSeconds,
+            correctCount: session.speedRoundScore,
+            sectionStyle: sectionStyle
         )
-        .opacity(isUrgent ? (session.speedRoundTimeRemaining % 2 == 0 ? 1.0 : 0.7) : 1.0)
-        .animation(.easeInOut(duration: 0.4), value: session.speedRoundTimeRemaining)
     }
 
     var dictionaryTrainingLevelCard: some View {
@@ -302,10 +234,10 @@ extension TrainingView {
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Speed Round")
-                                .font(.system(size: 21, weight: .bold, design: .rounded))
+                                .font(.system(size: 22, weight: .bold, design: .rounded))
                                 .foregroundStyle(AppTheme.Colors.textPrimary)
                             Text("45 Sek. Contest")
-                                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                .font(.system(size: 13, weight: .semibold, design: .rounded))
                                 .foregroundStyle(AppTheme.Colors.textSecondary)
                         }
 

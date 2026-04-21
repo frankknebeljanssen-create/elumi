@@ -16,37 +16,79 @@ enum QuizQuestionCountOption: Int, CaseIterable, Identifiable {
     }
 }
 
-struct QuizMultipleChoiceQuestion: Identifiable, Hashable {
-    let id = UUID()
+// Codable-Konformität: Alle vier Frage-Typen + `QuizQuestion` können seit
+// Swift 5.5 automatisch Codable sein (auch das Enum mit Associated Values),
+// weil alle Felder Codable-Primitive sind. Damit lassen sich generierte
+// Quizfragen für Session-Resume 1:1 auf die Platte schreiben.
+
+struct QuizMultipleChoiceQuestion: Identifiable, Hashable, Codable {
+    let id: UUID
     let prompt: String
     let correctAnswer: String
     let options: [String]
     let category: String
+
+    init(id: UUID = UUID(), prompt: String, correctAnswer: String, options: [String], category: String) {
+        self.id = id
+        self.prompt = prompt
+        self.correctAnswer = correctAnswer
+        self.options = options
+        self.category = category
+    }
 }
 
-struct QuizTypingQuestion: Identifiable, Hashable {
-    let id = UUID()
+struct QuizTypingQuestion: Identifiable, Hashable, Codable {
+    let id: UUID
     let prompt: String
     let correctAnswer: String
     let category: String
     let promptLanguageCode: String
     let answerLanguageCode: String
+
+    init(
+        id: UUID = UUID(),
+        prompt: String,
+        correctAnswer: String,
+        category: String,
+        promptLanguageCode: String,
+        answerLanguageCode: String
+    ) {
+        self.id = id
+        self.prompt = prompt
+        self.correctAnswer = correctAnswer
+        self.category = category
+        self.promptLanguageCode = promptLanguageCode
+        self.answerLanguageCode = answerLanguageCode
+    }
 }
 
-struct QuizMatchingPair: Identifiable, Hashable {
-    let id = UUID()
+struct QuizMatchingPair: Identifiable, Hashable, Codable {
+    let id: UUID
     let prompt: String
     let answer: String
+
+    init(id: UUID = UUID(), prompt: String, answer: String) {
+        self.id = id
+        self.prompt = prompt
+        self.answer = answer
+    }
 }
 
-struct QuizMatchingQuestion: Identifiable, Hashable {
-    let id = UUID()
+struct QuizMatchingQuestion: Identifiable, Hashable, Codable {
+    let id: UUID
     let pairs: [QuizMatchingPair]
     let shuffledAnswers: [QuizMatchingPair]
     let category: String
     let isWordCombo: Bool
 
-    init(pairs: [QuizMatchingPair], shuffledAnswers: [QuizMatchingPair], category: String, isWordCombo: Bool = false) {
+    init(
+        id: UUID = UUID(),
+        pairs: [QuizMatchingPair],
+        shuffledAnswers: [QuizMatchingPair],
+        category: String,
+        isWordCombo: Bool = false
+    ) {
+        self.id = id
         self.pairs = pairs
         self.shuffledAnswers = shuffledAnswers
         self.category = category
@@ -54,14 +96,32 @@ struct QuizMatchingQuestion: Identifiable, Hashable {
     }
 }
 
-struct QuizFillBlanksQuestion: Identifiable, Hashable {
-    let id = UUID()
+struct QuizFillBlanksQuestion: Identifiable, Hashable, Codable {
+    let id: UUID
     let sentenceWithBlank: String
     let fullSentence: String
     let translationHint: String
     let correctAnswer: String
     let options: [String]
     let category: String
+
+    init(
+        id: UUID = UUID(),
+        sentenceWithBlank: String,
+        fullSentence: String,
+        translationHint: String,
+        correctAnswer: String,
+        options: [String],
+        category: String
+    ) {
+        self.id = id
+        self.sentenceWithBlank = sentenceWithBlank
+        self.fullSentence = fullSentence
+        self.translationHint = translationHint
+        self.correctAnswer = correctAnswer
+        self.options = options
+        self.category = category
+    }
 }
 
 struct QuizPromptFramePreferenceKey: PreferenceKey {
@@ -80,7 +140,7 @@ struct QuizAnswerFramePreferenceKey: PreferenceKey {
     }
 }
 
-enum QuizQuestion: Identifiable, Hashable {
+enum QuizQuestion: Identifiable, Hashable, Codable {
     case multipleChoice(QuizMultipleChoiceQuestion)
     case matching(QuizMatchingQuestion)
     case typing(QuizTypingQuestion)

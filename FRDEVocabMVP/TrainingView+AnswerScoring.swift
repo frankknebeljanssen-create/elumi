@@ -45,7 +45,13 @@ extension TrainingView {
 
     func handleCorrectAnswer() {
         feedbackPlayer.playStudySuccess()
-        session.recordAnswer(correct: true)
+        // firstAttempt: nur wenn die Karte beim ersten Versuch richtig
+        // beantwortet wurde, zählt sie zur laufenden Streak-Serie. Retry-
+        // Corrects brechen die Serie genauso ab wie eine falsche Antwort.
+        session.recordAnswer(
+            correct: true,
+            firstAttempt: session.failedAttemptsOnCurrentCard == 0
+        )
         lastResult = ScoreResult(label: "Richtig 🙂", detail: "")
         scheduleNextCard()
     }

@@ -7,7 +7,16 @@ extension FlashcardsView {
         // findet einmal pro Session statt (Schutz via `sessionRewardConsumed`).
         SessionSummaryView(
             outcome: flashcardSessionOutcome ?? .empty,
-            progress: ProgressStore.shared.progress
+            progress: ProgressStore.shared.progress,
+            primaryCTALabel: "Weiter lernen",
+            onPrimaryCTA: {
+                returnToFlashcardSetup()
+            }
+            // „Zur Startseite"-Secondary-CTA entfernt — das Karteikarten-
+            // Summary wurde damit für kleinere Screens zu lang. Der User
+            // kommt jederzeit über das Home-Icon in der AppBottomBar auf
+            // die Startseite zurück, daher ist der explizite Secondary-
+            // Button hier entbehrlich.
         )
         .onAppear {
             consumeFlashcardSessionReward()

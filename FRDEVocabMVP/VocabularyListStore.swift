@@ -75,6 +75,22 @@ final class VocabularyListStore: ObservableObject {
             loadState()
             print("⏱ [ListStore.init] loadState: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
         }
+
+        // One-shot Dual-Form-Migration (User-Wunsch): bestehende
+        // Custom-Listen-Einträge wie „mon ami/mon amie" oder
+        // „l'école, les écoles" werden einmalig in separate Einträge
+        // aufgesplittet. Geguarded durch UserDefaults-Flag, läuft also
+        // nur einmal pro Installation.
+        //
+        // Darf das `customLists`-didSet-Save triggern — ist okay, die
+        // Migration ist genau der Moment, wo wir das aufgeräumte
+        // Ergebnis persistieren wollen.
+        let didMigrate = VocabularyListDualFormMigration.applyIfNeeded(to: &customLists)
+        #if DEBUG
+        if didMigrate {
+            print("⏱ [ListStore.init] dual-form migration applied; lists updated.")
+        }
+        #endif
         print("⏱ [ListStore.init] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
     }
 

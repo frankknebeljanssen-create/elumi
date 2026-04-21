@@ -3,65 +3,27 @@ import SwiftUI
 extension TrainingView {
     var sessionCard: some View {
         Group {
-            if session.isSpeedRound, session.speedRoundTimeRemaining <= 0, session.hasStartedTraining {
-                let score = session.speedRoundScore
-                let earnedCredits = ArcadeCreditSystem.speedRoundCredits(score: score)
-                let earnedXP = score * 2  // 2 XP per correct answer in speed round
-                VStack(alignment: .center, spacing: 12) {
-                    Text("Zeit abgelaufen!")
-                        .font(.system(size: 22, weight: .black, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.warning)
-                    Text("\(score)")
-                        .font(.system(size: 48, weight: .black, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.success)
-                    Text("richtig")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-
-                    HStack(spacing: 12) {
-                        if earnedXP > 0 {
-                            Text("+\(earnedXP) XP")
-                                .font(.system(size: 14, weight: .bold, design: .rounded))
-                                .foregroundStyle(AppTheme.Colors.success)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 4)
-                                .background(AppTheme.Colors.success.opacity(0.15))
-                                .clipShape(Capsule())
-                        }
-                        if earnedCredits > 0 {
-                            Text("+\(earnedCredits) Credit\(earnedCredits > 1 ? "s" : "")")
-                                .font(.system(size: 14, weight: .bold, design: .rounded))
-                                .foregroundStyle(AppTheme.Colors.warning)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 4)
-                                .background(AppTheme.Colors.warning.opacity(0.15))
-                                .clipShape(Capsule())
-                        }
-                    }
-                }
-                .frame(maxWidth: .infinity, minHeight: sessionCardMinHeight, alignment: .center)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 14)
-                .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium)
-                .onAppear {
-                    if earnedCredits > 0 {
-                        arcadeCredits += earnedCredits
-                    }
-                    // XP + bonus credits from XP milestones
-                    if earnedXP > 0 {
-                        let previousXP = UserDefaults.standard.integer(forKey: appElumiXPKey)
-                        let newXP = previousXP + earnedXP
-                        UserDefaults.standard.set(newXP, forKey: appElumiXPKey)
-                        let xpBonusCredits = ArcadeCreditSystem.bonusCreditsFromXP(previousXP: previousXP, newXP: newXP)
-                        if xpBonusCredits > 0 {
-                            arcadeCredits += xpBonusCredits
-                        }
-                    }
-                }
-            } else if let currentCard, session.hasStartedTraining {
+            // Frühere Inline-„Zeit abgelaufen!"-Card + direkte UserDefaults-
+            // XP/Credits-Vergabe wurde **entfernt**. Der Speed-Round-Timer
+            // setzt jetzt am Ende direkt `trainingSessionOutcome` via
+            // `awardTrainingXPIfNeeded()` → die globale `SessionSummaryView`
+            // übernimmt. Single Source of Truth für Reward: `ProgressService`.
+            // Der frühere Branch war ein Fremdkörper im Summary-Flow und
+            // hat XP doppelt vergeben (einmal inline via UserDefaults,
+            // einmal später via ProgressService beim Back-Aus).
+            if let currentCard, session.hasStartedTraining {
                 VStack(alignment: .center, spacing: 8) {
                     if isVerbMode, let selected = verbMCSelected {
                         let isCorrect = selected.lowercased() == verbCorrectAnswer.lowercased()
+                        Text(isCorrect ? "Richtig 🙂" : "Falsch 😕")
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .foregroundStyle(isCorrect ? AppTheme.Colors.success : Color(red: 0.9, green: 0.3, blue: 0.15))
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    } else if isNounChoiceMode, let selected = nounMCSelected {
+                        // Nomen-Wortauswahl: gleiches Feedback-Label wie
+                        // bei Verben — Richtig/Falsch erscheint sofort oben,
+                        // nicht erst unten in der Response-Card.
+                        let isCorrect = selected.lowercased() == nounCorrectAnswer.lowercased()
                         Text(isCorrect ? "Richtig 🙂" : "Falsch 😕")
                             .font(.system(size: 14, weight: .bold, design: .rounded))
                             .foregroundStyle(isCorrect ? AppTheme.Colors.success : Color(red: 0.9, green: 0.3, blue: 0.15))
@@ -86,7 +48,7 @@ extension TrainingView {
                 .frame(maxWidth: .infinity, minHeight: sessionCardMinHeight, alignment: .center)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
-                .appCardBackground(sectionStyle, intensity: isVerbMode && verbMCSelected != nil ? AppTheme.CardIntensity.strong : AppTheme.CardIntensity.subtle)
+                .appCardBackground(sectionStyle, intensity: (isVerbMode && verbMCSelected != nil) || (isNounChoiceMode && nounMCSelected != nil) ? AppTheme.CardIntensity.strong : AppTheme.CardIntensity.subtle)
             } else {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Keine Karten")
@@ -265,6 +227,60 @@ extension TrainingView {
         if isCorrectPick && option.lowercased() == correct { return AppTheme.Colors.success }
         if !isCorrectPick && option.lowercased() == selected.lowercased() { return Color(red: 0.9, green: 0.3, blue: 0.15) }
         if verbMCLocked { return AppTheme.Colors.secondarySurface }
+        return trainingActionTint
+    }
+
+    // MARK: - Nomen Wortauswahl-Card
+    //
+    // Grid-Variante zur Speech-Alternative. Strukturell identisch zum
+    // `verbMCCard` — `LazyVGrid` mit 2 Spalten, pro Option ein
+    // Tap-Button, Farben kommen aus `nounMCButtonForeground/Background`.
+    // Die Font-Regel (Phrasen kleiner) ist im Nomen-Modul irrelevant (es
+    // gibt keine Phrasen im MC-Pool), bleibt aber analog zum Verb-Card-
+    // Code — billig und robust gegen spätere Änderungen.
+
+    var nounMCCard: some View {
+        VStack(spacing: 8) {
+            let columns = [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)]
+            LazyVGrid(columns: columns, spacing: 8) {
+                ForEach(nounMCOptions, id: \.self) { option in
+                    Button {
+                        submitNounMC(option)
+                    } label: {
+                        Text(option)
+                            .font(.system(size: session.cardType == .phrases ? 12 : 15, weight: .semibold, design: .rounded))
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.6)
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: 48)
+                            .foregroundStyle(nounMCButtonForeground(option))
+                            .background(nounMCButtonBackground(option))
+                            .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(nounMCLocked)
+                }
+            }
+        }
+    }
+
+    func nounMCButtonForeground(_ option: String) -> Color {
+        guard let selected = nounMCSelected else { return .white }
+        let correct = nounCorrectAnswer.lowercased()
+        let isCorrectPick = selected.lowercased() == correct
+        if isCorrectPick && option.lowercased() == correct { return .white }
+        if !isCorrectPick && option.lowercased() == selected.lowercased() { return .white }
+        if nounMCLocked { return AppTheme.Colors.textPrimary.opacity(0.5) }
+        return .white
+    }
+
+    func nounMCButtonBackground(_ option: String) -> Color {
+        guard let selected = nounMCSelected else { return trainingActionTint }
+        let correct = nounCorrectAnswer.lowercased()
+        let isCorrectPick = selected.lowercased() == correct
+        if isCorrectPick && option.lowercased() == correct { return AppTheme.Colors.success }
+        if !isCorrectPick && option.lowercased() == selected.lowercased() { return Color(red: 0.9, green: 0.3, blue: 0.15) }
+        if nounMCLocked { return AppTheme.Colors.secondarySurface }
         return trainingActionTint
     }
 
