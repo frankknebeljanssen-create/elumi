@@ -327,26 +327,25 @@ struct WordRunnerGameView: View {
                     .padding(.horizontal, AppTheme.Spacing.md)
                     .padding(.top, AppTheme.Spacing.sm)
             }
-            // **Listen-Chip (Phase 7.6+)** — oben mittig, zeigt die
-            // aktuell gewählte Vokabelliste mit kleinem Icon. Nur
-            // während `.running` sichtbar (User-Spec „im Spiel oben
-            // gewählte Liste anzeigen mit kleinem Icon"). Top-Padding
-            // 58 pt — identisch zum HUD rechts, sonst säße der Chip
-            // hinter der Notch (ignoresSafeArea oben auf dem Body).
-            .overlay(alignment: .top) {
+            // **Linker HUD-Stack (Phase 7.6+)** — unter dem Close-
+            // Button sitzen Listen-Chip + Collectibles-Chips
+            // vertikal gestapelt. Damit rückt die Info-Hierarchie
+            // klar: Liste oben, Gesammeltes darunter, alles links.
+            .overlay(alignment: .topLeading) {
                 if game.runState.isRunning {
-                    selectedListChip
-                        .padding(.top, 58)
+                    VStack(alignment: .leading, spacing: 8) {
+                        selectedListChip
+                        collectiblesChip
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.md)
+                    .padding(.top, 58)
                 }
             }
-            // HUD oben rechts: Leben + Score + Collectibles. Nur sichtbar
-            // **während** des Runs — in Idle/Summary wäre die Anzeige
-            // irritierend.
-            //
-            // **Top-Padding 58 pt** (User-Wunsch „leben anzeige viel zu
-            // weit oben, sitzt am screen rand, runter"): Die View
-            // ignoriert safe-area, daher müssen wir selbst Luft zur
-            // Notch/Status-Bar geben.
+            // HUD oben rechts: Leben **oben** + Score **darunter**.
+            // Collectibles sind nach links gewandert (s. o.), damit
+            // die rechte Seite klarer nur für die „Elumis"-Anzeige
+            // reserviert bleibt. Nur sichtbar während `.running` oder
+            // `.gameOver`.
             .overlay(alignment: .topTrailing) {
                 if game.runState.isRunning || game.runState.isGameOver {
                     hudPanel
@@ -608,12 +607,12 @@ struct WordRunnerGameView: View {
     /// ist sie klar in der sichtbaren Zone.
     @ViewBuilder
     private var hudPanel: some View {
+        // Phase 7.6+: Collectibles sind in den linken Stack gewandert.
+        // Rechts nur noch Leben (oben) und Score (darunter) — klare
+        // vertikale Ordnung, keine konkurrierenden HStack-Elemente mehr.
         VStack(alignment: .trailing, spacing: 8) {
             livesRow
-            HStack(alignment: .center, spacing: 8) {
-                collectiblesChip
-                scoreChip
-            }
+            scoreChip
         }
     }
 
