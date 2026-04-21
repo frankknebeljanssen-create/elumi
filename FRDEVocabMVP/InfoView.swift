@@ -137,16 +137,11 @@ struct InfoView: View {
                     ]
                 )
 
-                colorInfoCard(
-                    title: "XP & Fortschritt",
-                    icon: "star.fill",
-                    tint: AppTheme.Colors.warning,
-                    lines: [
-                        "Quiz: 5 XP, Training & Karteikarten: 2 XP.",
-                        "Alle 20 XP = 1 Arcade Credit.",
-                        "Lerne regelmäßig für mehr Credits!"
-                    ]
-                )
+                // **Spiele & Fortschritt** — übergeordnete Card, die beide
+                // Spiele (Elumi + Word Runner) unter einer einheitlichen
+                // Logik erklärt. Begriffs-Konsistenz: „XP" + „Spiele",
+                // kein „Credits" / „Tokens" / „Points" mehr (Spec 7.6+).
+                gamesProgressInfoCard
 
 
                 // Credits
@@ -194,6 +189,119 @@ struct InfoView: View {
                 onScan: nil,
                 onSettings: { openSettings() }
             )
+        }
+    }
+
+    // MARK: - Spiele & Fortschritt (Info)
+
+    /// Übergeordnete Info-Card zu den beiden Spielen (Elumi + Word
+    /// Runner). Zeigt die gemeinsame XP-/Spiele-Logik, damit der
+    /// Nutzer versteht, dass alles in einem System lebt.
+    ///
+    /// Texte sind bewusst kurz und ohne Fachbegriffe — Änderungen
+    /// passieren direkt hier, nicht über Localisation-Layer.
+    private var gamesProgressInfoCard: some View {
+        let tint = AppTheme.Colors.warning
+        return VStack(alignment: .leading, spacing: 14) {
+            // Card-Header (analog zu `colorInfoCard`)
+            HStack(spacing: 8) {
+                Image(systemName: "gamecontroller.fill")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(tint)
+                Text("Spiele & Fortschritt")
+                    .font(.system(size: 20, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+            }
+
+            // Abschnitt 1 — Einleitung
+            VStack(alignment: .leading, spacing: 4) {
+                Text("In den Spielen lernst du und sammelst Fortschritt.")
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                Text("Beide Spiele nutzen dasselbe System für XP und Spiele.")
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+
+            gamesProgressSubsection(
+                emoji: "🎮",
+                title: "Spiele",
+                lines: [
+                    "Spiele verdienst du durch Lernen.",
+                    "Du kannst sie im Arcade-Spiel einsetzen.",
+                    "Ein Spiel = ein Versuch im Arcade."
+                ]
+            )
+
+            gamesProgressSubsection(
+                emoji: "⭐",
+                title: "XP",
+                lines: [
+                    "Für richtige Antworten bekommst du XP.",
+                    "XP zeigen deinen Fortschritt.",
+                    "Mit mehr XP steigst du im Level auf."
+                ]
+            )
+
+            gamesProgressSubsection(
+                emoji: "🧠",
+                title: "Wie du Spiele bekommst",
+                lines: [
+                    "Etwa 250 XP ergeben ein Spiel.",
+                    "Zusätzlich kannst du Spiele durch Level oder tägliche Ziele bekommen."
+                ]
+            )
+
+            // Abschnitt 5 — beide Spiele kurz erklärt
+            VStack(alignment: .leading, spacing: 8) {
+                gamesProgressGameLine(title: "Elumi (Arcade)",
+                                      line: "Steuere Elumi, weiche aus und sammle Punkte.")
+                gamesProgressGameLine(title: "Word Runner",
+                                      line: "Laufe durch die Strecke und triff die richtigen Entscheidungen.")
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(AppTheme.Colors.surface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(tint.opacity(0.08))
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(tint.opacity(0.2), lineWidth: 1)
+        )
+    }
+
+    private func gamesProgressSubsection(emoji: String, title: String, lines: [String]) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 6) {
+                Text(emoji)
+                    .font(.system(size: 14))
+                Text(title)
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+            }
+            ForEach(lines, id: \.self) { line in
+                Text(line)
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
+    private func gamesProgressGameLine(title: String, line: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+            Text(line)
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
         }
     }
 
