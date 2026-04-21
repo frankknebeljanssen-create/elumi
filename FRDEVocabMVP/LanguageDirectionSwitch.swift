@@ -135,10 +135,8 @@ struct LanguageDirectionSwitch: View {
             // das visuelle Gewicht der umliegenden Chips, statt als
             // eigene Schwergewichts-Zeile zu wirken.
             return Spec(
-                // Phase 7.6+: Flaggen-Icon verdoppelt (20 → 40 pt),
-                // ohne umliegende Paddings zu ändern (User-Spec
-                // „NICHTS anderes verschieben").
-                iconHeight: 40,
+                // Phase 7.6+: Flaggen-Icon halbiert (40 → 20 pt).
+                iconHeight: 20,
                 horizontalPadding: 16,
                 verticalPadding: 4,
                 expandsWidth: true
@@ -155,12 +153,8 @@ struct LanguageDirectionSwitch: View {
             // Element näher an die Ausgewählte-Listen-Card darüber,
             // ohne seine Lesbarkeit zu verlieren.
             return Spec(
-                // Phase 7.6+: Flaggen-Icon verdoppelt (32 → 64 pt),
-                // Paddings bleiben identisch — der Icon-Frame wird
-                // höher, Nachbar-Cards verschieben sich durch den
-                // VStack-Spacing-Rhythmus, aber kein manuelles
-                // Reposition.
-                iconHeight: 64,
+                // Phase 7.6+: Flaggen-Icon halbiert (64 → 32 pt).
+                iconHeight: 32,
                 horizontalPadding: 12,
                 verticalPadding: 2,
                 expandsWidth: false
