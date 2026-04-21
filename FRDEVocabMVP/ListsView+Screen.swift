@@ -9,7 +9,8 @@ extension ListsView {
                 subtitle: "",
                 systemImage: nil, // kein Icon rechts — klassischer Nav-Bar-Look
                 onBack: { dismiss() },
-                centeredTitle: true
+                centeredTitle: true,
+                leadingModuleIcon: .listen
             )
 
             allListsCard

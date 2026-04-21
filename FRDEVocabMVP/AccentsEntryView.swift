@@ -238,7 +238,8 @@ struct AccentsEntryView: View {
                         subtitle: "",
                         systemImage: nil,
                         onBack: { goHome() },
-                        centeredTitle: true
+                        centeredTitle: true,
+                        leadingModuleIcon: .akzente
                     )
 
                     listSelectorCard

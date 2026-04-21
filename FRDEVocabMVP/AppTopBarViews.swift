@@ -25,6 +25,13 @@ struct ScreenHeaderCard: View {
     /// Nav-Bar-Look). Rechts wird bei fehlendem Icon ein unsichtbarer
     /// 34×34-Platzhalter gezeichnet, damit der Titel exakt mittig sitzt.
     var centeredTitle: Bool = false
+    /// Optionales **Modul-Icon** (Home-Style, kartoon-SVG), das zwischen
+    /// Back-Button und Titel sitzt. Wenn gesetzt, bekommt der Screen
+    /// die gleiche Icon-Identität wie seine zugehörige Home-Card —
+    /// konsistenter Übergang Home → Modul (Phase 7.6+ „Farb-System").
+    /// Asset selbst bringt seine Farbe mit; wir zeichnen es in einer
+    /// quadratischen 30×30-Bounding-Box.
+    var leadingModuleIcon: HomeModuleIcon? = nil
 
     private var titleParts: [String] {
         subtitle.isEmpty ? [title] : [title, subtitle]
@@ -75,14 +82,24 @@ struct ScreenHeaderCard: View {
 
     @ViewBuilder
     private var leadingSlot: some View {
-        if let onBack {
-            // Systemweiter Back-Button — nackter Pfeil, kein Rahmen.
-            AppBackButton(action: onBack)
-        } else if centeredTitle {
-            // Symmetric placeholder, damit der Titel bei fehlendem
-            // Back-Button trotzdem sauber mittig sitzt. 44 pt = Breite
-            // des AppBackButton-Touch-Targets.
-            Color.clear.frame(width: 44, height: 44)
+        HStack(spacing: 6) {
+            if let onBack {
+                // Systemweiter Back-Button — nackter Pfeil, kein Rahmen.
+                AppBackButton(action: onBack)
+            } else if centeredTitle {
+                // Symmetric placeholder, damit der Titel bei fehlendem
+                // Back-Button trotzdem sauber mittig sitzt. 44 pt = Breite
+                // des AppBackButton-Touch-Targets.
+                Color.clear.frame(width: 44, height: 44)
+            }
+
+            // Modul-Icon (Phase 7.6+): wenn gesetzt, sitzt es direkt
+            // neben dem Back-Button — identische Optik wie auf der
+            // Home-Card, damit der Übergang Home → Modul visuell
+            // geschlossen wirkt.
+            if let moduleIcon = leadingModuleIcon {
+                HomeModuleIconView(icon: moduleIcon, size: 30)
+            }
         }
     }
 
