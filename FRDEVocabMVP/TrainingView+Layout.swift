@@ -273,6 +273,18 @@ extension TrainingView {
         let ctaTitle: String = isVocabMode ? "Vokabeltraining starten" : "Los geht's!"
         let ctaSubtitle: String? = nil
 
+        // Modul-Icon dynamisch per `trainingMode` — jeder Modus hat
+        // seine eigene Home-Identität (Phase 7.6+).
+        let moduleIconForMode: HomeModuleIcon = {
+            switch session.trainingMode {
+            case .vocabulary: return .vokabeln
+            case .nouns:      return .nomen
+            case .articles:   return .artikel
+            case .verbs:      return .verben
+            case .verbforms:  return .verbformen
+            }
+        }()
+
         return SessionSetupScreen(
             title: sessionHeaderTitle,
             accent: trainingActionTint,
@@ -281,6 +293,7 @@ extension TrainingView {
             primarySubtitle: ctaSubtitle,
             isPrimaryEnabled: isVerbformsMode ? verbformsCanStart : canStartTraining,
             showsGamificationBar: !isVocabMode,
+            moduleIcon: moduleIconForMode,
             onBack: { dismiss() },
             onStart: {
                 if isVerbformsMode {

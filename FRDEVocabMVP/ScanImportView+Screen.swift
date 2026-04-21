@@ -532,6 +532,15 @@ extension ScanImportView {
     func scanRootContent(proxy: ScrollViewProxy) -> some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: AppTheme.Spacing.sm) {
+                // **Modul-Header-Card** (Phase 7.6+): farbige Identitäts-
+                // Card oben im Body — visueller Wiedererkennungsanker
+                // zum Home-Tap auf „Scan".
+                ModuleHeaderCard(
+                    icon: .scan,
+                    title: "Scan",
+                    accent: sectionStyle.accent
+                )
+
                 if hasActiveScanDraft {
                     Button {
                         returnToScanSetup()

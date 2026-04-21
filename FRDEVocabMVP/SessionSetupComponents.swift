@@ -72,34 +72,50 @@ struct SessionSetupHeader: View {
     let title: String
     let accent: Color
     let onBack: () -> Void
+    /// Optionales Modul-Icon (Phase 7.6+). Wenn gesetzt, rendert der
+    /// Header eine farbige `ModuleHeaderCard` (wie die Home-Cards) und
+    /// den Back-Button darüber — visuelle Klammer Home → Modul.
+    /// Ohne Icon bleibt der klassische zentrierte Text-Header erhalten
+    /// (z.\u{00A0}B. für Screens ohne Home-Pendant).
+    let moduleIcon: HomeModuleIcon?
 
-    init(title: String, accent: Color = AppTheme.Colors.primary, onBack: @escaping () -> Void) {
+    init(
+        title: String,
+        accent: Color = AppTheme.Colors.primary,
+        onBack: @escaping () -> Void,
+        moduleIcon: HomeModuleIcon? = nil
+    ) {
         self.title = title
         self.accent = accent
         self.onBack = onBack
+        self.moduleIcon = moduleIcon
     }
 
     var body: some View {
-        ZStack {
-            Text(title)
-                .font(.system(size: 28, weight: .black, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-                .frame(maxWidth: .infinity, alignment: .center)
-
+        VStack(spacing: 8) {
             HStack {
-                // Systemweiter Back-Button — „Zurück"-Text entfernt,
-                // einheitlicher nackter Pfeil. `tint` in Modul-Akzent
-                // erlaubt, damit der Setup-Header seine Akzent-Sprache
-                // behält.
                 AppBackButton(action: onBack, tint: accent)
-
                 Spacer()
+            }
+
+            if let moduleIcon {
+                // Modul-Header-Card — farbige Identitäts-Card mit Icon
+                // links + Titel. Gleiche Optik wie die Home-Hero-Cards.
+                ModuleHeaderCard(
+                    icon: moduleIcon,
+                    title: title,
+                    accent: accent
+                )
+            } else {
+                // Fallback: klassischer zentrierter Text-Header.
+                Text(title)
+                    .font(.system(size: 28, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .frame(maxWidth: .infinity, alignment: .center)
             }
         }
         .padding(.horizontal, 16)
         .padding(.top, 4)
-        // Systemweites Bottom-Padding — identisch zu allen anderen
-        // Headern in der App.
         .padding(.bottom, AppLayout.screenHeaderBottomPadding)
     }
 }

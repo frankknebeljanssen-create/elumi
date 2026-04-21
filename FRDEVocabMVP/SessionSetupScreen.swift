@@ -48,6 +48,10 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
     var showsGamificationBar: Bool = true
     let onBack: () -> Void
     let onStart: () -> Void
+    /// Optionales Modul-Icon (Phase 7.6+), rendert den Header als
+    /// farbige `ModuleHeaderCard`. Kompatibel zu bestehenden Aufrufen —
+    /// Default `nil` lässt alles beim Standard-Text-Header.
+    var moduleIcon: HomeModuleIcon? = nil
     @ViewBuilder let contextContent: () -> ContextContent
     @ViewBuilder let optionsContent: () -> OptionsContent
 
@@ -62,6 +66,7 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
         isPrimaryEnabled: Bool = true,
         showsDirection: Bool = true,
         showsGamificationBar: Bool = true,
+        moduleIcon: HomeModuleIcon? = nil,
         onBack: @escaping () -> Void,
         onStart: @escaping () -> Void,
         @ViewBuilder contextContent: @escaping () -> ContextContent,
@@ -75,6 +80,7 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
         self.isPrimaryEnabled = isPrimaryEnabled
         self.showsDirection = showsDirection
         self.showsGamificationBar = showsGamificationBar
+        self.moduleIcon = moduleIcon
         self.onBack = onBack
         self.onStart = onStart
         self.contextContent = contextContent
@@ -83,7 +89,12 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SessionSetupHeader(title: title, accent: accent, onBack: onBack)
+            SessionSetupHeader(
+                title: title,
+                accent: accent,
+                onBack: onBack,
+                moduleIcon: moduleIcon
+            )
 
             ScrollView(showsIndicators: false) {
                 // Spacing = `sessionContextToDirectionSpacing` — verbindlich
@@ -141,6 +152,7 @@ extension SessionSetupScreen where ContextContent == SessionContextCard {
         primaryButtonTitle: String,
         isPrimaryEnabled: Bool = true,
         showsDirection: Bool = true,
+        moduleIcon: HomeModuleIcon? = nil,
         onBack: @escaping () -> Void,
         onEditContext: @escaping () -> Void,
         onStart: @escaping () -> Void,
@@ -153,6 +165,7 @@ extension SessionSetupScreen where ContextContent == SessionContextCard {
             primaryButtonTitle: primaryButtonTitle,
             isPrimaryEnabled: isPrimaryEnabled,
             showsDirection: showsDirection,
+            moduleIcon: moduleIcon,
             onBack: onBack,
             onStart: onStart,
             contextContent: { SessionContextCard(data: context, onEditTapped: onEditContext) },

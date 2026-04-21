@@ -51,17 +51,39 @@ extension FlashcardsView {
     /// links der kleine „< Zurück"-Button, daneben „Karteikarten" als zentrierter
     /// Titel. Ersetzt die alte `ScreenHeaderCard` + den großen „Zurück"-Button.
     /// `onBack` ist die jeweilige Aktion (Session → Setup; Setup → Home).
-    func flashcardCompactHeader(onBack: @escaping () -> Void) -> some View {
-        ZStack {
-            Text("Karteikarten")
-                .font(.system(size: 28, weight: .black, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-                .frame(maxWidth: .infinity, alignment: .center)
-
+    /// `showsModuleCard`: wenn `true`, rendert der Header zusätzlich eine
+    /// farbige `ModuleHeaderCard` mit Icon — für Setup-Screens (visuelle
+    /// Klammer Home → Modul). Während der aktiven Session bleibt der
+    /// Header kompakt (Text-only), damit der Lerninhalt dominiert.
+    func flashcardCompactHeader(
+        onBack: @escaping () -> Void,
+        showsModuleCard: Bool = false
+    ) -> some View {
+        VStack(spacing: 8) {
             HStack {
                 AppBackButton(action: onBack, tint: sectionStyle.accent)
-
                 Spacer()
+                if !showsModuleCard {
+                    // Platzhalter: klassisches zentriertes Layout — Titel
+                    // sitzt mittig über dem Back-Offset.
+                    Color.clear.frame(width: 44, height: 44)
+                }
+            }
+            .overlay(alignment: .center) {
+                // Kompakter Text-Titel nur im Session-Modus.
+                if !showsModuleCard {
+                    Text("Karteikarten")
+                        .font(.system(size: 28, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                }
+            }
+
+            if showsModuleCard {
+                ModuleHeaderCard(
+                    icon: .karteikarten,
+                    title: "Karteikarten",
+                    accent: sectionStyle.accent
+                )
             }
         }
         .padding(.horizontal, flashcardSessionCardInset)
@@ -71,14 +93,18 @@ extension FlashcardsView {
 
     /// Header für die laufende Karteikarten-Übung — Zurück führt zur
     /// Listen-Auswahl-/Setup-Card (nicht ganz raus zu Home).
+    /// Bleibt bewusst **ohne** ModuleHeaderCard: während aktiver Session
+    /// soll der Lerninhalt maximal Platz haben.
     var flashcardSessionHeader: some View {
-        flashcardCompactHeader(onBack: returnToFlashcardSetup)
+        flashcardCompactHeader(onBack: returnToFlashcardSetup, showsModuleCard: false)
     }
 
     /// Header für den Karteikarten-Setup-Screen — Zurück verlässt die
     /// Karteikarten-View komplett (zurück zur vorherigen Navigationsebene).
+    /// Zeigt die farbige `ModuleHeaderCard` → visueller Wiedererkennungs-
+    /// anker zum Home-Tap.
     var flashcardSetupHeader: some View {
-        flashcardCompactHeader(onBack: handleBackNavigation)
+        flashcardCompactHeader(onBack: handleBackNavigation, showsModuleCard: true)
     }
 
     /// Drei-Spalten-Statistik oben im Session-Screen — ersetzt den alten

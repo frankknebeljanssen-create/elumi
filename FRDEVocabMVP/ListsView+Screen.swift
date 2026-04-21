@@ -3,14 +3,10 @@ import SwiftUI
 extension ListsView {
     var listsPrimaryContent: some View {
         VStack(spacing: 14) {
-            ScreenHeaderCard(
-                style: sectionStyle,
+            ModuleHeaderCard(
+                icon: .listen,
                 title: "Listen verwalten",
-                subtitle: "",
-                systemImage: nil, // kein Icon rechts — klassischer Nav-Bar-Look
-                onBack: { dismiss() },
-                centeredTitle: true,
-                leadingModuleIcon: .listen
+                accent: sectionStyle.accent
             )
 
             allListsCard

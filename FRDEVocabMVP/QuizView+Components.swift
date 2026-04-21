@@ -34,6 +34,7 @@ var quizSetupScreen: some View {
         estimate: quizSessionEstimate,
         primaryButtonTitle: session.isPreparingQuiz ? "Quiz wird gestartet …" : "Quiz starten",
         isPrimaryEnabled: canStartQuiz && !session.isPreparingQuiz,
+        moduleIcon: .quiz,
         onBack: { handleBackNavigation() },
         onStart: { startQuiz() },
         contextContent: {
