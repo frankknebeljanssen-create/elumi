@@ -330,11 +330,13 @@ struct WordRunnerGameView: View {
             // **Listen-Chip (Phase 7.6+)** — oben mittig, zeigt die
             // aktuell gewählte Vokabelliste mit kleinem Icon. Nur
             // während `.running` sichtbar (User-Spec „im Spiel oben
-            // gewählte Liste anzeigen mit kleinem Icon").
+            // gewählte Liste anzeigen mit kleinem Icon"). Top-Padding
+            // 58 pt — identisch zum HUD rechts, sonst säße der Chip
+            // hinter der Notch (ignoresSafeArea oben auf dem Body).
             .overlay(alignment: .top) {
                 if game.runState.isRunning {
                     selectedListChip
-                        .padding(.top, 14)
+                        .padding(.top, 58)
                 }
             }
             // HUD oben rechts: Leben + Score + Collectibles. Nur sichtbar

@@ -230,17 +230,21 @@ extension ElumiArcadeGameView {
         guard !elumiVisible else { return }
 
         // **Hard-Reset von Welt-State** (User-Report „beim Start kommen
-        // manchmal 100 Items auf einmal runter, vor allem beim Wechsel
-        // zwischen Elumi und Word Runner"): das View-State wird zwar
-        // bei `endGame()` / `exitArcadeSilently()` geleert, aber wenn
-        // das Cover ohne einen dieser Pfade geschlossen wird (z.\u{00A0}B.
-        // System-Swipe-Back / iOS-Schnelltaste / State-Restore), bleiben
-        // `activeSnacks` + Power-Up-Timer gesetzt. Der nächste Start
-        // rendert sie dann alle auf einmal.
+        // manchmal 50–100 Items auf einmal runter, vor allem beim
+        // Wechsel zwischen Elumi und Word Runner"):
         //
-        // Die hier gelisteten State-Keys sind identisch zu denen in
-        // `endGame()` — wir setzen sie bewusst nochmal zurück, damit
-        // der Start garantiert von Null anfängt.
+        //   1. Ursprungs-Snack-Reset: `activeSnacks` + Power-Ups
+        //      (Phase 7.6 – Commit 52285b6).
+        //   2. **Zusätzlich** (dieser Patch): `gameClock` / `lastFrameDate`
+        //      zurücksetzen. Sonst läuft die Game-Uhr weiter, während
+        //      der User in Word Runner unterwegs ist — beim Rückkehr
+        //      glaubt der Spawner, es seien 30+ Sekunden vergangen und
+        //      rendert den kumulierten Spawn-Plan auf einmal ab.
+        //   3. Runden-/Combo-Counter (`round`, `roundCatchCount`,
+        //      `comboCount`, `totalCaught`, `bestCombo`, `lastCatchDate`)
+        //      ebenfalls mit aufsetzen — ein stehen gelassener
+        //      `roundCatchCount` triggert sonst den Runden-Abschluss
+        //      beim ersten Snack.
         activeSnacks = []
         activeJellyfish = nil
         activeTentacles = []
@@ -255,6 +259,34 @@ extension ElumiArcadeGameView {
         arcadeSFX?.reset()
         powerUpSpawnGate.reset()
         powerUpRuntime.hardReset()
+        // Zeit-State neu synchronisieren, damit der Spawner ohne
+        // Zeit-Sprung bei 0 s startet.
+        gameClock = Date()
+        lastFrameDate = nil
+        // Runden- + Catch-State — Sonst trägt ein stehen gelassener
+        // `roundCatchCount` den Fortschritt der vorherigen Session mit.
+        round = 1
+        roundCatchCount = 0
+        roundSuctionSpawned = false
+        showingRoundBanner = false
+        roundBannerPhase = 0
+        readyBlinkVisible = true
+        comboCount = 0
+        totalCaught = 0
+        bestCombo = 0
+        lastCatchDate = nil
+        comboBannerText = nil
+        // Score/Misses zurücksetzen, falls der Re-Start ohne Game-Over
+        // passiert (z.\u{00A0}B. Dismiss + Re-Open ohne endGame-Pfad).
+        score = 0
+        misses = 0
+        // Bonus-Runden-State ebenfalls leeren.
+        isBonusRound = false
+        bonusFishCaught = 0
+        bonusFishSpawned = 0
+        bonusRoundStartedAt = nil
+        bonusRoundResultText = nil
+        bonusRoundWaitingForTap = false
 
         feedbackPlayer.playLaunch()
         showingStartOverlay = false
