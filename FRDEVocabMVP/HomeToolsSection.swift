@@ -64,13 +64,10 @@ private struct ToolCard: View {
                     glyphTint: accent
                 )
                 Text(title)
-                    // Scannen +1pt (User-Wunsch) — auf 18, Listen
-                    // bleibt 17 als Vergleichsanker.
-                    .font(.system(
-                        size: title == "Scannen" ? 18 : 17,
-                        weight: .black,
-                        design: .rounded
-                    ))
+                    // Beide Tool-Labels gleich groß (Scannen 18 → 17,
+                    // Listen bleibt 17). Vereinheitlicht den
+                    // Typografie-Rhythmus der Tools-Sektion.
+                    .font(.system(size: 17, weight: .black, design: .rounded))
                     // Weiß mit Drop-Shadow → Lesbarkeit auf Accent-BG.
                     .foregroundStyle(.white)
                     .shadow(color: .black.opacity(0.4), radius: 1, x: 0, y: 1)

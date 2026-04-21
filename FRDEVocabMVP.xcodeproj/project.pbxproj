@@ -26,7 +26,6 @@
 		44D622B2824546FFBDFF7083 /* Sounds/elumi_powerupspawn.wav in Resources */ = {isa = PBXBuildFile; fileRef = 550C14FD7EDE4E0C8426E5C0 /* Sounds/elumi_powerupspawn.wav */; };
 		495F17EE7BAD4C4E9518D9CE /* Sounds/elumi_jellyfish_appear.wav in Resources */ = {isa = PBXBuildFile; fileRef = 997E13571F014504A8CCFE9C /* Sounds/elumi_jellyfish_appear.wav */; };
 		4A2F5E28015042B8897FAD67 /* Sounds/elumi_stackcomplete.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3CC12181E32D4557B70AA0CF /* Sounds/elumi_stackcomplete.wav */; };
-		4C49B8DF9320038C9966EF64 /* HomeProgressBoardCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE477CD1315E437F15BA91BD /* HomeProgressBoardCard.swift */; };
 		4FC0AFE2020E42DF8ADBDC59 /* VariableRewardEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 765EA90FF65349C1ADBD8D70 /* VariableRewardEngine.swift */; };
 		50F57B704E604DE98AD4FA51 /* Sounds/elumi_quizcomplete.wav in Resources */ = {isa = PBXBuildFile; fileRef = 21594A50F0B744E68ED245F2 /* Sounds/elumi_quizcomplete.wav */; };
 		535BC11A38424C789F12B637 /* Sounds/elumi_saugend.wav in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDD993CDA84C048277CCF7 /* Sounds/elumi_saugend.wav */; };
@@ -384,7 +383,6 @@
 		A00000000000000000000766 /* FlashcardsSessionController+AnswerFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000767 /* FlashcardsSessionController+AnswerFlow.swift */; };
 		A00000000000000000000768 /* FlashcardsView+PromptResponseComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000769 /* FlashcardsView+PromptResponseComponents.swift */; };
 		A00000000000000000000770 /* FlashcardsView+InputActionComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000771 /* FlashcardsView+InputActionComponents.swift */; };
-		A1B2C3D4E5F60708090A0B01 /* HomeStatusCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0B02 /* HomeStatusCard.swift */; };
 		A1B2C3D4E5F60708090A0C01 /* DailyStatsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */; };
 		A1B2C3D4E5F60708090A0E02 /* ItemLearningStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0E01 /* ItemLearningStatus.swift */; };
 		A1B2C3D4E5F60708090A0E04 /* ItemLearningStatusStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0E03 /* ItemLearningStatusStore.swift */; };
@@ -909,7 +907,6 @@
 		A00000000000000000000767 /* FlashcardsSessionController+AnswerFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsSessionController+AnswerFlow.swift"; sourceTree = "<group>"; };
 		A00000000000000000000769 /* FlashcardsView+PromptResponseComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsView+PromptResponseComponents.swift"; sourceTree = "<group>"; };
 		A00000000000000000000771 /* FlashcardsView+InputActionComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsView+InputActionComponents.swift"; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708090A0B02 /* HomeStatusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeStatusCard.swift; path = FRDEVocabMVP/HomeStatusCard.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyStatsStore.swift; path = FRDEVocabMVP/DailyStatsStore.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0E01 /* ItemLearningStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatus.swift; path = FRDEVocabMVP/ItemLearningStatus.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0E03 /* ItemLearningStatusStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatusStore.swift; path = FRDEVocabMVP/ItemLearningStatusStore.swift; sourceTree = "<group>"; };
@@ -974,7 +971,6 @@
 		D7E48C7D56DE47BA8A612FB2 /* HomeDailyFocusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeDailyFocusCard.swift; path = FRDEVocabMVP/HomeDailyFocusCard.swift; sourceTree = "<group>"; };
 		DADBA6D5B4FF4413839CBF0D /* Sounds/elumi_shieldactivate.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_shieldactivate.wav; sourceTree = "<group>"; };
 		DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = FRDEMasterLexicon.sqlite; sourceTree = "<group>"; };
-		DE477CD1315E437F15BA91BD /* HomeProgressBoardCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeProgressBoardCard.swift; path = FRDEVocabMVP/HomeProgressBoardCard.swift; sourceTree = "<group>"; };
 		ED6E2620B526439EA130ADE9 /* Sounds/elumi_jellyfish_ambient.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_jellyfish_ambient.wav; sourceTree = "<group>"; };
 		F1C01A111A111A111A111111 /* GamificationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamificationConfig.swift; sourceTree = "<group>"; };
 		F244E2378E0C4DF89CC561E1 /* ProgressHubComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProgressHubComponents.swift; path = FRDEVocabMVP/ProgressHubComponents.swift; sourceTree = "<group>"; };
@@ -1066,9 +1062,7 @@
 				3C6021AB9E4ED9043B2F3F7F /* LanguageDirectionSwitch.swift */,
 				6FEDD84AF0BD7AE57209A819 /* HomeHeader.swift */,
 				D7E48C7D56DE47BA8A612FB2 /* HomeDailyFocusCard.swift */,
-				A1B2C3D4E5F60708090A0B02 /* HomeStatusCard.swift */,
 				A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */,
-				DE477CD1315E437F15BA91BD /* HomeProgressBoardCard.swift */,
 				A1B2C3D4E5F60708090A0E01 /* ItemLearningStatus.swift */,
 				A1B2C3D4E5F60708090A0E03 /* ItemLearningStatusStore.swift */,
 				A1B2C3D4E5F60708090A0E05 /* ItemLearningStatusRecorder.swift */,
@@ -1956,9 +1950,7 @@
 				D8F389FE7E57642F1343E575 /* LanguageDirectionSwitch.swift in Sources */,
 				A5E02C81EAD95B48BD32C1C4 /* HomeHeader.swift in Sources */,
 				F430601DADA83D05822596D0 /* HomeDailyFocusCard.swift in Sources */,
-				A1B2C3D4E5F60708090A0B01 /* HomeStatusCard.swift in Sources */,
 				A1B2C3D4E5F60708090A0C01 /* DailyStatsStore.swift in Sources */,
-				4C49B8DF9320038C9966EF64 /* HomeProgressBoardCard.swift in Sources */,
 				A1B2C3D4E5F60708090A0E02 /* ItemLearningStatus.swift in Sources */,
 				A1B2C3D4E5F60708090A0E04 /* ItemLearningStatusStore.swift in Sources */,
 				A1B2C3D4E5F60708090A0E06 /* ItemLearningStatusRecorder.swift in Sources */,

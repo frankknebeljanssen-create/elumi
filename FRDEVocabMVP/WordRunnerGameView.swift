@@ -383,6 +383,15 @@ struct WordRunnerGameView: View {
         Color.clear
             .contentShape(Rectangle())
             .gesture(dragGesture(width: size.width))
+            // **Hit-Testing nur im Running-State.** Sonst fängt der
+            // screen-füllende Layer im Idle/GameOver/Summary-State alle
+            // Taps ab — inklusive Close-Button (X oben links) und der
+            // dedizierten CTAs im State-Overlay. Der Idle-Tap-to-Start
+            // ist redundant (der explizite „Spiel starten"-Button liegt
+            // im idleStartScreen darüber), und GameOver/Summary haben
+            // eigene Buttons. Außerhalb von `.running` hat der Gesture-
+            // Layer also kein legitimes Ziel.
+            .allowsHitTesting(game.runState.isRunning)
     }
 
     /// Eine einzige Geste übernimmt beides:
