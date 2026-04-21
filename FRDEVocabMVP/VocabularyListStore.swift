@@ -35,9 +35,35 @@ final class VocabularyListStore: ObservableObject {
     let customListsKey = "FRDEVocabMVP.customLists.v2"
     let selectedListKey = "FRDEVocabMVP.selectedListID.v2"
     let sampleListsSeededKey = "FRDEVocabMVP.sampleListsSeeded.v1"
-    private let builtInListStorage: VocabularyList
-    private let builtInWordsCountStorage: Int
-    private let builtInPhrasesCountStorage: Int
+
+    // **Lazy-Materialisierung** (Start-Performance): die 57k Built-in-
+    // Einträge werden NICHT mehr im Init aufgebaut — das hat den First-
+    // Frame vorher um ~195 ms blockiert. Stattdessen:
+    //   • `DataStore.prewarmBuiltInLaunchData()` läuft im `listWarmupTask`
+    //     detached und populiert die statische `DataStore.builtInVocabularyItems`.
+    //   • Die drei `lazy var`-Properties unten kapseln List-Wrap +
+    //     Filter; sie initialisieren on-demand (erste Modul-Öffnung)
+    //     und treffen dank BG-Prewarm auf einen bereits materialisierten
+    //     `DataStore`-Cache — die Kosten in der lazy-Init sind dann nur
+    //     noch VocabularyList-Struct + zwei Filter (~15-20 ms zusammen).
+    //   • Solange der User auf Home bleibt, wird keine dieser Properties
+    //     berührt, die Items-Liste bleibt komplett off-main.
+    private lazy var builtInListStorage: VocabularyList = {
+        let items = DataStore.builtInVocabularyItems
+        return VocabularyList(
+            id: Self.builtInListID,
+            name: "Standardpaket",
+            items: items,
+            isBuiltIn: true
+        )
+    }()
+    private lazy var builtInWordsCountStorage: Int = {
+        builtInListStorage.items.filter { $0.cardType == .words }.count
+    }()
+    private lazy var builtInPhrasesCountStorage: Int = {
+        builtInListStorage.items.filter { $0.cardType == .phrases }.count
+    }()
+
     let repository: VocabularyListStoreRepository
     var isApplyingStoredState = false
     var sortedCustomListsStorage: [VocabularyList] = []
@@ -51,23 +77,7 @@ final class VocabularyListStore: ObservableObject {
         let totalStart = CFAbsoluteTimeGetCurrent()
         self.repository = repository
 
-        var start = CFAbsoluteTimeGetCurrent()
-        let items = DataStore.builtInVocabularyItems
-        print("⏱ [ListStore.init] builtInVocabularyItems: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms (\(items.count) items)")
-
-        start = CFAbsoluteTimeGetCurrent()
-        let builtInList = VocabularyList(
-            id: Self.builtInListID,
-            name: "Standardpaket",
-            items: items,
-            isBuiltIn: true
-        )
-        self.builtInListStorage = builtInList
-        self.builtInWordsCountStorage = builtInList.items.filter { $0.cardType == .words }.count
-        self.builtInPhrasesCountStorage = builtInList.items.filter { $0.cardType == .phrases }.count
-        print("⏱ [ListStore.init] builtInList+filters: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
-
-        start = CFAbsoluteTimeGetCurrent()
+        let start = CFAbsoluteTimeGetCurrent()
         if let snapshot {
             apply(snapshot: snapshot)
             print("⏱ [ListStore.init] apply(snapshot): \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")

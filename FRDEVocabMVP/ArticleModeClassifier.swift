@@ -480,9 +480,17 @@ enum ArticleModeClassifier {
 
     /// Prüft ob `core` mit einem Vokal oder `h` beginnt. Alles in einer
     /// Funktion, damit die Elision-Regel an genau einer Stelle lebt.
+    ///
+    /// **Mehrwort-Kerne**: bei „mon meilleur ami" soll das Kernwort (das
+    /// letzte Nomen „ami") betrachtet werden — nicht das eingeschobene
+    /// Adjektiv „meilleur". Wir nehmen daher das **letzte** Token, wenn
+    /// der Kern aus mehreren Wörtern besteht. Für Einwort-Kerne ändert
+    /// sich nichts.
     private static func startsWithVowelOrHMuet(_ core: String) -> Bool {
-        let lower = core.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        guard let first = lower.first else { return false }
+        let trimmed = core.trimmingCharacters(in: .whitespacesAndNewlines)
+        let tokens = trimmed.split(whereSeparator: { $0.isWhitespace })
+        let relevant = (tokens.last.map(String.init) ?? trimmed).lowercased()
+        guard let first = relevant.first else { return false }
         return vowelOrHMuetStarters.contains(first)
     }
 
@@ -547,6 +555,28 @@ enum ArticleModeClassifier {
         // zu Priorität 0 in den meisten Fällen, bleibt als Safety-Net).
         if leadingSignal == .articlePlural { return .pluriel }
 
+        // ─── Priorität 1.5: Flexions-basierte Plural-Erkennung ──────
+        // MUSS vor der `frenchGender`-Abfrage laufen: wenn das Lexikon
+        // „amis" sowohl als eigenen Eintrag (mit maskulinem Genus-
+        // Marker) ALS AUCH als Flexion von „ami" kennt, würde der
+        // Volltext-Pfad „masculin Singular" melden — korrekt ist
+        // aber „pluriel". `inflectionLemma(for:)` umgeht den Volltext-
+        // Vorrang und gibt uns den Flexions-Hinweis direkt.
+        if let pluriel = detectPluralViaInflection(core: core) {
+            return pluriel
+        }
+
+        // ─── Priorität 1.7: Suffix-Heuristik Plural ─────────────────
+        // Läuft ebenfalls VOR `frenchGender`, weil der DB-Genus-Marker
+        // Singular und Plural im Maskulinum nicht unterscheidet —
+        // „hommes" und „homme" tragen beide „m". Erkennung über
+        // Endung + DB-verifizierten Singular-Stamm; bekannte Ausnahmen
+        // (z.\u{00A0}B. „fils", „temps") sind hardcoded ausgeschlossen.
+        if leadingSignal != .articleSingular,
+           let heurPlural = detectPluralByHeuristic(core: core) {
+            return heurPlural
+        }
+
         // ─── Priorität 2: Master-Lexikon (StandardVocabularyLoader) ──
         // Direkter Treffer aus `frenchGenderMap` (Cache, O(1)). Dieses
         // Signal kommt aus der kuratierten SQLite-DB — deshalb vor
@@ -558,17 +588,6 @@ enum ArticleModeClassifier {
             case "p", "plural":     return .pluriel
             default: break
             }
-        }
-
-        // ─── Priorität 3: Konservative Plural-Erkennung ──────────────
-        // Wort endet auf s/x (typische Pluralendungen im Französischen)
-        // UND das Singular-Pendant (ohne s/x) steht im Master-Lexikon
-        // als m. oder f. Verlangt beides, damit nicht Einzeiler wie
-        // „fils" (masc. Sing. mit Endung -s) fälschlich als Plural
-        // klassifiziert werden: „fils" selbst steht als Sing. im
-        // Lexikon → die Pluralheuristik greift nicht.
-        if let detected = detectPluralByHeuristic(core: core) {
-            return detected
         }
 
         // ─── Priorität 4: Supplemental-Lexikon (source-only) ─────────
@@ -630,52 +649,71 @@ enum ArticleModeClassifier {
         return .indetermine
     }
 
-    /// Versucht aus dem Lernkern einen Plural zu erkennen — **nur**, wenn
-    /// wir das sehr sicher sagen können. Regel:
+    /// Flexions-basierte Plural-Erkennung. Liefert `.pluriel` genau dann,
+    /// wenn `core` in der Flexions-Map auf ein anderes Lemma verweist UND
+    /// typographisch nach Plural aussieht (endet auf `s` oder `x`, länger
+    /// als 2 Zeichen). Das unterscheidet:
+    ///   • „amis" → Flexion von „ami" → Plural ✓
+    ///   • „fils"  → Flexion von „fils" (identisches Lemma) → kein Plural ✗
+    ///   • „école" → keine Flexion → weiter zur Heuristik ✗
+    private static func detectPluralViaInflection(core: String) -> ArticleExerciseTarget.Genre? {
+        let lower = core.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard lower.count > 2 else { return nil }
+        guard let last = lower.last, last == "s" || last == "x" else { return nil }
+        guard let inflLemma = StandardVocabularyLoader.inflectionLemma(for: lower),
+              inflLemma.lowercased() != lower else { return nil }
+        // Nur Flexionen von Nomen zählen (Verb-Flexionen wären ohnehin kein
+        // Artikel-Modus-Kandidat, aber absichern schadet nicht).
+        if let lemmaClass = StandardVocabularyLoader.wordClass(for: inflLemma),
+           lemmaClass != "noun" {
+            return nil
+        }
+        return .pluriel
+    }
+
+    /// Nomen, die im **Singular** auf `-s`/`-x`/`-z` enden — ohne diese
+    /// Liste würde die Plural-Heuristik sie fälschlich als Plural
+    /// klassifizieren („fils" = Sohn, „temps" = Zeit). Bewusst klein
+    /// gehalten; für Grenzfälle jenseits dieser Liste setzt die Heuristik
+    /// weiterhin auf die DB-Singular-Verifikation.
+    private static let singularNounsEndingInSXZ: Set<String> = [
+        "fils", "temps", "pays", "repas", "dos", "corps", "bois", "mois",
+        "poids", "bras", "cas", "cours", "concours", "discours", "univers",
+        "processus", "virus", "os", "sens", "puits", "printemps",
+        "prix", "choix", "croix", "voix", "noix", "paix", "faix",
+        "nez", "riz", "gaz", "rez"
+    ]
+
+    /// Suffix-basierte Plural-Erkennung — liefert `.pluriel` wenn der
+    /// Kern auf `-s`/`-x` endet UND der Singular-Stamm (Kern ohne
+    /// letztes Zeichen bzw. über `naiveSingularizeFrenchNoun`) im
+    /// Master-Lexikon als Nomen steht. Ausnahmen in `singularNounsEndingInSXZ`.
     ///
-    /// 1. Kern muss lang genug sein (> 2 Zeichen), damit Mini-Artefakte
-    ///    ausgeschlossen sind.
-    /// 2. Kern endet auf `s` oder `x` (klassische Pluralendungen im Fr.).
-    /// 3. Kern selbst ist **nicht** im Master-Lexikon als Singular
-    ///    bekannt. Anderenfalls ist die Endung zufällig („fils" = Sohn,
-    ///    Sing. mask., endet auf -s) → **nicht** Plural.
-    /// 4. Singular-Pendant (Kern ohne letztes Zeichen) ist im Master-
-    ///    Lexikon als m. oder f. → sichere Indikation für Plural.
-    ///
-    /// Liefert `.pluriel` bei Treffer, sonst `nil` (= Heuristik enthält
-    /// sich, die Genus-Pipeline läuft regulär weiter).
+    /// Unterschied zur älteren Version: wir **verlassen uns nicht** mehr
+    /// auf einen nil-selfGender-Check. Ist auch dann korrekt, wenn die
+    /// DB den Plural-Form-Eintrag ebenfalls mit einem Gender-Marker
+    /// führt („hommes" mit Marker „m").
     private static func detectPluralByHeuristic(core: String) -> ArticleExerciseTarget.Genre? {
         let lower = core.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         guard lower.count > 2 else { return nil }
         guard let last = lower.last, last == "s" || last == "x" else { return nil }
 
-        // Wort selbst als Singular bekannt → kein Plural (z. B. „fils").
-        if let selfGender = StandardVocabularyLoader.frenchGender(for: lower),
-           let normalized = Self.normalizedGenderCode(selfGender),
-           normalized == "m" || normalized == "f" {
-            return nil
-        }
+        // Hardcoded Ausnahmen.
+        if singularNounsEndingInSXZ.contains(lower) { return nil }
 
-        // Sing-Pendant ohne letztes Zeichen im Lexikon als m/f? → Plural.
-        let singularCandidate = String(lower.dropLast())
-        if let singularGender = StandardVocabularyLoader.frenchGender(for: singularCandidate),
-           let normalized = Self.normalizedGenderCode(singularGender),
-           normalized == "m" || normalized == "f" {
+        // Direkter Singular-Stamm (ein Zeichen weg).
+        let directSingular = String(lower.dropLast())
+        if StandardVocabularyLoader.isNoun(directSingular) {
             return .pluriel
         }
 
-        return nil
-    }
+        // Spezielle Plural-Muster (eaux → eau, aux → al, eux → eu).
+        if let naive = FrenchLemmaFormatter.naiveSingularizeFrenchNoun(lower),
+           naive != lower,
+           StandardVocabularyLoader.isNoun(naive) {
+            return .pluriel
+        }
 
-    /// Normalisiert die in der DB gespeicherten Gender-Codes auf ein
-    /// einheitliches Mini-Alphabet (`m`, `f`, `p`). Fängt die bekannten
-    /// Varianten ab (`m`, `masculine`, `M.`, …) und gibt `nil` bei
-    /// unbekannten Werten → Aufrufer skipt diesen Zweig.
-    private static func normalizedGenderCode(_ raw: String) -> String? {
-        let lower = raw.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-        if lower.hasPrefix("m") { return "m" }
-        if lower.hasPrefix("f") { return "f" }
-        if lower.hasPrefix("p") { return "p" }
         return nil
     }
 

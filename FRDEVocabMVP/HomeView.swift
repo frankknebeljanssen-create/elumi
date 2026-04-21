@@ -4,14 +4,13 @@ import SwiftUI
 /// Home-Screen (2×2-Hero-Rebuild).
 ///
 /// Blöcke von oben nach unten:
-///   1. Greeting + Maskottchen (`HomeHeader`)
-///   2. Kompakte Status-Card (`HomeCompactStatusCard`) — Streak + „Du bist dran"
-///   3. Hero-Lernsektion als 2×2 Grid (`HomeHeroLearningSection`) —
+///   1. Greeting + Streak-Inline + Maskottchen (`HomeHeader`)
+///   2. Hero-Lernsektion als 2×2 Grid (`HomeHeroLearningSection`) —
 ///      Karteikarten · Nomen · Verben · Quiz, feste Reihenfolge, kein Scroll
-///   4. Weitere Übungen (`HomeMoreExercisesSection`) — horizontale Scroll-Reihe,
-///      gefiltert gegen die Hero-Module (keine Dopplungen)
-///   5. Deine Tools (`HomeToolsSection`) — Scannen + Listen
-///   6. Footer-Clearance
+///   3. Weitere Übungen (`HomeMoreExercisesSection`) — 4 gleich-breite
+///      Tiles, gefiltert gegen die Hero-Module (keine Dopplungen)
+///   4. Deine Tools (`HomeToolsSection`) — Scannen + Listen
+///   5. Footer-Clearance
 ///
 /// Navigation ist über `openScreen` injiziert — Home selbst kennt keine
 /// konkrete Route-Logik, nur das Mapping Modul → `AppScreen`.
@@ -58,39 +57,41 @@ struct HomeView: View {
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 10) {
+            // Basis-VStack-Spacing 0 — jeder Block bekommt sein eigenes
+            // `padding(.top, …)`. Klare Gap-Hierarchie:
+            //   Header → Hero:              12 pt (eng, Hero an Header)
+            //   Hero → Weitere Übungen:     22 pt (klar abgesetzt)
+            //   Weitere Übungen → Tools:    20 pt (klar abgesetzt)
+            //   Tools → Footer:             +24 pt unten (Tools „klebt"
+            //                               nicht mehr am Footer)
+            VStack(alignment: .leading, spacing: 0) {
                 HomeHeader(
-                    greeting: Personalization.homeGreeting(for: profileStore.profile?.displayName)
+                    greeting: Personalization.homeGreeting(for: profileStore.profile?.displayName),
+                    streakDays: currentStreak
                 )
-
-                // Kompakte Status-Card direkt unter dem Greeting — nur
-                // Streak, keine Lernstand-Phrase mehr.
-                HomeCompactStatusCard(
-                    streakDays: currentStreak,
-                    onTap: { openHomeScreen(.trophy) }
-                )
-                .padding(.top, -22)
 
                 // Hero-Grid (2×2) — Hauptentscheidung des Screens.
-                // Abstand zur Status-Card auf `setupMainSectionSpacing`
-                // (16 pt) reduziert — vorher +8 pt extra, jetzt eng.
+                // Näher an den Header gerückt, weil die frühere
+                // Status-Card entfallen ist.
                 HomeHeroLearningSection(
                     onSelect: { module in openHomeScreen(module.screen) }
                 )
-                .padding(.top, AppLayout.setupMainSectionSpacing)
+                .padding(.top, 12)
 
                 HomeMoreExercisesSection(
                     onSelect: { module in openHomeScreen(module.screen) }
                 )
-                .padding(.top, AppLayout.setupMainSectionSpacing + 4)
+                .padding(.top, 22)
 
                 HomeToolsSection(
                     onSelectScan: { openHomeScreen(.scan) },
                     onSelectLists: { openHomeScreen(.lists(nil)) }
                 )
-                // +6 → 0: Abstand über „Deine Tools" kleiner
-                // (User-Wunsch).
-                .padding(.top, AppLayout.setupMainSectionSpacing)
+                // Tools-Block (Headline + beide Cards) etwas weiter
+                // nach unten: 12 → 22 pt.
+                .padding(.top, 22)
+                // Klarer Abstand zum Footer — Tools klebt nicht mehr.
+                .padding(.bottom, 24)
 
                 Color.clear.frame(height: homeFooterClearance)
             }

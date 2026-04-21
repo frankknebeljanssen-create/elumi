@@ -20,8 +20,14 @@ struct FRDEVocabMVPApp: App {
         // liest (z. B. Training-Setup mit Listen-Aggregation), den
         // Load synchron auslösen. Die Task läuft auf `.utility`, damit
         // sie keine UI-Frames konkurriert.
+        //
+        // `vocabularyItems` ist der Abkömmling, den der `ListStore`
+        // als Lazy-Property lädt (siehe `VocabularyListStore.builtIn-
+        // ListStorage`). Wir prewarmen ihn hier mit, damit die erste
+        // Modul-Öffnung auf einen warm-gecachten `static let` trifft.
         Task.detached(priority: .utility) {
             _ = StandardVocabularyLoader.allEntries
+            _ = StandardVocabularyLoader.vocabularyItems
             _ = StandardVocabularyLoader.verbEntries
             _ = StandardVocabularyLoader.nounEntries
             _ = StandardVocabularyLoader.frenchGenderMap

@@ -5,3 +5,13 @@ build/
 *.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/
 FRDEVocabMVP/OpenAIConfig.plist
+
+# Lose Design-Assets im Repo-Root (Arbeitskopien / Lieferantenpakete) —
+# sind schon als `*.imageset` in `Assets.xcassets` integriert bzw.
+# werden nicht vom Build gebraucht. Werden nicht committed, damit der
+# Repo schlank bleibt.
+/File.txt
+/*.zip
+/elumi-icon-set-*/
+/icons HomeSCreen */
+/recources/

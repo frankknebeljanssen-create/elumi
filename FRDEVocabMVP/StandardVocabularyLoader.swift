@@ -315,6 +315,19 @@ enum StandardVocabularyLoader {
         return nil
     }
 
+    /// Direkter Zugriff auf die Flexions-Lemma-Map — **umgeht** den Vorrang,
+    /// den `lemma(for:)` für Volltext-Einträge gibt. Wichtig für die Plural-
+    /// Erkennung im Artikel-Modus: „amis" steht in `wordClassMap` ggf. als
+    /// eigener Eintrag mit maskulinem Genus-Marker, in `inflectionLemmaMap`
+    /// aber als Flexion von „ami". `lemma(for: "amis")` würde den Volltext-
+    /// Pfad nehmen und `amis` zurückgeben — wir brauchen hier aber den
+    /// Flexions-Hinweis auf „ami", um Plural zu erkennen.
+    static func inflectionLemma(for text: String) -> String? {
+        let key = text.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        if let inf = inflectionInfinitiveMap[key] { return inf }
+        return inflectionLemmaMap[key]
+    }
+
     /// Entfernt führende französische Artikel aus einem Lemma („la maison" → „maison").
     private static func stripFrenchLemmaArticle(_ text: String) -> String {
         let lower = text.lowercased()

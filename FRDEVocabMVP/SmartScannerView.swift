@@ -533,7 +533,7 @@ struct SmartScannerView: View {
         // mehr in diesem Pfad). Wäre obsolet weil vocabularyList nie
         // text-dense ist; `denseFlag = false` als sicherer Default.
         let config: SmartDocumentProcessor.Config
-        var denseFlag = false
+        let denseFlag = false
         if useFreeTextRectangleAssist {
             config = .freierTextRectangleAssist
         } else {

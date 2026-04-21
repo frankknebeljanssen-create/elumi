@@ -293,6 +293,48 @@ enum FrenchEntryAnalyzer {
         "me", "m", "te", "t", "se", "s", "nous", "vous"
     ]
 
+    /// Französische Adverbien, die in der kuratierten DB teils fälschlich
+    /// als Adjektiv kategorisiert sind (oder gar nicht vorkommen). Diese
+    /// Liste greift **vor** dem DB-Lookup und setzt `primaryPos = .adverb`
+    /// samt Adverb-Lemma — so bleibt z.\u{00A0}B. „vite" konsistent über
+    /// alle Bereiche als Adverb gelabelt.
+    static let hardcodedAdverbs: Set<String> = [
+        "vite", "bien", "mal", "tr\u{00E8}s", "trop", "peu", "beaucoup",
+        "toujours", "jamais", "ici", "l\u{00E0}", "maintenant", "souvent",
+        "parfois", "rarement", "vraiment", "plut\u{00F4}t", "assez",
+        "d\u{00E9}j\u{00E0}", "encore", "hier", "aujourd'hui", "demain",
+        "lentement", "rapidement", "facilement", "doucement", "fortement"
+    ]
+
+    /// Nomen, die bereits im **Singular** auf `-s`/`-x`/`-z` enden — ohne
+    /// diese Liste würde `normalizeNounLemma` sie fälschlich als Plural
+    /// behandeln („fils" → „fil", „temps" → „temp" …).
+    static let singularNounsEndingInSXZ: Set<String> = [
+        "fils", "temps", "pays", "repas", "dos", "corps", "bois", "mois",
+        "poids", "bras", "cas", "cours", "concours", "discours", "univers",
+        "processus", "virus", "os", "sens", "puits", "printemps",
+        "prix", "choix", "croix", "voix", "noix", "paix", "nez", "riz",
+        "gaz"
+    ]
+
+    /// Slash-/Pipe-Varianten (Mehrdeutigkeits-Einträge wie „le/la", „un/une"),
+    /// bei denen die Wortart im DB-Lookup uneindeutig oder inkonsistent ist.
+    /// User-Erwartung für „le/la": Pronomen (Objektpronomen, nicht Artikel).
+    static let slashVariantWordClass: [String: String] = [
+        "le/la":    "pronoun",
+        "la/le":    "pronoun",
+        "le|la":    "pronoun",
+        "la|le":    "pronoun",
+        "le / la":  "pronoun",
+        "la / le":  "pronoun",
+        "un/une":   "article",
+        "une/un":   "article",
+        "un|une":   "article",
+        "une|un":   "article",
+        "un / une": "article",
+        "une / un": "article"
+    ]
+
     /// Funktionswörter, die im Phrase-Scan als „Füllung" gelten und übersprungen werden.
     static let frenchFunctionWordTokens: Set<String> = [
         "je", "tu", "il", "elle", "on", "nous", "vous", "ils", "elles",
@@ -322,6 +364,50 @@ enum FrenchEntryAnalyzer {
                 showLemmaHint: false,
                 lemmaHintText: nil,
                 directWordClass: nil,
+                specialCategory: nil
+            )
+        }
+
+        // ADVERB-OVERRIDE:
+        // Hardcoded-Adverben gehen VOR dem normalen Lookup — sichert die
+        // konsistente Kategorisierung über alle Bereiche (Listen, Lexikon,
+        // Scan-Import). Ohne diesen Shortcut liefert die DB für „vite"
+        // „adjective", was die Cross-Area-Labels kaputt macht.
+        if hardcodedAdverbs.contains(normalized) {
+            var lemmas = EntryLemmas()
+            lemmas.adverbs.append(normalized)
+            return EntryAnalysisResult(
+                originalText: text,
+                normalizedText: normalized,
+                displayType: .singleWord,
+                primaryPos: .adverb,
+                detectedPos: [.adverb],
+                lemmas: lemmas,
+                analysisConfidence: .high,
+                showLemmaHint: false,
+                lemmaHintText: nil,
+                directWordClass: "adverb",
+                specialCategory: nil
+            )
+        }
+
+        // SLASH-/PIPE-VARIANTEN-OVERRIDE:
+        // „le/la", „un/une" etc. werden als eine Einheit klassifiziert — die
+        // hardcoded Map gewinnt gegen den DB-Einzel-Lookup (wo „le" oft als
+        // „article" steht, aber im Slash-Paar-Kontext als Pronomen/Artikel
+        // gelehrt wird).
+        if let slashClass = slashVariantWordClass[normalized] {
+            return EntryAnalysisResult(
+                originalText: text,
+                normalizedText: normalized,
+                displayType: .singleWord,
+                primaryPos: .unknown,
+                detectedPos: [],
+                lemmas: EntryLemmas(),
+                analysisConfidence: .high,
+                showLemmaHint: false,
+                lemmaHintText: nil,
+                directWordClass: slashClass,
                 specialCategory: nil
             )
         }
@@ -496,10 +582,12 @@ enum FrenchEntryAnalyzer {
 
         // 1b) Compound-Noun-Kurzweg: „le jeu vidéo", „la salle à manger" …
         // Kein Phrase-Scan, damit nicht fälschlich ein Verb-Token aufgenommen wird.
-        // Lemma = artikel-gestrippte Gesamtbezeichnung (zentrale Anzeigeform).
+        // Lemma = artikel-gestrippte Gesamtbezeichnung, flektierte Formen auf
+        // die Grundform zurückgeführt (z.\u{00A0}B. „des enfants" → „enfant").
         if looksLikeCompoundNoun(normalized) {
             var lemmas = EntryLemmas()
-            let lemma = cleanLemma(normalized, wordClass: "noun")
+            let cleaned = cleanLemma(normalized, wordClass: "noun")
+            let lemma = normalizeNounLemma(cleaned)
             if !lemma.isEmpty {
                 lemmas.nouns.append(lemma)
             }
@@ -533,6 +621,19 @@ enum FrenchEntryAnalyzer {
             }
         }
 
+        // 2c) Adjektiv-Fallback für flektierte Einzelwörter: „petites" →
+        //     „petit", „heureuse" → „heureux". Greift, wenn lookupLemma
+        //     (2) leer blieb und es sich um ein Einzelwort ohne bekannte
+        //     Wortart handelt. Die DB-Verifikation im Helper verhindert,
+        //     dass zufällige Wortfragmente durchrutschen.
+        if displayType == .singleWord, lemmas.nouns.isEmpty, lemmas.verbs.isEmpty,
+           lemmas.adjectives.isEmpty, lemmas.adverbs.isEmpty,
+           !normalized.contains(" "), !normalized.contains("'"),
+           let adjLemma = naiveAdjectiveLemma(normalized) {
+            lemmas.adjectives.append(adjLemma)
+            return (lemmas, .medium)
+        }
+
         guard mode != .strict else {
             return (lemmas, lemmas.isEmpty ? .low : .medium)
         }
@@ -550,6 +651,9 @@ enum FrenchEntryAnalyzer {
             //
             // (1) Reflexiv-Clitic (me, m', te, t', se, s') unmittelbar davor →
             //     reflexive Form versuchen (DB-Direktlookup, dann Synthese).
+            //     **User-Spec-Lockerung**: Die App arbeitet in mehreren Bereichen
+            //     mit dem Kernlemma (ohne Reflexiv-Teil) — wir liefern daher
+            //     **beide** Formen: die vollständige reflexive UND das Kernlemma.
             if index > 0 {
                 let prev = tokens[index - 1]
                 if strictReflexiveClitics.contains(prev) {
@@ -558,6 +662,9 @@ enum FrenchEntryAnalyzer {
                     let spaceForm = "\(prev) \(token)"
                     if let inf = StandardVocabularyLoader.infinitive(for: apostropheForm) {
                         appendUnique(inf, into: &lemmas.verbs)
+                        if let core = coreLemmaOfReflexive(inf) {
+                            appendUnique(core, into: &lemmas.verbs)
+                        }
                         if !auxiliaryVerbInfinitives.contains(inf.lowercased()) {
                             foundContentVerb = true
                         }
@@ -565,15 +672,20 @@ enum FrenchEntryAnalyzer {
                     }
                     if let inf = StandardVocabularyLoader.infinitive(for: spaceForm) {
                         appendUnique(inf, into: &lemmas.verbs)
+                        if let core = coreLemmaOfReflexive(inf) {
+                            appendUnique(core, into: &lemmas.verbs)
+                        }
                         if !auxiliaryVerbInfinitives.contains(inf.lowercased()) {
                             foundContentVerb = true
                         }
                         continue
                     }
-                    // (1b) Synthese-Fallback: Basisinfinitiv → s'/se prefixen
+                    // (1b) Synthese-Fallback: Basisinfinitiv → s'/se prefixen.
+                    //      `inf` IST schon das Kernlemma → zusätzlich emitten.
                     if let inf = StandardVocabularyLoader.infinitive(for: token) {
                         let reflexiveLemma = reflexiveInfinitiveForm(of: inf)
                         appendUnique(reflexiveLemma, into: &lemmas.verbs)
+                        appendUnique(inf, into: &lemmas.verbs)
                         if !auxiliaryVerbInfinitives.contains(inf.lowercased()) {
                             foundContentVerb = true
                         }
@@ -644,6 +756,113 @@ enum FrenchEntryAnalyzer {
         return nil
     }
 
+    /// Reduziert ein Nomen auf sein Grundlemma, falls erkennbar. Nutzt:
+    ///   1. **Flexions-Map** (`inflectionLemma`) — kennt „enfants → enfant",
+    ///      „maisons → maison", „chevaux → cheval" etc. direkt aus der DB,
+    ///      ohne dass der Volltext-Pfad dazwischenfunkt.
+    ///   2. **Naive Pluralregel** — ohne DB-Treffer: endet das Wort auf
+    ///      `-s`/`-x` und ist die Form ohne letztes Zeichen als Nomen
+    ///      bekannt, nehmen wir das. Stop-Liste verhindert false-positives
+    ///      bei „fils", „temps" etc.
+    ///
+    /// Liefert den Input zurück, wenn keine Lemma-Normalisierung sicher
+    /// möglich ist.
+    private static func normalizeNounLemma(_ candidate: String) -> String {
+        let lower = candidate.lowercased()
+        guard !lower.isEmpty else { return candidate }
+
+        // Flexions-Hinweis aus der DB (umgeht den Volltext-Vorrang in lemma())
+        if let inflLemma = StandardVocabularyLoader.inflectionLemma(for: lower),
+           inflLemma.lowercased() != lower,
+           inflLemma.count <= lower.count {
+            return inflLemma
+        }
+
+        // Naive Pluralregel: Wort endet auf s/x, Singular steht im Lexikon.
+        if lower.count > 2, let last = lower.last, last == "s" || last == "x",
+           !singularNounsEndingInSXZ.contains(lower) {
+            let directSing = String(lower.dropLast())
+            if StandardVocabularyLoader.isNoun(directSing) {
+                return directSing
+            }
+            if let naiveSing = FrenchLemmaFormatter.naiveSingularizeFrenchNoun(lower),
+               naiveSing != lower,
+               StandardVocabularyLoader.isNoun(naiveSing) {
+                return naiveSing
+            }
+        }
+
+        return candidate
+    }
+
+    /// Extrahiert das Kernlemma aus einer reflexiven Infinitiv-Form:
+    ///   „s'appeler" → „appeler", „se présenter" → „présenter".
+    /// Liefert `nil`, wenn der Input gar nicht reflexiv aussieht — dann
+    /// darf der Aufrufer das Lemma 1:1 verwenden.
+    private static func coreLemmaOfReflexive(_ lemma: String) -> String? {
+        let lower = lemma.lowercased()
+        if lower.hasPrefix("s'") {
+            return String(lemma.dropFirst(2)).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        if lower.hasPrefix("se ") {
+            return String(lemma.dropFirst(3)).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        return nil
+    }
+
+    /// Heuristische Adjektiv-Lemmatisierung für Fälle, die weder in
+    /// `wordClassMap` noch in `inflectionWordClassMap` erscheinen.
+    /// Probiert schrittweise die häufigen Flexionen zurück:
+    ///   • feminin-plural   „petites"  → „petite"  → „petit"
+    ///   • feminin-singular „petite"   →             „petit"
+    ///   • maskulin-plural  „petits"   →             „petit"
+    ///   • „-euse" → „-eux" („heureuse" → „heureux")
+    /// Jeder Kandidat wird per DB-Lookup verifiziert, damit wir nicht auf
+    /// zufälligen Wortfragmenten landen.
+    private static func naiveAdjectiveLemma(_ word: String) -> String? {
+        let lower = word.lowercased()
+        guard lower.count >= 3 else { return nil }
+
+        // Kandidaten-Reihenfolge (spezifische Endungen zuerst).
+        var candidates: [String] = []
+        if lower.hasSuffix("euses") {
+            candidates.append(String(lower.dropLast(4)) + "eux")   // heureuses → heureux
+        }
+        if lower.hasSuffix("euse") {
+            candidates.append(String(lower.dropLast(3)) + "eux")   // heureuse → heureux
+        }
+        if lower.hasSuffix("elles") {
+            candidates.append(String(lower.dropLast(4)) + "el")    // naturelles → naturel
+        }
+        if lower.hasSuffix("elle") {
+            candidates.append(String(lower.dropLast(3)) + "el")    // naturelle → naturel
+        }
+        if lower.hasSuffix("ennes") {
+            candidates.append(String(lower.dropLast(4)) + "en")    // parisiennes → parisien
+        }
+        if lower.hasSuffix("enne") {
+            candidates.append(String(lower.dropLast(3)) + "en")    // parisienne → parisien
+        }
+        if lower.hasSuffix("es") {
+            let stem = String(lower.dropLast(2))                    // petites → petit
+            candidates.append(stem)
+            candidates.append(stem + "e")                           // cover-case: grandes → grand, grande
+        }
+        if lower.hasSuffix("e") {
+            candidates.append(String(lower.dropLast()))             // petite → petit
+        }
+        if lower.hasSuffix("s") {
+            candidates.append(String(lower.dropLast()))             // petits → petit
+        }
+
+        for candidate in candidates where candidate.count >= 2 {
+            if StandardVocabularyLoader.wordClass(for: candidate) == "adjective" {
+                return candidate
+            }
+        }
+        return nil
+    }
+
     /// Artikel aus einem Lemma entfernen („la maison" → „maison", „l'ami" → „ami").
     private static func cleanLemma(_ raw: String, wordClass: String) -> String {
         let lower = raw.lowercased()
@@ -659,8 +878,21 @@ enum FrenchEntryAnalyzer {
         guard !cleaned.isEmpty else { return }
         switch wc {
         case "verb":      appendUnique(cleaned, into: &lemmas.verbs)
-        case "noun":      appendUnique(cleaned, into: &lemmas.nouns)
-        case "adjective": appendUnique(cleaned, into: &lemmas.adjectives)
+        case "noun":
+            // Flektierte Nomen auf das Grundlemma zurückführen
+            // („enfants" → „enfant", „maisons" → „maison"). Fängt
+            // auch den Fall, dass das Lexikon das Wort mit Plural-
+            // Marker führt, aber die Flexions-Map die Zuordnung zum
+            // Singular-Lemma kennt.
+            appendUnique(normalizeNounLemma(cleaned), into: &lemmas.nouns)
+        case "adjective":
+            // Flektierte Adjektive auf das Masculin-Singular-Lemma
+            // zurückführen („petites" → „petit", „heureuses" → „heureux").
+            // Verifiziert gegen die DB, damit wir nicht auf zufälligen
+            // Wortfragmenten landen — bei Nicht-Verifikation bleibt die
+            // Input-Form erhalten.
+            let lemma = naiveAdjectiveLemma(cleaned) ?? cleaned
+            appendUnique(lemma, into: &lemmas.adjectives)
         case "adverb":    appendUnique(cleaned, into: &lemmas.adverbs)
         default: break
         }
@@ -768,6 +1000,12 @@ enum FrenchListStatisticsAggregator {
     /// Baut die Listen-Statistik aus vorberechneten Analyse-Ergebnissen.
     /// `low`-Confidence fliesst standardmässig NICHT mit ein.
     /// Wiederholte Lemmata werden nur einmal gezählt (Set-basierte Dedup).
+    ///
+    /// **Reflexiv-Dedup**: Per-Entry liefern wir bewusst **beide** Formen
+    /// (`s'appeler` UND `appeler`), damit UI-Stellen, die mit dem Kernlemma
+    /// arbeiten, nicht zusätzlich parsen müssen. In der Aggregation wollen
+    /// wir diese Doppel-Zählung aber nicht sehen — wenn der Kern `X` im
+    /// Set ist, entfernen wir die reflexive Form `s'X`/`se X`.
     static func build(
         from results: [EntryAnalysisResult],
         minimumConfidence: AnalysisConfidence = .medium
@@ -789,6 +1027,20 @@ enum FrenchListStatisticsAggregator {
                 interjectionSet.insert(r.normalizedText)
             }
         }
+
+        // Reflexive Doppel-Einträge kollabieren: wenn „appeler" im Set ist,
+        // entfernt sich „s'appeler" / „se appeler" automatisch.
+        let reflexivesToDrop = verbSet.filter { form in
+            let lower = form.lowercased()
+            if lower.hasPrefix("s'") {
+                return verbSet.contains(String(form.dropFirst(2)))
+            }
+            if lower.hasPrefix("se ") {
+                return verbSet.contains(String(form.dropFirst(3)))
+            }
+            return false
+        }
+        verbSet.subtract(reflexivesToDrop)
 
         return ListPOSStatistics(
             entryCount: results.count,
@@ -814,7 +1066,7 @@ enum FrenchListStatisticsAggregator {
     // an der Analyse (neue Sonderfälle, Slash-Varianten, Overrides, Lemma-Regeln …)
     // MUSS diese Zahl hochzählen, damit alte In-Memory-Cache-Einträge nicht
     // falsche Ergebnisse liefern.
-    private static let cacheVersion = "v12"
+    private static let cacheVersion = "v13"
 
     private static let resultCacheLock = NSLock()
     private static var resultCache: [String: EntryAnalysisResult] = [:]

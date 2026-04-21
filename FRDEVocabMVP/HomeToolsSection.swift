@@ -13,11 +13,17 @@ struct HomeToolsSection: View {
     let onSelectLists: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+        // Spacing 4 pt — **exakt identisch** zum Headline-Cards-Abstand
+        // in `HomeMoreExercisesSection`, damit beide Sektionen visuell
+        // gleich atmen.
+        VStack(alignment: .leading, spacing: 4) {
             Text("Deine Tools")
-                // 17 → 16 (−1 pt): dezenter gegenüber dem Hero-Grid.
-                .font(.system(size: 16, weight: .black, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
+                // Section-Headline-Hierarchie: 16 pt / .medium /
+                // textSecondary — identisch zu „Weitere Übungen".
+                // Hebt sich klar von der Hero-Headline ab
+                // (22 pt / .black / textPrimary).
+                .font(.system(size: 16, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
 
             HStack(spacing: 10) {
                 ToolCard(
@@ -73,16 +79,30 @@ private struct ToolCard: View {
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 14)
-            // Vertical-Padding 12 → 10, minHeight 68 → 58: Tools-Cards
-            // noch etwas niedriger.
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity)
             .frame(minHeight: 58)
-            // Identischer 3-Lagen-Pop-Look wie Hero-Cards. Kein
-            // farbiger Außen-Glow — Tiefe nur innerhalb der Card.
-            .background(PopCardBackground(accent: accent, cornerRadius: 18))
-            .overlay(PopCardBevel(cornerRadius: 18))
-            .shadow(color: .black.opacity(0.32), radius: 5, x: 0, y: 3)
+            // Gradient-Background statt 3-Lagen-Pop-Look (User-Spec):
+            // subtiler Verlauf 0.95 → 0.75 vom topLeading nach
+            // bottomTrailing, keine harten Flächen-Trennungen mehr.
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                accent.opacity(0.95),
+                                accent.opacity(0.75)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color.white.opacity(0.03))
+            )
+            .shadow(color: .black.opacity(0.25), radius: 5, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }

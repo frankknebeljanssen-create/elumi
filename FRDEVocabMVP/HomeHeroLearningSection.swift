@@ -36,8 +36,10 @@ struct HomeHeroLearningSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppLayout.setupHeadlineToContentSpacing) {
+            // Hauptheadline — klar dominant gegenüber den Sektions-
+            // Headlines darunter. 20 → 22 pt, .black bleibt.
             Text("Was möchtest du heute lernen?")
-                .font(.system(size: 21, weight: .black, design: .rounded))
+                .font(.system(size: 22, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
 
             LazyVGrid(columns: gridColumns, spacing: 10) {
@@ -136,10 +138,8 @@ private struct HeroModuleCard: View {
 
     var body: some View {
         Button(action: onTap) {
-            // 1.0 → 1.15 (breiter als hoch): User-Wunsch „etwas
-            // weniger tall". Aspect Ratio 1.15 liefert ca. 15 %
-            // weniger Höhe bei gleicher Breite, die Card liest
-            // sich weiter als Hero-Block.
+            // 1.3 → 1.15 (mehr Höhe, Cards bekommen wieder mehr
+            // Präsenz — User-Wunsch „leicht mehr Höhe zulassen").
             Color.clear
                 .aspectRatio(1.15, contentMode: .fit)
                 .overlay {
@@ -150,8 +150,11 @@ private struct HeroModuleCard: View {
                             glyphTint: .white
                         )
                         Text(module.title)
+                            // +1 pt (17/18 → 18/19). Karteikarten bleibt
+                            // 1 pt unter den anderen, weil das längere
+                            // Wort sonst den minimumScaleFactor triggert.
                             .font(.system(
-                                size: module == .karteikarten ? 15 : 16,
+                                size: module == .karteikarten ? 18 : 19,
                                 weight: .black,
                                 design: .rounded
                             ))
@@ -161,9 +164,31 @@ private struct HeroModuleCard: View {
                             .minimumScaleFactor(0.7)
                     }
                 }
-                .background(PopCardBackground(accent: module.accent, cornerRadius: 22))
-                .overlay(PopCardBevel(cornerRadius: 22))
-                .shadow(color: .black.opacity(0.32), radius: 5, x: 0, y: 3)
+                // **Gradient-Background** (User-Spec): subtiler
+                // LinearGradient mit 0.95 → 0.75 Opacity vom
+                // topLeading nach bottomTrailing. Keine harten
+                // Flächen-Trennungen mehr, nur ein weicher Verlauf.
+                .background(
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    module.accent.opacity(0.95),
+                                    module.accent.opacity(0.75)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
+                // Leichtes Depth-Overlay (User-Option 8) — minimale
+                // Aufhellung, damit die Fläche nicht komplett flach
+                // wirkt, aber ohne harte Kante.
+                .overlay(
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .fill(Color.white.opacity(0.03))
+                )
+                .shadow(color: .black.opacity(0.25), radius: 5, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }
