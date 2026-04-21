@@ -99,7 +99,7 @@ enum AppTheme {
         static let warning = elumiAmberDeep
 
         // ── Single Source of Truth: Modul-Farben ──
-        static let moduleVocabulary = elumiPinkDeep              // Vokabeln — Pink
+        static let moduleVocabulary = Color(hex: "#1E3A8A")      // Vokabeln — Dark Blue (Indigo-900; deutlich dunkler als `moduleFlashcards` #3B82F6, damit beide klar unterscheidbar bleiben)
         static let moduleNomen = Color(hex: "#059669")           // Nomen — Emerald
         static let moduleArticles = Color(hex: "#34D399")        // Artikel — Light Emerald (Nomen-Familie)
         static let moduleVerbs = Color(hex: "#8B5CF6")           // Verben — Purple
