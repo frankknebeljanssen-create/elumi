@@ -56,14 +56,20 @@ final class WordRunnerSFXPlayer {
             }
         }
 
+        // Audio-Balance-Pass (Phase 7.6): Musik ist um ~15 % leiser
+        // (siehe `WordRunnerMusicPlayer.defaultVolume`), SFX werden
+        // leicht angehoben, damit sie über der Musik durchkommen.
+        //   • Life-Loss bleibt am stärksten (klarstes Fehler-Signal).
+        //   • Lane bleibt dezent (feuert sehr häufig).
+        //   • Correct/Wrong/Pickup/Boost wandern auf ~0.65.
         var volume: Float {
             switch self {
-            case .lane:     return 0.32
-            case .correct:  return 0.55
-            case .wrong:    return 0.50
-            case .lifeLoss: return 0.65
-            case .pickup:   return 0.55
-            case .boost:    return 0.55
+            case .lane:     return 0.38
+            case .correct:  return 0.68
+            case .wrong:    return 0.65
+            case .lifeLoss: return 0.78
+            case .pickup:   return 0.68
+            case .boost:    return 0.65
             }
         }
     }
