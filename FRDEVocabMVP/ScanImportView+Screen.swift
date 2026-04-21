@@ -538,7 +538,8 @@ extension ScanImportView {
                 ModuleHeaderCard(
                     icon: .scan,
                     title: "Scan",
-                    accent: sectionStyle.accent
+                    accent: sectionStyle.accent,
+                    onBack: { dismiss() }
                 )
 
                 if hasActiveScanDraft {

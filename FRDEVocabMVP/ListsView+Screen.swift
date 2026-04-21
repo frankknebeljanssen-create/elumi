@@ -6,7 +6,8 @@ extension ListsView {
             ModuleHeaderCard(
                 icon: .listen,
                 title: "Listen verwalten",
-                accent: sectionStyle.accent
+                accent: sectionStyle.accent,
+                onBack: { dismiss() }
             )
 
             allListsCard

@@ -235,7 +235,8 @@ struct AccentsEntryView: View {
                     ModuleHeaderCard(
                         icon: .akzente,
                         title: "Akzente",
-                        accent: sectionStyle.accent
+                        accent: sectionStyle.accent,
+                        onBack: { goHome() }
                     )
 
                     listSelectorCard
