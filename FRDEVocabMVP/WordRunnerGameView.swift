@@ -327,6 +327,16 @@ struct WordRunnerGameView: View {
                     .padding(.horizontal, AppTheme.Spacing.md)
                     .padding(.top, AppTheme.Spacing.sm)
             }
+            // **Listen-Chip (Phase 7.6+)** — oben mittig, zeigt die
+            // aktuell gewählte Vokabelliste mit kleinem Icon. Nur
+            // während `.running` sichtbar (User-Spec „im Spiel oben
+            // gewählte Liste anzeigen mit kleinem Icon").
+            .overlay(alignment: .top) {
+                if game.runState.isRunning {
+                    selectedListChip
+                        .padding(.top, 14)
+                }
+            }
             // HUD oben rechts: Leben + Score + Collectibles. Nur sichtbar
             // **während** des Runs — in Idle/Summary wäre die Anzeige
             // irritierend.
@@ -602,6 +612,38 @@ struct WordRunnerGameView: View {
                 collectiblesChip
                 scoreChip
             }
+        }
+    }
+
+    /// **Listen-Chip** (Phase 7.6+): kleine Pill am oberen Rand mit
+    /// Listen-Icon + Namen der aktuell gewählten Vokabelliste. Hilft
+    /// dem Spieler beim langen Run die Orientierung zu behalten —
+    /// besonders wenn Listen mitten im Spiel gewechselt wurden (auf
+    /// dem Idle-Screen über den Picker). Schlanker dunkler Capsule-
+    /// Look, damit er den Spielinhalt nicht überdeckt.
+    @ViewBuilder
+    private var selectedListChip: some View {
+        if let store = listStoreRef.backing {
+            HStack(spacing: 6) {
+                Image(systemName: "list.bullet.rectangle.portrait")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(Color(hex: "#BDEBFF"))
+                Text(currentListName(store: store))
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(
+                Capsule()
+                    .fill(Color.black.opacity(0.55))
+                    .overlay(
+                        Capsule().stroke(Color.white.opacity(0.15), lineWidth: 0.8)
+                    )
+            )
+            .allowsHitTesting(false)
         }
     }
 
