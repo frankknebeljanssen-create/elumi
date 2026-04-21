@@ -198,12 +198,37 @@ extension ElumiArcadeGameView {
     func shieldBubbleActiveOverlay(at date: Date) -> some View {
         let endDate = shieldBubbleEndsAt
         let remaining = endDate.map { $0.timeIntervalSince(date) } ?? 0
-        let endFadeAmount: Double = {
-            guard remaining < 0.4 else { return 0 }
-            return max(0, min(1, 1 - remaining / 0.4))
+
+        // **Warnphase** (Phase 7.6): in den letzten 2 Sekunden vor
+        // Ablauf blinkt die Bubble mit zunehmender Frequenz (3 → 9 Hz).
+        // Ergibt 6–8 klar sichtbare Blinks über den Warn-Zeitraum.
+        // Die kumulative Phase wird analytisch berechnet (lineare
+        // Frequenz-Rampe → Phase = ∫ω dt = ½(ω₁+ω₂)·t), damit die
+        // Sinus-Welle durchgehend glatt bleibt.
+        let warningDuration: TimeInterval = 2.0
+        let warningProgress: Double = {
+            guard remaining > 0, remaining < warningDuration else { return 0 }
+            return 1.0 - (remaining / warningDuration)
         }()
-        let opacity = 1.0 - endFadeAmount
-        let endScale = 1.0 + 0.15 * CGFloat(endFadeAmount)
+        let warnOpacity: Double = {
+            guard warningProgress > 0 else { return 1.0 }
+            let elapsed = warningDuration - remaining
+            let startHz: Double = 3.0
+            let endHz: Double = 9.0
+            let avgHz = startHz + 0.5 * (endHz - startHz) * (elapsed / warningDuration)
+            let phase = 2 * Double.pi * avgHz * elapsed
+            return 0.4 + 0.6 * (0.5 + 0.5 * sin(phase))
+        }()
+
+        // **End-Fade** (letzte 0.3 s): kurzer Scale-Up + Fade-Out,
+        // damit der Ablauf nicht nur still endet, sondern einen
+        // sichtbaren Abschluss bekommt (Scale 1.0 → 1.25).
+        let endFadeAmount: Double = {
+            guard remaining < 0.3 else { return 0 }
+            return max(0, min(1, 1 - remaining / 0.3))
+        }()
+        let opacity = (1.0 - endFadeAmount) * warnOpacity
+        let endScale = 1.0 + 0.25 * CGFloat(endFadeAmount)
 
         // Ripple-Progress aus Zeit-Differenz zum letzten Impact-Event.
         // Dauer 0.32 s — sichtbar, aber nicht dominant.

@@ -149,11 +149,22 @@ final class ProgressService {
         //    Wahrscheinlichkeiten zentral in `VariableRewardEngine`.
         //    Bonus-XP und -Credits werden **zusätzlich** auf den Store
         //    gebucht, damit sie sofort wirksam sind.
+        //
+        // **Credit-Guard** (Phase 7.6): Variable-Reward-Credits werden
+        // nur gewährt, wenn die Session mindestens einen echten XP-
+        // Fortschritt hatte (`sessionXP > 0`). Ohne diesen Guard würde
+        // ein WordRunner-/Arcade-Run mit 0 richtigen Antworten trotzdem
+        // einen zufälligen Bonus-Credit ausspucken können — per Spec
+        // „Game Over ohne Fortschritt" darf das nicht passieren. Bonus-
+        // XP bleibt erhalten (geringer Effekt, als Trost-Preis OK).
         let variableReward = VariableRewardEngine.roll(for: session)
         if variableReward.hasBonus {
+            let grantBonusCredit = sessionXP > 0
             store.mutate { p in
                 p.totalXP += variableReward.bonusXP
-                p.arcadeCredits += variableReward.bonusCredit
+                if grantBonusCredit {
+                    p.arcadeCredits += variableReward.bonusCredit
+                }
             }
         }
 
