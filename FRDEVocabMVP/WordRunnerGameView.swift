@@ -151,6 +151,32 @@ struct WordRunnerGameView: View {
     /// kein Badge. Lebensdauer ~1.5 s, dann faded es aus.
     @State private var comboBadgeShownAt: Date? = nil
 
+    // MARK: - Runden-System (Phase 7.6 D)
+    //
+    // Runden gliedern den Run in 25-Sekunden-Abschnitte. Die
+    // tatsächliche Difficulty steigt weiter über die bestehende
+    // Speed-Ramp (`startScrollSpeed` → `peakScrollSpeed` über 35 s)
+    // und Wave-Interval-Ramp (2.8 s → 2.1 s über 60 s) — das Runden-
+    // System ist primär **visuelles Pacing**, nicht Difficulty-Spike.
+    // Beim Übergang zur nächsten Runde wird ein zentriertes Badge
+    // „Runde X" kurz eingeblendet (Fade + Scale).
+
+    /// Runden-Dauer in Sekunden. Jede Runde: 25 s (User-Spec).
+    private static let roundDuration: TimeInterval = 25.0
+    /// Anzeigedauer des Runden-Badges.
+    private static let roundBadgeDuration: TimeInterval = 1.8
+
+    /// Zuletzt angezeigte Runde — verhindert Dauer-Trigger.
+    @State private var displayedRound: Int = 1
+    /// Zeitstempel, ab dem das „Runde X"-Badge sichtbar ist.
+    @State private var roundBadgeShownAt: Date? = nil
+
+    /// Aktuelle Runde (1-basiert) bei gegebener Welt-Zeit.
+    private func currentRound(at date: Date) -> Int {
+        let elapsed = game.effectiveElapsed(context: date)
+        return max(1, Int(elapsed / Self.roundDuration) + 1)
+    }
+
     // MARK: - Body
 
     var body: some View {
@@ -342,6 +368,27 @@ struct WordRunnerGameView: View {
                 }
                 .padding(.trailing, AppTheme.Spacing.md)
                 .padding(.top, 160)
+            }
+            // **Runden-Badge (Phase 7.6 D)**: zentriertes „Runde X"
+            // beim Übergang zur nächsten Runde. Fade + Scale.
+            .overlay(alignment: .center) {
+                roundBadge
+                    .offset(y: -80)  // leicht oberhalb der Bildmitte
+            }
+            // **Runden-Watcher**: periodisch prüfen, ob sich die
+            // Runde hochgezählt hat; bei Sprung Badge triggern.
+            .overlay {
+                TimelineView(.periodic(from: .now, by: 0.25)) { ctx in
+                    let round = currentRound(at: ctx.date)
+                    Color.clear
+                        .onChange(of: round) { _, newRound in
+                            guard game.runState.isRunning,
+                                  newRound > displayedRound else { return }
+                            displayedRound = newRound
+                            roundBadgeShownAt = Date()
+                        }
+                }
+                .allowsHitTesting(false)
             }
         }
         .background(AppTheme.Colors.elumiMidnight)
@@ -668,6 +715,47 @@ struct WordRunnerGameView: View {
         guard age >= 0, age < duration else { return 0 }
         // Ease-out: stark am Anfang, langsames Ausfaden.
         return max(0, pow(1 - age / duration, 1.3))
+    }
+
+    // MARK: - Runden-Badge (Phase 7.6 D)
+
+    /// Zentrales „Runde X"-Badge, das bei Rundenübergang kurz
+    /// einblendet (Fade + Scale) und wieder verschwindet. Positionierung
+    /// via Overlay im Main-Body; hier nur die Badge-Grafik + Intensität.
+    @ViewBuilder
+    private var roundBadge: some View {
+        TimelineView(.animation) { context in
+            let intensity = roundBadgeIntensity(at: context.date)
+            if intensity > 0 {
+                Text("Runde \(displayedRound)")
+                    .font(.system(size: 34, weight: .black, design: .rounded))
+                    .foregroundStyle(.white)
+                    .tracking(2)
+                    .padding(.horizontal, 26)
+                    .padding(.vertical, 14)
+                    .background(
+                        Capsule().fill(Color.black.opacity(0.55))
+                    )
+                    .overlay(
+                        Capsule().stroke(Color.white.opacity(0.25), lineWidth: 1)
+                    )
+                    .shadow(color: .black.opacity(0.45), radius: 12, x: 0, y: 4)
+                    .opacity(intensity)
+                    .scaleEffect(0.78 + 0.22 * intensity)
+            }
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func roundBadgeIntensity(at date: Date) -> Double {
+        guard let ts = roundBadgeShownAt else { return 0 }
+        let age = date.timeIntervalSince(ts)
+        let duration = Self.roundBadgeDuration
+        guard age >= 0, age < duration else { return 0 }
+        // Ease-in + ease-out: glockenartig (stark in der Mitte,
+        // fade an beiden Enden).
+        let t = age / duration
+        return sin(.pi * t)
     }
 
     // MARK: - Combo-Badge (Mini-Ziele)
@@ -2400,6 +2488,11 @@ struct WordRunnerGameView: View {
     private func startRun() {
         // Doppelter Gate, falls ein Retry-CTA den Empty-State umgeht.
         guard hasUsableList else { return }
+        // Runden-State zurücksetzen, damit das Badge beim ersten
+        // Übergang zu Runde 2 korrekt triggert (sonst würde der
+        // Watcher einen Sprung 0 → 1 als Rundenwechsel lesen).
+        displayedRound = 1
+        roundBadgeShownAt = nil
         game.start()
         music.startNewRun()
     }
