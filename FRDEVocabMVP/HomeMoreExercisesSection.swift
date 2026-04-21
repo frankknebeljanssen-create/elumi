@@ -73,7 +73,10 @@ private struct MoreExerciseCard: View {
                         HomeModuleIconView(
                             icon: module.icon,
                             size: 40,
-                            glyphTint: module.accent
+                            // Glyph weiß auf farbiger Card, identisch
+                            // zum Hero-Grid — liest sich klar gegen
+                            // den Modul-Tint.
+                            glyphTint: .white
                         )
                         Text(module.title)
                             .font(.system(
@@ -81,20 +84,35 @@ private struct MoreExerciseCard: View {
                                 weight: .bold,
                                 design: .rounded
                             ))
-                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                            .foregroundStyle(.white)
+                            .shadow(color: .black.opacity(0.35), radius: 1, x: 0, y: 1)
                             .lineLimit(1)
                             .minimumScaleFactor(0.7)
                     }
                 }
+                // Farbiger Gradient-Background in der Modulfarbe —
+                // identisches Pattern wie Hero, nur etwas sanfter
+                // (0.88 → 0.68 statt 0.95 → 0.75), damit die Cards
+                // klar untergeordnet zu Hero wirken, aber die
+                // Modul-Farb-Identität konsistent weitertragen.
                 .background(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(AppTheme.Colors.surface)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    module.accent.opacity(0.88),
+                                    module.accent.opacity(0.68)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(module.accent.opacity(0.22), lineWidth: 1)
+                        .fill(Color.white.opacity(0.03))
                 )
-                .shadow(color: .black.opacity(0.10), radius: 4, x: 0, y: 2)
+                .shadow(color: .black.opacity(0.20), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(.plain)
     }
