@@ -195,6 +195,6 @@ private struct HeroModuleCard: View {
                 )
                 .shadow(color: .black.opacity(0.25), radius: 5, x: 0, y: 3)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(AppCardPressStyle())
     }
 }

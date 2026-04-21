@@ -243,7 +243,7 @@ struct TrophyView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .appSetupCardBackground()
         }
-        .buttonStyle(.plain)
+        .buttonStyle(AppCardPressStyle())
     }
 
     private func lernstatusColumn(icon: String, tint: Color, label: String, value: Int) -> some View {
@@ -399,7 +399,7 @@ struct TrophyView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .appSetupCardBackground()
         }
-        .buttonStyle(.plain)
+        .buttonStyle(AppCardPressStyle())
         .disabled(!unlocked)
     }
 

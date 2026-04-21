@@ -114,6 +114,6 @@ private struct MoreExerciseCard: View {
                 )
                 .shadow(color: .black.opacity(0.20), radius: 4, x: 0, y: 2)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(AppCardPressStyle())
     }
 }

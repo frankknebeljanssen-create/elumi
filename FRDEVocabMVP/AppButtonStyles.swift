@@ -30,6 +30,34 @@ struct AppPrimaryButtonStyle: ButtonStyle {
     }
 }
 
+/// **AppCardPressStyle** (Phase 7.6+) — systemweiter Tap-Feedback-Stil
+/// für alle tappbaren Cards (Home-Hero-Grid, Weitere Übungen, Tools,
+/// Status-Card, Pokal, etc.).
+///
+/// Verhalten:
+///   • Auf Finger-Down sofort Scale-Down (0.95) — kein Delay, greift
+///     im selben Frame wie der Touch-Event.
+///   • Auf Release/Drag-Cancel schnelle Spring-Zurück-Animation
+///     (response 0.22, dampingFraction 0.55) — natürliches „Pop"-
+///     Feedback, minimaler Overshoot.
+///   • `scaleEffect` + Spring — keine Opacity-/Shadow-Wackler, die
+///     den Render-Path ausbremsen könnten.
+///
+/// Nutzung: `Button { ... } label: { ... }.buttonStyle(AppCardPressStyle())`
+/// statt `.buttonStyle(.plain)` auf allen tappbaren Modul-/Home-Cards.
+struct AppCardPressStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .animation(
+                configuration.isPressed
+                    ? .easeOut(duration: 0.08)
+                    : .spring(response: 0.22, dampingFraction: 0.55),
+                value: configuration.isPressed
+            )
+    }
+}
+
 struct AppSecondaryButtonStyle: ButtonStyle {
     var tint: Color = AppTheme.Colors.primary
 
