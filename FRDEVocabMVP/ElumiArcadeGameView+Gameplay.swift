@@ -228,6 +228,34 @@ extension ElumiArcadeGameView {
         // sichtbar ist (Spiel läuft), keine Aktion. Sonst regulärer
         // Start-Pfad, egal ob aus Overlay-Tap oder AutoStart.
         guard !elumiVisible else { return }
+
+        // **Hard-Reset von Welt-State** (User-Report „beim Start kommen
+        // manchmal 100 Items auf einmal runter, vor allem beim Wechsel
+        // zwischen Elumi und Word Runner"): das View-State wird zwar
+        // bei `endGame()` / `exitArcadeSilently()` geleert, aber wenn
+        // das Cover ohne einen dieser Pfade geschlossen wird (z.\u{00A0}B.
+        // System-Swipe-Back / iOS-Schnelltaste / State-Restore), bleiben
+        // `activeSnacks` + Power-Up-Timer gesetzt. Der nächste Start
+        // rendert sie dann alle auf einmal.
+        //
+        // Die hier gelisteten State-Keys sind identisch zu denen in
+        // `endGame()` — wir setzen sie bewusst nochmal zurück, damit
+        // der Start garantiert von Null anfängt.
+        activeSnacks = []
+        activeJellyfish = nil
+        activeTentacles = []
+        activeFish = []
+        suctionEndsAt = nil
+        bonusPointsEndsAt = nil
+        slowMotionEndsAt = nil
+        shieldBubbleEndsAt = nil
+        shieldBubbleRippleAt = nil
+        ambientSeaCreature = nil
+        ambientEventFiredThisRound = false
+        arcadeSFX?.reset()
+        powerUpSpawnGate.reset()
+        powerUpRuntime.hardReset()
+
         feedbackPlayer.playLaunch()
         showingStartOverlay = false
         withAnimation(.spring(response: 0.35, dampingFraction: 0.65)) {
