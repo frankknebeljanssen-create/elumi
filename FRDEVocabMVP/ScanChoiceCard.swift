@@ -259,7 +259,9 @@ struct ScanHeroCard: View {
 /// der die Lider exakt auf die Augen-Positionen legt.
 struct ScanScreenHeader: View {
     @State private var blinkStartDate: Date = .now
-    private static let mascotSize: CGFloat = 88
+    // 88 → 70 (−20 %): Mascot rechts etwas dezenter, rückt den
+    // Content darunter näher ans Auge.
+    private static let mascotSize: CGFloat = 70
 
     var body: some View {
         HStack(alignment: .center, spacing: 4) {
