@@ -86,7 +86,11 @@ extension FlashcardsView {
                 }
             }
         }
-        .padding(.horizontal, flashcardSessionCardInset)
+        // Horizontal-Padding 0 (vorher `flashcardSessionCardInset` = 8).
+        // Der äußere Screen-Wrapper (`flashcardSetupScreen`) setzt bereits
+        // `AppLayout.screenPadding` — wenn wir hier nochmal 8 pt pro Seite
+        // draufsetzen, ist der Header 16 pt schmaler als der Content
+        // darunter. Gleich breit wie alle Cards jetzt.
         .padding(.top, 4)
         .padding(.bottom, AppLayout.screenHeaderBottomPadding)
     }
@@ -94,15 +98,20 @@ extension FlashcardsView {
     /// Header für die laufende Karteikarten-Übung — Zurück führt zur
     /// Listen-Auswahl-/Setup-Card (nicht ganz raus zu Home).
     /// Bleibt bewusst **ohne** ModuleHeaderCard: während aktiver Session
-    /// soll der Lerninhalt maximal Platz haben.
+    /// soll der Lerninhalt maximal Platz haben. Horizontal-Inset gleich
+    /// zu den Session-Cards (`flashcardSessionCardInset`).
     var flashcardSessionHeader: some View {
         flashcardCompactHeader(onBack: returnToFlashcardSetup, showsModuleCard: false)
+            .padding(.horizontal, flashcardSessionCardInset)
     }
 
     /// Header für den Karteikarten-Setup-Screen — Zurück verlässt die
     /// Karteikarten-View komplett (zurück zur vorherigen Navigationsebene).
     /// Zeigt die farbige `ModuleHeaderCard` → visueller Wiedererkennungs-
-    /// anker zum Home-Tap.
+    /// anker zum Home-Tap. **Kein** eigener Horizontal-Inset — der
+    /// Setup-Wrapper setzt bereits `AppLayout.screenPadding`, damit
+    /// der Header auf derselben Kante wie die Setup-Cards sitzt
+    /// (vorher: zusätzliche 8 pt machten ihn 16 pt schmaler).
     var flashcardSetupHeader: some View {
         flashcardCompactHeader(onBack: handleBackNavigation, showsModuleCard: true)
     }

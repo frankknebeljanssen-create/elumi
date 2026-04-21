@@ -225,12 +225,11 @@ extension FlashcardsView {
                             flashcardDictionaryLevelCard
                         }
 
-                        // User-Request: etwas größerer Spacing zwischen
-                        // „Anzahl der Karten" und „Karte fällt raus nach".
-                        // Default-Spacing (AppTheme.Spacing.md = 16 pt)
-                        // wurde ersetzt durch lokale 22 pt — deutlich
-                        // ruhigere Trennung der beiden Mechanik-Cards.
-                        VStack(alignment: .leading, spacing: 22) {
+                        // User-Nachjustierung: Spacing zwischen „Anzahl
+                        // der Karten" und „Karte fällt raus nach" wieder
+                        // zurück auf 12 pt — die 22 pt waren zu viel
+                        // Abstand zwischen den beiden Mechanik-Cards.
+                        VStack(alignment: .leading, spacing: 12) {
                             flashcardCountLimitCard
                             flashcardMasteryThresholdCard
                         }
