@@ -264,14 +264,16 @@ struct WordRunnerGameView: View {
                     }
                     .offset(x: offset.width, y: offset.height)
                 }
-                // **Game-Over-Freeze** (Phase 7.6): der Welt-Layer wird
-                // im GameOver-State unscharf gerendert. Die Welt-Uhr
-                // friert ohnehin via `gameOverAt` ein (siehe
-                // `WordRunnerGame.effectiveElapsed`) — der Blur setzt
-                // den Freeze visuell klar sichtbar um, damit kein
-                // subtiler Bewegungseindruck zurückbleibt.
-                .blur(radius: game.runState.isGameOver ? 8 : 0)
-                .animation(.easeOut(duration: 0.35), value: game.runState.isGameOver)
+                // **Game-Over-/Summary-Freeze** (Phase 7.6): der Welt-
+                // Layer verschwindet im GameOver- UND Summary-State
+                // fast vollständig — starker Blur + niedrige Opacity.
+                // Zusammen mit dem dunklen Dim aus dem State-Overlay
+                // bleibt vom Spielhintergrund nichts Lesbares übrig
+                // (User-Spec: „muss alles weg").
+                .blur(radius: (game.runState.isGameOver || game.runState.isSummary) ? 22 : 0)
+                .opacity((game.runState.isGameOver || game.runState.isSummary) ? 0.08 : 1)
+                .animation(.easeOut(duration: 0.4), value: game.runState.isGameOver)
+                .animation(.easeOut(duration: 0.4), value: game.runState.isSummary)
 
                 // **Dedicated Gesture-Layer** (Arcade-Pattern): eigener
                 // transparenter Layer mit DragGesture(minimumDistance: 0)
@@ -1007,15 +1009,25 @@ struct WordRunnerGameView: View {
 
     /// Weicher pinker Bodenschein unter dem Vehicle. Hebt den
     /// Spieler vom dunklen Road-Plane ab, ohne ihn zu „glühen".
+    ///
+    /// **Phase 7.6 Fix**: Die X-Position folgt jetzt derselben Logik
+    /// wie `playerPuck` — `displayX` (Finger-Tracking während Drag) +
+    /// Breath-Offset (statische Lane × Atmung). Vorher hing der Schein
+    /// an der statischen Lane-X und „hing" merklich hinter dem Spieler
+    /// her, wenn der User die Spur schnell wechselte.
     @ViewBuilder
     private func playerGroundGlow(size: CGSize) -> some View {
+        let staticLaneX = size.width * game.currentLane.xFraction
         let playerY = size.height * WordRunnerGame.Tuning.playerYFraction
         TimelineView(.animation) { context in
             let elapsed = game.effectiveElapsed(context: context.date)
             let breathFraction = WordRunnerGame.Tuning.laneXFraction(
-                game.currentLane, at: elapsed
-            )
-            let centerX = size.width * breathFraction
+                game.currentLane,
+                at: elapsed
+            ) - game.currentLane.xFraction
+            let breathOffset = breathFraction * size.width
+            let baseX = displayX ?? staticLaneX
+            let centerX = baseX + breathOffset
 
             Ellipse()
                 .fill(

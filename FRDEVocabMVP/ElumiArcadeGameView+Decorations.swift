@@ -199,13 +199,13 @@ extension ElumiArcadeGameView {
         let endDate = shieldBubbleEndsAt
         let remaining = endDate.map { $0.timeIntervalSince(date) } ?? 0
 
-        // **Warnphase** (Phase 7.6): in den letzten 2 Sekunden vor
-        // Ablauf blinkt die Bubble mit zunehmender Frequenz (3 → 9 Hz).
-        // Ergibt 6–8 klar sichtbare Blinks über den Warn-Zeitraum.
-        // Die kumulative Phase wird analytisch berechnet (lineare
-        // Frequenz-Rampe → Phase = ∫ω dt = ½(ω₁+ω₂)·t), damit die
-        // Sinus-Welle durchgehend glatt bleibt.
-        let warningDuration: TimeInterval = 2.0
+        // **Warnphase** (Phase 7.6): in den letzten 4 Sekunden vor
+        // Ablauf blinkt die Bubble mit zunehmender Frequenz (2.5 →
+        // 8 Hz). +2 s gegenüber der Erstfassung, damit der User mehr
+        // Vorlauf bekommt. Die kumulative Phase wird analytisch
+        // berechnet (lineare Frequenz-Rampe → Phase = ∫ω dt =
+        // ½(ω₁+ω₂)·t), damit die Sinus-Welle durchgehend glatt bleibt.
+        let warningDuration: TimeInterval = 4.0
         let warningProgress: Double = {
             guard remaining > 0, remaining < warningDuration else { return 0 }
             return 1.0 - (remaining / warningDuration)
@@ -213,8 +213,8 @@ extension ElumiArcadeGameView {
         let warnOpacity: Double = {
             guard warningProgress > 0 else { return 1.0 }
             let elapsed = warningDuration - remaining
-            let startHz: Double = 3.0
-            let endHz: Double = 9.0
+            let startHz: Double = 2.5
+            let endHz: Double = 8.0
             let avgHz = startHz + 0.5 * (endHz - startHz) * (elapsed / warningDuration)
             let phase = 2 * Double.pi * avgHz * elapsed
             return 0.4 + 0.6 * (0.5 + 0.5 * sin(phase))

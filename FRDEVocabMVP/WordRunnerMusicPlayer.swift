@@ -57,9 +57,10 @@ final class WordRunnerMusicPlayer: ObservableObject {
 
     // MARK: - Tuning
 
-    // Audio-Balance-Pass (Phase 7.6): Musik ~15 % leiser (0.55 → 0.47),
-    // damit SFX (Life-Loss, Correct, Wrong) klar über den Mix kommen.
-    private let defaultVolume: Float = 0.47
+    // Audio-Balance-Pass (Phase 7.6): Musik insgesamt ~30 % leiser
+    // (zwei −15 %-Stufen, 0.55 → 0.47 → 0.40), damit SFX klar über
+    // den Mix kommen.
+    private let defaultVolume: Float = 0.40
     private let defaultFadeDuration: TimeInterval = 0.8
 
     private init() {}

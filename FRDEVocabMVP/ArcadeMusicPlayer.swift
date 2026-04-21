@@ -63,11 +63,12 @@ final class ArcadeMusicPlayer: ObservableObject {
 
     // MARK: - Lautstärken
 
-    // Audio-Balance-Pass (Phase 7.6): Musik ~15 % leiser, damit SFX
-    // (v. a. Life-Loss) über dem Mix durchkommen. Fish-Event bleibt
-    // proportional etwas lauter als Standard (atmosphärischer Moment).
-    private let arcadeVolume: Float = 0.47
-    private let fishVolume: Float = 0.53
+    // Audio-Balance-Pass (Phase 7.6): Musik insgesamt ~30 % leiser
+    // (zwei −15 %-Stufen), damit SFX (v. a. Life-Loss) klar über dem
+    // Mix durchkommen. Fish-Event bleibt proportional etwas lauter als
+    // Standard-Track (atmosphärischer Moment).
+    private let arcadeVolume: Float = 0.40
+    private let fishVolume: Float = 0.45
 
     // MARK: - Fade-Dauern
 

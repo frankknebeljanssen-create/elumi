@@ -124,17 +124,32 @@ final class LiveListRunnerTaskProvider: RunnerTaskProvider {
         var tasks: [RunnerTask] = []
         for item in items {
             guard let info = Self.parseNounInfo(item) else { continue }
-            let correctIndex: Int = {
+            // Default-Optionen + Index. Bei Elision wird der Singular-
+            // Artikel (le/la) durch „l'" ersetzt, damit das Lösungs-
+            // Schild die grammatisch korrekte Form trägt. Ohne diesen
+            // Austausch wäre die Aufgabe unlösbar (z.\u{00A0}B. Nomen
+            // „ami" → le ist falsch, l' ist richtig — aber l' stand
+            // vorher gar nicht auf den Schildern).
+            let (options, correctIndex): ([String], Int) = {
                 switch info.gender {
-                case .masculine, .neuter: return 0   // le
-                case .feminine:           return 1   // la
-                case .plural:             return 2   // les
+                case .masculine, .neuter:
+                    return info.needsElision
+                        ? (["l'", "la", "les"], 0)
+                        : (["le", "la", "les"], 0)
+                case .feminine:
+                    return info.needsElision
+                        ? (["le", "l'", "les"], 1)
+                        : (["le", "la", "les"], 1)
+                case .plural:
+                    // Plural hat keine Elision im Französischen — „les"
+                    // bleibt in allen Fällen stabil.
+                    return (["le", "la", "les"], 2)
                 }
             }()
             tasks.append(RunnerTask(
                 category: .article,
                 prompt: info.noun,
-                options: ["le", "la", "les"],
+                options: options,
                 correctIndex: correctIndex
             ))
         }
@@ -214,7 +229,7 @@ final class LiveListRunnerTaskProvider: RunnerTaskProvider {
             if let gender = LexiconNounGender(rawValue: variant.tag + ".") ?? tagMap[variant.tag] {
                 let noun = stripArticle(from: variant.french)
                 guard isSingleNoun(noun) else { return nil }
-                return NounInfo(noun: noun, gender: gender)
+                return NounInfo(noun: noun, gender: gender, needsElision: requiresElision(noun))
             }
         }
 
@@ -225,7 +240,7 @@ final class LiveListRunnerTaskProvider: RunnerTaskProvider {
             if lower.hasPrefix(prefix) {
                 let noun = String(raw.dropFirst(prefix.count)).trimmingCharacters(in: .whitespaces)
                 guard isSingleNoun(noun) else { return nil }
-                return NounInfo(noun: noun, gender: gender)
+                return NounInfo(noun: noun, gender: gender, needsElision: requiresElision(noun))
             }
         }
 
@@ -256,6 +271,30 @@ final class LiveListRunnerTaskProvider: RunnerTaskProvider {
     fileprivate struct NounInfo {
         let noun: String
         let gender: LexiconNounGender
+        /// Startet mit Vokal oder stillem h → Elision notwendig
+        /// („l'ami" statt „le ami"). Wird in der Task-Generierung
+        /// dazu genutzt, den Singular-Artikel in den Optionen durch
+        /// `l'` zu ersetzen, damit der Lösungs-Schild auch wirklich
+        /// den korrekten Artikel trägt (sonst unlösbar).
+        let needsElision: Bool
+    }
+
+    /// Vokale (inkl. Akzent-Varianten) + `h` (stilles h). Deckungsgleich
+    /// mit `ArticleModeClassifier.vowelOrHMuetStarters`.
+    private static let elisionStarters: Set<Character> = [
+        "a", "e", "i", "o", "u", "y",
+        "\u{00E0}", "\u{00E2}", "\u{00E4}",
+        "\u{00E9}", "\u{00E8}", "\u{00EA}", "\u{00EB}",
+        "\u{00EE}", "\u{00EF}",
+        "\u{00F4}", "\u{00F6}",
+        "\u{00F9}", "\u{00FB}", "\u{00FC}",
+        "h"
+    ]
+
+    private static func requiresElision(_ noun: String) -> Bool {
+        let lower = noun.lowercased().trimmingCharacters(in: .whitespaces)
+        guard let first = lower.first else { return false }
+        return elisionStarters.contains(first)
     }
 
     /// Mapping kurze-Tags → Lexicon-Gender. `LexiconNounGender`
