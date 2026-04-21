@@ -61,16 +61,12 @@ struct GameHubView: View {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
                 hubHeader
                 heroBlock
-                ctaBlock
+                // Zwei gleichwertige Start-Buttons (Elumi + Word Runner)
+                // direkt unter dem Hero — oben Auswahl, dann Start.
+                // Die frühere separate Word-Runner-Dev-Shortcut-Card
+                // ganz unten ist damit entfallen.
+                gameStartButtons
                 rewardExplainerBlock
-                // `wordRunnerDevShortcut` war kurz `#if DEBUG`-gated,
-                // aber dieses Projekt setzt `SWIFT_ACTIVE_COMPILATION_
-                // CONDITIONS` nirgendwo → die Swift-DEBUG-Flag greift
-                // nicht, Karte wäre unsichtbar. Bis die Flag im Projekt
-                // eingetragen ist, bleibt die Karte immer sichtbar —
-                // Label „DEBUG · Phase 2/3 Prototype" macht den Status
-                // am Sprachlabel kenntlich.
-                wordRunnerDevShortcut
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, AppLayout.screenPadding)
@@ -187,62 +183,79 @@ struct GameHubView: View {
         }
     }
 
-    // MARK: - CTA Block
+    // MARK: - Game-Start-Buttons (Phase 7.6+)
     //
-    // **Ein** Button — keine konkurrierenden Aktionen, kein Sekundär-CTA.
-    // Kontext-sensitiv: mit Credits = „Spiel starten"; ohne Credits wird
-    // der Button zum Lern-Einstieg, damit der User nicht auf einem toten
-    // Screen sitzt.
+    // Zwei gleichgroße Primary-CTAs, einer pro Spiel. Visuell
+    // identisches Design — gleicher Button-Style, gleiche Höhe, gleiche
+    // Icon-Größe —, nur Label + Icon differenzieren die Spiele.
+    //
+    // Elumi (Arcade) braucht Credits; ohne Credits wird der Button
+    // deaktiviert + eine Hinweiszeile unter dem Block zeigt, wie der
+    // User an Spiele kommt. Word Runner läuft ohne Credit-Verbrauch
+    // (Dev-/Prototyp-Stand) und ist daher immer verfügbar.
 
-    private var ctaBlock: some View {
-        VStack(spacing: 8) {
+    private var gameStartButtons: some View {
+        VStack(spacing: 10) {
+            // Elumi — Credit-gated
+            gameStartButton(
+                title: "Elumi starten",
+                systemImage: "gamecontroller.fill",
+                enabled: hasCredits,
+                action: startGameTapped
+            )
+
+            // Word Runner — immer verfügbar (kein Credit-Verbrauch)
+            gameStartButton(
+                title: "Word Runner starten",
+                systemImage: "figure.run",
+                enabled: true,
+                action: { showWordRunner = true }
+            )
+
+            // Status-/Hinweiszeile unter den beiden Buttons.
             if hasCredits {
-                Button {
-                    startGameTapped()
-                } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: "play.fill")
-                            .font(.system(size: 17, weight: .bold))
-                        Text("Spiel starten")
-                            .font(.system(size: 18, weight: .black, design: .rounded))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: 60)
-                }
-                .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-
                 Text(ArcadeCreditSystem.gamesCost == 1
-                    ? "1 Spiel wird verwendet"
-                    : "\(ArcadeCreditSystem.gamesCost) Spiele werden verwendet")
+                    ? "1 Spiel wird für Elumi verwendet"
+                    : "\(ArcadeCreditSystem.gamesCost) Spiele werden für Elumi verwendet")
                     .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
-            } else {
-                Button {
-                    // Empty-State-CTA führt zurück in den Lernbereich.
-                    // Wortlaut nach Game-Loop-Spec: „Verdiene Spiele
-                    // durch Lernen" — klares Signal, warum man den
-                    // Game Hub gerade verlässt.
-                    feedbackPlayer.playTabSwitch()
-                    goHome()
-                } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: "book.fill")
-                            .font(.system(size: 16, weight: .bold))
-                        Text("Verdiene Spiele durch Lernen")
-                            .font(.system(size: 16, weight: .black, design: .rounded))
-                    }
                     .frame(maxWidth: .infinity)
-                    .frame(minHeight: 60)
-                }
-                .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-
-                Text("Du hast keine Spiele — spiel eine Runde Lernen, um welche zu verdienen.")
+            } else {
+                Text("Keine Spiele für Elumi — spiel eine Runde Lernen, um welche zu verdienen. Word Runner kannst du trotzdem starten.")
                     .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
             }
         }
+    }
+
+    /// Gemeinsamer Start-Button-Stil — beide Spiele nutzen identisches
+    /// Layout (Icon + „… starten"-Label), damit die beiden Buttons
+    /// visuell gleichwertig nebeneinander stehen.
+    @ViewBuilder
+    private func gameStartButton(
+        title: String,
+        systemImage: String,
+        enabled: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button {
+            guard enabled else { return }
+            action()
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 17, weight: .bold))
+                Text(title)
+                    .font(.system(size: 18, weight: .black, design: .rounded))
+            }
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 60)
+        }
+        .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+        .disabled(!enabled)
+        .opacity(enabled ? 1.0 : 0.5)
     }
 
     private func startGameTapped() {
@@ -343,43 +356,4 @@ struct GameHubView: View {
             .padding(.leading, 58)
     }
 
-    // MARK: - Word Runner Dev-Shortcut
-    //
-    // Sichtbar unten auf dem Hub, deutlich als Debug markiert.
-    // Verbraucht **keine** Credits, hängt nicht an Session/Progress —
-    // reiner Tester-Zugang, damit wir den Runner-Prototyp ohne
-    // Credit-Farming anspielen können. Wird in Phase 4+ durch die
-    // reguläre Spiel-Auswahl ersetzt.
-    private var wordRunnerDevShortcut: some View {
-        Button {
-            showWordRunner = true
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "figure.run")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(AppTheme.Colors.elumiPink)
-                    .frame(width: 32, height: 32)
-                    .background(
-                        Circle().fill(AppTheme.Colors.elumiPink.opacity(0.18))
-                    )
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("Word Runner")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                    Text("DEBUG · Phase 2/3 Prototype")
-                        .font(.system(size: 11, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                }
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 11)
-            .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.plain)
-        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.subtle)
-    }
 }
