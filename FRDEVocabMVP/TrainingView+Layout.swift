@@ -709,6 +709,12 @@ extension TrainingView {
     ) -> some View {
         let isSelected = (session.isSpeedRound == isSpeedRound)
 
+        // `subtitle` ist per User-Spec entfallen („Gezielt üben und behalten"
+        // + „30 Sekunden Tempo" sind raus). Parameter bleibt in der API,
+        // wird intern aber ignoriert — Call-Sites müssen nicht angefasst
+        // werden, falls später wieder eine Subline gebraucht wird.
+        _ = subtitle
+
         return Button {
             feedbackPlayer.playTabSwitch()
             session.isSpeedRound = isSpeedRound
@@ -725,40 +731,21 @@ extension TrainingView {
                 .padding(.top, 4)
                 .frame(maxWidth: .infinity, alignment: .center)
 
-                VStack(alignment: .center, spacing: 4) {
-                    Text(title)
-                        .font(.system(size: 18, weight: .black, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.center)
-                        .minimumScaleFactor(0.8)
-                        .frame(maxWidth: .infinity)
-
-                    if let subtitle, !subtitle.isEmpty {
-                        // Subtitle auf **1 Zeile** begrenzt + Scale-Down —
-                        // garantiert, dass die Training-Card (längere
-                        // Subline) und die Speed-Round-Card (kürzere) die
-                        // **gleiche** Höhe haben. Vorher wrappte die
-                        // längere auf 2 Zeilen und wuchs über den
-                        // minHeight hinaus — die kürzere blieb dagegen
-                        // auf Min-Höhe, dadurch wirkten sie unterschiedlich.
-                        Text(subtitle)
-                            .font(.system(size: 12, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
-                            .multilineTextAlignment(.center)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.75)
-                            .frame(maxWidth: .infinity)
-                    }
-                }
+                Text(title)
+                    .font(.system(size: 18, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.8)
+                    .frame(maxWidth: .infinity)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 14)
             .padding(.vertical, 14)
-            // minHeight angehoben (120 → 130) — puffert auch bei
-            // Font-Skalierung (Accessibility-Settings) beide Varianten
-            // auf identische Höhe, ohne dass eine über-/unterlaufen kann.
-            .frame(maxWidth: .infinity, minHeight: 130, alignment: .top)
+            // minHeight 130 → 100: die ~18 pt des entfernten Subline-
+            // Blocks + Inner-Spacing kommen zurück, Card wirkt ruhiger
+            // und weniger dominant neben den Detail-Cards darunter.
+            .frame(maxWidth: .infinity, minHeight: 100, alignment: .top)
             .background(vocabularyModeCardBackground(isSelected: isSelected))
             .overlay(vocabularyModeCardBorder(isSelected: isSelected))
             .shadow(
