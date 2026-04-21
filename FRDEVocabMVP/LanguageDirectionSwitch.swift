@@ -53,7 +53,12 @@ struct LanguageDirectionSwitch: View {
             // Komposition (zwei `StraightFlagBadge` + SF-Symbol dazwischen) ist
             // dadurch entfallen. `.id(…)` triggert beim Richtungswechsel eine
             // saubere Image-Transition, analog zum alten `.id(code)`-Pattern.
-            Image(appIcon: isFrToDE ? "IconLanguageToggle" : "IconLanguageToggleReverse")
+            //
+            // **User-Fix (Phase 7.6+)**: Bewusst `Image("...")` ohne
+            // `appIcon:`-Resolver — damit greift hier *nicht* der globale
+            // A/B-Icon-Set-Switch, der Flaggen-Switcher bleibt immer auf
+            // dem Original-A-Set-Asset.
+            Image(isFrToDE ? "IconLanguageToggle" : "IconLanguageToggleReverse")
                 .resizable()
                 .scaledToFit()
                 .frame(height: spec.iconHeight)
