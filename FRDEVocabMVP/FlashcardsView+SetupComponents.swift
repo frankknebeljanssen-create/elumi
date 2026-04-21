@@ -174,7 +174,8 @@ extension FlashcardsView {
             // kleine Mini-Stapel (in derselben roten Farbe), dann der Slider.
             HStack(alignment: .center, spacing: 6) {
                 Text("\(displayCount)")
-                    .font(.system(size: 36, weight: .black, design: .rounded))
+                    // 36 → 33 pt (−3 pt User-Wunsch).
+                    .font(.system(size: 33, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.error)
                     .contentTransition(.numericText())
                     .animation(.spring(response: 0.3, dampingFraction: 0.7), value: displayCount)

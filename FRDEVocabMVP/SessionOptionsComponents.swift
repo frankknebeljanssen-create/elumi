@@ -114,12 +114,11 @@ struct OptionChipGrid<Option: Hashable>: View {
                         }
                     }
                     .frame(maxWidth: .infinity)
-                    // Noch einmal minimal flacher als zuvor (62 → 56) —
-                    // die Anzahl-Fragen-Chips im Quiz-Setup wirken
-                    // dadurch weniger dominant. Inhalt sitzt weiterhin
-                    // komfortabel, Text + Subtitle bleiben sauber
-                    // zentriert.
-                    .frame(height: 56)
+                    // Nochmals flacher (56 → 48) — Quiz-Fragen-Chips
+                    // wirken als reine Auswahl-Buttons, nicht als
+                    // dominante Cards. Text bleibt lesbar, Subtitle
+                    // rutscht dichter heran.
+                    .frame(height: 48)
                     .background(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .fill(isSelected
