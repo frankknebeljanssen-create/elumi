@@ -37,6 +37,30 @@ final class DailyChallengeStore: ObservableObject {
     init() {
         load()
         refreshForTodayIfNeeded()
+
+        // **Phase E.4** — Account-Switch-Hook: der neue Account hat
+        // seine eigene Daily-Challenge. Reload aus seinem Namespace,
+        // danach refresh (falls die gespeicherte Challenge für heute
+        // nicht mehr gilt, wird eine frische generiert).
+        NotificationCenter.default.addObserver(
+            forName: AccountStore.didSwitchAccount,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.reloadForCurrentAccount()
+            }
+        }
+    }
+
+    /// **Phase E.4** — lädt die Daily-Challenge für den neu aktiven
+    /// Account aus seinem Namespace, generiert falls nötig eine neue
+    /// für den aktuellen Tag.
+    func reloadForCurrentAccount() {
+        challenge = nil
+        lastCompletionOutcome = nil
+        load()
+        refreshForTodayIfNeeded()
     }
 
     // MARK: - Public API
@@ -182,16 +206,33 @@ final class DailyChallengeStore: ObservableObject {
 
     // MARK: - Persistence
 
+    /// Per-Account-Key (Phase E.4). Fallback auf den globalen Key,
+    /// solange kein Account aktiv ist (Erstinstall).
+    private var scopedKey: String {
+        AccountStore.shared.namespacedKey(appDailyChallengeKey)
+    }
+
     private func load() {
-        guard let data = UserDefaults.standard.data(forKey: appDailyChallengeKey),
-              let decoded = try? JSONDecoder().decode(DailyChallenge.self, from: data) else {
+        // Zuerst scoped Key lesen. Wenn nichts da ist (z. B. erster
+        // Start nach Update in den ersten migrierten Account), auf
+        // den globalen Legacy-Key fallen und sofort in den scoped
+        // Slot persistieren.
+        let defaults = UserDefaults.standard
+        if let data = defaults.data(forKey: scopedKey),
+           let decoded = try? JSONDecoder().decode(DailyChallenge.self, from: data) {
+            self.challenge = decoded
             return
         }
-        self.challenge = decoded
+        if scopedKey != appDailyChallengeKey,
+           let legacyData = defaults.data(forKey: appDailyChallengeKey),
+           let legacy = try? JSONDecoder().decode(DailyChallenge.self, from: legacyData) {
+            self.challenge = legacy
+            defaults.set(legacyData, forKey: scopedKey)
+        }
     }
 
     private func persist() {
         guard let challenge, let data = try? JSONEncoder().encode(challenge) else { return }
-        UserDefaults.standard.set(data, forKey: appDailyChallengeKey)
+        UserDefaults.standard.set(data, forKey: scopedKey)
     }
 }

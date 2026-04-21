@@ -178,6 +178,29 @@ final class WordRunnerGame: ObservableObject {
     /// Standard-Dauer pro Pickup.
     static let slowMoDuration: TimeInterval = 4.0
 
+    // MARK: - User Speed Control (Vertikal-Drag)
+    //
+    // User zieht in der View vertikal am Spielfeld:
+    //   • Drag UP    → `userSpeedMultiplier` > 1  → Welt scrollt schneller
+    //   • Drag DOWN  → `userSpeedMultiplier` < 1  → Welt scrollt langsamer
+    //   • Drag End   → zurück auf 1.0 (animiert in der View)
+    //
+    // Technisch: die View setzt `userSpeedMultiplier` pro Frame (oder
+    // animiert). `tick(now:)` integriert die Differenz (multiplier - 1)
+    // über die Zeit in `accumulatedUserTimeBias`. Dieser Bias fließt in
+    // `effectiveElapsed`, d. h. die Welt bewegt sich entsprechend
+    // schneller oder langsamer — ohne dass die Wave-Geometrie reißt
+    // (dieselbe Mechanik wie Slow-Mo-Lag, nur mit variablem Vorzeichen).
+    @Published var userSpeedMultiplier: CGFloat = 1.0
+    private(set) var accumulatedUserTimeBias: TimeInterval = 0
+    private var lastUserBiasTickDate: Date?
+
+    /// Max-Grenzen für den User-Speed — damit Kinder das Spiel nicht
+    /// zum Stillstand bringen oder in Sekundenbruchteilen fliegen. Wird
+    /// in der View beim Drag-Mapping geclampt.
+    static let userSpeedMin: CGFloat = 0.5
+    static let userSpeedMax: CGFloat = 1.6
+
     /// **Fisch-Event** (visuelles Ambient-Event). Maximal eines pro
     /// Run; wird beim `start()` mit zufälligem Delay (25–40 s)
     /// scheduled. View rendert dann eine Fisch-Silhouette, die über
@@ -624,6 +647,9 @@ final class WordRunnerGame: ObservableObject {
         slowMoEndsAt = nil
         slowMoStartedAt = nil
         accumulatedSlowMoLag = 0
+        userSpeedMultiplier = 1.0
+        accumulatedUserTimeBias = 0
+        lastUserBiasTickDate = nil
         fishEventStartedAt = nil
         jumpStartedAt = nil
         pendingOutcome = nil
@@ -831,6 +857,30 @@ final class WordRunnerGame: ObservableObject {
     ///   3. Weggeflogene Wellen aus dem Array entfernen.
     func tick(now: Date, screenHeight: CGFloat) {
         guard runState.isRunning else { return }
+
+        // **User-Speed-Bias-Integration** (Vertikal-Drag).
+        // Pro Frame: dt = now − lastTickDate. Bias wächst (oder
+        // schrumpft) proportional zu `(userSpeedMultiplier − 1)`.
+        // Wenn Multiplier = 1 (Ruhezustand), ist dt-Beitrag 0 und der
+        // Bias bleibt konstant — der User spürt keinen Unterschied zu
+        // früher. Zieht der User nach oben (>1), läuft die Welt
+        // schneller; nach unten (<1), langsamer. Cap auf `-realElapsed`
+        // damit effectiveElapsed nie negativ wird.
+        if let last = lastUserBiasTickDate {
+            let dt = now.timeIntervalSince(last)
+            if dt > 0 {
+                let delta = dt * TimeInterval(userSpeedMultiplier - 1)
+                accumulatedUserTimeBias += delta
+                // Safety-Clamp: Welt-Zeit darf nicht rückwärts laufen.
+                let realElapsed = now.timeIntervalSince(runStart)
+                let minBias = -(realElapsed - accumulatedSlowMoLag)
+                if accumulatedUserTimeBias < minBias {
+                    accumulatedUserTimeBias = minBias
+                }
+            }
+        }
+        lastUserBiasTickDate = now
+
         // **Welt-Zeit** statt Wall-Clock — Slow-Mo verzögert Wave-Y
         // entsprechend, Hit-Box bleibt synchron zur Render-Position.
         let elapsed = effectiveElapsed(context: now)
@@ -1045,7 +1095,10 @@ final class WordRunnerGame: ObservableObject {
             let activeSoFar = max(0, cap.timeIntervalSince(started))
             lag += activeSoFar * (1 - Self.slowMoFactor)
         }
-        return realElapsed - lag
+        // User-Bias (durch Vertikal-Drag) wird zur Welt-Zeit addiert:
+        // positiv → Welt „reist" mehr, scrollt schneller; negativ →
+        // Welt „reist" weniger, scrollt langsamer.
+        return realElapsed - lag + accumulatedUserTimeBias
     }
 
     // MARK: - Spawn Loop

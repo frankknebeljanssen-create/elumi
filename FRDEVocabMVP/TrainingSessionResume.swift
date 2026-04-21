@@ -78,7 +78,18 @@ struct TrainingSessionResumeState: Codable, Equatable {
 /// UserDefaults-Legacy, weil es vorher nichts gab.
 enum TrainingSessionResumeStore {
 
-    private static let fileName = "training-session-resume-v1.json"
+    private static let legacyFileName = "training-session-resume-v1.json"
+
+    /// Per-Account-Filename (Phase E.4). Fallback auf Legacy-Name,
+    /// solange kein Account aktiv ist. @MainActor — `AccountStore` ist
+    /// MainActor-isoliert; alle Save-/Load-Sites laufen eh auf Main.
+    @MainActor
+    private static var fileName: String {
+        if let id = AccountStore.shared.currentAccountID {
+            return "training-session-resume-v1-\(id.uuidString).json"
+        }
+        return legacyFileName
+    }
 
     // MARK: Save / Load / Clear
 
@@ -87,6 +98,7 @@ enum TrainingSessionResumeStore {
     /// Für den Hot-Path (recordAnswer, loadNextTrainingCard) nutzt der
     /// Controller `scheduleSave(_:)` mit Background-Write + Debounce —
     /// spart ~5–15 ms pro Antwort auf dem Main-Thread.
+    @MainActor
     static func save(_ state: TrainingSessionResumeState) {
         guard let data = try? JSONEncoder().encode(state) else { return }
         AppPersistenceSupport.writeData(data, named: fileName)
@@ -98,6 +110,7 @@ enum TrainingSessionResumeStore {
     /// zuletzt geplante State landet.
     private static var pendingSaveItem: DispatchWorkItem?
 
+    @MainActor
     static func scheduleSave(_ state: TrainingSessionResumeState) {
         pendingSaveItem?.cancel()
         let targetName = fileName
@@ -109,11 +122,13 @@ enum TrainingSessionResumeStore {
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.4, execute: item)
     }
 
+    @MainActor
     static func load() -> TrainingSessionResumeState? {
         guard let data = AppPersistenceSupport.readData(named: fileName) else { return nil }
         return try? JSONDecoder().decode(TrainingSessionResumeState.self, from: data)
     }
 
+    @MainActor
     static func clear() {
         // Pending Save canceln — sonst könnte ein verspäteter Write den
         // gerade geklärten Snapshot wieder rausschreiben.

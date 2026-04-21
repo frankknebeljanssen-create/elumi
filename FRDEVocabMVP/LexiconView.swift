@@ -131,6 +131,29 @@ struct LexiconView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 14) {
+                // **Modul-Header identisch zu Spielen/Fortschritt**
+                // (User-Spec „exakt wie"). Sitzt **vor** dem Sticky-
+                // Header-Block, damit der User ihn oben auf dem Screen
+                // sieht — genau wie bei Spielen/Fortschritt. Scrollt
+                // mit dem Content mit (kein Sticky-Inset mehr).
+                ModuleHeaderCard(
+                    systemImage: "book.closed.fill",
+                    title: "Wörterbuch",
+                    accent: sectionStyle.accent,
+                    onBack: { dismiss() }
+                )
+                // Etwas mehr Luft zwischen Modul-Header-Card und
+                // Content/Sticky-Search darunter (User-Request
+                // „etwas mehr padding bei Wörterbuch").
+                .padding(.bottom, AppTheme.Spacing.xs)
+
+                // Suche + Filter direkt im Scroll-Content — früher per
+                // `safeAreaInset(edge: .top)` oben gepinnt, was den
+                // Modul-Header unterhalb der Suche landen ließ. Jetzt
+                // im natürlichen Fluss; identisch zur Spielen- und
+                // Fortschritt-Layout-Hierarchie.
+                stickyLexiconHeader
+
                 if hasActiveSearch {
                     if model.isLoadingLexiconEntries && model.allEntries.isEmpty {
                         LexiconInfoCard(
@@ -191,19 +214,22 @@ struct LexiconView: View {
                     }
                 }
             }
-            .padding(.top, AppTheme.Spacing.xxs)
-            .padding(.bottom, lexiconScrollBottomInset)
+            // Padding-Block **identisch zu GameHub + TrophyView**
+            // (User-Spec „exakt gleiche Position für diesen
+            // Header-Typ"). Einzige Quelle der Wahrheit:
+            //   • `screenHeaderTopPadding` oben (Header sitzt auf
+            //     derselben vertikalen Linie wie Fortschritt/Spielen).
+            //   • `screenPadding` horizontal.
+            //   • `Spacing.xxl` unten (für Bottom-Bar-Clearance).
+            // Das frühere `.padding(.top, Spacing.xxs)` im VStack +
+            // zusätzliches `.padding(.top, screenHeaderTopPadding)` am
+            // ScrollView ergaben zusammen ~6–8 pt mehr — genau der
+            // Offset, den der User beim Umschalten bemerkt hat.
+            .padding(.horizontal, AppLayout.screenPadding)
+            .padding(.top, AppLayout.screenHeaderTopPadding)
+            .padding(.bottom, AppTheme.Spacing.xxl)
             .frame(maxWidth: .infinity, alignment: .top)
         }
-        .safeAreaInset(edge: .top, spacing: 0) {
-            stickyLexiconHeader
-                // Systemweites Top-Padding — Header sitzt auf derselben
-                // vertikalen Position wie im Quiz-Setup.
-                .padding(.top, AppLayout.screenHeaderTopPadding)
-                .padding(.bottom, AppTheme.Spacing.sm)
-                .background(AppTheme.Colors.surface.opacity(0.98))
-        }
-        .padding(.horizontal, AppLayout.screenPadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .tint(sectionStyle.accent)
         .appAmbientWormBackground(sectionStyle)
@@ -282,14 +308,12 @@ struct LexiconView: View {
     }
 
     private var stickyLexiconHeader: some View {
+        // Sticky-Header enthält jetzt nur noch Such-Card + Filter-Rows.
+        // Der Modul-Header (`ModuleHeaderCard`) wanderte in den
+        // Scroll-Content, damit das Wörterbuch denselben Header-
+        // Lifecycle wie Spielen/Fortschritt hat (scrollt mit, keine
+        // eigene Background-Ebene).
         VStack(spacing: 10) {
-            ScreenHeaderCard(
-                style: sectionStyle,
-                title: "Wörterbuch",
-                subtitle: "",
-                systemImage: "book.closed.fill"
-            )
-
             LexiconSearchCardView(
                 searchText: $model.searchText,
                 accentColor: lexiconAccentColor,

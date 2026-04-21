@@ -40,23 +40,77 @@ final class ItemLearningStatusStore: ObservableObject {
     /// sobald während einer Session eine neue Antwort eingeht.
     @Published private(set) var statuses: [String: ItemLearningStatus] = [:]
 
-    private let fileName = "item-learning-status.v1.json"
+    /// Globaler Legacy-Filename (pre-Phase E.3). Bleibt als Fallback
+    /// für die Erst-Migration in den ersten Account liegen; danach
+    /// liest/schreibt der Store ausschließlich per-Account.
+    private let legacyFileName = "item-learning-status.v1.json"
+
+    /// **Per-Account-Filename** (Phase E.3): der Account-UUID ist
+    /// Teil des Dateinamens, damit jeder Account seinen eigenen
+    /// Lernstatus-Blob hat. Fallback auf den globalen Namen, falls
+    /// noch kein Account aktiv ist (z. B. Erst-Install vor Onboarding).
+    private var fileName: String {
+        if let id = AccountStore.shared.currentAccountID {
+            return "item-learning-status.v1-\(id.uuidString).json"
+        }
+        return legacyFileName
+    }
 
     init() {
+        load()
+
+        // Auf Account-Switches hören — Lernstatus des neuen Accounts
+        // laden. Weak-Self, damit die Subscription das Singleton nicht
+        // künstlich am Leben hält (hier zwar ohnehin singleton, aber
+        // korrekter Stil spart späteres Refactoring).
+        NotificationCenter.default.addObserver(
+            forName: AccountStore.didSwitchAccount,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.reloadForCurrentAccount()
+            }
+        }
+    }
+
+    /// **Phase E.3** — invalidiert den in-memory-State und lädt den
+    /// Lernstatus des aktuell aktiven Accounts. Views, die auf
+    /// `statuses` binden, aktualisieren automatisch.
+    func reloadForCurrentAccount() {
+        statuses = [:]
         load()
     }
 
     // MARK: - Persistenz
 
     private func load() {
-        guard let data = AppPersistenceSupport.readData(named: fileName) else { return }
-        guard let decoded = try? JSONDecoder().decode([String: ItemLearningStatus].self, from: data) else {
-            // Defensive: bei inkompatibler Datei (z. B. altes Format)
-            // lieber mit leerem Store starten als crashen. Das Schreiben
-            // überschreibt die defekte Datei beim nächsten Write automatisch.
+        let activeName = fileName
+        // Erster Load für den Per-Account-File: wenn dort nichts
+        // liegt, aber der globale Legacy-File existiert, übernehmen
+        // wir dessen Inhalt einmalig — ohne Datenverlust beim ersten
+        // Start nach App-Update (Pre-Phase-E-Daten lebten global).
+        // Danach nur noch aus dem Per-Account-File lesen.
+        if let data = AppPersistenceSupport.readData(named: activeName),
+           let decoded = try? JSONDecoder().decode([String: ItemLearningStatus].self, from: data) {
+            statuses = decoded
             return
         }
-        statuses = decoded
+
+        // Per-Account-File leer/fehlt → Legacy-Fallback versuchen.
+        // `activeName != legacyFileName` schützt vor Endlos-Schleife,
+        // falls kein Account aktiv ist (dann ist fileName = legacy).
+        if activeName != legacyFileName,
+           let legacyData = AppPersistenceSupport.readData(named: legacyFileName),
+           let legacy = try? JSONDecoder().decode([String: ItemLearningStatus].self, from: legacyData) {
+            statuses = legacy
+            #if DEBUG
+            print("📦 [LearningStatus] first-time per-account load — seeded from legacy file (\(legacy.count) entries)")
+            #endif
+            // Sofort in den Per-Account-File schreiben, damit der
+            // Legacy-Fallback nur einmal greift.
+            persist()
+        }
     }
 
     /// Debounce-Token für `persist()`. Bei schneller Antwort-Sequenz

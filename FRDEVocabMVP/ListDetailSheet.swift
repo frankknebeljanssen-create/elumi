@@ -7,6 +7,11 @@ struct ListDetailSheet: View {
     let onClose: () -> Void
     let onEdit: (VocabularyItem) -> Void
     let onDelete: (VocabularyItem) -> Void
+    /// Optionales Rename-Callback. Wenn gesetzt und die Liste nicht
+    /// gebuilt-in ist, erscheint neben dem Listennamen im Header ein
+    /// Stift-Button. Tap feuert den Callback — der Caller (`ListsView`)
+    /// schließt das Detail-Sheet und öffnet das Rename-Sheet.
+    var onRename: (() -> Void)? = nil
     @State private var itemPendingDeletion: VocabularyItem?
 
     var body: some View {
@@ -21,10 +26,33 @@ struct ListDetailSheet: View {
             )
 
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xxs) {
-                Text(list.name)
-                    .font(AppTheme.Typography.screenTitle)
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .lineLimit(2)
+                // **Name + Rename-Stift** (User-Spec): Pencil sitzt
+                // rechts neben dem Listen-Namen, nur für eigene
+                // (nicht-built-in) Listen sichtbar. Tap ruft
+                // `onRename` — der Parent (`ListsView`) schließt das
+                // Detail-Sheet und öffnet die `RenameListSheet`.
+                HStack(alignment: .center, spacing: 10) {
+                    Text(list.name)
+                        .font(AppTheme.Typography.screenTitle)
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .lineLimit(2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    if !list.isBuiltIn, let onRename {
+                        Button(action: onRename) {
+                            Image(systemName: "pencil")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(style.accent)
+                                .frame(width: 32, height: 32)
+                                .background(
+                                    Circle().fill(style.accent.opacity(0.18))
+                                )
+                                .contentShape(Circle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Liste umbenennen")
+                    }
+                }
 
                 Text("\(list.items.count) Einträge")
                     .font(AppTheme.Typography.caption)

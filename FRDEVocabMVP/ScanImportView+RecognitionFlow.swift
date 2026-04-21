@@ -314,7 +314,10 @@ extension ScanImportView {
                 #if DEBUG
                 print("🧠 [FreeText] navigating to processing")
                 #endif
-                freierTextPendingImage = FreierTextPendingImage(image: refined)
+                freierTextPendingImage = FreierTextPendingImage(
+                    image: refined,
+                    inputMethod: session.selectedScanInputMethod
+                )
             }
             return
         }
@@ -326,7 +329,12 @@ extension ScanImportView {
         isRecognizingImage = true
         feedbackPlayer.playScanStart()
         startScanProgressFeedback()
-        scanRuntimeStage = .ocrPreflight
+        // Start der Pipeline: erst die Bild-Vorbereitungs-Stage anzeigen.
+        // Das ist **vor** OCR/AI die erste sichtbare Phase; die alte
+        // Version sprang direkt auf `.ocrPreflight`, obwohl zwischen
+        // Tap und OCR-Start das Bild noch skaliert/rotiert wird — das
+        // erste wahrgenommene „halbe Sekunde Nichts" ist jetzt erklärt.
+        scanRuntimeStage = .preparingImage
         importMessage = "Text wird erkannt..."
         let appendToExistingPreview = shouldAppendNextScan
         let aiConfiguredForScan = OpenAIResponsesScanAIClient.fromEnvironment() != nil
@@ -346,6 +354,16 @@ extension ScanImportView {
                 await MainActor.run {
                     scanRuntimeStage = stage
                 }
+            }
+
+            // Engine fertig → Ergebnis verarbeiten. Das Parsing in
+            // `applyRecognizedScanAnalysis` + das Preview-Aufbauen ist
+            // für den User eine eigene sichtbare Phase („Vokabelpaare
+            // werden erkannt"). Wir setzen die Stage explizit, damit
+            // die Card nicht zwischen „KI analysiert" und „fertig"
+            // springt, ohne dass der User merkt, warum.
+            await MainActor.run {
+                scanRuntimeStage = .parsingResults
             }
 
             await MainActor.run {

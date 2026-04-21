@@ -22,6 +22,12 @@ struct FreierTextAnalysisFlowView: View {
     /// werden, muss das Bild vorliegen.
     let image: UIImage
 
+    /// Herkunft des Bildes (Kamera / Galerie). Wird an die
+    /// Processing-View durchgereicht, damit die Stage-Headline
+    /// mode-spezifisch formuliert („KI analysiert dein Foto" bei
+    /// Kamera, „…dein Bild" bei Galerie).
+    var inputMethod: ScanInputMethod? = nil
+
     /// Optionales Cleanup-Callback — wird beim Dismiss gefeuert, damit
     /// der Aufrufer `freierTextPendingImage` zurücksetzen kann.
     var onDismiss: () -> Void = {}
@@ -67,6 +73,7 @@ struct FreierTextAnalysisFlowView: View {
             case .processing:
                 FreierTextProcessingView(
                     image: image,
+                    inputMethod: inputMethod,
                     onSuccess: { result in
                         // Qualitätsfilter + Abkürzungs-Expansion einmal
                         // anwenden — alle nachgelagerten Views und das

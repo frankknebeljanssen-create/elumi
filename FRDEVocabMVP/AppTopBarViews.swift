@@ -20,7 +20,13 @@ import SwiftUI
 ///     ca. 2 Zeilen hoch reicht; Title-Font dick + weiß mit
 ///     dezentem Drop-Shadow, gleiche Lesbarkeit wie Home-Hero.
 struct ModuleHeaderCard: View {
-    let icon: HomeModuleIcon
+    /// Entweder ein `HomeModuleIcon` (Standard — eigene SVG-Assets) oder
+    /// ein SF-Symbol-Fallback für Screens ohne dediziertes Modul-Asset
+    /// (z. B. Spielen/Arcade → `gamecontroller.fill`, Fortschritt →
+    /// `trophy.fill`). **Genau einer** der beiden Werte muss gesetzt
+    /// sein — der Convenience-Init erzwingt das über separate Signatures.
+    let icon: HomeModuleIcon?
+    let iconSystemImage: String?
     let title: String
     let accent: Color
     /// Optionaler Back-Chevron (Phase 7.6+). Wenn gesetzt, sitzt der
@@ -36,6 +42,43 @@ struct ModuleHeaderCard: View {
     /// Size des Switches, wird vertikal mit dem Back-Button
     /// zentriert.
     var showsDirectionToggle: Bool = false
+
+    // MARK: - Inits
+    //
+    // Zwei getrennte Inits, damit der Aufrufer **einen** Icon-Pfad wählt
+    // und das Modell keine Ambiguität trägt. Die bestehenden Call-Sites
+    // (Flashcards, Quiz, Training, Scan, Lists, Accents) nutzen weiterhin
+    // den Standard-Init mit `HomeModuleIcon` — kein Breakage.
+
+    init(
+        icon: HomeModuleIcon,
+        title: String,
+        accent: Color,
+        onBack: (() -> Void)? = nil,
+        showsDirectionToggle: Bool = false
+    ) {
+        self.icon = icon
+        self.iconSystemImage = nil
+        self.title = title
+        self.accent = accent
+        self.onBack = onBack
+        self.showsDirectionToggle = showsDirectionToggle
+    }
+
+    init(
+        systemImage: String,
+        title: String,
+        accent: Color,
+        onBack: (() -> Void)? = nil,
+        showsDirectionToggle: Bool = false
+    ) {
+        self.icon = nil
+        self.iconSystemImage = systemImage
+        self.title = title
+        self.accent = accent
+        self.onBack = onBack
+        self.showsDirectionToggle = showsDirectionToggle
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -65,8 +108,17 @@ struct ModuleHeaderCard: View {
     /// und der Back-Chevron immer oberhalb sitzt.
     private var coloredCard: some View {
         HStack(spacing: 14) {
-            HomeModuleIconView(icon: icon, size: 64)
-                .frame(width: 64, height: 64)
+            Group {
+                if let icon {
+                    HomeModuleIconView(icon: icon, size: 64)
+                } else if let iconSystemImage {
+                    Image(systemName: iconSystemImage)
+                        .font(.system(size: 36, weight: .bold))
+                        .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.35), radius: 1, x: 0, y: 1)
+                }
+            }
+            .frame(width: 64, height: 64)
             Text(title)
                 .font(.system(size: 24, weight: .black, design: .rounded))
                 .foregroundStyle(.white)

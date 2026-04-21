@@ -18,134 +18,130 @@ struct ImportCompletionView: View {
     let onVerbforms: () -> Void
     let onFlashcards: () -> Void
     let onQuiz: () -> Void
+    let onAccents: () -> Void
     let onViewList: () -> Void
     let onLater: () -> Void
     private let sectionStyle: AppSectionStyle = .scan
     @State private var isNavigationLocked = false
 
+    /// Feste Modul-Reihenfolge — identisch zur Home-Identität (User-
+    /// Spec: „Reihenfolge wie im Home: kartei, quiz, nomen, artikel,
+    /// verben, verbformen, akzente, vokabeln"). Einzige Quelle der
+    /// Wahrheit für den 4×2-Grid darunter.
+    private static let moduleOrder: [HomeHeroModule] = [
+        .karteikarten, .quiz, .nomen, .artikel,
+        .verben, .verbformen, .akzente, .vokabeln
+    ]
+
+    /// **4 Spalten × 2 Reihen** (User-Spec): 8 Module in einem
+    /// kompakten Grid, Kartengröße wie `HomeMoreExercisesSection.
+    /// MoreExerciseCard` (klein, ≙ Home-„Weitere Übungen"-Reihe).
+    /// Damit bleibt die Grid-Höhe flach genug, dass die Action-Row
+    /// unten ohne Scrollen sichtbar bleibt.
+    private let gridColumns: [GridItem] = [
+        GridItem(.flexible(), spacing: 8),
+        GridItem(.flexible(), spacing: 8),
+        GridItem(.flexible(), spacing: 8),
+        GridItem(.flexible(), spacing: 8)
+    ]
+
     var body: some View {
-        VStack(spacing: 16) {
-            // Import fertig! — outside card
-            VStack(spacing: 6) {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 48, weight: .bold))
-                    .foregroundStyle(AppTheme.Colors.success)
-                Text("Import fertig!")
-                    .font(.system(size: 28, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-            }
+        // **Scrollbar** (User-Bug: „unten steht noch was, kann nicht
+        // scrollen"). ScrollView hüllt jetzt den kompletten Content —
+        // bei vielen Kacheln + langer Summary + Footer-Buttons rutscht
+        // sonst der letzte Block unter die Bottom-Bar.
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(spacing: 16) {
+                // Import fertig! — Häkchen **über** dem Titel
+                // (User-Spec, Rollback auf das vorherige Layout). Icon
+                // prominent in 48 pt, Titel darunter.
+                VStack(spacing: 6) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 48, weight: .bold))
+                        .foregroundStyle(AppTheme.Colors.success)
+                    Text("Import fertig!")
+                        .font(.system(size: 28, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                }
 
-            // Summary card
-            VStack(alignment: .leading, spacing: 6) {
-                Text(context.summaryText)
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                Text("Liste: \(context.targetListName)")
-                    .font(.system(size: 14, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .lineLimit(2)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
-            // Zentralisierter Scan-Modul-Tint — Summary-Card wird Teil des
-            // Scan-Farbsystems statt flat-Surface.
-            .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft, cornerRadius: 16)
-
-            // Question — outside card
-            Text("Was möchtest du sofort üben?")
-                .font(.system(size: 22, weight: .black, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
+                // Summary card
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(context.summaryText)
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                    Text("Liste: \(context.targetListName)")
+                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .lineLimit(2)
+                }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.top, 4)
+                .padding(16)
+                .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft, cornerRadius: 16)
 
-            // Module buttons — same layout as Home
-            VStack(spacing: 8) {
-                // Nomen + Artikel
-                HStack(spacing: 8) {
-                    completionModuleButton(
-                        title: "Nomen",
-                        systemImage: "textformat",
-                        tint: AppTheme.Colors.moduleNomen,
-                        action: onNomen
-                    )
-                    completionModuleButton(
-                        title: "Artikel",
-                        systemImage: "textformat.abc.dottedunderline",
-                        tint: AppTheme.Colors.moduleArticles,
-                        action: onArticles
-                    )
+                // Question — outside card
+                Text("Was möchtest du sofort üben?")
+                    .font(.system(size: 22, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 4)
+
+                // **Module-Grid** — identisches Format wie `HomeHeroLearning
+                // Section`: 2-Spalten-`LazyVGrid`, Cards mit 1.15-Aspect,
+                // Gradient-Background in Modul-Accent, große Home-Icons
+                // (kein SF-Symbol-Mix). 8 Kacheln in fester Home-Reihen-
+                // folge. Karteikarten ist **nicht** mehr full-width,
+                // sondern gleich groß wie die anderen.
+                LazyVGrid(columns: gridColumns, spacing: 8) {
+                    ForEach(Self.moduleOrder) { module in
+                        completionHomeStyleCard(module: module)
+                    }
                 }
 
-                // Verben + Verbformen
-                HStack(spacing: 8) {
-                    completionModuleButton(
-                        title: "Verben",
-                        systemImage: "arrow.triangle.branch",
-                        tint: AppTheme.Colors.moduleVerbs,
-                        action: onVerbs
-                    )
-                    completionModuleButton(
-                        title: "Verbformen",
-                        systemImage: "text.line.first.and.arrowtriangle.forward",
-                        tint: AppTheme.Colors.moduleVerbforms,
-                        action: onVerbforms
-                    )
-                }
-
-                // Vokabeln + Quiz
-                HStack(spacing: 8) {
-                    completionModuleButton(
-                        title: "Vokabeln",
-                        systemImage: "character.book.closed.fill",
-                        tint: AppTheme.Colors.moduleVocabulary,
-                        action: onTrain
-                    )
-                    completionModuleButton(
-                        title: "Quiz",
-                        systemImage: "lightbulb.fill",
-                        tint: AppTheme.Colors.moduleQuiz,
-                        action: onQuiz
-                    )
-                }
-
-                // Karteikarten full width
-                completionModuleButton(
-                    title: "Karteikarten",
-                    systemImage: "square.stack.3d.up.fill",
-                    tint: AppTheme.Colors.moduleFlashcards,
-                    action: onFlashcards
-                )
-            }
-
-            HStack(spacing: 10) {
-                Button {
-                    guard !isNavigationLocked else { return }
-                    isNavigationLocked = true
-                    onViewList()
-                } label: {
-                    Label("Liste ansehen", systemImage: "list.bullet")
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                // Action-Row: „Liste ansehen" + „Ich übe später" — beide
+                // mit weißem Text/Icon (User-Spec). „Liste ansehen"
+                // bekommt das Listen-Icon aus dem Home-Set
+                // (`HomeModuleIcon.listen`), damit die Tap-Absicht
+                // sofort erkennbar ist; „Ich übe später" bleibt
+                // text-only, damit die Aktion sekundär wirkt.
+                HStack(spacing: 10) {
+                    Button {
+                        guard !isNavigationLocked else { return }
+                        isNavigationLocked = true
+                        onViewList()
+                    } label: {
+                        HStack(spacing: 6) {
+                            HomeModuleIconView(icon: .listen, size: 20)
+                            Text("Liste ansehen")
+                                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                                .foregroundStyle(.white)
+                        }
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 36)
-                }
-                .buttonStyle(AppSecondaryButtonStyle(tint: AppTheme.Colors.textSecondary))
+                    }
+                    .buttonStyle(AppSecondaryButtonStyle(tint: .white))
 
-                Button {
-                    guard !isNavigationLocked else { return }
-                    isNavigationLocked = true
-                    onLater()
-                } label: {
-                    Text("Ich übe später")
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 36)
+                    Button {
+                        guard !isNavigationLocked else { return }
+                        isNavigationLocked = true
+                        onLater()
+                    } label: {
+                        Text("Ich übe später")
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: 36)
+                    }
+                    .buttonStyle(AppSecondaryButtonStyle(tint: .white))
                 }
-                .buttonStyle(AppSecondaryButtonStyle(tint: AppTheme.Colors.textSecondary))
             }
+            .padding(AppLayout.screenPadding)
+            // Bottom-Clearance, damit der letzte Block (Liste ansehen /
+            // Ich übe später) garantiert über Footer + Safe-Area passt.
+            .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.lg)
+            .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .top)
+            .frame(maxWidth: .infinity, alignment: .center)
         }
         .safeAreaPadding(.top, AppTheme.Spacing.xs)
-        .padding(AppLayout.screenPadding)
-        .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .tint(sectionStyle.accent)
         .appScreenBackground(sectionStyle)
@@ -155,39 +151,85 @@ struct ImportCompletionView: View {
         }
     }
 
-    private func completionModuleButton(title: String, systemImage: String, tint: Color, action: @escaping () -> Void) -> some View {
+    /// Home-Style-Card (kleine Variante für das 4×2 Import-Grid). Sehr
+    /// eng an `HomeHeroLearningSection.HeroModuleCard` angelehnt —
+    /// Gradient-Background, Home-Icon zentriert, weißer Titel. Eigener
+    /// Wrapper (statt Private-Struct zu reusen), damit wir hier:
+    ///   • den `isNavigationLocked`-Guard setzen (keine doppelten Taps
+    ///     während der Navigation rausspringt),
+    ///   • das Icon eine Stufe kleiner rendern (85 pt statt 95 pt —
+    ///     das Grid hat 4 Reihen, die Home-Hero nur 2, also leicht
+    ///     kompaktere Cards).
+    @ViewBuilder
+    private func completionHomeStyleCard(module: HomeHeroModule) -> some View {
         Button {
             guard !isNavigationLocked else { return }
             isNavigationLocked = true
-            action()
+            completionAction(for: module)()
         } label: {
-            VStack(spacing: 6) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundStyle(tint)
-                    .frame(height: 32)
-                Text(title)
-                    .font(.system(size: 16, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(AppTheme.Spacing.sm)
-            .frame(maxWidth: .infinity, minHeight: 90)
-            .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(AppTheme.Colors.surface)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(tint.opacity(0.12))
-                    )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(AppTheme.Colors.border, lineWidth: 1)
-            )
-            .shadow(color: AppTheme.Shadow.card.color, radius: AppTheme.Shadow.card.radius, x: 0, y: 6)
+            // **Größe wie Home-„Weitere Übungen"-Cards** (User-Spec):
+            // aspectRatio 1.2, Icon 40 pt, Titel 12 pt (Karteikarten
+            // 11 pt), cornerRadius 16, sanfterer Gradient (0.88→0.68).
+            // 1:1 Match mit `HomeMoreExercisesSection.MoreExerciseCard`
+            // — kompakt und klar untergeordnet zur Hero-Identität.
+            Color.clear
+                .aspectRatio(1.2, contentMode: .fit)
+                .overlay {
+                    VStack(spacing: 1) {
+                        HomeModuleIconView(
+                            icon: module.icon,
+                            size: 40,
+                            glyphTint: .white
+                        )
+                        Text(module.title)
+                            .font(.system(
+                                size: module == .karteikarten ? 11 : 12,
+                                weight: .bold,
+                                design: .rounded
+                            ))
+                            .foregroundStyle(.white)
+                            .shadow(color: .black.opacity(0.35), radius: 1, x: 0, y: 1)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                    }
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    module.accent.opacity(0.88),
+                                    module.accent.opacity(0.68)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(Color.white.opacity(0.03))
+                )
+                .shadow(color: .black.opacity(0.20), radius: 4, x: 0, y: 2)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(AppCardPressStyle())
         .disabled(isNavigationLocked)
+    }
+
+    /// Mapping Home-Modul → Import-Completion-Callback. Zentral hier,
+    /// damit die Card-Rendering-Logik modul-agnostisch bleibt und
+    /// später (z. B. „Freier Text"-Modus) einfach erweitert werden
+    /// kann — neuer Case hier + neue Closure-Property oben reichen.
+    private func completionAction(for module: HomeHeroModule) -> () -> Void {
+        switch module {
+        case .karteikarten: return onFlashcards
+        case .quiz:         return onQuiz
+        case .nomen:        return onNomen
+        case .artikel:      return onArticles
+        case .verben:       return onVerbs
+        case .verbformen:   return onVerbforms
+        case .akzente:      return onAccents
+        case .vokabeln:     return onTrain
+        }
     }
 }

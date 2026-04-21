@@ -8,6 +8,16 @@ let appFirstNameKey = "myVoc.account.firstName.v1"
 let appLearnerProfileKey = "elumi.profile.learner.v1"
 let appOnboardingCompletedKey = "elumi.profile.onboarding.completed.v1"
 
+// MARK: - Accounts (Multi-User, Phase 8)
+// Liste aller angelegten Accounts auf diesem Gerät (Codable-JSON-Array
+// von `AccountProfile`). `currentAccountID` zeigt auf den aktiven.
+// Migration existierender Single-User-Daten läuft beim ersten Start
+// nach App-Update — der vorhandene `LearnerProfile` wandert in die
+// Liste als erster Account („Frank" als Test-Account des Owners).
+let appAccountListKey = "elumi.accounts.list.v1"
+let appCurrentAccountIDKey = "elumi.accounts.current.id.v1"
+let appAccountsMigratedKey = "elumi.accounts.migrated.v1"
+
 // MARK: - Daily Challenge
 // Phase 5: Tages-Aufgabe + Streak. Wird als Codable-JSON im
 // `DailyChallengeStore` persistiert. Reset passiert nicht über einen

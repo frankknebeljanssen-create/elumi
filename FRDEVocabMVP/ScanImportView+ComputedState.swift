@@ -27,51 +27,17 @@ extension ScanImportView {
         UIImagePickerController.isSourceTypeAvailable(.camera) || VNDocumentCameraViewController.isSupported
     }
 
+    /// Kleine Status-Headline über der großen Stage-Card — zeigt Batch-
+    /// Info („Seite 2/3") oder eine generische „Scan läuft"-Zeile. Die
+    /// eigentliche User-Information (Was macht die App gerade?) kommt
+    /// aus `ScanRuntimeStage.displayTitle` und wird prominent darunter
+    /// gerendert, nicht mehr hier.
     var scanProgressText: String {
         let dots = String(repeating: ".", count: scanProgressStep + 1)
         if session.batchTotalCount > 1 {
             return "Seite \(session.batchCurrentIndex)/\(session.batchTotalCount)\(dots)"
         }
-        return "Analysiere\(dots)"
-    }
-
-    var scanProgressRuntimeLabel: String {
-        switch scanRuntimeStage {
-        case .idle, .ocrPreflight:
-            return "OCR lokal"
-        case .aiConnecting:
-            return "KI wird kontaktiert"
-        case .aiPrimary:
-            return "KI analysiert"
-        case .ocrFallback:
-            return "OCR-Fallback"
-        }
-    }
-
-    var scanProgressRuntimeTint: Color {
-        switch scanRuntimeStage {
-        case .idle, .ocrPreflight:
-            return AppTheme.Colors.textSecondary
-        case .aiConnecting:
-            return AppTheme.Colors.warning
-        case .aiPrimary:
-            return AppTheme.Colors.primary
-        case .ocrFallback:
-            return AppTheme.Colors.warning
-        }
-    }
-
-    var scanProgressRuntimeIcon: String {
-        switch scanRuntimeStage {
-        case .idle, .ocrPreflight:
-            return "doc.text.viewfinder"
-        case .aiConnecting:
-            return "antenna.radiowaves.left.and.right"
-        case .aiPrimary:
-            return "sparkles"
-        case .ocrFallback:
-            return "arrow.triangle.2.circlepath"
-        }
+        return "Scan läuft\(dots)"
     }
 
     var hasAlternatePreparedImage: Bool {

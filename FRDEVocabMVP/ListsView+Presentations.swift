@@ -123,6 +123,18 @@ extension ListsView {
                         if editingItemID == item.id {
                             cancelEditing()
                         }
+                    },
+                    onRename: {
+                        // Detail-Sheet schließen, Rename-Dialog öffnen.
+                        // Zwei Sheets parallel (RenameSheet over
+                        // ListDetailSheet) verursacht in iOS teils
+                        // Remount-Flickern; der kleine Delay stellt
+                        // sauberes Sequencing sicher.
+                        editableListName = selectedList.name
+                        showingListDetail = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            showingRenameDialog = true
+                        }
                     }
                 )
                 .interactiveDismissDisabled()

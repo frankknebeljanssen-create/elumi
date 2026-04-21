@@ -1279,7 +1279,22 @@ extension ElumiArcadeGameView {
             group.addTask {
                 while await MainActor.run(body: { self.isPlaying && !self.isGameOver }) {
                     let delay = await MainActor.run { currentSpawnDelay() }
-                    try? await Task.sleep(for: .seconds(delay))
+                    // **Bugfix „Rapid-Fire-Spawn beim Restart"**: vorher
+                    // `try? await Task.sleep(...)` — das schluckt jede
+                    // CancellationError. Wenn `.task(id: gameSeed)`
+                    // beim Start einer neuen Runde die vorherige Task
+                    // cancelt, war der Sleep sofort zurück, die
+                    // while-Bedingung `isPlaying` noch `true` aus dem
+                    // Frisch-Start → Schleife hämmerte `spawnSnack()`
+                    // ohne Delay und 50–80 Items fielen gleichzeitig.
+                    // Jetzt: CancellationError bricht die Schleife
+                    // sauber ab.
+                    do {
+                        try await Task.sleep(for: .seconds(delay))
+                    } catch {
+                        break
+                    }
+                    if Task.isCancelled { break }
                     guard await MainActor.run(body: { self.isPlaying && !self.isGameOver }) else { break }
                     let isBannerUp = await MainActor.run { self.showingRoundBanner }
                     guard !isBannerUp else { continue }
@@ -1301,7 +1316,16 @@ extension ElumiArcadeGameView {
                     await MainActor.run {
                         updateGame(now: Date())
                     }
-                    try? await Task.sleep(for: .milliseconds(33))
+                    // Gleicher Cancel-Fix für den Update-Loop — ohne
+                    // den würde das Frame-Update nach Task-Cancel mit
+                    // 0 ms Delay spinnen, was CPU frisst und je nach
+                    // Timing Ghost-Updates produziert.
+                    do {
+                        try await Task.sleep(for: .milliseconds(33))
+                    } catch {
+                        break
+                    }
+                    if Task.isCancelled { break }
                 }
             }
         }

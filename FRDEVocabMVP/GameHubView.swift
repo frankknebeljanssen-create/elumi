@@ -58,8 +58,21 @@ struct GameHubView: View {
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
-                hubHeader
+            // Spacing `.md` statt `.lg` → insgesamt kompakter, damit
+            // Hero + beide Start-Buttons + Reward-Explainer ohne
+            // Scrollen auf den Screen passen (User-Spec).
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                // **Einheitlicher Modul-Header** (User-Spec): Back-
+                // Chevron oben + farbige `ModuleHeaderCard` mit Game-
+                // Controller-Icon und Titel „Spielen" — analog zu
+                // allen anderen Modulen (Karteikarten, Quiz …). Das
+                // alte schlichte `hubHeader` (nur Text) ist entfallen.
+                ModuleHeaderCard(
+                    systemImage: "gamecontroller.fill",
+                    title: "Spielen",
+                    accent: sectionStyle.accent,
+                    onBack: { dismiss() }
+                )
                 heroBlock
                 // Zwei gleichwertige Start-Buttons (Elumi + Word Runner)
                 // direkt unter dem Hero — oben Auswahl, dann Start.
@@ -70,7 +83,12 @@ struct GameHubView: View {
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, AppLayout.screenPadding)
-            .padding(.top, AppLayout.contentTopPadding)
+            // Top-Padding angeglichen an alle anderen Module
+            // (Wörterbuch, Nomen, Training …): `screenHeaderTopPadding`
+            // (= 4 pt) statt `contentTopPadding` (= Spacing.xl). Vorher
+            // saß der Spielen-Header sichtbar tiefer als die anderen
+            // Screens — jetzt auf gleicher Linie.
+            .padding(.top, AppLayout.screenHeaderTopPadding)
             .padding(.bottom, AppTheme.Spacing.xxl)
             .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .top)
@@ -108,15 +126,9 @@ struct GameHubView: View {
         }
     }
 
-    // MARK: - Header
-
-    private var hubHeader: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.xxs) {
-            Text("Spielen")
-                .font(AppTheme.Typography.largeTitle)
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-        }
-    }
+    // Alter `hubHeader` (nur „Spielen"-Text) raus — die farbige
+    // `ModuleHeaderCard` oben trägt jetzt Back-Chevron + Icon + Titel
+    // im systemweit einheitlichen Stil.
 
     // MARK: - Hero Block
 
@@ -130,41 +142,57 @@ struct GameHubView: View {
     /// „Credits" (DB-Key), für den User aber durchgängig „Spiele".
     /// `gamesCost == 1` → Credits = Spiele, daher direkt übertragbar.
     private var heroBlock: some View {
-        VStack(spacing: 14) {
-            HStack(alignment: .firstTextBaseline, spacing: 14) {
-                Image(systemName: "gamecontroller.fill")
-                    .font(.system(size: 36, weight: .bold))
-                    .foregroundStyle(hasCredits ? AppTheme.Colors.cta : AppTheme.Colors.textSecondary)
+        // Hero kompakter (User-Spec „weniger Platz verbrauchen"):
+        // Hauptzahl 56→36, kein Gamepad-Icon mehr — stattdessen direkt
+        // die prominente Textzeile „Deine Credits: X Spiele". Die
+        // Meta-Row nutzt jetzt das Elumi-Icon (Wasserfloh) statt des
+        // Herz-Symbols — enger an der Markenidentität des Spiels.
+        VStack(spacing: 10) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text("Deine Credits:")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
 
                 Text("\(arcadeCredits)")
-                    .font(.system(size: 56, weight: .black, design: .rounded))
+                    .font(.system(size: 36, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .monospacedDigit()
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
 
                 Text(arcadeCredits == 1 ? "Spiel" : "Spiele")
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
 
                 Spacer(minLength: 0)
             }
 
-            // Meta-Zeile 1: Spiel → Leben Zuordnung. Ruhiges Icon-+-Text.
-            heroMetaRow(
-                systemImage: "heart.fill",
-                tint: AppTheme.Colors.error.opacity(0.85),
-                text: "1 Spiel = \(livesPerCredit) Leben"
-            )
-
-            // Meta-Zeile 2: Kontext — *warum* hat der User Spiele?
-            heroMetaRow(
-                systemImage: "sparkles",
-                tint: AppTheme.Colors.cta,
-                text: "Verdient durch Lernen"
-            )
+            // Meta-Zeilen nebeneinander — spart eine komplette Zeile.
+            // „Herz → Elumi-Icon": das Icon im Leben-Hinweis zieht den
+            // Bezug zur Spielfigur, statt generisches Herz-Symbol.
+            HStack(spacing: 14) {
+                heroMetaRowAsset(
+                    // Elumi-Maskottchen (Wasserfloh) — vorher hatte
+                    // diese Zeile fälschlich `IconElumiSpiel` (das
+                    // U-Boot-Icon). Im „1 Spiel = N Leben"-Hinweis
+                    // gehört visuell das Spiel-Subjekt hin, nicht das
+                    // Fahrzeug aus dem anderen Modus.
+                    assetName: "ElumiWasserfloh",
+                    text: "1 Spiel = \(livesPerCredit) Leben"
+                )
+                heroMetaRow(
+                    systemImage: "sparkles",
+                    tint: AppTheme.Colors.cta,
+                    text: "Verdient durch Lernen"
+                )
+            }
         }
-        .padding(AppTheme.Spacing.md)
+        .padding(.horizontal, AppTheme.Spacing.md)
+        // Vertical-Padding wieder auf `Spacing.md` gesetzt (User-
+        // Rollback: „Credit-Card wieder etwas taller"). Davor war's
+        // auf `xs` geschrumpft — zu wenig Luft, die Card wirkte
+        // gedrückt.
+        .padding(.vertical, AppTheme.Spacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.strong, cornerRadius: AppLayout.largeCardCornerRadius)
     }
@@ -176,6 +204,23 @@ struct GameHubView: View {
                 .font(.system(size: 13, weight: .bold))
                 .foregroundStyle(tint)
                 .frame(width: 18)
+            Text(text)
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+            Spacer(minLength: 0)
+        }
+    }
+
+    /// Asset-Variante von `heroMetaRow` — rendert ein Image aus dem
+    /// Asset-Catalog statt eines SF-Symbols. Genutzt für das Elumi-Icon
+    /// im „1 Spiel = X Leben"-Hinweis (markennäher als Herz-SF-Symbol).
+    @ViewBuilder
+    private func heroMetaRowAsset(assetName: String, text: String) -> some View {
+        HStack(spacing: 8) {
+            Image(assetName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 20, height: 20)
             Text(text)
                 .font(.system(size: 14, weight: .bold, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
@@ -196,31 +241,36 @@ struct GameHubView: View {
 
     private var gameStartButtons: some View {
         VStack(spacing: 10) {
-            // Elumi — Credit-gated
+            // Asset-Zuordnung (korrigiert nach Asset-Prüfung):
+            //   • `ElumiWasserfloh` = die eigentliche Elumi-Spielfigur
+            //     (Wasserfloh-Maskottchen) → Button „Elumi starten".
+            //   • `IconElumiSpiel`   = das U-Boot-Icon
+            //     (Submarine-Silhouette mit Bullaugen) → Button „Word
+            //     Runner starten" (User-Spec „Elumi im U-Boot").
+            // Vorher waren beide vertauscht — der Dateiname
+            // `IconElumiSpiel` klang nach Elumi, zeigt aber ein U-Boot.
             gameStartButton(
                 title: "Elumi starten",
-                systemImage: "gamecontroller.fill",
+                // Drei Snack-Icons nebeneinander (User-Spec) — zeigt
+                // auf einen Blick, worum's im Arcade-Spiel geht:
+                // Wurm, Wasserfloh, Algenkugel.
+                assetNames: ["ElumiWuermchen", "ElumiWasserfloh", "ElumiAlgenkugel"],
                 enabled: hasCredits,
                 action: startGameTapped
             )
 
-            // Word Runner — immer verfügbar (kein Credit-Verbrauch)
             gameStartButton(
                 title: "Word Runner starten",
-                systemImage: "figure.run",
+                assetNames: ["IconElumiSpiel"],
                 enabled: true,
                 action: { showWordRunner = true }
             )
 
-            // Status-/Hinweiszeile unter den beiden Buttons.
-            if hasCredits {
-                Text(ArcadeCreditSystem.gamesCost == 1
-                    ? "1 Spiel wird für Elumi verwendet"
-                    : "\(ArcadeCreditSystem.gamesCost) Spiele werden für Elumi verwendet")
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .frame(maxWidth: .infinity)
-            } else {
+            // Hinweis-Zeile **nur** im Empty-State — die generische
+            // „X Spiele werden verwendet"-Zeile (User-Spec: raus) ist
+            // entfallen, da sie keine neue Info über den bereits
+            // sichtbaren Credits-Block liefert.
+            if !hasCredits {
                 Text("Keine Spiele für Elumi — spiel eine Runde Lernen, um welche zu verdienen. Word Runner kannst du trotzdem starten.")
                     .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
@@ -231,12 +281,20 @@ struct GameHubView: View {
     }
 
     /// Gemeinsamer Start-Button-Stil — beide Spiele nutzen identisches
-    /// Layout (Icon + „… starten"-Label), damit die beiden Buttons
-    /// visuell gleichwertig nebeneinander stehen.
+    /// Layout, damit die beiden Buttons visuell gleichwertig
+    /// nebeneinander stehen.
+    ///
+    /// `assetNames` kann **ein oder mehrere** Asset-Namen enthalten:
+    ///   • 1 Asset  → klassischer Button mit einem einzelnen Icon
+    ///     (Word-Runner-U-Boot).
+    ///   • 2–3 Assets → alle nebeneinander vor dem Label. Genutzt vom
+    ///     Elumi-Start-Button, damit die drei Snacks (Wurm, Wasserfloh,
+    ///     Algenkugel) sofort sichtbar sind und der Button erzählt,
+    ///     worum es im Arcade-Spiel geht.
     @ViewBuilder
     private func gameStartButton(
         title: String,
-        systemImage: String,
+        assetNames: [String],
         enabled: Bool,
         action: @escaping () -> Void
     ) -> some View {
@@ -244,14 +302,32 @@ struct GameHubView: View {
             guard enabled else { return }
             action()
         } label: {
-            HStack(spacing: 10) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 17, weight: .bold))
+            HStack(spacing: 12) {
+                HStack(spacing: 4) {
+                    ForEach(assetNames, id: \.self) { name in
+                        Image(name)
+                            .resizable()
+                            .scaledToFit()
+                            // Bei einem Single-Asset bleibt es bei der
+                            // großen 52-pt-Darstellung (User-Spec
+                            // „doppelt so groß"). Bei mehreren Icons
+                            // nebeneinander etwas kleiner (36 pt) —
+                            // sonst sprengt die Icon-Reihe die Button-
+                            // Breite und drückt das Label raus.
+                            .frame(
+                                width: assetNames.count > 1 ? 36 : 52,
+                                height: assetNames.count > 1 ? 36 : 52
+                            )
+                    }
+                }
                 Text(title)
-                    .font(.system(size: 18, weight: .black, design: .rounded))
+                    .font(.system(size: 16, weight: .black, design: .rounded))
             }
             .frame(maxWidth: .infinity)
-            .frame(minHeight: 60)
+            // minHeight wächst mit dem Icon-Set: Single-Icon 60 pt
+            // (Icon 52 + Padding), Multi-Icon 52 pt (Icon 36 +
+            // Padding).
+            .frame(minHeight: assetNames.count > 1 ? 52 : 60)
         }
         .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
         .disabled(!enabled)
@@ -346,7 +422,8 @@ struct GameHubView: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 11)
+        // Vertikal-Padding 11 → 8 pro Row → 4 Reihen sparen 12 pt.
+        .padding(.vertical, 8)
     }
 
     private var rewardExplainerDivider: some View {

@@ -49,6 +49,10 @@ extension ScanAnalysisEngine {
         await progressHandler?(.aiPrimary)
         let primaryResult = await primaryProvider.analyze(request: request, context: primaryContext)
         logTiming("engine_primary", start: primaryStart)
+        // Nach dem Request: Antwort ist zurück, die App entpackt die
+        // Daten. Eigene Stage, damit der User sieht, dass wir aus der
+        // „KI analysiert"-Phase raus sind und jetzt die Antwort lesen.
+        await progressHandler?(.aiReceiving)
 
         if shouldAbortAfterPrimaryFailure(primaryResult) {
             logTiming("engine_total", start: totalStart)
@@ -104,6 +108,7 @@ extension ScanAnalysisEngine {
         let primaryStart = CFAbsoluteTimeGetCurrent()
         let primaryResult = await primaryProvider.analyze(request: request, context: nil)
         logTiming("engine_primary", start: primaryStart)
+        await progressHandler?(.aiReceiving)
 
         if shouldAbortAfterPrimaryFailure(primaryResult) {
             logTiming("engine_total", start: totalStart)
@@ -147,6 +152,7 @@ extension ScanAnalysisEngine {
 
         let primaryResult = await primaryTask
         logTiming("engine_primary", start: sharedStart)
+        await progressHandler?(.aiReceiving)
 
         if shouldAbortAfterPrimaryFailure(primaryResult) {
             _ = await preflightTask

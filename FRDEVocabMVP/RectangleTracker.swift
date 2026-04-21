@@ -76,13 +76,18 @@ final class RectangleTracker {
         }
 
         /// Dauer, für die das Rechteck stabil sein muss, bevor der
-        /// Lock-State auf `.locked` kippt. 0.5 s fühlt sich für den
-        /// User nicht hektisch an.
-        var stabilityDuration: CFTimeInterval = 0.5
+        /// Lock-State auf `.locked` kippt. 0.5 → **0.35 s** (User-Spec
+        /// „Auto findet zu langsam, Kinder wackeln mehr"). Zusammen mit
+        /// `requiredConsecutiveLockedFrames = 2` fällt die Gesamt-
+        /// Latenz von ~0.8 s auf ~0.45 s.
+        var stabilityDuration: CFTimeInterval = 0.35
 
         /// Maximale erlaubte Ecken-Varianz (normalisiert, 0..1) während
-        /// der Stabilitätsperiode. 0.02 = 2 % Bild pro Ecke.
-        var stabilityTolerance: CGFloat = 0.02
+        /// der Stabilitätsperiode. 0.02 → **0.03** — 50 % mehr Toleranz
+        /// für leichte Kinderbewegungen. Bei jedem merklichen Wackler
+        /// wurde vorher der Stability-Anchor komplett zurückgesetzt;
+        /// mit 3 % Toleranz überleben kleine Drifts den Countdown.
+        var stabilityTolerance: CGFloat = 0.03
 
         /// Mindest-Flächenanteil für „gute Qualität". Unter 28 %
         /// → „näher rangehen".

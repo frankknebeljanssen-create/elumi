@@ -193,16 +193,33 @@ struct InfoView: View {
     }
 
     // MARK: - Spiele & Fortschritt (Info)
+    //
+    // Kindgerechte Info-Card (Zielgruppe 10–14 Jahre). Struktur folgt
+    // der UX-Spec „Settings > Info > Spiele & Fortschritt":
+    //
+    //   1. Header:     🎮  „Spiele & Fortschritt"
+    //   2. Einstieg:   2 Zeilen Erklär-Text
+    //   3. Abschnitt:  ⭐  XP (was das ist, wofür du es bekommst)
+    //   4. Abschnitt:  🎮  Spiele (was das ist, wofür du sie brauchst)
+    //   5. Abschnitt:  🧠  So bekommst du Spiele (ohne Zahlen / Formeln)
+    //   6. Abschnitt:  Die Spiele (beide Spiele je 1 Zeile: 🧍 Elumi,
+    //                  🛤️ Word Runner)
+    //
+    // **Text-Änderungen** passieren direkt in diesem View — keine
+    // Localisation-Schicht, kein Resource-File. Jeder Text-Block ist
+    // als Array gepflegt (`lines: […]`), neue Zeilen einfach dazu.
+    // Die Sub-Komponenten `gamesProgressSubsection(emoji:title:lines:)`
+    // und `gamesProgressGameLine(emoji:title:line:)` regeln das
+    // Rendering, damit Typo/Spacing systemweit konsistent bleibt.
+    //
+    // **Regeln (laut Spec):**
+    //   – Keine technischen Begriffe (kein „Credits", „Tokens").
+    //   – Keine Zahlen im Text („250 XP = 1 Spiel" ist verboten).
+    //   – Kurze Sätze, max. 2 Zeilen pro Game-Beschreibung.
 
-    /// Übergeordnete Info-Card zu den beiden Spielen (Elumi + Word
-    /// Runner). Zeigt die gemeinsame XP-/Spiele-Logik, damit der
-    /// Nutzer versteht, dass alles in einem System lebt.
-    ///
-    /// Texte sind bewusst kurz und ohne Fachbegriffe — Änderungen
-    /// passieren direkt hier, nicht über Localisation-Layer.
     private var gamesProgressInfoCard: some View {
         let tint = AppTheme.Colors.warning
-        return VStack(alignment: .leading, spacing: 14) {
+        return VStack(alignment: .leading, spacing: 16) {
             // Card-Header (analog zu `colorInfoCard`)
             HStack(spacing: 8) {
                 Image(systemName: "gamecontroller.fill")
@@ -213,51 +230,65 @@ struct InfoView: View {
                     .foregroundStyle(AppTheme.Colors.textPrimary)
             }
 
-            // Abschnitt 1 — Einleitung
+            // Abschnitt 1 — Einstieg (max. 2 Zeilen, sehr einfach)
             VStack(alignment: .leading, spacing: 4) {
-                Text("In den Spielen lernst du und sammelst Fortschritt.")
+                Text("In den Spielen lernst du und wirst immer besser.")
                     .font(.system(size: 14, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
-                Text("Beide Spiele nutzen dasselbe System für XP und Spiele.")
+                Text("Dabei sammelst du XP und bekommst Spiele.")
                     .font(.system(size: 14, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
 
-            gamesProgressSubsection(
-                emoji: "🎮",
-                title: "Spiele",
-                lines: [
-                    "Spiele verdienst du durch Lernen.",
-                    "Du kannst sie im Arcade-Spiel einsetzen.",
-                    "Ein Spiel = ein Versuch im Arcade."
-                ]
-            )
-
+            // Abschnitt 2 — XP (zuerst, weil XP die Basis für Spiele sind)
             gamesProgressSubsection(
                 emoji: "⭐",
                 title: "XP",
                 lines: [
-                    "Für richtige Antworten bekommst du XP.",
-                    "XP zeigen deinen Fortschritt.",
-                    "Mit mehr XP steigst du im Level auf."
+                    "XP bekommst du für richtige Antworten.",
+                    "Je mehr XP du hast, desto höher steigst du im Level.",
+                    "XP zeigen, wie gut du bist."
                 ]
             )
 
+            // Abschnitt 3 — Spiele
+            gamesProgressSubsection(
+                emoji: "🎮",
+                title: "Spiele",
+                lines: [
+                    "Spiele bekommst du durch Lernen.",
+                    "Du kannst sie im Arcade-Spiel einsetzen.",
+                    "Ein Spiel ist ein Versuch im Arcade."
+                ]
+            )
+
+            // Abschnitt 4 — So bekommst du Spiele
+            // WICHTIG: keine konkreten Zahlen (250 XP etc.) — nur das
+            // Konzept „genug XP gesammelt" + Level/Tagesziele.
             gamesProgressSubsection(
                 emoji: "🧠",
-                title: "Wie du Spiele bekommst",
+                title: "So bekommst du Spiele",
                 lines: [
-                    "Etwa 250 XP ergeben ein Spiel.",
-                    "Zusätzlich kannst du Spiele durch Level oder tägliche Ziele bekommen."
+                    "Wenn du genug XP gesammelt hast, bekommst du ein Spiel.",
+                    "Du kannst auch Spiele durch Level oder Tagesziele bekommen."
                 ]
             )
 
-            // Abschnitt 5 — beide Spiele kurz erklärt
-            VStack(alignment: .leading, spacing: 8) {
-                gamesProgressGameLine(title: "Elumi (Arcade)",
-                                      line: "Steuere Elumi, weiche aus und sammle Punkte.")
-                gamesProgressGameLine(title: "Word Runner",
-                                      line: "Laufe durch die Strecke und triff die richtigen Entscheidungen.")
+            // Abschnitt 5 — Die Spiele (beide je 1 Zeile, sehr einfach)
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Die Spiele")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                gamesProgressGameLine(
+                    emoji: "🧍",
+                    title: "Elumi",
+                    line: "Steuere Elumi, weiche aus und sammle Punkte."
+                )
+                gamesProgressGameLine(
+                    emoji: "🛤️",
+                    title: "Word Runner",
+                    line: "Laufe durch die Strecke und triff die richtigen Antworten."
+                )
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -276,6 +307,12 @@ struct InfoView: View {
         )
     }
 
+    /// Sub-Komponente für die Abschnitte XP / Spiele / So bekommst du
+    /// Spiele. Emoji + Titel bilden eine kleine Headline, darunter
+    /// 1–3 kurze Zeilen in Secondary-Farbe. Spacing (4 pt innen,
+    /// 16 pt zwischen den Abschnitten via äußerem VStack) wurde an die
+    /// Kinder-Lesbarkeits-Spec angepasst — mehr Luft als die alten
+    /// `colorInfoCard`-Blöcke.
     private func gamesProgressSubsection(emoji: String, title: String, lines: [String]) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
@@ -294,11 +331,19 @@ struct InfoView: View {
         }
     }
 
-    private func gamesProgressGameLine(title: String, line: String) -> some View {
+    /// Eine der beiden Spiele-Zeilen (Elumi / Word Runner) — Emoji +
+    /// Spielname auf einer Zeile, darunter 1 Satz Erklärung. Bewusst
+    /// flacher als `gamesProgressSubsection`, weil die Spec eine
+    /// 1-Zeilen-Erklärung vorsieht.
+    private func gamesProgressGameLine(emoji: String, title: String, line: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(title)
-                .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
+            HStack(spacing: 6) {
+                Text(emoji)
+                    .font(.system(size: 14))
+                Text(title)
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+            }
             Text(line)
                 .font(.system(size: 13, weight: .medium, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textSecondary)

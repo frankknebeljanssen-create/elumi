@@ -5,6 +5,7 @@ struct ContentView: View {
     @StateObject private var runtime = AppRuntimeContainer()
     @StateObject private var navigation = AppNavigationCoordinator()
     @ObservedObject private var profileStore = ProfileStore.shared
+    @ObservedObject private var accountStore = AccountStore.shared
     @AppStorage(appDirectionKey) private var selectedDirectionRaw = Direction.frenchToGerman.rawValue
 
     private var navigationPathBinding: Binding<[AppScreen]> {
@@ -67,15 +68,32 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             if let feedbackPlayer = runtime.feedbackPlayer {
-                // Onboarding-Gate: beim allerersten Start (oder nach
-                // Reset) zeigen wir den leichten Willkommens-Flow
-                // *statt* der NavigationStack-Home. Der Flag flippt
-                // atomar via ProfileStore.completeOnboarding, SwiftUI
-                // rendert dann die Home-Hierarchie.
-                if !profileStore.hasCompletedOnboarding {
-                    OnboardingView(
-                        profileStore: profileStore,
-                        feedbackPlayer: feedbackPlayer
+                // **Onboarding-Gate (Phase 8 — Multi-Account)**: beim
+                // allerersten Start (oder nach Reset) zeigen wir den
+                // Account-Onboarding-Flow *statt* der NavigationStack-
+                // Home. Sobald ein Account existiert, rendert die
+                // Home-Hierarchie. Der alte single-user `OnboardingView`
+                // mit Lernziel-Auswahl ist entfallen — das Account-
+                // Modell deckt die Identität jetzt ab; Lernziel kann
+                // perspektivisch im Account-Detail erweitert werden.
+                if !accountStore.hasAnyAccount {
+                    AccountOnboardingView(
+                        accountStore: accountStore,
+                        onComplete: { account in
+                            // Legacy-ProfileStore-Sync: der bestehende
+                            // Name-Display greift weiterhin über
+                            // `ProfileStore.displayName`. Damit die
+                            // Begrüßung auf Home sofort den neuen
+                            // Namen zeigt, fassen wir `ProfileStore`
+                            // mit gleichem Namen nach — keine
+                            // Doppelfelder im UI, beide Stores bleiben
+                            // konsistent.
+                            profileStore.completeOnboarding(
+                                displayName: account.displayName,
+                                learningGoal: nil
+                            )
+                        },
+                        allowsCancel: false
                     )
                     .transition(.opacity)
                 } else {

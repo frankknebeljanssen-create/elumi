@@ -13,6 +13,10 @@ import UIKit
 /// verlässt (Dismiss → keine orphan-Netzwerk-Calls).
 struct FreierTextProcessingView: View {
     let image: UIImage
+    /// Herkunft des Bildes (Kamera / Galerie) — bestimmt, ob die
+    /// `.aiPrimary`-Stage „Foto" oder „Bild" sagt. Wird über
+    /// `ScanRuntimeStage.displayTitle(for:)` aufgelöst.
+    var inputMethod: ScanInputMethod? = nil
     let onSuccess: (FreeTextResult) -> Void
     /// Typ-spezifischer Fehler statt plain `String`, damit der Parent
     /// zwischen Netzwerk-/HTTP-/Decode-Fehlern unterscheiden und passende
@@ -25,6 +29,15 @@ struct FreierTextProcessingView: View {
 
     @State private var hasStarted = false
     @State private var elapsedSeconds: Int = 0
+    /// Aktuelle User-sichtbare Pipeline-Phase. Da der FreeText-Flow
+    /// nur aus **einem** API-Call besteht (Claude Vision), gibt es hier
+    /// keine echten Callbacks wie im Vokabel-Scan — stattdessen leiten
+    /// wir die Stage zeitgesteuert weiter (Preparing→Connecting→
+    /// Analyzing), damit der Nutzer dieselbe Transparenz wie im
+    /// Vokabel-Scan bekommt: „jetzt passiert X, jetzt Y". Bei Erfolg
+    /// wird kurz auf `.aiReceiving` + `.parsingResults` umgeschaltet,
+    /// bevor `onSuccess` feuert.
+    @State private var stage: ScanRuntimeStage = .preparingImage
 
     /// Timeout in Sekunden — nach dieser Zeit wird der Request als
     /// hängend betrachtet und automatisch der Fehler-Callback gefeuert.
@@ -76,49 +89,45 @@ struct FreierTextProcessingView: View {
 
                 VStack(spacing: AppTheme.Spacing.sm) {
                     ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: AppSectionStyle.scan.accent))
+                        .progressViewStyle(CircularProgressViewStyle(tint: stage.tintColor))
                         .scaleEffect(1.5)
-                    Text("Analysiere Text…")
-                        .font(AppTheme.Typography.cardTitle)
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                    // Dezenter Elapsed-Counter. Gibt dem Nutzer ein
-                    // Gefühl dafür, dass etwas passiert — ohne
-                    // „falsche Genauigkeit" (API-Progress kennen wir
-                    // nicht). Erst ab 3s sichtbar, damit bei
-                    // schnellen Responses kein flackernder Zähler
-                    // aufpoppt.
-                    if elapsedSeconds >= 3 {
-                        // Sekunden + KI-Aktivitäts-Hinweis nebeneinander
-                        // (User-Wunsch: „kleine Info über KI-Verwendung
-                        // /Analyse aktiv"). Pille mit Sparkles-Icon
-                        // signalisiert dem User, dass eine externe KI
-                        // (Claude Vision API) gerade arbeitet — keine
-                        // App-interne Pseudo-Animation.
-                        HStack(spacing: 8) {
-                            Text("\(elapsedSeconds)s")
-                                .font(.system(size: 12, weight: .medium, design: .rounded))
-                                .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.55))
-                                .monospacedDigit()
-                            HStack(spacing: 4) {
-                                Image(systemName: "sparkles")
-                                    .font(.system(size: 10, weight: .bold))
-                                Text("KI analysiert")
-                                    .font(.system(size: 10, weight: .semibold, design: .rounded))
-                            }
-                            .foregroundStyle(AppSectionStyle.scan.accent)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 3)
-                            .background(
-                                Capsule().fill(AppSectionStyle.scan.accent.opacity(0.14))
-                            )
-                            .overlay(
-                                Capsule().stroke(AppSectionStyle.scan.accent.opacity(0.35), lineWidth: 0.8)
-                            )
-                        }
+                    // Stage-Titel + Sub-Zeile identisch zur
+                    // Vokabel-Scan-Card — gleiche Wörter, gleiche
+                    // Struktur, damit der User in beiden Modi die
+                    // gleiche Transparenz erlebt.
+                    HStack(spacing: 10) {
+                        Image(systemName: stage.systemImage)
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(stage.tintColor)
+                        Text(stage.displayTitle(for: inputMethod))
+                            .font(.system(size: 19, weight: .black, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.85)
                     }
-                    // Mode-Badge direkt unter dem Counter — hier ist
-                    // immer Platz und der User sieht klar, dass gerade
-                    // der FreeText-Pfad läuft.
+                    .animation(.easeInOut(duration: 0.22), value: stage)
+
+                    if let subtitle = stage.displaySubtitle {
+                        Text(subtitle)
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, AppTheme.Layout.screenPadding)
+                            .transition(.opacity)
+                            .animation(.easeInOut(duration: 0.22), value: subtitle)
+                    }
+
+                    // Elapsed-Counter + Mode-Badge — erst ab 3s sichtbar,
+                    // damit bei schnellen Responses kein flackernder
+                    // Zähler aufpoppt.
+                    if elapsedSeconds >= 3 {
+                        Text("\(elapsedSeconds)s")
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.55))
+                            .monospacedDigit()
+                            .padding(.top, 2)
+                    }
                     ScanModeBadge(mode: .text, variant: .card)
                         .padding(.top, 4)
                 }
@@ -142,11 +151,30 @@ struct FreierTextProcessingView: View {
             await runAnalysis()
         }
         .task {
-            // Parallel-Task für Elapsed-Counter + Timeout-Überwachung.
+            // Parallel-Task für Elapsed-Counter + Timeout-Überwachung +
+            // Stage-Progression. Die Stage wird zeitgesteuert weiter-
+            // gereicht, weil der FreeText-Client keine Fortschritts-
+            // Callbacks liefert (ein einziger HTTP-Request zur Claude-
+            // Vision-API). Der Zeitplan ist bewusst konservativ —
+            // lieber etwas zu früh auf die nächste Stage wechseln, als
+            // den User auf einer Phase „festhängen" lassen.
+            //
+            //   0–0 s:  .preparingImage  (init)
+            //   nach 1 s: .aiConnecting  (Payload + Verbindung)
+            //   nach 2 s: .aiPrimary     (KI analysiert)
+            //
+            // Nach `onSuccess` wird in `runAnalysis()` kurz auf
+            // `.aiReceiving` + `.parsingResults` umgeschaltet, damit
+            // der User auch die End-Phase kurz visuell sieht.
             while !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
                 await MainActor.run {
                     elapsedSeconds += 1
+                    switch elapsedSeconds {
+                    case 1: stage = .aiConnecting
+                    case 2: stage = .aiPrimary
+                    default: break
+                    }
                     // Timeout: nach 90s gilt der Request als hängend →
                     // Fehler melden, damit der Nutzer nicht ewig wartet
                     // oder die App neu starten muss.
@@ -195,6 +223,14 @@ struct FreierTextProcessingView: View {
             // dann nicht mehr `onSuccess` feuern, sonst leuchtet kurz
             // das Result-UI auf, bevor der Parent dismissed.
             try Task.checkCancellation()
+            // Kurze End-Phase: User sieht, dass wir aus der KI-Analyse
+            // raus sind und die Antwort verarbeiten. Ca. 350 ms reichen,
+            // damit die Stage optisch wahrgenommen wird, bevor das
+            // Result-UI erscheint.
+            await MainActor.run { stage = .aiReceiving }
+            try? await Task.sleep(nanoseconds: 350_000_000)
+            await MainActor.run { stage = .parsingResults }
+            try? await Task.sleep(nanoseconds: 250_000_000)
             await MainActor.run {
                 onSuccess(result)
             }

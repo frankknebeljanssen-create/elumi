@@ -162,6 +162,10 @@ struct ListSelectionSheet: View {
     let onSelectionChanged: (Set<UUID>) -> Void
 
     @State private var localSelection: Set<UUID> = []
+    /// Reihenfolge der Selection — nötig, damit wir bei Erreichen des
+    /// `maxSelectableLists`-Limits die **älteste** Auswahl durch die neue
+    /// ersetzen können (statt den Tap stumm zu verwerfen, wie früher).
+    @State private var selectionOrder: [UUID] = []
 
     var body: some View {
         VStack(spacing: AppTheme.Spacing.md) {
@@ -203,7 +207,36 @@ struct ListSelectionSheet: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .tint(style.accent)
         .appScreenBackground(style)
-        .onAppear { localSelection = selectedListIDs }
+        .onAppear {
+            localSelection = selectedListIDs
+            selectionOrder = Array(selectedListIDs)
+        }
+    }
+
+    private func toggleSelection(for list: VocabularyList) {
+        let isSelected = localSelection.contains(list.id)
+        if list.isAggregateVocabulary {
+            localSelection = isSelected ? [] : [list.id]
+            selectionOrder = isSelected ? [] : [list.id]
+            return
+        }
+        localSelection.remove(VocabularyListStore.allCustomVocabularyListID)
+        selectionOrder.removeAll { $0 == VocabularyListStore.allCustomVocabularyListID }
+        if isSelected {
+            localSelection.remove(list.id)
+            selectionOrder.removeAll { $0 == list.id }
+            return
+        }
+        // Beim Limit NICHT mehr stumm abbrechen — die älteste Auswahl wird
+        // ersetzt. User sieht sofort Feedback (Häkchen wandert), statt zu
+        // denken der Tap sei kaputt (Bug in Artikel/Verbformen-Setup).
+        if localSelection.count >= AppLayout.maxSelectableLists,
+           let oldest = selectionOrder.first {
+            localSelection.remove(oldest)
+            selectionOrder.removeFirst()
+        }
+        localSelection.insert(list.id)
+        selectionOrder.append(list.id)
     }
 
     private func sectionHeader(_ title: String) -> some View {
@@ -217,45 +250,39 @@ struct ListSelectionSheet: View {
 
     private func listRow(_ list: VocabularyList) -> some View {
         let isSelected = localSelection.contains(list.id)
-        return Button {
-            if list.isAggregateVocabulary {
-                localSelection = isSelected ? [] : [list.id]
-            } else {
-                localSelection.remove(VocabularyListStore.allCustomVocabularyListID)
-                if isSelected {
-                    localSelection.remove(list.id)
-                } else {
-                    // App-weites 5er-Limit für Mehrfachauswahl
-                    guard localSelection.count < AppLayout.maxSelectableLists else { return }
-                    localSelection.insert(list.id)
-                }
+        // Kein `Button` mehr — bei eng gestapelten Zeilen in einer
+        // `ScrollView` kann SwiftUI den Button-Tap an die Scroll-Gesture
+        // verlieren, sodass das Label-Rendering zwar aktualisiert wird,
+        // das Tap-Event aber nie die action-Closure erreicht. Ein
+        // explizites `onTapGesture` mit `contentShape(Rectangle())` umgeht
+        // das und macht die komplette Zeilen-Box zuverlässig tappbar.
+        return HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(list.name)
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                Text("\(list.items.count) Einträge")
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
             }
-        } label: {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(list.name)
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
-                    Text("\(list.items.count) Einträge")
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                }
-                Spacer(minLength: 0)
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(isSelected ? style.accent : AppTheme.Colors.textDisabled)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .appCardBackground(style, intensity: isSelected ? AppTheme.CardIntensity.selected : AppTheme.CardIntensity.whisper, cornerRadius: 14)
-            .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(isSelected ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
-            )
+            Spacer(minLength: 0)
+            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                .font(.system(size: 22, weight: .bold))
+                .foregroundStyle(isSelected ? style.accent : AppTheme.Colors.textDisabled)
         }
-        .buttonStyle(.plain)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .appCardBackground(style, intensity: isSelected ? AppTheme.CardIntensity.selected : AppTheme.CardIntensity.whisper, cornerRadius: 14)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(isSelected ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
+        )
+        .contentShape(Rectangle())
+        .onTapGesture {
+            toggleSelection(for: list)
+        }
     }
 }
 

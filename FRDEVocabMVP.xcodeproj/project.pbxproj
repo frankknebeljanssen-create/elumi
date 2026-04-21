@@ -440,6 +440,9 @@
 		B4758C33858646B6A402E9E2 /* Sounds/elumi_roundclear.wav in Resources */ = {isa = PBXBuildFile; fileRef = 5F6AA0B1D09C4B26B5544537 /* Sounds/elumi_roundclear.wav */; };
 		B88DDE296B824BCA8E9B5AA6 /* GamificationFeedbackPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71844DBDB0A8498D87F33E5B /* GamificationFeedbackPresenter.swift */; };
 		BBA6A1692A074A9BA79D994A /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F654EF57484ACA8C074FF2 /* ProfileStore.swift */; };
+		AAAC0001AAAC0001AAAC0001 /* AccountStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAC0002AAAC0002AAAC0002 /* AccountStore.swift */; };
+		AAAC0003AAAC0003AAAC0003 /* AccountOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAC0004AAAC0004AAAC0004 /* AccountOnboardingView.swift */; };
+		AAAC0005AAAC0005AAAC0005 /* AccountSwitcherSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAC0006AAAC0006AAAC0006 /* AccountSwitcherSheet.swift */; };
 		BFB7270E17924A98985159AE /* Sounds/elumi_scandone.wav in Resources */ = {isa = PBXBuildFile; fileRef = BAC62D87FEAD413F90BCE57C /* Sounds/elumi_scandone.wav */; };
 		BFBC9A0F8FA14ED791E9E103 /* Sounds/elumi_combo.wav in Resources */ = {isa = PBXBuildFile; fileRef = 777D26688D2246308F41248B /* Sounds/elumi_combo.wav */; };
 		C0F11A111A111A111A111111 /* GamificationConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1C01A111A111A111A111111 /* GamificationConfig.swift */; };
@@ -533,6 +536,9 @@
 		2E74EDA8D2904AA7A3E9F688 /* Sounds/elumi_slowmostart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_slowmostart.wav; sourceTree = "<group>"; };
 		32C43DE8F494458D929C4AE1 /* Sounds/elumi_toggle.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_toggle.wav; sourceTree = "<group>"; };
 		35F654EF57484ACA8C074FF2 /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileStore.swift; path = FRDEVocabMVP/ProfileStore.swift; sourceTree = "<group>"; };
+		AAAC0002AAAC0002AAAC0002 /* AccountStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountStore.swift; path = FRDEVocabMVP/AccountStore.swift; sourceTree = "<group>"; };
+		AAAC0004AAAC0004AAAC0004 /* AccountOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountOnboardingView.swift; path = FRDEVocabMVP/AccountOnboardingView.swift; sourceTree = "<group>"; };
+		AAAC0006AAAC0006AAAC0006 /* AccountSwitcherSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountSwitcherSheet.swift; path = FRDEVocabMVP/AccountSwitcherSheet.swift; sourceTree = "<group>"; };
 		3A58F580B36740F78ED60FD0 /* Personalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Personalization.swift; path = FRDEVocabMVP/Personalization.swift; sourceTree = "<group>"; };
 		3AF0AA02FEF444D2BD481B5B /* GameHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GameHubView.swift; path = FRDEVocabMVP/GameHubView.swift; sourceTree = "<group>"; };
 		3C6021AB9E4ED9043B2F3F7F /* LanguageDirectionSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LanguageDirectionSwitch.swift; path = FRDEVocabMVP/LanguageDirectionSwitch.swift; sourceTree = "<group>"; };
@@ -1108,6 +1114,9 @@
 				901A6A0D6B194C198EEE6882 /* ProfileAvatarBadge.swift */,
 				3A58F580B36740F78ED60FD0 /* Personalization.swift */,
 				35F654EF57484ACA8C074FF2 /* ProfileStore.swift */,
+				AAAC0002AAAC0002AAAC0002 /* AccountStore.swift */,
+				AAAC0004AAAC0004AAAC0004 /* AccountOnboardingView.swift */,
+				AAAC0006AAAC0006AAAC0006 /* AccountSwitcherSheet.swift */,
 				7313B768D707425B9C3DA9DA /* LearnerProfile.swift */,
 				F43B1C072F86A7BA0094BA73 /* StandardVocabularyLoader.swift */,
 				F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */,
@@ -1990,6 +1999,9 @@
 				C39E800D461E4B3A84CA306E /* ProfileAvatarBadge.swift in Sources */,
 				EF1331233D8443888E1FAC22 /* Personalization.swift in Sources */,
 				BBA6A1692A074A9BA79D994A /* ProfileStore.swift in Sources */,
+				AAAC0001AAAC0001AAAC0001 /* AccountStore.swift in Sources */,
+				AAAC0003AAAC0003AAAC0003 /* AccountOnboardingView.swift in Sources */,
+				AAAC0005AAAC0005AAAC0005 /* AccountSwitcherSheet.swift in Sources */,
 				B2B53A9B62034F82BF7C110D /* LearnerProfile.swift in Sources */,
 				A00000000000000000000172 /* AppPersistenceSupport.swift in Sources */,
 				A00000000000000000000174 /* BuiltInVocabularyCatalog.swift in Sources */,

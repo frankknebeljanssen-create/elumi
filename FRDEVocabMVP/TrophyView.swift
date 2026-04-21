@@ -48,15 +48,36 @@ struct TrophyView: View {
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            // VStack-Spacing `.md` → `.sm` (User-Spec „padding zwischen
+            // allen minimal kleiner"). Zusammen mit den reduzierten
+            // vertical-paddings pro Card wirkt der Screen spürbar
+            // ruhiger und alle Sektionen passen komfortabler rein.
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                // **Einheitlicher Modul-Header** (User-Spec): Back-
+                // Chevron oben + farbige `ModuleHeaderCard` mit Pokal-
+                // SF-Symbol als Platzhalter-Icon. Analog zum Spielen-
+                // Screen und allen anderen Modulen.
+                ModuleHeaderCard(
+                    systemImage: "trophy.fill",
+                    title: "Fortschritt",
+                    accent: sectionStyle.accent,
+                    onBack: { dismiss() }
+                )
                 heroProgressCard
                 streakCard
                 lernstatusCard
                 achievementsCard
-                wordRunnerCard
+                // Word-Runner-Start-Card entfernt — das Spiel sitzt
+                // jetzt zentral im Spielen-Screen (GameHub), Doppel-
+                // Einstieg auf Fortschritt war redundant.
             }
             .padding(.horizontal, AppLayout.screenPadding)
-            .padding(.top, AppLayout.contentTopPadding)
+            // Top-Padding angeglichen an alle anderen Module —
+            // `screenHeaderTopPadding` (= 4 pt) statt `contentTopPadding`
+            // (= Spacing.xl), damit der Fortschritt-Header auf der
+            // gleichen vertikalen Höhe sitzt wie Wörterbuch, Nomen,
+            // Training und die übrigen Screens.
+            .padding(.top, AppLayout.screenHeaderTopPadding)
             .padding(.bottom, AppTheme.Spacing.xxl)
             .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .top)
@@ -89,17 +110,17 @@ struct TrophyView: View {
         let levelEnd = GamificationConfig.levelEndXP(for: level)
         let remaining = max(0, levelEnd - collectedXP)
 
-        return VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .center, spacing: 14) {
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .center, spacing: 12) {
                 levelBadge(level: level)
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 1) {
                     Text("Dein Fortschritt")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                         .textCase(.uppercase)
-                        .tracking(1.2)
+                        .tracking(1.1)
                     Text("Level \(level)")
-                        .font(.system(size: 22, weight: .black, design: .rounded))
+                        .font(.system(size: 20, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                 }
                 Spacer(minLength: 0)
@@ -110,10 +131,11 @@ struct TrophyView: View {
             Text(remaining > 0
                  ? "Noch \(remaining) XP bis Level \(level + 1)"
                  : "Maximum erreicht — weiter so!")
-                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .font(.system(size: 12, weight: .medium, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textSecondary)
         }
-        .padding(16)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .appSetupCardBackground()
     }
@@ -158,25 +180,26 @@ struct TrophyView: View {
     // MARK: - Section 2: Streak
 
     private var streakCard: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 12) {
             ZStack {
                 Circle()
                     .fill(Color(hex: "#FF9F40").opacity(0.18))
-                    .frame(width: 46, height: 46)
+                    .frame(width: 40, height: 40)
                 Text("🔥")
-                    .font(.system(size: 24))
+                    .font(.system(size: 20))
             }
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(currentStreak == 1 ? "1 Tag Streak" : "\(currentStreak) Tage Streak")
-                    .font(.system(size: 18, weight: .black, design: .rounded))
+                    .font(.system(size: 17, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                 Text(streakSubline(for: currentStreak))
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
             Spacer(minLength: 0)
         }
-        .padding(16)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .appSetupCardBackground()
     }
@@ -205,14 +228,14 @@ struct TrophyView: View {
         return Button {
             navigate(.lernstatus)
         } label: {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 10) {
                 HStack(alignment: .firstTextBaseline) {
                     Text("Lernstatus")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
 
@@ -239,7 +262,8 @@ struct TrophyView: View {
                     )
                 }
             }
-            .padding(16)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .appSetupCardBackground()
         }
@@ -247,12 +271,12 @@ struct TrophyView: View {
     }
 
     private func lernstatusColumn(icon: String, tint: Color, label: String, value: Int) -> some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 3) {
             Image(systemName: icon)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(tint)
             Text("\(value)")
-                .font(.system(size: 22, weight: .black, design: .rounded))
+                .font(.system(size: 20, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
                 .monospacedDigit()
             Text(label)
@@ -267,7 +291,7 @@ struct TrophyView: View {
     private var lernstatusDivider: some View {
         Rectangle()
             .fill(AppTheme.Colors.border.opacity(0.5))
-            .frame(width: 1, height: 40)
+            .frame(width: 1, height: 34)
     }
 
     // MARK: - Section 4: Achievements

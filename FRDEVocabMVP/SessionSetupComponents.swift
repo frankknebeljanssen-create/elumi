@@ -229,32 +229,52 @@ struct SessionContextCard: View {
 
 struct SessionGamificationBar: View {
     let estimate: SessionEstimate
+    /// Optionaler Hinweis-Text. Wenn gesetzt, rendert die Bar **statt**
+    /// der XP/Dauer-Zeile diesen Hinweis in Secondary-Farbe. Genutzt
+    /// z. B. im Verbformen-Setup: wenn aus der gewählten Liste keine
+    /// Verben erkannt werden, soll der „keine Verben erkannt"-Text
+    /// **in** der Bar landen (statt als lose Text-Zeile darüber), und
+    /// die XP-Zahl (0) verschwindet dabei.
+    var hintText: String? = nil
 
     var body: some View {
         // Inhalt zentriert in der Bar — kein `maxHeight: .infinity` auf
         // den Kindern (würde die Bar vertikal ins Unendliche ausdehnen).
         // `HStack(alignment: .center)` zentriert die drei gleich großen
         // Texte bereits sauber gegeneinander.
-        HStack(alignment: .center, spacing: 12) {
-            // Font identisch zum CTA „Los geht's!" darunter:
-            // `AppTheme.Typography.button` = 17 pt, bold, rounded.
-            // Alle drei Texte (XP, Bullet, Minuten) teilen dieselbe
-            // Typo — Weiß für XP (Hauptwert), Secondary-Farbe für
-            // Bullet und Minuten (dezenter, aber gleich groß/bold).
-            Text("+\(estimate.estimatedXP) XP")
-                .font(AppTheme.Typography.button)
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-                .monospacedDigit()
-
-            if let minutes = estimate.estimatedMinutes {
-                Text("·")
+        Group {
+            if let hintText, !hintText.isEmpty {
+                // Hint-Modus: statt XP/Dauer → zentrierter Hinweis in
+                // Secondary-Farbe, gleiche Typo wie der CTA darunter.
+                Text(hintText)
                     .font(AppTheme.Typography.button)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+            } else {
+                HStack(alignment: .center, spacing: 12) {
+                    // Font identisch zum CTA „Los geht's!" darunter:
+                    // `AppTheme.Typography.button` = 17 pt, bold, rounded.
+                    // Alle drei Texte (XP, Bullet, Minuten) teilen dieselbe
+                    // Typo — Weiß für XP (Hauptwert), Secondary-Farbe für
+                    // Bullet und Minuten (dezenter, aber gleich groß/bold).
+                    Text("+\(estimate.estimatedXP) XP")
+                        .font(AppTheme.Typography.button)
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .monospacedDigit()
 
-                Text("~\(minutes) min")
-                    .font(AppTheme.Typography.button)
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .monospacedDigit()
+                    if let minutes = estimate.estimatedMinutes {
+                        Text("·")
+                            .font(AppTheme.Typography.button)
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+
+                        Text("~\(minutes) min")
+                            .font(AppTheme.Typography.button)
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                            .monospacedDigit()
+                    }
+                }
             }
         }
         .padding(.horizontal, 16)

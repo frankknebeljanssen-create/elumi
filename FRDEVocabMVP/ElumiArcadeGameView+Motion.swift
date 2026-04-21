@@ -83,11 +83,40 @@ extension ElumiArcadeGameView {
         return minX + ((maxX - minX) * elumiX)
     }
 
+    // MARK: - Elumi-Vertikal-Range (Arcade, normale Runde)
+    //
+    // User-Spec: Elumi darf sich auch vertikal bewegen — ca. **1 Icon-
+    // Größe nach oben** und **0.5 Icon-Größe nach unten** relativ zur
+    // Ruheposition. Damit kann der Spieler Jellyfish / Tentacles nicht
+    // nur seitlich, sondern auch kurz nach oben/unten ausweichen.
+    //
+    // Elumi-Icon im Layout = 80 pt (siehe `ElumiArcadeGameView+Layout`).
+    //   • Up-Range   = 80 pt (1 Icon oberhalb der Ruheposition)
+    //   • Down-Range = 40 pt (0.5 Icon unterhalb der Ruheposition)
+    //
+    // Ruheposition = `height - 118` (unverändert).
+    // `elumiY` bleibt normalisiert auf 0…1; 0 = voll oben, 0.5 =
+    // Ruheposition, 1 = voll unten. Der Default `elumiY = 0.5` hält
+    // Elumi beim Start genau auf der Ruheposition.
+    private var elumiArcadeRestingYOffset: CGFloat { 118 }
+    private var elumiArcadeUpRange: CGFloat { 80 }
+    private var elumiArcadeDownRange: CGFloat { 40 }
+
     func elumiPositionY(in height: CGFloat) -> CGFloat {
-        guard isBonusRound else { return height - 118 }
-        let minY: CGFloat = 80
-        let maxY = max(minY, height - 80)
-        return minY + ((maxY - minY) * elumiY)
+        // Bonus-Runde behält den vollen Y-Range (80…height-80), weil
+        // dort keine Catch-Line existiert und der Spieler frei
+        // schwimmt.
+        if isBonusRound {
+            let minY: CGFloat = 80
+            let maxY = max(minY, height - 80)
+            return minY + ((maxY - minY) * elumiY)
+        }
+
+        // Normale Runde: begrenzte Range um die Ruheposition.
+        let restingY = height - elumiArcadeRestingYOffset
+        let topLimit = restingY - elumiArcadeUpRange     // voll oben
+        let bottomLimit = restingY + elumiArcadeDownRange // voll unten
+        return topLimit + ((bottomLimit - topLimit) * elumiY)
     }
 
     func updateElumiPosition(to x: CGFloat, width: CGFloat) {
@@ -104,6 +133,19 @@ extension ElumiArcadeGameView {
         let maxY = max(minY, size.height - 80)
         let clampedY = min(max(point.y, minY), maxY)
         elumiY = (clampedY - minY) / max(maxY - minY, 1)
+    }
+
+    /// Arcade-Variante von `updateElumiPosition2D` (**nicht** Bonus-
+    /// Runde): X frei wie bisher, Y auf das begrenzte Range um die
+    /// Ruheposition geclampt. Wird vom Drag-Handler während normaler
+    /// Runden aufgerufen.
+    func updateElumiArcadePosition2D(to point: CGPoint, in size: CGSize) {
+        updateElumiPosition(to: point.x, width: size.width)
+        let restingY = size.height - elumiArcadeRestingYOffset
+        let topLimit = restingY - elumiArcadeUpRange
+        let bottomLimit = restingY + elumiArcadeDownRange
+        let clampedY = min(max(point.y, topLimit), bottomLimit)
+        elumiY = (clampedY - topLimit) / max(bottomLimit - topLimit, 1)
     }
 
     // ── Jellyfish ──

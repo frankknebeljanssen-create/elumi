@@ -28,13 +28,23 @@ final class ProfileStore: ObservableObject {
     /// nutzt diesen Flag zum Gaten der Onboarding-UI.
     @Published private(set) var hasCompletedOnboarding: Bool
 
-    private let storageKey = appLearnerProfileKey
-    private let onboardingKey = appOnboardingCompletedKey
+    /// **Per-Account-Scope** (Phase E.4): der Profile-Store liest und
+    /// schreibt pro Account unter einem account-präfixten Key. Der
+    /// Greeting „Salut, …" auf Home und alle anderen personalisierten
+    /// Stellen ziehen darüber automatisch den Namen des **aktuellen**
+    /// Accounts — beim Switch lädt `reloadForCurrentAccount()` das
+    /// entsprechende Profil frisch.
+    private var storageKey: String {
+        AccountStore.shared.namespacedKey(appLearnerProfileKey)
+    }
+    private var onboardingKey: String {
+        AccountStore.shared.namespacedKey(appOnboardingCompletedKey)
+    }
 
     init() {
         let defaults = UserDefaults.standard
-        self.hasCompletedOnboarding = defaults.bool(forKey: appOnboardingCompletedKey)
-        if let data = defaults.data(forKey: appLearnerProfileKey),
+        self.hasCompletedOnboarding = defaults.bool(forKey: AccountStore.shared.namespacedKey(appOnboardingCompletedKey))
+        if let data = defaults.data(forKey: AccountStore.shared.namespacedKey(appLearnerProfileKey)),
            let decoded = try? JSONDecoder().decode(LearnerProfile.self, from: data) {
             self.profile = decoded
         } else {
@@ -44,6 +54,47 @@ final class ProfileStore: ObservableObject {
         // App schon mit `appFirstNameKey` verwendet haben, bevor es ein
         // ProfileStore gab. Kein Onboarding-Zwang nach App-Update.
         migrateLegacyFirstNameIfNeeded()
+
+        // **Phase E.4** — auf Account-Switch reagieren: frisches Profil
+        // für den neuen Account laden. Ohne diese Subscription würde
+        // der Greeting nach Switch den alten Namen zeigen.
+        NotificationCenter.default.addObserver(
+            forName: AccountStore.didSwitchAccount,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.reloadForCurrentAccount()
+            }
+        }
+    }
+
+    /// Lädt `profile` + `hasCompletedOnboarding` aus dem Account-
+    /// Namespace des gerade aktiven Accounts. Triggert via @Published
+    /// Views, die auf `profileStore.profile?.displayName` bindan.
+    func reloadForCurrentAccount() {
+        let defaults = UserDefaults.standard
+        let scope = AccountStore.shared
+        hasCompletedOnboarding = defaults.bool(forKey: scope.namespacedKey(appOnboardingCompletedKey))
+        if let data = defaults.data(forKey: scope.namespacedKey(appLearnerProfileKey)),
+           let decoded = try? JSONDecoder().decode(LearnerProfile.self, from: data) {
+            profile = decoded
+        } else {
+            // Kein persistiertes Profil für diesen Account — erzeugen
+            // wir on-the-fly aus dem AccountProfile (Namen übernehmen,
+            // Onboarding als abgeschlossen markieren, persistieren).
+            // Damit sieht der Greeting sofort den richtigen Namen und
+            // die Home-UI springt nicht ins Onboarding-Gate.
+            if let active = scope.currentAccount {
+                profile = LearnerProfile(displayName: active.displayName, lastActiveAt: Date())
+                hasCompletedOnboarding = true
+                persist()
+                persistOnboardingFlag()
+            } else {
+                profile = nil
+                hasCompletedOnboarding = false
+            }
+        }
     }
 
     // MARK: - Public API

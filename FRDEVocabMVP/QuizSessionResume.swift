@@ -40,10 +40,29 @@ struct QuizSessionResumeState: Codable, Equatable {
 
 enum QuizSessionResumeStore {
 
-    private static let fileName = "quiz-session-resume-v1.json"
+    /// Legacy-Filename (pre-Phase E.4). Bleibt als Fallback für die
+    /// Erst-Migration — neue Writes gehen in den account-scoped Slot.
+    private static let legacyFileName = "quiz-session-resume-v1.json"
+
+    /// **Per-Account-Filename** (Phase E.4): jeder Account hält seinen
+    /// eigenen Resume-Snapshot. Switch zwischen Accounts verschüttet
+    /// keine laufenden Sessions — jede Identität taucht in ihrem
+    /// eigenen Zustand wieder auf. @MainActor, weil `AccountStore`
+    /// MainActor-isoliert ist — alle Save-/Load-Call-Sites laufen
+    /// ohnehin auf Main (SwiftUI-View-Flow).
+    @MainActor
+    private static var fileName: String {
+        if let id = AccountStore.shared.currentAccountID {
+            return "quiz-session-resume-v1-\(id.uuidString).json"
+        }
+        return legacyFileName
+    }
 
     /// Synchrone Save-API — für Cleanup-Pfade. Hot-Path nutzt
-    /// `scheduleSave(_:)` (debounced Background-Write).
+    /// `scheduleSave(_:)` (debounced Background-Write). @MainActor,
+    /// weil fileName den MainActor-isolierten `AccountStore` liest;
+    /// alle Call-Sites laufen in SwiftUI-View-Code auf Main.
+    @MainActor
     static func save(_ state: QuizSessionResumeState) {
         guard let data = try? JSONEncoder().encode(state) else { return }
         AppPersistenceSupport.writeData(data, named: fileName)
@@ -51,6 +70,7 @@ enum QuizSessionResumeStore {
 
     private static var pendingSaveItem: DispatchWorkItem?
 
+    @MainActor
     static func scheduleSave(_ state: QuizSessionResumeState) {
         pendingSaveItem?.cancel()
         let targetName = fileName
@@ -62,11 +82,13 @@ enum QuizSessionResumeStore {
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.4, execute: item)
     }
 
+    @MainActor
     static func load() -> QuizSessionResumeState? {
         guard let data = AppPersistenceSupport.readData(named: fileName) else { return nil }
         return try? JSONDecoder().decode(QuizSessionResumeState.self, from: data)
     }
 
+    @MainActor
     static func clear() {
         pendingSaveItem?.cancel()
         pendingSaveItem = nil

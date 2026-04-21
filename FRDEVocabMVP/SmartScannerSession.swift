@@ -146,6 +146,19 @@ final class SmartScannerSession: NSObject {
     /// Wird in `start()` konfiguriert.
     let previewLayer: AVCaptureVideoPreviewLayer
 
+    /// **Freeze-Frame-Support** (User-Spec „wenn Shutter kommt, Bild
+    /// einfrieren"): zuletzt empfangenes Video-Frame, gehalten als
+    /// Pixel-Buffer. Wird bei jedem Delegate-Callback aktualisiert.
+    /// Beim Shutter ruft der Controller `snapshotLatestFrame()` auf —
+    /// das rendert einmalig zu UIImage und liefert den Freeze-Frame,
+    /// den die View als Overlay über den weiterlaufenden Video-Feed
+    /// legt, bis das Still-Photo zurück ist.
+    ///
+    /// Kein @Published — pro Frame aktualisieren würde die Haupt-Queue
+    /// belasten. Access vom Session-Queue aus, Snapshot nur on-demand.
+    private var latestPixelBuffer: CVPixelBuffer?
+    private let snapshotContext = CIContext(options: [.useSoftwareRenderer: false])
+
     /// Auto-Capture aktiviert? Wenn true, triggert die Session automatisch
     /// `capturePhoto()` sobald die Stabilität-Bedingungen erfüllt sind.
     var autoCaptureEnabled: Bool = true
@@ -492,6 +505,21 @@ final class SmartScannerSession: NSObject {
     /// • Stabile Mustererkennung beim Tap: `isPhotoDeliveryInFlight = true`
     ///   früh gesetzt, damit weitere Taps in der gleichen Sekunde
     ///   ignoriert werden.
+    /// Rendert den zuletzt empfangenen Video-Frame als UIImage — für
+    /// den Freeze-Frame-Overlay beim Shutter. Nil, solange noch kein
+    /// Frame durch den Delegate gelaufen ist (typisch: erste 50 ms
+    /// nach Session-Start). Orientation wird auf `.right` gesetzt, weil
+    /// die Kamera-Buffer im Portrait-Modus als Landscape-Right liefern —
+    /// ohne diesen Hinweis würde der Overlay auf dem Kopf stehen.
+    func snapshotLatestFrame() -> UIImage? {
+        guard let buffer = latestPixelBuffer else { return nil }
+        let ciImage = CIImage(cvPixelBuffer: buffer)
+        guard let cg = snapshotContext.createCGImage(ciImage, from: ciImage.extent) else {
+            return nil
+        }
+        return UIImage(cgImage: cg, scale: 1, orientation: .right)
+    }
+
     func capturePhoto() {
         #if DEBUG
         print("🟡 [Session] capturePhoto called")
@@ -869,6 +897,10 @@ extension SmartScannerSession: AVCaptureVideoDataOutputSampleBufferDelegate {
         lastProcessedTimestamp = now
 
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+
+        // Latest-Frame-Cache für Freeze-Frame on Shutter — nur die
+        // Referenz halten, keine UIImage-Konvertierung pro Frame.
+        latestPixelBuffer = pixelBuffer
 
         // **VocabularyList-Pfad**: nur RectangleTracker, mit voller
         // Quality + Auto-Trigger über emitGuidance.

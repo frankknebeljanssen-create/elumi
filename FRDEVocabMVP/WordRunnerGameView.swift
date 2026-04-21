@@ -504,6 +504,25 @@ struct WordRunnerGameView: View {
                     game.setLane(lane)
                     nudgeTilt(for: lane)
                 }
+
+                // **Vertikal-Drag → Speed-Control** (User-Spec):
+                // Zieht der Spieler nach oben (translation.height < 0),
+                // beschleunigt sich die Welt; nach unten (> 0), wird
+                // sie langsamer. Mapping: 140 pt Vertikal-Drag ergibt
+                // voll ausgefahrenen Speed (`userSpeedMin`/`…Max`).
+                // Linear interpoliert, geclampt, glatt animiert.
+                let verticalTravel = value.translation.height
+                let range: CGFloat = 140
+                let normalized = max(-1, min(1, -verticalTravel / range))
+                let target: CGFloat
+                if normalized >= 0 {
+                    target = 1.0 + normalized * (WordRunnerGame.userSpeedMax - 1.0)
+                } else {
+                    target = 1.0 + normalized * (1.0 - WordRunnerGame.userSpeedMin)
+                }
+                withAnimation(.interactiveSpring(response: 0.18, dampingFraction: 0.9)) {
+                    game.userSpeedMultiplier = target
+                }
             }
             .onEnded { _ in
                 let wasTap = !gestureMovedBeyondTapThreshold
@@ -521,6 +540,12 @@ struct WordRunnerGameView: View {
                     case .gameOver, .summary:
                         break
                     }
+                }
+
+                // **Speed-Control loslassen** → sanft zurück auf 1.0.
+                // Spring-Ease damit der Übergang nicht hart bricht.
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                    game.userSpeedMultiplier = 1.0
                 }
 
                 guard game.runState.isRunning else {

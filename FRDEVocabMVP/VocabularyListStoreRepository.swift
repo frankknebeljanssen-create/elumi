@@ -1,8 +1,20 @@
 import Foundation
 
 final class VocabularyListStoreRepository {
-    private enum Storage {
+    enum Storage {
+        /// **Globales** Legacy-File, pre-Multi-Account. Bleibt als
+        /// Quelle für die einmalige Migration in den ersten Account
+        /// stehen. Nach erfolgreicher Migration liest/schreibt die
+        /// App ausschließlich in den per-Account-scoped Filenamen
+        /// (siehe `accountScopedFileName(for:)`).
         static let customListsFileName = "vocabulary-lists-v2.json"
+
+        /// Per-Account-Filename für die Custom-Listen. Account-UUID
+        /// ist Teil des Dateinamens, damit jeder Account seinen
+        /// eigenen JSON-Blob auf Disk hat.
+        static func accountScopedFileName(for accountID: UUID) -> String {
+            "vocabulary-lists-v2-\(accountID.uuidString).json"
+        }
     }
 
     private let userDefaults: UserDefaults
@@ -11,6 +23,42 @@ final class VocabularyListStoreRepository {
 
     init(userDefaults: UserDefaults = .standard) {
         self.userDefaults = userDefaults
+    }
+
+    /// Invalidiert den internen Snapshot-Cache. Wird nach einem
+    /// Account-Wechsel vom Store gerufen, damit der nächste
+    /// `loadSnapshot(...)` wieder von Disk/UserDefaults für den
+    /// neuen Account liest statt den Cache des vorigen Accounts zu
+    /// retourneren.
+    func invalidateCache() {
+        snapshotLock.lock()
+        preloadedSnapshot = nil
+        snapshotLock.unlock()
+    }
+
+    /// Aktuell gültige Account-ID für den File-Namen. Wird vom Store
+    /// (MainActor) synchron via `setCurrentAccount(_:)` gesetzt, bevor
+    /// irgendeine Persist-/Load-Methode läuft. Die Repository selbst
+    /// ist **nicht** MainActor — sie lebt auf einem Background-Queue
+    /// für I/O — deshalb kein direkter `AccountStore.shared`-Zugriff.
+    private var currentAccountIDScope: UUID?
+
+    /// Setter vom Store: vor jedem Load/Persist muss die aktive
+    /// Account-ID (oder nil bei globalem Fallback) reingereicht
+    /// werden. Gekapselt, damit Call-Sites den Zustand nicht
+    /// versehentlich vergessen.
+    func setCurrentAccount(_ accountID: UUID?) {
+        currentAccountIDScope = accountID
+    }
+
+    /// Liefert den aktuell gültigen File-Namen für die Custom-Listen —
+    /// per-Account, sofern ein Account aktiv ist, sonst der globale
+    /// Legacy-Name.
+    fileprivate func currentScopedFileName() -> String {
+        if let id = currentAccountIDScope {
+            return Storage.accountScopedFileName(for: id)
+        }
+        return Storage.customListsFileName
     }
 
     func prewarmStoredStateIfNeeded(
@@ -73,7 +121,7 @@ final class VocabularyListStoreRepository {
         snapshot: VocabularyListStoreSnapshot
     ) {
         if let data = try? JSONEncoder().encode(customLists) {
-            AppPersistenceSupport.writeData(data, named: Storage.customListsFileName)
+            AppPersistenceSupport.writeData(data, named: currentScopedFileName())
             // **Redundanter Backup-Pfad** (Safety-Net gegen Datei-
             // Level-Verlust): zusätzlich eine Kopie in UserDefaults.
             // Wenn die Haupt-Datei irgendwie weg kommt (iCloud-Sync-
@@ -122,7 +170,7 @@ final class VocabularyListStoreRepository {
         var loadSource = "none"
 
         if let data = AppPersistenceSupport.readData(
-            named: Storage.customListsFileName,
+            named: currentScopedFileName(),
             legacyDefaults: userDefaults,
             legacyKey: customListsKey
         ),
@@ -196,7 +244,7 @@ final class VocabularyListStoreRepository {
 
         if shouldPersistMigratedLists,
            let data = try? JSONEncoder().encode(loadedCustomLists) {
-            AppPersistenceSupport.writeData(data, named: Storage.customListsFileName)
+            AppPersistenceSupport.writeData(data, named: currentScopedFileName())
             userDefaults.removeObject(forKey: customListsKey)
         }
 

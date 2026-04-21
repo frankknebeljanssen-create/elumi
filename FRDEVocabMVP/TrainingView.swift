@@ -488,6 +488,30 @@ struct TrainingView: View {
         if availableTrainingLists.isEmpty {
             return "Lege zuerst eine Liste mit Vokabeln an."
         }
+        // Verben sollen sprachlich identisch zu Verbformen („keine Verben
+        // erkannt") klingen — statt der generischen „Für diesen Typ…"-
+        // Zeile. Alle anderen Modi (Nomen, Artikel, Vokabeln) behalten
+        // den allgemeinen Fallback-Text.
+        if session.trainingMode == .verbs {
+            return "In der gewählten Liste wurden keine Verben erkannt."
+        }
         return "Für diesen Typ gibt es in der gewählten Liste noch keine Einträge."
+    }
+
+    /// Hint, der **in** der GamificationBar (Preview-Card über dem CTA)
+    /// gerendert werden soll, statt als lose Text-Zeile unter den
+    /// Optionen. Aktiv für die beiden Verb-Module (Verben/Verbformen),
+    /// wenn der jeweilige Start-Guard negativ ist — die XP-Zahl in der
+    /// Bar wird dabei automatisch ausgeblendet und der Hinweis rückt an
+    /// die prominenteste Stelle direkt neben „Los geht's!". Alle anderen
+    /// Modi (Nomen/Artikel/Vokabeln) bleiben beim Inline-Hint-Pattern.
+    var trainingGamificationHintText: String? {
+        if session.trainingMode == .verbforms, !verbformsCanStart {
+            return verbformsStartHint
+        }
+        if session.trainingMode == .verbs, !canStartTraining {
+            return startHintText
+        }
+        return nil
     }
 }

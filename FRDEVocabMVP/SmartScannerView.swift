@@ -360,19 +360,28 @@ struct SmartScannerView: View {
             // und die „Vokabeln scannen"-Pille wanderte weit rechts aus
             // dem Screen raus. Explizit auf Screen-Breite pinnen.
             VStack {
-                HStack {
-                    Button(action: cancelProcessing) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .frame(width: 40, height: 40)
-                            .background(Circle().fill(Color.black.opacity(0.5)))
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Abbrechen")
-                    Spacer()
+                // **Badge mittig** (User-Spec): ZStack mit Badge als
+                // Center-Layer und X-Button als Leading-Overlay. So
+                // sitzt die grüne „Vokabeln scannen"-/„Freier Text"-
+                // Pille garantiert auf der Screen-Mitte, unabhängig
+                // davon, wie breit der X-Button ist oder ob sich
+                // links noch andere Elemente befinden. Vorher saß sie
+                // via `HStack + Spacer` rechts bündig.
+                ZStack {
                     ScanModeBadge(profile: profile, variant: .overlay)
                         .fixedSize()
+                    HStack {
+                        Button(action: cancelProcessing) {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .frame(width: 40, height: 40)
+                                .background(Circle().fill(Color.black.opacity(0.5)))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Abbrechen")
+                        Spacer()
+                    }
                 }
                 .padding(.horizontal, AppTheme.Layout.screenPadding)
                 .padding(.top, AppTheme.Spacing.sm)
@@ -498,6 +507,11 @@ struct SmartScannerView: View {
             )
             if Task.isCancelled { return }
             await MainActor.run {
+                // WYSIWYG-Pfad (freeText manual) — es gab kein
+                // Document-Processing, also auch keine Perspektiv-
+                // Korrektur. Flag explizit auf false, damit die
+                // Review-Stage den „kein Rand"-Hinweis zeigen kann.
+                controller.lastCaptureDidCorrectPerspective = false
                 controller.markReviewReady(corrected: pipelineImage, report: report)
                 lastCaptureID = captureID
                 optimizedVariant = nil
@@ -640,6 +654,12 @@ struct SmartScannerView: View {
                 return
             }
 
+            // Perspektiv-Flag aus dem Document-Processor-Ergebnis —
+            // die Review-Stage nutzt das, um bei `false` einen dezenten
+            // „kein Rand erkannt"-Hinweis zu zeigen (User-Spec „Wird
+            // korrigiert… aber nichts passiert" sollte nicht mehr wie
+            // ein gebrochenes Versprechen wirken).
+            controller.lastCaptureDidCorrectPerspective = result.didCorrectPerspective
             controller.markReviewReady(corrected: pipelineImage, report: report)
             lastCaptureID = captureID
             // **Auto-Optimization-State zurücksetzen** für jeden neuen
@@ -821,6 +841,22 @@ struct SmartScannerView: View {
                         .padding(.top, AppTheme.Spacing.sm)
                 }
 
+                // **Perspektiv-Transparenz** (User-Spec: „Wird
+                // korrigiert… aber nichts passiert"): wenn die Pipeline
+                // keinen Rahmen finden konnte, zeigt die Preview einen
+                // dezenten Hinweis — dann weiß der User, dass das Bild
+                // bewusst unperspektivisch bleibt (mit Enhancement),
+                // statt sich zu fragen warum die Korrektur-Animation
+                // nichts visibles verändert hat. Nur für vocabularyList-
+                // Profil relevant, weil freeText-Modi ohnehin meist
+                // ohne Quad arbeiten.
+                if profile == .vocabularyList,
+                   !controller.lastCaptureDidCorrectPerspective {
+                    noCorrectionBanner()
+                        .padding(.horizontal, AppTheme.Layout.screenPadding)
+                        .padding(.top, AppTheme.Spacing.sm)
+                }
+
                 Spacer()
 
                 // **DisplayImage-Auflösung** (Reihenfolge):
@@ -949,6 +985,42 @@ struct SmartScannerView: View {
     }
 
     // MARK: - Preview Helpers
+
+    /// Transparenz-Banner, wenn keine Perspektivkorrektur möglich war
+    /// (kein Dokumentrand erkannt). Dezent, informativ — keine
+    /// Warnung. Begründet, warum die „Wird korrigiert…"-Phase keinen
+    /// sichtbaren Geometrie-Effekt hatte: das Bild bleibt als Original
+    /// mit Enhancement erhalten. User-Spec Ehrlichkeits-Pass.
+    @ViewBuilder
+    private func noCorrectionBanner() -> some View {
+        let tint = AppTheme.Colors.elumiBlue
+        HStack(spacing: 8) {
+            Image(systemName: "info.circle.fill")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(tint)
+            Text("Kein Dokumentrand erkannt — Originalbild optimiert.")
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+                .lineLimit(2)
+                .minimumScaleFactor(0.9)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(AppTheme.Colors.surface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(tint.opacity(0.08))
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(tint.opacity(0.3), lineWidth: 1)
+        )
+    }
 
     /// Banner über dem Bild bei schlechter/mittlerer Qualität.
     /// Farbcodiert: gelb (mittel) / rot (schlecht).
@@ -1361,6 +1433,22 @@ private struct SmartScannerCaptureView: View {
             CameraPreviewLayerView(layer: controller.previewLayer)
                 .ignoresSafeArea()
 
+            // **Freeze-Frame-Overlay** (User-Spec „wenn Shutter kommt,
+            // Bild einfrieren"): sobald `shutterFrozenFrame` gesetzt
+            // ist, legen wir das letzte Video-Frame als Bild drüber —
+            // der Live-Feed läuft darunter weiter, wird aber optisch
+            // blockiert. Nach Refining wird der Snapshot gecleart und
+            // der Live-Feed ist wieder sichtbar. Kein HitTesting —
+            // Overlay-Buttons (X, Auto-Pille) bleiben anklickbar.
+            if let frozen = controller.shutterFrozenFrame {
+                Image(uiImage: frozen)
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+                    .allowsHitTesting(false)
+            }
+
             // **Gesten-Layer**: transparente Fläche über dem Kamera-
             // Preview, die drei Gesten entgegennimmt:
             //   • Tap (1 Finger, <20pt Bewegung)   → Tap-to-Lock
@@ -1427,32 +1515,19 @@ private struct SmartScannerCaptureView: View {
             // (Müslipackungen, Poster) haben typisch kein dominantes
             // Dokument; der zappelnde Quad-Rahmen ist hier irreführend
             // und nervig. Pro `ScanCaptureProfile.showsLiveQuadOverlay`.
-            // **Debug-Raw-Overlay** (rot) — zeigt die **ungeglättete**
-            // Vision-Detection direkt. Liegt der grüne (smoothed)
-            // Overlay daneben vs. dem roten, weiß man: Smoothing
-            // lagt. Liegen beide daneben vom Motiv, weiß man: Mapper
-            // liefert falsche Koordinaten.
+            // Debug-Raw-Overlay (rot) entfernt — das war ein Diagnose-
+            // Tool für den Overlay-Sync-Bug. Der Alignment-Bug ist
+            // gefixt, die rote Hilfslinie nimmt jetzt nur noch visuell
+            // Platz weg und verwirrt bei der Aufnahme.
             //
-            // **Bewusst ohne `#if DEBUG`**: der User testet gerade
-            // das Overlay-Sync-Problem, das Debug-Overlay muss auch
-            // in Release-Builds sichtbar sein, um Diagnose zu
-            // ermöglichen. Entfernen sobald Overlay-Alignment stimmt.
-            // **Sichtbarkeit der Quad-Overlays**:
+            // **Sichtbarkeit der Quad-Overlays** (weiterhin genutzt vom
+            // smoothed-Overlay weiter unten):
             //   • vocabularyList → immer (showsLiveQuadOverlay = true)
             //   • freeText auto/Rahmen → wenn der User „Auto" gewählt
             //     hat (Rectangle-Assistenz für Plakat/Cover/Schild)
             //   • freeText manual → kein Quad-Overlay
             let showsQuadOverlay = profile.showsLiveQuadOverlay
                 || (profile == .freeText && autoCaptureEnabled)
-            if showsQuadOverlay, let raw = controller.rawCorners {
-                QuadrilateralOverlay(
-                    corners: raw,
-                    color: .red,
-                    lineWidth: 1.5
-                )
-                .ignoresSafeArea()
-                .allowsHitTesting(false)
-            }
 
             // **FreeText-Attention-Overlay**: weicher RoundedRectangle-
             // Rahmen auf dem zentralen Text-/Saliency-Bereich. Im
@@ -2367,6 +2442,22 @@ private final class SmartScannerController: ObservableObject {
     /// kurzen Puls auf dem Overlay zu zeigen.
     @Published var isAutoCaptureReady: Bool = false
 
+    /// **Freeze-Frame beim Shutter** (User-Spec): sobald ein Capture
+    /// startet, legt die View das zuletzt empfangene Video-Frame als
+    /// Overlay über den weiterlaufenden Kamera-Feed — das Bild wirkt
+    /// eingefroren. Der Snapshot kommt aus `session.snapshotLatestFrame()`
+    /// und wird nach Abschluss des Refinings wieder auf `nil` gesetzt.
+    @Published var shutterFrozenFrame: UIImage?
+
+    /// **Ergebnis-Transparenz** (User-Spec „Wird korrigiert… aber
+    /// nichts passiert"): `true`, wenn die Pipeline ein Dokument-
+    /// Rechteck gefunden **und** perspektiv-korrigiert hat. `false`
+    /// bedeutet: kein Rand erkannt, nur Enhancement wurde angewendet
+    /// — die Review-Stage zeigt dann einen dezenten Hinweis, damit
+    /// der User nicht „Wird korrigiert…" als Versprechen liest, das
+    /// gebrochen wurde.
+    @Published var lastCaptureDidCorrectPerspective: Bool = false
+
     /// **FreeText-Attention**: weiches Overlay-Rect in View-Layer-
     /// Koordinaten. Nur im FreeText-Profil belegt (vocabularyList
     /// nutzt Rectangle-Tracker). Nil, wenn aktuell weder Text noch
@@ -2510,6 +2601,13 @@ private final class SmartScannerController: ObservableObject {
             return
         }
 
+        // **Freeze-Frame snapshotten** (vor der Machine-Transition,
+        // damit die View beim `.capturing`-Layout das Overlay sofort
+        // sieht). Der Snapshot ist das zuletzt empfangene Video-Frame
+        // und friert den Preview optisch ein, solange das Still-Photo
+        // von AVFoundation geliefert + refined wird.
+        shutterFrozenFrame = session.snapshotLatestFrame()
+
         // Shutter gedrückt: Machine auf `.capturing`. Vermeidet Re-
         // Entry über Tracker-Updates und erlaubt der UI, ein
         // Shutter-Feedback-Overlay zu zeigen.
@@ -2531,6 +2629,9 @@ private final class SmartScannerController: ObservableObject {
                 print("❌ [Capture] Timeout after 2.0s — forcing failure (delegate never fired)")
                 #endif
                 self.captureMachine.transition(to: .captureFailed(.captureFailed))
+                // Freeze-Frame-Overlay weg: der Fehler-Screen übernimmt,
+                // das eingefrorene Bild wäre irreführend.
+                self.shutterFrozenFrame = nil
             }
         }
     }
@@ -2546,6 +2647,9 @@ private final class SmartScannerController: ObservableObject {
     /// Pipeline fertig — Review-Stage kann zeigen.
     func markReviewReady(corrected: UIImage, report: ImageQualityAnalyzer.Report) {
         captureMachine.transition(to: .reviewReady(corrected: corrected, report: report))
+        // Freeze-Frame-Overlay kann weg — das Review zeigt das finale,
+        // korrigierte Foto, der Freeze ist nicht mehr nötig.
+        shutterFrozenFrame = nil
     }
 
     /// User hat „Neu aufnehmen" getippt — zurück in den Live-Flow.
@@ -2557,6 +2661,7 @@ private final class SmartScannerController: ObservableObject {
             focusMode = .auto
             session.focusMode = .auto
         }
+        shutterFrozenFrame = nil
     }
 
     // MARK: - Tap-to-Lock (FreeText)

@@ -535,23 +535,38 @@ extension ScanImportView {
                 // **Modul-Header-Card** (Phase 7.6+): farbige Identitäts-
                 // Card oben im Body — visueller Wiedererkennungsanker
                 // zum Home-Tap auf „Scan".
+                //
+                // **Back-Verhalten kontext-abhängig** (User-Spec:
+                // „Chevron während Analyse → vorheriger Screen, nicht
+                // Home"):
+                //   • Draft aktiv (Bild gewählt / Analyse läuft /
+                //     Preview-Paare vorhanden) → zurück zum Scan-
+                //     Setup (Choice-Screen innerhalb der ScanImport-
+                //     View, via `returnToScanSetup()`). User verliert
+                //     nichts aus der Session, kann aber neu wählen.
+                //   • Keine aktive Session → `dismiss()` verlässt den
+                //     ganzen Scan-Screen (klassisches Zurück zu
+                //     Home / vorherigem Screen).
                 ModuleHeaderCard(
                     icon: .scan,
                     title: "Scan",
                     accent: sectionStyle.accent,
-                    onBack: { dismiss() }
+                    onBack: {
+                        if hasActiveScanDraft {
+                            returnToScanSetup()
+                        } else {
+                            dismiss()
+                        }
+                    }
                 )
 
-                if hasActiveScanDraft {
-                    Button {
-                        returnToScanSetup()
-                    } label: {
-                        Label("Zurück", systemImage: "arrow.left")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(AppSecondaryButtonStyle(tint: sectionStyle.accent))
-                    .disabled(isRecognizingImage)
-                }
+                // Separater „Zurück"-Button raus (User-Spec): der
+                // Back-Chevron in der `ModuleHeaderCard` oben ruft
+                // bereits `dismiss()` und liefert die gewohnte Zurück-
+                // Geste. Ein zweiter Button direkt darunter war
+                // redundant und nahm Platz auf dem Analyse-Screen weg.
+                // `returnToScanSetup()` bleibt als Methode erhalten —
+                // wird perspektivisch für andere Entry-Points genutzt.
 
                 if session.batchCompleted && !previewPairs.isEmpty {
                     // Summary: nur Summary zentriert, keine Auswahl-Buttons
@@ -590,11 +605,18 @@ extension ScanImportView {
                             // das Review-Layout für Liste und Freitext
                             // leicht unterschiedlich ist und der User
                             // jederzeit sehen soll, welchen Pfad er nimmt.
-                            HStack {
-                                ScanModeBadge(mode: activeScanMode, variant: .card)
-                                Spacer()
-                            }
-                            .padding(.top, 4)
+                            // **Zentriert** (User-Spec): Badge sitzt mittig
+                            // über dem Content, statt linksbündig wie
+                            // früher. Zusätzliches `.padding(.bottom, 14)`,
+                            // damit die grüne Pille nicht direkt auf dem
+                            // Bild-/Thumbnail-Block sitzt — das wirkte
+                            // gedrückt. 14 pt plus VStack-Spacing (10 pt)
+                            // ergeben ~24 pt Luft bis zur Analyse-Card
+                            // darunter.
+                            ScanModeBadge(mode: activeScanMode, variant: .card)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .padding(.top, 4)
+                                .padding(.bottom, 14)
                         }
 
                         if isOnChoiceScreen {
@@ -673,10 +695,9 @@ extension ScanImportView {
                                     currentIndex: session.batchCurrentIndex,
                                     isRecognizing: isRecognizingImage,
                                     progressText: scanProgressText,
-                                    runtimeLabel: scanProgressRuntimeLabel,
-                                    runtimeTint: scanProgressRuntimeTint,
-                                    runtimeIcon: scanProgressRuntimeIcon,
-                                    sectionStyle: sectionStyle
+                                    stage: scanRuntimeStage,
+                                    sectionStyle: sectionStyle,
+                                    inputMethod: session.selectedScanInputMethod
                                 )
                             } else if let selectedImage {
                                 // Single page
@@ -684,13 +705,12 @@ extension ScanImportView {
                                     image: selectedImage,
                                     isRecognizingImage: isRecognizingImage,
                                     progressText: scanProgressText,
-                                    runtimeLabel: scanProgressRuntimeLabel,
-                                    runtimeTint: scanProgressRuntimeTint,
-                                    runtimeIcon: scanProgressRuntimeIcon,
+                                    stage: scanRuntimeStage,
                                     sectionStyle: sectionStyle,
                                     onTap: {
                                         showingImagePreview = true
-                                    }
+                                    },
+                                    inputMethod: session.selectedScanInputMethod
                                 )
                             }
                         }
@@ -791,6 +811,9 @@ extension ScanImportView {
             },
             onQuiz: {
                 handleCompletionSelection(.quiz(context.quizLaunchContext))
+            },
+            onAccents: {
+                handleCompletionSelection(.accents(nil))
             },
             onViewList: {
                 handleCompletionSelection(.lists(context.listLaunchContext))

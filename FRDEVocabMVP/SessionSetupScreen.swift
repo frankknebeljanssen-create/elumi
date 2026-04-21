@@ -46,6 +46,12 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
     /// im Screen integriert sind (Vokabel-Setup: XP/Zeit/Credits stecken
     /// in der Speed-Round-Mode-Card, die zentrale Bar wäre redundant).
     var showsGamificationBar: Bool = true
+    /// Optionaler Hint-Text, der **in** der Gamification-Bar statt der
+    /// XP/Dauer-Zeile erscheint. Genutzt z. B. vom Verbformen-Setup,
+    /// wenn aus der gewählten Liste keine Verben erkannt werden — der
+    /// Hinweis landet dadurch **im** Preview-Card-Block (wo sonst die
+    /// XP stehen), statt als lose Text-Zeile darüber.
+    var gamificationBarHintText: String? = nil
     let onBack: () -> Void
     let onStart: () -> Void
     /// Optionales Modul-Icon (Phase 7.6+), rendert den Header als
@@ -73,6 +79,7 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
         showsGamificationBar: Bool = true,
         moduleIcon: HomeModuleIcon? = nil,
         showsDirectionToggle: Bool = false,
+        gamificationBarHintText: String? = nil,
         onBack: @escaping () -> Void,
         onStart: @escaping () -> Void,
         @ViewBuilder contextContent: @escaping () -> ContextContent,
@@ -90,6 +97,7 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
         self.showsGamificationBar = showsGamificationBar
         self.moduleIcon = moduleIcon
         self.showsDirectionToggle = showsDirectionToggle
+        self.gamificationBarHintText = gamificationBarHintText
         self.onBack = onBack
         self.onStart = onStart
         self.contextContent = contextContent
@@ -131,7 +139,7 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
                 // GamificationBar + CTA nutzen dasselbe Horizontal-Padding
                 // → garantiert identische Breite. Systemweite Konstante.
                 if showsGamificationBar {
-                    SessionGamificationBar(estimate: estimate)
+                    SessionGamificationBar(estimate: estimate, hintText: gamificationBarHintText)
                         .padding(.horizontal, AppLayout.sessionCTAHorizontalPadding)
                 }
 

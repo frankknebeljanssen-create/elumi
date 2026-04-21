@@ -145,6 +145,15 @@ extension ElumiArcadeGameView {
                             x: elumiPositionX(in: geometry.size.width),
                             y: elumiPositionY(in: geometry.size.height)
                         )
+                        // Smooth Follow — Elumi folgt dem Finger mit
+                        // leichtem Spring-Ease statt pixelgenau zu
+                        // kleben. Wichtig für das neue Y-Spiel (User-
+                        // Spec „smooth und flüssig"): schnelle Drags
+                        // ergeben einen weichen Bogen statt harten
+                        // Sprüngen. 220 ms Response mit hohem Damping
+                        // reagiert flott, überschwingt aber nicht.
+                        .animation(.spring(response: 0.22, dampingFraction: 0.85), value: elumiX)
+                        .animation(.spring(response: 0.22, dampingFraction: 0.85), value: elumiY)
 
                         // Bonus round fish
                         if isBonusRound {
@@ -210,7 +219,15 @@ extension ElumiArcadeGameView {
                         if isBonusRound {
                             updateElumiPosition2D(to: value.location, in: geometry.size)
                         } else {
-                            updateElumiPosition(to: value.location.x, width: geometry.size.width)
+                            // Neu: 2D-Update auch in normalen Runden,
+                            // aber mit begrenzter Y-Range (1 Icon nach
+                            // oben, 0.5 Icon nach unten — siehe
+                            // `updateElumiArcadePosition2D`). Spieler
+                            // kann jetzt auch vertikal ausweichen.
+                            updateElumiArcadePosition2D(
+                                to: value.location,
+                                in: geometry.size
+                            )
                         }
                     }
             )

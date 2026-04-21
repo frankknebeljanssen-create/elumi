@@ -12,6 +12,9 @@ struct SettingsView: View {
     @State private var dictionaryStats: (total: Int, breakdown: [DictionaryWordClassCount]) = (0, [])
     @State private var dictionaryDetailActive: Bool = false
     @State private var arcadeDetailActive: Bool = false
+    /// Gate für das Multi-Account-Switcher-Sheet. Zeigt `AccountSwitcherSheet`.
+    @State private var isShowingAccountSwitcher: Bool = false
+    @ObservedObject private var accountStore = AccountStore.shared
     /// Zweistufige Alerts für die beiden User-sichtbaren Resets. Getrennte
     /// Flags, damit versehentlich nie beides zusammen geöffnet wird —
     /// das würde die Warnlogik untergraben.
@@ -38,6 +41,19 @@ struct SettingsView: View {
     /// Foto behalten. Im Smart-Scanner wird der Toggle über
     /// `ScanSettings.smartRegionCropEnabled` gelesen.
     @AppStorage(appScanSmartRegionCropKey) private var scanSmartRegionCropEnabled: Bool = false
+
+    /// Sub-Zeile unter der „Meine Accounts"-Card: zeigt den aktiven
+    /// Account-Namen plus, falls es mehrere gibt, die Gesamtzahl.
+    /// Beispiel: „Frank · 1 weiterer" / „Frank · 2 weitere".
+    private var accountSwitcherSubline: String {
+        guard let active = accountStore.currentAccount else {
+            return "Kein Account aktiv"
+        }
+        let others = max(0, accountStore.accounts.count - 1)
+        if others == 0 { return active.displayName }
+        if others == 1 { return "\(active.displayName) · 1 weiterer" }
+        return "\(active.displayName) · \(others) weitere"
+    }
 
     /// Footer-Clearance analog zu `HomeView` / `InfoView`: die Card-
     /// Liste wird sonst von der globalen Bottom-Bar verdeckt — der User
@@ -84,6 +100,47 @@ struct SettingsView: View {
 
                     // Cartoon-Mein-Konto statt SF `person.crop.circle.fill`.
                     ElumiIconView(icon: .meinKonto, size: 56)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(18)
+                .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
+            }
+            .buttonStyle(.plain)
+
+            // **Meine Accounts** — Multi-User-Switcher (Phase 8).
+            // Zeigt aktiven Account + Anzahl weiterer Accounts;
+            // Tap öffnet `AccountSwitcherSheet` mit Liste + Neu-CTA +
+            // Löschen. Bewusst als **zweite** Card unter „Mein Konto":
+            // „Mein Konto" = Details des aktiven Users, „Meine
+            // Accounts" = zwischen Usern wechseln.
+            Button {
+                isShowingAccountSwitcher = true
+            } label: {
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Meine Accounts")
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                        Text(accountSwitcherSubline)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer(minLength: 0)
+
+                    if let active = accountStore.currentAccount {
+                        ZStack {
+                            Circle()
+                                .fill(sectionStyle.accent.opacity(0.22))
+                                .frame(width: 56, height: 56)
+                            Text(active.avatarEmoji)
+                                .font(.system(size: 28))
+                        }
+                    } else {
+                        Image(systemName: "person.2.fill")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundStyle(sectionStyle.accent)
+                            .frame(width: 56, height: 56)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(18)
@@ -198,6 +255,9 @@ struct SettingsView: View {
         .tint(sectionStyle.accent)
         .appAmbientWormBackground(sectionStyle)
         .toolbar(.hidden, for: .navigationBar)
+        .sheet(isPresented: $isShowingAccountSwitcher) {
+            AccountSwitcherSheet(accountStore: accountStore)
+        }
         .appLocalChrome(enabled: !usesGlobalChrome) {
             AppTopBar(onBack: { dismiss() }, onInfo: openInfo)
                 .padding(.horizontal, AppLayout.screenPadding)

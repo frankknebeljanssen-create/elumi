@@ -29,7 +29,7 @@ struct SessionOptionGroupCard<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 6) {
                 if let iconName {
                     Image(systemName: iconName)
@@ -44,12 +44,12 @@ struct SessionOptionGroupCard<Content: View>: View {
 
             content()
         }
-        // Vertikal etwas enger (18 → 10) — zieht den Chip-Inhalt um
-        // ~10 pt nach oben. Gilt aktuell ausschließlich für die
-        // Quiz-„Anzahl Fragen"-Card, die als einziger Call-Site diese
-        // Komponente verwendet.
+        // Mehr Luft zwischen Headline („ANZAHL FRAGEN") und dem Chip-Grid
+        // darunter (Spacing 4→12). Vertikal-Padding 10→14, damit die Card
+        // insgesamt etwas höher wirkt und das neue Spacing nicht den
+        // Content nach unten rausschiebt.
         .padding(.horizontal, 18)
-        .padding(.vertical, 10)
+        .padding(.vertical, 14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(SessionCardBackground())
     }

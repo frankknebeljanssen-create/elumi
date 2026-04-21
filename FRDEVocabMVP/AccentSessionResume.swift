@@ -47,11 +47,23 @@ struct AccentSessionResumeState: Codable, Equatable {
 
 enum AccentSessionResumeStore {
 
-    private static let fileName = "accent-session-resume-v1.json"
+    private static let legacyFileName = "accent-session-resume-v1.json"
+
+    /// Per-Account-Filename (Phase E.4). Fallback auf Legacy-Name,
+    /// solange kein Account aktiv ist. @MainActor — `AccountStore` ist
+    /// MainActor-isoliert; alle Save-/Load-Sites laufen eh auf Main.
+    @MainActor
+    private static var fileName: String {
+        if let id = AccountStore.shared.currentAccountID {
+            return "accent-session-resume-v1-\(id.uuidString).json"
+        }
+        return legacyFileName
+    }
 
     /// Synchrone Save-API — für Cleanup-Pfade. Der Engine nutzt im
     /// Hot-Path `scheduleSave(_:)` (debounced Background-Write, siehe
     /// `TrainingSessionResumeStore` für das identische Muster).
+    @MainActor
     static func save(_ state: AccentSessionResumeState) {
         guard let data = try? JSONEncoder().encode(state) else { return }
         AppPersistenceSupport.writeData(data, named: fileName)
@@ -59,6 +71,7 @@ enum AccentSessionResumeStore {
 
     private static var pendingSaveItem: DispatchWorkItem?
 
+    @MainActor
     static func scheduleSave(_ state: AccentSessionResumeState) {
         pendingSaveItem?.cancel()
         let targetName = fileName
@@ -70,11 +83,13 @@ enum AccentSessionResumeStore {
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.4, execute: item)
     }
 
+    @MainActor
     static func load() -> AccentSessionResumeState? {
         guard let data = AppPersistenceSupport.readData(named: fileName) else { return nil }
         return try? JSONDecoder().decode(AccentSessionResumeState.self, from: data)
     }
 
+    @MainActor
     static func clear() {
         pendingSaveItem?.cancel()
         pendingSaveItem = nil

@@ -11,6 +11,11 @@ import UIKit
 struct FreierTextPendingImage: Identifiable {
     let id = UUID()
     let image: UIImage
+    /// Woher kommt das Bild — Kamera oder Galerie? Wird an die
+    /// Processing-View durchgereicht, damit die Stage-Anzeige
+    /// mode-spezifisch formuliert ist („KI analysiert dein Foto" vs.
+    /// „…dein Bild"). `nil` fällt auf den neutralen Default-Text.
+    var inputMethod: ScanInputMethod? = nil
 }
 
 /// MVP-Datenmodell für die „Freier Text"-Analyse via Claude Vision.

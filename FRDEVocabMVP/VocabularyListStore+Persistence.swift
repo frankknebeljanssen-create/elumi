@@ -2,6 +2,7 @@ import Foundation
 
 extension VocabularyListStore {
     func loadState() {
+        repository.setCurrentAccount(AccountStore.shared.currentAccountID)
         let snapshot = repository.loadSnapshot(
             customListsKey: customListsKey,
             selectedListKey: selectedListKey,
@@ -12,6 +13,16 @@ extension VocabularyListStore {
         apply(snapshot: snapshot)
     }
 
+    /// **Phase E.2** — wird vom `AccountStore` nach jedem Account-
+    /// Wechsel gerufen. Invalidiert den Repository-Snapshot-Cache und
+    /// lädt das Custom-Listen-Paket des neu aktiven Accounts. Ohne
+    /// diese Methode würden Views nach dem Switch weiter die Listen
+    /// des vorigen Accounts zeigen.
+    func reloadForCurrentAccount() {
+        repository.invalidateCache()
+        loadState()
+    }
+
     func apply(snapshot: VocabularyListStoreSnapshot) {
         isApplyingStoredState = true
         customLists = snapshot.customLists
@@ -20,6 +31,7 @@ extension VocabularyListStore {
     }
 
     func saveCustomLists() {
+        repository.setCurrentAccount(AccountStore.shared.currentAccountID)
         repository.persistCustomLists(
             customLists,
             key: customListsKey,
@@ -31,6 +43,7 @@ extension VocabularyListStore {
     }
 
     func saveSelectedListID() {
+        repository.setCurrentAccount(AccountStore.shared.currentAccountID)
         repository.persistSelectedListID(
             selectedListID,
             key: selectedListKey,

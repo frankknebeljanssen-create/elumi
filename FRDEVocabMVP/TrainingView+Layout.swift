@@ -295,6 +295,7 @@ extension TrainingView {
             showsGamificationBar: !isVocabMode,
             moduleIcon: moduleIconForMode,
             showsDirectionToggle: true,
+            gamificationBarHintText: trainingGamificationHintText,
             onBack: { dismiss() },
             onStart: {
                 if isVerbformsMode {
@@ -411,18 +412,15 @@ extension TrainingView {
                 }
             }
 
-            if !canStartTraining && !isVerbformsMode {
+            // Verbformen/Verben: Hint steht jetzt **in** der
+            // GamificationBar über dem CTA (siehe
+            // `trainingGamificationHintText`) — keine lose Inline-Zeile
+            // mehr. Nomen/Artikel/Vokabeln bleiben beim bisherigen
+            // Inline-Pattern, damit der Hint dort sichtbar ist.
+            if !canStartTraining, !isVerbformsMode, !isVerbMode {
                 Text(startHintText)
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
-            }
-
-            if isVerbformsMode && !verbformsCanStart {
-                Text(verbformsStartHint)
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
             }
         }
     }
@@ -450,14 +448,14 @@ extension TrainingView {
         // Grid) + Titel, eine Erklär-Zeile ist redundant.
         VStack(alignment: .leading, spacing: 10) {
             Text("Wie möchtest du antworten?")
-                .font(.system(size: 18, weight: .black, design: .rounded))
+                .font(.system(size: 17, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(alignment: .top, spacing: 10) {
                 nounAnswerModeCard(
                     mode: .speech,
-                    title: "Spracheingabe",
+                    title: "Sprache",
                     systemImage: "mic.fill"
                 )
                 nounAnswerModeCard(
@@ -502,7 +500,7 @@ extension TrainingView {
                 .padding(.top, 2)
 
                 Text(title)
-                    .font(.system(size: 15, weight: .black, design: .rounded))
+                    .font(.system(size: 16, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
@@ -675,7 +673,7 @@ extension TrainingView {
     private func vocabularySectionTitle(title: String, subtitle: String?) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
-                .font(.system(size: 20, weight: .black, design: .rounded))
+                .font(.system(size: 18, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
             if let subtitle, !subtitle.isEmpty {
                 Text(subtitle)
@@ -720,33 +718,34 @@ extension TrainingView {
             feedbackPlayer.playTabSwitch()
             session.isSpeedRound = isSpeedRound
         } label: {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .center, spacing: 8) {
                 ZStack {
                     Circle()
                         .fill(trainingActionTint.opacity(isSelected ? 0.28 : 0.16))
                     Image(systemName: systemImage)
-                        .font(.system(size: 20, weight: .bold))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(trainingActionTint)
                 }
-                .frame(width: 44, height: 44)
-                .padding(.top, 4)
+                .frame(width: 38, height: 38)
+                .padding(.top, 2)
                 .frame(maxWidth: .infinity, alignment: .center)
 
                 Text(title)
-                    .font(.system(size: 18, weight: .black, design: .rounded))
+                    .font(.system(size: 16, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .lineLimit(2)
+                    .lineLimit(1)
                     .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.8)
+                    .minimumScaleFactor(0.85)
                     .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 14)
-            // minHeight 130 → 100: die ~18 pt des entfernten Subline-
-            // Blocks + Inner-Spacing kommen zurück, Card wirkt ruhiger
-            // und weniger dominant neben den Detail-Cards darunter.
-            .frame(maxWidth: .infinity, minHeight: 100, alignment: .top)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 11)
+            // minHeight auf 92 pt — identisch zur Nomen-Answer-Mode-Card
+            // darunter (Sprache / Wortauswahl). Das Modus-Cards-Paar und
+            // das Answer-Cards-Paar wirken dadurch als einheitliche
+            // 2-Spalten-Reihen gleicher Höhe.
+            .frame(maxWidth: .infinity, minHeight: 92, alignment: .top)
             .background(vocabularyModeCardBackground(isSelected: isSelected))
             .overlay(vocabularyModeCardBorder(isSelected: isSelected))
             .shadow(

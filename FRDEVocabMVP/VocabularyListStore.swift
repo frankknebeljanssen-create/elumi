@@ -32,9 +32,15 @@ final class VocabularyListStore: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: workItem)
     }
 
-    let customListsKey = "FRDEVocabMVP.customLists.v2"
-    let selectedListKey = "FRDEVocabMVP.selectedListID.v2"
-    let sampleListsSeededKey = "FRDEVocabMVP.sampleListsSeeded.v1"
+    // **Per-Account-Namespace** (Phase E.2): Die drei UserDefaults-Keys
+    // werden pro Access durch `AccountStore.namespacedKey(_:)` gereicht.
+    // Vor dem ersten Onboarding liefert der Helper den Legacy-Slot
+    // (ohne Präfix) zurück — Kompatibilität mit dem bisherigen
+    // Single-User-Verhalten. Sobald ein Account aktiv ist, sitzen
+    // die Daten pro Account isoliert.
+    var customListsKey: String { AccountStore.shared.namespacedKey("FRDEVocabMVP.customLists.v2") }
+    var selectedListKey: String { AccountStore.shared.namespacedKey("FRDEVocabMVP.selectedListID.v2") }
+    var sampleListsSeededKey: String { AccountStore.shared.namespacedKey("FRDEVocabMVP.sampleListsSeeded.v1") }
 
     // **Lazy-Materialisierung** (Start-Performance): die 57k Built-in-
     // Einträge werden NICHT mehr im Init aufgebaut — das hat den First-
@@ -102,6 +108,22 @@ final class VocabularyListStore: ObservableObject {
         }
         #endif
         print("⏱ [ListStore.init] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
+
+        // **Phase E.2** — auf Account-Switches reagieren: die
+        // `AccountStore.didSwitchAccount`-Notification triggert einen
+        // Reload aus dem neuen Account-Namespace. Abo läuft fürs
+        // gesamte Store-Leben; deinit wird für dieses Singleton-artige
+        // Container-Objekt nie regulär gerufen, deshalb kein
+        // removeObserver nötig.
+        NotificationCenter.default.addObserver(
+            forName: AccountStore.didSwitchAccount,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.reloadForCurrentAccount()
+            }
+        }
     }
 
     var builtInList: VocabularyList {

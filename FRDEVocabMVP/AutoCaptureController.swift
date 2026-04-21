@@ -74,12 +74,14 @@ final class AutoCaptureController {
         /// Wieviele aufeinanderfolgende `.locked`-Frames erforderlich
         /// sind, bevor gefeuert werden darf. Bei 10-Hz-Detection-
         /// Drossel (`SmartScannerSession.minFrameInterval = 0.1 s`)
-        /// entsprechen 3 Frames ≈ 0.3 s zusätzliche Bestätigung.
+        /// entsprechen 2 Frames ≈ 0.2 s zusätzliche Bestätigung.
         ///
-        /// Addiert sich zur `RectangleTracker.Config.stabilityDuration`
-        /// (0.5 s). Effektiv braucht Auto-Capture heute also ≈ 0.8 s
-        /// stabiles Framing — vorher waren es 0.5 s.
-        var requiredConsecutiveLockedFrames: Int = 3
+        /// **User-Spec „schneller einlocken"**: 3 → **2** Frames.
+        /// Addiert zur `RectangleTracker.Config.stabilityDuration`
+        /// (jetzt 0.35 s) ergibt das eine Gesamt-Latenz von ca. 0.45 s
+        /// bis der Shutter feuert — vorher waren es ~0.8 s. Für
+        /// Kinderhände („wackeln mehr") spürbar responsiver.
+        var requiredConsecutiveLockedFrames: Int = 2
 
         /// Maximale zulässige Magnitude der kombinierten Device-
         /// Motion (`|userAcceleration|² + |rotationRate|²`, ohne

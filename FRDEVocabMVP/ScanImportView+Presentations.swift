@@ -215,6 +215,7 @@ extension ScanImportView {
             }) { pending in
                 FreierTextAnalysisFlowView(
                     image: pending.image,
+                    inputMethod: pending.inputMethod,
                     onDismiss: {
                         freierTextPendingImage = nil
                     },

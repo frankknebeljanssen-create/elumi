@@ -5,16 +5,49 @@ extension LexiconViewModel {
         // Legacy-Marker (nur noun/verb/adjective/phrase) — bleibt für DetailSheet-Header
         // wo expliziter Marker gewünscht ist. Für die Listen-Badges siehe `lexiconWordClassBadgeText`.
         if entry.displayCardType == .phrases { return .phrase }
+
+        // **Bugfix** (User-Report: „hell (clair)" taucht unter Verben
+        // auf, obwohl das Adjektiv-Pill gesetzt ist):
+        // Vorher lief hier als erstes die Verb-Heuristik
+        // (`StandardVocabularyLoader.isVerb`), die auf das Suffix „-ir"
+        // greift — dadurch wurde „clair" fälschlich als Verb markiert,
+        // während das Badge via `FrenchLemmaFormatter.wordClassLabel`
+        // korrekt „Adjektiv" zeigte. Ergebnis: Filter und Pill
+        // widersprachen sich.
+        //
+        // Neue Ordnung: erst das **gespeicherte** Wortklassen-Label
+        // (Single Source of Truth — identisch zu dem, was das Badge
+        // zeigt) respektieren. Nur wenn das Label unklar ist, greifen
+        // die Heuristiken als Fallback.
+        if let firstEntry = entry.entries.first {
+            let storedLabel = FrenchLemmaFormatter.wordClassLabel(forLexiconEntry: firstEntry)
+                .lowercased()
+            switch storedLabel {
+            case "nomen", "substantiv":
+                return .noun
+            case "verb":
+                return .verb
+            case "adjektiv", "adjektiv/adverb":
+                return .adjective
+            default:
+                break  // Fallback auf Heuristik unten
+            }
+        }
+
         let hasNoun = entry.entries.contains(where: { $0.isGermanNoun })
         if hasNoun { return .noun }
         let sourceTerms = entry.entries.map(\.sourceTerm)
-        if sourceTerms.contains(where: { StandardVocabularyLoader.isVerb($0) }) {
-            return .verb
-        }
+        // Adjektiv-Check **vor** der Verb-Heuristik — „clair", „noir",
+        // „chair"-artige Wörter enden auf „-ir" und würden sonst von
+        // `StandardVocabularyLoader.isVerb` als Verb eingestuft,
+        // obwohl sie klar Adjektive sind.
         let isAdjLike = sourceTerms.contains { term in
             self.isLikelyAdjectiveLexiconEntry(makeStubEntry(sourceTerm: term))
         }
         if isAdjLike { return .adjective }
+        if sourceTerms.contains(where: { StandardVocabularyLoader.isVerb($0) }) {
+            return .verb
+        }
         return nil
     }
 

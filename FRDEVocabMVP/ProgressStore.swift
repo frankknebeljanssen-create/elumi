@@ -53,32 +53,50 @@ final class ProgressStore: ObservableObject {
 
     @Published private(set) var progress: UserProgress
 
-    private let xpKey = appElumiXPKey
-    private let creditsKey = appArcadeCreditsKey
-    private let streakKey = appElumiCurrentStreakKey
-    private let bestStreakKey = appElumiBestStreakKey
-    private let lastSessionDayKey = "elumi.gamification.lastSessionDay.v1"
-    private let lastDailyBonusDayKey = "elumi.gamification.lastDailyBonusDay.v1"
-    private let awardedMilestonesKey = "elumi.gamification.awardedStreakMilestones.v1"
+    // **Per-Account-Namespace** (Phase E): alle Keys werden pro Read/
+    // Write durch `AccountStore.namespacedKey(_:)` geschickt. Wenn kein
+    // Account aktiv ist (Startup pre-onboarding), fällt der Helper auf
+    // den globalen Base-Key zurück — Verhalten kompatibel zur V1.
+    private var xpKey: String { AccountStore.shared.namespacedKey(appElumiXPKey) }
+    private var creditsKey: String { AccountStore.shared.namespacedKey(appArcadeCreditsKey) }
+    private var streakKey: String { AccountStore.shared.namespacedKey(appElumiCurrentStreakKey) }
+    private var bestStreakKey: String { AccountStore.shared.namespacedKey(appElumiBestStreakKey) }
+    private var lastSessionDayKey: String {
+        AccountStore.shared.namespacedKey("elumi.gamification.lastSessionDay.v1")
+    }
+    private var lastDailyBonusDayKey: String {
+        AccountStore.shared.namespacedKey("elumi.gamification.lastDailyBonusDay.v1")
+    }
+    private var awardedMilestonesKey: String {
+        AccountStore.shared.namespacedKey("elumi.gamification.awardedStreakMilestones.v1")
+    }
 
     init() {
+        self.progress = Self.loadSnapshot()
+    }
+
+    /// Lädt eine frische `UserProgress`-Instanz aus dem aktuell
+    /// aktiven Account-Namespace. Statisch, damit der Init-Pfad und
+    /// der Reload-Pfad (siehe unten) denselben Code nutzen.
+    private static func loadSnapshot() -> UserProgress {
         let defaults = UserDefaults.standard
+        let scope = AccountStore.shared
         var loaded = UserProgress()
-        loaded.totalXP = defaults.integer(forKey: appElumiXPKey)
-        loaded.currentStreak = defaults.integer(forKey: appElumiCurrentStreakKey)
-        loaded.bestStreak = defaults.integer(forKey: appElumiBestStreakKey)
-        loaded.lastSessionDayIndex = defaults.object(forKey: "elumi.gamification.lastSessionDay.v1") as? Int ?? -1
-        loaded.lastDailyBonusDayIndex = defaults.object(forKey: "elumi.gamification.lastDailyBonusDay.v1") as? Int ?? -1
-        if let credits = defaults.object(forKey: appArcadeCreditsKey) as? Int {
+        loaded.totalXP = defaults.integer(forKey: scope.namespacedKey(appElumiXPKey))
+        loaded.currentStreak = defaults.integer(forKey: scope.namespacedKey(appElumiCurrentStreakKey))
+        loaded.bestStreak = defaults.integer(forKey: scope.namespacedKey(appElumiBestStreakKey))
+        loaded.lastSessionDayIndex = defaults.object(forKey: scope.namespacedKey("elumi.gamification.lastSessionDay.v1")) as? Int ?? -1
+        loaded.lastDailyBonusDayIndex = defaults.object(forKey: scope.namespacedKey("elumi.gamification.lastDailyBonusDay.v1")) as? Int ?? -1
+        if let credits = defaults.object(forKey: scope.namespacedKey(appArcadeCreditsKey)) as? Int {
             loaded.arcadeCredits = credits
         } else {
             loaded.arcadeCredits = 3
         }
-        if let data = defaults.data(forKey: "elumi.gamification.awardedStreakMilestones.v1"),
+        if let data = defaults.data(forKey: scope.namespacedKey("elumi.gamification.awardedStreakMilestones.v1")),
            let arr = try? JSONDecoder().decode([Int].self, from: data) {
             loaded.awardedStreakMilestones = Set(arr)
         }
-        self.progress = loaded
+        return loaded
     }
 
     /// Schreibt eine geänderte `UserProgress`-Instanz zurück und persistiert
@@ -89,6 +107,13 @@ final class ProgressStore: ObservableObject {
         change(&copy)
         progress = copy
         persist(copy)
+    }
+
+    /// Wird vom `AccountStore` nach einem Account-Switch gerufen —
+    /// re-liest die Per-Account-Daten und publisht sie. Views, die auf
+    /// `progress` binden, aktualisieren automatisch auf den neuen Stand.
+    func reloadForCurrentAccount() {
+        progress = Self.loadSnapshot()
     }
 
     private func persist(_ snapshot: UserProgress) {
