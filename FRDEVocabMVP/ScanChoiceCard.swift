@@ -281,7 +281,8 @@ struct ScanScreenHeader: View {
         HStack(alignment: .center, spacing: 4) {
             VStack(alignment: .leading, spacing: 0) {
                 Text("Was möchtest du scannen?")
-                    .font(.system(size: 26, weight: .black, design: .rounded))
+                    // 26 → 25 pt (−1 pt User-Wunsch).
+                    .font(.system(size: 25, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .multilineTextAlignment(.leading)
                     .lineLimit(2)

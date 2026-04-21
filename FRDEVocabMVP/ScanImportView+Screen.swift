@@ -560,7 +560,11 @@ extension ScanImportView {
                     Spacer(minLength: 8)
                 } else {
                 ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 16) {
+                    // VStack-Spacing 16 → 10: enger zwischen Labels,
+                    // Cards und Folge-Blöcken (User-Wunsch „padding
+                    // zwischen Wähle-Labels und Cards + zwischen
+                    // Kamera & Foto-Album kleiner").
+                    VStack(alignment: .leading, spacing: 10) {
                         // Choice-Screen NUR zeigen, wenn nichts läuft —
                         // sobald ein Bild gewählt / die Erkennung läuft /
                         // bereits Preview-Einträge da sind, fokussieren wir
