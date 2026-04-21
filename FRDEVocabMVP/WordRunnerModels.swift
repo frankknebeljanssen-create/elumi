@@ -98,6 +98,12 @@ struct WordRunnerObstacle: Identifiable, Equatable {
 
     enum Kind: Equatable {
         case blocker
+        /// **Baustelle** — visuelle Variante zum STOP-Schild (Phase 7.6).
+        /// Gameplay identisch tödlich + via Jump überspringbar; nur
+        /// Rendering unterscheidet sich (oranges Dreieck-Schild mit
+        /// SF-Symbol). Vergrößert die visuelle Vielfalt bei Hazard-
+        /// Wellen, ohne neue Mechanik.
+        case construction
         case option(label: String, isCorrect: Bool)
         /// **Felsen** — visuelle Variante zum STOP-Schild. Gameplay
         /// identisch tödlich, lediglich anderes Render-Format.
@@ -138,11 +144,12 @@ struct WordRunnerObstacle: Identifiable, Equatable {
     /// Duplicate-Regel einbaut.
     var isFatalOnHit: Bool {
         switch kind {
-        case .blocker: return true
-        case .rock:    return true
+        case .blocker:      return true
+        case .construction: return true
+        case .rock:         return true
         case .option(_, let isCorrect): return !isCorrect
-        case .powerUp: return false
-        case .collectible: return false
+        case .powerUp:      return false
+        case .collectible:  return false
         }
     }
 
@@ -155,15 +162,18 @@ struct WordRunnerObstacle: Identifiable, Equatable {
 
     /// Convenience — STOP-Blocker, ebenfalls über Jump überspringbar
     /// (User-Wunsch „springen über stopschild muss möglich sein").
+    /// Phase 7.6: Baustelle verhält sich identisch zum STOP-Schild.
     var isBlocker: Bool {
-        if case .blocker = kind { return true }
-        return false
+        switch kind {
+        case .blocker, .construction: return true
+        default:                       return false
+        }
     }
 
     /// Kann per Jump übersprungen werden? Aktuell: Felsen + STOP-
-    /// Schilder. Option-Schilder, Power-Ups und Collectibles werden
-    /// bewusst **nicht** umgangen — dort passiert die Entscheidungs-
-    /// oder Einsammel-Mechanik.
+    /// Schilder + Baustellen. Option-Schilder, Power-Ups und
+    /// Collectibles werden bewusst **nicht** umgangen — dort
+    /// passiert die Entscheidungs- oder Einsammel-Mechanik.
     var isJumpable: Bool {
         return isRock || isBlocker
     }
@@ -300,7 +310,7 @@ struct WordRunnerWave: Identifiable, Equatable {
             switch obs.kind {
             case .option(_, let isCorrect): return isCorrect
             case .powerUp, .collectible:    return true
-            case .blocker, .rock:           return false
+            case .blocker, .construction, .rock: return false
             }
         }
     }

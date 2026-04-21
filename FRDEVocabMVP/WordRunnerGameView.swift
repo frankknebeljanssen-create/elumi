@@ -87,10 +87,10 @@ struct WordRunnerGameView: View {
     /// Spurwechsel.
     private static let playerSize: CGFloat = 50
     /// User-Feedback: STOP-Achteck zu schmal — „STOP"-Text wird
-    /// abgeschnitten. Schild dezent vergrößert (56×45 → 70×52),
-    /// Höhe bleibt halb-Format (Wegweiser-Look erhalten), aber
-    /// Breite + leicht mehr Höhe gibt dem Text-Polygon Atemraum.
-    private static let obstacleSize: CGSize = .init(width: 70, height: 52)
+    /// abgeschnitten. Schild dezent vergrößert (56×45 → 70×52 → 80×60).
+    /// Phase 7.6: weitere +14 % (Breite) / +15 % (Höhe), damit der STOP-
+    /// Text sicher und großzügig reinpasst.
+    private static let obstacleSize: CGSize = .init(width: 80, height: 60)
     /// Smooth-Settle-Animation für den Spieler **nach** Drag-End oder
     /// bei Tap-Sprüngen. `interactiveSpring` statt reiner `easeOut`,
     /// weil sie kurz mit-ziehen kann, wenn der Finger schnell weiter
@@ -238,6 +238,14 @@ struct WordRunnerGameView: View {
                     }
                     .offset(x: offset.width, y: offset.height)
                 }
+                // **Game-Over-Freeze** (Phase 7.6): der Welt-Layer wird
+                // im GameOver-State unscharf gerendert. Die Welt-Uhr
+                // friert ohnehin via `gameOverAt` ein (siehe
+                // `WordRunnerGame.effectiveElapsed`) — der Blur setzt
+                // den Freeze visuell klar sichtbar um, damit kein
+                // subtiler Bewegungseindruck zurückbleibt.
+                .blur(radius: game.runState.isGameOver ? 8 : 0)
+                .animation(.easeOut(duration: 0.35), value: game.runState.isGameOver)
 
                 // **Dedicated Gesture-Layer** (Arcade-Pattern): eigener
                 // transparenter Layer mit DragGesture(minimumDistance: 0)
@@ -1825,6 +1833,12 @@ struct WordRunnerGameView: View {
                 colorTheme: colorTheme,
                 variant: .classic
             )
+        case .construction:
+            // Baustellen-Schild (Phase 7.6) — oranges Warn-Dreieck mit
+            // SF-Symbol. Gameplay identisch zu `.blocker` (fatal,
+            // jumpable), nur visuelle Variante für mehr Abwechslung in
+            // Hazard-Wellen.
+            ConstructionObstacleView(size: Self.obstacleSize)
         case .option(let label, _):
             SignOnPostView(
                 label: label,
@@ -2324,28 +2338,27 @@ struct WordRunnerGameView: View {
         hasUsableList = LiveListRunnerTaskProvider.hasUsableContent(in: listStoreRef.backing)
     }
 
-    /// **GAME OVER-Screen** zwischen Crash und Summary. Zeigt 2 s
-    /// lang (siehe `Tuning.gameOverOverlayDelay`) den Schriftzug +
-    /// Mini-Zeile „Deine Runde ist vorbei". Danach wechselt der
-    /// VM-State auf `.summary` und die SessionSummaryView übernimmt.
+    /// **GAME OVER-Screen** zwischen Crash und Summary. Zeigt 2 s lang
+    /// nur „GAME OVER" auf einem dunklen, **blur-lastigen** Backdrop —
+    /// der Hintergrund des Spiels friert ein (siehe `frozenGameClock`
+    /// + `gameOverAt`) und wird durch `.blur(radius: 8)` zusätzlich
+    /// unscharf, damit kein Bewegungseindruck mehr entsteht.
     ///
-    /// Bewusst keine CTAs hier — die Summary hat die Action-Buttons
-    /// („Nochmal" / „Zur Auswahl"). Der Game-Over-Screen ist reiner
-    /// Ankündigungs-Moment, kein Entscheidungs-Screen.
+    /// Keine Sub-Zeile mehr („Deine Runde ist vorbei." ist entfallen —
+    /// GAME OVER allein kommuniziert den Zustand klar).
     @ViewBuilder
     private var gameOverScreen: some View {
         ZStack {
-            Color.black.opacity(0.55).ignoresSafeArea()
-            VStack(spacing: 10) {
-                Text("GAME OVER")
-                    .font(.system(size: 44, weight: .black, design: .rounded))
-                    .foregroundStyle(.white)
-                    .tracking(3)
-                    .shadow(color: .black.opacity(0.7), radius: 6, x: 0, y: 3)
-                Text("Deine Runde ist vorbei.")
-                    .font(.system(size: 15, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.75))
-            }
+            // Schwarzer Dim + milder Blur-Tint. Der eigentliche
+            // Background-Blur wird im Main-Body (WordRunnerGameView)
+            // über `.blur(...)` auf den Spiel-Renderer gelegt, damit
+            // die Bewegungslosigkeit visuell sofort sichtbar ist.
+            Color.black.opacity(0.62).ignoresSafeArea()
+            Text("GAME OVER")
+                .font(.system(size: 44, weight: .black, design: .rounded))
+                .foregroundStyle(.white)
+                .tracking(3)
+                .shadow(color: .black.opacity(0.7), radius: 6, x: 0, y: 3)
         }
     }
 
@@ -2924,6 +2937,46 @@ private struct JellyfishTentacle: View {
 ///   - **Hellere Oberseite, dunklere Unterseite** → Lichtquelle von oben
 ///   - Feiner Umriss-Stroke für Kontur-Lesbarkeit
 ///   - Highlight oben-links (Plus-Lighter-Blend)
+/// **Baustellen-Schild** (Phase 7.6) — visuelle Variante zum STOP-
+/// Schild. Orangefarbenes Warn-Dreieck (Verkehrs-Semantik: Warnung)
+/// mit SF-Symbol mittig. Gameplay identisch: fatal bei Kollision,
+/// aber via Jump überspringbar (siehe `WordRunnerObstacle.isJumpable`).
+private struct ConstructionObstacleView: View {
+    let size: CGSize
+
+    /// Warn-Dreieck-Pfad (oben spitz, unten breit) — klassisches
+    /// Verkehrs-Gefahrenzeichen.
+    private struct TriangleShape: Shape {
+        func path(in rect: CGRect) -> Path {
+            var p = Path()
+            p.move(to: CGPoint(x: rect.midX, y: rect.minY))
+            p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+            p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+            p.closeSubpath()
+            return p
+        }
+    }
+
+    var body: some View {
+        ZStack {
+            TriangleShape()
+                .fill(Color(red: 0.98, green: 0.60, blue: 0.08))
+            TriangleShape()
+                .stroke(Color.white, lineWidth: 1.8)
+                .padding(2)
+            // SF-Symbol als Warn-Marke. `cone.fill` liest sich sofort
+            // als „Baustelle" — Farbe bewusst dunkel, damit der Kontrast
+            // zum orangen Grund hoch bleibt.
+            Image(systemName: "cone.fill")
+                .font(.system(size: size.height * 0.42, weight: .bold))
+                .foregroundStyle(Color.black.opacity(0.82))
+                .offset(y: size.height * 0.08)
+                .shadow(color: .black.opacity(0.35), radius: 1, x: 0, y: 1)
+        }
+        .frame(width: size.width, height: size.height)
+    }
+}
+
 ///
 /// Varianten-Auswahl kommt aus `WordRunnerObstacle.Kind.rock(variant:)`.
 /// Modulo gegen die View-Anzahl schützt gegen out-of-range-Indizes,

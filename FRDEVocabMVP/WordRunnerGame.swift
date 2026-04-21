@@ -237,7 +237,10 @@ final class WordRunnerGame: ObservableObject {
         /// Startgeschwindigkeit. Visual-Tuning: weiter runter (105 → 88).
         /// Mit Horizon bei 0.12 und Player bei 0.80 → 612 pt Strecke,
         /// bei 88 pt/s = **~7 s** Reaktionszeit pro Welle am Start.
-        static let startScrollSpeed: CGFloat = 88
+        // Phase 7.6: Start-Speed +10 % (88 → 97). Peak bleibt bei 150,
+        // Ramp-Duration unverändert — die Difficulty-Curve wird nur am
+        // Anfang steiler, damit der Einstieg direkter wirkt.
+        static let startScrollSpeed: CGFloat = 97
         /// Peak nach Ramp. Sanfter (180 → 150).
         /// Am Peak noch ~4 s.
         static let peakScrollSpeed: CGFloat = 150
@@ -984,6 +987,7 @@ final class WordRunnerGame: ObservableObject {
     private func reasonFor(obstacle: WordRunnerObstacle) -> WordRunnerRunState.GameOverReason {
         switch obstacle.kind {
         case .blocker:        return .hitBlocker
+        case .construction:   return .hitBlocker
         case .rock:           return .hitBlocker
         case .option:         return .wrongChoice
         // PowerUps + Collectibles sind nie fatal — der Pfad sollte

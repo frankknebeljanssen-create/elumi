@@ -171,24 +171,57 @@ struct WordRunnerSpawner {
     /// rein visuelle Abwechslung.
     private func makeHazardWave(spawnTime: TimeInterval, index: Int) -> WordRunnerWave {
         let lanes = WordRunnerLane.allCases
-        let free = lanes.randomElement()!
         let style: WordRunnerObstacle.Style =
             (index / 2).isMultiple(of: 2) ? .block : .rounded
-        let useRocks = (index / 2) % 3 == 1
-        let obstacles: [WordRunnerObstacle] = lanes
-            .filter { $0 != free }
-            .map { lane in
-                if useRocks {
-                    // Rock-Varianten-Seed: stabile Zuordnung aus Lane
-                    // + Wave-Index → dieselbe Welle zeigt nicht zwei
-                    // identische Felsen, aber bleibt deterministisch
-                    // in Replay-Snapshots.
-                    let variant = (lane.rawValue + index) % Self.rockVariantCount
-                    return WordRunnerObstacle(lane: lane, kind: .rock(variant: variant), style: style)
-                } else {
-                    return WordRunnerObstacle(lane: lane, kind: .blocker, style: style)
-                }
+
+        // **Pattern-Rotation (Phase 7.6)** — 5 Layouts, deterministisch
+        // per `index` ausgewählt. Das verhindert, dass die Hazard-
+        // Wellen sich wie zufällig gleiche Konfigurationen anfühlen.
+        //
+        //   A  Block · frei  · Block         (Mitte frei)
+        //   B  Block · Block · frei          (rechts frei)
+        //   C  Block · frei  · frei          (nur links Block — entspannt)
+        //   D  frei  · Block · Block         (links frei)
+        //   E  frei  · Block · frei          (nur Mitte Block — entspannt)
+        //
+        // Hazard-Index (index/2, da Hazard jede 2. Welle ist) mod 5
+        // rotiert durch die Patterns. Kein echter Zufall — bleibt
+        // Replay-deterministisch.
+        let patternIndex = (index / 2) % 5
+        let blockedLanes: [WordRunnerLane] = {
+            switch patternIndex {
+            case 0: return [.left, .right]           // A
+            case 1: return [.left, .center]          // B
+            case 2: return [.left]                   // C
+            case 3: return [.center, .right]         // D
+            default: return [.center]                // E
             }
+        }()
+
+        // **Hindernis-Varianten-Mix (Phase 7.6)**: Rocks · STOP · Baustelle
+        // rotieren ebenfalls über `index`. Die drei sind gameplay-
+        // identisch (alle fatal + via Jump überspringbar), variieren
+        // nur visuell.
+        let kindCycle = (index / 2) % 4
+        let obstacles: [WordRunnerObstacle] = blockedLanes.map { lane in
+            switch kindCycle {
+            case 0:
+                let variant = (lane.rawValue + index) % Self.rockVariantCount
+                return WordRunnerObstacle(lane: lane, kind: .rock(variant: variant), style: style)
+            case 1:
+                return WordRunnerObstacle(lane: lane, kind: .blocker, style: style)
+            case 2:
+                return WordRunnerObstacle(lane: lane, kind: .construction, style: style)
+            default:
+                // Gemischte Welle: STOP + Baustelle, mit Lane-Parität
+                // als Trenner — sieht visuell interessanter aus.
+                let kind: WordRunnerObstacle.Kind = (lane.rawValue.isMultiple(of: 2))
+                    ? .blocker
+                    : .construction
+                return WordRunnerObstacle(lane: lane, kind: kind, style: style)
+            }
+        }
+
         return WordRunnerWave(
             spawnTime: spawnTime,
             prompt: nil,
