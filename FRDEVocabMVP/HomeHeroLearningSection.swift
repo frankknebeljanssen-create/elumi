@@ -23,8 +23,13 @@ struct HomeHeroLearningSection: View {
     /// Feste Hero-Reihenfolge. Einzige Quelle der Wahrheit — der Filter
     /// in `HomeMoreExercisesSection` liest hier, um Dopplungen zu
     /// vermeiden.
+    ///
+    /// Reihenfolge-Historie:
+    ///   • Initial: Karteikarten · Nomen · Verben · Quiz
+    ///   • Swap 1 (nomen ↔ verben):  Karteikarten · Verben · Nomen · Quiz
+    ///   • Swap 2 (verben ↔ quiz):   Karteikarten · Quiz  · Nomen · Verben
     static let heroModules: [HomeHeroModule] = [
-        .karteikarten, .nomen, .verben, .quiz
+        .karteikarten, .quiz, .nomen, .verben
     ]
 
     /// 2 gleich breite Spalten — `.flexible()` teilt die Screen-Breite

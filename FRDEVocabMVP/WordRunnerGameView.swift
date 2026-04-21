@@ -303,7 +303,13 @@ struct WordRunnerGameView: View {
                     .allowsHitTesting(false)
                 }
 
-                promptBanner(size: geo.size)
+                // PromptBanner nur im Running-State — während GameOver/
+                // Summary darf **kein** Wort oder Vokabel mehr sichtbar
+                // sein (User-Spec: „nur der Bubble-Background darf
+                // weiterlaufen").
+                if game.runState.isRunning {
+                    promptBanner(size: geo.size)
+                }
 
                 // Wrong-Feedback: kurzer Screen-Flash über alles
                 // gezogen (außer State-Overlay). Macht den Crash
@@ -599,34 +605,72 @@ struct WordRunnerGameView: View {
         }
     }
 
-    /// Sammelobjekt-Zähler. Warm-goldenes Stern-Icon neben der Zahl.
-    /// **Phase 7.4 Fix**: immer sichtbar, auch wenn noch 0 — zeigt
-    /// dem User, dass es Sammelobjekte gibt. Nach jedem Pickup macht
-    /// der Chip einen kurzen Scale-Puls (via `pickupPulseScale`).
+    /// Collectibles-HUD (Phase 7.6+): drei separate Chips pro Typ,
+    /// vertikal gestapelt. Jeder Chip zeigt Icon + Count. Bei Count 0
+    /// ist der Chip gedimmt, damit der Spieler weiß, dass es diesen
+    /// Typ gibt — aber noch nichts gesammelt wurde.
     @ViewBuilder
     private var collectiblesChip: some View {
         TimelineView(.animation) { ctx in
             let pulse = pickupPulseScale(at: ctx.date)
-            HStack(spacing: 4) {
-                Image(systemName: "star.fill")
-                    .font(.system(size: 12, weight: .heavy))
-                    .foregroundStyle(Color(hex: "#FFC46C"))
-                Text("\(game.collectiblesGathered)")
-                    .font(.system(size: 14, weight: .black, design: .rounded))
-                    .foregroundStyle(.white)
-                    .monospacedDigit()
+            VStack(alignment: .trailing, spacing: 4) {
+                collectibleTypeChip(
+                    symbol: "✦",
+                    tint: Color(hex: "#FFC46C"),
+                    count: game.collectedStarfish,
+                    isRecent: game.lastCollectiblePickupKind == .starfish
+                )
+                collectibleTypeChip(
+                    symbol: "◉",
+                    tint: Color(hex: "#EF6C50"),
+                    count: game.collectedWorm,
+                    isRecent: game.lastCollectiblePickupKind == .worm
+                )
+                collectibleTypeChip(
+                    symbol: "❖",
+                    tint: Color(hex: "#C4B5FD"),
+                    count: game.collectedPearl,
+                    isRecent: game.lastCollectiblePickupKind == .pearl
+                )
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(
-                Capsule()
-                    .fill(Color.black.opacity(0.55))
-                    .overlay(
-                        Capsule().stroke(Color(hex: "#FFC46C").opacity(0.35), lineWidth: 0.8)
-                    )
-            )
-            .scaleEffect(pulse)
+            // Puls-Scale nur auf den zuletzt gesammelten Typ
+            // anwenden — die anderen Chips ruhen.
+            .scaleEffect(pulse, anchor: .trailing)
         }
+    }
+
+    /// Einzelner Typ-Chip. Bei `count == 0` gedimmt; `isRecent`
+    /// hebt den zuletzt aufgenommenen Typ leicht hervor (via
+    /// Border-Opacity).
+    @ViewBuilder
+    private func collectibleTypeChip(
+        symbol: String,
+        tint: Color,
+        count: Int,
+        isRecent: Bool
+    ) -> some View {
+        let active = count > 0
+        HStack(spacing: 4) {
+            Text(symbol)
+                .font(.system(size: 12, weight: .heavy, design: .rounded))
+                .foregroundStyle(active ? tint : tint.opacity(0.35))
+            Text("\(count)")
+                .font(.system(size: 13, weight: .black, design: .rounded))
+                .foregroundStyle(active ? .white : .white.opacity(0.4))
+                .monospacedDigit()
+        }
+        .padding(.horizontal, 9)
+        .padding(.vertical, 4)
+        .background(
+            Capsule()
+                .fill(Color.black.opacity(active ? 0.55 : 0.35))
+                .overlay(
+                    Capsule().stroke(
+                        tint.opacity(isRecent ? 0.65 : (active ? 0.35 : 0.15)),
+                        lineWidth: 0.8
+                    )
+                )
+        )
     }
 
     /// Skalierung (1.0…1.18) für den Pickup-Pulse — läuft 0.5 s ab

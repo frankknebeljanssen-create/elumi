@@ -146,6 +146,15 @@ final class WordRunnerGame: ObservableObject {
     @Published private(set) var lastCollectiblePickupAt: Date?
     @Published private(set) var lastCollectiblePickupKind: WordRunnerCollectible?
 
+    // Per-Typ-Counter (Phase 7.6+): die HUD zeigt die drei Collectible-
+    // Typen jetzt einzeln, damit der Spieler sieht, was genau er
+    // gesammelt hat — nicht nur die Summe. `collectiblesGathered`
+    // bleibt als Summe erhalten (wird von Summary + Legacy-Pfaden
+    // konsumiert).
+    @Published private(set) var collectedStarfish: Int = 0
+    @Published private(set) var collectedWorm: Int = 0
+    @Published private(set) var collectedPearl: Int = 0
+
     /// **Power-Up: Schild-Charges**. Jeder Charge absorbiert genau
     /// einen fatalen Treffer (Blocker, Felsen, falsche Option).
     /// View zeigt eine Schild-Aura um das Vehikel, solange `> 0`.
@@ -606,6 +615,9 @@ final class WordRunnerGame: ObservableObject {
         lives = Self.startingLives
         score = 0
         collectiblesGathered = 0
+        collectedStarfish = 0
+        collectedWorm = 0
+        collectedPearl = 0
         lastCollectiblePickupAt = nil
         lastCollectiblePickupKind = nil
         shieldCharges = 0
@@ -871,6 +883,12 @@ final class WordRunnerGame: ObservableObject {
                 score += kind.scoreBonus
                 if kind.isCountedCollectible {
                     collectiblesGathered += 1
+                }
+                // Per-Typ-Counter hochziehen (Phase 7.6+).
+                switch kind {
+                case .starfish: collectedStarfish += 1
+                case .worm:     collectedWorm += 1
+                case .pearl:    collectedPearl += 1
                 }
                 lastCollectiblePickupAt = Date()
                 lastCollectiblePickupKind = kind
