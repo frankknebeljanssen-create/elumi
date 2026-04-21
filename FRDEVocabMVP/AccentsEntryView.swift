@@ -367,34 +367,38 @@ struct AccentsEntryView: View {
         Button {
             startSession(mode: mode)
         } label: {
-            VStack(alignment: .center, spacing: 10) {
+            // Cards ~20 % flacher (User-Wunsch):
+            //   • minHeight 120 → 96
+            //   • vertical padding 14 → 10
+            //   • Icon-Circle 54 → 48 pt (+ Spacing/Top angepasst)
+            VStack(alignment: .center, spacing: 8) {
                 ZStack {
                     Circle()
                         .fill(moduleAccentColor.opacity(0.18))
                     Image(systemName: icon)
-                        .font(.system(size: 20, weight: .bold))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(moduleAccentColor)
                 }
-                .frame(width: 54, height: 54)
-                .padding(.top, 4)
+                .frame(width: 48, height: 48)
+                .padding(.top, 2)
 
-                VStack(alignment: .center, spacing: 4) {
+                VStack(alignment: .center, spacing: 3) {
                     Text(headline)
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                     Text(subline)
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.75)
                 }
                 .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: .infinity, minHeight: 120, alignment: .top)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity, minHeight: 96, alignment: .top)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
             .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
         }
         .buttonStyle(.plain)
