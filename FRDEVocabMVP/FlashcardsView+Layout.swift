@@ -38,7 +38,11 @@ extension FlashcardsView {
     }
 
     var flashcardsTopBar: some View {
-        AppTopBar(onBack: { handleBackNavigation() }, onInfo: openInfo)
+        AppTopBar(
+            onBack: { handleBackNavigation() },
+            onInfo: openInfo,
+            leadingModuleIcon: .karteikarten
+        )
             .padding(.horizontal, AppLayout.screenPadding)
             .padding(.top, flashcardTopBarSpacing)
     }

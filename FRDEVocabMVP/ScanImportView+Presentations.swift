@@ -16,7 +16,11 @@ extension ScanImportView {
             .animation(.easeInOut(duration: 0.22), value: isShowingScanToast)
             .animation(.easeInOut(duration: 0.18), value: isRecognizingImage)
             .appLocalChrome(enabled: !usesGlobalChrome) {
-                AppTopBar(onBack: { dismiss() }, onInfo: openInfo)
+                AppTopBar(
+                    onBack: { dismiss() },
+                    onInfo: openInfo,
+                    leadingModuleIcon: .scan
+                )
                     .padding(.horizontal, AppLayout.screenPadding)
                     .padding(.top, AppLayout.topBarInsetTop)
             } bottomBar: {

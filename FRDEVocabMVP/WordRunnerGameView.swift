@@ -657,20 +657,23 @@ struct WordRunnerGameView: View {
         TimelineView(.animation) { ctx in
             let pulse = pickupPulseScale(at: ctx.date)
             VStack(alignment: .trailing, spacing: 4) {
+                // Emojis statt geometrischer Symbole — besser
+                // wiedererkennbar als das Ingame-Äquivalent (bis
+                // dedizierte Sprites fürs HUD verfügbar sind).
                 collectibleTypeChip(
-                    symbol: "✦",
+                    symbol: "⭐",
                     tint: Color(hex: "#FFC46C"),
                     count: game.collectedStarfish,
                     isRecent: game.lastCollectiblePickupKind == .starfish
                 )
                 collectibleTypeChip(
-                    symbol: "◉",
+                    symbol: "🪱",
                     tint: Color(hex: "#EF6C50"),
                     count: game.collectedWorm,
                     isRecent: game.lastCollectiblePickupKind == .worm
                 )
                 collectibleTypeChip(
-                    symbol: "❖",
+                    symbol: "🔮",
                     tint: Color(hex: "#C4B5FD"),
                     count: game.collectedPearl,
                     isRecent: game.lastCollectiblePickupKind == .pearl

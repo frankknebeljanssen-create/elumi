@@ -46,8 +46,7 @@ struct HomeLernstatusCard: View {
 
     var body: some View {
         Button(action: onTap) {
-            // Eine-Zeilen-Layout, symmetrisch zur `HomeStatusCard` und
-            // `HomeProgressBoardCard` darüber: Icon-Badge links, Titel
+            // Eine-Zeilen-Layout: Icon-Badge links, Titel
             // + Pills mittig, Chevron rechts. Keine Microcopy-Zeile
             // mehr — Header und die drei Icon-Zahl-Pills reichen aus.
             HStack(alignment: .center, spacing: 11) {
@@ -104,8 +103,7 @@ struct HomeLernstatusCard: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 7)
-            // minHeight synchron zu HomeStatusCard (66) — alle drei
-            // Cards darüber bilden optisch ein einheitliches Band.
+            // minHeight 66 — bewährte Pokal-Band-Höhe.
             .frame(maxWidth: .infinity, minHeight: 66)
             .background(cardBackground)
             .overlay(cardBorder)
@@ -123,8 +121,8 @@ struct HomeLernstatusCard: View {
         .accessibilityHint("Öffnet die Lernstatus-Detailansicht.")
     }
 
-    /// Icon-Badge links — gleiche Optik wie `HomeStatusCard` (Icon im
-    /// Tint-getönten Kreis). Nutzt `brain.head.profile` als klar
+    /// Icon-Badge links — Icon im Tint-getönten Kreis. Nutzt
+    /// `brain.head.profile` als klar
     /// lesbares Lernstatus-Symbol; Tint = Strong-Grün, passt zur
     /// Empty-State-Logik (siehe weiter unten).
     private var iconBadge: some View {
@@ -259,13 +257,10 @@ struct HomeLernstatusCard: View {
     private var emptyState: some View {
         // Empty-State: Nur das Wort „Lernstatus" neben dem Icon-Badge.
         // Die frühere Erklärung („Los geht's — nach ein paar Runden…")
-        // ist raus — der User hat den Kontext schon aus dem Home-Flow
+        // ist raus — der User hat den Kontext schon aus dem Pokal-Flow
         // verstanden, und eine zweite Textzeile machte die Card
         // gesprächiger als nötig. Font-Größe 17 pt .black (statt 13 pt)
-        // bringt das Wort auf dieselbe Prominenz wie das „X Aktionen"
-        // in der `HomeStatusCard` darüber — damit die beiden Cards
-        // ein visuelles Paar bilden, auch wenn die Lernstatus-Card
-        // noch leer ist.
+        // bringt das Wort prominent lesbar.
         //
         // Farb-Aufteilung (User-Request):
         //   • „Lernstatus"-Text → weiß (`textPrimary`), liest sich als
@@ -296,7 +291,7 @@ struct HomeLernstatusCard: View {
         }
     }
 
-    // MARK: - Chrome (identisch zu HomeProgressBoardCard)
+    // MARK: - Chrome
 
     private var cardBackground: some View {
         RoundedRectangle(cornerRadius: 16, style: .continuous)

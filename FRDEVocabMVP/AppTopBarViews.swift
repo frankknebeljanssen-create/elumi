@@ -96,9 +96,10 @@ struct ScreenHeaderCard: View {
             // Modul-Icon (Phase 7.6+): wenn gesetzt, sitzt es direkt
             // neben dem Back-Button — identische Optik wie auf der
             // Home-Card, damit der Übergang Home → Modul visuell
-            // geschlossen wirkt.
+            // geschlossen wirkt. Size 38 pt, damit das Cartoon-Icon
+            // klar lesbar neben dem 44-pt-Back-Target sitzt.
             if let moduleIcon = leadingModuleIcon {
-                HomeModuleIconView(icon: moduleIcon, size: 30)
+                HomeModuleIconView(icon: moduleIcon, size: 38)
             }
         }
     }
@@ -130,6 +131,11 @@ struct AppTopBar: View {
     var onBack: (() -> Void)? = nil
     var onInfo: (() -> Void)? = nil
     var onAccount: (() -> Void)? = nil
+    /// Optionales **Modul-Icon**, sitzt direkt neben dem Back-Button
+    /// (Phase 7.6+). Dieselbe Komponente wie im `ScreenHeaderCard` —
+    /// Modul-Screens, die direkt `AppTopBar` nutzen (Flashcards, Quiz,
+    /// Scan), bekommen damit konsistent die gleiche Modul-Identität.
+    var leadingModuleIcon: HomeModuleIcon? = nil
 
     private var selectedDirection: Direction {
         (Direction(rawValue: selectedDirectionRaw) ?? .frenchToGerman).sanitizedForFrenchOnly
@@ -171,6 +177,15 @@ struct AppTopBar: View {
                 // Systemweiter Back-Button — kein Rahmen mehr, einheitlich
                 // mit allen anderen Screens und Headern.
                 AppBackButton(action: onBack)
+            }
+
+            // Modul-Icon, sitzt direkt neben dem Back-Button.
+            // Dieselbe Größe (38 pt) wie im `ScreenHeaderCard`, damit
+            // Screens, die entweder direkt `AppTopBar` oder über
+            // `ScreenHeaderCard` gerendert werden, identisch wirken.
+            if let leadingModuleIcon {
+                HomeModuleIconView(icon: leadingModuleIcon, size: 38)
+                    .padding(.leading, 2)
             }
 
             Spacer(minLength: 0)

@@ -26,7 +26,11 @@ extension QuizView {
             .dismissKeyboardOnTap()
             .toolbar(.hidden, for: .navigationBar)
             .appLocalChrome(enabled: !usesGlobalChrome) {
-                AppTopBar(onBack: { handleBackNavigation() }, onInfo: openInfo)
+                AppTopBar(
+                    onBack: { handleBackNavigation() },
+                    onInfo: openInfo,
+                    leadingModuleIcon: .quiz
+                )
                     .padding(.horizontal, AppLayout.screenPadding)
                     .padding(.top, quizTopBarSpacing)
             } bottomBar: {
