@@ -48,13 +48,15 @@ struct AppPrimaryButtonStyle: ButtonStyle {
 struct AppCardPressStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
-            .animation(
-                configuration.isPressed
-                    ? .easeOut(duration: 0.08)
-                    : .spring(response: 0.22, dampingFraction: 0.55),
-                value: configuration.isPressed
-            )
+            // Opacity-Dimm + Scale-Down — dieselbe Combo wie im
+            // bewährten `HomeCardPressStyle` (ScanImportSupportViews).
+            // Doppel-Signal greift auch auf komplexen Cards mit
+            // Gradients/Overlays, wo ein reiner `scaleEffect` von
+            // überlappenden View-Transformationen geschluckt werden
+            // kann.
+            .opacity(configuration.isPressed ? 0.85 : 1)
+            .scaleEffect(configuration.isPressed ? 0.96 : 1)
+            .animation(.easeOut(duration: 0.10), value: configuration.isPressed)
     }
 }
 

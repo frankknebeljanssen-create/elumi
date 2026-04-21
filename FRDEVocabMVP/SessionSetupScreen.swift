@@ -52,6 +52,11 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
     /// farbige `ModuleHeaderCard`. Kompatibel zu bestehenden Aufrufen —
     /// Default `nil` lässt alles beim Standard-Text-Header.
     var moduleIcon: HomeModuleIcon? = nil
+    /// FR-DE-Richtungs-Toggle in der Back-Chevron-Row (Phase 7.6+).
+    /// Wenn `true`, wird die dedizierte `SessionDirectionRow` im Body
+    /// automatisch ausgeblendet — der Switch lebt dann oben rechts
+    /// neben dem Back-Button.
+    var showsDirectionToggle: Bool = false
     @ViewBuilder let contextContent: () -> ContextContent
     @ViewBuilder let optionsContent: () -> OptionsContent
 
@@ -67,6 +72,7 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
         showsDirection: Bool = true,
         showsGamificationBar: Bool = true,
         moduleIcon: HomeModuleIcon? = nil,
+        showsDirectionToggle: Bool = false,
         onBack: @escaping () -> Void,
         onStart: @escaping () -> Void,
         @ViewBuilder contextContent: @escaping () -> ContextContent,
@@ -78,9 +84,12 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
         self.primaryButtonTitle = primaryButtonTitle
         self.primarySubtitle = primarySubtitle
         self.isPrimaryEnabled = isPrimaryEnabled
-        self.showsDirection = showsDirection
+        // Toggle im Header → automatisch keine Direction-Row im Body
+        // (sonst hätten wir zwei gleiche Switcher parallel).
+        self.showsDirection = showsDirectionToggle ? false : showsDirection
         self.showsGamificationBar = showsGamificationBar
         self.moduleIcon = moduleIcon
+        self.showsDirectionToggle = showsDirectionToggle
         self.onBack = onBack
         self.onStart = onStart
         self.contextContent = contextContent
@@ -93,7 +102,8 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
                 title: title,
                 accent: accent,
                 onBack: onBack,
-                moduleIcon: moduleIcon
+                moduleIcon: moduleIcon,
+                showsDirectionToggle: showsDirectionToggle
             )
 
             ScrollView(showsIndicators: false) {

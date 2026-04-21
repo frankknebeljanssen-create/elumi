@@ -35,6 +35,7 @@ var quizSetupScreen: some View {
         primaryButtonTitle: session.isPreparingQuiz ? "Quiz wird gestartet …" : "Quiz starten",
         isPrimaryEnabled: canStartQuiz && !session.isPreparingQuiz,
         moduleIcon: .quiz,
+        showsDirectionToggle: true,
         onBack: { handleBackNavigation() },
         onStart: { startQuiz() },
         contextContent: {

@@ -62,13 +62,14 @@ extension FlashcardsView {
         Group {
             if showsModuleCard {
                 // Setup-Screen: farbige ModuleHeaderCard mit integriertem
-                // Back-Chevron über der Card (zentrales Muster, identisch
-                // zu allen anderen Modul-Screens).
+                // Back-Chevron + FR-DE-Toggle rechts oben — zentrales
+                // Muster, identisch zu Quiz/Training/Vokabeln.
                 ModuleHeaderCard(
                     icon: .karteikarten,
                     title: "Karteikarten",
                     accent: sectionStyle.accent,
-                    onBack: onBack
+                    onBack: onBack,
+                    showsDirectionToggle: true
                 )
             } else {
                 // Session-Modus (aktives Lernen): kompakter Text-Header,

@@ -29,13 +29,31 @@ struct ModuleHeaderCard: View {
     /// darunter Haupt-Content). Kein Overlay mehr auf der Card, kein
     /// geteiltes Layout pro Aufrufer.
     var onBack: (() -> Void)? = nil
+    /// **FR-DE-Toggle** in der Back-Chevron-Row (Phase 7.6+). Wenn
+    /// `true`, rendert rechts vom Back-Button ein kompakter
+    /// `LanguageDirectionSwitch` — spart Platz im Setup-Body, wo
+    /// früher die dedizierte Direction-Row saß. Nutzt die `.compact`-
+    /// Size des Switches, wird vertikal mit dem Back-Button
+    /// zentriert.
+    var showsDirectionToggle: Bool = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if let onBack {
-                HStack {
+                HStack(alignment: .center, spacing: 0) {
                     AppBackButton(action: onBack, tint: accent)
                     Spacer()
+                    if showsDirectionToggle {
+                        LanguageDirectionSwitch(size: .compact)
+                    }
+                }
+            } else if showsDirectionToggle {
+                // Sonderfall: kein Back, aber Toggle gewünscht —
+                // rechtsbündig, damit die Card-Kante mit der
+                // Modul-Card übereinstimmt.
+                HStack {
+                    Spacer()
+                    LanguageDirectionSwitch(size: .compact)
                 }
             }
             coloredCard

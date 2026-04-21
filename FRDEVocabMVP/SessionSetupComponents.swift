@@ -78,17 +78,22 @@ struct SessionSetupHeader: View {
     /// Ohne Icon bleibt der klassische zentrierte Text-Header erhalten
     /// (z.\u{00A0}B. für Screens ohne Home-Pendant).
     let moduleIcon: HomeModuleIcon?
+    /// FR-DE-Richtungs-Toggle rechts neben dem Back-Button — spart die
+    /// dedizierte Direction-Row im Body.
+    let showsDirectionToggle: Bool
 
     init(
         title: String,
         accent: Color = AppTheme.Colors.primary,
         onBack: @escaping () -> Void,
-        moduleIcon: HomeModuleIcon? = nil
+        moduleIcon: HomeModuleIcon? = nil,
+        showsDirectionToggle: Bool = false
     ) {
         self.title = title
         self.accent = accent
         self.onBack = onBack
         self.moduleIcon = moduleIcon
+        self.showsDirectionToggle = showsDirectionToggle
     }
 
     var body: some View {
@@ -97,12 +102,13 @@ struct SessionSetupHeader: View {
                 // Modul-Header-Card — farbige Identitäts-Card rendert
                 // Back-Chevron + Icon-Card selbst (zentrales Muster
                 // aus `ModuleHeaderCard`). Der Setup-Header reicht
-                // `onBack` durch, statt selbst eine Row zu bauen.
+                // `onBack` + optionalen FR-DE-Toggle durch.
                 ModuleHeaderCard(
                     icon: moduleIcon,
                     title: title,
                     accent: accent,
-                    onBack: onBack
+                    onBack: onBack,
+                    showsDirectionToggle: showsDirectionToggle
                 )
             } else {
                 // Fallback: klassischer ZStack mit zentriertem Text-

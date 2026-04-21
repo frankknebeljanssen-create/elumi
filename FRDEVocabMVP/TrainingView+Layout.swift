@@ -294,6 +294,7 @@ extension TrainingView {
             isPrimaryEnabled: isVerbformsMode ? verbformsCanStart : canStartTraining,
             showsGamificationBar: !isVocabMode,
             moduleIcon: moduleIconForMode,
+            showsDirectionToggle: true,
             onBack: { dismiss() },
             onStart: {
                 if isVerbformsMode {

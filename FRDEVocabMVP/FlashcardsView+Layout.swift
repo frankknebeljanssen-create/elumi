@@ -212,14 +212,10 @@ extension FlashcardsView {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
                         flashcardsListSelectionCard
 
-                        // Richtungs-Zeile — systemweit direkt unter
-                        // „Ausgewählte Listen", mit verbindlichem Abstand aus
-                        // `AppLayout.sessionContextToDirectionSpacing`. Die
-                        // Top-Korrektur kompensiert das `VStack`-Spacing
-                        // (AppTheme.Spacing.md) des äußeren Stacks, so dass
-                        // der Gap identisch zu Quiz/Nomen/... ausfällt.
-                        SessionDirectionRow()
-                            .padding(.top, AppLayout.sessionContextToDirectionSpacing - AppTheme.Spacing.md)
+                        // Direction-Row ist in den Header gewandert
+                        // (FR-DE-Toggle rechts oben im ModuleHeaderCard).
+                        // Frühere `SessionDirectionRow()` hier entfallen —
+                        // identisches Pattern wie Quiz/Training.
 
                         if isDictionarySelectedInStack {
                             flashcardDictionaryLevelCard
