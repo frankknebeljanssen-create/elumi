@@ -1,5 +1,65 @@
 import SwiftUI
 
+/// **ModuleHeaderCard** (Phase 7.6+): farbige Modul-Identitäts-Card,
+/// die direkt nach dem `AppTopBar` oben im Body jedes Modul-Screens
+/// sitzt. Zeigt das Modul-Icon (Home-Style Cartoon-SVG) links und
+/// den Modul-Namen rechts — **exakt die visuelle Anmutung**, die
+/// der User von seiner Home-Card kennt.
+///
+/// Damit entsteht eine geschlossene visuelle Klammer Home → Modul:
+/// tappt der User z.\u{00A0}B. auf die blaue „Karteikarten"-Card,
+/// landet er auf einem Screen, dessen erste Card genau dieselbe
+/// blaue Identität mit demselben Icon trägt.
+///
+/// Design-Regeln:
+///   • Volle Screen-Card-Breite (matched `AppLayout.screenPadding`
+///     am Call-Site — diese Card setzt kein eigenes horizontales Inset).
+///   • Gleicher Gradient-Look wie die Hero-Cards auf Home
+///     (`accent.opacity(0.95) → 0.75`, `topLeading → bottomTrailing`).
+///   • Höhe mind. ~78 pt — genug Platz, dass ein 64-pt-Icon
+///     ca. 2 Zeilen hoch reicht; Title-Font dick + weiß mit
+///     dezentem Drop-Shadow, gleiche Lesbarkeit wie Home-Hero.
+struct ModuleHeaderCard: View {
+    let icon: HomeModuleIcon
+    let title: String
+    let accent: Color
+
+    var body: some View {
+        HStack(spacing: 14) {
+            HomeModuleIconView(icon: icon, size: 64)
+                .frame(width: 64, height: 64)
+            Text(title)
+                .font(.system(size: 24, weight: .black, design: .rounded))
+                .foregroundStyle(.white)
+                .shadow(color: .black.opacity(0.35), radius: 1, x: 0, y: 1)
+                .lineLimit(2)
+                .minimumScaleFactor(0.8)
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            accent.opacity(0.95),
+                            accent.opacity(0.75)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.white.opacity(0.03))
+        )
+        .shadow(color: .black.opacity(0.20), radius: 5, x: 0, y: 3)
+    }
+}
+
 struct ScreenHeaderCard: View {
     let style: AppSectionStyle
     let title: String

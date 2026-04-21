@@ -232,14 +232,10 @@ struct AccentsEntryView: View {
         ZStack(alignment: .top) {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 14) {
-                    ScreenHeaderCard(
-                        style: sectionStyle,
+                    ModuleHeaderCard(
+                        icon: .akzente,
                         title: "Akzente",
-                        subtitle: "",
-                        systemImage: nil,
-                        onBack: { goHome() },
-                        centeredTitle: true,
-                        leadingModuleIcon: .akzente
+                        accent: sectionStyle.accent
                     )
 
                     listSelectorCard

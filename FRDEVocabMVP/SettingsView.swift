@@ -66,39 +66,8 @@ struct SettingsView: View {
                 centeredTitle: true
             )
 
-            VStack(alignment: .leading, spacing: 14) {
-                HStack(spacing: 12) {
-                    Text("Ton")
-                        .font(.system(size: 26, weight: .bold, design: .rounded))
-
-                    Spacer(minLength: 0)
-
-                    // Cartoon-Lautsprecher toggelt zwischen „an" und „aus".
-                    // foregroundStyle entfällt — das SVG bringt eigene
-                    // Farbigkeit mit (Sound-an: bunt, Sound-aus: rote
-                    // Verbots-Markierung im SVG selbst).
-                    ElumiIconView(
-                        icon: feedbackPlayer.areSoundsEnabled ? .lautsprecherOn : .lautsprecherOff,
-                        size: 56
-                    )
-                }
-
-                Toggle(isOn: $feedbackPlayer.areSoundsEnabled) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(feedbackPlayer.areSoundsEnabled ? "Ton an" : "Ton aus")
-                            .font(.system(size: 20, weight: .semibold, design: .rounded))
-                        Text("Startsound und Feedback-Töne")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .toggleStyle(.switch)
-                .tint(sectionStyle.accent)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(18)
-            .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
-
+            // **Mein Konto** — jetzt als erste Card in der Settings-
+            // Liste (User-Wunsch: wichtigste Aktion nach oben).
             Button {
                 openAccountAction?()
             } label: {
@@ -121,6 +90,34 @@ struct SettingsView: View {
                 .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
             }
             .buttonStyle(.plain)
+
+            // **Ton-Toggle** — kompakt: ein einziger Row, Icon + Toggle-
+            // Label + Switch. Die frühere Header-Zeile „Ton" + Doppel-
+            // Label ist entfallen; Padding + Size reduziert.
+            HStack(spacing: 12) {
+                ElumiIconView(
+                    icon: feedbackPlayer.areSoundsEnabled ? .lautsprecherOn : .lautsprecherOff,
+                    size: 44
+                )
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(feedbackPlayer.areSoundsEnabled ? "Ton an" : "Ton aus")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                    Text("Startsound und Feedback-Töne")
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer(minLength: 0)
+
+                Toggle("", isOn: $feedbackPlayer.areSoundsEnabled)
+                    .toggleStyle(.switch)
+                    .tint(sectionStyle.accent)
+                    .labelsHidden()
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(14)
+            .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
 
             Button {
                 openInfo()
