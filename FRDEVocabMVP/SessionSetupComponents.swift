@@ -92,26 +92,33 @@ struct SessionSetupHeader: View {
     }
 
     var body: some View {
-        VStack(spacing: 8) {
-            HStack {
-                AppBackButton(action: onBack, tint: accent)
-                Spacer()
-            }
-
+        VStack(spacing: 0) {
             if let moduleIcon {
-                // Modul-Header-Card — farbige Identitäts-Card mit Icon
-                // links + Titel. Gleiche Optik wie die Home-Hero-Cards.
+                // Modul-Header-Card — farbige Identitäts-Card rendert
+                // Back-Chevron + Icon-Card selbst (zentrales Muster
+                // aus `ModuleHeaderCard`). Der Setup-Header reicht
+                // `onBack` durch, statt selbst eine Row zu bauen.
                 ModuleHeaderCard(
                     icon: moduleIcon,
                     title: title,
-                    accent: accent
+                    accent: accent,
+                    onBack: onBack
                 )
             } else {
-                // Fallback: klassischer zentrierter Text-Header.
-                Text(title)
-                    .font(.system(size: 28, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .frame(maxWidth: .infinity, alignment: .center)
+                // Fallback: klassischer ZStack mit zentriertem Text-
+                // Header + Back-Chevron links (für Screens ohne Home-
+                // Pendant bzw. ohne Modul-Icon).
+                ZStack {
+                    Text(title)
+                        .font(.system(size: 28, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+
+                    HStack {
+                        AppBackButton(action: onBack, tint: accent)
+                        Spacer()
+                    }
+                }
             }
         }
         .padding(.horizontal, 16)

@@ -598,12 +598,11 @@ extension ScanImportView {
                             // ─────── Schritt 1 — MODUS ───────
                             // Selection-Toggles (kein Navigations-Element).
                             // Tap ändert nur den Modus, User bleibt auf dem Screen.
-                            // Padding 28 → 10: Schritt 1 rückt näher an
-                            // den Header, Block darunter folgt. Header
-                            // selbst und Footer-Positionen bleiben
-                            // unverändert (User-Spec).
+                            // Padding 28 → 10 → 14: Schritt 1 rückt
+                            // minimal wieder runter (User-Nachjustierung),
+                            // Block darunter folgt.
                             ScanSectionLabel(stepNumber: 1, title: "Wähle den Modus")
-                                .padding(.top, 10)
+                                .padding(.top, 14)
 
                             HStack(spacing: 12) {
                                 ScanModeSelectionCard(
@@ -636,7 +635,10 @@ extension ScanImportView {
                                 illustrationName: "ScanIconKamera",
                                 title: "Kamera",
                                 accent: sectionStyle.accent,
-                                isPriority: true                            ) {
+                                isPriority: true,
+                                // Kamera-Tint: dunkles Grün (moduleNomen-Ton).
+                                baseTint: Color(hex: "#059669")
+                            ) {
                                 guard !isRecognizingImage else { return }
                                 guard isCameraCaptureAvailable else { return }
                                 shouldAppendNextScan = false
@@ -647,7 +649,11 @@ extension ScanImportView {
                             ScanChoiceCard(
                                 illustrationName: "ScanIconFotoAlbum",
                                 title: "Foto-Album",
-                                accent: sectionStyle.accent                            ) {
+                                accent: sectionStyle.accent,
+                                // Foto-Album-Tint: dezentes Violett
+                                // (moduleVerbs-Ton).
+                                baseTint: Color(hex: "#8B5CF6")
+                            ) {
                                 guard !isRecognizingImage else { return }
                                 shouldAppendNextScan = false
                                 selectedScanInputMethod = .library

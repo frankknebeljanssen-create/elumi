@@ -26,6 +26,13 @@ struct ScanChoiceCard: View {
     /// Modus („Scan als: Vokabelliste"). Gibt dem User Sicherheit, in
     /// welchem Modus die KI das Foto interpretieren wird.
     var modeHint: String? = nil
+    /// Optionaler **Card-Tint** (Phase 7.6+): dezent eingefärbter
+    /// Background in der Farbe der jeweiligen Quelle (Kamera grün,
+    /// Foto-Album violett). Wenn `nil`, bleibt die Card im neutralen
+    /// Setup-Card-Look. Tint wird mit 8 %-Opacity als zusätzliche
+    /// Ebene über dem `setupCardBackground` gerendert — sehr subtil,
+    /// erkennbar ohne aufdringlich zu sein.
+    var baseTint: Color? = nil
     let action: () -> Void
 
     @State private var isPressed = false
@@ -93,6 +100,13 @@ struct ScanChoiceCard: View {
                 ZStack {
                     RoundedRectangle(cornerRadius: 22, style: .continuous)
                         .fill(AppTheme.Colors.setupCardBackground)
+                    // Optionaler Quellen-Tint (Phase 7.6+): subtile 8 %-
+                    // Füllung in der Farbe der Quelle — Kamera grün,
+                    // Foto-Album violett. Sichtbar, aber nicht aufdringlich.
+                    if let baseTint {
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            .fill(baseTint.opacity(0.08))
+                    }
                     // Priority bekommt einen ganz subtilen Akzent-Tint
                     // (nicht über die Outline) — führt den Blick ohne den
                     // Look zu zerschneiden.
@@ -290,7 +304,8 @@ struct ScanScreenHeader: View {
                 )
                 .frame(width: Self.mascotSize, height: Self.mascotSize)
             }
-            .offset(y: 10)
+            // Mascot etwas höher: y-Offset 10 → −6 (User-Wunsch).
+            .offset(y: -6)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.bottom, 6)

@@ -59,31 +59,31 @@ extension FlashcardsView {
         onBack: @escaping () -> Void,
         showsModuleCard: Bool = false
     ) -> some View {
-        VStack(spacing: 8) {
-            HStack {
-                AppBackButton(action: onBack, tint: sectionStyle.accent)
-                Spacer()
-                if !showsModuleCard {
-                    // Platzhalter: klassisches zentriertes Layout — Titel
-                    // sitzt mittig über dem Back-Offset.
-                    Color.clear.frame(width: 44, height: 44)
-                }
-            }
-            .overlay(alignment: .center) {
-                // Kompakter Text-Titel nur im Session-Modus.
-                if !showsModuleCard {
-                    Text("Karteikarten")
-                        .font(.system(size: 28, weight: .black, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                }
-            }
-
+        Group {
             if showsModuleCard {
+                // Setup-Screen: farbige ModuleHeaderCard mit integriertem
+                // Back-Chevron über der Card (zentrales Muster, identisch
+                // zu allen anderen Modul-Screens).
                 ModuleHeaderCard(
                     icon: .karteikarten,
                     title: "Karteikarten",
-                    accent: sectionStyle.accent
+                    accent: sectionStyle.accent,
+                    onBack: onBack
                 )
+            } else {
+                // Session-Modus (aktives Lernen): kompakter Text-Header,
+                // kein Card-Block — der Lerninhalt soll Fläche bekommen.
+                ZStack {
+                    Text("Karteikarten")
+                        .font(.system(size: 28, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+
+                    HStack {
+                        AppBackButton(action: onBack, tint: sectionStyle.accent)
+                        Spacer()
+                    }
+                }
             }
         }
         .padding(.horizontal, flashcardSessionCardInset)

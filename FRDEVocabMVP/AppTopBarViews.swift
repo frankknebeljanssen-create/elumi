@@ -23,16 +23,29 @@ struct ModuleHeaderCard: View {
     let icon: HomeModuleIcon
     let title: String
     let accent: Color
-    /// Optionaler Back-Chevron. Wenn gesetzt, rendert die Card einen
-    /// weißen Chevron-Links-Button in der oberen linken Ecke — so
-    /// bleibt die Modul-Card auch auf Screens ohne separaten `AppTopBar`-
-    /// Back-Button (z.\u{00A0}B. Accents / Lists / Scan im globalChrome-
-    /// Modus) navigierbar. Nicht-setzen überspringt den Chevron
-    /// (z.\u{00A0}B. Setup-Header, wo der Back-Button außerhalb der
-    /// Card separat liegt).
+    /// Optionaler Back-Chevron (Phase 7.6+). Wenn gesetzt, sitzt der
+    /// `AppBackButton` **oberhalb** der farbigen Card — identisches
+    /// Muster wie auf **allen** anderen Screens der App (Back-Row,
+    /// darunter Haupt-Content). Kein Overlay mehr auf der Card, kein
+    /// geteiltes Layout pro Aufrufer.
     var onBack: (() -> Void)? = nil
 
     var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if let onBack {
+                HStack {
+                    AppBackButton(action: onBack, tint: accent)
+                    Spacer()
+                }
+            }
+            coloredCard
+        }
+    }
+
+    /// Die eigentliche farbige Identitäts-Card (Icon + Title) — ohne
+    /// Back-Logik. Privates Sub-View, damit der Body lesbar bleibt
+    /// und der Back-Chevron immer oberhalb sitzt.
+    private var coloredCard: some View {
         HStack(spacing: 14) {
             HomeModuleIconView(icon: icon, size: 64)
                 .frame(width: 64, height: 64)
@@ -47,21 +60,6 @@ struct ModuleHeaderCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .overlay(alignment: .topLeading) {
-            if let onBack {
-                Button(action: onBack) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 14, weight: .heavy))
-                        .foregroundStyle(.white)
-                        .frame(width: 28, height: 28)
-                        .background(Circle().fill(Color.black.opacity(0.22)))
-                }
-                .buttonStyle(.plain)
-                .padding(.top, 8)
-                .padding(.leading, 10)
-                .accessibilityLabel("Zurück")
-            }
-        }
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(
