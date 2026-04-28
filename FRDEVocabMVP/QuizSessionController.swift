@@ -43,9 +43,15 @@ final class QuizSessionController: ObservableObject {
     /// Schutz gegen doppelte Reward-Vergabe — analog zum Flashcard-Flow.
     var sessionRewardConsumed: Bool = false
 
+    /// **V1b (2026-04-28)** — `lernjahrMax` ist Teil des Equality-Vergleichs.
+    /// `refreshMergedItemsIfNeeded` blockiert den Rebuild, wenn die letzte
+    /// MergeRequest gleich der aktuellen ist; ohne `lernjahrMax`-Komponente
+    /// würde ein Filter-Wechsel (gleiche Listen + gleiche Direction)
+    /// fälschlich als „nichts zu tun" durchgewinkt → Stale Pool.
     struct MergeRequest: Equatable {
         let listIDs: [UUID]
         let direction: Direction
+        let lernjahrMax: Int?
     }
 
     func restoreSelectedListIDs() {

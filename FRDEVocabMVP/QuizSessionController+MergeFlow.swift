@@ -26,9 +26,15 @@ extension QuizSessionController {
         direction: Direction,
         force: Bool = false
     ) {
+        // **V1b (2026-04-28)** — `lernjahrMax` ist Teil des Equality-
+        // Vergleichs UND der Cache-Key-Identität. Damit wird ein Filter-
+        // Wechsel (gleiche Listen + Direction, anderer max) korrekt als
+        // „muss neu gebaut werden" erkannt.
+        let lernjahrMax = VocabularyListSelectionResolver.currentLernjahrMax()
         let request = MergeRequest(
             listIDs: selectedLists.map(\.id),
-            direction: direction
+            direction: direction,
+            lernjahrMax: lernjahrMax
         )
 
         if !force, request == lastMergedItemsRequest {
@@ -47,8 +53,14 @@ extension QuizSessionController {
         plannedQuestionCount = 0
         isLoadingRemainingQuestions = false
 
-        let totalItems = selectedLists.reduce(0) { $0 + $1.items.count }
-        print("⏱ [Quiz] rebuildMergedItems starting (\(selectedLists.count) lists, \(totalItems) items)")
+        // **V1b (2026-04-28)** — Diagnostic zeigt raw vs effective Counts
+        // damit Filter-Wirkung in Logs sofort sichtbar ist.
+        let lernjahrMax = VocabularyListSelectionResolver.currentLernjahrMax()
+        let rawTotal = selectedLists.reduce(0) { $0 + $1.items.count }
+        let effectiveTotal = selectedLists.reduce(0) { acc, list in
+            acc + VocabularyListSelectionResolver.effectiveItems(for: list, lernjahrMax: lernjahrMax).count
+        }
+        print("⏱ [Quiz] rebuildMergedItems: lists=\(selectedLists.count) raw=\(rawTotal) effective=\(effectiveTotal) lernjahrMax=\(lernjahrMax.map(String.init) ?? "nil")")
 
         Task {
             let result = await Task.detached(priority: .userInitiated) {
