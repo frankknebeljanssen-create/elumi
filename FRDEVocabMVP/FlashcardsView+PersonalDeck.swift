@@ -133,7 +133,10 @@ extension FlashcardsView {
     func createPersonalDeck(fromSelectedListIDs selectedIDs: Set<UUID>) {
         guard !selectedIDs.isEmpty else { return }
         let selectedLists = availableStackLists.filter { selectedIDs.contains($0.id) }
-        let cardIDs = selectedLists.flatMap { $0.items.map(\.id) }
+        // **V1b Snapshot (2026-04-28)** — cardOrder wird mit dem
+        // aktuellen lernjahrMax gefiltert. Spätere Filter-Änderungen
+        // wirken NICHT auf diesen Deck (Re-Snapshot via Edit-Mode).
+        let cardIDs = PersonalDeck.buildCardOrderSnapshot(from: selectedLists)
         guard !cardIDs.isEmpty else { return }
 
         let deck = PersonalDeck(
@@ -163,10 +166,12 @@ extension FlashcardsView {
         var updated = deck
         updated.sourceListIDs = Array(newLists)
         if listsChanged {
-            let freshCardIDs = availableStackLists
-                .filter { newLists.contains($0.id) }
-                .flatMap { $0.items.map(\.id) }
-            updated.cardOrder = freshCardIDs.shuffled()
+            // **V1b Re-Snapshot (2026-04-28)** — Listen-Wechsel
+            // erzwingt neuen Snapshot mit aktuellem lernjahrMax.
+            let freshLists = availableStackLists.filter { newLists.contains($0.id) }
+            updated.cardOrder = PersonalDeck
+                .buildCardOrderSnapshot(from: freshLists)
+                .shuffled()
             updated.currentIndex = 0
             updated.masteredCardIDs = []
         }
@@ -230,8 +235,13 @@ extension FlashcardsView {
         // resettet. Der User kann den Stapel ab jetzt wieder spielen.
         if orderedItems.isEmpty && !itemsByID.isEmpty && !deck.cardOrder.isEmpty {
             print("♻️ UUID-Stale-Recovery: rebuilding cardOrder from current items")
-            let allItems = matchedLists.flatMap { $0.items }
-            let shuffled = allItems.shuffled()
+            // **V1b Recovery (2026-04-28)** — Recovery-Pfad zerstört
+            // Snapshot ohnehin (Mastery weg, neuer Shuffle), daher
+            // gilt der **aktuelle** lernjahrMax. Konsistent zum
+            // globalen Filter-Verhalten.
+            let recoveredIDs = PersonalDeck.buildCardOrderSnapshot(from: matchedLists)
+            let recoveredItems = recoveredIDs.compactMap { itemsByID[$0] }
+            let shuffled = recoveredItems.shuffled()
             personalDeckStore.update(id: deck.id) { mutableDeck in
                 mutableDeck.cardOrder = shuffled.map(\.id)
                 mutableDeck.currentIndex = 0

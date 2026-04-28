@@ -30,6 +30,35 @@ Filter erzeugt häufiger leere Pools).
 - Setup-CTA disable, solange Pool < Block-Min, mit klarer Fehlerlinie statt
   Silent-Tap.
 
+**Variante: Empty Personal-Deck Create (V1b Step 3, 2026-04-28)**
+
+Beim Erstellen eines persönlichen Stapels (Karteikarten → Personal-Deck →
+„Stapel erstellen") gilt das gleiche Muster:
+
+```swift
+// FlashcardsView+PersonalDeck.swift:138 (createPersonalDeck)
+let cardIDs = PersonalDeck.buildCardOrderSnapshot(from: selectedLists)
+guard !cardIDs.isEmpty else { return }   // ← silent return
+```
+
+Wenn alle Items der gewählten Quell-Listen außerhalb des aktuellen
+`lernjahrMax` liegen (z. B. User wählt nur Y3-getaggte Listen aber hat
+`max=1`), wird der Deck **silent NICHT angelegt**. User tippt „Speichern",
+das Sheet schließt, aber kein neues Deck erscheint in der Übersicht.
+
+**Same Pattern, gleiche Lösung:** im Empty-Pool-Hint-Branch mit erfassen.
+Toast/Inline-Fehler im Sheet: „In deinem aktuellen Lernjahr-Range
+ergeben diese Listen keine Karten — wähle andere Listen oder erweitere
+den Range."
+
+**Recovery-Pfad-Notiz (zur Reference):**
+`PersonalDeck.buildCardOrderSnapshot(from:)` wird auch im UUID-Stale-
+Recovery-Pfad genutzt (`FlashcardsView+PersonalDeck.swift:233`). Dort
+gelten die **aktuellen Filter-Regeln** (nicht die zur Erstellungs-Zeit) —
+weil Recovery den Original-Snapshot ohnehin zerstört (Mastery-Daten weg,
+neuer Shuffle). Konsistent zum globalen Filter-Verhalten. Kein Bug.
+
 **Priorität:** Niedrig — kosmetischer UX-Bug, keine Daten-Korruption.
 
 **Erstellt am:** 2026-04-28 (während V1b-Lernjahr-Rollout)
+**Erweitert am:** 2026-04-28 (V1b Step 3, Personal-Deck-Variante)

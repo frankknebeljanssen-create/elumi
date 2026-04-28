@@ -219,7 +219,9 @@ struct PersonalDecksView: View {
     private func createDeck(fromSelectedListIDs selectedIDs: Set<UUID>) {
         guard !selectedIDs.isEmpty else { return }
         let selectedLists = allLists.filter { selectedIDs.contains($0.id) }
-        let cardIDs = selectedLists.flatMap { $0.items.map(\.id) }
+        // **V1b Snapshot (2026-04-28)** — cardOrder wird mit dem
+        // aktuellen lernjahrMax gefiltert (Snapshot-Semantik).
+        let cardIDs = PersonalDeck.buildCardOrderSnapshot(from: selectedLists)
         guard !cardIDs.isEmpty else { return }
         let deck = PersonalDeck(
             name: autoName(fromLists: selectedLists),
@@ -241,7 +243,9 @@ struct PersonalDecksView: View {
         updated.sourceListIDs = Array(selectedIDs)
         if listsChanged {
             let matchedLists = allLists.filter { selectedIDs.contains($0.id) }
-            let freshCardIDs = matchedLists.flatMap { $0.items.map(\.id) }
+            // **V1b Re-Snapshot (2026-04-28)** — Listen-Wechsel
+            // erzwingt neuen Snapshot mit aktuellem lernjahrMax.
+            let freshCardIDs = PersonalDeck.buildCardOrderSnapshot(from: matchedLists)
             print("🔧 updateDeck: lists changed → matched=\(matchedLists.count) freshCards=\(freshCardIDs.count)")
 
             // Defensive: wenn KEIN Item gematched wurde (Listen wurden
