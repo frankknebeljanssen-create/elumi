@@ -192,7 +192,14 @@ struct FlashcardStackComposerSheet: View {
     }
 
     private func cardCount(for list: VocabularyList) -> Int {
-        list.items.filter {
+        // **V1b (2026-04-28)** — Composer-Card-Count respektiert den
+        // globalen Lernjahr-Filter; konsistent zu dem was nach
+        // „Auswählen" tatsächlich in den Stack einfließt.
+        let effective = VocabularyListSelectionResolver.effectiveItems(
+            for: list,
+            lernjahrMax: VocabularyListSelectionResolver.currentLernjahrMax()
+        )
+        return effective.filter {
             $0.sourceLanguage == language &&
             (cardTypeFilter == nil || $0.cardType == cardTypeFilter)
         }.count

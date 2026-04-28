@@ -17,7 +17,27 @@ extension FlashcardsSetupController {
         lists.append(contentsOf: matchingPracticeLists)
         lists.append(contentsOf: StandardVocabularyLoader.levelLists)
         lists.append(contentsOf: StandardVocabularyLoader.topicLists)
-        return lists
+        // **V1b Lernjahr-Filter (2026-04-28)** — Pro-Liste Items-Swap
+        // BEVOR die Listen an Setup-UI/Builder weitergegeben werden.
+        // Hierarchische Listen (A1 mit cumulativeChildren) bekommen
+        // ihren Y_1...Y_max-Slice; flache Listen ihre vollen items.
+        // Damit kaskadiert der Filter automatisch durch
+        // selectedStackLists / selectedStackLanguages /
+        // selectedStackCardCount.
+        let lernjahrMax = VocabularyListSelectionResolver.currentLernjahrMax()
+        return lists.map { list in
+            VocabularyList(
+                id: list.id,
+                name: list.name,
+                items: VocabularyListSelectionResolver.effectiveItems(
+                    for: list,
+                    lernjahrMax: lernjahrMax
+                ),
+                isBuiltIn: list.isBuiltIn,
+                collectionPreset: list.collectionPreset,
+                isAggregateVocabulary: list.isAggregateVocabulary
+            )
+        }
     }
 
     func selectedStackLists(
