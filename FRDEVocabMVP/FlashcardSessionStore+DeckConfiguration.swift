@@ -60,8 +60,29 @@ extension FlashcardSessionStore {
     }
 
     func configureCustomDeck(from list: VocabularyList?, preferredCardType: CardType?) {
+        // **V1b Lernjahr-Filter (2026-04-28)** — Defense-in-Depth:
+        // Auch wenn die Caller (FlashcardsSetupController über
+        // availableStackLists / scopedFlashcardLaunchLists) bereits
+        // gefilterte Listen liefern, applizieren wir den Filter hier
+        // nochmal als Choke-Point. So kann auch ein neuer Caller, der
+        // den Setup-Cascade umgeht, niemals ungefilterte Items in den
+        // Builder schicken.
+        let lernjahrMax = VocabularyListSelectionResolver.currentLernjahrMax()
+        let filteredList = list.map { source in
+            VocabularyList(
+                id: source.id,
+                name: source.name,
+                items: VocabularyListSelectionResolver.effectiveItems(
+                    for: source,
+                    lernjahrMax: lernjahrMax
+                ),
+                isBuiltIn: source.isBuiltIn,
+                collectionPreset: source.collectionPreset,
+                isAggregateVocabulary: source.isAggregateVocabulary
+            )
+        }
         customDeck = FlashcardDeckBuilder.buildDeck(
-            from: list,
+            from: filteredList,
             preferredCardType: preferredCardType
         )
         ensureValidSession()
@@ -73,8 +94,27 @@ extension FlashcardSessionStore {
         preferredCardType: CardType?,
         maxCardCount: Int? = nil
     ) {
+        // **V1b Lernjahr-Filter (2026-04-28)** — siehe Single-List-
+        // Overload oben. Defense-in-Depth: Filter auf jede Liste
+        // einzeln applizieren, BEVOR der Builder durch die Liste
+        // iteriert. Hierarchische Listen werden auf Y_max gesliced;
+        // flache Listen unverändert weitergegeben.
+        let lernjahrMax = VocabularyListSelectionResolver.currentLernjahrMax()
+        let filteredLists = lists.map { source in
+            VocabularyList(
+                id: source.id,
+                name: source.name,
+                items: VocabularyListSelectionResolver.effectiveItems(
+                    for: source,
+                    lernjahrMax: lernjahrMax
+                ),
+                isBuiltIn: source.isBuiltIn,
+                collectionPreset: source.collectionPreset,
+                isAggregateVocabulary: source.isAggregateVocabulary
+            )
+        }
         customDeck = FlashcardDeckBuilder.buildDeck(
-            from: lists,
+            from: filteredLists,
             language: language,
             preferredCardType: preferredCardType,
             maxCardCount: maxCardCount

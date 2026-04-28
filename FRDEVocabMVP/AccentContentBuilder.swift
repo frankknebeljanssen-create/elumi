@@ -194,7 +194,15 @@ enum AccentContentBuilder {
         var fromList: [AccentWordCatalog.SeedEntry] = []
 
         if let list = list {
-            for item in list.items {
+            // **V1b Lernjahr-Filter (2026-04-28)** — Akzente respektiert
+            // jetzt den globalen Lernjahr-Max. Hierarchische Listen
+            // (A1 mit cumulativeChildren) liefern nur den Y_1...Y_max-
+            // Slice; klassische Listen ihre vollen items unverändert.
+            let effective = VocabularyListSelectionResolver.effectiveItems(
+                for: list,
+                lernjahrMax: VocabularyListSelectionResolver.currentLernjahrMax()
+            )
+            for item in effective {
                 let word = item.french
                     .trimmingCharacters(in: .whitespacesAndNewlines)
                     .lowercased()

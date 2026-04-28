@@ -33,19 +33,29 @@ enum QuizQuestionKind {
     case typing
 }
 
+/// **V1b (2026-04-28)** — `lernjahrMax` ist Teil des Schlüssels. Damit
+/// erzeugt jede Filter-Änderung automatisch einen Cache-Miss → der Pool
+/// wird mit den aktuellen Filter-Regeln neu gebaut. Kein expliziter
+/// UserDefaults-Observer nötig.
 struct QuizMergedItemsCacheKey: Hashable {
     let direction: Direction
     let listIDs: [UUID]
+    let lernjahrMax: Int?
 }
 
 enum QuizMergedItemsCache {
     private static let lock = NSLock()
     private static var storage: [QuizMergedItemsCacheKey: [VocabularyItem]] = [:]
 
-    static func mergedItems(from lists: [VocabularyList], direction: Direction) -> [VocabularyItem] {
+    static func mergedItems(
+        from lists: [VocabularyList],
+        direction: Direction,
+        lernjahrMax: Int?
+    ) -> [VocabularyItem] {
         let key = QuizMergedItemsCacheKey(
             direction: direction,
-            listIDs: lists.map(\.id).sorted { $0.uuidString < $1.uuidString }
+            listIDs: lists.map(\.id).sorted { $0.uuidString < $1.uuidString },
+            lernjahrMax: lernjahrMax
         )
 
         lock.lock()
@@ -55,7 +65,11 @@ enum QuizMergedItemsCache {
         }
         lock.unlock()
 
-        let mergedItems = QuizBuildService.makeMergedItems(from: lists, direction: direction)
+        let mergedItems = QuizBuildService.makeMergedItems(
+            from: lists,
+            direction: direction,
+            lernjahrMax: lernjahrMax
+        )
 
         lock.lock()
         storage[key] = mergedItems
@@ -75,8 +89,15 @@ enum QuizBuildService {
         QuizMergedItemsCache.clear()
     }
 
+    /// **V1b (2026-04-28)** — Wrapper liest `currentLernjahrMax()` aus
+    /// dem Resolver (Single-Source-of-Truth) und reicht den Wert in den
+    /// Cache-Key durch.
     static func mergedItems(from lists: [VocabularyList], direction: Direction) -> [VocabularyItem] {
-        QuizMergedItemsCache.mergedItems(from: lists, direction: direction)
+        QuizMergedItemsCache.mergedItems(
+            from: lists,
+            direction: direction,
+            lernjahrMax: VocabularyListSelectionResolver.currentLernjahrMax()
+        )
     }
 
     static func availableCandidateIDs(from items: [VocabularyItem], direction: Direction) -> Set<String> {

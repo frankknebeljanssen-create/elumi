@@ -71,4 +71,40 @@ struct PersonalDeck: Codable, Identifiable, Equatable {
         let total = max(1, cardOrder.count)
         return min(1.0, max(0.0, Double(currentIndex) / Double(total)))
     }
+
+    // MARK: - Card-Order-Snapshot (V1b Lernjahr-Filter, 2026-04-28)
+
+    /// **Snapshot-Semantik für `cardOrder`** — zentraler Helper für alle
+    /// Pfade, die einen Personal-Deck-Karten-Pool aus Quell-Listen
+    /// aufbauen (Create / Update-with-listsChanged / UUID-Stale-Recovery).
+    ///
+    /// **Verhalten:**
+    /// Items werden zum Aufruf-Zeitpunkt mit dem **aktuellen**
+    /// `lernjahrMax` aus `VocabularyListSelectionResolver.currentLernjahrMax()`
+    /// gefiltert (Per-Liste-Slice via `effectiveItems`). Das Ergebnis ist
+    /// eine flache Liste von Item-UUIDs — die Caller-Site kümmert sich
+    /// selbst um `.shuffled()` falls gewünscht.
+    ///
+    /// **Snapshot-Garantie:**
+    /// Spätere `lernjahrMax`-Änderungen wirken NICHT auf bereits
+    /// existierende Decks. Der eingefrorene `cardOrder` bleibt stabil,
+    /// bis der User explizit über den Edit-Mode mit
+    /// `listsChanged = true` einen Re-Snapshot erzwingt — dann läuft
+    /// dieser Helper erneut mit dem aktuellen `lernjahrMax`.
+    ///
+    /// **Recovery-Pfad:**
+    /// Beim UUID-Stale-Recovery (DB-Reload erzeugt neue UUIDs, alter
+    /// cardOrder findet keine Matches mehr) wird der Helper ebenfalls
+    /// genutzt — die aktuellen Filter-Regeln gelten auch dort, weil
+    /// Recovery den ursprünglichen Snapshot ohnehin zerstört (Mastery-
+    /// Daten weg, neuer Shuffle).
+    static func buildCardOrderSnapshot(from lists: [VocabularyList]) -> [UUID] {
+        let lernjahrMax = VocabularyListSelectionResolver.currentLernjahrMax()
+        return lists.flatMap { list in
+            VocabularyListSelectionResolver.effectiveItems(
+                for: list,
+                lernjahrMax: lernjahrMax
+            )
+        }.map(\.id)
+    }
 }

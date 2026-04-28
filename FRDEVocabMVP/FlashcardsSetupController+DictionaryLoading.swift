@@ -55,6 +55,15 @@ extension FlashcardsSetupController {
     }
 
     func scopedFlashcardLaunchLists(from lists: [VocabularyList]) -> [VocabularyList] {
+        // Bewusst kein Lernjahr-Filter: scoped-launch ist explicit user intent
+        // (z.B. nach Import). preferredLaunchItemIDs sticht globalen Filter.
+        //
+        // Begründung: Wenn der User gerade 5 Items importiert hat und diese
+        // direkt im Flashcards-Modul üben will, sind die ID-genauen Items
+        // authoritativ — auch wenn einzelne Y3-getaggt sind und der globale
+        // lernjahrMax=1 stehen würde. Die Caller-Site hat hier sehr explizit
+        // „diese Items, jetzt". Globalen Filter zu applizieren wäre eine
+        // verwirrende Verkleinerung des User-Intents.
         guard !preferredLaunchItemIDs.isEmpty else { return lists }
 
         return lists.compactMap { list in

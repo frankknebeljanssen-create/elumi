@@ -1,11 +1,24 @@
 import Foundation
 
 extension QuizBuildService {
-    static func makeMergedItems(from lists: [VocabularyList], direction: Direction) -> [VocabularyItem] {
+    /// **V1b Lernjahr-Filter (2026-04-28)** — Pro-Liste-Slice via
+    /// Resolver, BEVOR der flache Pool entsteht. Hierarchische Listen
+    /// (A1 mit cumulativeChildren) liefern ihren Y_1...Y_max-Slice;
+    /// klassische Listen ihre vollen items unverändert.
+    ///
+    /// `lernjahrMax` ist Pflicht-Param (Cache-Key-Komponente). Defense-
+    /// in-Depth: filtert hier zusätzlich zum Cache-Layer, schützt vor
+    /// künftigen Callern, die `makeMergedItems` direkt ohne Cache
+    /// aufrufen.
+    static func makeMergedItems(
+        from lists: [VocabularyList],
+        direction: Direction,
+        lernjahrMax: Int?
+    ) -> [VocabularyItem] {
         var seen = Set<String>()
 
         return lists
-            .flatMap(\.items)
+            .flatMap { VocabularyListSelectionResolver.effectiveItems(for: $0, lernjahrMax: lernjahrMax) }
             .filter { $0.sourceLanguage == direction.sourceLanguage }
             .filter { item in
                 let key = [

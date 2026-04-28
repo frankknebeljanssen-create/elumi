@@ -10,8 +10,16 @@ import Foundation
 /// Stelle und Erweiterungen (Confidence-Filter, Topic-Filter etc.)
 /// kommen automatisch durch alle Consumer durch.
 ///
-/// **V1a-Scope**: Word Runner (`LiveListRunnerTaskProvider`) ruft
-/// hier hinein. Quiz/Flashcards/Training-Generator folgen in V1b.
+/// **Konsumenten** (alle Module, die der Lernjahr-Filter erreicht):
+///   • Word Runner (`LiveListRunnerTaskProvider`)
+///   • Training (`TrainingSessionController.activeItems`) — alle Modi
+///   • Akzente (`AccentContentBuilder.gatherSeeds`)
+///   • Flashcards (`FlashcardSessionStore.configureCustomDeck`,
+///     plus Setup-Pfad via `FlashcardsSetupController.availableStackLists`)
+///   • Personal-Deck (`PersonalDeck.buildCardOrderSnapshot` — Snapshot
+///     bei Erstellung; spätere Filter-Änderungen wirken nicht mehr)
+///   • Quiz (`QuizBuildService.makeMergedItems`, Cache-Key
+///     berücksichtigt `lernjahrMax`)
 ///
 /// Die Funktion ist `pure` — kein Side-Effect, kein Logging,
 /// deterministisch. Persistente State-Variablen (UserDefaults-Lookup)
@@ -48,5 +56,16 @@ enum VocabularyListSelectionResolver {
         // nicht crasht.
         let cap = Swift.min(max, children.count)
         return children.prefix(cap).flatMap(\.items)
+    }
+
+    /// **Single-Source-of-Truth** für den aktuellen Lernjahr-Max-Wert.
+    /// Alle Consumer (Word Runner / Quiz / Flashcards / Training) lesen
+    /// hier statt direkt aus `UserDefaults.standard` — damit der
+    /// AppStorage-Key an EINER Stelle gekapselt ist.
+    ///
+    /// Returns: nil wenn der User noch nie gewählt hat (= „alle
+    /// Lernjahre"), sonst 1...5.
+    static func currentLernjahrMax() -> Int? {
+        UserDefaults.standard.object(forKey: appLernjahrMaxKey) as? Int
     }
 }

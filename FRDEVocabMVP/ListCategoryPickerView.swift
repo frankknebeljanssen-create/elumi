@@ -1,5 +1,18 @@
 import SwiftUI
 
+/// **V1b (2026-04-28)** — file-private Honesty-Helper. Liefert die
+/// effektive Item-Anzahl einer Liste unter Berücksichtigung des
+/// aktuellen `lernjahrMax`. Wird von allen 3 Structs in dieser Datei
+/// genutzt (`ListCategoryPickerView`, `ListSelectionSheet`,
+/// `TrainingCategoryListSheet`). Hierarchische Listen liefern ihren
+/// Y_max-Slice-Count; flache Listen ihre items.count unverändert.
+fileprivate func effectiveCount(for list: VocabularyList) -> Int {
+    VocabularyListSelectionResolver.effectiveItems(
+        for: list,
+        lernjahrMax: VocabularyListSelectionResolver.currentLernjahrMax()
+    ).count
+}
+
 /// Shared list selection component used across Training, Flashcards, and Quiz setup screens.
 /// Shows selected lists + "Liste auswählen" button that opens the category picker.
 ///
@@ -54,7 +67,7 @@ struct ListCategoryPickerView: View {
 
     var body: some View {
         let hasSelection = !selectedLists.isEmpty
-        let totalItems = selectedLists.reduce(0) { $0 + $1.items.count }
+        let totalItems = selectedLists.reduce(0) { $0 + effectiveCount(for: $1) }
 
         Button {
             feedbackPlayer.playTabSwitch()
@@ -263,7 +276,7 @@ struct ListSelectionSheet: View {
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
-                Text("\(list.items.count) Einträge")
+                Text("\(effectiveCount(for: list)) Einträge")
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }

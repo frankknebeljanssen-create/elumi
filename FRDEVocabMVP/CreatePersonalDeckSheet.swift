@@ -353,10 +353,14 @@ struct CreatePersonalDeckSheet: View {
                 // Neue Karten einsammeln + neu shufflen. Fortschritts-
                 // Cursor + masteredCardIDs zurücksetzen, weil die
                 // alten IDs ggf. nicht mehr in cardOrder stecken.
-                let freshCardIDs = availableLists
-                    .filter { newLists.contains($0.id) }
-                    .flatMap { $0.items.map(\.id) }
-                updated.cardOrder = freshCardIDs.shuffled()
+                //
+                // **V1b Re-Snapshot (2026-04-28)** — Listen-Wechsel
+                // erzwingt neuen Snapshot mit aktuellem lernjahrMax
+                // via PersonalDeck.buildCardOrderSnapshot.
+                let freshLists = availableLists.filter { newLists.contains($0.id) }
+                updated.cardOrder = PersonalDeck
+                    .buildCardOrderSnapshot(from: freshLists)
+                    .shuffled()
                 updated.currentIndex = 0
                 updated.masteredCardIDs = []
             }
@@ -366,7 +370,9 @@ struct CreatePersonalDeckSheet: View {
         }
 
         // Create-Mode (Default): frisches Deck.
-        let allCardIDs = selectedLists.flatMap { $0.items.map(\.id) }
+        // **V1b Snapshot (2026-04-28)** — Items werden mit aktuellem
+        // lernjahrMax gefiltert (Snapshot-Semantik).
+        let allCardIDs = PersonalDeck.buildCardOrderSnapshot(from: selectedLists)
         guard !allCardIDs.isEmpty else { return }
         let shuffled = allCardIDs.shuffled()
 
