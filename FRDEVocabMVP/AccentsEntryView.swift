@@ -290,7 +290,18 @@ struct AccentsEntryView: View {
                             // Summary-Zeile in Elumi-Blau — systemweiter
                             // Link-Look, identisch zu Verbformen/Vokabeln.
                             // Kein redundanter Right-Side-Badge mehr.
-                            Text("1 Liste · \(list.items.count) \(list.items.count == 1 ? "Eintrag" : "Einträge") gesamt")
+                            //
+                            // **V1b (2026-04-28)**: Count respektiert
+                            // den globalen Lernjahr-Filter — User sieht
+                            // ehrlich, wieviele Karten ins Akzent-Pool
+                            // einfließen.
+                            Text({
+                                let cnt = VocabularyListSelectionResolver.effectiveItems(
+                                    for: list,
+                                    lernjahrMax: VocabularyListSelectionResolver.currentLernjahrMax()
+                                ).count
+                                return "1 Liste · \(cnt) \(cnt == 1 ? "Eintrag" : "Einträge") gesamt"
+                            }())
                                 .font(.system(size: 13, weight: .medium, design: .rounded))
                                 .foregroundStyle(AppTheme.Colors.elumiBlue)
                                 .padding(.top, 2)

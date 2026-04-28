@@ -49,7 +49,17 @@ struct WordRunnerListPickerSheet: View {
                                 Text(list.name)
                                     .font(.system(size: 16, weight: .semibold, design: .rounded))
                                     .foregroundStyle(AppTheme.Colors.textPrimary)
-                                Text("\(list.items.count) Einträge")
+                                // **V1b (2026-04-28)** — Count
+                                // respektiert den globalen Lernjahr-
+                                // Filter; konsistent zu dem was Word
+                                // Runner tatsächlich spielt (V1a).
+                                Text({
+                                    let cnt = VocabularyListSelectionResolver.effectiveItems(
+                                        for: list,
+                                        lernjahrMax: VocabularyListSelectionResolver.currentLernjahrMax()
+                                    ).count
+                                    return "\(cnt) Einträge"
+                                }())
                                     .font(.system(size: 12, weight: .medium, design: .rounded))
                                     .foregroundStyle(AppTheme.Colors.textSecondary)
                             }

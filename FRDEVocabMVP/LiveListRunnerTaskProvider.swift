@@ -207,10 +207,9 @@ final class LiveListRunnerTaskProvider: RunnerTaskProvider {
         guard let selected = allLists.first(where: { $0.id == selectedID }) else {
             return []
         }
-        let lernjahrMax = UserDefaults.standard.object(forKey: appLernjahrMaxKey) as? Int
         let items = VocabularyListSelectionResolver.effectiveItems(
             for: selected,
-            lernjahrMax: lernjahrMax
+            lernjahrMax: VocabularyListSelectionResolver.currentLernjahrMax()
         )
         return items.filter { $0.cardType == .words }
     }

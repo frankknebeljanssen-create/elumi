@@ -77,7 +77,15 @@ extension TrainingSessionController {
             return []
         }
 
-        let allItems = selectedLists.flatMap(\.items)
+        // **V1b Lernjahr-Filter (2026-04-28)** — Per-Liste-Slice via
+        // Resolver, BEVOR der flache Pool entsteht. Hierarchische Listen
+        // (A1 mit cumulativeChildren) liefern ihren Y_1...Y_max-Slice;
+        // klassische Listen (Découvertes, Custom) ihre vollen items.
+        // Mode-Filter (vocabulary/nouns/articles/verbs/accents) greift
+        // nachgelagert orthogonal.
+        let lernjahrMax = VocabularyListSelectionResolver.currentLernjahrMax()
+        let allItems = selectedLists
+            .flatMap { VocabularyListSelectionResolver.effectiveItems(for: $0, lernjahrMax: lernjahrMax) }
             .filter { $0.sourceLanguage == selectedAppDirection.sourceLanguage }
 
         // Spezialpfad für Verben: Aus ALLEN Items (auch Phrasen) die eindeutigen

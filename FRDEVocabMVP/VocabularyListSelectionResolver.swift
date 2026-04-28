@@ -49,4 +49,15 @@ enum VocabularyListSelectionResolver {
         let cap = Swift.min(max, children.count)
         return children.prefix(cap).flatMap(\.items)
     }
+
+    /// **Single-Source-of-Truth** für den aktuellen Lernjahr-Max-Wert.
+    /// Alle Consumer (Word Runner / Quiz / Flashcards / Training) lesen
+    /// hier statt direkt aus `UserDefaults.standard` — damit der
+    /// AppStorage-Key an EINER Stelle gekapselt ist.
+    ///
+    /// Returns: nil wenn der User noch nie gewählt hat (= „alle
+    /// Lernjahre"), sonst 1...5.
+    static func currentLernjahrMax() -> Int? {
+        UserDefaults.standard.object(forKey: appLernjahrMaxKey) as? Int
+    }
 }
