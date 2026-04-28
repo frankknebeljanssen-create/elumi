@@ -196,11 +196,10 @@ final class LiveListRunnerTaskProvider: RunnerTaskProvider {
     /// Aktuelle Nomen-Items aus der gewählten Liste. Filtert auf
     /// `cardType == .words` — Phrasen sind für Article-Tasks ungeeignet.
     ///
-    /// **Stufe 1 V1a (2026-04-28)**: Wenn die ausgewählte Liste
-    /// hierarchisch (mit `children`) und cumulative ist (z. B.
-    /// „Grundwortschatz A1"), wird die per `appLernjahrMaxKey`
-    /// gewählte Lernjahr-Range angewandt — der Resolver übernimmt
-    /// die Cumulative-Slice-Logik.
+    /// Hierarchische Listen mit `cumulativeChildren=true` (z. B.
+    /// „Grundwortschatz A1") werden über
+    /// `VocabularyListSelectionResolver.effectiveItems` auf den
+    /// aktuell gewählten Y_max-Slice reduziert.
     private func currentNounItems() -> [VocabularyItem] {
         let selectedID = listStore.selectedListID
         let allLists = [listStore.builtInList] + listStore.customLists

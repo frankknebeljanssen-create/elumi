@@ -538,7 +538,7 @@ struct ListPickerSheet: View {
                     .stroke(isSelected ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
             )
 
-            // ── Children + Beta-Hinweis (nur wenn expanded) ──
+            // ── Children (nur wenn expanded) ──
             if isExpanded {
                 VStack(spacing: 4) {
                     ForEach(Array(children.enumerated()), id: \.element.id) { idx, child in
@@ -548,10 +548,6 @@ struct ListPickerSheet: View {
                 }
                 .padding(.leading, 22)
                 .padding(.top, 2)
-
-                lernjahrBetaHint()
-                    .padding(.leading, 22)
-                    .padding(.top, 4)
             }
         }
     }
@@ -603,19 +599,6 @@ struct ListPickerSheet: View {
         .buttonStyle(.plain)
         .opacity(count == 0 ? 0.5 : 1.0)
         .disabled(count == 0)
-    }
-
-    private func lernjahrBetaHint() -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: "info.circle")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-            Text("Aktuell nur im Word Runner aktiv. Quiz/Flashcards folgen in Kürze.")
-                .font(.system(size: 11, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func wordClassBreakdownText(for list: VocabularyList) -> some View {
