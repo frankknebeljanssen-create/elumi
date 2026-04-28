@@ -56,6 +56,10 @@ extension ListsView {
                         listStore.mergeLists(sourceID: source.id, into: target.id)
                         feedbackPlayer.playListAction()
                         showToast("\(source.name) in \(target.name) zusammengef\u{00FC}hrt.")
+                    },
+                    lernjahrMax: lernjahrMax,
+                    onLernjahrMaxChange: { newMax in
+                        lernjahrMax = newMax
                     }
                 )
             }
@@ -97,7 +101,11 @@ extension ListsView {
                     },
                     feedbackPlayer: feedbackPlayer,
                     onHome: { goHome() },
-                    onSettings: { openSettings() }
+                    onSettings: { openSettings() },
+                    lernjahrMax: lernjahrMax,
+                    onLernjahrMaxChange: { newMax in
+                        lernjahrMax = newMax
+                    }
                 )
             }
             .sheet(isPresented: $showingListDetail) {

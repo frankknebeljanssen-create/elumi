@@ -15,9 +15,21 @@ struct ListPickerSheet: View {
     var onHome: (() -> Void)? = nil
     var onSettings: (() -> Void)? = nil
 
+    // ─── Stufe 1 V1a (2026-04-28) — Lernjahr-Hierarchie ───
+    //
+    // Cumulative Lernjahr-Range. 0 = alle Lernjahre, 1...5 = Y_1…Y_n.
+    // Wird vom Caller via @AppStorage(appLernjahrMaxKey) gebunden.
+    var lernjahrMax: Int = 1
+    var onLernjahrMaxChange: (Int) -> Void = { _ in }
+
     @State private var listPendingDeletion: VocabularyList?
     @State private var listPendingMerge: VocabularyList?
     @State private var localSelectedID: UUID?
+    /// Lokaler Mirror — wird auf „Fertig" via `onLernjahrMaxChange`
+    /// nach außen gepushed.
+    @State private var localLernjahrMax: Int = 1
+    /// Welche List-IDs sind aktuell aufgeklappt (UI-only, nicht persistiert).
+    @State private var expandedListIDs: Set<UUID> = []
 
     private var displayedLists: [VocabularyList] {
         lists.sorted { lhs, rhs in
@@ -67,6 +79,7 @@ struct ListPickerSheet: View {
                 onLeading: { dismiss() },
                 onTrailing: {
                     onSelect(currentSelectedID)
+                    onLernjahrMaxChange(localLernjahrMax)
                     dismiss()
                 }
             )
@@ -132,7 +145,19 @@ struct ListPickerSheet: View {
                 )
             }
         }
-        .onAppear { localSelectedID = selectedListID }
+        .onAppear {
+            localSelectedID = selectedListID
+            localLernjahrMax = lernjahrMax
+            // Auto-expand: wenn die ausgewählte Liste hierarchisch ist
+            // UND nicht im Default-„alle"-State (max=0), dann öffnen
+            // wir sie direkt — der User soll seine Sub-Auswahl sofort
+            // sehen.
+            if let list = lists.first(where: { $0.id == selectedListID }),
+               list.children != nil, list.cumulativeChildren,
+               lernjahrMax != 0 {
+                expandedListIDs.insert(list.id)
+            }
+        }
         .alert("Wirklich löschen?", isPresented: Binding(
             get: { listPendingDeletion != nil },
             set: { if !$0 { listPendingDeletion = nil } }
@@ -252,7 +277,19 @@ struct ListPickerSheet: View {
         .padding(.bottom, 6)
     }
 
+    /// Branch-Punkt: hierarchische Listen mit cumulativeChildren bekommen
+    /// das expandable Layout (Stufe 1 V1a). Alle anderen rendern wie
+    /// bisher als flache Row.
+    @ViewBuilder
     private func listRow(_ list: VocabularyList) -> some View {
+        if let children = list.children, list.cumulativeChildren {
+            expandableLernjahrListRow(list, children: children)
+        } else {
+            regularListRow(list)
+        }
+    }
+
+    private func regularListRow(_ list: VocabularyList) -> some View {
         Button {
             localSelectedID = list.id
         } label: {
@@ -335,6 +372,250 @@ struct ListPickerSheet: View {
             )
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Expandable Lernjahr-Row (Stufe 1 V1a, 2026-04-28)
+
+    /// Effektive Y-Anzahl, die als „aktiv" zählt (für Halb-Check-
+    /// Berechnung etc.). max=0 = alle 5, sonst max=n.
+    private func effectiveActiveYearCount(_ max: Int, totalChildren: Int) -> Int {
+        max == 0 ? totalChildren : Swift.min(max, totalChildren)
+    }
+
+    /// Item-Count über alle bis Y_max eingeschlossenen Children.
+    private func cumulativeItemCount(_ max: Int, children: [VocabularyList]) -> Int {
+        let active = effectiveActiveYearCount(max, totalChildren: children.count)
+        return children.prefix(active).reduce(0) { $0 + $1.items.count }
+    }
+
+    /// Sublabel des Parents — entweder „alle Lernjahre · X Karten"
+    /// oder „N von 5 · X Karten".
+    private func parentSublabel(for list: VocabularyList, children: [VocabularyList], max: Int) -> String {
+        if max == 0 {
+            return "alle Lernjahre · \(list.items.count) Karten"
+        }
+        let cnt = cumulativeItemCount(max, children: children)
+        return "\(max) von \(children.count) · \(cnt) Karten"
+    }
+
+    /// Halb-Check, voller Check, oder leer — basierend auf max.
+    private func parentSelectionIcon(_ max: Int, isSelected: Bool, totalChildren: Int) -> String {
+        guard isSelected else { return "circle" }
+        if max == 0 || max >= totalChildren {
+            return "checkmark.circle.fill"
+        }
+        return "minus.circle.fill"
+    }
+
+    /// Parent-Tap-Handler. Toggelt „alles ↔ Y1" für eine bereits
+    /// ausgewählte Liste. Auf nicht-ausgewählter Liste: einfach
+    /// auswählen (max bleibt was es war).
+    private func handleParentTap(for list: VocabularyList) {
+        if currentSelectedID != list.id {
+            // Nicht-aktive Liste → aktivieren, max bleibt unverändert.
+            localSelectedID = list.id
+            return
+        }
+        // Aktive Liste → Toggle alles ↔ Y1. „Nichts" ist in single-
+        // select Picker nicht sinnvoll erreichbar.
+        if localLernjahrMax == 0 {
+            localLernjahrMax = 1
+        } else {
+            localLernjahrMax = 0
+        }
+    }
+
+    /// Child-Tap-Handler mit α-Rule (Y1-no-op) und kumulativer Logic.
+    private func handleChildTap(year: Int, list: VocabularyList) {
+        // Liste muss aktiv sein, damit Child-Tap überhaupt Sinn macht.
+        // Falls nicht aktiv: Liste aktivieren UND als Y_n setzen.
+        if currentSelectedID != list.id {
+            localSelectedID = list.id
+            localLernjahrMax = year
+            return
+        }
+        let effective = localLernjahrMax == 0 ? 5 : localLernjahrMax
+        if year > effective {
+            // Y_n nicht aktiv → aktiviere Y_n + alle darunter.
+            localLernjahrMax = year
+        } else {
+            // Y_n aktiv → deselektiere Y_n + alle darüber.
+            // α-Rule: Y1 + max==1 → no-op (Y1 nicht abwählbar).
+            if year == 1 && localLernjahrMax == 1 {
+                return
+            }
+            localLernjahrMax = year - 1
+        }
+    }
+
+    /// Ist Y_n explicit gewählt (= der zuletzt vom User getippte)?
+    private func isExplicit(year: Int, max: Int) -> Bool {
+        max != 0 && year == max
+    }
+
+    /// Ist Y_n auto-aktiv (= aktiv weil Y_max darüber liegt)?
+    private func isAuto(year: Int, max: Int) -> Bool {
+        max == 0 ? false : (year < max)
+    }
+
+    /// Ist Y_n überhaupt aktiv (auto oder explicit)?
+    private func isActive(year: Int, max: Int) -> Bool {
+        max == 0 ? true : year <= max
+    }
+
+    private func toggleExpanded(_ id: UUID) {
+        if expandedListIDs.contains(id) {
+            expandedListIDs.remove(id)
+        } else {
+            expandedListIDs.insert(id)
+        }
+    }
+
+    private func expandableLernjahrListRow(
+        _ list: VocabularyList,
+        children: [VocabularyList]
+    ) -> some View {
+        let isSelected = (currentSelectedID == list.id)
+        let isExpanded = expandedListIDs.contains(list.id)
+        let activeMax = isSelected ? localLernjahrMax : 0
+        let totalChildren = children.count
+        let selectionIcon = parentSelectionIcon(
+            activeMax,
+            isSelected: isSelected,
+            totalChildren: totalChildren
+        )
+        let sublabel = parentSublabel(for: list, children: children, max: activeMax)
+
+        return VStack(spacing: 6) {
+            // ── Parent-Row ──
+            HStack(spacing: 12) {
+                // Tap-Bereich (außer Chevron) — toggelt Parent.
+                Button {
+                    handleParentTap(for: list)
+                } label: {
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(list.name)
+                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.textPrimary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                            Text(sublabel)
+                                .font(AppTheme.Typography.caption)
+                                .foregroundStyle(AppTheme.Colors.textSecondary)
+                        }
+                        Spacer(minLength: 0)
+                        Image(systemName: selectionIcon)
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundStyle(isSelected ? style.accent : AppTheme.Colors.textDisabled)
+                    }
+                }
+                .buttonStyle(.plain)
+
+                // Chevron — separater Tap, ändert keine Auswahl.
+                Button {
+                    toggleExpanded(list.id)
+                } label: {
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .frame(width: 32, height: 32)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .appCardBackground(
+                style,
+                intensity: isSelected
+                    ? AppTheme.CardIntensity.selected
+                    : AppTheme.CardIntensity.whisper,
+                cornerRadius: 14
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(isSelected ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
+            )
+
+            // ── Children + Beta-Hinweis (nur wenn expanded) ──
+            if isExpanded {
+                VStack(spacing: 4) {
+                    ForEach(Array(children.enumerated()), id: \.element.id) { idx, child in
+                        let year = idx + 1
+                        lernjahrChildRow(child: child, year: year, parentList: list, max: activeMax)
+                    }
+                }
+                .padding(.leading, 22)
+                .padding(.top, 2)
+
+                lernjahrBetaHint()
+                    .padding(.leading, 22)
+                    .padding(.top, 4)
+            }
+        }
+    }
+
+    private func lernjahrChildRow(
+        child: VocabularyList,
+        year: Int,
+        parentList: VocabularyList,
+        max: Int
+    ) -> some View {
+        let active = isActive(year: year, max: max)
+        let auto = isAuto(year: year, max: max)
+        let count = child.items.count
+
+        return Button {
+            handleChildTap(year: year, list: parentList)
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: active ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(active ? style.accent : AppTheme.Colors.textDisabled)
+
+                Text(child.name)
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+
+                if auto {
+                    Text("auto")
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(
+                            Capsule().fill(AppTheme.Colors.textSecondary.opacity(0.18))
+                        )
+                }
+
+                Spacer(minLength: 0)
+
+                Text("\(count)")
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .monospacedDigit()
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .opacity(count == 0 ? 0.5 : 1.0)
+        .disabled(count == 0)
+    }
+
+    private func lernjahrBetaHint() -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: "info.circle")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+            Text("Aktuell nur im Word Runner aktiv. Quiz/Flashcards folgen in Kürze.")
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func wordClassBreakdownText(for list: VocabularyList) -> some View {

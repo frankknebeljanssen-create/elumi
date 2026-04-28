@@ -15,6 +15,10 @@ struct ListsView: View {
     /// Settings-Wechsel ohne App-Neustart.
     @AppStorage(AppIconRegistry.storageKey) var iconSetRaw: String = AppIconSet.a.rawValue
 
+    /// **Stufe 1 V1a (2026-04-28)** — Cumulative Lernjahr-Max-Selektion.
+    /// 0 = alle Lernjahre, 1...5 = Y_1…Y_n. Default 1 = „7. Klasse Gym".
+    @AppStorage(appLernjahrMaxKey) var lernjahrMax: Int = 1
+
     @State var newListName = ""
     @State var newListCollectionPreset: ListCollectionPreset = .schoolbook
     @State var editableListName = ""

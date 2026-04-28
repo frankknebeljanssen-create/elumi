@@ -54,6 +54,16 @@ let appWordRunnerTotalTrophiesKey = "elumi.wordrunner.totalTrophies.v1"
 /// verändert haben.
 let appWordRunnerLastListIDKey = "elumi.wordrunner.lastListID.v1"
 let appTrainingSelectedListIDsKey = "training.selectedListIDs.v1"
+/// **Stufe 1 (2026-04-28)** — Cumulative Lernjahr-Auswahl.
+/// Der gewählte „Max-Year" für hierarchische Listen mit
+/// `cumulativeChildren=true` (V1: nur „Grundwortschatz A1"). Werte:
+///   • nil → Parent voll gewählt = alle Lernjahre
+///   • 1...5 → kumulativ Y_1 bis Y_n
+///
+/// Globaler Scope (kein .training-Prefix) — aktuell nur im Word
+/// Runner integriert (V1a), Quiz/Flashcards/Training-Generator
+/// folgen in V1b.
+let appLernjahrMaxKey = "elumi.lernjahrMax.v1"
 let appQuizSelectedListIDsKey = "quiz.selectedListIDs.v1"
 let appFlashcardsSelectedListIDsKey = "flashcards.selectedListIDs.v1"
 let appFlashcardsMasteryThresholdKey = "flashcards.masteryThreshold.v1"

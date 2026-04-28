@@ -20,6 +20,18 @@ enum StandardVocabularyLoader {
         let genderSource: FrenchGenderSource
         let genderConfidence: Double
 
+        // ─── Stufe 1 (2026-04-28) — Lernjahr-Tags ───
+        // Werden NUR für A1-Einträge befüllt (im DB-Schema NULL für
+        // alle anderen Levels). nil = nicht getaggt; "" für TEXT-Felder
+        // signalisiert „in DB war NULL" (defensive Default).
+
+        /// Lernjahr 1-5, NUR für A1-Einträge. Sonst nil.
+        let lernjahr: Int?
+        /// Confidence-Tag der AI-Klassifizierung: "high"/"med"/"low"/"".
+        let confidence: String
+        /// Schulrelevanz-Tag: "high"/"med"/"low"/"".
+        let schulrelevanz: String
+
         init(
             sourceDisplay: String,
             target: String,
@@ -30,7 +42,10 @@ enum StandardVocabularyLoader {
             topic: String,
             frequency: Double,
             genderSource: FrenchGenderSource = .explicitArticle,
-            genderConfidence: Double = 1.0
+            genderConfidence: Double = 1.0,
+            lernjahr: Int? = nil,
+            confidence: String = "",
+            schulrelevanz: String = ""
         ) {
             self.sourceDisplay = sourceDisplay
             self.target = target
@@ -42,6 +57,9 @@ enum StandardVocabularyLoader {
             self.frequency = frequency
             self.genderSource = genderSource
             self.genderConfidence = genderConfidence
+            self.lernjahr = lernjahr
+            self.confidence = confidence
+            self.schulrelevanz = schulrelevanz
         }
     }
 
@@ -570,6 +588,40 @@ enum StandardVocabularyLoader {
         isAggregateVocabulary: true
     )
 
+    // ─── Stufe 1 (2026-04-28) — Lernjahr-Children für die A1-Liste ───
+    //
+    // 5 atomare per-Year-Buckets. Jedes Child enthält NUR die Items
+    // des jeweiligen Lernjahrs (kein Overlap). Cumulative-Slicing
+    // passiert im `VocabularyListSelectionResolver` zur Auswahlzeit.
+    //
+    // Y4/Y5 sind aktuell leer (alle 932 A1-Tags liegen in Y1-Y3) —
+    // werden trotzdem gerendert (UI: 5er-Grid-Konsistenz). Bei
+    // späterem Tagging-Run werden sie automatisch befüllt.
+    private static let lernjahrChildLists: [VocabularyList] = {
+        // Stable Hex-UUIDs (kein L/J — wären kein gültiges Hex).
+        let uuids: [Int: UUID] = [
+            1: UUID(uuidString: "F1E1EEE1-A001-4000-A000-000000000001")!,
+            2: UUID(uuidString: "F1E1EEE1-A002-4000-A000-000000000002")!,
+            3: UUID(uuidString: "F1E1EEE1-A003-4000-A000-000000000003")!,
+            4: UUID(uuidString: "F1E1EEE1-A004-4000-A000-000000000004")!,
+            5: UUID(uuidString: "F1E1EEE1-A005-4000-A000-000000000005")!,
+        ]
+        var lists: [VocabularyList] = []
+        for year in 1...5 {
+            let yearItems = vocabularyItems.enumerated().compactMap { idx, item -> VocabularyItem? in
+                allEntries[idx].lernjahr == year ? item : nil
+            }
+            lists.append(VocabularyList(
+                id: uuids[year]!,
+                name: "\(year). Lernjahr",
+                items: yearItems,
+                isBuiltIn: true,
+                collectionPreset: .standardLevel
+            ))
+        }
+        return lists
+    }()
+
     static let levelLists: [VocabularyList] = {
         var lists: [VocabularyList] = []
         let levelUUIDs: [String: UUID] = [
@@ -583,19 +635,32 @@ enum StandardVocabularyLoader {
         for level in ["A1", "A2", "B1", "B2", "C1", "C2"] {
             let levelItems = items(for: level)
             guard !levelItems.isEmpty else { continue }
+            // **Stufe 1 (2026-04-28)**: A1-Liste bekommt Lernjahr-
+            // Children + cumulativeChildren=true. Andere Levels bleiben
+            // klassisch flach (children=nil, cumulative=false).
+            let isA1 = (level == "A1")
             lists.append(VocabularyList(
                 id: levelUUIDs[level]!,
                 name: levelNames[level] ?? level,
                 items: levelItems,
                 isBuiltIn: true,
-                collectionPreset: .standardLevel
+                collectionPreset: .standardLevel,
+                children: isA1 ? lernjahrChildLists : nil,
+                cumulativeChildren: isA1
             ))
         }
         return lists
     }()
 
     static let topicLists: [VocabularyList] = {
-        let minItems = 20
+        // **2026-04-28 A1-Cleanup**: Schwelle 20 → 15 gesenkt, damit
+        // die neue kuratierte A1-Liste „Im Straßenverkehr" (17
+        // Einträge) als Themen-Liste sichtbar wird. Side-Effect-Check
+        // gegen die DB ergab: kein einziges weiteres Topic liegt im
+        // Range 15-19 (kleinster bestehender Topic = „Wissenschaft"
+        // mit 1114 Einträgen). Senkung ist daher risikofrei, keine
+        // Müll-Topics werden dadurch neu sichtbar.
+        let minItems = 15
         var lists: [VocabularyList] = []
         let sortedTopics = allTopics
         for (index, topic) in sortedTopics.enumerated() {
@@ -690,7 +755,16 @@ enum StandardVocabularyLoader {
                     topic: entry.topic,
                     frequency: entry.frequency,
                     genderSource: resolution.source,
-                    genderConfidence: resolution.confidence
+                    genderConfidence: resolution.confidence,
+                    // **Bug-Fix 2026-04-28**: V1a-Lernjahr-Felder MÜSSEN
+                    // hier durchgereicht werden — sonst verlieren alle
+                    // Nomen-Phrasen mit explizitem Artikel (la/le/l'…)
+                    // ihren lernjahr-Tag, weil dieser Resolver-Pass sie
+                    // als neue Entries rekonstruiert. Symptom: A1-
+                    // Children-Counts 390/436/49 statt 420/458/54.
+                    lernjahr: entry.lernjahr,
+                    confidence: entry.confidence,
+                    schulrelevanz: entry.schulrelevanz
                 )
             )
         }
@@ -790,8 +864,13 @@ enum StandardVocabularyLoader {
 
     private static func loadEntries() -> [Entry] {
         guard let result = SupplementalFreeDictLexicon.withReadOnlyDatabase({ database -> [Entry] in
+            // **Stufe 1 (2026-04-28)**: SQL liest 11 Spalten statt 8.
+            // Drei neue Spalten (lernjahr/confidence/schulrelevanz) sind
+            // nur für A1-Einträge befüllt (DB-Migration vom 2026-04-28).
+            // Bei NULL-Werten (alle non-A1) → lernjahr=nil, conf=""=rel.
             let sql = """
-                SELECT lemma_fr, lemma_de, word_class, gender_fr, level, is_phrase, frequency_rank, topic
+                SELECT lemma_fr, lemma_de, word_class, gender_fr, level, is_phrase, frequency_rank, topic,
+                       lernjahr, confidence, schulrelevanz
                 FROM entries
                 ORDER BY frequency_rank ASC
                 """
@@ -815,6 +894,15 @@ enum StandardVocabularyLoader {
                 let freqRank = sqlite3_column_int(stmt, 6)
                 let topic = sqlite3_column_text(stmt, 7).map { String(cString: $0) } ?? "Allgemein"
 
+                // Lernjahr: SQLite liefert 0 für NULL-INTEGER. Wir
+                // nutzen den expliziten NULL-Check via column_type.
+                let lernjahr: Int? = {
+                    guard sqlite3_column_type(stmt, 8) != SQLITE_NULL else { return nil }
+                    return Int(sqlite3_column_int(stmt, 8))
+                }()
+                let confidence = sqlite3_column_text(stmt, 9).map { String(cString: $0) } ?? ""
+                let schulrelevanz = sqlite3_column_text(stmt, 10).map { String(cString: $0) } ?? ""
+
                 entries.append(Entry(
                     sourceDisplay: lemmaFr,
                     target: lemmaDe,
@@ -823,7 +911,10 @@ enum StandardVocabularyLoader {
                     wordClass: wordClass,
                     gender: genderFr,
                     topic: topic,
-                    frequency: Double(freqRank)
+                    frequency: Double(freqRank),
+                    lernjahr: lernjahr,
+                    confidence: confidence,
+                    schulrelevanz: schulrelevanz
                 ))
             }
             return entries
