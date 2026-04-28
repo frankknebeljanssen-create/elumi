@@ -178,6 +178,10 @@ final class WordRunnerGame: ObservableObject {
     /// Standard-Dauer pro Pickup.
     static let slowMoDuration: TimeInterval = 4.0
 
+    // Vertikal-Drag-Speed-Control-Properties liegen weiter unten im
+    // File (`userSpeedMultiplier`, `accumulatedUserTimeBias`,
+    // `userSpeedMin/Max`) — Phase 7.6 Feature bereits implementiert.
+
     // MARK: - User Speed Control (Vertikal-Drag)
     //
     // User zieht in der View vertikal am Spielfeld:
@@ -266,16 +270,16 @@ final class WordRunnerGame: ObservableObject {
         //
         //   F(t) ist `cumulativeTravel(at:)` unten.
 
-        /// Startgeschwindigkeit. Visual-Tuning: weiter runter (105 → 88).
-        /// Mit Horizon bei 0.12 und Player bei 0.80 → 612 pt Strecke,
-        /// bei 88 pt/s = **~7 s** Reaktionszeit pro Welle am Start.
-        // Phase 7.6: Start-Speed +10 % (88 → 97). Peak bleibt bei 150,
-        // Ramp-Duration unverändert — die Difficulty-Curve wird nur am
-        // Anfang steiler, damit der Einstieg direkter wirkt.
-        static let startScrollSpeed: CGFloat = 97
-        /// Peak nach Ramp. Sanfter (180 → 150).
-        /// Am Peak noch ~4 s.
-        static let peakScrollSpeed: CGFloat = 150
+        /// Startgeschwindigkeit. Visual-Tuning History:
+        ///   • 105 → 88 (Phase X)
+        ///   • 88 → 97 (Phase 7.6, +10 %)
+        ///   • **97 → 112 (Stufe 1, +15 % / 2026-04-28)** — der
+        ///     Spielstart soll spürbar flotter wirken.
+        static let startScrollSpeed: CGFloat = 112
+        /// Peak nach Ramp. Tuning-History: 180 → 150 → **173** (+15 %
+        /// in Stufe 1, 2026-04-28). Ramp-Duration unverändert
+        /// (`speedRampDuration = 35 s`).
+        static let peakScrollSpeed: CGFloat = 173
         /// Wie lange die Ramp von Start → Peak dauert (Sekunden).
         /// 35 s = „Run 1 fühlt sich ruhig an, Run 2 spürbar schneller".
         static let speedRampDuration: TimeInterval = 35.0
@@ -351,11 +355,13 @@ final class WordRunnerGame: ObservableObject {
         /// aber noch keine Hindernisse). Phase 3.5 UX-Polish.
         static let startSpawnDelay: TimeInterval = 0.4
         /// Wie lange nach Game-Over das Summary-Overlay zurückgehalten
-        /// wird. In diesen 3 s zeigt die View einen „GAME OVER"-Screen
-        /// (User-Wunsch: „game over 3 sekunden statt 2").
-        /// Danach wechselt die State-Machine auf `.summary` → Session-
-        /// SummaryView mit XP/Credits/CTAs.
-        static let gameOverOverlayDelay: TimeInterval = 3.0
+        /// wird. Phase 7.5 (Start/Ende-Unification): kein separates
+        /// „GAME OVER"-Zwischen-Overlay mehr — der Spieler sieht 0.6 s
+        /// den eingefrorenen Crash-Moment (Wrong-Flash, Life-Lost),
+        /// danach fadet direkt das geteilte `GameSummaryView` ein.
+        /// Das matched das Elumi-Verhalten — beide Spiele enden
+        /// strukturell identisch.
+        static let gameOverOverlayDelay: TimeInterval = 0.6
         /// Wie lange das Correct-Feedback (Lane-Highlight) leuchtet.
         static let correctFeedbackDuration: TimeInterval = 0.4
         /// Wie lange das Wrong-Feedback (Screen-Flash/Shake) läuft.
@@ -393,10 +399,13 @@ final class WordRunnerGame: ObservableObject {
         /// Timing. Jetzt cleart auch **STOP-Schilder** (jumpable ab
         /// diesem Patch).
         static let jumpDuration: TimeInterval = 1.25
-        /// Sprung-Apex in pt. **205 pt** — noch dramatischer hoch,
-        /// damit auch das 52-pt-Schild + Pfosten visuell klar
-        /// untersprungen werden.
-        static let jumpMaxHeight: CGFloat = 205
+        /// Sprung-Apex in pt. Tuning-History: 205 → **246**
+        /// (Stufe 1, 2026-04-28, User-Spec „vertikale Bewegungsfreiheit
+        /// um ~20 % erweitern"). Spieler kann sichtbar höher steigen,
+        /// das Spielgefühl wird offener. Untere Y-Grenze (`playerY` =
+        /// 80 % Screen-Höhe) bleibt unverändert — der Player-Y selbst
+        /// ist fix, nur der Apex der Sin-Wave-Kurve wächst.
+        static let jumpMaxHeight: CGFloat = 246
         /// Dauer der Landing-Squash-Animation **nach** Jump-Ende.
         /// 0.18 s, passt zum noch höheren Sprung.
         static let jumpLandingDuration: TimeInterval = 0.18
@@ -406,6 +415,34 @@ final class WordRunnerGame: ObservableObject {
         /// Semantik mit allen anderen Tuning-Konstanten an einer
         /// Stelle steht.
         static let jumpVsDragThreshold: CGFloat = 12
+
+        // MARK: - Height-Based Speed-Scaling (Stufe 1, 2026-04-28)
+        //
+        // **User-Spec**: „mit zunehmender Höhe spürbar steigern".
+        // Niedrige Höhe = Basis-Speed, hohe Position = deutlich
+        // schneller. Kurve **leicht progressiv** (pow 1.4) statt
+        // linear, damit der Spieler beim Apex ein klares Durchrauschen-
+        // Gefühl bekommt.
+        //
+        // Formel:
+        //   heightFactor = jumpHeight(at:) / jumpMaxHeight  // 0…1
+        //   curve         = pow(heightFactor, heightSpeedCurveExponent)
+        //   multiplier    = 1.0 + curve * heightSpeedMaxBonus
+        //
+        // Der Multiplier wird über die existierende User-Speed-Bias-
+        // Integration in `tick()` ins `accumulatedUserTimeBias`
+        // eingespeist — gleicher Mechanismus wie der vertikale Drag.
+        // Damit bleibt die Wave-Geometrie (`cumulativeTravel`)
+        // mathematisch konsistent.
+
+        /// Maximaler Bonus-Multiplikator am Sprung-Apex.
+        /// 0.40 = +40 % Welt-Geschwindigkeit ganz oben.
+        static let heightSpeedMaxBonus: CGFloat = 0.40
+        /// Kurven-Exponent (>1 = progressiv, <1 = degressiv).
+        /// 1.4 = leicht progressiv: bei halber Höhe gibt's nur ~38 %
+        /// vom Bonus, bei 80 % Höhe schon ~73 %. Spürbares
+        /// „Durchrauschen" zum Apex hin.
+        static let heightSpeedCurveExponent: Double = 1.4
 
         // MARK: - Phase-6 Perspektiv-Helper
         //
@@ -755,7 +792,12 @@ final class WordRunnerGame: ObservableObject {
     /// Provider (z. B. Seed) ist sie no-op, weil ihre Pools von der
     /// Listen-Auswahl unabhängig sind.
     func refreshLiveContent() {
+        // Direkter Live-Provider (ohne Fallback-Wrapper).
         (taskProvider as? LiveListRunnerTaskProvider)?.refreshPool()
+        // Wenn der Provider in einen Fallback-Wrapper eingepackt ist
+        // (Stufe 1 / 2026-04-28), durch den Wrapper hindurch
+        // refreshen.
+        (taskProvider as? FallbackRunnerTaskProvider)?.refreshPool()
     }
 
     /// Bewegt die aktuelle Spur um `delta`. Clamped an den Rändern
@@ -825,6 +867,26 @@ final class WordRunnerGame: ObservableObject {
         return Tuning.jumpMaxHeight * CGFloat(sin(t * .pi))
     }
 
+    /// **Height-based Speed-Multiplikator (Stufe 1, 2026-04-28)**.
+    ///
+    /// Liefert einen Multiplikator >= 1.0, abhängig von der aktuellen
+    /// Sprung-Höhe. Während der Spieler am Boden ist (jumpHeight == 0),
+    /// gibt diese Funktion 1.0 zurück → kein Effekt. Während des Sprungs
+    /// wächst der Multiplikator über eine progressive Kurve auf maximal
+    /// `1.0 + Tuning.heightSpeedMaxBonus` am Apex.
+    ///
+    /// Wird in `tick()` zusammen mit `userSpeedMultiplier` in den
+    /// `accumulatedUserTimeBias` integriert — die Welt-Geschwindigkeit
+    /// (`cumulativeTravel`) reagiert dadurch sanft, ohne dass das
+    /// Wave-Geometrie-Modell bricht.
+    func heightSpeedMultiplier(at now: Date) -> CGFloat {
+        let height = jumpHeight(at: now)
+        guard height > 0, Tuning.jumpMaxHeight > 0 else { return 1.0 }
+        let normalized = max(0, min(1, height / Tuning.jumpMaxHeight))
+        let curve = CGFloat(pow(Double(normalized), Tuning.heightSpeedCurveExponent))
+        return 1.0 + curve * Tuning.heightSpeedMaxBonus
+    }
+
     /// Landing-Squash-Skalierung (Y-Achse) nach Abschluss eines
     /// Sprungs. In den ersten `jumpLandingDuration` Sekunden nach
     /// Jump-Ende läuft der Player von 0.88 → 1.0 (leicht gequetscht,
@@ -869,8 +931,17 @@ final class WordRunnerGame: ObservableObject {
         if let last = lastUserBiasTickDate {
             let dt = now.timeIntervalSince(last)
             if dt > 0 {
-                let delta = dt * TimeInterval(userSpeedMultiplier - 1)
-                accumulatedUserTimeBias += delta
+                // **User-Drag-Bias** (vertikales Ziehen für manuelle
+                // Speed-Anpassung).
+                let userDelta = dt * TimeInterval(userSpeedMultiplier - 1)
+                // **Height-based Speed-Bias (Stufe 1, 2026-04-28)** —
+                // beim Sprung wächst der Multiplikator über eine
+                // progressive Kurve auf bis zu 1.4 am Apex. Der
+                // resultierende Zeitbias addiert sich zur User-Drag-
+                // Bias, sodass beide Quellen gemeinsam in
+                // `effectiveElapsed` einfließen.
+                let heightDelta = dt * TimeInterval(heightSpeedMultiplier(at: now) - 1)
+                accumulatedUserTimeBias += userDelta + heightDelta
                 // Safety-Clamp: Welt-Zeit darf nicht rückwärts laufen.
                 let realElapsed = now.timeIntervalSince(runStart)
                 let minBias = -(realElapsed - accumulatedSlowMoLag)

@@ -199,6 +199,13 @@ struct ContentView: View {
                 .environment(\.appOpenArcadeAction, { autoStart in
                     navigation.openArcadeScreen(autoStart: autoStart)
                 })
+                .environment(\.appOpenElumiAction, {
+                    // **Phase 8**: Axolotl-Footer-Button → persönlicher
+                    // Elumi-Tab. Nutzt die gleiche Pfad-Push-Mechanik wie
+                    // die anderen Tabs, damit der Screen via Back wieder
+                    // sauber zurück zu Home führt.
+                    navigation.openElumiScreen()
+                })
                 .environment(\.appSetImmersiveArcadeAction, { active in
                     navigation.setImmersiveArcade(active)
                 })

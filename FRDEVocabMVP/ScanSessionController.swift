@@ -33,6 +33,31 @@ final class ScanSessionController: ObservableObject {
     @Published var batchCurrentIndex = 0
     @Published var batchTotalCount = 0
     @Published var batchCompleted = false
+
+    // MARK: - Multi-Capture-Review (User-Spec 2026-04-22 Abend VI)
+    //
+    // Stabile Sammlung der im Auto-Modus aufgenommenen Bilder, mit
+    // Identifiable pro Item — damit die UI eine klare Auswahl halten
+    // kann und Captures nicht durch UI-State-Bugs verloren gehen.
+    //
+    // `capturedItems` ist die Quelle der Wahrheit — `selectedCapturedItemID`
+    // markiert das aktuell hervorgehobene Bild für die Big-Preview /
+    // „Überprüfen"-Aktion. `isShowingMultiCaptureReview` triggert die
+    // Präsentation des MultiCaptureReviewView via fullScreenCover.
+    @Published var capturedItems: [CapturedScanItem] = []
+    @Published var selectedCapturedItemID: UUID?
+    @Published var isShowingMultiCaptureReview: Bool = false
+
+    // MARK: - Gallery-Multi-Image-Review (User-Spec 2026-04-23 nachmittags)
+    //
+    // Per-Image Review-/Optimierungszustand für Galerie-Mehrfachauswahl.
+    // Trennung vom Camera-Capture-Review: Galerie-Items haben einen
+    // eigenen Optimierungs-Workflow (Auto-Optimieren / Original
+    // verwenden), und der finale Submit reicht ALLE Bilder an die
+    // Analyse weiter — nicht nur das ausgewählte.
+    @Published var galleryReviewItems: [GalleryReviewItem] = []
+    @Published var selectedGalleryItemID: UUID?
+    @Published var isShowingGalleryReview: Bool = false
     @Published var originalScanImage: UIImage?
     @Published var preparedScanImage: UIImage?
     @Published var usePreparedScanImage = true

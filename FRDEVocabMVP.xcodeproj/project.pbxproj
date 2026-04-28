@@ -383,6 +383,10 @@
 		A00000000000000000000766 /* FlashcardsSessionController+AnswerFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000767 /* FlashcardsSessionController+AnswerFlow.swift */; };
 		A00000000000000000000768 /* FlashcardsView+PromptResponseComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000769 /* FlashcardsView+PromptResponseComponents.swift */; };
 		A00000000000000000000770 /* FlashcardsView+InputActionComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000771 /* FlashcardsView+InputActionComponents.swift */; };
+		A00000000000000000000772 /* ElumiCreditsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000773 /* ElumiCreditsStore.swift */; };
+		A00000000000000000000774 /* ElumiArcadeGameView+PlayCredits.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000775 /* ElumiArcadeGameView+PlayCredits.swift */; };
+		A00000000000000000000776 /* GermanNounCapitalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000777 /* GermanNounCapitalization.swift */; };
+		A00000000000000000000778 /* VocabularyListSelectionResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000779 /* VocabularyListSelectionResolver.swift */; };
 		A1B2C3D4E5F60708090A0C01 /* DailyStatsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */; };
 		A1B2C3D4E5F60708090A0E02 /* ItemLearningStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0E01 /* ItemLearningStatus.swift */; };
 		A1B2C3D4E5F60708090A0E04 /* ItemLearningStatusStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0E03 /* ItemLearningStatusStore.swift */; };
@@ -390,33 +394,6 @@
 		A1B2C3D4E5F60708090A0E08 /* HomeLernstatusCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0E07 /* HomeLernstatusCard.swift */; };
 		A1B2C3D4E5F60708090A0E0A /* LernstatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0E09 /* LernstatusView.swift */; };
 		A1B2C3D4E5F60708091C0D01 /* AppIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708091C0D02 /* AppIcons.swift */; };
-		FE12345678901234567890A1 /* AppIconRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890A2 /* AppIconRegistry.swift */; };
-		FE12345678901234567890B1 /* ScanTuning.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890B2 /* ScanTuning.swift */; };
-		FE12345678901234567890C1 /* WordRunnerGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890C2 /* WordRunnerGameView.swift */; };
-		FE12345678901234567890D1 /* WordRunnerModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890D2 /* WordRunnerModels.swift */; };
-		FE12345678901234567890E1 /* WordRunnerTaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890E2 /* WordRunnerTaskProvider.swift */; };
-		FE12345678901234567890F1 /* WordRunnerSpawner.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890F2 /* WordRunnerSpawner.swift */; };
-		FE1234567890123456789001 /* WordRunnerGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789002 /* WordRunnerGame.swift */; };
-		FE1234567890123456789011 /* WordRunnerMusicPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789012 /* WordRunnerMusicPlayer.swift */; };
-		FE1234567890123456789021 /* Sounds/runner_theme_01.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789022 /* Sounds/runner_theme_01.mp3 */; };
-		FE1234567890123456789031 /* Sounds/runner_theme_02.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789032 /* Sounds/runner_theme_02.mp3 */; };
-		FE1234567890123456789041 /* ArcadeMusicPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789042 /* ArcadeMusicPlayer.swift */; };
-		FE1234567890123456789051 /* Sounds/arcade_theme_01.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789052 /* Sounds/arcade_theme_01.mp3 */; };
-		FE1234567890123456789061 /* Sounds/arcade_theme_02.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789062 /* Sounds/arcade_theme_02.mp3 */; };
-		FE1234567890123456789071 /* Sounds/fish_theme_01.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789072 /* Sounds/fish_theme_01.mp3 */; };
-		FE1234567890123456789081 /* MusicCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789082 /* MusicCatalog.swift */; };
-		FE1234567890123456789091 /* TrophyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789092 /* TrophyView.swift */; };
-		FE12345678901234567890BA /* HomeHeroLearningSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890BB /* HomeHeroLearningSection.swift */; };
-		FE12345678901234567890CA /* HomeMoreExercisesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890CB /* HomeMoreExercisesSection.swift */; };
-		FE12345678901234567890DA /* HomeToolsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890DB /* HomeToolsSection.swift */; };
-		FE12345678901234567890FA /* LiveListRunnerTaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890FB /* LiveListRunnerTaskProvider.swift */; };
-		FE12345678901234567891AA /* WordRunnerSFXPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567891AB /* WordRunnerSFXPlayer.swift */; };
-		FE12345678901234567891BA /* sfx/sfx_lane.wav in Resources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567891BB /* sfx/sfx_lane.wav */; };
-		FE12345678901234567891CA /* sfx/sfx_correct.wav in Resources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567891CB /* sfx/sfx_correct.wav */; };
-		FE12345678901234567891DA /* sfx/sfx_wrong.wav in Resources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567891DB /* sfx/sfx_wrong.wav */; };
-		FE12345678901234567891EA /* sfx/sfx_life_loss.wav in Resources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567891EB /* sfx/sfx_life_loss.wav */; };
-		FE12345678901234567891FA /* sfx/sfx_pickup.wav in Resources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567891FB /* sfx/sfx_pickup.wav */; };
-		FE12345678901234567892AA /* sfx/sfx_boost.wav in Resources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567892AB /* sfx/sfx_boost.wav */; };
 		A1B2C3D4E5F60708091C0D03 /* DebugResetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708091C0D04 /* DebugResetService.swift */; };
 		A32AEA7409624035B7BCEB16 /* Sounds/elumi_snackmiss.wav in Resources */ = {isa = PBXBuildFile; fileRef = 08593D8836594A859D387AE8 /* Sounds/elumi_snackmiss.wav */; };
 		A5E02C81EAD95B48BD32C1C4 /* HomeHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FEDD84AF0BD7AE57209A819 /* HomeHeader.swift */; };
@@ -435,14 +412,14 @@
 		AA11BB22CC33DD44EE55FF80 /* SpeedRoundTimerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF81 /* SpeedRoundTimerCard.swift */; };
 		AA11BB22CC33DD44EE55FF82 /* GameStateResetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF83 /* GameStateResetService.swift */; };
 		AA11BB22CC33DD44EE55FF84 /* LevelProgression.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF85 /* LevelProgression.swift */; };
+		AAAC0001AAAC0001AAAC0001 /* AccountStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAC0002AAAC0002AAAC0002 /* AccountStore.swift */; };
+		AAAC0003AAAC0003AAAC0003 /* AccountOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAC0004AAAC0004AAAC0004 /* AccountOnboardingView.swift */; };
+		AAAC0005AAAC0005AAAC0005 /* AccountSwitcherSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAC0006AAAC0006AAAC0006 /* AccountSwitcherSheet.swift */; };
 		AE2E9CF09D254EB88B2560F0 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF6D48598792426F80A5D511 /* OnboardingView.swift */; };
 		B2B53A9B62034F82BF7C110D /* LearnerProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7313B768D707425B9C3DA9DA /* LearnerProfile.swift */; };
 		B4758C33858646B6A402E9E2 /* Sounds/elumi_roundclear.wav in Resources */ = {isa = PBXBuildFile; fileRef = 5F6AA0B1D09C4B26B5544537 /* Sounds/elumi_roundclear.wav */; };
 		B88DDE296B824BCA8E9B5AA6 /* GamificationFeedbackPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71844DBDB0A8498D87F33E5B /* GamificationFeedbackPresenter.swift */; };
 		BBA6A1692A074A9BA79D994A /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F654EF57484ACA8C074FF2 /* ProfileStore.swift */; };
-		AAAC0001AAAC0001AAAC0001 /* AccountStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAC0002AAAC0002AAAC0002 /* AccountStore.swift */; };
-		AAAC0003AAAC0003AAAC0003 /* AccountOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAC0004AAAC0004AAAC0004 /* AccountOnboardingView.swift */; };
-		AAAC0005AAAC0005AAAC0005 /* AccountSwitcherSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAC0006AAAC0006AAAC0006 /* AccountSwitcherSheet.swift */; };
 		BFB7270E17924A98985159AE /* Sounds/elumi_scandone.wav in Resources */ = {isa = PBXBuildFile; fileRef = BAC62D87FEAD413F90BCE57C /* Sounds/elumi_scandone.wav */; };
 		BFBC9A0F8FA14ED791E9E103 /* Sounds/elumi_combo.wav in Resources */ = {isa = PBXBuildFile; fileRef = 777D26688D2246308F41248B /* Sounds/elumi_combo.wav */; };
 		C0F11A111A111A111A111111 /* GamificationConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1C01A111A111A111A111111 /* GamificationConfig.swift */; };
@@ -475,6 +452,54 @@
 		F9234FB8ED6A4B12B93A988E /* SessionSetupEstimate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832B8E6EB6D8482D957CF256 /* SessionSetupEstimate.swift */; };
 		FA00000000000000000000001 /* FrenchLinguisticAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA00000000000000000000002 /* FrenchLinguisticAnalysis.swift */; };
 		FDAE5763D9AB4A198F799CCB /* Sounds/elumi_snackcatch.wav in Resources */ = {isa = PBXBuildFile; fileRef = 985C1E62789347B8A53B860F /* Sounds/elumi_snackcatch.wav */; };
+		FE1234567890123456789001 /* WordRunnerGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789002 /* WordRunnerGame.swift */; };
+		FE1234567890123456789011 /* WordRunnerMusicPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789012 /* WordRunnerMusicPlayer.swift */; };
+		FE1234567890123456789021 /* Sounds/runner_theme_01.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789022 /* Sounds/runner_theme_01.mp3 */; };
+		FE1234567890123456789031 /* Sounds/runner_theme_02.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789032 /* Sounds/runner_theme_02.mp3 */; };
+		FE1234567890123456789041 /* ArcadeMusicPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789042 /* ArcadeMusicPlayer.swift */; };
+		FE1234567890123456789051 /* Sounds/arcade_theme_01.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789052 /* Sounds/arcade_theme_01.mp3 */; };
+		FE1234567890123456789061 /* Sounds/arcade_theme_02.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789062 /* Sounds/arcade_theme_02.mp3 */; };
+		FE1234567890123456789071 /* Sounds/fish_theme_01.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789072 /* Sounds/fish_theme_01.mp3 */; };
+		FE1234567890123456789081 /* MusicCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789082 /* MusicCatalog.swift */; };
+		FE1234567890123456789091 /* TrophyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789092 /* TrophyView.swift */; };
+		FE12345678901234567890A1 /* AppIconRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890A2 /* AppIconRegistry.swift */; };
+		FE12345678901234567890B1 /* ScanTuning.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890B2 /* ScanTuning.swift */; };
+		FE12345678901234567890BA /* HomeHeroLearningSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890BB /* HomeHeroLearningSection.swift */; };
+		FE12345678901234567890C1 /* WordRunnerGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890C2 /* WordRunnerGameView.swift */; };
+		FE12345678901234567890CA /* HomeMoreExercisesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890CB /* HomeMoreExercisesSection.swift */; };
+		FE12345678901234567890D1 /* WordRunnerModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890D2 /* WordRunnerModels.swift */; };
+		FE12345678901234567890DA /* HomeToolsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890DB /* HomeToolsSection.swift */; };
+		FE12345678901234567890E1 /* WordRunnerTaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890E2 /* WordRunnerTaskProvider.swift */; };
+		FE12345678901234567890E3 /* ElumiTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890E4 /* ElumiTabView.swift */; };
+		FE12345678901234567890E5 /* PersonalDeck.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890E6 /* PersonalDeck.swift */; };
+		FE12345678901234567890E7 /* PersonalDeckStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890E8 /* PersonalDeckStore.swift */; };
+		FE12345678901234567890E9 /* PersonalDeckSlotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890EA /* PersonalDeckSlotView.swift */; };
+		FE12345678901234567890EB /* CreatePersonalDeckSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890EC /* CreatePersonalDeckSheet.swift */; };
+		FE12345678901234567890ED /* FlashcardsView+PersonalDeck.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890EE /* FlashcardsView+PersonalDeck.swift */; };
+		FE12345678901234567890F1 /* WordRunnerSpawner.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890F2 /* WordRunnerSpawner.swift */; };
+		FE12345678901234567890FA /* LiveListRunnerTaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890FB /* LiveListRunnerTaskProvider.swift */; };
+		FE1234567890123456789100 /* TrainingGeneratorModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789101 /* TrainingGeneratorModels.swift */; };
+		FE1234567890123456789102 /* TrainingGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789103 /* TrainingGenerator.swift */; };
+		FE1234567890123456789104 /* TrainingGeneratorStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789105 /* TrainingGeneratorStore.swift */; };
+		FE1234567890123456789106 /* TrainingGeneratorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789107 /* TrainingGeneratorView.swift */; };
+		FE1234567890123456789108 /* TrainingGeneratorShuffleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789109 /* TrainingGeneratorShuffleView.swift */; };
+		FE1234567890123456789110 /* VoiceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789111 /* VoiceModels.swift */; };
+		FE1234567890123456789112 /* SpeechVoiceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789113 /* SpeechVoiceService.swift */; };
+		FE1234567890123456789114 /* VoiceSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789115 /* VoiceSettingsStore.swift */; };
+		FE1234567890123456789116 /* VoiceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789117 /* VoiceSettingsView.swift */; };
+		FE1234567890123456789120 /* PersonalDecksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789121 /* PersonalDecksView.swift */; };
+		FE1234567890123456789122 /* TrainingGeneratorSlotMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789123 /* TrainingGeneratorSlotMachine.swift */; };
+		FE12345678901234567891AA /* WordRunnerSFXPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567891AB /* WordRunnerSFXPlayer.swift */; };
+		FE12345678901234567891BA /* sfx_lane.wav in Resources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567891BB /* sfx_lane.wav */; };
+		FE12345678901234567891CA /* sfx_correct.wav in Resources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567891CB /* sfx_correct.wav */; };
+		FE12345678901234567891DA /* sfx_wrong.wav in Resources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567891DB /* sfx_wrong.wav */; };
+		FE12345678901234567891EA /* sfx_life_loss.wav in Resources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567891EB /* sfx_life_loss.wav */; };
+		FE12345678901234567891FA /* sfx_pickup.wav in Resources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567891FB /* sfx_pickup.wav */; };
+		FE12345678901234567892AA /* sfx_boost.wav in Resources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567892AB /* sfx_boost.wav */; };
+		FE12345678901234567893AA /* GameStartScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567893AB /* GameStartScreen.swift */; };
+		FE12345678901234567893BA /* GameSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567893BB /* GameSummaryView.swift */; };
+		FE12345678901234567893CA /* WordRunnerListPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567893CB /* WordRunnerListPickerSheet.swift */; };
+		FE12345678901234567893DA /* AppMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567893DB /* AppMotion.swift */; };
 		FEDEA1000000000000000001 /* FreierTextModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA1000000000000000002 /* FreierTextModels.swift */; };
 		FEDEA1000000000000000003 /* FreierTextClaudeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA1000000000000000004 /* FreierTextClaudeClient.swift */; };
 		FEDEA1000000000000000005 /* FreierTextEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA1000000000000000006 /* FreierTextEntryView.swift */; };
@@ -517,7 +542,22 @@
 		FEDEA20300000000000030001 /* ArcadeSFX.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20300000000000030002 /* ArcadeSFX.swift */; };
 		FEDEA20300000000000031001 /* GermanAbbreviationExpander.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20300000000000031002 /* GermanAbbreviationExpander.swift */; };
 		FEDEA20300000000000032001 /* ArcadePowerUpRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20300000000000032002 /* ArcadePowerUpRuntime.swift */; };
+		FEDEA20400000000000026001 /* PhraseNounCapitalizationMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20400000000000026002 /* PhraseNounCapitalizationMigration.swift */; };
+		FEDEA20500000000000027001 /* SlotMachineDropRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20500000000000027002 /* SlotMachineDropRate.swift */; };
+		FEDEA20600000000000028001 /* VocabularyKnownBadEntriesMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20600000000000028002 /* VocabularyKnownBadEntriesMigration.swift */; };
+		FEDEA20700000000000029001 /* FrenchGenderHeuristicRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20700000000000029002 /* FrenchGenderHeuristicRules.swift */; };
+		FEDEA20800000000000030001 /* FrenchGenderResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20800000000000030002 /* FrenchGenderResolver.swift */; };
+		FEDEA20900000000000031001 /* VocabularyListMergePlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20900000000000031002 /* VocabularyListMergePlan.swift */; };
 		FEDEA210000000000000011 /* AccentsSessionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA210000000000000012 /* AccentsSessionHeader.swift */; };
+		FEDEA21000000000000032001 /* ImportTargetChoiceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA21000000000000032002 /* ImportTargetChoiceSheet.swift */; };
+		FEDEA21100000000000033001 /* ExistingListPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA21100000000000033002 /* ExistingListPickerSheet.swift */; };
+		FEDEA21200000000000034001 /* ScanImportConflictReviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA21200000000000034002 /* ScanImportConflictReviewSheet.swift */; };
+		FEDEA21300000000000035001 /* CapturedScanItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA21300000000000035002 /* CapturedScanItem.swift */; };
+		FEDEA21400000000000036001 /* MultiCaptureReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA21400000000000036002 /* MultiCaptureReviewView.swift */; };
+		FEDEA21500000000000037001 /* NewListNameSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA21500000000000037002 /* NewListNameSheet.swift */; };
+		FEDEA21600000000000038001 /* GalleryReviewItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA21600000000000038002 /* GalleryReviewItem.swift */; };
+		FEDEA21700000000000039001 /* GalleryMultiImageReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA21700000000000039002 /* GalleryMultiImageReviewView.swift */; };
+		FEDEA21800000000000040001 /* ScanMetaMarkerExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA21800000000000040002 /* ScanMetaMarkerExtractor.swift */; };
 		FEDEA22000000000000001A1 /* AccentAdaptiveStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA22000000000000001A2 /* AccentAdaptiveStore.swift */; };
 		PB00000000000000000000001 /* POSBreakdownComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = PB00000000000000000000002 /* POSBreakdownComponents.swift */; };
 		TC00000000000000000000001 /* TextCasingRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = TC00000000000000000000002 /* TextCasingRules.swift */; };
@@ -536,9 +576,6 @@
 		2E74EDA8D2904AA7A3E9F688 /* Sounds/elumi_slowmostart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_slowmostart.wav; sourceTree = "<group>"; };
 		32C43DE8F494458D929C4AE1 /* Sounds/elumi_toggle.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_toggle.wav; sourceTree = "<group>"; };
 		35F654EF57484ACA8C074FF2 /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileStore.swift; path = FRDEVocabMVP/ProfileStore.swift; sourceTree = "<group>"; };
-		AAAC0002AAAC0002AAAC0002 /* AccountStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountStore.swift; path = FRDEVocabMVP/AccountStore.swift; sourceTree = "<group>"; };
-		AAAC0004AAAC0004AAAC0004 /* AccountOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountOnboardingView.swift; path = FRDEVocabMVP/AccountOnboardingView.swift; sourceTree = "<group>"; };
-		AAAC0006AAAC0006AAAC0006 /* AccountSwitcherSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountSwitcherSheet.swift; path = FRDEVocabMVP/AccountSwitcherSheet.swift; sourceTree = "<group>"; };
 		3A58F580B36740F78ED60FD0 /* Personalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Personalization.swift; path = FRDEVocabMVP/Personalization.swift; sourceTree = "<group>"; };
 		3AF0AA02FEF444D2BD481B5B /* GameHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GameHubView.swift; path = FRDEVocabMVP/GameHubView.swift; sourceTree = "<group>"; };
 		3C6021AB9E4ED9043B2F3F7F /* LanguageDirectionSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LanguageDirectionSwitch.swift; path = FRDEVocabMVP/LanguageDirectionSwitch.swift; sourceTree = "<group>"; };
@@ -913,6 +950,10 @@
 		A00000000000000000000767 /* FlashcardsSessionController+AnswerFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsSessionController+AnswerFlow.swift"; sourceTree = "<group>"; };
 		A00000000000000000000769 /* FlashcardsView+PromptResponseComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsView+PromptResponseComponents.swift"; sourceTree = "<group>"; };
 		A00000000000000000000771 /* FlashcardsView+InputActionComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsView+InputActionComponents.swift"; sourceTree = "<group>"; };
+		A00000000000000000000773 /* ElumiCreditsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElumiCreditsStore.swift; sourceTree = "<group>"; };
+		A00000000000000000000775 /* ElumiArcadeGameView+PlayCredits.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ElumiArcadeGameView+PlayCredits.swift"; sourceTree = "<group>"; };
+		A00000000000000000000777 /* GermanNounCapitalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GermanNounCapitalization.swift; sourceTree = "<group>"; };
+		A00000000000000000000779 /* VocabularyListSelectionResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyListSelectionResolver.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyStatsStore.swift; path = FRDEVocabMVP/DailyStatsStore.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0E01 /* ItemLearningStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatus.swift; path = FRDEVocabMVP/ItemLearningStatus.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0E03 /* ItemLearningStatusStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatusStore.swift; path = FRDEVocabMVP/ItemLearningStatusStore.swift; sourceTree = "<group>"; };
@@ -920,33 +961,6 @@
 		A1B2C3D4E5F60708090A0E07 /* HomeLernstatusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeLernstatusCard.swift; path = FRDEVocabMVP/HomeLernstatusCard.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0E09 /* LernstatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LernstatusView.swift; path = FRDEVocabMVP/LernstatusView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708091C0D02 /* AppIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppIcons.swift; path = FRDEVocabMVP/AppIcons.swift; sourceTree = "<group>"; };
-		FE12345678901234567890A2 /* AppIconRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppIconRegistry.swift; path = FRDEVocabMVP/AppIconRegistry.swift; sourceTree = "<group>"; };
-		FE12345678901234567890B2 /* ScanTuning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanTuning.swift; path = FRDEVocabMVP/ScanTuning.swift; sourceTree = "<group>"; };
-		FE12345678901234567890C2 /* WordRunnerGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerGameView.swift; path = FRDEVocabMVP/WordRunnerGameView.swift; sourceTree = "<group>"; };
-		FE12345678901234567890D2 /* WordRunnerModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerModels.swift; path = FRDEVocabMVP/WordRunnerModels.swift; sourceTree = "<group>"; };
-		FE12345678901234567890E2 /* WordRunnerTaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerTaskProvider.swift; path = FRDEVocabMVP/WordRunnerTaskProvider.swift; sourceTree = "<group>"; };
-		FE12345678901234567890F2 /* WordRunnerSpawner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerSpawner.swift; path = FRDEVocabMVP/WordRunnerSpawner.swift; sourceTree = "<group>"; };
-		FE1234567890123456789002 /* WordRunnerGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerGame.swift; path = FRDEVocabMVP/WordRunnerGame.swift; sourceTree = "<group>"; };
-		FE1234567890123456789012 /* WordRunnerMusicPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerMusicPlayer.swift; path = FRDEVocabMVP/WordRunnerMusicPlayer.swift; sourceTree = "<group>"; };
-		FE1234567890123456789022 /* Sounds/runner_theme_01.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/runner_theme_01.mp3; sourceTree = "<group>"; };
-		FE1234567890123456789032 /* Sounds/runner_theme_02.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/runner_theme_02.mp3; sourceTree = "<group>"; };
-		FE1234567890123456789042 /* ArcadeMusicPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArcadeMusicPlayer.swift; path = FRDEVocabMVP/ArcadeMusicPlayer.swift; sourceTree = "<group>"; };
-		FE1234567890123456789052 /* Sounds/arcade_theme_01.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/arcade_theme_01.mp3; sourceTree = "<group>"; };
-		FE1234567890123456789062 /* Sounds/arcade_theme_02.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/arcade_theme_02.mp3; sourceTree = "<group>"; };
-		FE1234567890123456789072 /* Sounds/fish_theme_01.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/fish_theme_01.mp3; sourceTree = "<group>"; };
-		FE1234567890123456789082 /* MusicCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MusicCatalog.swift; path = FRDEVocabMVP/MusicCatalog.swift; sourceTree = "<group>"; };
-		FE1234567890123456789092 /* TrophyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrophyView.swift; path = FRDEVocabMVP/TrophyView.swift; sourceTree = "<group>"; };
-		FE12345678901234567890BB /* HomeHeroLearningSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeHeroLearningSection.swift; path = FRDEVocabMVP/HomeHeroLearningSection.swift; sourceTree = "<group>"; };
-		FE12345678901234567890CB /* HomeMoreExercisesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeMoreExercisesSection.swift; path = FRDEVocabMVP/HomeMoreExercisesSection.swift; sourceTree = "<group>"; };
-		FE12345678901234567890DB /* HomeToolsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeToolsSection.swift; path = FRDEVocabMVP/HomeToolsSection.swift; sourceTree = "<group>"; };
-		FE12345678901234567890FB /* LiveListRunnerTaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LiveListRunnerTaskProvider.swift; path = FRDEVocabMVP/LiveListRunnerTaskProvider.swift; sourceTree = "<group>"; };
-		FE12345678901234567891AB /* WordRunnerSFXPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerSFXPlayer.swift; path = FRDEVocabMVP/WordRunnerSFXPlayer.swift; sourceTree = "<group>"; };
-		FE12345678901234567891BB /* Sounds/sfx/sfx_lane.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_lane.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_lane.wav; sourceTree = SOURCE_ROOT; };
-		FE12345678901234567891CB /* Sounds/sfx/sfx_correct.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_correct.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_correct.wav; sourceTree = SOURCE_ROOT; };
-		FE12345678901234567891DB /* Sounds/sfx/sfx_wrong.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_wrong.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_wrong.wav; sourceTree = SOURCE_ROOT; };
-		FE12345678901234567891EB /* Sounds/sfx/sfx_life_loss.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_life_loss.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_life_loss.wav; sourceTree = SOURCE_ROOT; };
-		FE12345678901234567891FB /* Sounds/sfx/sfx_pickup.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_pickup.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_pickup.wav; sourceTree = SOURCE_ROOT; };
-		FE12345678901234567892AB /* Sounds/sfx/sfx_boost.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_boost.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_boost.wav; sourceTree = SOURCE_ROOT; };
 		A1B2C3D4E5F60708091C0D04 /* DebugResetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DebugResetService.swift; path = FRDEVocabMVP/DebugResetService.swift; sourceTree = "<group>"; };
 		A2097A8DB27E4BDC957255A8 /* Sounds/elumi_highscore.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_highscore.wav; sourceTree = "<group>"; };
 		AA11BB22CC33DD44EE55FF67 /* SessionStreak.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStreak.swift; sourceTree = "<group>"; };
@@ -962,6 +976,9 @@
 		AA11BB22CC33DD44EE55FF81 /* SpeedRoundTimerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedRoundTimerCard.swift; sourceTree = "<group>"; };
 		AA11BB22CC33DD44EE55FF83 /* GameStateResetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStateResetService.swift; sourceTree = "<group>"; };
 		AA11BB22CC33DD44EE55FF85 /* LevelProgression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelProgression.swift; sourceTree = "<group>"; };
+		AAAC0002AAAC0002AAAC0002 /* AccountStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountStore.swift; path = FRDEVocabMVP/AccountStore.swift; sourceTree = "<group>"; };
+		AAAC0004AAAC0004AAAC0004 /* AccountOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountOnboardingView.swift; path = FRDEVocabMVP/AccountOnboardingView.swift; sourceTree = "<group>"; };
+		AAAC0006AAAC0006AAAC0006 /* AccountSwitcherSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountSwitcherSheet.swift; path = FRDEVocabMVP/AccountSwitcherSheet.swift; sourceTree = "<group>"; };
 		B10CDA22DCE1454195172B47 /* FRDEVocabMVP/ListCategoryPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FRDEVocabMVP/ListCategoryPickerView.swift; sourceTree = SOURCE_ROOT; };
 		B2D8AABD1A084A80A03C7C97 /* DailyChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyChallenge.swift; path = FRDEVocabMVP/DailyChallenge.swift; sourceTree = "<group>"; };
 		B72C571C840B4169A98D8ABA /* ScanChoiceCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanChoiceCard.swift; path = FRDEVocabMVP/ScanChoiceCard.swift; sourceTree = "<group>"; };
@@ -997,6 +1014,54 @@
 		F5C01A111A111A111A111111 /* SessionSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionSummaryView.swift; sourceTree = "<group>"; };
 		F9E9A871DD9141F488C32488 /* Sounds/elumi_saugstart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_saugstart.wav; sourceTree = "<group>"; };
 		FA00000000000000000000002 /* FrenchLinguisticAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrenchLinguisticAnalysis.swift; sourceTree = "<group>"; };
+		FE1234567890123456789002 /* WordRunnerGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerGame.swift; path = FRDEVocabMVP/WordRunnerGame.swift; sourceTree = "<group>"; };
+		FE1234567890123456789012 /* WordRunnerMusicPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerMusicPlayer.swift; path = FRDEVocabMVP/WordRunnerMusicPlayer.swift; sourceTree = "<group>"; };
+		FE1234567890123456789022 /* Sounds/runner_theme_01.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/runner_theme_01.mp3; sourceTree = "<group>"; };
+		FE1234567890123456789032 /* Sounds/runner_theme_02.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/runner_theme_02.mp3; sourceTree = "<group>"; };
+		FE1234567890123456789042 /* ArcadeMusicPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArcadeMusicPlayer.swift; path = FRDEVocabMVP/ArcadeMusicPlayer.swift; sourceTree = "<group>"; };
+		FE1234567890123456789052 /* Sounds/arcade_theme_01.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/arcade_theme_01.mp3; sourceTree = "<group>"; };
+		FE1234567890123456789062 /* Sounds/arcade_theme_02.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/arcade_theme_02.mp3; sourceTree = "<group>"; };
+		FE1234567890123456789072 /* Sounds/fish_theme_01.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/fish_theme_01.mp3; sourceTree = "<group>"; };
+		FE1234567890123456789082 /* MusicCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MusicCatalog.swift; path = FRDEVocabMVP/MusicCatalog.swift; sourceTree = "<group>"; };
+		FE1234567890123456789092 /* TrophyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrophyView.swift; path = FRDEVocabMVP/TrophyView.swift; sourceTree = "<group>"; };
+		FE12345678901234567890A2 /* AppIconRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppIconRegistry.swift; path = FRDEVocabMVP/AppIconRegistry.swift; sourceTree = "<group>"; };
+		FE12345678901234567890B2 /* ScanTuning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanTuning.swift; path = FRDEVocabMVP/ScanTuning.swift; sourceTree = "<group>"; };
+		FE12345678901234567890BB /* HomeHeroLearningSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeHeroLearningSection.swift; path = FRDEVocabMVP/HomeHeroLearningSection.swift; sourceTree = "<group>"; };
+		FE12345678901234567890C2 /* WordRunnerGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerGameView.swift; path = FRDEVocabMVP/WordRunnerGameView.swift; sourceTree = "<group>"; };
+		FE12345678901234567890CB /* HomeMoreExercisesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeMoreExercisesSection.swift; path = FRDEVocabMVP/HomeMoreExercisesSection.swift; sourceTree = "<group>"; };
+		FE12345678901234567890D2 /* WordRunnerModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerModels.swift; path = FRDEVocabMVP/WordRunnerModels.swift; sourceTree = "<group>"; };
+		FE12345678901234567890DB /* HomeToolsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeToolsSection.swift; path = FRDEVocabMVP/HomeToolsSection.swift; sourceTree = "<group>"; };
+		FE12345678901234567890E2 /* WordRunnerTaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerTaskProvider.swift; path = FRDEVocabMVP/WordRunnerTaskProvider.swift; sourceTree = "<group>"; };
+		FE12345678901234567890E4 /* ElumiTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElumiTabView.swift; path = FRDEVocabMVP/ElumiTabView.swift; sourceTree = "<group>"; };
+		FE12345678901234567890E6 /* PersonalDeck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PersonalDeck.swift; path = FRDEVocabMVP/PersonalDeck.swift; sourceTree = "<group>"; };
+		FE12345678901234567890E8 /* PersonalDeckStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PersonalDeckStore.swift; path = FRDEVocabMVP/PersonalDeckStore.swift; sourceTree = "<group>"; };
+		FE12345678901234567890EA /* PersonalDeckSlotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PersonalDeckSlotView.swift; path = FRDEVocabMVP/PersonalDeckSlotView.swift; sourceTree = "<group>"; };
+		FE12345678901234567890EC /* CreatePersonalDeckSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CreatePersonalDeckSheet.swift; path = FRDEVocabMVP/CreatePersonalDeckSheet.swift; sourceTree = "<group>"; };
+		FE12345678901234567890EE /* FlashcardsView+PersonalDeck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FlashcardsView+PersonalDeck.swift"; path = "FRDEVocabMVP/FlashcardsView+PersonalDeck.swift"; sourceTree = "<group>"; };
+		FE12345678901234567890F2 /* WordRunnerSpawner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerSpawner.swift; path = FRDEVocabMVP/WordRunnerSpawner.swift; sourceTree = "<group>"; };
+		FE12345678901234567890FB /* LiveListRunnerTaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LiveListRunnerTaskProvider.swift; path = FRDEVocabMVP/LiveListRunnerTaskProvider.swift; sourceTree = "<group>"; };
+		FE1234567890123456789101 /* TrainingGeneratorModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGeneratorModels.swift; path = FRDEVocabMVP/TrainingGeneratorModels.swift; sourceTree = "<group>"; };
+		FE1234567890123456789103 /* TrainingGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGenerator.swift; path = FRDEVocabMVP/TrainingGenerator.swift; sourceTree = "<group>"; };
+		FE1234567890123456789105 /* TrainingGeneratorStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGeneratorStore.swift; path = FRDEVocabMVP/TrainingGeneratorStore.swift; sourceTree = "<group>"; };
+		FE1234567890123456789107 /* TrainingGeneratorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGeneratorView.swift; path = FRDEVocabMVP/TrainingGeneratorView.swift; sourceTree = "<group>"; };
+		FE1234567890123456789109 /* TrainingGeneratorShuffleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGeneratorShuffleView.swift; path = FRDEVocabMVP/TrainingGeneratorShuffleView.swift; sourceTree = "<group>"; };
+		FE1234567890123456789111 /* VoiceModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VoiceModels.swift; path = FRDEVocabMVP/VoiceModels.swift; sourceTree = "<group>"; };
+		FE1234567890123456789113 /* SpeechVoiceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SpeechVoiceService.swift; path = FRDEVocabMVP/SpeechVoiceService.swift; sourceTree = "<group>"; };
+		FE1234567890123456789115 /* VoiceSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VoiceSettingsStore.swift; path = FRDEVocabMVP/VoiceSettingsStore.swift; sourceTree = "<group>"; };
+		FE1234567890123456789117 /* VoiceSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VoiceSettingsView.swift; path = FRDEVocabMVP/VoiceSettingsView.swift; sourceTree = "<group>"; };
+		FE1234567890123456789121 /* PersonalDecksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PersonalDecksView.swift; path = FRDEVocabMVP/PersonalDecksView.swift; sourceTree = "<group>"; };
+		FE1234567890123456789123 /* TrainingGeneratorSlotMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGeneratorSlotMachine.swift; path = FRDEVocabMVP/TrainingGeneratorSlotMachine.swift; sourceTree = "<group>"; };
+		FE12345678901234567891AB /* WordRunnerSFXPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerSFXPlayer.swift; path = FRDEVocabMVP/WordRunnerSFXPlayer.swift; sourceTree = "<group>"; };
+		FE12345678901234567891BB /* sfx_lane.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_lane.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_lane.wav; sourceTree = SOURCE_ROOT; };
+		FE12345678901234567891CB /* sfx_correct.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_correct.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_correct.wav; sourceTree = SOURCE_ROOT; };
+		FE12345678901234567891DB /* sfx_wrong.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_wrong.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_wrong.wav; sourceTree = SOURCE_ROOT; };
+		FE12345678901234567891EB /* sfx_life_loss.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_life_loss.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_life_loss.wav; sourceTree = SOURCE_ROOT; };
+		FE12345678901234567891FB /* sfx_pickup.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_pickup.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_pickup.wav; sourceTree = SOURCE_ROOT; };
+		FE12345678901234567892AB /* sfx_boost.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_boost.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_boost.wav; sourceTree = SOURCE_ROOT; };
+		FE12345678901234567893AB /* GameStartScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GameStartScreen.swift; path = FRDEVocabMVP/GameStartScreen.swift; sourceTree = "<group>"; };
+		FE12345678901234567893BB /* GameSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GameSummaryView.swift; path = FRDEVocabMVP/GameSummaryView.swift; sourceTree = "<group>"; };
+		FE12345678901234567893CB /* WordRunnerListPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerListPickerSheet.swift; path = FRDEVocabMVP/WordRunnerListPickerSheet.swift; sourceTree = "<group>"; };
+		FE12345678901234567893DB /* AppMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppMotion.swift; path = FRDEVocabMVP/AppMotion.swift; sourceTree = "<group>"; };
 		FEDEA1000000000000000002 /* FreierTextModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreierTextModels.swift; sourceTree = "<group>"; };
 		FEDEA1000000000000000004 /* FreierTextClaudeClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreierTextClaudeClient.swift; sourceTree = "<group>"; };
 		FEDEA1000000000000000006 /* FreierTextEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreierTextEntryView.swift; sourceTree = "<group>"; };
@@ -1039,7 +1104,22 @@
 		FEDEA20300000000000030002 /* ArcadeSFX.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadeSFX.swift; sourceTree = "<group>"; };
 		FEDEA20300000000000031002 /* GermanAbbreviationExpander.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GermanAbbreviationExpander.swift; sourceTree = "<group>"; };
 		FEDEA20300000000000032002 /* ArcadePowerUpRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadePowerUpRuntime.swift; sourceTree = "<group>"; };
+		FEDEA20400000000000026002 /* PhraseNounCapitalizationMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhraseNounCapitalizationMigration.swift; sourceTree = "<group>"; };
+		FEDEA20500000000000027002 /* SlotMachineDropRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlotMachineDropRate.swift; sourceTree = "<group>"; };
+		FEDEA20600000000000028002 /* VocabularyKnownBadEntriesMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyKnownBadEntriesMigration.swift; sourceTree = "<group>"; };
+		FEDEA20700000000000029002 /* FrenchGenderHeuristicRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrenchGenderHeuristicRules.swift; sourceTree = "<group>"; };
+		FEDEA20800000000000030002 /* FrenchGenderResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrenchGenderResolver.swift; sourceTree = "<group>"; };
+		FEDEA20900000000000031002 /* VocabularyListMergePlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyListMergePlan.swift; sourceTree = "<group>"; };
 		FEDEA210000000000000012 /* AccentsSessionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentsSessionHeader.swift; sourceTree = "<group>"; };
+		FEDEA21000000000000032002 /* ImportTargetChoiceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportTargetChoiceSheet.swift; sourceTree = "<group>"; };
+		FEDEA21100000000000033002 /* ExistingListPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExistingListPickerSheet.swift; sourceTree = "<group>"; };
+		FEDEA21200000000000034002 /* ScanImportConflictReviewSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanImportConflictReviewSheet.swift; sourceTree = "<group>"; };
+		FEDEA21300000000000035002 /* CapturedScanItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturedScanItem.swift; sourceTree = "<group>"; };
+		FEDEA21400000000000036002 /* MultiCaptureReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiCaptureReviewView.swift; sourceTree = "<group>"; };
+		FEDEA21500000000000037002 /* NewListNameSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewListNameSheet.swift; sourceTree = "<group>"; };
+		FEDEA21600000000000038002 /* GalleryReviewItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryReviewItem.swift; sourceTree = "<group>"; };
+		FEDEA21700000000000039002 /* GalleryMultiImageReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryMultiImageReviewView.swift; sourceTree = "<group>"; };
+		FEDEA21800000000000040002 /* ScanMetaMarkerExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanMetaMarkerExtractor.swift; sourceTree = "<group>"; };
 		FEDEA22000000000000001A2 /* AccentAdaptiveStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentAdaptiveStore.swift; sourceTree = "<group>"; };
 		PB00000000000000000000002 /* POSBreakdownComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = POSBreakdownComponents.swift; sourceTree = "<group>"; };
 		TC00000000000000000000002 /* TextCasingRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextCasingRules.swift; sourceTree = "<group>"; };
@@ -1087,17 +1167,38 @@
 				FE1234567890123456789042 /* ArcadeMusicPlayer.swift */,
 				FE1234567890123456789082 /* MusicCatalog.swift */,
 				FE1234567890123456789092 /* TrophyView.swift */,
+				FE12345678901234567890E4 /* ElumiTabView.swift */,
+				FE12345678901234567890E6 /* PersonalDeck.swift */,
+				FE12345678901234567890E8 /* PersonalDeckStore.swift */,
+				FE12345678901234567890EA /* PersonalDeckSlotView.swift */,
+				FE12345678901234567890EC /* CreatePersonalDeckSheet.swift */,
+				FE12345678901234567890EE /* FlashcardsView+PersonalDeck.swift */,
+				FE1234567890123456789101 /* TrainingGeneratorModels.swift */,
+				FE1234567890123456789103 /* TrainingGenerator.swift */,
+				FE1234567890123456789105 /* TrainingGeneratorStore.swift */,
+				FE1234567890123456789107 /* TrainingGeneratorView.swift */,
+				FE1234567890123456789109 /* TrainingGeneratorShuffleView.swift */,
+				FE1234567890123456789111 /* VoiceModels.swift */,
+				FE1234567890123456789113 /* SpeechVoiceService.swift */,
+				FE1234567890123456789115 /* VoiceSettingsStore.swift */,
+				FE1234567890123456789117 /* VoiceSettingsView.swift */,
+				FE1234567890123456789121 /* PersonalDecksView.swift */,
+				FE1234567890123456789123 /* TrainingGeneratorSlotMachine.swift */,
 				FE12345678901234567890BB /* HomeHeroLearningSection.swift */,
 				FE12345678901234567890CB /* HomeMoreExercisesSection.swift */,
 				FE12345678901234567890DB /* HomeToolsSection.swift */,
 				FE12345678901234567890FB /* LiveListRunnerTaskProvider.swift */,
 				FE12345678901234567891AB /* WordRunnerSFXPlayer.swift */,
-				FE12345678901234567891BB /* sfx/sfx_lane.wav */,
-				FE12345678901234567891CB /* sfx/sfx_correct.wav */,
-				FE12345678901234567891DB /* sfx/sfx_wrong.wav */,
-				FE12345678901234567891EB /* sfx/sfx_life_loss.wav */,
-				FE12345678901234567891FB /* sfx/sfx_pickup.wav */,
-				FE12345678901234567892AB /* sfx/sfx_boost.wav */,
+				FE12345678901234567893AB /* GameStartScreen.swift */,
+				FE12345678901234567893BB /* GameSummaryView.swift */,
+				FE12345678901234567893CB /* WordRunnerListPickerSheet.swift */,
+				FE12345678901234567893DB /* AppMotion.swift */,
+				FE12345678901234567891BB /* sfx_lane.wav */,
+				FE12345678901234567891CB /* sfx_correct.wav */,
+				FE12345678901234567891DB /* sfx_wrong.wav */,
+				FE12345678901234567891EB /* sfx_life_loss.wav */,
+				FE12345678901234567891FB /* sfx_pickup.wav */,
+				FE12345678901234567892AB /* sfx_boost.wav */,
 				A1B2C3D4E5F60708091C0D04 /* DebugResetService.swift */,
 				47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */,
 				C9545925434E4BCBA46071F1 /* SessionOptionsComponents.swift */,
@@ -1188,6 +1289,10 @@
 				A00000000000000000000377 /* AppBottomBarComponents.swift */,
 				A00000000000000000000379 /* ElumiFooterFeastButton.swift */,
 				A00000000000000000000231 /* ElumiArcadeViews.swift */,
+				A00000000000000000000773 /* ElumiCreditsStore.swift */,
+				A00000000000000000000775 /* ElumiArcadeGameView+PlayCredits.swift */,
+				A00000000000000000000777 /* GermanNounCapitalization.swift */,
+				A00000000000000000000779 /* VocabularyListSelectionResolver.swift */,
 				A00000000000000000000297 /* ElumiArcadeGameView+Layout.swift */,
 				A00000000000000000000299 /* ElumiArcadeGameView+Flow.swift */,
 				A00000000000000000000501 /* ElumiArcadeGameView+Motion.swift */,
@@ -1574,6 +1679,21 @@
 				FEDEA1C000000000001F002 /* ScanImageEnhancer.swift */,
 				FEDEA1D00000000000020002 /* ScanAIPostProcessor.swift */,
 				FEDEA1E00000000000021002 /* VocabularyListDualFormMigration.swift */,
+				FEDEA20400000000000026002 /* PhraseNounCapitalizationMigration.swift */,
+				FEDEA20500000000000027002 /* SlotMachineDropRate.swift */,
+				FEDEA20600000000000028002 /* VocabularyKnownBadEntriesMigration.swift */,
+				FEDEA20700000000000029002 /* FrenchGenderHeuristicRules.swift */,
+				FEDEA20800000000000030002 /* FrenchGenderResolver.swift */,
+				FEDEA20900000000000031002 /* VocabularyListMergePlan.swift */,
+				FEDEA21000000000000032002 /* ImportTargetChoiceSheet.swift */,
+				FEDEA21100000000000033002 /* ExistingListPickerSheet.swift */,
+				FEDEA21200000000000034002 /* ScanImportConflictReviewSheet.swift */,
+				FEDEA21300000000000035002 /* CapturedScanItem.swift */,
+				FEDEA21400000000000036002 /* MultiCaptureReviewView.swift */,
+				FEDEA21500000000000037002 /* NewListNameSheet.swift */,
+				FEDEA21600000000000038002 /* GalleryReviewItem.swift */,
+				FEDEA21700000000000039002 /* GalleryMultiImageReviewView.swift */,
+				FEDEA21800000000000040002 /* ScanMetaMarkerExtractor.swift */,
 				FEDEA1F00000000000022002 /* VocabDualFormSplitter.swift */,
 				FEDEA20100000000000023002 /* VocabDualFormMerger.swift */,
 				FEDEA20200000000000024002 /* VocabContextClassifier.swift */,
@@ -1707,12 +1827,12 @@
 				FE1234567890123456789051 /* Sounds/arcade_theme_01.mp3 in Resources */,
 				FE1234567890123456789061 /* Sounds/arcade_theme_02.mp3 in Resources */,
 				FE1234567890123456789071 /* Sounds/fish_theme_01.mp3 in Resources */,
-				FE12345678901234567891BA /* sfx/sfx_lane.wav in Resources */,
-				FE12345678901234567891CA /* sfx/sfx_correct.wav in Resources */,
-				FE12345678901234567891DA /* sfx/sfx_wrong.wav in Resources */,
-				FE12345678901234567891EA /* sfx/sfx_life_loss.wav in Resources */,
-				FE12345678901234567891FA /* sfx/sfx_pickup.wav in Resources */,
-				FE12345678901234567892AA /* sfx/sfx_boost.wav in Resources */,
+				FE12345678901234567891BA /* sfx_lane.wav in Resources */,
+				FE12345678901234567891CA /* sfx_correct.wav in Resources */,
+				FE12345678901234567891DA /* sfx_wrong.wav in Resources */,
+				FE12345678901234567891EA /* sfx_life_loss.wav in Resources */,
+				FE12345678901234567891FA /* sfx_pickup.wav in Resources */,
+				FE12345678901234567892AA /* sfx_boost.wav in Resources */,
 				4A2F5E28015042B8897FAD67 /* Sounds/elumi_stackcomplete.wav in Resources */,
 				0956E1BD7D8A4C2CA60FF949 /* Sounds/elumi_streak.wav in Resources */,
 				114BC2757EED4D78B9EFADEA /* Sounds/elumi_tabswitch.wav in Resources */,
@@ -1821,6 +1941,10 @@
 				A00000000000000000000378 /* ElumiFooterFeastButton.swift in Sources */,
 				A00000000000000000000380 /* UnderwaterRevealOverlay.swift in Sources */,
 				A00000000000000000000230 /* ElumiArcadeViews.swift in Sources */,
+				A00000000000000000000772 /* ElumiCreditsStore.swift in Sources */,
+				A00000000000000000000774 /* ElumiArcadeGameView+PlayCredits.swift in Sources */,
+				A00000000000000000000776 /* GermanNounCapitalization.swift in Sources */,
+				A00000000000000000000778 /* VocabularyListSelectionResolver.swift in Sources */,
 				A00000000000000000000296 /* ElumiArcadeGameView+Layout.swift in Sources */,
 				A00000000000000000000298 /* ElumiArcadeGameView+Flow.swift in Sources */,
 				A00000000000000000000500 /* ElumiArcadeGameView+Motion.swift in Sources */,
@@ -1978,11 +2102,32 @@
 				FE1234567890123456789041 /* ArcadeMusicPlayer.swift in Sources */,
 				FE1234567890123456789081 /* MusicCatalog.swift in Sources */,
 				FE1234567890123456789091 /* TrophyView.swift in Sources */,
+				FE12345678901234567890E3 /* ElumiTabView.swift in Sources */,
+				FE12345678901234567890E5 /* PersonalDeck.swift in Sources */,
+				FE12345678901234567890E7 /* PersonalDeckStore.swift in Sources */,
+				FE12345678901234567890E9 /* PersonalDeckSlotView.swift in Sources */,
+				FE12345678901234567890EB /* CreatePersonalDeckSheet.swift in Sources */,
+				FE12345678901234567890ED /* FlashcardsView+PersonalDeck.swift in Sources */,
+				FE1234567890123456789100 /* TrainingGeneratorModels.swift in Sources */,
+				FE1234567890123456789102 /* TrainingGenerator.swift in Sources */,
+				FE1234567890123456789104 /* TrainingGeneratorStore.swift in Sources */,
+				FE1234567890123456789106 /* TrainingGeneratorView.swift in Sources */,
+				FE1234567890123456789108 /* TrainingGeneratorShuffleView.swift in Sources */,
+				FE1234567890123456789110 /* VoiceModels.swift in Sources */,
+				FE1234567890123456789112 /* SpeechVoiceService.swift in Sources */,
+				FE1234567890123456789114 /* VoiceSettingsStore.swift in Sources */,
+				FE1234567890123456789116 /* VoiceSettingsView.swift in Sources */,
+				FE1234567890123456789120 /* PersonalDecksView.swift in Sources */,
+				FE1234567890123456789122 /* TrainingGeneratorSlotMachine.swift in Sources */,
 				FE12345678901234567890BA /* HomeHeroLearningSection.swift in Sources */,
 				FE12345678901234567890CA /* HomeMoreExercisesSection.swift in Sources */,
 				FE12345678901234567890DA /* HomeToolsSection.swift in Sources */,
 				FE12345678901234567890FA /* LiveListRunnerTaskProvider.swift in Sources */,
 				FE12345678901234567891AA /* WordRunnerSFXPlayer.swift in Sources */,
+				FE12345678901234567893AA /* GameStartScreen.swift in Sources */,
+				FE12345678901234567893BA /* GameSummaryView.swift in Sources */,
+				FE12345678901234567893CA /* WordRunnerListPickerSheet.swift in Sources */,
+				FE12345678901234567893DA /* AppMotion.swift in Sources */,
 				A1B2C3D4E5F60708091C0D03 /* DebugResetService.swift in Sources */,
 				D8F531550E0A4DF7B96CC21C /* SessionSetupScreen.swift in Sources */,
 				8641C62C7C85427FB59B365B /* SessionOptionsComponents.swift in Sources */,
@@ -2170,6 +2315,21 @@
 				FEDEA1C000000000001F001 /* ScanImageEnhancer.swift in Sources */,
 				FEDEA1D00000000000020001 /* ScanAIPostProcessor.swift in Sources */,
 				FEDEA1E00000000000021001 /* VocabularyListDualFormMigration.swift in Sources */,
+				FEDEA20400000000000026001 /* PhraseNounCapitalizationMigration.swift in Sources */,
+				FEDEA20500000000000027001 /* SlotMachineDropRate.swift in Sources */,
+				FEDEA20600000000000028001 /* VocabularyKnownBadEntriesMigration.swift in Sources */,
+				FEDEA20700000000000029001 /* FrenchGenderHeuristicRules.swift in Sources */,
+				FEDEA20800000000000030001 /* FrenchGenderResolver.swift in Sources */,
+				FEDEA20900000000000031001 /* VocabularyListMergePlan.swift in Sources */,
+				FEDEA21000000000000032001 /* ImportTargetChoiceSheet.swift in Sources */,
+				FEDEA21100000000000033001 /* ExistingListPickerSheet.swift in Sources */,
+				FEDEA21200000000000034001 /* ScanImportConflictReviewSheet.swift in Sources */,
+				FEDEA21300000000000035001 /* CapturedScanItem.swift in Sources */,
+				FEDEA21400000000000036001 /* MultiCaptureReviewView.swift in Sources */,
+				FEDEA21500000000000037001 /* NewListNameSheet.swift in Sources */,
+				FEDEA21600000000000038001 /* GalleryReviewItem.swift in Sources */,
+				FEDEA21700000000000039001 /* GalleryMultiImageReviewView.swift in Sources */,
+				FEDEA21800000000000040001 /* ScanMetaMarkerExtractor.swift in Sources */,
 				FEDEA1F00000000000022001 /* VocabDualFormSplitter.swift in Sources */,
 				FEDEA20100000000000023001 /* VocabDualFormMerger.swift in Sources */,
 				FEDEA20200000000000024001 /* VocabContextClassifier.swift in Sources */,
@@ -2213,9 +2373,12 @@
 				PRODUCT_NAME = myVoc;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -2242,9 +2405,12 @@
 				PRODUCT_NAME = myVoc;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};

@@ -56,7 +56,8 @@ private struct ScanSelectionButtonCard: View {
             x: 0,
             y: isSelected ? 8 : 0
         )
-        .animation(.easeInOut(duration: 0.18), value: isSelected)
+        // Phase 7.6 — systemweite Konstante statt ad-hoc-Wert.
+        .animation(AppMotion.state, value: isSelected)
     }
 }
 

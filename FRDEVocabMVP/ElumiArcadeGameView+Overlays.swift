@@ -215,65 +215,78 @@ extension ElumiArcadeGameView {
     // Regeln sind einklappbar und nehmen keine visuelle Priorität mehr.
     // Die Verbindung Lernen → Credits → Spiel wird explizit im Hero-Card
     // und (wenn leer) im Empty-State kommuniziert.
+    /// **Start-Overlay** (Phase 7.5 — Start-Flow-Unification +
+    /// Layout-Nach-Fix).
+    ///
+    /// Struktur (User-Spec):
+    ///   1. Icon
+    ///   2. Name
+    ///   3. Große Card (Credits)
+    ///   4. Spielregeln-Dropdown
+    ///   5. CTA
+    ///
+    /// **Entfallen**: Subline „Spiele und lerne" und der kleine
+    /// Info-Pill „1 Runde · 1 Credit". Der Credit-Preis steht schon
+    /// in der Credit-Card selbst („1 Runde kostet …").
     var startOverlay: some View {
-        ZStack {
-            Color.black.opacity(0.32)
-                .ignoresSafeArea()
-                .allowsHitTesting(false)
-
-            // Vertikale Zentrierung: ScrollView sitzt in einem VStack mit
-            // flexiblen Spacern — so bleibt das Card vertikal in der Mitte,
-            // selbst wenn die Regeln ausgeklappt werden. Bei sehr kleinen
-            // Geräten kann der User trotzdem scrollen, falls nötig.
-            GeometryReader { geo in
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 0) {
-                        Spacer(minLength: 0)
-
-                        VStack(spacing: 16) {
-                            ElumiArcadeCharacter(
-                                mouthOpen: false,
-                                scale: 1.04,
-                                rotation: 0,
-                                sparkleBurst: true
-                            )
-                            .frame(width: 64, height: 64)
-
-                            Text("Elumi Spiel")
-                                .font(.system(size: 28, weight: .black, design: .rounded))
-                                .foregroundStyle(AppTheme.Colors.textPrimary)
-
-                            startCreditHeroCard
-
-                            startCTASection
-
-                            startRulesDisclosure
-                        }
-                        .padding(.horizontal, 22)
-                        .padding(.vertical, 24)
-                        .frame(maxWidth: 340)
-                        .background(AppTheme.Colors.surface.opacity(0.96))
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .stroke(AppTheme.Colors.cta.opacity(0.22), lineWidth: 1)
-                        )
-                        .shadow(color: .black.opacity(0.28), radius: 22, x: 0, y: 12)
-                        .padding(.horizontal, 24)
-
-                        Spacer(minLength: 0)
-                    }
-                    .frame(minHeight: geo.size.height)
+        let hasCredits = arcadeCredits >= ArcadeCreditSystem.gamesCost
+        return GameStartScreen(
+            title: "Elumi Spiel",
+            subline: nil,
+            infoLine: nil,
+            primaryCTALabel: hasCredits ? "Spiel starten" : "Lernen starten",
+            primaryCTAIcon: hasCredits ? "play.fill" : "book.fill",
+            primaryCTAEnabled: true,
+            hint: hasCredits ? nil : "Lernen bringt Credits — dann wieder spielen",
+            onPrimaryCTA: {
+                if hasCredits {
+                    arcadeCredits -= ArcadeCreditSystem.gamesCost
+                    startGame()
+                } else {
+                    exitArcadeSilently()
+                    dismiss()
+                }
+            },
+            onBack: {
+                exitArcadeSilently()
+                dismiss()
+            },
+            icon: {
+                ElumiArcadeCharacter(
+                    mouthOpen: false,
+                    scale: 1.04,
+                    rotation: 0,
+                    sparkleBurst: true
+                )
+            },
+            extraContent: {
+                VStack(spacing: 14) {
+                    startCreditHeroCard
+                    startRulesDisclosure
                 }
             }
-        }
+        )
         .transition(.opacity)
+        // **Audio-Session-Warmup** (Phase 7.6 — User-Report
+        // „Elumi-Musik startet erst nach SFX-Trigger"): Session beim
+        // Erscheinen des Start-Overlays aktivieren, damit der
+        // Musik-Start beim Tap nicht den ersten Session-Setup
+        // abwarten muss. Sonst bleibt `player.play()` stumm, bis
+        // ein SFX-Event die Session vollends aktiviert.
+        .onAppear {
+            feedbackPlayer.sp.ensureAudioSession()
+        }
     }
 
     /// Credit-Hero: großer Credit-Wert + Verbindung zum Lernsystem.
     /// Icon bewusst `circle.hexagongrid.fill` (gleiche Sprache wie in der
     /// Home-Balanced-Bar), damit der User „Credits" über alle Screens
     /// mit demselben Symbol wiedererkennt.
+    ///
+    /// **Phase 7.5 Nachsatz** — Leben-Row unter „1 Runde kostet …":
+    /// dieselben Mini-Elumi-Icons, die während des Spiels oben rechts
+    /// den Leben-Stand anzeigen. Damit sieht der User schon vor dem
+    /// Start, wie viele Leben er pro Runde bekommt.
     var startCreditHeroCard: some View {
         let hasCredits = arcadeCredits >= ArcadeCreditSystem.gamesCost
         return VStack(spacing: 10) {
@@ -287,7 +300,7 @@ extension ElumiArcadeGameView {
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .monospacedDigit()
 
-                Text(arcadeCredits == 1 ? "Credit" : "Credits")
+                Text(arcadeCredits == 1 ? "Spiel" : "Spiele")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
@@ -297,11 +310,30 @@ extension ElumiArcadeGameView {
                     .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                 Text(hasCredits
-                    ? "1 Runde kostet \(ArcadeCreditSystem.gamesCost) Credit"
-                    : "Lernen bringt Credits — dann spielen")
+                    ? "1 Runde kostet \(ArcadeCreditSystem.gamesCost) Spiel"
+                    : "Lernen bringt Spiele — dann spielen")
                     .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
+
+            // Leben-Row (Phase 7.5) — 4 Mini-Elumis analog zum HUD
+            // oben rechts während des Spielens. „4 Leben"-Label +
+            // Icon-Zeile, damit der Spieler weiß, was ihn erwartet.
+            HStack(spacing: 8) {
+                Text("\(ElumiArcadeGameView.maxMisses) Leben")
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                HStack(spacing: 3) {
+                    ForEach(0..<ElumiArcadeGameView.maxMisses, id: \.self) { _ in
+                        Image("SplashCharacter")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                            .clipShape(Circle())
+                    }
+                }
+            }
+            .padding(.top, 2)
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 14)
@@ -319,50 +351,18 @@ extension ElumiArcadeGameView {
         )
     }
 
-    /// CTA-Sektion: Haupt-Button „Spiel starten" (hat Credits) oder
-    /// „Lernen starten" (keine Credits → führt zurück zum Home).
-    var startCTASection: some View {
-        let hasCredits = arcadeCredits >= ArcadeCreditSystem.gamesCost
-        return VStack(spacing: 0) {
-            if hasCredits {
-                Button {
-                    arcadeCredits -= ArcadeCreditSystem.gamesCost
-                    startGame()
-                } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: "play.fill")
-                            .font(.system(size: 16, weight: .bold))
-                        Text("Spiel starten")
-                            .font(AppTheme.Typography.button)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: 52)
-                }
-                .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-            } else {
-                Button {
-                    exitArcadeSilently()
-                    dismiss()
-                } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: "book.fill")
-                            .font(.system(size: 15, weight: .bold))
-                        Text("Lernen starten")
-                            .font(AppTheme.Typography.button)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: 52)
-                }
-                .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-            }
-        }
-    }
+    // Der frühere `startCTASection` ist in die shared `GameStartScreen`-
+    // Komponente gewandert (Phase 7.5 — Unification). Credit-Abzug +
+    // `startGame()` passieren jetzt im `onPrimaryCTA`-Closure in
+    // `startOverlay` oben; „Lernen starten" ebenso über den gleichen
+    // CTA-Slot (Label/Icon wechseln je nach Credit-Status).
 
     /// Regeln einklappbar — Platz nicht mehr durch Gameplay-Regeln dominiert.
     var startRulesDisclosure: some View {
         VStack(spacing: 10) {
             Button {
-                withAnimation(.easeInOut(duration: 0.22)) {
+                // Phase 7.6 — systemweite State-Animation.
+                withAnimation(AppMotion.state) {
                     isShowingArcadeRules.toggle()
                 }
             } label: {
@@ -447,139 +447,60 @@ extension ElumiArcadeGameView {
         )
     }
 
+    /// **Game-Over-Overlay** (Phase 7.5 — Ende-Flow-Unification).
+    ///
+    /// Nutzt jetzt die shared `GameSummaryView`-Komponente — identisch
+    /// zu Word Runner. Elumi-spezifische Daten:
+    ///   - Hero = `score` (Punkte)
+    ///   - Stats = Runde / Gefangen / Verpasst / Highscore
+    ///   - Badge = „Neuer Highscore" wenn `didBeatHighScore`
+    ///   - Primär-CTA „Nochmal" nur bei ausreichend Credits — mit
+    ///     Hint über Rest-Credits. Ohne Credits: Label wird zu
+    ///     „Lernen starten", führt zurück zum Home.
     var gameOverOverlay: some View {
-        ZStack {
-            Color.black.opacity(0.34)
-                .ignoresSafeArea()
-
-            VStack(spacing: 18) {
+        let hasCredits = arcadeCredits >= ArcadeCreditSystem.gamesCost
+        return GameSummaryView(
+            headline: gameOverTitle,
+            subtitle: gameOverSubtitle.isEmpty ? nil : gameOverSubtitle,
+            badge: didBeatHighScore ? "Neuer Highscore" : nil,
+            heroValue: "\(score)",
+            heroValueLabel: "Punkte",
+            heroValueColor: AppTheme.Colors.warning,
+            stats: [
+                .init(title: "Runde",     value: "\(round)"),
+                .init(title: "Gefangen",  value: "\(totalCaught)"),
+                .init(title: "Verpasst",  value: "\(misses)"),
+                .init(title: "Highscore", value: "\(max(highScore, score))")
+            ],
+            primaryCTALabel: hasCredits ? "Noch eine Runde" : "Lernen starten",
+            primaryCTAIcon: hasCredits ? "arrow.clockwise" : "book.fill",
+            primaryCTAEnabled: true,
+            primaryCTAHint: hasCredits
+                ? "\(arcadeCredits) Credit\(arcadeCredits == 1 ? "" : "s") übrig"
+                : "0 Credits — Lernen bringt Credits",
+            onPrimaryCTA: {
+                if hasCredits {
+                    arcadeCredits -= ArcadeCreditSystem.gamesCost
+                    restartGame()
+                } else {
+                    exitArcadeSilently()
+                    dismiss()
+                }
+            },
+            secondaryCTALabel: "Zur Startseite",
+            onSecondaryCTA: {
+                exitArcadeSilently()
+                dismiss()
+            },
+            icon: {
                 ZStack {
                     Circle()
                         .fill(AppTheme.Colors.primary.opacity(0.16))
-                        .frame(width: 92, height: 92)
                     ElumiSnackCluster(count: max(1, min(totalCaught, 3)), size: 38)
                 }
-
-                VStack(spacing: 8) {
-                    Text(gameOverTitle)
-                        .font(.system(size: 30, weight: .black, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-
-                    if didBeatHighScore {
-                        Text("Neuer Highscore")
-                            .font(.system(size: 13, weight: .bold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.warning)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(AppTheme.Colors.warning.opacity(0.14))
-                            .clipShape(Capsule())
-                    }
-
-                    if !gameOverSubtitle.isEmpty {
-                        Text(gameOverSubtitle)
-                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
-                    }
-                }
-
-                VStack(spacing: 2) {
-                    Text("Punkte")
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                    Text("\(score)")
-                        .font(.system(size: 42, weight: .black, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.warning)
-                        .shadow(color: AppTheme.Colors.warning.opacity(0.3), radius: 8, x: 0, y: 2)
-                }
-
-                HStack(spacing: 8) {
-                    gameOverStat(title: "Runde", value: "\(round)")
-                    gameOverStat(title: "Gefangen", value: "\(totalCaught)")
-                    gameOverStat(title: "Verpasst", value: "\(misses)")
-                    gameOverStat(title: "Highscore", value: "\(max(highScore, score))")
-                }
-
-                if arcadeCredits >= ArcadeCreditSystem.gamesCost {
-                    HStack(spacing: 12) {
-                        Button("Schließen") {
-                            exitArcadeSilently()
-                            dismiss()
-                        }
-                        .buttonStyle(AppSecondaryButtonStyle())
-
-                        Button {
-                            arcadeCredits -= ArcadeCreditSystem.gamesCost
-                            restartGame()
-                        } label: {
-                            Text("Nochmal")
-                        }
-                        .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-                    }
-
-                    // Credit-Rest im gleichen Icon-Vokabular wie Start-Overlay
-                    // und Home-Balanced-Bar — konsistente Credit-Identität.
-                    HStack(spacing: 5) {
-                        Image(systemName: "circle.hexagongrid.fill")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(AppTheme.Colors.cta.opacity(0.85))
-                        Text("\(arcadeCredits) Credit\(arcadeCredits == 1 ? "" : "s") übrig")
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
-                    }
-                } else {
-                    // Empty-State: klarer Call-zum-Lernen, nicht nur Schließen.
-                    HStack(spacing: 6) {
-                        Image(systemName: "circle.hexagongrid.fill")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
-                        Text("0 Credits — Lernen bringt Credits")
-                            .font(.system(size: 13, weight: .bold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
-                    }
-                    .padding(.vertical, 4)
-
-                    Button {
-                        exitArcadeSilently()
-                        dismiss()
-                    } label: {
-                        HStack(spacing: 10) {
-                            Image(systemName: "book.fill")
-                                .font(.system(size: 15, weight: .bold))
-                            Text("Lernen starten")
-                                .font(AppTheme.Typography.button)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 48)
-                    }
-                    .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-                }
             }
-            .padding(.horizontal, 22)
-            .padding(.vertical, 26)
-            .frame(maxWidth: 344)
-            .background(AppTheme.Colors.surface.opacity(0.96))
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
-            )
-        }
+        )
         .transition(.opacity)
-    }
-
-    func gameOverStat(title: String, value: String) -> some View {
-        VStack(spacing: 5) {
-            Text(value)
-                .font(.system(size: 16, weight: .black, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-            Text(title)
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 10)
-        .background(AppTheme.Colors.secondarySurface.opacity(0.9))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     var bonusRoundAnnouncement: some View {

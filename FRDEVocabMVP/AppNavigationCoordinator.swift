@@ -102,6 +102,20 @@ final class AppNavigationCoordinator: ObservableObject {
         navigateInstant { navigationPath.append(.arcade(autoStart: autoStart)) }
     }
 
+    /// **Word Runner** als echte Nav-Destination (Phase 7.5):
+    /// Start-Screen zeigt jetzt den globalen Footer — analog zur
+    /// Arcade. Sobald der User in den Run geht, ruft WR
+    /// `setImmersiveArcade(true)` auf und blendet den Footer aus.
+    func openWordRunnerScreen() {
+        if case .wordRunner = currentScreen { return }
+        navigateInstant { navigationPath.append(.wordRunner) }
+    }
+
+    var isWordRunnerScreenActive: Bool {
+        if case .wordRunner = currentScreen { return true }
+        return false
+    }
+
     func setImmersiveArcade(_ active: Bool) {
         isImmersiveArcadeActive = active
     }
@@ -113,6 +127,19 @@ final class AppNavigationCoordinator: ObservableObject {
 
     var isLexiconScreenActive: Bool {
         if case .lexicon = currentScreen { return true }
+        return false
+    }
+
+    /// **Elumi-Tab** (Phase 8): vom Footer-Axolotl-Button aus aufgerufen.
+    /// Stacked-Push analog zu GameHub/Trophy/Lexicon — Back führt sauber
+    /// zurück zu Home.
+    func openElumiScreen() {
+        guard currentScreen != .elumi else { return }
+        navigateInstant { navigationPath.append(.elumi) }
+    }
+
+    var isElumiScreenActive: Bool {
+        if case .elumi = currentScreen { return true }
         return false
     }
 

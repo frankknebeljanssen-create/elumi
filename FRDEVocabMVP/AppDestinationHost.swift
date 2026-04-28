@@ -40,6 +40,17 @@ struct AppDestinationHost: View {
             // während des Start-Overlays sichtbar, verschwindet erst,
             // wenn das Spiel tatsächlich beginnt (via Immersive-Flag).
             ElumiArcadeGameView(feedbackPlayer: feedbackPlayer, autoStart: autoStart)
+        case .wordRunner:
+            // Word Runner als echte Nav-Destination (Phase 7.5) — der
+            // globale Footer bleibt während des Start-Screens sichtbar;
+            // Immersive-Modus wird erst im Run aktiviert, analog
+            // Arcade. Listen-Store + Go-To-Lists-Callback kommen aus
+            // dem Runtime-Container / der Navigation-Coordinator-Schicht.
+            WordRunnerGameView(
+                listStore: runtime.listStore,
+                onClose: goHome,
+                onGoToLists: { navigate(.lists(nil)) }
+            )
         case .lists(let launchContext):
             listsDestination(launchContext: launchContext)
         case .lexicon:
@@ -79,6 +90,29 @@ struct AppDestinationHost: View {
             // Lernstatus). Home zeigt jetzt nur eine kompakte Status-
             // Card; Detail lebt hier.
             TrophyView(
+                feedbackPlayer: feedbackPlayer,
+                goHome: goHome,
+                openSettings: openSettings,
+                openInfo: openInfo,
+                navigate: navigate
+            )
+        case .elumi:
+            // **Elumi-Tab** (Phase 8) — persönlicher Begleiter-Screen:
+            // Begrüßung + Axolotl, eine Empfehlungs-Card (V1 Karteikarten),
+            // kompakter Streak/Level/XP-Status. Bewusst schlank, klar
+            // abgegrenzt von Home/Spielen/Fortschritt/Wörterbuch.
+            ElumiTabView(
+                feedbackPlayer: feedbackPlayer,
+                goHome: goHome,
+                openSettings: openSettings,
+                openInfo: openInfo,
+                navigate: navigate
+            )
+        case .trainingGenerator:
+            // **Training-Generator** (Phase 8) — automatisch kuratierte
+            // Session aus 2–4 Blöcken. Dauer + Fokus im Setup, kurze
+            // Slot-Shuffle-Animation, Result-Screen mit Start/Neu-Mischen.
+            TrainingGeneratorView(
                 feedbackPlayer: feedbackPlayer,
                 goHome: goHome,
                 openSettings: openSettings,

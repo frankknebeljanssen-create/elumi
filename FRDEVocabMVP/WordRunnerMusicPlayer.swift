@@ -57,15 +57,25 @@ final class WordRunnerMusicPlayer: ObservableObject {
 
     // MARK: - Tuning
 
-    // Audio-Balance-Pass (Phase 7.6): Musik insgesamt ~30 % leiser
-    // (zwei −15 %-Stufen, 0.55 → 0.47 → 0.40), damit SFX klar über
-    // den Mix kommen.
-    private let defaultVolume: Float = 0.40
+    // Audio-Balance-Pass (Phase 7.6 — User-Report „Musik zu laut"):
+    // weitere Reduktion auf 0.30 (analog Arcade-Volume). Die SFX
+    // (v. a. Life-Loss) kommen klar über den Mix; die Musik bleibt
+    // atmosphärischer Layer.
+    private let defaultVolume: Float = 0.30
     private let defaultFadeDuration: TimeInterval = 0.8
 
     private init() {}
 
     // MARK: - Phase-2/3-API
+
+    /// **Preload** (Phase 7.6) — bereitet den nächsten Runner-Track
+    /// vor, damit `startNewRun()` ohne Decoder-Anlauf spielt. Wird
+    /// beim WR-Start-Screen-Aufruf gecalled.
+    func preloadNextTrack() {
+        let index = nextTrackIndex % tracks.count
+        let track = tracks[index]
+        SoundPlayer.shared.preloadMusic(resource: track, ext: trackExtension)
+    }
 
     /// Startet die Musik für einen neuen Run.
     /// Rotiert auf den nächsten Track und loopt ihn.
@@ -82,12 +92,16 @@ final class WordRunnerMusicPlayer: ObservableObject {
         // andere Track dran, nicht zweimal derselbe.
         nextTrackIndex = (index + 1) % tracks.count
 
-        // **Exklusiv-Ownership-Fix**: beim Run-Start nukt der Runner
-        // **alle** bekannten Music-Tracks (auch die Arcade-Tracks)
-        // — sonst spielen beide Player parallel, wenn der User
-        // schnell zwischen Runner und Arcade wechselt.
+        // **Exklusiv-Ownership-Fix** + Phase 7.6 Preload-Erhaltung:
+        // alle fremden Tracks inklusive deren Silent-Preloads stoppen,
+        // aber den preloaded-silent Player für den kommenden Track
+        // **nicht** mit-killen (sonst fehlt dem sofort-folgenden
+        // playMusic die warme Pipeline → Musik startet spät).
         for resource in MusicCatalog.allMusicResources {
             SoundPlayer.shared.stopMusic(resource: resource)
+            if resource != trackName {
+                SoundPlayer.shared.dropPreload(resource: resource)
+            }
         }
 
         SoundPlayer.shared.playMusic(

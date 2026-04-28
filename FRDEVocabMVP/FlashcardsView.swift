@@ -3,6 +3,9 @@ import SwiftUI
 struct FlashcardsView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.appUsesGlobalChrome) var usesGlobalChrome
+    // **Personal-Deck-Teardown (Phase 8)**: Scene-Phase in der Hand, um
+    // den Stapel-Fortschritt beim Übergang Background/Inactive abzusichern.
+    @Environment(\.scenePhase) var scenePhase
     @AppStorage(appDirectionKey) var selectedAppDirectionRaw = Direction.frenchToGerman.rawValue
     @AppStorage(appArcadeCreditsKey) var arcadeCredits = 0
     @ObservedObject var sessionStore: FlashcardSessionStore
@@ -30,6 +33,28 @@ struct FlashcardsView: View {
 
     // Listen-Picker-Sheet für die custom Listen-Card im Speed-Round-Stil
     @State var stackListPickerActive: Bool = false
+
+    // MARK: - Persönlicher Trainingsmodus (Phase 8)
+    //
+    // Separater State-Block für den neuen „MEINE STAPEL"-Setup-Block +
+    // Create-/Rename-/Delete-Sheets. Komplett unabhängig vom bestehenden
+    // Setup-Flow — so bleibt die reguläre Session-Logik unberührt.
+    @StateObject var personalDeckStore = PersonalDeckStore.shared
+    /// **Phase 8.2 Entry-Button-Refactor**: Subscreen für Meine Stapel.
+    /// Create/Edit/Delete-Sheets + Alerts leben jetzt IN der
+    /// `PersonalDecksView`, nicht mehr im Setup-Parent — der Setup-
+    /// Parent pusht nur noch die View an und trägt die Session-Start-
+    /// Callback nach oben zurück.
+    @State var isShowingPersonalDecksScreen: Bool = false
+
+    /// **User-Revision 2026-04-22 (Bug-Fix)**: Schutzschild gegen den
+    /// Auto-Switch in `handleFlashcardsAppear`. SwiftUI feuert
+    /// `.onAppear` auch beim Pop einer NavigationDestination — wenn
+    /// der User aus dem Meine-Stapel-Subscreen zurück kommt, würde
+    /// der Auto-Switch ihn in die laufende Session werfen, obwohl
+    /// er ins Setup zurück möchte. Flag wird beim ERSTEN Appear
+    /// gesetzt; danach läuft der Auto-Switch nicht mehr.
+    @State var hasHandledInitialFlashcardsAppear: Bool = false
 
     var currentCard: FlashcardDeckCard? {
         sessionStore.currentCard
@@ -60,8 +85,9 @@ struct FlashcardsView: View {
     }
 
     var flashcardFaceHeight: CGFloat {
-        // Mikro + Lautsprecher liegen jetzt nebeneinander → die gewonnene
-        // Zeile (~60pt) wandert in die Karteikarten-Höhe.
+        // **Karteikarten-Design Phase 8.4** (User-Revision „etwas größer"):
+        // 320×210 pt — gleiche Ratio (~1.524), 6,5 % größer. Container-
+        // Höhe für den Flip-ZStack + umliegende Layout-Berechnungen.
         210
     }
 

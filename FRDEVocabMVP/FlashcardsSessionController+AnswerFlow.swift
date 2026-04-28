@@ -50,6 +50,29 @@ extension FlashcardsSessionController {
         hideTypedAnswerField()
 
         if isCorrect(got: got, expected: expected, card: currentFlashCard) {
+            // **Peek-Protection (User-Revision 2026-04-22)**: Wurde die
+            // Karte vorher manuell geflippt (gepeekt), zählt die
+            // korrekte Antwort NICHT als gemeistert. Stattdessen wird
+            // die Karte ans Ende des aktuellen Stapels geschoben und
+            // kommt später nochmal dran — diesmal ohne Spicken.
+            if let cardID = sessionStore.session?.currentCardID,
+               peekedCurrentCardID == cardID {
+                lastResult = ScoreResult(label: "Nochmal — diesmal ohne peek", detail: "")
+                showingSolution = false
+                isFlashcardFlipped = false
+                peekedCurrentCardID = nil
+                sessionStore.moveCurrentCardToEndAndAdvance()
+                syncDisplayedCard(with: sessionStore)
+                scheduleNextPrompt(
+                    after: 0.3,
+                    sessionStore: sessionStore,
+                    speechController: speechController,
+                    speaker: speaker,
+                    areSoundsEnabled: true
+                )
+                return
+            }
+
             if sessionStore.remainingCount > 1 {
                 feedbackPlayer.playFlashcardSuccess()
             }
@@ -68,23 +91,44 @@ extension FlashcardsSessionController {
         feedbackPlayer.playFlashcardError()
         lastResult = ScoreResult(label: "Falsch 😕", detail: "")
 
-        // Show solution for 1.5 seconds before moving on
+        // **User-Revision 2026-04-22**: bei falscher Antwort NICHT mehr
+        // automatisch die nächste Karte aufdecken. Stattdessen:
+        //   • Karte bleibt auf der Rückseite (Lösung sichtbar)
+        //   • `isAwaitingContinueAfterWrong` gesetzt → Antwort-Card
+        //     zeigt einen „Weiter"-Button
+        //   • `markWrong()` + Karten-Advance erst, wenn der User den
+        //     Button drückt (`continueAfterWrongAnswer(...)`).
         showingSolution = true
         isFlashcardFlipped = true
+        isAwaitingContinueAfterWrong = true
         pushCurrentFlashcardToHistory(revealingSolution: true, sessionStore: sessionStore)
-        // DON'T markWrong yet — it changes the card! Wait until after showing solution.
-
+        // Keine Auto-Advance-Task mehr — der User steuert den Wechsel.
         cancelPendingFeedback()
-        let workItem = DispatchWorkItem { [weak self] in
-            guard let self else { return }
-            sessionStore.markWrong()
-            self.isFlashcardFlipped = false
-            self.showingSolution = false
-            self.syncDisplayedCard(with: sessionStore)
-            self.scheduleNextPrompt(after: 0.3, sessionStore: sessionStore, speechController: speechController, speaker: speaker, areSoundsEnabled: true)
-        }
-        pendingFeedbackTask = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: workItem)
+    }
+
+    /// Triggered durch den „Weiter"-Button in der Antwort-Card nach einer
+    /// falschen Antwort. Führt die bisher im 1,5-s-Auto-Advance
+    /// eingebettete Mutation aus: `markWrong()` zählt die Karte zurück,
+    /// Karte wird zurückgeklappt, nächste Karte vorbereitet.
+    func continueAfterWrongAnswer(
+        sessionStore: FlashcardSessionStore,
+        speechController: SpeechController,
+        speaker: Speaker,
+        feedbackPlayer: FeedbackPlayer
+    ) {
+        guard isAwaitingContinueAfterWrong else { return }
+        isAwaitingContinueAfterWrong = false
+        sessionStore.markWrong()
+        isFlashcardFlipped = false
+        showingSolution = false
+        syncDisplayedCard(with: sessionStore)
+        scheduleNextPrompt(
+            after: 0.3,
+            sessionStore: sessionStore,
+            speechController: speechController,
+            speaker: speaker,
+            areSoundsEnabled: true
+        )
     }
 
     func animateCorrectCardRemoval(

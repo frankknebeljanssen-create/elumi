@@ -146,12 +146,31 @@ extension ListsView {
                     onCancel: {
                         editableListName = selectedList.name
                         showingRenameDialog = false
+                        // **Bug-Fix 2026-04-23**: Nach dem Schließen des
+                        // Rename-Sheets MUSS das Detail-Sheet wieder
+                        // aufgehen — sonst landet der User (besonders
+                        // im Direct-Launch-Pfad aus Import-Completion)
+                        // auf einem schwarzen Screen, weil
+                        // `screenContent` bei `isDirectListLaunch`
+                        // bewusst keinen `listsPrimaryContent` rendert.
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            showingListDetail = true
+                        }
                     },
                     onSave: {
                         listStore.renameList(id: selectedList.id, to: editableListName)
                         editableListName = listStore.selectedList.name
                         showingRenameDialog = false
                         showToast("Liste umbenannt.")
+                        // **Bug-Fix 2026-04-23**: dito — Rename-Save
+                        // schloss vorher das Rename-Sheet, ließ aber
+                        // `showingListDetail = false` → schwarzer
+                        // Screen. Re-trigger sequenziell mit kleinem
+                        // Delay, damit zwei iOS-Sheets nicht im
+                        // selben Frame Remount-Flackern auslösen.
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            showingListDetail = true
+                        }
                     }
                 )
             }

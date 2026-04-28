@@ -2,45 +2,167 @@ import SwiftUI
 import UIKit
 
 extension FlashcardsView {
-    func flashcardFace(text: String, isAnswerSide: Bool, languageCode: String, wordClassLabel: String? = nil) -> some View {
-        RoundedRectangle(cornerRadius: 14, style: .continuous)
-            .fill(isAnswerSide ? AppTheme.Colors.secondarySurface : AppTheme.Colors.surface)
-            .overlay(
-                // Promt-Seite deutlich farbig hinterlegen, damit die Karteikarte
-                // gegenüber den darunter liegenden Action-Buttons dominiert.
-                // Answer-Seite bleibt dezenter grün.
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(isAnswerSide ? AppTheme.Colors.success.opacity(0.18) : sectionStyle.accent.opacity(0.22))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(
-                        isAnswerSide ? AppTheme.Colors.success.opacity(0.5) : sectionStyle.accent.opacity(0.55),
-                        lineWidth: 1.5
-                    )
-            )
-            .overlay(alignment: .center) {
-                VStack(spacing: 6) {
+    /// **Karteikarten-Design Phase 8** (User-Spec 2026-04-22):
+    /// Fixed-size Karte 260×168 pt, cornerRadius 6, farblich klar
+    /// differenzierte Front/Back-Seiten mit pink/teal-Stripe und
+    /// Streak-Row rechts oben (5 Dots, Amber-Filling aus
+    /// `consecutiveCorrect` im SM-2-Datenmodell).
+    ///
+    /// Bei Streak ≥ 5 wird die Karte „mastered" → Stripe wechselt auf
+    /// beiden Seiten auf Amber (#FFD166). Streak > 5 wird auf 5
+    /// geclampt (Render-Only-Cap; das Datenmodell kann weiter zählen).
+    func flashcardFace(
+        text: String,
+        isAnswerSide: Bool,
+        languageCode: String,
+        wordClassLabel: String? = nil,
+        cardIndex: Int,
+        totalCount: Int,
+        streak: Int,
+        streakTarget: Int
+    ) -> some View {
+        // **User-Revision 2026-04-22**: Streak-Dots richten sich nach der
+        // Mastery-Threshold („Karte fällt raus nach N richtigen Antworten").
+        // Threshold 1 → 1 Dot, 2 → 2 Dots, 3 → 3 Dots, 4 → 4 Dots. Das
+        // Spielgefühl bleibt stimmig: man sieht die „Lebens"-Leiste genau
+        // so lang wie sie auch tatsächlich ist.
+        let clampedTarget = max(1, min(4, streakTarget))
+        let clampedStreak = max(0, min(clampedTarget, streak))
+        let isMastered = clampedStreak >= clampedTarget
+
+        // User-Spec-Palette (exakt aus dem Briefing)
+        let borderColor = Color(hex: "#1E4060")
+        let bgFront = Color(hex: "#0F2D48")
+        let bgBack = Color(hex: "#0A2035")
+        let stripePink = Color(hex: "#FF4D80")
+        let stripeTeal = Color(hex: "#2EC4A9")
+        let stripeAmber = Color(hex: "#FFD166")
+        let dotFilled = Color(hex: "#FFD166")
+        let dotEmpty = Color.white.opacity(0.12)
+
+        let bg = isAnswerSide ? bgBack : bgFront
+        // Stripe: im Mastered-Zustand auf beiden Seiten Amber, sonst
+        // Front = Pink, Back = Teal.
+        let stripeColor = isMastered ? stripeAmber : (isAnswerSide ? stripeTeal : stripePink)
+        // Tag-Farbe spiegelt die Seiten-Identität, auch im Mastered-
+        // Zustand (damit FR/DE optisch unterscheidbar bleibt).
+        let tagColor = isAnswerSide ? stripeTeal : stripePink
+
+        // Sprach-Label aus languageCode ableiten — „Français" bei fr*,
+        // „Deutsch" bei de*, sonst Uppercase-Code.
+        let languageLabel: String = {
+            let code = languageCode.lowercased()
+            if code.hasPrefix("fr") { return "Français" }
+            if code.hasPrefix("de") { return "Deutsch" }
+            if code.hasPrefix("en") { return "English" }
+            return code.uppercased()
+        }()
+        let tagText: String = isAnswerSide
+            ? "\(languageLabel) · Antwort"
+            : "\(languageLabel) · Karte \(cardIndex) / \(totalCount)"
+
+        return ZStack(alignment: .topLeading) {
+            // Hintergrund + Border
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .fill(bg)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .stroke(borderColor, lineWidth: 1.5)
+                )
+
+            // 4 pt Top-Stripe, durch denselben Corner-Radius geclippt,
+            // damit er bündig in die runden Ecken läuft.
+            VStack(spacing: 0) {
+                Rectangle()
+                    .fill(stripeColor)
+                    .frame(height: 4)
+                Spacer(minLength: 0)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+
+            // Content-Stack: Tag-Zeile oben, Vokabel zentriert,
+            // Genus nur auf der Antwort-Seite.
+            VStack(spacing: 0) {
+                // Top row — Tag links, Streak-Block rechts
+                HStack(alignment: .top, spacing: 8) {
+                    Text(tagText.uppercased())
+                        // **User-Revision**: Sprachart-Tag links +1 pt (8 → 9).
+                        // Tracking proportional auf 9 × 0.12em ≈ 1.08 pt.
+                        .font(.system(size: 9, weight: .medium))
+                        .tracking(1.08)
+                        .foregroundStyle(tagColor)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+
+                    Spacer(minLength: 4)
+
+                    // Streak-Block: „STREAK" Label + Dots
+                    VStack(alignment: .trailing, spacing: 3) {
+                        Text("STREAK")
+                            // **User-Revision 2026-04-22**: STREAK-Label
+                            // +1 pt (9 → 10). Tracking 10 × 0.12em ≈ 1.2 pt.
+                            .font(.system(size: 10, weight: .medium))
+                            .tracking(1.2)
+                            .foregroundStyle(Color.white.opacity(0.5))
+                        HStack(spacing: 4) {
+                            ForEach(0..<clampedTarget, id: \.self) { i in
+                                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                                    .fill(i < clampedStreak ? dotFilled : dotEmpty)
+                                    .frame(width: 6, height: 6)
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, 14)
+                // **User-Revision**: mehr Luft oben & unten auf der Karte
+                // (12 → 16 pt). Bottom-Padding sitzt unten auf dem VStack,
+                // damit Vokabel/Genus nicht zu nah an der Kartenunterkante
+                // kleben.
+                .padding(.top, 16)
+
+                Spacer(minLength: 6)
+
+                // Vokabel — zentriert, 26pt semibold rounded, white.
+                VStack(spacing: 4) {
                     Text(text)
-                        .font(.system(size: 29, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .lineLimit(4)
+                        .font(.system(size: 26, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.white)
+                        .lineLimit(3)
                         .minimumScaleFactor(0.55)
                         .multilineTextAlignment(.center)
 
-                    if let wordClassLabel, !wordClassLabel.isEmpty {
-                        Text("(\(wordClassLabel))")
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                    // Genus nur auf der Antwort-Seite.
+                    if isAnswerSide, let wordClassLabel, !wordClassLabel.isEmpty {
+                        Text(wordClassLabel)
+                            .font(.system(size: 10, weight: .regular))
+                            .italic()
+                            .foregroundStyle(Color.white.opacity(0.30))
                     }
                 }
-                .padding(.horizontal, 18)
-                .padding(.vertical, isAnswerSide ? 14 : 16)
+                .padding(.horizontal, 14)
+
+                Spacer(minLength: 0)
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: flashcardFaceHeight)
-            .shadow(color: sectionStyle.accent.opacity(isAnswerSide ? 0 : 0.18), radius: 12, x: 0, y: 6)
-            .shadow(color: .black.opacity(isAnswerSide ? 0.06 : 0.12), radius: 16, x: 0, y: 8)
+            // **User-Revision**: expliziter Bottom-Inset auf dem
+            // Content-VStack — hält Vokabel/Genus von der Kartenunter-
+            // kante weg. Oben wird das Gegenstück via `.padding(.top, 16)`
+            // auf der Tag-Zeile erreicht.
+            .padding(.bottom, 14)
+        }
+        // **Design-Phase 8.1 → 8.4 (User-Revision „etwas größer")**:
+        // Fix-Größe von 300×194 → 320×210 pt. Ratio bleibt nahe an
+        // 1.524 (= ursprünglich 1.548) — eine 6,5 %-Steigerung sowohl
+        // in Breite als auch Höhe. `flashcardFaceHeight` muss parallel
+        // angepasst werden (FlashcardsView.swift).
+        .frame(width: 320, height: 210)
+        // Sanfter Schatten — Mastered-Karten kriegen einen leicht
+        // wärmeren Ton, damit der Sieg auch unterbewusst ankommt.
+        .shadow(
+            color: isMastered ? stripeAmber.opacity(0.22) : .black.opacity(0.25),
+            radius: 10,
+            x: 0,
+            y: 6
+        )
     }
 
     func selectionChip(title: String, value: String) -> some View {

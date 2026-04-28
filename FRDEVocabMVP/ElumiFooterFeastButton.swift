@@ -1,6 +1,13 @@
 import SwiftUI
 
 struct ElumiFooterFeastButton: View {
+    /// **Elumi-Tab Wiring (Phase 8)**: primärer Tap öffnet jetzt den
+    /// persönlichen Elumi-Tab (`AppScreen.elumi`). Arcade/Feast-Game ist
+    /// weiterhin über den „Spiele"-Footer-Button (Snack-Icon) erreichbar.
+    /// Fallback auf die alte Arcade-Route bleibt für den unwahrscheinlichen
+    /// Fall erhalten, dass `appOpenElumiAction` nicht gesetzt ist (z. B.
+    /// in Preview-Hosts ohne Navigation).
+    @Environment(\.appOpenElumiAction) private var openElumi
     @Environment(\.appOpenArcadeAction) private var openArcade
     @ObservedObject var feedbackPlayer: FeedbackPlayer
     @AppStorage(appArcadeCreditsKey) private var arcadeCredits = 0
@@ -16,11 +23,15 @@ struct ElumiFooterFeastButton: View {
 
     var body: some View {
         Button {
-            // Navigation zur Arcade als echte Route (kein fullScreenCover).
-            // autoStart=false → Start-Overlay poppt auf, Footer bleibt
-            // während des Overlays sichtbar. Erst wenn der User „Spiel
-            // starten" drückt, verschwindet der Footer (immersive mode).
-            openArcade?(false)
+            // **Phase 8 Footer-Wiring**: der Axolotl-Button im Footer führt
+            // jetzt in den Elumi-Tab (persönlicher Begleiter-Screen). Die
+            // alte Arcade-Route bleibt als Fallback, falls kein Elumi-
+            // Handler registriert ist.
+            if let openElumi {
+                openElumi()
+            } else {
+                openArcade?(false)
+            }
         } label: {
             ZStack {
                 if let activeSnackKind {

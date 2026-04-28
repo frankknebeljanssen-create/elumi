@@ -34,6 +34,24 @@ enum AppPersistenceSupport {
         try? fileManager.removeItem(at: url)
     }
 
+    /// Prüft, ob eine Daten-Datei am erwarteten Pfad existiert.
+    /// **Wichtig** für die Unterscheidung „Fresh Install / Datei nicht
+    /// vorhanden" vs. „Datei vorhanden aber korrupt" — letzteres ist
+    /// ein Datenverlust-Signal und darf nicht still mit Defaults
+    /// überschrieben werden.
+    static func fileExists(named fileName: String) -> Bool {
+        let url = dataURL(named: fileName)
+        return fileManager.fileExists(atPath: url.path)
+    }
+
+    /// Liest reine Datei-Daten OHNE Legacy-UserDefaults-Fallback.
+    /// Caller, die zwischen den beiden Quellen unterscheiden müssen,
+    /// nutzen diesen Pfad statt `readData(named:legacyDefaults:legacyKey:)`.
+    static func readDataIfFileExists(named fileName: String) -> Data? {
+        let url = dataURL(named: fileName)
+        return try? Data(contentsOf: url)
+    }
+
     static func dataURL(named fileName: String) -> URL {
         persistenceDirectory().appendingPathComponent(fileName, isDirectory: false)
     }

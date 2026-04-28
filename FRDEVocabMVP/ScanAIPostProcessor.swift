@@ -49,8 +49,17 @@ enum ScanAIPostProcessor {
         var metrics = ScanMetrics()
         metrics.inputCount = payload.entries.count
 
+        // **Bug-Fix 2026-04-24 (Meta-Leak)**: Allererster Pass —
+        // Meta-Marker `(m)` / `(f)` / `(pl.)` / `(adj.)` etc. aus
+        // source/target rausziehen, BEVOR irgendeine andere
+        // Normalisierung läuft. Sonst landen die Marker als
+        // sichtbarer Vokabel-Text. Den extrahierten Marker
+        // hängen wir defensiv ans `wordClass`-Feld an, falls leer —
+        // sichtbare Pill-UI greift schon auf `wordClass` zu.
+        let metaStripped = payload.entries.map(stripMetaMarkers)
+
         // Common Safety-Passes: gelten für beide Modi.
-        let scrubbed = payload.entries.map { entry -> ScanAIResponseEntry in
+        let scrubbed = metaStripped.map { entry -> ScanAIResponseEntry in
             let after = scrubMirroredTarget(entry)
             if after.target != entry.target { metrics.scrubbedTargetCount += 1 }
             return after
@@ -78,7 +87,7 @@ enum ScanAIPostProcessor {
         //     weil der Lehrer die Wahl bewusst getroffen haben könnte).
         let expansionPolicy: GermanAbbreviationExpander.Policy =
             (payload.mode == .text) ? .exactAndInline : .exactOnly
-        let finalEntries = processedEntries.map { entry -> ScanAIResponseEntry in
+        let expandedEntries = processedEntries.map { entry -> ScanAIResponseEntry in
             let expanded = applyAbbreviationExpansion(
                 entry: entry,
                 policy: expansionPolicy
@@ -88,6 +97,26 @@ enum ScanAIPostProcessor {
             }
             return expanded
         }
+
+        // **Bug-Fix 2026-04-24 (Token-Drop in Phrasen)**: Phrasen-
+        // Honorific-Check. Ergänzt fehlende Anreden (`Madame`/
+        // `Monsieur`/`Mademoiselle`) im Zieltext per Injection
+        // und markiert den Eintrag als review-required.
+        let honorificChecked = expandedEntries.map(validatePhraseHonorificPreservation)
+
+        // **Style-Rule 2026-04-25**: Produkt-Style-Vereinheitlichung
+        // für typisch deutsche Phrasen. Aktuell nur eine Regel:
+        // `wie viel Uhr` → `wieviel Uhr`. Der Pass ist bewusst
+        // **phrase-spezifisch** (nicht alle `wie viel`-Vorkommen),
+        // um keine unverwandten Sätze zu verändern.
+        let styleApplied = honorificChecked.map(applyGermanStyleRules)
+
+        // **Bug-Fix 2026-04-25 (Nomen-Kapitalisierung)**: Letzter Pass —
+        // wenn der Eintrag als Nomen klassifiziert ist und das
+        // deutsche Ziel klein beginnt, wird der erste Nomen-Token
+        // korrekt großgeschrieben. Systemisch über die ganze Scan-
+        // Pipeline, nicht nur Migration.
+        let finalEntries = styleApplied.map(capitalizeGermanNounTarget)
 
         metrics.finalCount = finalEntries.count
 
@@ -458,6 +487,336 @@ enum ScanAIPostProcessor {
         return ScanAIResponseEntry(
             source: entry.source,
             target: normalized,
+            cardType: entry.cardType,
+            sourcePhonetic: entry.sourcePhonetic,
+            targetPhonetic: entry.targetPhonetic,
+            confidence: entry.confidence,
+            reviewMetadata: entry.reviewMetadata,
+            notes: entry.notes,
+            wordClass: entry.wordClass
+        )
+    }
+
+    // MARK: - Bug-Fix 2026-04-24: Meta-Marker-Strip + Phrase-Honorific-Check
+
+    /// **Meta-Marker-Strip** (Bug C): Extrahiert grammatikalische
+    /// Annotations-Marker `(m)`, `(f)`, `(pl.)` etc. aus source/target,
+    /// damit sie nicht als sichtbarer Vokabel-Text bleiben. Den
+    /// extrahierten Marker hängen wir als Note an und füllen
+    /// `wordClass` bzw. die strukturelle Note auf, damit das Genus
+    /// in der UI als Pill auftauchen kann.
+    static func stripMetaMarkers(_ entry: ScanAIResponseEntry) -> ScanAIResponseEntry {
+        let sourceResult = ScanMetaMarkerExtractor.extract(from: entry.source)
+        let targetResult = ScanMetaMarkerExtractor.extract(from: entry.target)
+
+        // Wenn auf keiner Seite ein Marker → keine Mutation.
+        if sourceResult.normalizedMarker == nil && targetResult.normalizedMarker == nil {
+            return entry
+        }
+
+        // Marker-Notizen sammeln.
+        var collectedNotes = entry.notes
+        if let sm = sourceResult.normalizedMarker {
+            collectedNotes.append("source-marker:\(sm)")
+        }
+        if let tm = targetResult.normalizedMarker, tm != sourceResult.normalizedMarker {
+            collectedNotes.append("target-marker:\(tm)")
+        }
+
+        // wordClass auffüllen: wenn leer und Marker einen Genus liefert,
+        // setzen wir mindestens „noun". Der separate Genus-Tag landet
+        // in den Notes — die Display-Pipeline (`displayFrenchWithGender`)
+        // konsultiert den DB-Lexikon-Lookup ohnehin selbst.
+        let resolvedWordClass: String? = {
+            if let existing = entry.wordClass, !existing.isEmpty {
+                return existing
+            }
+            // Marker wie m/f/pl deuten klar auf ein Nomen.
+            let genderHints: Set<String> = ["m", "f", "n", "pl"]
+            if let sm = sourceResult.normalizedMarker, genderHints.contains(sm) {
+                return "noun"
+            }
+            if let tm = targetResult.normalizedMarker, genderHints.contains(tm) {
+                return "noun"
+            }
+            return entry.wordClass
+        }()
+
+        #if DEBUG
+        let sm = sourceResult.normalizedMarker ?? "-"
+        let tm = targetResult.normalizedMarker ?? "-"
+        print("📋 [Meta-Strip] '\(entry.source)' -> '\(sourceResult.cleanedText)' (s:\(sm)/t:\(tm))")
+        #endif
+
+        return ScanAIResponseEntry(
+            source: sourceResult.cleanedText,
+            target: targetResult.cleanedText,
+            cardType: entry.cardType,
+            sourcePhonetic: entry.sourcePhonetic,
+            targetPhonetic: entry.targetPhonetic,
+            confidence: entry.confidence,
+            reviewMetadata: entry.reviewMetadata,
+            notes: collectedNotes,
+            wordClass: resolvedWordClass
+        )
+    }
+
+    /// **Phrase-Honorific-Check** (Bug B — 2026-04-25 systemischer
+    /// Rewrite):
+    ///
+    /// Wenn die Quelle Anreden wie `madame`, `monsieur`, `mademoiselle`
+    /// enthält und das Ziel KEINE entsprechende Form hat, ist das KEINE
+    /// diffuse „Unsicherheit" — es ist ein **konkreter Token-Verlust**.
+    ///
+    /// Vorher: Der fehlende Token wurde nur als `isImportable: false`
+    /// markiert, der Zieltext blieb leer bzw. unvollständig. Der Nutzer
+    /// musste manuell nachschreiben.
+    ///
+    /// Jetzt (User-Spec 2026-04-25):
+    ///   1. Detektieren wir fehlende geschützte Anreden (wie vorher).
+    ///   2. **Injizieren** die Anrede als deutsches Loanword-Äquivalent
+    ///      (`Madame`, `Monsieur`, `Mademoiselle` — kapitalisiert) an
+    ///      einer natürlichen Stelle im Zieltext:
+    ///        • nach dem ersten Komma (typisches „Entschuldigung, …"-
+    ///          Muster bei höflicher Anrede),
+    ///        • sonst vor dem Satzendzeichen,
+    ///        • sonst am Ende.
+    ///   3. Markieren das Ergebnis mit einem strukturellen Note
+    ///      `injected-honorific:…` **und** halten es als
+    ///      `isImportable: false` fest, sodass der Nutzer die Injektion
+    ///      im Review bestätigen kann. Note-Text erklärt explizit, dass
+    ///      eine Anrede auto-injiziert wurde — kein pauschales „unsicher".
+    ///   4. Senken die Confidence leicht (damit UI-seitige Low-Confidence-
+    ///      Filter den Eintrag konsistent behandeln).
+    static func validatePhraseHonorificPreservation(_ entry: ScanAIResponseEntry) -> ScanAIResponseEntry {
+        // Nur für Phrasen relevant.
+        guard entry.cardType == .phrases else { return entry }
+
+        let sourceLower = entry.source.lowercased()
+        let targetLower = entry.target.lowercased()
+
+        struct HonorificPair {
+            let sourceTokens: [String]
+            let targetTokens: [String]
+            let injectionForm: String  // Kapitalisierte Form, die in den Zieltext eingefügt wird.
+            let label: String
+        }
+
+        let pairs: [HonorificPair] = [
+            HonorificPair(
+                sourceTokens: ["madame"],
+                targetTokens: ["frau", "madame", "gnädige frau"],
+                injectionForm: "Madame",
+                label: "madame"
+            ),
+            HonorificPair(
+                sourceTokens: ["monsieur"],
+                targetTokens: ["herr", "monsieur", "mein herr"],
+                injectionForm: "Monsieur",
+                label: "monsieur"
+            ),
+            HonorificPair(
+                sourceTokens: ["mademoiselle"],
+                targetTokens: ["fräulein", "mademoiselle", "junge frau"],
+                injectionForm: "Mademoiselle",
+                label: "mademoiselle"
+            )
+        ]
+
+        var missingForInjection: [HonorificPair] = []
+        for pair in pairs {
+            let inSource = pair.sourceTokens.contains { sourceLower.contains($0) }
+            let inTarget = pair.targetTokens.contains { targetLower.contains($0) }
+            if inSource && !inTarget {
+                missingForInjection.append(pair)
+            }
+        }
+
+        guard !missingForInjection.isEmpty else { return entry }
+
+        // Injektion durchführen.
+        var updatedTarget = entry.target
+        for pair in missingForInjection {
+            updatedTarget = injectHonorific(pair.injectionForm, into: updatedTarget)
+        }
+
+        let missingLabels = missingForInjection.map(\.label)
+        var augmentedNotes = entry.notes
+        augmentedNotes.append("injected-honorific:\(missingLabels.joined(separator: ","))")
+
+        let augmentedReviewMetadata = ScanEntryReviewMetadata(
+            learningCategory: entry.reviewMetadata.learningCategory,
+            note: "Anrede(n) '\(missingLabels.joined(separator: ", "))' wurde(n) automatisch ergänzt – bitte prüfen.",
+            isImportable: false
+        )
+
+        // Confidence leicht senken, damit Low-Confidence-UI-Filter
+        // (falls vorhanden) den Eintrag als „auto-korrigiert" einstufen.
+        let reducedConfidence = min(entry.confidence, 0.55)
+
+        #if DEBUG
+        print("🔧 [Honorific-Injection] '\(entry.source)' -> '\(entry.target)' → '\(updatedTarget)' (injected: \(missingLabels))")
+        #endif
+
+        return ScanAIResponseEntry(
+            source: entry.source,
+            target: updatedTarget,
+            cardType: entry.cardType,
+            sourcePhonetic: entry.sourcePhonetic,
+            targetPhonetic: entry.targetPhonetic,
+            confidence: reducedConfidence,
+            reviewMetadata: augmentedReviewMetadata,
+            notes: augmentedNotes,
+            wordClass: entry.wordClass
+        )
+    }
+
+    /// Fügt einen Anrede-Token an einer natürlichen Stelle im deutschen
+    /// Zieltext ein. Strategie:
+    ///   1. Wenn der Text ein erstes Komma enthält (typisch
+    ///      „Entschuldigung, …"), setzen wir die Anrede direkt
+    ///      **dahinter** — mit neuem Komma-Trenner:
+    ///      „Entschuldigung, **Madame,** wie spät ist es?"
+    ///   2. Wenn kein Komma vorhanden, aber ein Satzendzeichen
+    ///      (`.`, `?`, `!`), fügen wir vor dem Endzeichen mit
+    ///      Komma-Trenner ein: „Wie spät ist es**, Madame?"
+    ///   3. Fallback: an den Satz anhängen.
+    private static func injectHonorific(_ honorific: String, into target: String) -> String {
+        let trimmed = target.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            // Leerer Zieltext: nur die Anrede allein ergibt wenig Sinn,
+            // aber besser als Leerstring — markiert klar, dass etwas
+            // fehlt.
+            return honorific
+        }
+
+        // Schon drin? (Defensive — sollte durch den Caller-Check
+        // eigentlich nicht passieren.)
+        if trimmed.lowercased().contains(honorific.lowercased()) {
+            return trimmed
+        }
+
+        // 1. Erstes Komma.
+        if let commaIndex = trimmed.firstIndex(of: ",") {
+            let afterComma = trimmed.index(after: commaIndex)
+            if afterComma < trimmed.endIndex {
+                let head = trimmed[..<commaIndex]
+                // `rest` beginnt mit dem Zeichen direkt nach dem Komma
+                // — typischerweise ein Whitespace.
+                let rest = trimmed[afterComma...].drop(while: { $0 == " " })
+                return "\(head), \(honorific), \(rest)"
+            }
+        }
+
+        // 2. Satzendzeichen.
+        let endingPunctuation: Set<Character> = ["?", "!", "."]
+        if let last = trimmed.last, endingPunctuation.contains(last) {
+            let body = trimmed.dropLast().trimmingCharacters(in: .whitespacesAndNewlines)
+            return "\(body), \(honorific)\(last)"
+        }
+
+        // 3. Fallback.
+        return "\(trimmed), \(honorific)"
+    }
+
+    // MARK: - POS-aware German Noun Capitalization
+
+    /// **Nomen-Kapitalisierung** (Bug-Fix 2026-04-25, User-Spec
+    /// „montre → Uhr", „question → Frage").
+    ///
+    /// Wenn der Eintrag als Nomen klassifiziert ist (`wordClass` ∈
+    /// {noun, nomen, substantiv}), MUSS das deutsche Ziel korrekt
+    /// großgeschrieben sein. Der Pass greift am Ende der
+    /// Postprocessing-Kaskade — nach Abkürzungs-Normalisierung und
+    /// Honorific-Injection — damit keine spätere Stage das Casing
+    /// wieder kaputt macht.
+    ///
+    /// Regel:
+    ///   • Artikel (`der/die/das/ein/…`) bleiben klein.
+    ///   • Das ERSTE Nicht-Artikel-Wort wird großgeschrieben (das ist
+    ///     bei Nomen-Einträgen im Regelfall das Nomen selbst).
+    ///   • Weitere Wörter werden NICHT verändert — kein pauschales
+    ///     Title-Case, kein Eingriff bei Adjektiven/Verben in
+    ///     komplexeren Targets.
+    ///
+    /// Greift NUR wenn das Target WIRKLICH kleingeschrieben ist —
+    /// bereits korrekt kapitalisierte Einträge werden durchgelassen.
+    static func capitalizeGermanNounTarget(_ entry: ScanAIResponseEntry) -> ScanAIResponseEntry {
+        // Single Source of Truth: `GermanNounCapitalization` führt die
+        // POS-Gate-Regel (`wordClass == noun`) und die Wort-Logik
+        // (erstes Nicht-Artikel-Wort groß) in einer Stelle aus.
+        let capitalized = GermanNounCapitalization.normalizeGermanNounTarget(
+            entry.target,
+            wordClass: entry.wordClass
+        )
+        guard capitalized != entry.target else { return entry }
+
+        #if DEBUG
+        print("🔠 [Noun-Cap] '\(entry.target)' → '\(capitalized)' (wc=\(entry.wordClass ?? "nil"))")
+        #endif
+
+        return ScanAIResponseEntry(
+            source: entry.source,
+            target: capitalized,
+            cardType: entry.cardType,
+            sourcePhonetic: entry.sourcePhonetic,
+            targetPhonetic: entry.targetPhonetic,
+            confidence: entry.confidence,
+            reviewMetadata: entry.reviewMetadata,
+            notes: entry.notes,
+            wordClass: entry.wordClass
+        )
+    }
+
+    // **Refactor 2026-04-25**: Die frühere lokale Helper-Implementierung
+    // (`capitalizeFirstNounWord` + `capitalizeFirstLetterOf`) lebt jetzt
+    // zentral in `GermanNounCapitalization.swift`. Dieser Call-Site
+    // delegiert über `normalizeGermanNounTarget` an die Utility.
+
+    // MARK: - Deutsche Style-Regeln (2026-04-25)
+
+    /// Produkt-Style-Vereinheitlichung für typisch deutsche Phrasen im
+    /// Zieltext. Läuft als eigener Pass zwischen Honorific-Injection und
+    /// Nomen-Kapitalisierung.
+    ///
+    /// **Aktuell nur eine Regel**:
+    ///   • `wie viel Uhr` → `wieviel Uhr`
+    ///     (case-insensitive Match, behält die Kapitalisierung von
+    ///     `Uhr`, falls bereits großgeschrieben; ansonsten übernimmt
+    ///     der nachfolgende `capitalizeGermanNounTarget`-Pass das
+    ///     korrekte Casing).
+    ///
+    /// Phrase-spezifisch, damit unverwandte „wie viel"-Vorkommen
+    /// (z. B. „wie viel kostet das?") nicht verändert werden.
+    static func applyGermanStyleRules(_ entry: ScanAIResponseEntry) -> ScanAIResponseEntry {
+        guard !entry.target.isEmpty else { return entry }
+
+        var text = entry.target
+        // Regel 1: „wie viel Uhr" → „wieviel Uhr" (case-insensitive).
+        // Wir matchen den Whitespace flexibel (`\s+`), damit auch
+        // Mehrfach-Spaces oder Umbrüche normalisiert werden.
+        if let regex = try? NSRegularExpression(
+            pattern: #"\bwie\s+viel(\s+Uhr\b)"#,
+            options: [.caseInsensitive]
+        ) {
+            let range = NSRange(text.startIndex..., in: text)
+            text = regex.stringByReplacingMatches(
+                in: text,
+                options: [],
+                range: range,
+                withTemplate: "wieviel$1"
+            )
+        }
+
+        guard text != entry.target else { return entry }
+
+        #if DEBUG
+        print("✍️  [GermanStyle] '\(entry.target)' → '\(text)'")
+        #endif
+
+        return ScanAIResponseEntry(
+            source: entry.source,
+            target: text,
             cardType: entry.cardType,
             sourcePhonetic: entry.sourcePhonetic,
             targetPhonetic: entry.targetPhonetic,

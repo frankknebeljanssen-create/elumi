@@ -129,9 +129,15 @@ extension ElumiArcadeGameView {
 
     func updateElumiPosition2D(to point: CGPoint, in size: CGSize) {
         updateElumiPosition(to: point.x, width: size.width)
+        // **Finger-Lift Phase 7.7** (User-Revision „Elumi nochmal 0.5 cm
+        // höher"): Offset ist jetzt 64 pt (≈1 cm), damit Elumi deutlich
+        // oberhalb des Fingers schwimmt und das Gesicht komplett frei
+        // bleibt. Gleicher Wert im Arcade-Pfad (siehe unten).
+        let fingerLiftOffset: CGFloat = 64
         let minY: CGFloat = 80
         let maxY = max(minY, size.height - 80)
-        let clampedY = min(max(point.y, minY), maxY)
+        let targetY = point.y - fingerLiftOffset
+        let clampedY = min(max(targetY, minY), maxY)
         elumiY = (clampedY - minY) / max(maxY - minY, 1)
     }
 
@@ -139,12 +145,19 @@ extension ElumiArcadeGameView {
     /// Runde): X frei wie bisher, Y auf das begrenzte Range um die
     /// Ruheposition geclampt. Wird vom Drag-Handler während normaler
     /// Runden aufgerufen.
+    ///
+    /// **Phase 7.7 Finger-Offset**: Elumi wird ca. 1 cm (~64 pt)
+    /// oberhalb des Finger-Y gerendert, damit der Finger nicht
+    /// Elumis Gesicht verdeckt (User-Wunsch „nochmal 0.5 cm höher").
+    /// Auf iOS-Geräten ist 1 pt ≈ 1/163 inch, also 1 cm ≈ 64 pt.
     func updateElumiArcadePosition2D(to point: CGPoint, in size: CGSize) {
         updateElumiPosition(to: point.x, width: size.width)
+        let fingerLiftOffset: CGFloat = 64
         let restingY = size.height - elumiArcadeRestingYOffset
         let topLimit = restingY - elumiArcadeUpRange
         let bottomLimit = restingY + elumiArcadeDownRange
-        let clampedY = min(max(point.y, topLimit), bottomLimit)
+        let targetY = point.y - fingerLiftOffset
+        let clampedY = min(max(targetY, topLimit), bottomLimit)
         elumiY = (clampedY - topLimit) / max(bottomLimit - topLimit, 1)
     }
 
@@ -331,8 +344,20 @@ extension ElumiArcadeGameView {
             return CGPoint(x: anchorX + horizontalDrift, y: baseY + wobbleY)
         }
 
+        // **Phase 7.7 Snack-Fall-Range-Fix** (User-Bug „Elumi ganz unten,
+        // snack in Linie, wird aber nicht gefangen — kein Sound"):
+        // Snacks fielen bisher nur bis `height - 144`. Elumis max-down
+        // Position ist aber `height - 78` (restingY + 40). Damit war die
+        // unterste Catch-Zone [height-110 … height-46] nie vom Snack
+        // erreichbar — Snack verschwand visuell ~66 pt ÜBER Elumi.
+        //
+        // Fix: bottomY nach unten verlängern, sodass Snacks durch Elumis
+        // gesamte Catch-Zone fallen, auch wenn er ganz unten steht. Beim
+        // Miss (progress ≥ 1.04) wird der Snack nahe der Screen-Unterkante
+        // entfernt — visuell natürlicher als das alte abrupte Verschwinden
+        // in Bildschirmmitte.
         let topY: CGFloat = -28
-        let bottomY = size.height - 144
+        let bottomY = size.height - 40
         let baseY = topY + ((bottomY - topY) * progress)
         let motionOffset = arcadeMotionOffset(for: snack, at: date, in: size)
 

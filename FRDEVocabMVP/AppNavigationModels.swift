@@ -9,6 +9,10 @@ enum AppScreen: Hashable {
     case lernstatus  // Lernstatus-Detail (cross-modular per-Vokabel) — reached via HomeLernstatusCard tap
     case gameHub     // Game Hub (Reward + Spiel-Start) — reached via Footer-Snack
     case arcade(autoStart: Bool)  // Das eigentliche Spiel — Start-Overlay oder Direkt-Start
+    /// **Word Runner** — Phase 7.5: jetzt als echte Navigation-Destination
+    /// (vorher FullScreenCover aus GameHub), damit der globale Footer
+    /// während des Start-Screens sichtbar bleibt — analog zur Arcade.
+    case wordRunner
     case lists(ListLaunchContext?)
     case lexicon
     case scan
@@ -21,6 +25,19 @@ enum AppScreen: Hashable {
     /// dominant auf Home lagen. Home zeigt nur noch eine kompakte
     /// Status-Card; Detail-Ansichten leben hier.
     case trophy
+    /// **Elumi-Tab** (Phase 8): persönlicher Begleiter-Screen. Zeigt
+    /// Begrüßung + Axolotl, die aktuell empfohlene nächste Lern-Einheit
+    /// (V1: fest „Karteikarten") und einen kompakten Streak/Level/XP-
+    /// Status. Bewusst schlank — **kein** Modul-Grid, keine Stats-Tiefe,
+    /// keine Tools. Abgrenzung zu Home (Auswahl) / Spielen / Fortschritt /
+    /// Wörterbuch: Elumi = „dein nächster Schritt".
+    case elumi
+    /// **Training-Generator** (Phase 8) — separater Einstieg aus dem
+    /// Elumi-Tab. Lässt Elumi auto-kurationisiert eine Session aus 2–4
+    /// Blöcken bauen. Kein Umbau bestehender Trainings-Pfade — der
+    /// Generator liefert nur den Bauplan und startet den ersten Block
+    /// über die existierenden Module.
+    case trainingGenerator
 }
 
 private struct AppOpenAccountActionKey: EnvironmentKey {
@@ -59,6 +76,15 @@ private struct AppSetImmersiveArcadeActionKey: EnvironmentKey {
     static let defaultValue: ((Bool) -> Void)? = nil
 }
 
+/// **Elumi-Tab-Action** (Phase 8): öffnet `AppScreen.elumi` — den
+/// persönlichen Begleiter-Screen. Vom Elumi-Footer-Button verwendet,
+/// damit das Axolotl-Icon im Footer jetzt zum Companion-Screen führt
+/// statt in die Arcade. Arcade/Spiele bleiben weiterhin über den
+/// „Spiele"-Button (Snack-Icon) erreichbar.
+private struct AppOpenElumiActionKey: EnvironmentKey {
+    static let defaultValue: (() -> Void)? = nil
+}
+
 private struct AppUsesGlobalChromeKey: EnvironmentKey {
     static let defaultValue = false
 }
@@ -87,6 +113,11 @@ extension EnvironmentValues {
     var appOpenArcadeAction: ((Bool) -> Void)? {
         get { self[AppOpenArcadeActionKey.self] }
         set { self[AppOpenArcadeActionKey.self] = newValue }
+    }
+
+    var appOpenElumiAction: (() -> Void)? {
+        get { self[AppOpenElumiActionKey.self] }
+        set { self[AppOpenElumiActionKey.self] = newValue }
     }
 
     var appSetImmersiveArcadeAction: ((Bool) -> Void)? {

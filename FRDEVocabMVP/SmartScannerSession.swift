@@ -1064,6 +1064,16 @@ extension SmartScannerSession: AVCapturePhotoCaptureDelegate {
             self.previewLayerSizeForCapture = nil
             self.currentCaptureID = nil
             self.isPhotoDeliveryInFlight = false
+            // **Bug-Fix 2026-04-23**: Tracker-Locks aktiv resetten,
+            // damit der NÄCHSTE manuelle Capture nicht den Quad vom
+            // GERADE abgelieferten Photo wiederverwendet. Vorher konnte
+            // ein zu schnelles 2./3. Foto mit dem alten lock-rect
+            // perspektiv-korrigiert werden, was die berichtete
+            // 90°-Rotation/Falsch-Zoom/Wrong-Angle-Symptomatik erzeugt.
+            // Beide Tracker werden geleert — der nächste Live-Stream-
+            // Frame baut frische Locks auf.
+            self.rectangleTracker.clearLastLockedRectangle()
+            self.assistRectangleTracker.clearLastLockedRectangle()
         }
 
         if error != nil {

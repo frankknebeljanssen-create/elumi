@@ -76,6 +76,24 @@ extension FeedbackPlayer {
     func playTentacleDrop() { playIfEnabled("tentacle_drop", volume: 0.5) }
     func playTentacleSting() { playIfEnabled("tentacle_sting", volume: 0.7) }
 
+    // ── Slot Machine (Trainings-Generator) ──
+
+    /// Kurzes, deutlich hörbares Klack beim Stop einer Walze.
+    /// Nutzt `toggle` (UI-Klick-Asset) — kompakter und markanter als
+    /// `tabswitch`, damit der User jedes einzelne Reel-Stop akustisch
+    /// wahrnimmt.
+    func playSlotReelClick() {
+        guard areSoundsEnabled else { return }
+        sp.play("toggle", volume: 1.0)
+    }
+
+    /// Finaler Walzen-Stop — leicht kräftiger als die regulären Clicks.
+    /// Nutzt `listaction` für eine etwas längere Abschluss-Klang-Signatur.
+    func playSlotFinalReelClick() {
+        guard areSoundsEnabled else { return }
+        sp.play("listaction", volume: 1.0)
+    }
+
     // ── Saugglocke ──
 
     func playSuctionWhir() { guard areSoundsEnabled else { return }; sp.play("saugstart") }

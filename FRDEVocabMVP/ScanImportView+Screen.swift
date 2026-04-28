@@ -136,10 +136,10 @@ extension ScanImportView {
                                         .lineLimit(2)
                                     Text(reviewWordClassLabel(for: pair))
                                         .font(.system(size: 10, weight: .bold, design: .rounded))
-                                        .foregroundStyle(reviewWordClassColor(for: pair))
+                                        .foregroundStyle(reviewWordClassForeground(for: pair))
                                         .padding(.horizontal, 6)
                                         .padding(.vertical, 2)
-                                        .background(reviewWordClassColor(for: pair).opacity(0.15))
+                                        .background(reviewWordClassBackground(for: pair))
                                         .clipShape(Capsule())
                                 }
                                 Text(pair.german)
@@ -210,13 +210,16 @@ extension ScanImportView {
 
             Divider().opacity(0.3)
 
-            // Fixed footer — Import button only
+            // Fixed footer — Import button only.
+            // **2026-04-22 Abend V**: ruft jetzt `beginImportTargetChoice()`
+            // statt direkt `importScannedText()`. Der User sieht zuerst
+            // ein Sheet mit der Wahl „neue Liste" vs. „bestehende Liste".
             VStack(spacing: 0) {
                 Button {
                     isShowingFullscreenReview = false
                     session.batchCompleted = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                        importScannedText()
+                        beginImportTargetChoice()
                     }
                 } label: {
                     Label("Jetzt importieren", systemImage: "square.and.arrow.down.fill")
@@ -483,6 +486,49 @@ extension ScanImportView {
         let wc = resolvedWordClass(for: pair)
         if wc == nil && pair.cardType == .phrases { return AppTheme.Colors.textSecondary }
         return Self.wordClassColor(wc)
+    }
+
+    // MARK: - Pill-Kontrast (Fix 2026-04-25)
+    //
+    // Vorher: `foreground = tintColor`, `background = tintColor.opacity(0.15)`
+    // — bei dunkelblauen Tint-Farben (`moduleVerbs`, `modulePractice`)
+    // erzeugte das im Dark-Mode-ähnlichen Kontext blau-auf-blau-Pills,
+    // die kaum lesbar waren.
+    //
+    // Jetzt: Wortklassen mit DUNKLEN Tints (aktuell `verb` + `adverb`)
+    // bekommen eine **solide** Background-Füllung und **weißen** Text —
+    // maximaler Kontrast. Helle/mittlere Tints behalten das bisherige
+    // „tinted-background + colored-text"-Schema.
+    //
+    // Diese Zweiteilung ist bewusst klein gehalten — keine neue
+    // Farbsemantik, nur Lesbarkeits-Fix.
+
+    /// True, wenn die Pill für diese Wortklasse einen dunklen Hintergrund
+    /// + weißen Text bekommen soll. Aktuell `verb` und `adverb` (beide
+    /// nutzen tiefe Blau-Töne, die mit Text in derselben Farbe keinen
+    /// Kontrast liefern).
+    private func shouldUseSolidDarkPill(for pair: ImportPreviewPair) -> Bool {
+        switch resolvedWordClass(for: pair) {
+        case "verb", "adverb":
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// Foreground-Farbe für den Pill-Text. Weiß auf dunklen Tints,
+    /// sonst der Tint selbst (bisheriges Verhalten).
+    func reviewWordClassForeground(for pair: ImportPreviewPair) -> Color {
+        shouldUseSolidDarkPill(for: pair) ? .white : reviewWordClassColor(for: pair)
+    }
+
+    /// Background-Farbe für den Pill. Für dunkle Tints solide (volle
+    /// Farbe mit leichtem Dämpfer), sonst 15%-tint wie bisher.
+    func reviewWordClassBackground(for pair: ImportPreviewPair) -> Color {
+        let base = reviewWordClassColor(for: pair)
+        return shouldUseSolidDarkPill(for: pair)
+            ? base.opacity(0.88)
+            : base.opacity(0.15)
     }
 
     static func wordClassColor(_ wc: String?) -> Color {

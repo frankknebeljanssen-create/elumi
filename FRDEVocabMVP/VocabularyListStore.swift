@@ -107,6 +107,30 @@ final class VocabularyListStore: ObservableObject {
             print("⏱ [ListStore.init] dual-form migration applied; lists updated.")
         }
         #endif
+
+        // One-shot Phrase-Noun-Capitalization-Migration (User-Wunsch
+        // 2026-04-22): in Phrasen-Einträgen wird jedes deutsche Wort
+        // kapitalisiert, das im Nomen-Lexikon vorkommt. Geguarded durch
+        // UserDefaults-Flag, läuft also nur einmal pro Installation.
+        let didCapitalize = PhraseNounCapitalizationMigration.applyIfNeeded(to: &customLists)
+        #if DEBUG
+        if didCapitalize {
+            print("⏱ [ListStore.init] phrase-noun capitalization migration applied.")
+        }
+        #endif
+
+        // One-shot Known-Bad-Entries-Migration (User-Wunsch 2026-04-22
+        // Abend): korrigiert bekannte Fehleinträge in Custom-Listen
+        // (z. B. „dur" → „gekochtes Ei" ersetzen durch „l'œuf dur"
+        // → „das gekochte Ei"). Zentrale Liste in
+        // `VocabularyKnownBadEntriesMigration.corrections`.
+        let didFixKnownBad = VocabularyKnownBadEntriesMigration.applyIfNeeded(to: &customLists)
+        #if DEBUG
+        if didFixKnownBad {
+            print("⏱ [ListStore.init] known-bad-entries migration applied.")
+        }
+        #endif
+
         print("⏱ [ListStore.init] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
 
         // **Phase E.2** — auf Account-Switches reagieren: die

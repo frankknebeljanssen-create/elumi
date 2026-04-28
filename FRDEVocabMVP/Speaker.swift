@@ -18,7 +18,12 @@ final class Speaker: NSObject, ObservableObject, @preconcurrency AVSpeechSynthes
         languageCode: String,
         rate: Float = 0.48,
         pitchMultiplier: Float = 1.0,
-        volume: Float = 0.82
+        // **User-Revision 2026-04-22**: TTS-Volume 0.82 → 0.62 —
+        // die SFX-Sounds (AVAudioPlayer, gecappt bei 1.0) wirkten bei
+        // 0.82 deutlich leiser als die Sprache, weil TTS unter einem
+        // anderen Pfad dröhnt als File-Playback. Absenken gleicht die
+        // wahrgenommene Lautstärke an SFX wie „cardflip" an.
+        volume: Float = 0.62
     ) {
         synth.stopSpeaking(at: .immediate)
         isSpeaking = false
@@ -31,7 +36,23 @@ final class Speaker: NSObject, ObservableObject, @preconcurrency AVSpeechSynthes
         }
 
         let utterance = AVSpeechUtterance(string: Self.spokenText(from: text))
-        utterance.voice = AVSpeechSynthesisVoice(language: languageCode)
+        // **Voice-Phase-9**: Zentrale Resolver-API nutzen, damit die
+        // vom User gewählte Apple-Stimme (Vicki / Yannick / Thomas)
+        // benutzt wird, mit sauberem Fallback auf System-Default, falls
+        // die gewünschte Stimme nicht installiert ist. Sprach-Mapping
+        // basiert auf dem BCP-47-Präfix; unbekannte Sprachen fallbacken
+        // transparent auf `AVSpeechSynthesisVoice(language:)`.
+        let resolved: AVSpeechSynthesisVoice? = {
+            let lower = languageCode.lowercased()
+            if lower.hasPrefix("de") {
+                return SpeechVoiceService.shared.resolvedVoice(for: .german)
+            }
+            if lower.hasPrefix("fr") {
+                return SpeechVoiceService.shared.resolvedVoice(for: .french)
+            }
+            return AVSpeechSynthesisVoice(language: languageCode)
+        }()
+        utterance.voice = resolved
         utterance.rate = rate
         utterance.pitchMultiplier = pitchMultiplier
         utterance.volume = volume

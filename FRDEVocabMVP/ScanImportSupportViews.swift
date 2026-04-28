@@ -1,13 +1,9 @@
 import SwiftUI
 
-private struct HomeCardPressStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .opacity(configuration.isPressed ? 0.84 : 1)
-            .scaleEffect(configuration.isPressed ? 0.975 : 1)
-            .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
-    }
-}
+// Phase 7.6 Cleanup: lokaler `HomeCardPressStyle` entfernt — der
+// systemweite `AppCardPressStyle` (siehe `AppButtonStyles.swift`)
+// übernimmt diese Rolle. Der Scan-Import-Flow nutzt bereits die
+// zentrale Variante (siehe Button-Aufrufe weiter unten).
 
 struct ImportCompletionView: View {
     let context: ImportCompletionContext
@@ -78,6 +74,27 @@ struct ImportCompletionView: View {
                 .padding(16)
                 .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft, cornerRadius: 16)
 
+                // **„Liste ansehen" — Primärer vollbreiter CTA**
+                // (User-Spec 2026-04-23 abends): über „Was möchtest du
+                // sofort üben" platziert, mit Eye-Icon und sichtbar
+                // größerer Font für klare Hauptaktion-Anmutung.
+                Button {
+                    guard !isNavigationLocked else { return }
+                    isNavigationLocked = true
+                    onViewList()
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "eye.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                        Text("Liste ansehen")
+                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 50)
+                }
+                .buttonStyle(AppSecondaryButtonStyle(tint: .white))
+
                 // Question — outside card
                 Text("Was möchtest du sofort üben?")
                     .font(.system(size: 22, weight: .black, design: .rounded))
@@ -89,50 +106,28 @@ struct ImportCompletionView: View {
                 // Section`: 2-Spalten-`LazyVGrid`, Cards mit 1.15-Aspect,
                 // Gradient-Background in Modul-Accent, große Home-Icons
                 // (kein SF-Symbol-Mix). 8 Kacheln in fester Home-Reihen-
-                // folge. Karteikarten ist **nicht** mehr full-width,
-                // sondern gleich groß wie die anderen.
+                // folge.
                 LazyVGrid(columns: gridColumns, spacing: 8) {
                     ForEach(Self.moduleOrder) { module in
                         completionHomeStyleCard(module: module)
                     }
                 }
 
-                // Action-Row: „Liste ansehen" + „Ich übe später" — beide
-                // mit weißem Text/Icon (User-Spec). „Liste ansehen"
-                // bekommt das Listen-Icon aus dem Home-Set
-                // (`HomeModuleIcon.listen`), damit die Tap-Absicht
-                // sofort erkennbar ist; „Ich übe später" bleibt
-                // text-only, damit die Aktion sekundär wirkt.
-                HStack(spacing: 10) {
-                    Button {
-                        guard !isNavigationLocked else { return }
-                        isNavigationLocked = true
-                        onViewList()
-                    } label: {
-                        HStack(spacing: 6) {
-                            HomeModuleIconView(icon: .listen, size: 20)
-                            Text("Liste ansehen")
-                                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundStyle(.white)
-                        }
+                // **„Ich übe später" — Sekundärer vollbreiter CTA**
+                // (User-Spec 2026-04-23 abends): unter dem Module-Grid,
+                // ebenfalls vollbreit und sichtbar größere Font.
+                Button {
+                    guard !isNavigationLocked else { return }
+                    isNavigationLocked = true
+                    onLater()
+                } label: {
+                    Text("Ich übe später")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
-                        .frame(minHeight: 36)
-                    }
-                    .buttonStyle(AppSecondaryButtonStyle(tint: .white))
-
-                    Button {
-                        guard !isNavigationLocked else { return }
-                        isNavigationLocked = true
-                        onLater()
-                    } label: {
-                        Text("Ich übe später")
-                            .font(.system(size: 13, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(minHeight: 36)
-                    }
-                    .buttonStyle(AppSecondaryButtonStyle(tint: .white))
+                        .frame(minHeight: 50)
                 }
+                .buttonStyle(AppSecondaryButtonStyle(tint: .white))
             }
             .padding(AppLayout.screenPadding)
             // Bottom-Clearance, damit der letzte Block (Liste ansehen /

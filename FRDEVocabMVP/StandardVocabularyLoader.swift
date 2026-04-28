@@ -13,9 +13,48 @@ enum StandardVocabularyLoader {
         let gender: String         // m, f, or empty
         let topic: String          // Essen & Trinken, Familie & Freunde, etc.
         let frequency: Double
+        /// Quelle des Genus-Werts — für Transparenz in der UI und
+        /// spätere Review-Tools. Leer/default = aus DB direkt.
+        /// Wird durch den `FrenchGenderResolver`-Pass gefüllt, wenn die
+        /// DB selbst kein Genus hatte.
+        let genderSource: FrenchGenderSource
+        let genderConfidence: Double
+
+        init(
+            sourceDisplay: String,
+            target: String,
+            cardType: CardType,
+            level: String,
+            wordClass: String,
+            gender: String,
+            topic: String,
+            frequency: Double,
+            genderSource: FrenchGenderSource = .explicitArticle,
+            genderConfidence: Double = 1.0
+        ) {
+            self.sourceDisplay = sourceDisplay
+            self.target = target
+            self.cardType = cardType
+            self.level = level
+            self.wordClass = wordClass
+            self.gender = gender
+            self.topic = topic
+            self.frequency = frequency
+            self.genderSource = genderSource
+            self.genderConfidence = genderConfidence
+        }
     }
 
-    static let allEntries: [Entry] = loadEntries()
+    /// **Master-Entry-Liste.** Wird einmal pro App-Start berechnet:
+    ///   1. `loadEntries()`  — rohes SQLite-Ergebnis
+    ///   2. `postProcessResolveGenders(_:)` — Genus-Pipeline für Nomen
+    ///      ohne `gender_fr`: Artikel-Parse → Plural-Lookup → Heuristik.
+    ///      KI-Overrides werden später (Phase 2) aus einer Bundle-
+    ///      Ressource geladen und hier priorisiert; Platzhalter unten.
+    static let allEntries: [Entry] = {
+        let raw = loadEntries()
+        return postProcessResolveGenders(raw)
+    }()
 
     /// Vorgefilterter Pool für Distraktoren im Verb-Training (Verb-MC).
     /// `prepareVerbMCOptions` wird bei jedem Karten-Wechsel aufgerufen —
@@ -31,6 +70,38 @@ enum StandardVocabularyLoader {
     static let nounEntries: [Entry] = allEntries.filter {
         $0.wordClass == "noun" && !$0.target.isEmpty && !$0.sourceDisplay.isEmpty
     }
+
+    /// Lookup-Set aller **deutschen Nomen** (lowercased). Wird vom
+    /// zentralen `TextNormalizationEngine` genutzt, um in
+    /// zusammengesetzten Phrasen wie „den Regenschutz für den
+    /// Kinderwagen vorbereiten" jedes Wort, das ein Nomen ist,
+    /// korrekt großzuschreiben — auch wenn es NICHT das letzte
+    /// Token der Phrase ist (der bisherige Default „nach Artikel nur
+    /// letztes Token groß" hat diese Fälle fälschlich kleingeschrieben).
+    ///
+    /// Aufbaustrategie: Wir iterieren alle `nounEntries` und
+    /// sammeln aus jedem `target` alle Tokens, die mit einem
+    /// Großbuchstaben beginnen (inklusive Kompositum-Nomen wie
+    /// „der Regenschirm für den Schulranzen" → „Regenschirm" UND
+    /// „Schulranzen" landen im Set). Artikel/Präpositionen/Adjektive
+    /// bleiben klein in der DB und landen deshalb nicht im Set.
+    static let germanNounSet: Set<String> = {
+        var set: Set<String> = []
+        for entry in nounEntries {
+            let germanTrim = entry.target.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !germanTrim.isEmpty else { continue }
+            let tokens = germanTrim.split(separator: " ").map(String.init)
+            for token in tokens {
+                guard let first = token.first, first.isUppercase else { continue }
+                let cleaned = token
+                    .lowercased()
+                    .trimmingCharacters(in: CharacterSet.punctuationCharacters)
+                guard !cleaned.isEmpty else { continue }
+                set.insert(cleaned)
+            }
+        }
+        return set
+    }()
 
     /// Lookup-Tabelle Französisch-Lemma → Genus (Roh-String aus DB: „m",
     /// „f", gelegentlich auch leere Einträge = keine Aussage). Wird vom
@@ -82,9 +153,21 @@ enum StandardVocabularyLoader {
             ].joined(separator: "|")
             guard seen.insert(key).inserted else { return nil }
 
+            // **2026-04-25 Nomen-Kapitalisierung (Standard-Wortschatz)**:
+            // Die SQLite-Quelle enthält teilweise kleingeschriebene
+            // deutsche Nomen. Für `wordClass == "noun"` normalisieren
+            // wir hier an der zentralen Loader-Stelle — einmalig beim
+            // App-Start, danach sehen alle Konsumenten (Flashcards,
+            // Quiz, Lexikon, Training, …) die korrekt kapitalisierte
+            // Form. Nicht-Nomen bleiben unangetastet.
+            let normalizedGerman = normalizeGermanNounTarget(
+                entry.target,
+                wordClass: entry.wordClass
+            )
+
             return VocabularyItem(
                 rawFrench: entry.sourceDisplay,
-                rawGerman: entry.target,
+                rawGerman: normalizedGerman,
                 cardType: cardType,
                 level: vocabularyLevel(for: entry.level),
                 sourceLanguage: .french,
@@ -92,6 +175,18 @@ enum StandardVocabularyLoader {
             )
         }
     }()
+
+    // MARK: - Nomen-Kapitalisierung (2026-04-25)
+    //
+    // Delegation an die zentrale Utility `GermanNounCapitalization`.
+    // Bewusst als Wrapper erhalten, damit der Loader-Call-Site
+    // (`vocabularyItems`-Konstruktor) lesbar bleibt.
+
+    /// POS-gated Nomen-Kapitalisierung. Siehe
+    /// `GermanNounCapitalization.normalizeGermanNounTarget`.
+    static func normalizeGermanNounTarget(_ target: String, wordClass: String) -> String {
+        GermanNounCapitalization.normalizeGermanNounTarget(target, wordClass: wordClass)
+    }
 
     static func items(for level: String) -> [VocabularyItem] {
         vocabularyItems.enumerated().compactMap { index, item in
@@ -519,6 +614,179 @@ enum StandardVocabularyLoader {
     }()
 
     // MARK: - Private
+
+    // MARK: - Post-Processing: Genus-Pipeline
+
+    /// Zentrale Schnittstelle für den `FrenchGenderResolver`. Läuft
+    /// **einmal** beim App-Start:
+    ///
+    /// Für jeden Nomen-Eintrag:
+    ///   • Wenn `gender_fr` bereits aus DB gefüllt → unverändert lassen,
+    ///     `genderSource = .explicitArticle` (DB hat meist aus Artikel
+    ///     abgeleitet)
+    ///   • Wenn `gender_fr` leer → `FrenchGenderResolver.resolve`
+    ///     aufrufen mit Plural-Singular-Lookup und optionalen KI-
+    ///     Overrides
+    ///   • Ergebnis: Entry mit gefülltem `gender`, normalisiertem
+    ///     `sourceDisplay` (inkl. Artikel), `genderSource` und
+    ///     `genderConfidence`
+    private static func postProcessResolveGenders(_ raw: [Entry]) -> [Entry] {
+        #if DEBUG
+        // Self-Tests für die Plural-Artikel-Regeln. Crash-früh bei
+        // Regression, damit wir Pipeline-Bugs sofort im Console-Log
+        // sehen.
+        FrenchGenderResolverSelfTest.runIfNeeded()
+        #endif
+
+        // Lookup-Tabelle für Plural-Schritt 2a aufbauen:
+        // aus allen Einträgen mit eindeutigem Artikel (le/la) eine
+        // Map Core → Genus ableiten, damit wir bei „les X" nachschlagen
+        // können.
+        let singularGenderMap = buildSingularGenderMap(raw)
+        let aiOverrides = loadAIGenderOverrides()
+
+        var resolved: [Entry] = []
+        resolved.reserveCapacity(raw.count)
+        var counts = (explicitArticle: 0, dbLookup: 0, heuristic: 0, aiOverride: 0, unknown: 0, alreadyFilled: 0)
+
+        for entry in raw {
+            guard entry.wordClass == "noun" else {
+                resolved.append(entry)
+                continue
+            }
+
+            // DB hat bereits ein Genus? → nicht anfassen.
+            if !entry.gender.isEmpty {
+                counts.alreadyFilled += 1
+                resolved.append(entry)
+                continue
+            }
+
+            let resolution = FrenchGenderResolver.resolve(
+                rawLemma: entry.sourceDisplay,
+                pluralLookup: { core in
+                    singularGenderMap[core.lowercased()]
+                },
+                aiOverrides: aiOverrides
+            )
+
+            switch resolution.source {
+            case .explicitArticle: counts.explicitArticle += 1
+            case .dbLookup:        counts.dbLookup += 1
+            case .heuristic:       counts.heuristic += 1
+            case .aiOverride:      counts.aiOverride += 1
+            case .unknown:         counts.unknown += 1
+            }
+
+            let newGender = resolution.gender?.rawValue ?? ""
+            resolved.append(
+                Entry(
+                    sourceDisplay: resolution.normalizedLemma,
+                    target: entry.target,
+                    cardType: entry.cardType,
+                    level: entry.level,
+                    wordClass: entry.wordClass,
+                    gender: newGender,
+                    topic: entry.topic,
+                    frequency: entry.frequency,
+                    genderSource: resolution.source,
+                    genderConfidence: resolution.confidence
+                )
+            )
+        }
+
+        #if DEBUG
+        print("""
+        🔤 [GenderResolver] Master-Pass abgeschlossen:
+           DB-vorhanden:  \(counts.alreadyFilled)
+           explicit art:  \(counts.explicitArticle)
+           DB-Lookup:     \(counts.dbLookup)
+           heuristic:     \(counts.heuristic)
+           ai-override:   \(counts.aiOverride)
+           unknown:       \(counts.unknown)
+        """)
+        #endif
+        return resolved
+    }
+
+    /// Baut aus allen Einträgen mit eindeutigem Genus (aus DB oder
+    /// Artikel) eine Map Core → Genus. Wird vom Resolver-Plural-
+    /// Lookup konsumiert: „les amis" → core „amis" → singular „ami"
+    /// via morphologische Pluralrückführung → Map-Treffer → m.
+    private static func buildSingularGenderMap(_ entries: [Entry]) -> [String: FrenchGenderHeuristicRules.Gender] {
+        var map: [String: FrenchGenderHeuristicRules.Gender] = [:]
+        for entry in entries where entry.wordClass == "noun" && !entry.gender.isEmpty {
+            let gender: FrenchGenderHeuristicRules.Gender? = {
+                switch entry.gender.lowercased() {
+                case "m": return .masculine
+                case "f": return .feminine
+                default:  return nil
+                }
+            }()
+            guard let g = gender else { continue }
+            // Core extrahieren
+            let (_, core, _) = FrenchGenderResolver.splitArticleAndCore(entry.sourceDisplay)
+            let key = core.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !key.isEmpty else { continue }
+            // Direkter Key (z. B. „ami")
+            if map[key] == nil { map[key] = g }
+            // Pluralrückführung: „amis" → „ami", „écoles" → „école"
+            // Simpler Regel: -s/-x am Ende entfernen
+            if key.hasSuffix("s") || key.hasSuffix("x") {
+                let stem = String(key.dropLast())
+                if !stem.isEmpty, map[stem] == nil { map[stem] = g }
+            }
+        }
+        return map
+    }
+
+    /// Lädt optionale KI-Genus-Overrides aus einer Bundle-Ressource
+    /// (`gender_ai_overrides.json`). Format:
+    ///
+    /// ```json
+    /// {
+    ///   "eau":   { "gender": "f", "confidence": 0.99 },
+    ///   "homme": { "gender": "m", "confidence": 0.99 }
+    /// }
+    /// ```
+    ///
+    /// Wird von Phase 2 (Python-Pipeline `tools/gender_ai_resolver.py`)
+    /// generiert. Wenn die Datei nicht im Bundle liegt, läuft die
+    /// Pipeline ohne KI-Anteil — Heuristik + Plural-Lookup bleiben aktiv.
+    private static func loadAIGenderOverrides() -> [String: (gender: FrenchGenderHeuristicRules.Gender, confidence: Double)]? {
+        guard let url = Bundle.main.url(forResource: "gender_ai_overrides", withExtension: "json") else {
+            return nil
+        }
+        do {
+            let data = try Data(contentsOf: url)
+            struct RawOverride: Decodable {
+                let gender: String
+                let confidence: Double
+            }
+            let raw = try JSONDecoder().decode([String: RawOverride].self, from: data)
+            var parsed: [String: (gender: FrenchGenderHeuristicRules.Gender, confidence: Double)] = [:]
+            for (key, value) in raw {
+                let gender: FrenchGenderHeuristicRules.Gender? = {
+                    switch value.gender.lowercased() {
+                    case "m", "masculine": return .masculine
+                    case "f", "feminine":  return .feminine
+                    default: return nil
+                    }
+                }()
+                guard let g = gender else { continue }
+                parsed[key.lowercased()] = (g, value.confidence)
+            }
+            #if DEBUG
+            print("🔤 [GenderResolver] \(parsed.count) KI-Overrides geladen aus Bundle.")
+            #endif
+            return parsed.isEmpty ? nil : parsed
+        } catch {
+            #if DEBUG
+            print("🔤 [GenderResolver] Fehler beim Laden von gender_ai_overrides.json: \(error)")
+            #endif
+            return nil
+        }
+    }
 
     private static func loadEntries() -> [Entry] {
         guard let result = SupplementalFreeDictLexicon.withReadOnlyDatabase({ database -> [Entry] in

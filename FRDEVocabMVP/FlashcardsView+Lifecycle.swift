@@ -108,6 +108,22 @@ extension FlashcardsView {
                         speaker: speaker,
                         dismissTypedAnswerFocus: { dismissTypedAnswerFocus() }
                     )
+                    // **Personal-Deck-Teardown-Sync (Phase 8)**: wird hier
+                    // ZUSÄTZLICH gefeuert, damit auch ein Swipe-Dismiss
+                    // (iOS-Pop-Gesture) und andere View-Teardown-Pfade,
+                    // die nicht über `returnToFlashcardSetup()` /
+                    // `handleBackNavigation()` laufen, den aktuellen
+                    // Stand des Persönlichen Stapels wegschreiben.
+                    syncPersonalDeckProgressIfNeeded()
+                }
+                // **Scene-Phase-Sync**: App wechselt in den Background →
+                // der Per-Card-Sink hat den aktuellen Stand schon live
+                // gespeichert, aber wir wollen lastAccessedAt trotzdem
+                // aktuell halten und sicherheitshalber doppelt absichern.
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .background || phase == .inactive {
+                        syncPersonalDeckProgressIfNeeded()
+                    }
                 }
         )
     }

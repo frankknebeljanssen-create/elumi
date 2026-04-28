@@ -61,6 +61,22 @@ final class VocabularyListStoreRepository {
         return Storage.customListsFileName
     }
 
+    /// **Last-Known-Good-Backup** (Persistenz-Schutz 2026-04-23 nacht):
+    /// neben der Hauptdatei pflegen wir eine `.lastKnownGood.json`-Kopie,
+    /// die nur dann aktualisiert wird, wenn der Save mit **nicht-leerem**
+    /// Inhalt erfolgreich durchläuft. Falls die Hauptdatei je korrupt
+    /// wird (Decode-Fehler, leerer Read), wird der LKG-Backup beim
+    /// Load als zusätzlicher Recovery-Pfad konsultiert — VOR dem
+    /// UserDefaults-Backup.
+    fileprivate func currentLastKnownGoodFileName() -> String {
+        let main = currentScopedFileName()
+        // .json → .lastKnownGood.json
+        let base = main.hasSuffix(".json")
+            ? String(main.dropLast(".json".count))
+            : main
+        return "\(base).lastKnownGood.json"
+    }
+
     func prewarmStoredStateIfNeeded(
         customListsKey: String,
         selectedListKey: String,
@@ -120,26 +136,54 @@ final class VocabularyListStoreRepository {
         key: String,
         snapshot: VocabularyListStoreSnapshot
     ) {
-        if let data = try? JSONEncoder().encode(customLists) {
-            AppPersistenceSupport.writeData(data, named: currentScopedFileName())
-            // **Redundanter Backup-Pfad** (Safety-Net gegen Datei-
-            // Level-Verlust): zusätzlich eine Kopie in UserDefaults.
-            // Wenn die Haupt-Datei irgendwie weg kommt (iCloud-Sync-
-            // Glitch, Simulator-Quirk, Dev-Wipe), hat `loadSnapshotFromDefaults`
-            // diesen Fallback-Weg über `AppPersistenceSupport.readData
-            // (legacyDefaults:, legacyKey:)`. Der Pfad existierte
-            // bereits für die ursprüngliche Migration UserDefaults→Datei;
-            // wir reaktivieren ihn jetzt als dauerhaftes Backup.
-            userDefaults.set(data, forKey: key)
+        // **Persistenz-Schutz 2026-04-23 nacht**: Pre-Save-Sanity-Check.
+        // Wenn der neue Stand drastisch kleiner als der aktuell gecachte
+        // ist (z. B. plötzlich leer obwohl vorher 100 Listen drin waren),
+        // ist das ein starkes Indiz für einen UI-State-Bug. Wir blockieren
+        // den Save NICHT (echte User-Aktionen wie „alles löschen" sind
+        // gültig), aber wir loggen LAUT, sodass solche Vorfälle in der
+        // Console sofort sichtbar sind.
+        let cachedCount = preloadedSnapshot?.customLists.count ?? -1
+        let newCount = customLists.count
+        if cachedCount > 0 && newCount == 0 {
             #if DEBUG
-            print("💾 [ListStore.save] \(customLists.count) custom lists persisted " +
-                  "(file + UserDefaults backup, \(data.count) bytes)")
+            print("⚠️ [ListStore.save] DANGER: customLists wechselt von \(cachedCount) → 0. " +
+                  "Sicher dass das ein User-Action-Reset war? Last-Known-Good bleibt erhalten.")
             #endif
-        } else {
+        } else if cachedCount > 10 && newCount < cachedCount / 2 {
             #if DEBUG
-            print("❌ [ListStore.save] JSON encoding failed — data NOT saved!")
+            print("⚠️ [ListStore.save] DANGER: Listenzahl halbiert sich (\(cachedCount) → \(newCount)). " +
+                  "Last-Known-Good bleibt vorerst erhalten.")
             #endif
         }
+
+        guard let data = try? JSONEncoder().encode(customLists) else {
+            #if DEBUG
+            print("❌ [ListStore.save] JSON encoding failed — data NOT saved! " +
+                  "Last-Known-Good unverändert, aktueller Cache bleibt.")
+            #endif
+            return
+        }
+
+        AppPersistenceSupport.writeData(data, named: currentScopedFileName())
+        // **Redundanter Backup-Pfad** (Safety-Net gegen Datei-Level-
+        // Verlust): zusätzlich eine Kopie in UserDefaults.
+        userDefaults.set(data, forKey: key)
+
+        // **Last-Known-Good-Update**: nur wenn der neue Stand
+        // **non-empty** ist. So bleibt bei einem versehentlichen
+        // Leer-Save der LKG-Stand mit den letzten echten Daten erhalten.
+        // Caller (z. B. Migrations) können den LKG dadurch nicht
+        // versehentlich „leer-überschreiben".
+        if newCount > 0 {
+            AppPersistenceSupport.writeData(data, named: currentLastKnownGoodFileName())
+        }
+
+        #if DEBUG
+        print("💾 [ListStore.save] \(newCount) custom lists persisted " +
+              "(file + UserDefaults + \(newCount > 0 ? "LKG-backup" : "LKG-skipped"), \(data.count) bytes)")
+        #endif
+
         cache(snapshot)
     }
 
@@ -168,47 +212,85 @@ final class VocabularyListStoreRepository {
         var loadedCustomLists: [VocabularyList] = []
         var shouldPersistMigratedLists = false
         var loadSource = "none"
+        // **Persistenz-Schutz 2026-04-23 nacht**: Korruption getrennt
+        // tracken. Wenn die Hauptdatei VORHANDEN aber NICHT decodierbar
+        // ist, ist das ein Datenverlust-Signal — kein „Fresh Install".
+        // In diesem Fall NIEMALS Sample-Seeding triggern (würde die
+        // Korruption stillschweigend mit Defaults überschreiben).
+        var mainFileWasCorrupt = false
+
+        let fileName = currentScopedFileName()
+        let mainFileExisted = AppPersistenceSupport.fileExists(named: fileName)
 
         if let data = AppPersistenceSupport.readData(
-            named: currentScopedFileName(),
+            named: fileName,
             legacyDefaults: userDefaults,
             legacyKey: customListsKey
-        ),
-           let decoded = try? JSONDecoder().decode([VocabularyList].self, from: data) {
-            loadedCustomLists = decoded
-            loadSource = decoded.isEmpty ? "file-empty" : "file"
+        ) {
+            if let decoded = try? JSONDecoder().decode([VocabularyList].self, from: data) {
+                loadedCustomLists = decoded
+                loadSource = decoded.isEmpty ? "file-empty" : "file"
+            } else {
+                // Datei vorhanden, aber Decode fehlgeschlagen → Korruption.
+                mainFileWasCorrupt = true
+                loadSource = "file-corrupt"
+                #if DEBUG
+                print("🚨 [ListStore.load] CORRUPTION detected: main file present (\(data.count) bytes) but decode failed!")
+                #endif
+            }
         }
 
-        // **Recovery-Pfad** (Safety-Net): Wenn die Datei leer zurückkam
-        // oder fehlschlug, aber der parallele UserDefaults-Backup-Key
-        // noch Daten hat → von dort wiederherstellen. Das schützt
-        // gegen Szenarien wie Application-Support-Ordner-Wipe durch
-        // externe Tools (Dev-Klones, iCloud-Sync-Konflikte, Simulator-
-        // Quirks).
+        // **Recovery-Pfad 1**: Last-Known-Good-Backup (höchste Priorität,
+        // weil nur befüllt wird, wenn ein erfolgreicher Save mit
+        // non-empty Inhalt durchlief).
+        if loadedCustomLists.isEmpty {
+            let lkgFileName = currentLastKnownGoodFileName()
+            if let lkgData = AppPersistenceSupport.readDataIfFileExists(named: lkgFileName),
+               let decoded = try? JSONDecoder().decode([VocabularyList].self, from: lkgData),
+               !decoded.isEmpty {
+                loadedCustomLists = decoded
+                loadSource = "last-known-good"
+                shouldPersistMigratedLists = true
+                #if DEBUG
+                print("✅ [ListStore.load] recovered \(decoded.count) lists from Last-Known-Good backup")
+                #endif
+            }
+        }
+
+        // **Recovery-Pfad 2**: UserDefaults-Backup (existierte schon
+        // vorher — wir lassen es als Doppel-Sicherung drin).
         if loadedCustomLists.isEmpty {
             if let backup = userDefaults.data(forKey: customListsKey),
                let decoded = try? JSONDecoder().decode([VocabularyList].self, from: backup),
                !decoded.isEmpty {
                 loadedCustomLists = decoded
                 loadSource = "userDefaults-recovery"
-                shouldPersistMigratedLists = true  // zurück in die Datei schreiben
+                shouldPersistMigratedLists = true
                 #if DEBUG
-                print("⚠️ [ListStore.load] file was empty/missing — recovered \(decoded.count) lists from UserDefaults backup")
+                print("⚠️ [ListStore.load] file was empty/missing/corrupt — recovered \(decoded.count) lists from UserDefaults backup")
                 #endif
             }
         }
 
         #if DEBUG
         if loadedCustomLists.isEmpty {
-            print("⚠️ [ListStore.load] WARNING: no custom lists found (source=\(loadSource)). " +
-                  "Fresh install OR data loss — check `Persistence/\(Storage.customListsFileName)` " +
-                  "and UserDefaults key `\(customListsKey)`.")
+            if mainFileWasCorrupt {
+                print("🚨 [ListStore.load] CRITICAL: Main file corrupt AND no recovery backup available. " +
+                      "Sample-Seeding wird übersprungen, um die Korruption nicht zu verschleiern.")
+            } else {
+                print("ℹ️ [ListStore.load] no custom lists found (source=\(loadSource)). " +
+                      "mainFileExisted=\(mainFileExisted) — \(mainFileExisted ? "empty file" : "fresh install").")
+            }
         } else {
             print("📦 [ListStore.load] \(loadedCustomLists.count) custom lists loaded from \(loadSource)")
         }
         #endif
 
-        if !userDefaults.bool(forKey: sampleListsSeededKey) {
+        // **Persistenz-Schutz 2026-04-23 nacht**: Sample-Seeding NUR,
+        // wenn die Hauptdatei nicht korrupt war. Sonst würde ein
+        // Decode-Failure stillschweigend zu „neuer Account mit Samples"
+        // werden und die echten User-Daten überschrieben werden.
+        if !userDefaults.bool(forKey: sampleListsSeededKey) && !mainFileWasCorrupt {
             for seed in sampleSeeds {
                 guard !loadedCustomLists.contains(where: {
                     $0.name.localizedCaseInsensitiveCompare(seed.name) == .orderedSame
@@ -226,6 +308,13 @@ final class VocabularyListStoreRepository {
 
             userDefaults.set(true, forKey: sampleListsSeededKey)
             shouldPersistMigratedLists = true
+            #if DEBUG
+            print("🌱 [ListStore.load] Sample-Seeding ausgeführt (\(sampleSeeds.count) Seeds geprüft)")
+            #endif
+        } else if mainFileWasCorrupt {
+            #if DEBUG
+            print("🚨 [ListStore.load] Sample-Seeding ÜBERSPRUNGEN wegen Datei-Korruption — manueller Recovery nötig.")
+            #endif
         }
 
         let selectedListID: UUID

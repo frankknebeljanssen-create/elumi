@@ -239,6 +239,15 @@ struct ElumiArcadeGameView: View {
     @ObservedObject var feedbackPlayer: FeedbackPlayer
     @AppStorage(appElumiArcadeHighScoreKey) var highScore = 0
     @AppStorage(appArcadeCreditsKey) var arcadeCredits = 0
+    /// **Play-Credits** (2026-04-24 Test-System) — persistent durch
+    /// Slot-Spins verdient, im Spiel für Rescue (Tot-abwenden) und
+    /// Skip (Runde überspringen) verbraucht. Bewusst getrennt vom
+    /// globalen `arcadeCredits` („1 Credit = 1 Spielstart").
+    @ObservedObject var playCredits = ElumiCreditsStore.shared
+    /// Wenn `true`, ist bereits eine Rescue-Entscheidung für das
+    /// aktuelle Game-Over gefallen (Accept oder Skip). Verhindert
+    /// Doppel-Taps und das wiederholte Anzeigen des Prompts.
+    @State var rescueConsumedForCurrentGameOver: Bool = false
     /// Wenn `true`, wird das Start-Overlay übersprungen und das Spiel beginnt
     /// direkt — Credit-Abzug und „Spiel starten"-CTA sind dann Aufgabe der
     /// aufrufenden View (z. B. `GameHubView`). Default `false` bewahrt das
@@ -341,7 +350,12 @@ struct ElumiArcadeGameView: View {
     // bekommen. Der User kann die Regeln bei Bedarf ausklappen.
     @State var isShowingArcadeRules = false
 
-    let maxMisses = 4
+    /// **Start-Leben** pro Runde. `static` damit der Start-Screen-
+    /// Card (Phase 7.5) den Wert lesen kann, ohne eine Instanz zu
+    /// brauchen — der Credit-Hero-Card zeigt vor dem Start schon
+    /// „4 Leben" + 4 Mini-Elumis.
+    static let maxMisses = 4
+    var maxMisses: Int { Self.maxMisses }
     let suctionDuration: TimeInterval = 4.6
     let bonusPointsDuration: TimeInterval = 5.0
     let slowMotionDuration: TimeInterval = 0.55

@@ -4,6 +4,14 @@ import SwiftUI
 extension FlashcardsSessionController {
     func syncDisplayedCard(with sessionStore: FlashcardSessionStore) {
         displayedFlashCard = sessionStore.currentCard?.card(for: sessionStore.selectedDirection)
+        // **Peek-Protection**: Wechselt die Karte, verliert der Peek-
+        // Flag seine Gültigkeit — der nächste Durchgang startet frisch.
+        if let currentCardID = sessionStore.session?.currentCardID,
+           peekedCurrentCardID != currentCardID {
+            peekedCurrentCardID = nil
+        } else if sessionStore.session?.currentCardID == nil {
+            peekedCurrentCardID = nil
+        }
     }
 
     func resetTransientState(

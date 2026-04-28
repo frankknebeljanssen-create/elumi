@@ -72,6 +72,10 @@ enum AppSectionStyle {
     case scan
     case lexicon
     case accents
+    /// **Elumi-Tab** — Companion-Screen-Style. Akzent in `elumiPink`,
+    /// damit der persönliche Character-Tab auch farblich klar zur
+    /// Mascot-Identität gehört (nicht zu einem spezifischen Lern-Modul).
+    case elumi
 
     var accent: Color {
         switch self {
@@ -101,6 +105,8 @@ enum AppSectionStyle {
             return AppTheme.Colors.moduleLexicon
         case .accents:
             return AppTheme.Colors.moduleAccents
+        case .elumi:
+            return AppTheme.Colors.elumiPink
         }
     }
 

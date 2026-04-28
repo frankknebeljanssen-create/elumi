@@ -132,7 +132,10 @@ extension ScanImportView {
             }
             .sheet(isPresented: showingPhotoLibraryBinding) {
                 PhotoLibraryPicker { images in
-                    handleSelectedImages(images)
+                    // **2026-04-23**: Galerie-Auswahl geht in den
+                    // dedizierten per-image Review-Pfad. Camera-Multi-
+                    // Shot bleibt am alten `handleSelectedImages`.
+                    handleSelectedImagesFromGallery(images)
                 }
             }
             .sheet(isPresented: showingImagePreviewBinding) {
@@ -202,6 +205,110 @@ extension ScanImportView {
             // cancelled" × 2, Alert „Analyse fehlgeschlagen"). Mit
             // `.fullScreenCover(item:)` hält SwiftUI genau EINE stabile
             // Präsentation, bis das Item auf `nil` geht.
+            // **2026-04-22 Abend V**: Drei neue Sheets für den
+            // Import-Target-Choice-Flow.
+            //
+            //   1. ImportTargetChoiceSheet — neue/bestehende Liste fragen
+            //   2. ExistingListPickerSheet — Single-Select wenn „bestehend"
+            //   3. ScanImportConflictReviewSheet — bei Konflikten vor Apply
+            .sheet(isPresented: $isShowingImportTargetChoice) {
+                ImportTargetChoiceSheet(
+                    importableCount: pendingImportItems.count,
+                    onChooseNewList: {
+                        // Pfad 1: bestehender Flow läuft unverändert.
+                        proceedWithNewListImport()
+                    },
+                    onChooseExistingList: {
+                        // Pfad 2: Picker öffnen.
+                        showExistingListPicker()
+                    }
+                )
+                .presentationDetents([.medium])
+            }
+            // **2026-04-23**: Namensabfrage für „neue Liste".
+            // Wird nach dem ImportTargetChoiceSheet präsentiert,
+            // wenn der User „neue Liste" gewählt hat.
+            .sheet(isPresented: $isShowingNewListNameSheet) {
+                NewListNameSheet(
+                    onCreate: { chosenName in
+                        handleNewListNameChosen(chosenName)
+                    }
+                )
+                .presentationDetents([.medium])
+            }
+            .sheet(isPresented: $isShowingExistingListPicker) {
+                if let activeStore = listStore {
+                    ExistingListPickerSheet(
+                        store: activeStore,
+                        importableCount: pendingImportItems.count,
+                        onConfirm: { listID in
+                            handleExistingListChosen(listID)
+                        },
+                        onFallbackToNewList: {
+                            // User hat keine eigenen Listen — fällt
+                            // zurück auf den neuen-Liste-Pfad.
+                            proceedWithNewListImport()
+                        }
+                    )
+                }
+            }
+            .sheet(isPresented: $isShowingConflictReview) {
+                if let plan = pendingMergePlan,
+                   let listID = pendingTargetListID,
+                   let targetList = (listStore ?? ensureListStoreReady())
+                       .customLists.first(where: { $0.id == listID }) {
+                    ScanImportConflictReviewSheet(
+                        workingConflicts: plan.conflicts,
+                        safeAddCount: plan.safeAdds.count,
+                        duplicateCount: plan.exactDuplicatesToSkip.count,
+                        targetListName: targetList.name,
+                        onConfirm: { resolved in
+                            handleConflictReviewConfirmed(resolved)
+                        }
+                    )
+                }
+            }
+            // **2026-04-22 Abend VI**: Multi-Capture-Review-Sheet.
+            // Wird präsentiert, wenn der User im Auto-Modus mehrere
+            // Bilder aufgenommen und „Fertig" getippt hat.
+            // Die Captures leben in `session.capturedItems` und sind
+            // dadurch stabil identifizierbar — kein UI-Deadlock-Pfad
+            // wie im vorigen Auto-Sequenz-Verarbeitungs-Flow.
+            // **2026-04-23 nachmittags**: Galerie-Mehrbild-Review.
+            // Per-image Optimization-State; Caller bekommt am Ende
+            // ALLE Bilder mit ihrem jeweils gewählten Final-State.
+            .fullScreenCover(isPresented: $session.isShowingGalleryReview) {
+                GalleryMultiImageReviewView(
+                    items: $session.galleryReviewItems,
+                    selectedItemID: $session.selectedGalleryItemID,
+                    sectionStyle: sectionStyle,
+                    onAnalyzeQuality: { item in
+                        await analyzeGalleryItemQuality(item)
+                    },
+                    onOptimizeItem: { item in
+                        await optimizeGalleryItem(item)
+                    },
+                    onSubmitAll: { submittedItems in
+                        submitGalleryReviewToAnalysis(submittedItems)
+                    }
+                )
+            }
+            .fullScreenCover(isPresented: $session.isShowingMultiCaptureReview) {
+                MultiCaptureReviewView(
+                    items: $session.capturedItems,
+                    selectedItemID: $session.selectedCapturedItemID,
+                    sectionStyle: sectionStyle,
+                    onReviewSelected: { item in
+                        reviewSelectedCapturedItem(item)
+                    },
+                    onAddMoreCaptures: {
+                        resumeScanningFromMultiReview()
+                    },
+                    onDiscardAll: {
+                        discardAllMultiCaptures()
+                    }
+                )
+            }
             .fullScreenCover(item: $freierTextPendingImage, onDismiss: {
                 // Fires NACH der Cover-Dismiss-Animation. Wenn ein
                 // pendingFreierTextCompletion vorliegt, wurde erfolgreich

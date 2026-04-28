@@ -169,7 +169,16 @@ extension ElumiArcadeGameView {
                 .allowsHitTesting(false)
 
                 VStack(spacing: 0) {
-                    headerBar
+                    // Phase 7.5: HeaderBar (X-Close + Score + Leben)
+                    // NUR sichtbar, solange das Spiel tatsächlich
+                    // läuft — auf dem Start-Screen hat der User bereits
+                    // den Chevron aus `GameStartScreen`, ein zusätzliches
+                    // X oben wäre doppelte Chrome (User-Report).
+                    // Während Game-Over übernimmt das gameOverOverlay
+                    // das Chrome-Feedback ohnehin vollständig.
+                    if !showingStartOverlay && !isGameOver {
+                        headerBar
+                    }
                     Spacer(minLength: 0)
                     footerHint
                 }
@@ -179,7 +188,19 @@ extension ElumiArcadeGameView {
                 .zIndex(showingStartOverlay ? 3 : 1)
 
                 if isGameOver {
-                    gameOverOverlay
+                    // **Play-Credits-Rescue-Prompt** (2026-04-24):
+                    // Fängt das Game-Over ab, solange der Nutzer
+                    // Credits hat und noch nicht entschieden hat.
+                    // Greift der Rescue, läuft das Spiel nahtlos
+                    // weiter. Lehnt der Nutzer ab, übernimmt das
+                    // reguläre `gameOverOverlay`.
+                    if shouldShowRescueOffer {
+                        playCreditsRescueOverlay
+                            .transition(.scale.combined(with: .opacity))
+                            .zIndex(6)
+                    } else {
+                        gameOverOverlay
+                    }
                 }
 
                 if showingStartOverlay {
@@ -239,14 +260,28 @@ extension ElumiArcadeGameView {
                 if arcadeSFX == nil {
                     arcadeSFX = ArcadeSFX(feedbackPlayer: feedbackPlayer)
                 }
-                // AutoStart-Pfad: Credit-Abzug + CTA wurden schon vom
-                // aufrufenden `GameHubView` erledigt → Overlay überspringen,
-                // direkt starten und Immersive-Mode aktivieren (Footer weg).
-                if autoStart, showingStartOverlay {
-                    showingStartOverlay = false
-                    setImmersiveArcade?(true)
-                    startGame()
-                }
+                // **Phase 7.5 — Start-Flow-Unification**:
+                // `autoStart` wird bewusst NICHT mehr respektiert.
+                // Jeder Einstieg (Footer-Icon, GameHub-Button) zeigt
+                // zuerst das Start-Overlay. Credit-Abzug + `startGame()`
+                // passieren jetzt ausschließlich im `GameStartScreen`-
+                // CTA-Closure. Der Parameter bleibt nur zur Laufzeit-
+                // Kompatibilität der Navigation-Route bestehen.
+                _ = autoStart   // silence unused-warning, see doc above
+
+                // **Phase 7.6** — Start-Sound beim Aufruf des Start-
+                // Screens (User-Spec „start sound nur zum aufruf").
+                // Feuert genau einmal, wenn der User auf Elumi
+                // navigiert (Footer-Icon / GameHub-CTA). Beim
+                // tatsächlichen Run-Start im Overlay kommt dafür
+                // die Musik sofort — kein zweiter SFX.
+                feedbackPlayer.playLaunch()
+                // Audio-Session gleich warm machen, damit der Musik-
+                // Start ohne Anlauf-Delay geht.
+                feedbackPlayer.sp.ensureAudioSession()
+                // Nächsten Arcade-Track preloaden, sodass `play()`
+                // im `startGame()` ohne Decoder-Anlauf startet.
+                ArcadeMusicPlayer.shared.preloadNextTrack()
             }
             .onChange(of: showingStartOverlay) { _, isShowing in
                 // Sobald der User im Start-Overlay „Spiel starten" drückt
@@ -259,6 +294,11 @@ extension ElumiArcadeGameView {
             }
         }
         .ignoresSafeArea()
+        // Phase 7.5 — System-Nav-Back-Button ausblenden. Der
+        // `GameStartScreen` im Overlay rendert einen eigenen Chevron
+        // oben links; die System-Chrome würde sonst darüber einen
+        // zweiten Chevron zeigen (User-Report „doppelter chevron").
+        .toolbar(.hidden, for: .navigationBar)
         .task(id: gameSeed) {
             await runGameLoops()
         }
@@ -371,6 +411,18 @@ extension ElumiArcadeGameView {
                 arcadeStatPill(icon: "checkmark.circle.fill", label: "Gefangen \(totalCaught)", tint: AppTheme.Colors.success)
                 Spacer(minLength: 0)
                 arcadeStatPill(icon: "xmark.circle.fill", label: "Verloren \(misses)", tint: AppTheme.Colors.error)
+            }
+
+            // **Play-Credits-Row** (2026-04-24): kleine, dezente Zeile
+            // mit aktuellem Credit-Stand + Skip-Button. Nur sichtbar,
+            // solange Credits > 0 ODER Skip-fähig ist (sonst nimmt die
+            // Zeile unnötig Platz im HUD).
+            if playCredits.credits > 0 || playCreditsSkipEnabled {
+                HStack(spacing: 8) {
+                    playCreditsHUDChip
+                    Spacer(minLength: 0)
+                    playCreditsSkipChip
+                }
             }
 
             // Power-up chips

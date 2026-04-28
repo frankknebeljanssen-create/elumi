@@ -172,4 +172,105 @@ extension VocabularyListStore {
         selectedListID = targetID
         return items.count
     }
+
+    // MARK: - Merge-Pipeline („Zu bestehender Liste hinzufügen")
+
+    /// Wendet einen `MergePlan` auf eine bestehende Custom-Liste an
+    /// und persistiert das Ergebnis (über das `customLists`-didSet).
+    ///
+    /// Die Plan-Berechnung passiert **vorher** in der UI via
+    /// `VocabularyListMergePlanner.computePlan(...)`. Hier wird nur
+    /// noch geschrieben — entweder direkt (keine Konflikte) oder
+    /// nachdem der User pro Konflikt entschieden hat.
+    ///
+    /// Doppelte Einträge werden durch die Plan-Logik ausgeschlossen,
+    /// die Liste kann also keine fachlichen Duplikate erzeugen.
+    @discardableResult
+    func applyMergePlan(
+        _ plan: MergePlan,
+        toListWithID listID: UUID
+    ) -> MergeResult {
+        // **Bug-Fix 2026-04-23 abends (Critical Import-Bug)**: Vorher
+        // konnte ein nicht-gefundenes `listID` ein „erfolgreiches"
+        // Result mit `added: 0` zurückgeben (silent failure), und der
+        // Save war über das `customLists`-didSet erst nach 0,3s
+        // geplant — die Success-Meldung erschien VOR der Persistenz.
+        // Bei großen Importen (270 Items) konnte das zu sichtbarem
+        // Inkonsistenzen führen.
+        //
+        // Jetzt:
+        //   1. Pre-Check: Ziel-Liste vorhanden? → sonst `.targetListMissing`
+        //   2. Snapshot der `beforeCount` für Validierung
+        //   3. Apply mutiert die Items
+        //   4. **Synchroner Save** — kein 0,3s-Delay
+        //   5. Post-Check: `actualAfterCount == beforeCount + added`?
+        //      → bei Mismatch `.persistenceMismatch`
+        //   6. `selectedListID` erst nach erfolgreichem Apply setzen
+        guard let index = customLists.firstIndex(where: { $0.id == listID }) else {
+            #if DEBUG
+            print("📋 [applyMergePlan] FEHLER: Ziel-Liste nicht gefunden (id=\(listID))")
+            #endif
+            return MergeResult.failure(.targetListMissing)
+        }
+
+        let beforeCount = customLists[index].items.count
+        let expectedAdded = plan.safeAdds.count
+            + plan.conflicts.filter { $0.resolution == .replaceWithIncoming }.count
+        // Bei Replace bleibt die Item-Count konstant (overwrite).
+        let expectedNetGrowth = plan.safeAdds.count
+        let expectedAfterCount = beforeCount + expectedNetGrowth
+
+        #if DEBUG
+        print("""
+        📋 [applyMergePlan] START
+           targetListID=\(listID)
+           targetListName=\(customLists[index].name)
+           beforeCount=\(beforeCount)
+           plan.safeAdds=\(plan.safeAdds.count)
+           plan.exactDuplicatesToSkip=\(plan.exactDuplicatesToSkip.count)
+           plan.conflicts=\(plan.conflicts.count) (replaces=\(plan.conflicts.filter { $0.resolution == .replaceWithIncoming }.count))
+           expectedAdded=\(expectedAdded)  expectedNetGrowth=\(expectedNetGrowth)  expectedAfterCount=\(expectedAfterCount)
+        """)
+        #endif
+
+        let (newItems, applyResult) = VocabularyListMergePlanner.apply(
+            plan: plan,
+            to: customLists[index].items
+        )
+        customLists[index].items = newItems
+
+        // **Synchroner Save** — wir warten nicht auf den 0,3s-debounce
+        // im didSet. Der User soll erst eine Success-Meldung sehen,
+        // wenn die Daten tatsächlich auf Platte sind.
+        saveCustomLists()
+
+        // **Post-Apply-Validierung** (User-Spec): „Eine Meldung darf
+        // nur gezeigt werden, wenn die Mutation wirklich angewendet
+        // wurde und die Persistenz erfolgreich war." Wir prüfen das,
+        // indem wir den aktuellen Item-Count gegen die Erwartung
+        // vergleichen.
+        guard let postIndex = customLists.firstIndex(where: { $0.id == listID }) else {
+            #if DEBUG
+            print("📋 [applyMergePlan] POST-CHECK FEHLER: Liste nach Apply weg")
+            #endif
+            return MergeResult.failure(.targetListMissing)
+        }
+        let actualAfterCount = customLists[postIndex].items.count
+        #if DEBUG
+        print("📋 [applyMergePlan] AFTER actualAfterCount=\(actualAfterCount), expected=\(expectedAfterCount)")
+        #endif
+        if actualAfterCount != expectedAfterCount {
+            #if DEBUG
+            print("📋 [applyMergePlan] MISMATCH! actual=\(actualAfterCount) ≠ expected=\(expectedAfterCount)")
+            #endif
+            return MergeResult.failure(.persistenceMismatch(expected: expectedAfterCount, actual: actualAfterCount))
+        }
+
+        // Erst nach validem Apply die aktive Liste switchen.
+        selectedListID = listID
+        #if DEBUG
+        print("📋 [applyMergePlan] OK — added=\(applyResult.added), skipped=\(applyResult.skipped), replaced=\(applyResult.replaced)")
+        #endif
+        return applyResult
+    }
 }

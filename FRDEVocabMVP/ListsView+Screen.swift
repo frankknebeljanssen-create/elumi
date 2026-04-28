@@ -202,20 +202,30 @@ extension ListsView {
             .buttonStyle(.plain)
 
             if showingCreateListForm {
+                // **2026-04-24 Vereinfachung**: Sammlung-Picker raus.
+                // Vorerst nur Namensfeld + Anlegen. Der interne
+                // `newListCollectionPreset`-Default `.schoolbook` bleibt
+                // erhalten (gesetzt in ListsView.swift Zeile 19) — die
+                // Datenkompatibilität ist damit unverändert, der UI-
+                // Block ist nur ausgeblendet.
                 VStack(alignment: .leading, spacing: 12) {
                     TextField("Name der Liste", text: $newListName)
                         .textFieldStyle(.roundedBorder)
 
-                    collectionPresetPicker(
-                        selectedPreset: $newListCollectionPreset,
-                        includeHeading: true
-                    )
-
-                    Button("Anlegen") {
+                    Button("Liste erstellen") {
                         createNewList()
                     }
                     .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
                     .frame(maxWidth: .infinity, alignment: .center)
+                    // Erstellen-Button nur aktiv, wenn nach Trim ein
+                    // nicht-leerer Name vorliegt (User-Spec).
+                    .disabled(
+                        newListName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    )
+                    .opacity(
+                        newListName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                            ? 0.55 : 1.0
+                    )
                 }
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }

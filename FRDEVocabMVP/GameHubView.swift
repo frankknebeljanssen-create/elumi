@@ -36,13 +36,12 @@ struct GameHubView: View {
     /// auf die Listen-Auswahl zu springen (Cover schließen + push).
     var navigate: ((AppScreen) -> Void)? = nil
 
-    // MARK: - Dev Shortcuts (nur DEBUG)
+    // MARK: - Word-Runner-Entry (Phase 7.5)
     //
-    // Word Runner (Phase 2+3) hat noch keine eigene Credit-/Session-
-    // Integration. Damit wir ihn testen können, ohne die Arcade-Route
-    // umzubiegen, bekommt der Hub eine Kurztaste unten:
-    // ein Tap öffnet ihn als FullScreenCover, Close schließt's wieder.
-    @State private var showWordRunner: Bool = false
+    // Word Runner wird jetzt als **echte Nav-Destination** gepusht —
+    // analog zur Arcade. Kein FullScreenCover mehr, damit der globale
+    // Footer während des Start-Screens sichtbar bleibt (User-Wunsch:
+    // „footer im start screen von wordrunner muss sichtbar sein").
 
     private let sectionStyle: AppSectionStyle = .hearts
     private let livesPerCredit = 4   // sichtbare Credit → Leben Zuordnung
@@ -92,19 +91,6 @@ struct GameHubView: View {
             .padding(.bottom, AppTheme.Spacing.xxl)
             .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .top)
-        }
-        .fullScreenCover(isPresented: $showWordRunner) {
-            WordRunnerGameView(
-                listStore: listStore,
-                onClose: { showWordRunner = false },
-                onGoToLists: {
-                    // Cover zuerst schließen, dann navigieren — sonst
-                    // konkurriert der SwiftUI-Push mit der FullScreen-
-                    // Cover-Dismiss-Animation.
-                    showWordRunner = false
-                    navigate?(.lists(nil))
-                }
-            )
         }
         .tint(sectionStyle.accent)
         .appAmbientWormBackground(sectionStyle)
@@ -263,7 +249,7 @@ struct GameHubView: View {
                 title: "Word Runner starten",
                 assetNames: ["IconElumiSpiel"],
                 enabled: true,
-                action: { showWordRunner = true }
+                action: { navigate?(.wordRunner) }
             )
 
             // Hinweis-Zeile **nur** im Empty-State — die generische
@@ -336,15 +322,12 @@ struct GameHubView: View {
 
     private func startGameTapped() {
         guard hasCredits else { return }
-        feedbackPlayer.playLaunch()
-        // Credit-Abzug **bevor** die Arcade präsentiert wird. Die Arcade
-        // bekommt dadurch konsistenten Startzustand und kann im autoStart-
-        // Modus ohne eigenen Gate sofort loslegen.
-        arcadeCredits -= ArcadeCreditSystem.gamesCost
-        // Navigation zur Arcade als echte Route mit autoStart=true —
-        // Start-Overlay wird übersprungen, Immersive-Mode aktiviert sich
-        // on-appear und lässt den globalen Footer sauber verschwinden.
-        openArcade?(true)
+        // Start-Sound hier NICHT — er kommt einmal beim
+        // **Erscheinen des Start-Screens** (ElumiArcadeGameView.
+        // onAppear). Beim tatsächlichen Run-Start (CTA im Overlay)
+        // startet sofort die Musik statt erneutem SFX — User-Spec
+        // „start sound nur beim aufruf des start screens".
+        openArcade?(false)
     }
 
     // MARK: - Reward Explainer

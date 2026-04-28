@@ -288,7 +288,11 @@ extension ElumiArcadeGameView {
         bonusRoundResultText = nil
         bonusRoundWaitingForTap = false
 
-        feedbackPlayer.playLaunch()
+        // **Phase 7.6** — `playLaunch()` hier entfernt. Der Start-
+        // Sound kommt schon **beim Erscheinen** des Start-Screens
+        // (siehe `ElumiArcadeGameView+Layout.onAppear`). Beim
+        // Run-Start soll sofort die Musik einsetzen — kein zweiter
+        // SFX-Trigger (User-Spec „dann geht sofort die musik los").
         showingStartOverlay = false
         withAnimation(.spring(response: 0.35, dampingFraction: 0.65)) {
             elumiVisible = true
@@ -299,6 +303,8 @@ extension ElumiArcadeGameView {
         // neuen Track, alternierend aus der Rotation. ArcadeMusicPlayer
         // nutzt die gleiche `SoundPlayer`-Infrastruktur wie die SFX
         // und der Word-Runner — keine parallelen Audio-Systeme.
+        // Dank `preloadNextTrack()` im onAppear ist der Decoder warm,
+        // play() startet ohne Anlauf.
         ArcadeMusicPlayer.shared.startNewRun()
     }
 
@@ -376,6 +382,12 @@ extension ElumiArcadeGameView {
         showingStartOverlay = false
         elumiVisible = true
         gameSeed = UUID()
+        // **2026-04-24 Play-Credits**: bei einem echten Restart den
+        // Rescue-Consumed-Flag zurücksetzen, damit im neuen Run ein
+        // frisches Game-Over wieder einen Rescue-Prompt anbieten kann.
+        // Pro Game-Over-Episode eine Rescue-Entscheidung — nicht
+        // pro App-Session.
+        rescueConsumedForCurrentGameOver = false
         // Restart rotiert auf den nächsten Track, wie beim normalen
         // Run-Start — jeder Run bekommt frische Musik, sodass
         // „Nochmal" sich klanglich wie ein neuer Versuch anfühlt.
@@ -520,8 +532,8 @@ extension ElumiArcadeGameView {
         isPlaying = false
         // Stop all sounds silently
         feedbackPlayer.sp.stop("saugloop")
-        feedbackPlayer.sp.stop("bgm_fischfang")
-        feedbackPlayer.stopBGM()
+        // Phase 7.6 — legacy `bgm_fischfang` + `stopBGM` entfernt
+        // (paralleles Altsystem zur ArcadeMusicPlayer-Infrastruktur).
         feedbackPlayer.playGameOver()
         // Arcade-Musik weich ausfaden (nicht hart abreißen); der
         // Game-Over-SFX liegt darüber ungestört, weil die Fade-Dauer
@@ -555,8 +567,7 @@ extension ElumiArcadeGameView {
         isGameOver = true
         // Alle laufenden/Loop-Sounds stoppen
         feedbackPlayer.sp.stop("saugloop")
-        feedbackPlayer.sp.stop("bgm_fischfang")
-        feedbackPlayer.stopBGM()
+        // Phase 7.6 — legacy `bgm_fischfang` + `stopBGM` entfernt.
         feedbackPlayer.stopJellyfishAmbient()
         feedbackPlayer.stopAllFeedback()
         // Arcade-Musik sofort abbrechen — der Silent-Exit soll
@@ -787,11 +798,10 @@ extension ElumiArcadeGameView {
         elumiY = 0.5
         bonusRoundStartedAt = Date()
         bonusRoundWaitingForTap = true
-        feedbackPlayer.stopBGM()
+        // Phase 7.6 — `stopBGM` entfernt (Legacy).
         feedbackPlayer.playPowerUpSpawn()
-        // **Fish-Event-Musik**: weicher Wechsel vom Arcade-Track auf
-        // das Fish-Theme. Der Übergang läuft asynchron im Player
-        // (Fade-Out ~0.6 s → Fade-In) — hier nur Signal setzen.
+        // Fish-Event-Musik: harter Cut vom Arcade-Track auf das
+        // Fish-Theme über den `ArcadeMusicPlayer`.
         ArcadeMusicPlayer.shared.enterFishEvent()
     }
 
@@ -814,7 +824,11 @@ extension ElumiArcadeGameView {
 
     func beginBonusFishSpawning() {
         bonusRoundWaitingForTap = false
-        feedbackPlayer.sp.loop("bgm_fischfang")
+        // Phase 7.6 — alter `bgm_fischfang`-Loop entfernt. Die
+        // Fish-Runden-Musik kommt jetzt exklusiv vom
+        // `ArcadeMusicPlayer.enterFishEvent()` (siehe
+        // `beginBonusRoundTransition` oben). Kein paralleler
+        // Legacy-Loop mehr, der über die `ArcadeMusic`-Spur läuft.
 
         Task { @MainActor in
             for i in 0..<bonusFishTotal {
@@ -900,10 +914,8 @@ extension ElumiArcadeGameView {
         activeTentacles = []
         jellyfishStingCount = 0
         feedbackPlayer.stopJellyfishAmbient()
-        feedbackPlayer.sp.stop("bgm_fischfang")
-        feedbackPlayer.startBGM()
-        // Fish-Theme ausfaden, zurück zum Arcade-Track, der beim
-        // Eintritt ins Event lief.
+        // Phase 7.6 — Legacy `bgm_fischfang` + `startBGM` entfernt.
+        // Fish-Theme stoppen + zurück zum Arcade-Track exklusiv.
         ArcadeMusicPlayer.shared.exitFishEvent()
 
         // Reset Elumi to bottom rail (normal game mode position)
@@ -953,18 +965,35 @@ extension ElumiArcadeGameView {
         var missedAnySnack = false
         var caughtSnackCount = 0
         let elumiXPosition = elumiPositionX(in: gameSize.width)
+        // **Phase 7.6 Fix** (User-Wunsch „Snack verschwindet genau
+        // wenn Elumi ihn berührt, nicht vorher/nachher"): Catch-Zone
+        // ist jetzt ein **Kreis um Elumis aktuelle Position** (X + Y),
+        // nicht mehr eine statische horizontale Linie. Damit bewegt
+        // sich der Catch-Punkt vertikal mit Elumi mit — bewegt er
+        // sich hoch, fängt er Snacks höher; bewegt er sich runter,
+        // fängt er sie tiefer. Fühlt sich realistisch an.
+        let elumiYPosition = elumiPositionY(in: gameSize.height)
+        /// Radius um Elumis Zentrum, in dem ein Snack eingefangen wird.
+        /// Matched in etwa die 80 pt Icon-Größe — ~34 pt horizontaler
+        /// Abstand war schon der alte Wert, 32 pt vertikal gibt ein
+        /// leicht flachovales Hit-Fenster (Elumi ist breiter als hoch
+        /// im Visual wegen Tentakel).
+        let catchRadiusX: CGFloat = 34
+        let catchRadiusY: CGFloat = 32
         let suctionActive = hasActiveSuction(at: now)
 
         for snack in activeSnacks {
             let progress = snackProgress(for: snack, at: motionNow)
             let position = snackPosition(for: snack, at: motionNow, in: gameSize)
-            let catchLineY = gameSize.height - 158
-            let isCatchable = position.y >= catchLineY
             let horizontalDistance = abs(position.x - elumiXPosition)
+            let verticalDistance = abs(position.y - elumiYPosition)
+            let isCatchable = horizontalDistance <= catchRadiusX
+                && verticalDistance <= catchRadiusY
+            // Beam greift **oberhalb** von Elumi und zieht Snacks an.
             let isInSuctionBeam = suctionActive &&
                 snack.kind.isSnack &&
-                position.y < catchLineY &&
-                abs(position.x - elumiXPosition) <= suctionBeamHalfWidth
+                position.y < elumiYPosition - catchRadiusY &&
+                horizontalDistance <= suctionBeamHalfWidth
 
             if snack.kind == .falseElumi {
                 if isCatchable && horizontalDistance <= 34 {
@@ -1120,7 +1149,9 @@ extension ElumiArcadeGameView {
         elumiX = 0.5
         isPlaying = true
         isGameOver = false
-        feedbackPlayer.startBGM()
+        // Phase 7.6 — Legacy `startBGM()` entfernt. Die Spiel-Musik
+        // läuft exklusiv über `ArcadeMusicPlayer.startNewRun()`,
+        // aufgerufen in `startGame()` / bei Restart.
         comboCount = 0
         totalCaught = 0
         bestCombo = 0
@@ -1299,12 +1330,20 @@ extension ElumiArcadeGameView {
                     let isBannerUp = await MainActor.run { self.showingRoundBanner }
                     guard !isBannerUp else { continue }
                     await MainActor.run {
-                        spawnSnack()
-                        // Jellyfish spawn check
-                        let config = ArcadeRoundConfig(round: round)
-                        if activeJellyfish == nil && !isBonusRound && config.jellyfishChance > 0 {
-                            if Double.random(in: 0...1) < config.jellyfishChance {
-                                spawnJellyfish()
+                        // Phase 7.6 Bug-Fix (User: „in fischrunde
+                        // KEINE Bubble spawnen"): während der
+                        // Bonus-/Fischrunde werden **keine** Snacks /
+                        // Power-Ups / Bubbles gespawnt. Nur der
+                        // Fisch-Spawn aus `beginBonusFishSpawning`
+                        // läuft in dieser Phase.
+                        if !isBonusRound {
+                            spawnSnack()
+                            // Jellyfish spawn check
+                            let config = ArcadeRoundConfig(round: round)
+                            if activeJellyfish == nil && config.jellyfishChance > 0 {
+                                if Double.random(in: 0...1) < config.jellyfishChance {
+                                    spawnJellyfish()
+                                }
                             }
                         }
                     }

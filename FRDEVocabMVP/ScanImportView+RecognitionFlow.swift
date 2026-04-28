@@ -47,44 +47,207 @@ extension ScanImportView {
 
         // „Freier Text" analysiert pro Flow genau ein Bild (Claude-Vision-
         // Call). Multi-Select aus der Galerie ist hier nicht sinnvoll —
-        // wir nehmen das erste Bild und ignorieren den Rest. Ohne diese
-        // Abzweigung würden die übrigen Bilder in `pendingBatchImages`
-        // liegenbleiben und beim nächsten Vokabel-Scan fälschlich als
-        // Batch-Reste auftauchen.
-        //
-        // **Pipeline-Symmetrie** (User-Wunsch „sollte alles analog
-        // funktionieren"): Galerie-Bilder laufen durch **dieselbe**
-        // Pre-Processing-Pipeline wie Kamera-Bilder. Die Pipeline
-        // selbst läuft aber nicht hier, sondern in `recognizeText(...)`
-        // — erst wenn der User im Preparation-Sheet bestätigt hat,
-        // dass er **dieses** Bild analysieren will. Vorher hat das
-        // Preparation-Sheet (Crop-Möglichkeit) das Vorrecht. So
-        // vermeiden wir auch, dass die UI während der Pipeline mit
-        // `isRecognizingImage = true` blockiert wird, was zu einem
-        // Dead-End-Zustand führen könnte, falls der Task still
-        // fehlschlägt.
+        // wir nehmen das erste Bild und ignorieren den Rest.
         if activeScanMode == .text {
             handleSelectedImage(images[0])
             return
         }
 
+        // Single-Image-Flow: unverändert.
         if images.count == 1 {
             handleSelectedImage(images[0])
             return
         }
 
-        // Multi-select: queue batch, generate thumbnails, process first image normally
-        session.pendingBatchImages = Array(images.dropFirst())
-        session.batchTotalCount = images.count
+        // **Multi-Capture-Review-Flow** (User-Spec 2026-04-22 Abend VI):
+        // statt sofort eine asynchrone Sequenz-Verarbeitung über alle
+        // Bilder zu starten (vorheriges Verhalten — UI dead, Captures
+        // lost), präsentieren wir den Multi-Capture-Review-Screen.
+        // Dort wählt der User ein Bild und tippt „Überprüfen".
+        // Die Captures bleiben in `session.capturedItems` erhalten,
+        // bis der User sie explizit verwirft.
+        //
+        // Architektur-Hinweis: die alten `pendingBatchImages` /
+        // `batchThumbnails` / `batchTotalCount` werden nicht mehr
+        // gefüllt — die haben einen Auto-Sequenz-Pfad in
+        // `processNextBatchImage()` getriggert, der genau die
+        // 10-Claude-Vision-Calls-Hängerei verursacht hat.
+        let now = Date()
+        let newItems = images.enumerated().map { idx, img in
+            CapturedScanItem(
+                originalImage: img,
+                createdAt: now.addingTimeInterval(Double(idx) * 0.001)
+            )
+        }
+        session.capturedItems = newItems
+        session.selectedCapturedItemID = newItems.first?.id
+        // Sicherheits-Reset alter Batch-Felder, damit kein Reststate
+        // den UI-Zweig in `ScanImportView+Screen` triggert.
+        session.pendingBatchImages = []
+        session.batchThumbnails = []
+        session.batchTotalCount = 0
+        session.batchCurrentIndex = 0
+        session.batchCompleted = false
+        session.isShowingMultiCaptureReview = true
+    }
+
+    /// Wird vom `MultiCaptureReviewView`-„Überprüfen"-CTA aufgerufen:
+    /// startet den bestehenden Single-Image-Pfad auf dem ausgewählten
+    /// Capture und markiert ihn als analysiert. Die übrigen Captures
+    /// bleiben in `session.capturedItems` erhalten — der User kann
+    /// jederzeit zurück und ein anderes Bild wählen.
+    func reviewSelectedCapturedItem(_ item: CapturedScanItem) {
+        if let idx = session.capturedItems.firstIndex(where: { $0.id == item.id }) {
+            session.capturedItems[idx].status = .analyzed
+        }
+        session.isShowingMultiCaptureReview = false
+        // Sequenzieller Scan ist hier explizit AUS — wir behandeln
+        // genau dieses eine Bild wie ein Single-Capture.
+        shouldAppendNextScan = false
+        handleSelectedImage(item.originalImage)
+    }
+
+    /// Vom „Mehr aufnehmen"-Eintrag im Multi-Review-Menü: schließt
+    /// den Review und öffnet den Scanner wieder; bestehende Captures
+    /// bleiben erhalten.
+    func resumeScanningFromMultiReview() {
+        session.isShowingMultiCaptureReview = false
+        // Den Scanner wieder öffnen — wir signalisieren das via
+        // `selectedScanInputMethod`. Caller-View beobachtet das.
+        session.selectedScanInputMethod = .camera
+    }
+
+    /// Vom „Alle verwerfen"-Eintrag im Multi-Review-Menü: leert die
+    /// Capture-Sammlung **explizit** (User-Aktion, nicht still).
+    func discardAllMultiCaptures() {
+        session.capturedItems = []
+        session.selectedCapturedItemID = nil
+        session.isShowingMultiCaptureReview = false
+    }
+
+    // MARK: - Galerie-Mehrbild-Review (User-Spec 2026-04-23 nachmittags)
+
+    /// Eigener Pfad für Galerie-Mehrfach-Auswahl. Vorher landeten
+    /// Galerie-Images im selben `handleSelectedImages`-Pfad wie
+    /// Camera-Multi-Shot — das hat zu falschen Reviews geführt
+    /// (kein per-image-State, globaler `optimizedVariant` für alle).
+    /// Jetzt: per-image-State in `session.galleryReviewItems`,
+    /// neue View mit Big-Preview + Per-Bild-Aktionen.
+    func handleSelectedImagesFromGallery(_ images: [UIImage]) {
+        guard !images.isEmpty else { return }
+
+        // FreeText-Modus + Single-Image bleiben am alten Pfad — keine
+        // semantische Änderung dort.
+        if activeScanMode == .text || images.count == 1 {
+            handleSelectedImage(images[0])
+            return
+        }
+
+        // Reihenfolge erhalten — Index 0 ist das ERSTE vom Picker
+        // gelieferte Bild.
+        let items = images.enumerated().map { idx, img in
+            GalleryReviewItem(sourceIndex: idx, originalImage: img)
+        }
+        session.galleryReviewItems = items
+        session.selectedGalleryItemID = items.first?.id
+        // Saubere Trennung: alte Batch-Felder leer halten, damit kein
+        // Auto-Sequenz-Pfad ausgelöst wird.
+        session.pendingBatchImages = []
+        session.batchThumbnails = []
+        session.batchTotalCount = 0
+        session.batchCurrentIndex = 0
+        session.batchCompleted = false
+        session.isShowingGalleryReview = true
+    }
+
+    /// Wird vom `GalleryMultiImageReviewView` als `onSubmitAll`-
+    /// Callback gerufen. Sammelt die finalen Bilder (optimiert oder
+    /// original) und reicht sie an die existierende Batch-Verarbeitungs-
+    /// Pipeline (`pendingBatchImages`/`processNextBatchImage`) weiter,
+    /// genau wie der frühere `handleSelectedImages`-Multi-Pfad.
+    func submitGalleryReviewToAnalysis(_ submittedItems: [GalleryReviewItem]) {
+        session.isShowingGalleryReview = false
+        guard !submittedItems.isEmpty else { return }
+        let finalImages = submittedItems
+            .sorted { $0.sourceIndex < $1.sourceIndex }
+            .map(\.finalImage)
+
+        // **Bug-Fix 2026-04-24 (Multi-Image-Submit)**: vorher rief diese
+        // Methode am Ende `handleSelectedImage(finalImages[0])` auf —
+        // das öffnet den Preparation-/„Bild prüfen"-Sheet erneut für
+        // das erste Bild und User landet wieder im Single-Image-Review.
+        //
+        // Korrekt: für ALLE Bilder den `processNextBatchImage`-Pfad
+        // simulieren, der die Preparation-Sheet überspringt und direkt
+        // `recognizeText` aufruft. Wir initialisieren den Batch-State
+        // genau wie der historische Multi-Image-Pfad und starten das
+        // erste Bild SOFORT in `recognizeText`.
+        session.pendingBatchImages = Array(finalImages.dropFirst())
+        session.batchTotalCount = finalImages.count
         session.batchCurrentIndex = 1
-        session.batchThumbnails = images.map { img in
+        session.batchThumbnails = finalImages.map { img in
             let maxEdge: CGFloat = 120
             let scale = min(maxEdge / img.size.width, maxEdge / img.size.height, 1.0)
             let newSize = CGSize(width: img.size.width * scale, height: img.size.height * scale)
             let renderer = UIGraphicsImageRenderer(size: newSize)
             return renderer.image { _ in img.draw(in: CGRect(origin: .zero, size: newSize)) }
         }
-        handleSelectedImage(images[0])
+        // Optimierungs-Status für die Sequenz aufräumen — das
+        // Galerie-Review hat schon optimiert.
+        session.galleryReviewItems = []
+        session.selectedGalleryItemID = nil
+
+        // **Direkt-Pfad** (skip preparation sheet): erstes Bild als
+        // Selection-State setzen + sofort `recognizeText`. Identische
+        // Logik zu `processNextBatchImage()`. Die folgenden Bilder
+        // verarbeitet die bestehende Recognition-Schleife dann
+        // automatisch via `processNextBatchImage()` — keine
+        // Sheet-Wiedervorlage.
+        let firstImage = finalImages[0]
+        if !shouldAppendNextScan {
+            session.discardDraftForReplacement(
+                activeScanMode: activeScanMode,
+                currentListName: listName,
+                fallbackListName: listStore?.suggestedListName(from: scanDateBaseName) ?? scanDateBaseName
+            )
+        }
+        let selectionState = ScanImageLifecycle.makeSelectedImageState(
+            from: firstImage,
+            sourcePath: nil,
+            maxAnalysisLongEdge: Self.maxOCRLongEdge,
+            maxPreviewLongEdge: Self.maxPreviewLongEdge,
+            normalizeForProcessing: { image, maxLongEdge in
+                normalizedImageForProcessing(image, maxLongEdge: maxLongEdge)
+            },
+            downscaledForDisplay: { image, maxLongEdge in
+                downscaledImageForDisplay(image, maxLongEdge: maxLongEdge)
+            }
+        )
+        ensureSuggestedListName()
+        session.applySelectedImageState(selectionState)
+        // Append-Modus AN, damit nachfolgende Recognition-Resultate
+        // an die Liste angehängt werden statt sie zu ersetzen.
+        shouldAppendNextScan = true
+        recognizeText(from: selectionState.analysisImage)
+    }
+
+    /// Async-Helper für den Galerie-View: berechnet Quality + empfohlenes
+    /// Profile pro Item. Wird aus dem View per `task`-Modifier aufgerufen.
+    func analyzeGalleryItemQuality(_ item: GalleryReviewItem) async -> (report: ImageQualityAnalyzer.Report, recommendedProfile: ImageQualityAnalyzer.EnhancementProfile?) {
+        let report = await ImageQualityAnalyzer.analyzeAsync(
+            image: item.originalImage,
+            rectangleMetrics: nil,
+            hints: .init(isTextDense: false)
+        )
+        let profile = ImageQualityAnalyzer.EnhancementProfile.recommended(for: report.issues)
+        return (report, profile)
+    }
+
+    /// Async-Helper für den Galerie-View: führt die Optimierung aus.
+    func optimizeGalleryItem(_ item: GalleryReviewItem) async -> UIImage? {
+        let profile = item.recommendedProfile
+            ?? ImageQualityAnalyzer.EnhancementProfile.recommended(for: item.qualityReport?.issues ?? [])
+        return await ImageEnhancer.optimizeAsync(item.originalImage, profile: profile)
     }
 
     func processNextBatchImage() {

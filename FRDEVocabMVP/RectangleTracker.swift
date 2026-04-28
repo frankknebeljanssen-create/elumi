@@ -240,6 +240,27 @@ final class RectangleTracker {
     /// gerade-mutierenden Live-Quad arbeitet.
     private(set) var lastLockedRectangle: VNRectangleObservation?
 
+    /// Setzt den letzten Lock-Rect explizit zurück.
+    ///
+    /// **Kontext** (User-Bug 2026-04-23): im manuellen Multi-Shot-Modus
+    /// (Vokabel-Listen) wurde der `lastLockedRectangle` zwischen zwei
+    /// rasch aufeinanderfolgenden Captures NICHT zurückgesetzt. Wenn
+    /// der User nach Foto 1 das Blatt wechselt und sofort Foto 2
+    /// auslöst, hatte der Tracker bei Foto 2 noch nicht neu gelockt
+    /// — `frozenQuadForCapture` bekam den alten Quad, die
+    /// Perspektivkorrektur warpte das neue Foto mit den falschen Eck-
+    /// punkten → Bild wirkte gedreht/gezoomt/in falscher Aspect.
+    ///
+    /// Diese API wird vom Photo-Delegate aufgerufen, sobald die
+    /// Capture-Delivery komplett ist. Der nächste Capture muss dann
+    /// einen frischen Lock vom Live-Stream erworben haben — wenn
+    /// keiner verfügbar ist, läuft `SmartDocumentProcessor` ohne
+    /// fallback-Quad, was robust ist (eigene Detection auf dem neuen
+    /// Photo).
+    func clearLastLockedRectangle() {
+        lastLockedRectangle = nil
+    }
+
     /// Anzahl aufeinanderfolgender Frames **ohne** Vision-Detection.
     /// Wird auf 0 zurückgesetzt, sobald wieder etwas erkannt wurde.
     /// Gated die Hysterese: solange `missingFrameCount <=

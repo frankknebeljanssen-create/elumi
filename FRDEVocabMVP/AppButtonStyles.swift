@@ -2,6 +2,10 @@ import SwiftUI
 
 struct AppPrimaryButtonStyle: ButtonStyle {
     var color: Color = AppTheme.Colors.cta
+    /// Haptic-Feedback beim Press. Default `true`, weil Primary-
+    /// Buttons per Definition „wichtige Aktionen" sind — genau
+    /// dort wollen wir spürbares Feedback (Phase 7.6 Debug-Pass).
+    var haptic: Bool = true
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -13,7 +17,7 @@ struct AppPrimaryButtonStyle: ButtonStyle {
             .frame(minHeight: AppTheme.Layout.buttonHeight)
             .background(
                 RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                    .fill(color.opacity(configuration.isPressed ? 0.88 : 1.0))
+                    .fill(color.opacity(configuration.isPressed ? 0.80 : 1.0))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
@@ -21,42 +25,51 @@ struct AppPrimaryButtonStyle: ButtonStyle {
             )
             .shadow(
                 color: AppTheme.Shadow.button.color,
-                radius: configuration.isPressed ? 4 : AppTheme.Shadow.button.radius,
+                radius: configuration.isPressed ? 2 : AppTheme.Shadow.button.radius,
                 x: AppTheme.Shadow.button.x,
-                y: configuration.isPressed ? 2 : AppTheme.Shadow.button.y
+                y: configuration.isPressed ? 1 : AppTheme.Shadow.button.y
             )
-            .scaleEffect(configuration.isPressed ? 0.985 : 1)
-            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+            // Phase 7.6 Debug-Pass — kräftigeres Feedback:
+            // Scale 0.95, Opacity auf den Fill drops 20%, Shadow
+            // schrumpft spürbar. Dazu leichtes Tap-Haptic.
+            .scaleEffect(configuration.isPressed ? AppMotion.Scale.buttonPress : 1)
+            .animation(AppMotion.tap, value: configuration.isPressed)
+            .onChange(of: configuration.isPressed) { _, isPressed in
+                if haptic && isPressed {
+                    AppMotion.triggerSelectionHaptic()
+                }
+            }
     }
 }
 
-/// **AppCardPressStyle** (Phase 7.6+) — systemweiter Tap-Feedback-Stil
-/// für alle tappbaren Cards (Home-Hero-Grid, Weitere Übungen, Tools,
-/// Status-Card, Pokal, etc.).
+/// **AppCardPressStyle** — systemweiter Tap-Feedback-Stil für alle
+/// tappbaren Cards (Home-Hero-Grid, Weitere Übungen, Tools, Status-
+/// Card, Pokal, Scan-Setup-Cards …).
 ///
-/// Verhalten:
-///   • Auf Finger-Down sofort Scale-Down (0.95) — kein Delay, greift
-///     im selben Frame wie der Touch-Event.
-///   • Auf Release/Drag-Cancel schnelle Spring-Zurück-Animation
-///     (response 0.22, dampingFraction 0.55) — natürliches „Pop"-
-///     Feedback, minimaler Overshoot.
-///   • `scaleEffect` + Spring — keine Opacity-/Shadow-Wackler, die
-///     den Render-Path ausbremsen könnten.
+/// Phase 7.6 Debug-Pass (User-Report „auf Gerät kaum sichtbar"):
+/// Scale 0.97 (statt 0.98), Opacity 0.85 (statt 0.92), zusätzlich
+/// dezenter Brightness-Drop (-0.05) für deutlich spürbaren Press.
+///
+/// Doppel-/Dreifach-Signal (Scale + Opacity + Brightness) greift
+/// auch auf komplexen Cards mit Gradients/Overlays, wo ein einzelner
+/// Effekt von überlappenden View-Transformationen geschluckt werden
+/// kann.
 ///
 /// Nutzung: `Button { ... } label: { ... }.buttonStyle(AppCardPressStyle())`
 /// statt `.buttonStyle(.plain)` auf allen tappbaren Modul-/Home-Cards.
 struct AppCardPressStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            // Opacity-Dimm + Scale-Down — dieselbe Combo wie im
-            // bewährten `HomeCardPressStyle` (ScanImportSupportViews).
-            // Doppel-Signal greift auch auf komplexen Cards mit
-            // Gradients/Overlays, wo ein reiner `scaleEffect` von
-            // überlappenden View-Transformationen geschluckt werden
-            // kann.
-            .opacity(configuration.isPressed ? 0.85 : 1)
-            .scaleEffect(configuration.isPressed ? 0.96 : 1)
-            .animation(.easeOut(duration: 0.10), value: configuration.isPressed)
+            // **Phase 7.6 Debug-Visibility-Pass**: sehr deutliche Werte,
+            // damit ein Press auf dem Gerät unmissverständlich sichtbar
+            // ist. Wenn das hier nicht wirkt, liegt der Grund **nicht**
+            // im Style, sondern an einer überdeckenden Touch-Fläche
+            // oder einem Parent-Gesture. Nach Verifizierung kann hier
+            // wieder zurück auf 0.97 / 0.85 gedreht werden.
+            .opacity(configuration.isPressed ? 0.7 : 1)
+            .scaleEffect(configuration.isPressed ? 0.92 : 1)
+            .brightness(configuration.isPressed ? -0.1 : 0)
+            .animation(AppMotion.tap, value: configuration.isPressed)
     }
 }
 
@@ -77,7 +90,8 @@ struct AppSecondaryButtonStyle: ButtonStyle {
                 RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
                     .stroke(tint.opacity(0.18), lineWidth: 1)
             )
-            .scaleEffect(configuration.isPressed ? 0.99 : 1)
-            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+            // Phase 7.6 — zentrale Konstanten aus `AppMotion`.
+            .scaleEffect(configuration.isPressed ? AppMotion.Scale.buttonPress : 1)
+            .animation(AppMotion.tap, value: configuration.isPressed)
     }
 }

@@ -75,34 +75,33 @@ final class LiveListRunnerTaskProvider: RunnerTaskProvider {
 
     // MARK: - Empty-State-Check (static)
 
-    /// Prüft, ob die aktuell gewählte Liste **genug** artikelfähige
-    /// Nomen für den strict-Live-Mode enthält. Wird von der View vor
-    /// dem Start des Runs aufgerufen — ist das `false`, zeigen wir
-    /// statt der Game-Arena einen Empty-State mit Hinweis + Button
-    /// „Zu den Listen".
+    /// Prüft, ob die aktuell gewählte Liste **genug Content** für
+    /// den Runner enthält. Wird von der View vor dem Start des Runs
+    /// aufgerufen — ist das `false`, bleibt der Start-CTA disabled
+    /// mit einem klaren Hint.
     ///
-    /// `minimum` = 3 ist absichtlich niedrig (permissiv): selbst kleine
-    /// User-Listen mit 3 Nomen sollen spielbar sein. Der Pool wird bei
-    /// Erschöpfung automatisch wieder aufgefüllt (shuffle-Repeat).
+    /// **Phase 7.6** — Kriterium gelockert: eine Liste gilt jetzt
+    /// als nutzbar, wenn sie mindestens `minimum` Wort-Items
+    /// (`cardType == .words`) enthält. Das Genus-Parsing passiert
+    /// später in `generateArticleTasks` und wirft stumm Items raus,
+    /// die nicht artikelfähig sind. Vorher forderte die Prüfung
+    /// explizit **3 artikelfähige** Nomen — bei Niveau-/Thema-Listen
+    /// ohne explizite Artikel-Präfixe scheiterte das regelmäßig und
+    /// der User konnte das Spiel nicht starten, obwohl die Liste
+    /// sonst Content hatte.
     static func hasUsableContent(
         in listStore: VocabularyListStore?,
         minimum: Int = 3
     ) -> Bool {
         guard let store = listStore else { return false }
         let selectedID = store.selectedListID
-        let allLists = [store.builtInList] + store.customLists
-        guard let selected = allLists.first(where: { $0.id == selectedID }) else {
+        guard let selected = store.allLists.first(where: { $0.id == selectedID })
+            ?? (store.builtInList.id == selectedID ? store.builtInList : nil)
+        else {
             return false
         }
-        let nouns = selected.items.filter { $0.cardType == .words }
-        var count = 0
-        for item in nouns {
-            if parseNounInfo(item) != nil {
-                count += 1
-                if count >= minimum { return true }
-            }
-        }
-        return false
+        let wordItems = selected.items.filter { $0.cardType == .words }
+        return wordItems.count >= minimum
     }
 
     // MARK: - Pool-Rebuild
@@ -317,4 +316,41 @@ final class LiveListRunnerTaskProvider: RunnerTaskProvider {
         ("une ",  .feminine),
         ("un ",   .masculine)
     ]
+}
+
+// MARK: - Fallback-Chain-Provider (Stufe 1 / 2026-04-28)
+
+/// **Fragen-Wiederherstellung (User-Spec)**: wenn der primäre Provider
+/// (typisch `LiveListRunnerTaskProvider` im Strict-Live-Mode) keinen
+/// Task liefern kann (Pool leer / Liste enthält keine artikel-fähigen
+/// Nomen), springt ein Sekundär-Provider ein. Damit erscheinen im Run
+/// **immer** Fragen — auch wenn die User-Liste edge-case-mäßig leer
+/// für Article-Tasks ist.
+///
+/// Strict-Live-Verhalten bleibt erhalten: solange `primary` Tasks
+/// liefert, wird `fallback` nicht angefasst. Der Fallback fängt nur
+/// echte Lücken auf, kein Mischen pro Run.
+@MainActor
+final class FallbackRunnerTaskProvider: RunnerTaskProvider {
+
+    private let primary: RunnerTaskProvider
+    private let fallback: RunnerTaskProvider
+
+    init(primary: RunnerTaskProvider, fallback: RunnerTaskProvider) {
+        self.primary = primary
+        self.fallback = fallback
+    }
+
+    func nextTask() -> RunnerTask? {
+        if let live = primary.nextTask() {
+            return live
+        }
+        return fallback.nextTask()
+    }
+
+    /// Delegiert an den Live-Provider (falls vorhanden), damit
+    /// `WordRunnerGame.refreshLiveContent()` den Pool neu aufbaut.
+    func refreshPool() {
+        (primary as? LiveListRunnerTaskProvider)?.refreshPool()
+    }
 }

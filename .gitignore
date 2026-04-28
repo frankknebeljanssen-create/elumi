@@ -15,3 +15,10 @@ FRDEVocabMVP/OpenAIConfig.plist
 /elumi-icon-set-*/
 /icons HomeSCreen */
 /recources/
+
+# Claude Code session data (lokal, niemals committed)
+.claude/
+
+# DB-Backups vor Migrationen — bleiben außerhalb Repo
+# (jeweils ~62 MB, im ~/Dropbox/VocabMVP-DB-Backups/ Folder)
+FRDEVocabMVP/FRDEMasterLexicon_pre_*.sqlite

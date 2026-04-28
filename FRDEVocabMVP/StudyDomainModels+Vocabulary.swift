@@ -215,13 +215,33 @@ struct VocabularyList: Identifiable, Codable, Equatable {
     var collectionPreset: ListCollectionPreset
     var isAggregateVocabulary: Bool
 
+    // ─── Stufe 1 (2026-04-28) — Lernjahr-Hierarchie ───
+    //
+    // **Transient** (NICHT persistiert): Diese Felder werden zur
+    // Laufzeit von `StandardVocabularyLoader` für die BuiltIn-A1-Liste
+    // gesetzt. Custom-Listen lassen beide auf Default. Sie sind absichtlich
+    // NICHT in `CodingKeys` aufgenommen — sonst würden persistente
+    // VocabularyList-JSONs (User-Custom-Listen) jedes Mal auch die
+    // Children-Items doppelt mit-serialisieren.
+
+    /// Optionale Kinder-Listen für hierarchische UI (Lernjahr-Buckets,
+    /// in V1 für „Grundwortschatz A1"). nil = klassische flache Liste.
+    var children: [VocabularyList]? = nil
+
+    /// Wenn true, sind Kinder-Auswahlen kumulativ — Tap auf Y_n
+    /// aktiviert Y_1…Y_n. Default false (Children unabhängig wählbar
+    /// — in V1 nicht implementiert, nur cumulativ aktiv).
+    var cumulativeChildren: Bool = false
+
     init(
         id: UUID = UUID(),
         name: String,
         items: [VocabularyItem],
         isBuiltIn: Bool = false,
         collectionPreset: ListCollectionPreset = .other,
-        isAggregateVocabulary: Bool = false
+        isAggregateVocabulary: Bool = false,
+        children: [VocabularyList]? = nil,
+        cumulativeChildren: Bool = false
     ) {
         self.id = id
         self.name = name
@@ -229,6 +249,8 @@ struct VocabularyList: Identifiable, Codable, Equatable {
         self.isBuiltIn = isBuiltIn
         self.collectionPreset = collectionPreset
         self.isAggregateVocabulary = isAggregateVocabulary
+        self.children = children
+        self.cumulativeChildren = cumulativeChildren
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -238,6 +260,7 @@ struct VocabularyList: Identifiable, Codable, Equatable {
         case isBuiltIn
         case collectionPreset
         case isAggregateVocabulary
+        // `children` und `cumulativeChildren` bewusst NICHT — transient.
     }
 
     init(from decoder: Decoder) throws {
@@ -248,5 +271,8 @@ struct VocabularyList: Identifiable, Codable, Equatable {
         isBuiltIn = try container.decodeIfPresent(Bool.self, forKey: .isBuiltIn) ?? false
         collectionPreset = try container.decodeIfPresent(ListCollectionPreset.self, forKey: .collectionPreset) ?? .other
         isAggregateVocabulary = try container.decodeIfPresent(Bool.self, forKey: .isAggregateVocabulary) ?? false
+        // children/cumulativeChildren bleiben auf Default (nil/false) —
+        // werden später zur Laufzeit gesetzt, falls dies eine BuiltIn-
+        // Liste mit Hierarchie ist.
     }
 }

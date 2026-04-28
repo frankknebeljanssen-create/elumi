@@ -56,6 +56,34 @@ struct ScanImportView: View {
     /// die Completion-View den selben Platz einnimmt wie beim Vokabel-Scan.
     @State var pendingFreierTextCompletion: ImportCompletionContext?
 
+    // MARK: - Import-Target-Choice (neuer Flow 2026-04-22 Abend V)
+    //
+    // Statt sofort beim Tap auf „Jetzt importieren" die bisherige
+    // Namensvergabe + neue-Liste-Anlage zu starten, fragt der Flow
+    // erst, wohin importiert werden soll. Drei zusätzliche Sheets:
+    //
+    //   1. ImportTargetChoiceSheet — neue/bestehende Liste wählen
+    //   2. ExistingListPickerSheet — Single-Select aus Custom-Listen
+    //   3. ScanImportConflictReviewSheet — Konflikte auflösen (nur bei Bedarf)
+    //
+    // Pendings sind die geplanten Items + Plan, die zwischen den
+    // Sheets gehalten werden müssen.
+
+    @State var isShowingImportTargetChoice = false
+    @State var isShowingExistingListPicker = false
+    @State var isShowingConflictReview = false
+    /// Neue Namensabfrage für „neue Liste importieren" (User-Spec
+    /// 2026-04-23 morgens). Wird nach `ImportTargetChoiceSheet`
+    /// präsentiert, wenn der User „neue Liste" gewählt hat.
+    @State var isShowingNewListNameSheet = false
+    /// Items, die der User im Review als importierbar markiert hat —
+    /// einmal beim Beginn berechnet, bis zum Apply unverändert.
+    @State var pendingImportItems: [VocabularyItem] = []
+    /// Ziel-Liste, in die importiert wird (nur Pfad „bestehende Liste").
+    @State var pendingTargetListID: UUID?
+    /// Aktueller Merge-Plan zwischen Picker und Conflict-Review.
+    @State var pendingMergePlan: MergePlan?
+
     // MARK: - Preparation-Sheet Quality & Auto-Optimize State
     //
     // Diese drei @State sind bewusst **in der View** (nicht im Session-

@@ -7,7 +7,73 @@ extension FlashcardsView {
                 // Hinweis: progressText / masteryProgressBar wurden in den Header-
                 // Stats-Row (`flashcardStatsRow`) verschoben, damit die Karteikarte
                 // selbst optisch ruhig bleibt.
+                //
+                // **Design-Phase 8**: Karte zeigt rechts oben einen Streak-Block
+                // (Dots). Streak kommt direkt aus dem SM-2-Datenmodell
+                // (`CardMastery.consecutiveCorrect` via `session.cardMastery`),
+                // also KEINE neue Datenstruktur. Card-Index ist die 1-basierte
+                // Position des Decks — zeigt dem Lerner, wo im Stapel er steht.
+                //
+                // **Personal-Deck-Variante (Phase 8)**: Wenn die Session aus
+                // einem PersonalDeck läuft (`activePersonalDeckID` gesetzt),
+                // zeigen Card-Index + Total die Gesamt-Position im
+                // Personal-Deck statt der Session-internen Position. Damit
+                // matcht das Tag-Label der User-Spec „Français · 248 / 1.300".
+                let activePersonalDeck = sessionStore.activePersonalDeckID.flatMap {
+                    personalDeckStore.deck(withID: $0)
+                }
+                let cardIndex: Int = {
+                    if let deck = activePersonalDeck {
+                        return min(deck.currentIndex + 1, deck.cardOrder.count)
+                    }
+                    guard let cardID = sessionStore.session?.currentCardID,
+                          let index = sessionStore.selectedDeck.cards.firstIndex(where: { $0.id == cardID }) else {
+                        return 1
+                    }
+                    return index + 1
+                }()
+                let totalCards: Int = activePersonalDeck?.cardOrder.count ?? sessionStore.totalCount
+                let streakValue: Int = {
+                    guard let cardID = sessionStore.session?.currentCardID,
+                          let mastery = sessionStore.session?.cardMastery[cardID] else {
+                        return 0
+                    }
+                    return mastery.consecutiveCorrect
+                }()
+                // Dot-Anzahl = wie oft muss die Karte korrekt sein, bis sie
+                // aus dem Stapel fällt. Kommt direkt aus der aktiven
+                // Session, damit Mitten-drin-Threshold-Änderungen nicht
+                // zu Inkonsistenz führen.
+                let streakTargetValue = sessionStore.masteryThreshold
+
                 VStack(spacing: 6) {
+                    // **Personal-Deck-Badge (Phase 8)** — kleiner Hinweis
+                    // oben-links über der Karte, der das Stapel-Branding
+                    // zeigt. Nur sichtbar, wenn eine Personal-Deck-Session
+                    // läuft. Dot in Deck-Farbe + Stapelname.
+                    if let deck = activePersonalDeck {
+                        HStack(spacing: 5) {
+                            Circle()
+                                .fill(PersonalDeck.color(for: deck.colorIndex))
+                                .frame(width: 5, height: 5)
+                            Text(deck.name)
+                                .font(.system(size: 7, weight: .medium, design: .rounded))
+                                .foregroundStyle(Color.white.opacity(0.5))
+                                .lineLimit(1)
+                        }
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 2)
+                        .background(
+                            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                                .fill(Color.white.opacity(0.06))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                                .stroke(Color(hex: "#1A3A55"), lineWidth: 1)
+                        )
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+
                     // Stack-Badge unten links/rechts entfernt — die Stats-Row
                     // oben zeigt die gleichen Counts schon prominent.
                     ZStack {
@@ -15,7 +81,11 @@ extension FlashcardsView {
                             text: currentFlashCard.prompt,
                             isAnswerSide: false,
                             languageCode: currentFlashCard.promptLanguageCode,
-                            wordClassLabel: currentFlashCard.wordClassLabel(for: currentFlashCard.promptLanguageCode)
+                            wordClassLabel: currentFlashCard.wordClassLabel(for: currentFlashCard.promptLanguageCode),
+                            cardIndex: cardIndex,
+                            totalCount: totalCards,
+                            streak: streakValue,
+                            streakTarget: streakTargetValue
                         )
                         .opacity(interaction.isFlashcardFlipped ? 0 : 1)
 
@@ -23,7 +93,11 @@ extension FlashcardsView {
                             text: currentFlashCard.answer,
                             isAnswerSide: true,
                             languageCode: currentFlashCard.answerLanguageCode,
-                            wordClassLabel: currentFlashCard.wordClassLabel(for: currentFlashCard.answerLanguageCode)
+                            wordClassLabel: currentFlashCard.wordClassLabel(for: currentFlashCard.answerLanguageCode),
+                            cardIndex: cardIndex,
+                            totalCount: totalCards,
+                            streak: streakValue,
+                            streakTarget: streakTargetValue
                         )
                         .opacity(interaction.isFlashcardFlipped ? 1 : 0)
                         .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0), perspective: 0.72)
@@ -46,6 +120,7 @@ extension FlashcardsView {
                             interaction.flipBackToFront(dismissTypedAnswerFocus: { dismissTypedAnswerFocus() })
                         } else {
                             interaction.revealSolution(
+                                sessionStore: sessionStore,
                                 speechController: speechController,
                                 dismissTypedAnswerFocus: { dismissTypedAnswerFocus() }
                             )
@@ -59,6 +134,32 @@ extension FlashcardsView {
                     // KEIN globaler `.animation(value:)` — wir steuern alle
                     // Bewegungen explizit (live folgen beim Drag, Spring-Back
                     // und Fly-Out-/Slide-In bei Karten-Wechsel).
+
+                    // **Personal-Deck-Footer-Hinweis (Phase 8)**: „X aktiv
+                    // verbleibend" unten-links unter der Karte. Zeigt
+                    // Gesamtkarten minus gemastered — gibt dem Lerner ein
+                    // klares „soviel bleibt noch übrig"-Gefühl.
+                    if let deck = activePersonalDeck {
+                        HStack {
+                            Text("\(deck.activeRemainingCount) aktiv verbleibend")
+                                .font(.system(size: 7, weight: .medium, design: .rounded))
+                                .foregroundStyle(Color.white.opacity(0.25))
+                            Spacer(minLength: 0)
+                        }
+                        .padding(.horizontal, 4)
+                    }
+
+                    // **Peek-Toast (User-Revision 2026-04-22)**: kurzer
+                    // Hinweis unter der Karte, wenn der User sie manuell
+                    // geflippt hat. Fade-in/out via `peekToastVisible`,
+                    // getriggert vom `triggerPeekToast()` im Controller.
+                    if interaction.peekToastVisible {
+                        Text("Karte als nicht gekonnt gewertet")
+                            .font(.system(size: 8, weight: .medium, design: .rounded))
+                            .foregroundStyle(Color(red: 1.0, green: 100.0/255.0, blue: 100.0/255.0).opacity(0.7))
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .transition(.opacity)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.vertical, 4)
@@ -89,6 +190,38 @@ extension FlashcardsView {
                     .font(AppTheme.Typography.body)
                     .foregroundStyle(AppTheme.Colors.success)
                     .frame(maxWidth: .infinity, alignment: .center)
+            } else if interaction.isAwaitingContinueAfterWrong {
+                // **User-Revision 2026-04-22**: Falsch-Antwort-Flow —
+                // Karte bleibt auf der Rückseite, User steuert den
+                // Wechsel selbst über „Weiter". Rote Hinweiszeile +
+                // CTA-Pill in Modul-Akzent.
+                VStack(alignment: .center, spacing: 10) {
+                    Text("Falsch 😕 — schau dir die Lösung an")
+                        .font(AppTheme.Typography.body)
+                        .foregroundStyle(AppTheme.Colors.error)
+                        .frame(maxWidth: .infinity, alignment: .center)
+
+                    Button {
+                        interaction.continueAfterWrongAnswer(
+                            sessionStore: sessionStore,
+                            speechController: speechController,
+                            speaker: speaker,
+                            feedbackPlayer: feedbackPlayer
+                        )
+                    } label: {
+                        Text("Weiter")
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .foregroundStyle(.black)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .fill(AppTheme.Colors.cta)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                }
             } else if interaction.showingSolution {
                 Text("Rückseite geöffnet")
                     .font(AppTheme.Typography.body)

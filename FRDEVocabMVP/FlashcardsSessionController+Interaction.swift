@@ -2,7 +2,15 @@ import Foundation
 import SwiftUI
 
 extension FlashcardsSessionController {
+    /// **Peek-aware revealSolution** (User-Revision 2026-04-22):
+    /// Manuelles Umdrehen der Karte (Peek) wird als „nicht gekonnt"
+    /// gewertet. Solange `peekedCurrentCardID` diese CardID markiert,
+    /// kann die Karte in diesem Durchgang **nicht** mehr als
+    /// gemeistert zählen — selbst wenn sie danach korrekt
+    /// beantwortet wird. Die korrekte Antwort schiebt sie ans Ende
+    /// des Stapels (nochmal drankommen).
     func revealSolution(
+        sessionStore: FlashcardSessionStore? = nil,
         speechController: SpeechController,
         dismissTypedAnswerFocus: () -> Void
     ) {
@@ -18,6 +26,31 @@ extension FlashcardsSessionController {
         showingSolution = true
         withAnimation(.spring(response: 0.36, dampingFraction: 0.82)) {
             isFlashcardFlipped = true
+        }
+
+        // **Peek-Protection**: Flag setzen + Mastery zurück auf 0.
+        // Nur beim ERSTEN Flip dieser Karte — wiederholtes
+        // Zurück-und-wieder-Aufdecken zählt als ein Peek.
+        if let sessionStore,
+           let currentCardID = sessionStore.session?.currentCardID,
+           peekedCurrentCardID != currentCardID {
+            peekedCurrentCardID = currentCardID
+            sessionStore.resetMasteryDueToPeek(cardID: currentCardID)
+            triggerPeekToast()
+        }
+    }
+
+    /// Kurzer User-Feedback-Toast unter der Karte. 0,3 s Fade-in,
+    /// 1,5 s sichtbar, 0,3 s Fade-out.
+    private func triggerPeekToast() {
+        withAnimation(.easeIn(duration: 0.3)) {
+            peekToastVisible = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) { [weak self] in
+            guard let self else { return }
+            withAnimation(.easeOut(duration: 0.3)) {
+                self.peekToastVisible = false
+            }
         }
     }
 

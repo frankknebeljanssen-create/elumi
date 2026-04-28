@@ -1312,13 +1312,8 @@ enum FrenchLemmaFormatter {
 
         // Singleword + kurze Noun-Phrases (Determiner + Nomen) sind
         // beide gültige Targets für Artikel-/Genus-Anreicherung.
-        // Vorher galt strikt `displayType == .singleWord` — das hat
-        // „mon ami", „une voiture", „le chat" etc. ausgeschlossen,
-        // weil das technisch 2-3 Wörter sind.
         let allowedForAnnotation: Bool = {
             if result.displayType == .singleWord { return true }
-            // Kurze Phrasen (2-3 Wörter), die wie ein Nomen behandelt
-            // werden. Trennwort muss typisch ein Determiner sein.
             let words = item.french.split(separator: " ")
             if words.count <= 3,
                storedIsNoun || resolvedIsNoun {
@@ -1328,8 +1323,24 @@ enum FrenchLemmaFormatter {
         }()
         guard allowedForAnnotation else { return displayFrench(for: item) }
 
-        // Rohe Basis ohne Artikel.
+        // **Bug-Fix 2026-04-24 (Artikel-Drift)**: Wenn der Originaltext
+        // bereits einen INDEFINITE Artikel (un/une/des) trägt, NICHT
+        // in den definite Form (le/la/l'/les) umschreiben. Sonst
+        // entstehen semantisch inkonsistente Paare wie
+        //   `une heure → eine Stunde`  → wird angezeigt als
+        //   `l'heure → eine Stunde`    (l'heure heißt aber „die Uhrzeit").
+        //
+        // Indefinite Artikel sind didaktisch oft bewusst gewählt
+        // (z. B. Zähleinheit „eine Stunde Zeit", „ein Buch lesen").
+        // Wir respektieren die Wahl des Quell-Texts und liefern nur
+        // die Genus-Annotation an, ohne den Artikel zu ersetzen.
         let raw = TextCasingRules.applyFrench(item.french)
+        if let preservedDisplay = preserveIndefiniteArticleWithGenderAnnotation(raw: raw, item: item) {
+            return preservedDisplay
+        }
+
+        // Rohe Basis ohne Artikel — für die definite-Form-Variante
+        // (le/la/l'/les) wie bisher.
         let stripped = strippingLeadingFrenchArticle(from: raw)
         guard !stripped.isEmpty else { return displayFrench(for: item) }
 
@@ -1375,6 +1386,46 @@ enum FrenchLemmaFormatter {
             return "\(withArticle) (\(g))"
         }
         return withArticle
+    }
+
+    /// **Indefinite-Artikel-Schutz** (Bug-Fix 2026-04-24): wenn das
+    /// Original `un`/`une`/`des` führt, behalten wir das bei. Liefert
+    /// optional den Display-String mit Original-Artikel + Genus-
+    /// Annotation; `nil` wenn kein indefinite Artikel im Original.
+    private static func preserveIndefiniteArticleWithGenderAnnotation(
+        raw: String,
+        item: VocabularyItem
+    ) -> String? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        let lower = trimmed.lowercased()
+        let indefinitePrefixes: [(prefix: String, gender: String)] = [
+            ("une ", "f"),
+            ("un ", "m"),
+            ("des ", "pl")
+        ]
+        for (prefix, gender) in indefinitePrefixes where lower.hasPrefix(prefix) {
+            // Wir fügen Genus nur an, wenn wir uns sicher sind (DB
+            // bestätigt) ODER der Artikel selbst das Genus klar gibt
+            // (un/une).  `des` ist plural-mehrdeutig — Genus-Letter
+            // kommt aus dem Word-Class-Lookup, falls verfügbar.
+            let dbGender = StandardVocabularyLoader.frenchGender(
+                for: strippingLeadingFrenchArticle(from: trimmed)
+            )
+            let annotation: String? = {
+                if gender == "pl" {
+                    return "pl"
+                }
+                if let db = dbGender, !db.isEmpty {
+                    return db
+                }
+                return gender
+            }()
+            if let g = annotation, !g.isEmpty {
+                return "\(trimmed) (\(g))"
+            }
+            return trimmed
+        }
+        return nil
     }
 
     /// Versuch, eine Singularform zu rekonstruieren — und dabei

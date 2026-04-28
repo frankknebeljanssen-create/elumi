@@ -6,6 +6,26 @@ final class FlashcardsSessionController: ObservableObject {
     @Published var lastResult: ScoreResult?
     @Published var showingSolution = false
     @Published var isFlashcardFlipped = false
+
+    /// **User-Revision 2026-04-22**: Bei einer falschen Antwort bleibt
+    /// die Karte auf der Rückseite sichtbar, **bis** der User den
+    /// „Weiter"-Button in der Antwort-Card drückt. Vorher lief nach
+    /// 1,5 s ein Auto-Advance — der wird durch diesen Flag pausiert.
+    /// Der Flag wird nur durch `continueAfterWrongAnswer(...)` oder
+    /// einen expliziten Kartenwechsel (Swipe) wieder auf false gesetzt.
+    @Published var isAwaitingContinueAfterWrong: Bool = false
+
+    /// **Peek-Protection (User-Revision 2026-04-22)**: Wenn der User
+    /// die Karte manuell umdreht (revealSolution), ohne sie vorher
+    /// beantwortet zu haben, wird sie als „nicht gekonnt" gewertet.
+    /// Dieser Flag hält die CardID, die im aktuellen Durchgang bereits
+    /// gepeekt wurde. Wird beim Karten-Wechsel wieder auf nil gesetzt.
+    @Published var peekedCurrentCardID: String? = nil
+
+    /// UI-Toast: „Karte als nicht gekonnt gewertet" — kurz nach Peek
+    /// sichtbar (0,3 s Fade-in, 1,5 s zu sehen, 0,3 s Fade-out). Wird
+    /// vom Flashcard-View als Overlay unter der Karte genutzt.
+    @Published var peekToastVisible: Bool = false
     @Published var cardFlyOutOffset: CGFloat = 0
     @Published var cardFlyOutRotation: Double = 0
     @Published var cardFlyOutOpacity = 1.0

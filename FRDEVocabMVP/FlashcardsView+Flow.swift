@@ -9,14 +9,32 @@ extension FlashcardsView {
     }
 
     func returnToFlashcardSetup() {
+        let cameFromPersonalDeck = sessionStore.activePersonalDeckID != nil
+        print("🔙 returnToFlashcardSetup: cameFromPersonalDeck=\(cameFromPersonalDeck) activeID=\(String(describing: sessionStore.activePersonalDeckID))")
+        syncPersonalDeckProgressIfNeeded()
         resetTransientState()
         setup.prepareReturnToSetup(
             selectedAppDirection: selectedAppDirection,
             sessionStore: sessionStore
         )
+        if cameFromPersonalDeck {
+            // **User-Revision 2026-04-22**: Async-Push, damit der
+            // Setup-Body-Switch zuerst durchläuft. Mit `+ 0.05 s`
+            // Mini-Delay, damit SwiftUI die Setup-Render-Phase wirklich
+            // abgeschlossen hat — sonst verschluckt die NavigationStack
+            // die Push-Animation oder feuert sie auf einen falschen
+            // Frame.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                print("🔙 push isShowingPersonalDecksScreen = true")
+                isShowingPersonalDecksScreen = true
+            }
+        }
     }
 
     func handleBackNavigation() {
+        // Ebenso beim Verlassen des Moduls komplett — letzter
+        // Fortschritt des Personal-Decks muss persistent landen.
+        syncPersonalDeckProgressIfNeeded()
         resetTransientState()
         sessionStore.clearTransientCustomDeckState()
         dismiss()
@@ -128,30 +146,42 @@ extension FlashcardsView {
 
     func handleFlashcardsAppear() {
         markFlashcardsOpenTiming("flashcards_view_on_appear")
-        // Zuletzt genutzte Karteikarten-Listen wiederherstellen, bevor der
-        // LaunchContext greift. Damit bleibt die Modul-spezifische Auswahl
-        // zwischen App-Besuchen erhalten (z. B. nach Modul-Wechsel zurückkehren).
+        // **User-Revision 2026-04-22 (Bug-Fix Navigation)**: SwiftUI
+        // feuert `.onAppear` auch beim Pop einer
+        // NavigationDestination (Meine-Stapel-Subscreen). Wenn der
+        // User aus Meine Stapel zurück kommt, sieht der Auto-Switch
+        // unten eine aktive Session und wirft ihn rein — obwohl er
+        // ins Setup zurück will. Wir markieren den ersten Appear und
+        // führen Init-Logik (LaunchContext, AutoStart, Session-Resume)
+        // NUR dann aus.
+        let isFirstAppear = !hasHandledInitialFlashcardsAppear
+        hasHandledInitialFlashcardsAppear = true
+
         if setup.selectedStackListIDs.isEmpty {
             setup.restoreSelectedStackListIDs()
         }
-        applyLaunchContextIfNeeded()
+        if isFirstAppear {
+            applyLaunchContextIfNeeded()
+        }
         ensureStackSelectionValidity()
         refreshDictionaryStackListIfNeeded()
         interaction.syncDisplayedCard(with: sessionStore)
-        if setup.shouldAutoStartFromLaunch {
-            setup.shouldAutoStartFromLaunch = false
-            isWaitingToStart = true
-            startFlashcardsFromSetup(autoplayPrompt: false)
-        } else {
-            syncSetupSelection()
-            // Nach Modul-Wechsel zurückgekehrt und es läuft noch eine gültige
-            // Session im Store? Direkt in die Karten-Ansicht statt Setup.
-            // So kann der User genau bei der Karte weitermachen, bei der er
-            // aufgehört hat (Home ↔ Karteikarten ohne Reset).
-            if setup.isShowingSetup, sessionStore.hasActiveSession, launchContext == nil {
-                setup.isShowingSetup = false
+
+        if isFirstAppear {
+            if setup.shouldAutoStartFromLaunch {
+                setup.shouldAutoStartFromLaunch = false
+                isWaitingToStart = true
+                startFlashcardsFromSetup(autoplayPrompt: false)
+            } else {
+                syncSetupSelection()
+                // Auto-Resume nur beim ersten Appear, NICHT bei jedem
+                // Inner-Navigation-Pop.
+                if setup.isShowingSetup, sessionStore.hasActiveSession, launchContext == nil {
+                    setup.isShowingSetup = false
+                }
             }
         }
+
         if sessionStore.hasActiveSession == false {
             speechController.stopRecording()
             speechController.deactivateAudioSession()

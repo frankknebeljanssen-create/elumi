@@ -30,6 +30,38 @@ struct WordRunnerGameView: View {
     @StateObject private var game: WordRunnerGame
     @StateObject private var music = WordRunnerMusicPlayer.shared
 
+    /// **Immersive-Toggle** (Phase 7.5). WR verwendet denselben
+    /// Environment-Hook wie Elumi, um den globalen Footer während
+    /// des tatsächlichen Gameplays auszublenden. Im Start-Screen und
+    /// im Summary bleibt der Footer sichtbar.
+    @Environment(\.appSetImmersiveArcadeAction) private var setImmersiveArcade
+    @Environment(\.dismiss) private var dismissEnvironment
+
+    /// **Lifetime-Stats** (Phase 7.5 Nachsatz — „Punkte, Leben,
+    /// Trophies analog Elumi"). Werden nach jedem Run aktualisiert
+    /// und im Start-Screen als Stats-Card angezeigt.
+    @AppStorage(appWordRunnerBestScoreKey) private var wordRunnerBestScore = 0
+    @AppStorage(appWordRunnerTotalTrophiesKey) private var wordRunnerTotalTrophies = 0
+
+    /// **Spiele-Economy** (Phase 7.5 — Start-Flow-Final). WR zieht
+    /// genau wie Elumi 1 Spiel pro Runde ab. Dieselbe UserDefaults-
+    /// Quelle, sodass Credits zwischen den Spielen geteilt sind.
+    @AppStorage(appArcadeCreditsKey) private var arcadeCredits = 0
+
+    /// **Zuletzt gewählte Liste in WR** (Phase 7.6). Damit die
+    /// Listen-Auswahl über mehrere WR-Runs hinweg persistiert, auch
+    /// wenn andere Module zwischendurch die globale `selectedListID`
+    /// verändert haben. `""` = noch keine WR-spezifische Auswahl.
+    @AppStorage(appWordRunnerLastListIDKey) private var wordRunnerLastListIDRaw = ""
+
+    /// Steuert das Ausklapp-Verhalten des Spielregeln-Blocks — analog
+    /// zu `ElumiArcadeGameView.isShowingArcadeRules`.
+    @State private var isShowingRules = false
+
+    /// Präsentiert die „Liste wählen"-Sheet (User-Spec „Tap öffnet
+    /// bekannte Liste-wählen-Ansicht mit Fertig-Button").
+    @State private var isShowingListPicker = false
+
     /// **Observed** — der Spieler darf auf dem Start-Screen die
     /// Vokabelliste wechseln (User-Wunsch „liste muss als option
     /// vorher im startscreen wählbar sein"). Wenn nicht vorhanden
@@ -63,12 +95,21 @@ struct WordRunnerGameView: View {
         onClose: @escaping () -> Void = {},
         onGoToLists: (() -> Void)? = nil
     ) {
+        // **Stufe 1 (2026-04-28) — Fragen-Fallback-Chain**:
+        // Wenn ein Store anliegt, wird Live-Provider primär verwendet.
+        // Der Seed-Provider hängt als **sekundärer Fallback** dran,
+        // damit auch bei leerer/fragmentierter Liste IMMER Tasks
+        // erscheinen. Strict-Live bleibt das Default-Verhalten —
+        // Seed greift nur, wenn Live nichts liefert.
         let provider: RunnerTaskProvider
         if let store = listStore {
-            provider = LiveListRunnerTaskProvider(listStore: store)
+            let live = LiveListRunnerTaskProvider(listStore: store)
+            let seed = SeedRunnerTaskProvider()
+            provider = FallbackRunnerTaskProvider(primary: live, fallback: seed)
         } else {
-            // Ohne Store → Seed als sicherer Fallback; Empty-State-
-            // Overlay gatet trotzdem den Start.
+            // Ohne Store → reiner Seed-Provider; Empty-State-Overlay
+            // gatet den Start zwar, aber wenn doch gestartet wird,
+            // gibt es Tasks.
             provider = SeedRunnerTaskProvider()
         }
         _game = StateObject(wrappedValue: WordRunnerGame(taskProvider: provider))
@@ -280,7 +321,16 @@ struct WordRunnerGameView: View {
                 // → Finger-Tracking 1:1 in Echtzeit, wie im
                 // Elumi-Arcade-Spiel. Die logische Spur wird aus der
                 // Finger-X abgeleitet, Kollision läuft weiter diskret.
-                gestureLayer(size: geo.size)
+                //
+                // **Phase 7.5 Bug-Fix** (User „Listen-Auswahl führt
+                // nicht zur Ansicht"): während `.idle` und `.summary`
+                // darf der Gesture-Layer NICHT die Touches abfangen —
+                // sonst bekommt der List-Picker-Button im Start-
+                // Overlay keine Taps mehr. Im Gameplay bleibt der
+                // Layer voll aktiv wie bisher.
+                if game.runState.isRunning {
+                    gestureLayer(size: geo.size)
+                }
 
                 // Correct-Feedback: grüne Spur-Säule leuchtet kurz
                 // auf, wenn eine korrekte Option unter den Spieler
@@ -320,26 +370,28 @@ struct WordRunnerGameView: View {
                 stateOverlay(size: geo.size)
             }
             .animation(.easeInOut(duration: 0.22), value: game.runState.isSummary)
-            // Close-Button als präzises Overlay, nicht als VStack, der
-            // den halben Screen zuklebt.
+            // **Linker Top-Stack** (Phase 7.5 — unified HUD-Position):
+            // Close-Button oben, darunter Listen-Chip + Collectibles-
+            // Chip. Alles auf derselben Y-Höhe wie Elumis headerBar
+            // (`.padding(.top, 58)`), damit die beiden Spiele ihre
+            // Chrome auf **gleicher Höhe** präsentieren.
+            //
+            // **User-Fix**: X nur **während Gameplay / GameOver**
+            // zeigen — auf dem Start-Screen übernimmt der Chevron aus
+            // `GameStartScreen` die Zurück-Funktion, in der Summary
+            // handhaben die CTAs den Ausgang. Doppelte Chrome raus.
             .overlay(alignment: .topLeading) {
-                closeButton
-                    .padding(.horizontal, AppTheme.Spacing.md)
-                    .padding(.top, AppTheme.Spacing.sm)
-            }
-            // **Linker HUD-Stack (Phase 7.6+)** — unter dem Close-
-            // Button sitzen Listen-Chip + Collectibles-Chips
-            // vertikal gestapelt. Damit rückt die Info-Hierarchie
-            // klar: Liste oben, Gesammeltes darunter, alles links.
-            .overlay(alignment: .topLeading) {
-                if game.runState.isRunning {
-                    VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 8) {
+                    if game.runState.isRunning || game.runState.isGameOver {
+                        closeButton
+                    }
+                    if game.runState.isRunning {
                         selectedListChip
                         collectiblesChip
                     }
-                    .padding(.horizontal, AppTheme.Spacing.md)
-                    .padding(.top, 58)
                 }
+                .padding(.horizontal, AppTheme.Spacing.md)
+                .padding(.top, 58)
             }
             // HUD oben rechts: Leben **oben** + Score **darunter**.
             // Collectibles sind nach links gewandert (s. o.), damit
@@ -412,9 +464,41 @@ struct WordRunnerGameView: View {
         }
         .background(AppTheme.Colors.elumiMidnight)
         .ignoresSafeArea()
+        // Phase 7.5 — System-Nav-Back-Button ausblenden. Der
+        // Start-Screen rendert einen eigenen Chevron, Gameplay/Summary
+        // haben eigene Close-Wege. Ohne diesen Toolbar-Hide würde der
+        // System-Chevron während des Spielens sichtbar bleiben (User-
+        // Report „doppelter chevron" + „beim spielen muss chevron weg").
+        .toolbar(.hidden, for: .navigationBar)
         .onDisappear {
             game.stop()
             music.fadeOut(over: 0.3)
+            // Immersive sauber zurückräumen, damit der Footer in
+            // nachfolgenden Screens wieder sichtbar ist.
+            setImmersiveArcade?(false)
+        }
+        // **Listen-Picker-Sheet** (Phase 7.6 Bug-3 Fix):
+        // `listStore.allLists` = Custom + Level + Topic — dieselbe
+        // Liste, die `ListsView` an die ListPickerSheet gibt. Damit
+        // sind wirklich ALLE Listen sichtbar (inkl. Niveau/Thema),
+        // nicht nur Built-in + Custom (User-Report „nur das
+        // Standardpaket sichtbar").
+        .sheet(isPresented: $isShowingListPicker) {
+            if let store = listStoreRef.backing {
+                ListPickerSheet(
+                    style: .home,
+                    lists: store.allLists,
+                    selectedListID: store.selectedListID,
+                    onSelect: { newID in
+                        store.selectedListID = newID
+                    },
+                    onDelete: { _ in
+                        // Löschen vom Start-Screen aus ist nicht
+                        // gewollt — die Löschen-Logik lebt in der
+                        // Listen-Verwaltung.
+                    }
+                )
+            }
         }
         .onChange(of: game.currentCombo) { _, newCombo in
             // Badge nur an Schwellen, nicht jedes Mal.
@@ -437,6 +521,26 @@ struct WordRunnerGameView: View {
         .onChange(of: game.runState) { _, newState in
             if case .gameOver = newState {
                 music.fadeOut(over: 0.8)
+                // Lifetime-Stats aktualisieren (Phase 7.5 Nachsatz):
+                // Best-Score und Trophies werden persistiert, damit
+                // der Start-Screen nach jedem Run aktuelle Werte
+                // zeigt. Kein Netzwerk-Call, nur UserDefaults via
+                // @AppStorage — sofort konsistent bei der nächsten
+                // Start-Screen-Rendering.
+                if game.score > wordRunnerBestScore {
+                    wordRunnerBestScore = game.score
+                }
+                wordRunnerTotalTrophies += game.collectiblesGathered
+            }
+            // **Immersive-Toggle** (Phase 7.5): Footer bleibt sichtbar,
+            // solange der User im Idle-Screen oder in der Summary
+            // steht. Nur während des tatsächlichen Gameplays (running /
+            // gameOver) blenden wir den globalen App-Footer aus.
+            switch newState {
+            case .running, .gameOver:
+                setImmersiveArcade?(true)
+            case .idle, .summary:
+                setImmersiveArcade?(false)
             }
         }
     }
@@ -1086,9 +1190,20 @@ struct WordRunnerGameView: View {
     @ViewBuilder
     private var closeButton: some View {
         Button {
+            // **Phase 7.6 Bug-Fix** (User: „kreuz während spiel führt
+            // zurück zum SPIEL start screen, NICHT zum home"): der
+            // X-Button bricht **nur den laufenden Run ab** und kehrt
+            // zum WR-Start-Screen (idle state) zurück. Kein
+            // `onClose()` mehr — das würde den ganzen WR-Screen
+            // dismissen und zum Home navigieren. Der User will
+            // danach die Liste ändern oder nochmal starten, ohne
+            // das ganze Spiel zu verlassen.
             game.stop()
             music.fadeOut(over: 0.3)
-            onClose()
+            // Footer wieder zeigen (immersive aus), damit der User
+            // Navigation hat. Der WR-Start-Screen selbst rendert
+            // sein eigenes Chrome (Chevron oben links).
+            setImmersiveArcade?(false)
         } label: {
             Image(systemName: "xmark")
                 .font(.system(size: 16, weight: .semibold))
@@ -2378,20 +2493,21 @@ struct WordRunnerGameView: View {
     private func stateOverlay(size: CGSize) -> some View {
         switch game.runState {
         case .idle:
-            // Idle-Overlay zeigt **immer** den List-Picker — auch wenn
-            // noch keine brauchbare Liste da ist. Dann ist der Start-
-            // Button ausgegraut + ein Hinweis „bitte Liste mit Nomen
-            // auswählen" oder „Zu den Listen" bleibt sichtbar.
             idleStartScreen
-                .transition(.opacity)
+                // **Exit-Transition** (Motion-Spec): Start-Screen fadet
+                // + scaled **leicht nach oben** (1.02) raus, sodass der
+                // Übergang ins Spiel wie ein „Sprung nach vorn" wirkt
+                // — kein harter Cut, kein Bounce. Das Game-World-Layer
+                // darunter ist sofort sichtbar.
+                .transition(
+                    .asymmetric(
+                        insertion: .opacity,
+                        removal: .opacity.combined(with: .scale(scale: 1.02))
+                    )
+                )
 
-        case .running:
-            // Im Running-State: kein Overlay.
+        case .running, .gameOver:
             EmptyView()
-
-        case .gameOver:
-            gameOverScreen
-                .transition(.opacity)
 
         case .summary:
             summaryOverlay
@@ -2399,229 +2515,439 @@ struct WordRunnerGameView: View {
         }
     }
 
-    /// **Start-Screen** (Phase 7.4+). Zeigt:
-    ///   1. Titel „Word Runner"
-    ///   2. Kurz-Hinweis (Spur wechseln via Drag, Springen via Tap)
-    ///   3. **List-Picker** (aktuelle Liste als Capsule-Button; Menu
-    ///      mit allen verfügbaren Listen) — der User sieht direkt,
-    ///      aus welcher Liste die Fragen kommen und kann sie vor dem
-    ///      Start wechseln.
-    ///   4. Primary-CTA „Spiel starten" — nur aktiv, wenn die Liste
-    ///      genug nutzbare Nomen enthält.
-    ///   5. Wenn Liste unbrauchbar: Hint-Text + Sekundär-Button
-    ///      „Zu den Listen".
+    /// **Start-Screen** (Phase 7.5 — Start-Flow-Unification +
+    /// Layout-Nach-Fix).
+    ///
+    /// Struktur analog Elumi:
+    ///   1. Icon
+    ///   2. Name
+    ///   3. Große Card: „Ausgewählte Liste" + Dropdown
+    ///   4. CTA „Spiel starten"
+    ///
+    /// Keine Subline, keine Info-Pill — reduziertes Layout, so wie
+    /// im User-Spec.
+    /// Start-CTA nur aktiv, wenn beide Bedingungen erfüllt:
+    ///   • mindestens 1 Spiel übrig (`arcadeCredits >= gamesCost`)
+    ///   • brauchbare Liste ausgewählt (`hasUsableList`)
+    /// User-Spec Phase 7.5: „CTA nur aktiv, wenn: mindestens 1 Spiel
+    /// vorhanden, eine Liste ausgewählt ist".
+    private var canStart: Bool {
+        hasUsableList && arcadeCredits >= ArcadeCreditSystem.gamesCost
+    }
+
+    private var startHintText: String? {
+        if !hasUsableList {
+            return "Wähle erst eine Liste mit Nomen."
+        }
+        if arcadeCredits < ArcadeCreditSystem.gamesCost {
+            return "Keine Spiele übrig — verdiene welche durchs Lernen."
+        }
+        return nil
+    }
+
     @ViewBuilder
     private var idleStartScreen: some View {
-        ZStack {
-            Color.black.opacity(0.55).ignoresSafeArea()
-            VStack(spacing: 16) {
-                Text("Word Runner")
-                    .font(.system(size: 30, weight: .black, design: .rounded))
-                    .foregroundStyle(.white)
-                Text("Ziehen wechselt die Spur · Tap springt")
-                    .font(.system(size: 14, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.8))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 24)
+        GameStartScreen(
+            title: "Word Runner",
+            subline: nil,
+            infoLine: nil,
+            primaryCTALabel: "Spiel starten",
+            primaryCTAIcon: "play.fill",
+            primaryCTAEnabled: canStart,
+            hint: startHintText,
+            onPrimaryCTA: { startRun() },
+            onBack: {
+                if let handler = onGoToLists, !hasUsableList {
+                    handler()
+                } else {
+                    dismissEnvironment()
+                }
+            },
+            icon: { wordRunnerStartIcon },
+            extraContent: {
+                // **Reihenfolge laut User-Spec** (verbindlich):
+                //   C. Credit Card (Spiele-Count + „1 Runde kostet …"
+                //      + Leben-Row)
+                //   E. Listen-Dropdown (Tap öffnet Sheet)
+                //   F. Spielregeln (ausklappbar)
+                // D ist der Spielname — der wird von GameStartScreen
+                // als Titel gerendert.
+                VStack(spacing: 14) {
+                    wordRunnerSpieleCard
+                    listSelectionCard
+                    wordRunnerRulesDisclosure
+                }
+            }
+        )
+        .onAppear {
+            // **Phase 7.6** — WR-spezifisches Listen-Recall: wenn wir
+            // beim letzten WR-Run eine Liste ausgewählt haben,
+            // stellen wir die Auswahl hier wieder her (selbst wenn
+            // ein anderes Modul zwischendurch die globale
+            // `selectedListID` geändert hat).
+            if let store = listStoreRef.backing,
+               let savedID = UUID(uuidString: wordRunnerLastListIDRaw),
+               store.selectedListID != savedID,
+               store.allLists.contains(where: { $0.id == savedID })
+                || store.builtInList.id == savedID {
+                store.selectedListID = savedID
+            }
+            recomputeHasUsableList()
+            // Phase 7.6 — Audio-Preload, damit `startNewRun` sofort
+            // Musik hat statt Decoder-Anlauf. Analog Elumi.
+            WordRunnerMusicPlayer.shared.preloadNextTrack()
+        }
+        .onChange(of: listStoreRef.backing?.selectedListID) { _, newID in
+            recomputeHasUsableList()
+            game.refreshLiveContent()
+            // WR-spezifisch persistieren — damit die Auswahl auch
+            // nach Modul-Wechseln (Quiz/Training ändert globalen
+            // Store) für die nächste WR-Session erhalten bleibt.
+            if let newID { wordRunnerLastListIDRaw = newID.uuidString }
+        }
+    }
 
-                // List-Picker
-                listPickerChip
+    /// **Word-Runner-Spiele-Card** (Phase 7.5 — Start-Screen-Final).
+    /// **Exakt** dasselbe Card-Design wie Elumis `startCreditHeroCard`:
+    /// gleiche Struktur, gleiche Abstände, gleiche Farben, gleiche
+    /// Leben-Row. Einzige Abweichung: Gamecontroller-Icon statt
+    /// Hexagon, „Spiele"-Label, 3 Mini-Icons statt 4. Alles andere
+    /// 1:1 übernommen — kein zweites System.
+    @ViewBuilder
+    private var wordRunnerSpieleCard: some View {
+        let hasCredits = arcadeCredits >= ArcadeCreditSystem.gamesCost
+        VStack(spacing: 10) {
+            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                Image(systemName: "gamecontroller.fill")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(hasCredits ? AppTheme.Colors.cta : AppTheme.Colors.textSecondary)
 
-                // CTA
-                Button(action: { startRun() }) {
-                    HStack(spacing: 10) {
-                        Image(systemName: "play.fill")
-                            .font(.system(size: 15, weight: .bold))
-                        Text("Spiel starten")
-                            .font(.system(size: 17, weight: .black, design: .rounded))
+                Text("\(arcadeCredits)")
+                    .font(.system(size: 34, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .monospacedDigit()
+
+                Text(arcadeCredits == 1 ? "Spiel" : "Spiele")
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+
+            HStack(spacing: 6) {
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                Text(hasCredits
+                    ? "1 Runde kostet \(ArcadeCreditSystem.gamesCost) Spiel"
+                    : "Lernen bringt Spiele — dann spielen")
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+
+            // Leben-Row (analog Elumi) — Mini-Charaktere + Label.
+            HStack(spacing: 8) {
+                Text("\(WordRunnerGame.startingLives) Leben")
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                HStack(spacing: 3) {
+                    ForEach(0..<WordRunnerGame.startingLives, id: \.self) { _ in
+                        Image("SplashCharacter")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                            .clipShape(Circle())
                     }
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 28)
-                    .padding(.vertical, 14)
+                }
+            }
+            .padding(.top, 2)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(AppTheme.Colors.secondarySurface)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(
+                    (hasCredits ? AppTheme.Colors.cta : AppTheme.Colors.border).opacity(hasCredits ? 0.35 : 1),
+                    lineWidth: 1
+                )
+        )
+    }
+
+    /// **Spielregeln-Dropdown** (analog Elumi `startRulesDisclosure`).
+    /// Tap auf den Header klappt die 4 Kernregeln ein/aus. Bewusst
+    /// kurz gehalten — keine langen Erklärungen, nur die 4 Punkte
+    /// aus der User-Spec.
+    @ViewBuilder
+    private var wordRunnerRulesDisclosure: some View {
+        VStack(spacing: 10) {
+            Button {
+                // Phase 7.6 — systemweite State-Animation.
+                withAnimation(AppMotion.state) {
+                    isShowingRules.toggle()
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Text(isShowingRules ? "Spielregeln ausblenden" : "Spielregeln anzeigen")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                    Image(systemName: isShowingRules ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 32)
+            }
+            .buttonStyle(.plain)
+
+            if isShowingRules {
+                VStack(alignment: .leading, spacing: 8) {
+                    ruleRow("Wähle die richtige Spur")
+                    ruleRow("Weiche Hindernissen aus")
+                    ruleRow("Tap springt über niedrige Hindernisse")
+                    ruleRow("Vertikal draggen steuert das Tempo")
+                    ruleRow("Ein Fehler kostet ein Leben")
+                    ruleRow("1 Runde kostet 1 Spiel")
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(AppTheme.Colors.secondarySurface.opacity(0.55))
+                )
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+    }
+
+    private func ruleRow(_ text: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(AppTheme.Colors.elumiPink)
+            Text(text)
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+        }
+    }
+
+    /// **Listen-Auswahl-Card** (Phase 7.5 — Sheet-basiert).
+    /// Tap öffnet die dedizierte `WordRunnerListPickerSheet` mit
+    /// „Fertig"-Button (User-Spec). Der Card-Look bleibt identisch
+    /// zu Elumis Credit-Card-Pattern.
+    @ViewBuilder
+    private var listSelectionCard: some View {
+        if let store = listStoreRef.backing {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 8) {
+                    Image(systemName: "list.bullet.rectangle.portrait")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(AppTheme.Colors.elumiPink)
+                    Text("Ausgewählte Liste")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .textCase(.uppercase)
+                        .tracking(0.5)
+                    Spacer()
+                }
+
+                Button {
+                    isShowingListPicker = true
+                } label: {
+                    HStack(spacing: 10) {
+                        // **Phase 7.6 Bug-Fix** — Listen-Name wird
+                        // **immer** angezeigt, sobald eine Liste
+                        // gewählt ist. Der alte Ternär zeigte bei
+                        // `hasUsableList == false` (Liste ohne Nomen)
+                        // fälschlich „Bitte Liste auswählen", obwohl
+                        // der User schon eine Liste gewählt hatte.
+                        // Die Warnung „zu wenige Nomen" lebt jetzt
+                        // **unter** dem CTA als Hint (siehe
+                        // `startHintText`).
+                        Text(currentListName(store: store))
+                            .font(.system(size: 17, weight: .black, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .black))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
                     .background(
-                        Capsule().fill(
-                            hasUsableList
-                                ? AppTheme.Colors.elumiPink
-                                : AppTheme.Colors.elumiPink.opacity(0.35)
-                        )
-                    )
-                    .shadow(
-                        color: AppTheme.Colors.elumiPink.opacity(hasUsableList ? 0.35 : 0),
-                        radius: 10, x: 0, y: 6
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(AppTheme.Colors.surface)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .stroke(AppTheme.Colors.border.opacity(0.5), lineWidth: 1)
+                            )
                     )
                 }
                 .buttonStyle(.plain)
-                .disabled(!hasUsableList)
-
-                if !hasUsableList {
-                    VStack(spacing: 6) {
-                        Text("Die gewählte Liste hat zu wenige Nomen. Wähle eine andere Liste oder geh zur Listen-Verwaltung.")
-                            .font(.system(size: 12, weight: .medium, design: .rounded))
-                            .foregroundStyle(.white.opacity(0.8))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 24)
-                        Button {
-                            if let handler = onGoToLists {
-                                handler()
-                            } else {
-                                onClose()
-                            }
-                        } label: {
-                            Text("Zu den Listen")
-                                .font(.system(size: 13, weight: .bold, design: .rounded))
-                                .foregroundStyle(.white.opacity(0.85))
-                                .underline()
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
             }
-            .padding(24)
-        }
-        .onAppear { recomputeHasUsableList() }
-        .onChange(of: listStoreRef.backing?.selectedListID) { _, _ in
-            recomputeHasUsableList()
-            game.refreshLiveContent()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 14)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(AppTheme.Colors.secondarySurface)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(
+                        (hasUsableList
+                            ? AppTheme.Colors.elumiPink
+                            : AppTheme.Colors.border
+                        ).opacity(hasUsableList ? 0.35 : 1),
+                        lineWidth: 1
+                    )
+            )
         }
     }
 
-    /// **Listen-Auswahl-Chip** für den Start-Screen. Zeigt den Namen
-    /// der aktuellen Liste + Pfeil-nach-unten; Tap öffnet ein
-    /// SwiftUI-Menu mit allen Custom-Listen + der Built-in-Liste.
-    @ViewBuilder
-    private var listPickerChip: some View {
-        if let store = listStoreRef.backing {
-            Menu {
-                ForEach(availableLists(store: store), id: \.id) { list in
-                    Button {
-                        store.selectedListID = list.id
-                    } label: {
-                        HStack {
-                            Text(list.name)
-                            if list.id == store.selectedListID {
-                                Spacer()
-                                Image(systemName: "checkmark")
-                            }
-                        }
-                    }
-                }
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "list.bullet.rectangle.portrait")
-                        .font(.system(size: 13, weight: .bold))
-                    Text(currentListName(store: store))
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 10, weight: .bold))
-                }
-                .foregroundStyle(.white)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .background(
-                    Capsule()
-                        .fill(Color.white.opacity(0.14))
-                        .overlay(
-                            Capsule().stroke(Color.white.opacity(0.3), lineWidth: 0.8)
-                        )
-                )
-            }
-            .buttonStyle(.plain)
-        } else {
-            // Kein Store → Hinweis statt Picker
-            Text("Keine Liste verfügbar")
-                .font(.system(size: 13, weight: .medium, design: .rounded))
-                .foregroundStyle(.white.opacity(0.6))
+    /// Spiel-Icon für den WR-Start-Screen: Lauf-Glyph im pinken Kreis.
+    private var wordRunnerStartIcon: some View {
+        ZStack {
+            Circle()
+                .fill(AppTheme.Colors.elumiPink.opacity(0.22))
+            Image(systemName: "figure.run")
+                .font(.system(size: 38, weight: .black))
+                .foregroundStyle(AppTheme.Colors.elumiPink)
         }
     }
 
-    /// Alle für den Picker relevanten Listen — Built-in zuerst, danach
-    /// alle Custom-Listen sortiert nach Name.
+    /// Alle für den Picker relevanten Listen — jetzt identisch zur
+    /// `store.allLists`-Quelle, die auch die ListPickerSheet nutzt.
+    /// So findet `currentListName` auch Niveau-/Thema-Listen, wenn
+    /// der User solche auswählt (vorher fehlten sie und der Card
+    /// zeigte generisches „Liste" statt des konkreten Namens).
     private func availableLists(store: VocabularyListStore) -> [VocabularyList] {
-        var result: [VocabularyList] = [store.builtInList]
-        result.append(contentsOf: store.customLists.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending })
-        return result
+        store.allLists
     }
 
     private func currentListName(store: VocabularyListStore) -> String {
-        let all = availableLists(store: store)
-        return all.first(where: { $0.id == store.selectedListID })?.name ?? "Liste"
+        // **Phase 7.6 Bug-Fix** — User-Report „Liste wird ausgewählt,
+        // aber nur `Liste` wird angezeigt". Wir durchsuchen jetzt
+        // `store.allLists` **plus** `builtInList` (falls die Selection
+        // darauf zeigt und `allLists` sie nicht inkludiert).
+        if store.builtInList.id == store.selectedListID {
+            return store.builtInList.name
+        }
+        return store.allLists.first(where: { $0.id == store.selectedListID })?.name
+            ?? "Liste"
     }
 
     private func recomputeHasUsableList() {
         hasUsableList = LiveListRunnerTaskProvider.hasUsableContent(in: listStoreRef.backing)
     }
 
-    /// **GAME OVER-Screen** zwischen Crash und Summary. Zeigt 2 s lang
-    /// nur „GAME OVER" auf einem dunklen, **blur-lastigen** Backdrop —
-    /// der Hintergrund des Spiels friert ein (siehe `frozenGameClock`
-    /// + `gameOverAt`) und wird durch `.blur(radius: 8)` zusätzlich
-    /// unscharf, damit kein Bewegungseindruck mehr entsteht.
+    /// **Summary-Overlay** (Phase 7.5 — Ende-Flow-Unification).
     ///
-    /// Keine Sub-Zeile mehr („Deine Runde ist vorbei." ist entfallen —
-    /// GAME OVER allein kommuniziert den Zustand klar).
-    @ViewBuilder
-    private var gameOverScreen: some View {
-        ZStack {
-            // Schwarzer Dim + milder Blur-Tint. Der eigentliche
-            // Background-Blur wird im Main-Body (WordRunnerGameView)
-            // über `.blur(...)` auf den Spiel-Renderer gelegt, damit
-            // die Bewegungslosigkeit visuell sofort sichtbar ist.
-            Color.black.opacity(0.62).ignoresSafeArea()
-            Text("GAME OVER")
-                .font(.system(size: 44, weight: .black, design: .rounded))
-                .foregroundStyle(.white)
-                .tracking(3)
-                .shadow(color: .black.opacity(0.7), radius: 6, x: 0, y: 3)
-        }
-    }
-
+    /// Nutzt jetzt die shared `GameSummaryView`-Komponente — identisch
+    /// zur Elumi-Arcade-Summary. Spielspezifische Daten:
+    ///   - Hero = gesammelte XP aus `SessionRewardOutcome.totalXP`
+    ///   - Stats = Richtig / Fehler / Combo / Score
+    ///   - Primär-CTA „Noch eine Runde" → `startRun()`
+    ///   - Sekundär-CTA „Zur Startseite" → Music-Fadeout + `onClose()`
+    ///
+    /// Das alte `gameOverScreen`-Zwischen-Overlay + die Nutzung des
+    /// geteilten `SessionSummaryView` sind bewusst entfallen — beide
+    /// Spiele (Elumi + WR) zeigen jetzt exakt denselben End-Screen.
     @ViewBuilder
     private var summaryOverlay: some View {
         let outcome = game.pendingOutcome ?? .empty
-        // Aufbau wie `ElumiArcadeGameView+Overlays.gameOverOverlay`:
-        // dimmer Backdrop + **zentriert** gesetzte Karte. Keine
-        // ScrollView — der geteilte `SessionSummaryView` ist auf
-        // iPhone-Höhen getestet und passt in den sichtbaren Bereich.
-        // Falls die Summary doch mal zu hoch wird (kleinere Devices
-        // / Dynamic Type XL), greift `minimumScaleFactor` innerhalb
-        // der Summary selbst.
-        ZStack {
-            Color.black.opacity(0.55)
-                .ignoresSafeArea()
+        let correct = game.correctAnswers
+        let wrong = game.wrongAnswers
+        let combo = game.longestCombo
+        let score = game.score
+        let headline = wordRunnerHeadline(correct: correct, wrong: wrong)
 
-            SessionSummaryView(
-                outcome: outcome,
-                progress: ProgressStore.shared.progress,
-                primaryCTALabel: "Nochmal spielen",
-                onPrimaryCTA: {
-                    startRun()
-                },
-                secondaryCTALabel: "Zurück zur Auswahl",
-                onSecondaryCTA: {
-                    music.fadeOut(over: 0.3)
-                    game.stop()
-                    onClose()
+        GameSummaryView(
+            headline: headline,
+            subtitle: nil,
+            badge: nil,
+            heroValue: "+\(outcome.totalXP)",
+            heroValueLabel: "XP",
+            heroValueColor: AppTheme.Colors.cta,
+            stats: [
+                .init(title: "Richtig", value: "\(correct)"),
+                .init(title: "Fehler",  value: "\(wrong)"),
+                .init(title: "Combo",   value: "\(combo)"),
+                .init(title: "Score",   value: "\(score)")
+            ],
+            primaryCTALabel: "Noch eine Runde",
+            primaryCTAIcon: "arrow.clockwise",
+            onPrimaryCTA: { startRun() },
+            secondaryCTALabel: "Zur Startseite",
+            onSecondaryCTA: {
+                music.fadeOut(over: 0.3)
+                game.stop()
+                onClose()
+            },
+            icon: {
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.Colors.elumiPink.opacity(0.18))
+                    Image(systemName: "figure.run")
+                        .font(.system(size: 40, weight: .black))
+                        .foregroundStyle(AppTheme.Colors.elumiPink)
                 }
-            )
-            .padding(.horizontal, 16)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        )
+    }
+
+    /// Kurzer Headline-Picker nach Quote. Bleibt freundlich auch bei
+    /// Nullrunden.
+    private func wordRunnerHeadline(correct: Int, wrong: Int) -> String {
+        let total = correct + wrong
+        guard total > 0 else { return "Weiter geht's!" }
+        let ratio = Double(correct) / Double(total)
+        switch ratio {
+        case 0.85...: return "Stark!"
+        case 0.6...:  return "Gut gemacht!"
+        case 0.3...:  return "Auf gutem Weg"
+        default:      return "Weiter üben!"
         }
     }
 
     // MARK: - Input
 
     private func startRun() {
-        // Doppelter Gate, falls ein Retry-CTA den Empty-State umgeht.
-        guard hasUsableList else { return }
+        // Start-Gate (User-Spec Phase 7.5):
+        //   1. Spiele > 0 (Credits vorhanden)
+        //   2. Liste ausgewählt + brauchbar
+        // Wenn eine Bedingung nicht erfüllt ist: KEIN Abzug, KEIN Start.
+        guard canStart else { return }
+
+        // Credit-Abzug **vor** dem Run-Start — konsistent mit Elumi
+        // (dort zieht der Start-CTA auch direkt ab).
+        arcadeCredits -= ArcadeCreditSystem.gamesCost
+
         // Runden-State zurücksetzen, damit das Badge beim ersten
-        // Übergang zu Runde 2 korrekt triggert (sonst würde der
-        // Watcher einen Sprung 0 → 1 als Rundenwechsel lesen).
+        // Übergang zu Runde 2 korrekt triggert.
         displayedRound = 1
         roundBadgeShownAt = nil
-        game.start()
-        music.startNewRun()
+
+        // Footer ausblenden, sobald das Gameplay läuft.
+        setImmersiveArcade?(true)
+        // Motion-Spec: Transition idle → running mit 0.20 s Ease-Out.
+        // Das Start-Overlay fadet + scaled leicht (.transition oben),
+        // der Game-Layer darunter wird instant sichtbar.
+        withAnimation(.easeOut(duration: 0.2)) {
+            game.start()
+        }
+        // Musik leicht verzögert starten (User-Motion-Spec: „Musik
+        // beginnt ~100–150 ms nach Tap, kein abruptes Starten vor der
+        // visuellen Bewegung").
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(130))
+            music.startNewRun()
+        }
     }
 }
 

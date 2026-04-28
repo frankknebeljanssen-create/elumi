@@ -33,15 +33,30 @@ struct LexiconEntry: Identifiable {
         wordClass: String? = nil
     ) {
         self.id = id
+        // **2026-04-25 Nomen-Kapitalisierung am Lexikon-Datenpfad**:
+        // Master-Lexikon (SQLite) enthält teilweise kleingeschriebene
+        // deutsche Nomen. Hier — zentral im LexiconEntry-Init — wird
+        // das `targetTerm` normalisiert, damit ALLE downstream Views
+        // (Wörterbuch-Row, Detail-Sheet, Sort-Keys) korrekt
+        // kapitalisierte Nomen sehen. Gated über `wordClass == "noun"`,
+        // sodass Verben/Adjektive unangetastet bleiben.
+        //
+        // `StudyLanguage` hat nur `.french`/`.english` — German ist
+        // immer die Zielsprache. Deshalb normalisieren wir
+        // ausschließlich `targetTerm` (deutsch), nicht `sourceTerm`.
+        let normalizedTarget = GermanNounCapitalization.normalizeGermanNounTarget(
+            targetTerm,
+            wordClass: wordClass
+        )
         self.sourceTerm = sourceTerm
-        self.targetTerm = targetTerm
+        self.targetTerm = normalizedTarget
         self.sourceLanguage = sourceLanguage
         self.cardType = cardType
         self.frenchGender = frenchGender
         self.germanGender = germanGender
         self.isGermanNoun = isGermanNoun ?? false
         self.sourceSortKey = sourceTerm.folding(options: .diacriticInsensitive, locale: .current).lowercased()
-        self.targetSortKey = targetTerm.lowercased()
+        self.targetSortKey = normalizedTarget.lowercased()
         // Fallback: entry_id aus der id-Komponente extrahieren
         // (Format: language|cardType|srcKey|tgtKey|entryId)
         if let explicit = entryID {

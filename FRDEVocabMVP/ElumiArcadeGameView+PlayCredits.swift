@@ -1,0 +1,229 @@
+import SwiftUI
+
+/// **Play-Credits-Integration in das Arcade-Spiel** (2026-04-24).
+///
+/// Isolierte Extension für die Credit-Interaktionen. Keine Änderung
+/// an bestehenden Gameplay-Regeln, keine Konflikte mit dem globalen
+/// `arcadeCredits`-System (GameHub „1 Credit = 1 Spiel starten").
+///
+/// **Features:**
+///   • `playCreditsHUDChip` — kleiner Chip im Header während des
+///     Spiels (dezent, zeigt Bestand). Spec-Punkt #2.
+///   • `playCreditsSkipChip` — Button „Überspringen (1 Credit)" im
+///     Header. Mapping auf Arcade: überspringt die aktuelle Runde
+///     und springt auf die nächste (der natürlichste Analog zu
+///     „Aufgabe überspringen" in diesem Arcade-Kontext).
+///   • `playCreditsRescueOverlay` — wird **vor** dem normalen
+///     Game-Over eingeblendet, wenn Credits > 0. Spec-Punkt #3
+///     („Mit 1 Credit retten"): gibt dem Spieler eine Runde zurück,
+///     reset Sting-Count auf 0, Spiel läuft weiter.
+///   • `consumePlayCreditRescue()` / `consumePlayCreditSkipRound()`
+///     — zentrale API-Eingangspunkte, zentralisieren die Consume-
+///     Race-Protection.
+extension ElumiArcadeGameView {
+
+    // MARK: - HUD: Credits-Anzeige
+
+    /// Dezenter Credits-Chip im HeaderBar während Spiel läuft.
+    /// Spec #2: „kleine Anzeige oben: Credits: X — unauffällig,
+    /// aber sichtbar".
+    var playCreditsHUDChip: some View {
+        HStack(spacing: 5) {
+            Image(systemName: "ticket.fill")
+                .font(.system(size: 10, weight: .bold))
+                .foregroundStyle(AppTheme.Colors.warning)
+            Text("Credits: \(playCredits.credits)")
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+                .monospacedDigit()
+                .contentTransition(.numericText())
+        }
+        .padding(.horizontal, 9)
+        .padding(.vertical, 5)
+        .background(
+            Capsule()
+                .fill(AppTheme.Colors.surface.opacity(0.92))
+        )
+        .overlay(
+            Capsule()
+                .stroke(AppTheme.Colors.warning.opacity(0.35), lineWidth: 1)
+        )
+        .animation(.easeInOut(duration: 0.2), value: playCredits.credits)
+    }
+
+    /// Skip-Chip neben dem Credits-Chip. Nur aktiv, wenn der User
+    /// Credits hat und sich gerade im regulären Spielfluss befindet
+    /// (kein Game-Over, keine Bonus-Runde). Spec #4.
+    var playCreditsSkipChip: some View {
+        Button {
+            consumePlayCreditSkipRound()
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "forward.fill")
+                    .font(.system(size: 10, weight: .bold))
+                Text("Skip (1)")
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 5)
+            .background(
+                Capsule()
+                    .fill(AppTheme.Colors.primary.opacity(playCreditsSkipEnabled ? 0.85 : 0.3))
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(!playCreditsSkipEnabled)
+        .opacity(playCreditsSkipEnabled ? 1.0 : 0.4)
+        .allowsHitTesting(playCreditsSkipEnabled)
+    }
+
+    /// Gate für den Skip-Button: Credits > 0 UND es läuft gerade
+    /// ein regulärer Run (kein Start-Overlay, kein Game-Over, keine
+    /// Banner, keine Bonusrunde).
+    var playCreditsSkipEnabled: Bool {
+        guard playCredits.credits > 0 else { return false }
+        guard !isGameOver, !showingStartOverlay else { return false }
+        guard !showingRoundBanner, !bonusRoundWaitingForTap else { return false }
+        guard !isBonusRound else { return false }
+        return isPlaying
+    }
+
+    // MARK: - Rescue-Prompt (Game-Over-Abfangpunkt)
+
+    /// Prompt, der vor dem normalen Game-Over-Overlay auftaucht,
+    /// wenn der Spieler Credits hat und noch keine Rescue-Entscheidung
+    /// getroffen hat. Spec #3: „Mit 1 Credit retten".
+    ///
+    /// Wird vom Layout oberhalb des `gameOverOverlay` eingeblendet,
+    /// solange `shouldShowRescueOffer == true`. Sobald der User eine
+    /// Wahl trifft (Retten oder Weiter), schließt der Prompt und das
+    /// Spiel verhält sich entweder regulär (Game-Over) oder läuft
+    /// weiter (Rescue).
+    var playCreditsRescueOverlay: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "heart.fill")
+                .font(.system(size: 42, weight: .bold))
+                .foregroundStyle(AppTheme.Colors.error)
+                .shadow(color: AppTheme.Colors.error.opacity(0.4), radius: 8, x: 0, y: 2)
+
+            VStack(spacing: 6) {
+                Text("Retten?")
+                    .font(.system(size: 24, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                Text("Nutze 1 Credit — du bekommst ein Leben zurück und spielst weiter.")
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 18)
+            }
+
+            VStack(spacing: 8) {
+                Button {
+                    consumePlayCreditRescue()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "ticket.fill")
+                            .font(.system(size: 13, weight: .bold))
+                        Text("Mit 1 Credit retten")
+                            .font(.system(size: 15, weight: .black, design: .rounded))
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 46)
+                }
+                .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.error))
+
+                Button {
+                    // User lehnt Rescue ab — Flag setzen, damit der
+                    // Prompt nicht wiederkehrt. `gameOverOverlay`
+                    // übernimmt ab jetzt den normalen Flow.
+                    rescueConsumedForCurrentGameOver = true
+                } label: {
+                    Text("Nein, Ergebnis zeigen")
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 20)
+        }
+        .padding(.vertical, 28)
+        .padding(.horizontal, 16)
+        .frame(maxWidth: 340)
+        .background(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(AppTheme.Colors.surface)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .stroke(AppTheme.Colors.error.opacity(0.25), lineWidth: 1.5)
+        )
+        .shadow(color: Color.black.opacity(0.28), radius: 24, x: 0, y: 12)
+    }
+
+    /// Gate für das Rescue-Prompt: Spiel ist beendet, Credits > 0,
+    /// und der Nutzer hat noch nicht entschieden.
+    var shouldShowRescueOffer: Bool {
+        isGameOver
+            && playCredits.credits > 0
+            && !rescueConsumedForCurrentGameOver
+    }
+
+    // MARK: - Consume-API (zentrale Eingänge, Race-sicher)
+
+    /// Rescue konsumieren: 1 Credit abziehen, Game-Over rückgängig
+    /// machen, ein Leben zurückgeben, Sting-Count reset, Spiel wieder
+    /// laufen lassen. Race-safe durch den `rescueConsumedForCurrentGameOver`-
+    /// Flag — zweiter Tap wird ignoriert.
+    func consumePlayCreditRescue() {
+        guard !rescueConsumedForCurrentGameOver else { return }
+        guard playCredits.useCredit() else { return }
+        rescueConsumedForCurrentGameOver = true
+
+        // Leben zurückgeben + States neutralisieren.
+        // `misses` reduzieren statt auf 0 setzen — fair: der Spieler
+        // hat sich bis hierher durchgekämpft und verliert nur das
+        // allerletzte Leben nicht. Falls misses schon 0 war (edge),
+        // max(0, …) schützt gegen Unterlauf.
+        misses = max(0, misses - 1)
+        jellyfishStingCount = 0
+        isGameOver = false
+        isPlaying = true
+        // Kein `restartGame()` — wir wollen nahtlos weiterspielen,
+        // keinen Fresh-Restart. Das Spiel läuft mit dem existierenden
+        // Score einfach weiter.
+        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+        feedbackPlayer.playAchievement()
+    }
+
+    /// Skip konsumieren: 1 Credit abziehen, Runde sofort beenden,
+    /// Banner für nächste Runde triggern. Race-safe — guarded durch
+    /// `playCreditsSkipEnabled`.
+    func consumePlayCreditSkipRound() {
+        guard playCreditsSkipEnabled else { return }
+        guard playCredits.useCredit() else { return }
+
+        // Aktive Snacks/Tentakel aufräumen, Sting zurücksetzen,
+        // Runde inkrementieren. Der bestehende Runden-Wechsel-Flow
+        // übernimmt den Rest (Banner, Ready-Blink).
+        activeSnacks.removeAll()
+        activeTentacles.removeAll()
+        jellyfishStingCount = 0
+        round += 1
+        roundCatchCount = 0
+        roundSuctionSpawned = false
+        ambientEventFiredThisRound = false
+        showingRoundBanner = true
+        roundBannerPhase = 0
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        feedbackPlayer.playTabSwitch()
+    }
+
+    /// Aufzurufen, wenn eine neue Game-Over-Episode beginnt — damit
+    /// der Rescue-Prompt für den neuen Game-Over wieder erscheint.
+    /// Nutzer kann pro Game-Over einmal entscheiden.
+    func resetRescueOfferForNewGameOver() {
+        rescueConsumedForCurrentGameOver = false
+    }
+}

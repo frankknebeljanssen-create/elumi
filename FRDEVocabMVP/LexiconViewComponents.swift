@@ -172,6 +172,89 @@ struct LexiconDetailSheetView: View {
     let sectionStyle: AppSectionStyle
     let onDone: () -> Void
 
+    /// **Wörterbuch-Audio (Phase 8)**: eigener Speaker pro Detail-Sheet.
+    /// `@StateObject` hält die Instanz über das Leben der Sheet-Präsentation,
+    /// damit der AVSpeechSynthesizer nicht bei jedem Re-Render neu erzeugt
+    /// wird (sonst schluckt der erste Tap manchmal das Audio).
+    @StateObject private var speaker = Speaker()
+
+    /// Country-Code → BCP-47-Sprachcode. Gleiche Mapping-Logik wie in den
+    /// bestehenden `speaker.speak(…)`-Aufrufern (Training, Flashcards,
+    /// Akzente). Fallback auf Französisch, weil das Wörterbuch primär
+    /// FR↔DE abdeckt.
+    private func languageCode(for countryCode: String) -> String {
+        switch countryCode.uppercased() {
+        case "FR": return "fr-FR"
+        case "DE": return "de-DE"
+        case "EN", "GB", "US": return "en-US"
+        case "IT": return "it-IT"
+        case "ES": return "es-ES"
+        default:    return "fr-FR"
+        }
+    }
+
+    /// Entfernt Genus-Marker in Klammern aus dem gesprochenen Text —
+    /// „(m)", „(f)", „(n)", „(m/f)", „(pl)" werden nicht mitgesprochen,
+    /// weil TTS sie sonst als „Klammer auf m Klammer zu" vokalisieren
+    /// oder komisch betonen würde. Die Marker bleiben auf dem Screen
+    /// sichtbar — nur die Audio-Pipeline bereinigt sie.
+    private static func stripGenusMarkers(from text: String) -> String {
+        var cleaned = text
+        // Muster: ` ? ( ? m|f|n|pl [ ? / ? m|f|n|pl ]* ? ) ? `
+        // Bewusst klein gehalten — nur Genus-/Numerus-Marker, keine
+        // anderen Klammer-Inhalte (Beispielsätze können Klammern enthalten).
+        let pattern = #"\s*\(\s*(?:m|f|n|pl)(?:\s*/\s*(?:m|f|n|pl))?\s*\)"#
+        cleaned = cleaned.replacingOccurrences(
+            of: pattern,
+            with: "",
+            options: .regularExpression
+        )
+        // Mehrfachleerzeichen einsammeln, die durch das Entfernen entstehen.
+        cleaned = cleaned.replacingOccurrences(
+            of: #"\s{2,}"#,
+            with: " ",
+            options: .regularExpression
+        )
+        return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Lautsprecher-Button (Sprecher-Kopf-Icon). Tap spricht das
+    /// übergebene Wort einmal im korrekten Sprachcode aus. Während der
+    /// Wiedergabe ist er disabled, damit Doppel-Taps keine Überlagerung
+    /// erzeugen. `isCompact` rendert eine kleinere Variante (z. B. für
+    /// Beispielsätze), `isCompact = false` die große Header-Variante.
+    @ViewBuilder
+    private func speakerButton(
+        for text: String,
+        countryCode: String,
+        isCompact: Bool = false
+    ) -> some View {
+        let code = languageCode(for: countryCode)
+        let isBusy = speaker.isSpeaking
+        let diameter: CGFloat = isCompact ? 26 : 32
+        let iconSize: CGFloat = isCompact ? 12 : 15
+        Button {
+            let spoken = Self.stripGenusMarkers(from: text)
+            guard !spoken.isEmpty else { return }
+            speaker.speak(text: spoken, languageCode: code)
+        } label: {
+            Image(systemName: isBusy ? "speaker.wave.2.fill" : "speaker.wave.2")
+                .font(.system(size: iconSize, weight: .semibold))
+                .foregroundStyle(sectionStyle.accent)
+                .frame(width: diameter, height: diameter)
+                .background(
+                    Circle().fill(sectionStyle.accent.opacity(isBusy ? 0.28 : 0.16))
+                )
+                .overlay(
+                    Circle().stroke(sectionStyle.accent.opacity(isCompact ? 0.25 : 0.35),
+                                    lineWidth: isCompact ? 0.75 : 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .disabled(text.trimmingCharacters(in: .whitespaces).isEmpty)
+        .accessibilityLabel("Vorsprechen")
+    }
+
     /// Alle Beispielsätze aller Einträge dieser Gruppe, deduped via example_id,
     /// sortiert: bevorzugt `example_order = 1` zuerst.
     private var allExamples: [DictionaryExample] {
@@ -215,7 +298,7 @@ struct LexiconDetailSheetView: View {
 
     private func translationGroupCard(countryCode: String?, badge: String?, translations: [String]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack {
+            HStack(spacing: 8) {
                 if let cc = countryCode {
                     LexiconFlagBadge(countryCode: cc, compact: false)
                 }
@@ -228,6 +311,14 @@ struct LexiconDetailSheetView: View {
                         .padding(.vertical, 4)
                         .background(sectionStyle.accent.opacity(0.14))
                         .clipShape(Capsule())
+                }
+                // **Wörterbuch-Audio (Phase 8)**: Lautsprecher rechts oben.
+                // Spricht die erste/primäre Übersetzung in der Zielsprache
+                // aus — bei mehreren bulleted-Alternativen gewinnt die erste,
+                // weil sie im UI am prominentesten dargestellt wird.
+                if let primary = translations.first, !primary.isEmpty,
+                   let cc = countryCode {
+                    speakerButton(for: primary, countryCode: cc)
                 }
             }
 
@@ -287,16 +378,30 @@ struct LexiconDetailSheetView: View {
 
             VStack(alignment: .leading, spacing: 14) {
                 ForEach(examples) { ex in
+                    // **Wörterbuch-Audio Phase 8 (Beispiele)**: pro Beispiel-
+                    // Zeile jeweils ein kleiner Lautsprecher rechts — für
+                    // Französisch immer, für Deutsch nur wenn vorhanden.
+                    // Kompakt-Variante (`isCompact: true`), damit die Beispiele
+                    // nicht optisch von den großen Header-Buttons dominiert
+                    // werden.
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(ex.french)
-                            .font(.system(size: 16, weight: .semibold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textPrimary)
-                            .fixedSize(horizontal: false, vertical: true)
-                        if !ex.german.isEmpty {
-                            Text(ex.german)
-                                .font(.system(size: 14, weight: .medium, design: .rounded))
-                                .foregroundStyle(AppTheme.Colors.textSecondary)
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            Text(ex.french)
+                                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.textPrimary)
                                 .fixedSize(horizontal: false, vertical: true)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            speakerButton(for: ex.french, countryCode: "FR", isCompact: true)
+                        }
+                        if !ex.german.isEmpty {
+                            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                Text(ex.german)
+                                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                speakerButton(for: ex.german, countryCode: "DE", isCompact: true)
+                            }
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -312,9 +417,19 @@ struct LexiconDetailSheetView: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
-                    // Source language section
+                    // Source language section — Flag + Speaker oben in einer
+                    // Zeile, Quellwort darunter groß. **Wörterbuch-Audio
+                    // Phase 8**: Lautsprecher rechts oben, Spiegel-Logik zur
+                    // Target-Card, damit beide Sprachen konsistent klickbar
+                    // sind.
                     VStack(alignment: .leading, spacing: 10) {
-                        LexiconFlagBadge(countryCode: sourceCountryCode, compact: false)
+                        HStack(spacing: 8) {
+                            LexiconFlagBadge(countryCode: sourceCountryCode, compact: false)
+                            Spacer()
+                            if !sourceText.isEmpty {
+                                speakerButton(for: sourceText, countryCode: sourceCountryCode)
+                            }
+                        }
 
                         Text(sourceText)
                             .font(.system(size: 22, weight: .black, design: .rounded))

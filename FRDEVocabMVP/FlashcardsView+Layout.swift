@@ -34,6 +34,35 @@ extension FlashcardsView {
                 ComboToastOverlay()
                 MilestoneOverlayView()
             }
+            // **Phase 8.2 Bug-Fix**: NavigationDestination wandert vom
+            // Setup-Screen-Modifier in den Body-Wrapper hoch, damit der
+            // Push-Pfad SETUP ↔ SESSION überlebt. Vorher: setup.isShowingSetup
+            // = false flippte den Body, was den Setup-Screen ENTFERNTE
+            // → auch die `.navigationDestination` verschwand → SwiftUI
+            // popte PersonalDecksView automatisch + dismiss() popte
+            // nochmal → User landete eine Ebene zu tief im Setup statt
+            // in der gerade frisch konfigurierten Session.
+            .navigationDestination(isPresented: $isShowingPersonalDecksScreen) {
+                PersonalDecksView(
+                    personalDeckStore: personalDeckStore,
+                    listStore: listStore,
+                    sectionStyle: sectionStyle,
+                    language: selectedAppDirection.sourceLanguage,
+                    cardTypeFilter: setup.selectedSetupContent.preferredCardType,
+                    onStartDeck: { deck in
+                        // **Bug-Fix Phase 8.2 (v4)**: Parent steuert
+                        // beides — Pop UND Session-Start. Vorher hat
+                        // PersonalDecksView selbst dismiss() gerufen,
+                        // das hat in Kombination mit dem Body-Flip zu
+                        // einer Race geführt, in der der Setup-Screen
+                        // wieder oben aufpoppte. Jetzt: erst pop, dann
+                        // start — beide synchronen State-Mutationen
+                        // werden von SwiftUI gebatched.
+                        isShowingPersonalDecksScreen = false
+                        startPersonalDeckSession(deck)
+                    }
+                )
+            }
         )
     }
 
@@ -152,7 +181,31 @@ extension FlashcardsView {
                     //
                     // Stats bleiben ÜBER der Karte. Mikro etc. sitzen am unteren
                     // Rand für kurze Tap-Wege.
-                    Spacer().frame(height: AppTheme.Spacing.md)
+                    // **User-Revision 2026-04-22 (final)**: Indikator
+                    // jetzt mit fixer Höhe (16 pt) — clipped, damit der
+                    // Header oben NIE überlappt wird. Text 12 → 11 pt,
+                    // Dot 7 → 6 pt für schmaleres Profil. `offset(y: -10)`
+                    // schiebt den ganzen Indikator-Layer 10 pt nach
+                    // oben, wie gewünscht. Spacer hält die Layout-Höhe
+                    // konstant — Stats-Row darunter bewegt sich nicht.
+                    ZStack(alignment: .top) {
+                        Spacer().frame(height: AppTheme.Spacing.md)
+                        if let deck = activePersonalDeckForSession {
+                            HStack(spacing: 5) {
+                                Circle()
+                                    .fill(PersonalDeck.color(for: deck.colorIndex))
+                                    .frame(width: 6, height: 6)
+                                Text("Mein Stapel · \(deck.name)")
+                                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                                    .foregroundStyle(Color.white.opacity(0.75))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.7)
+                            }
+                            .padding(.horizontal, flashcardSessionCardInset)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .offset(y: -10)
+                        }
+                    }
 
                     flashcardStatsRow
                         .padding(.horizontal, flashcardSessionCardInset)
@@ -164,9 +217,13 @@ extension FlashcardsView {
 
                     flashcardSwipeHintCard
                         .padding(.horizontal, flashcardSessionCardInset)
-                        .padding(.top, 6)
+                        .padding(.top, 10)
 
-                    Spacer().frame(height: AppTheme.Spacing.sm)
+                    // **Phase 8.1** — Elemente unter der Karte ein Stück
+                    // weiter nach unten, damit die jetzt größere Karte
+                    // ihren Platz bekommt, ohne dass Antwort-Card und
+                    // Action-Block in den Footer reinrutschen.
+                    Spacer().frame(height: AppTheme.Spacing.md)
 
                     flashcardResponseCard
                         .padding(.horizontal, flashcardSessionCardInset)
@@ -174,7 +231,7 @@ extension FlashcardsView {
                     // Größerer Abstand vor dem Action-Block, damit Antwort-
                     // Card und Mikro/Lautsprecher/Tastatur klar voneinander
                     // abgesetzt sind.
-                    Spacer().frame(height: 28)
+                    Spacer().frame(height: 32)
 
                     flashcardPrimaryActions
                         .padding(.horizontal, flashcardSessionCardInset)
@@ -209,13 +266,19 @@ extension FlashcardsView {
                 // Hintergrund hatte und das appScreenBackground des äußeren
                 // Chrome-Wrappers erst nach dem Layout greift).
                 ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                    // **User-Revision 2026-04-22**: Outer-Spacing
+                    // `md` (16) → `sm` (12), damit der Abstand zwischen
+                    // „Meine Stapel" und „Anzahl der Karten" so eng
+                    // sitzt wie der Gap zwischen den beiden Mechanik-
+                    // Cards („Anzahl" ↔ „Karte fällt raus nach").
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                        // **App-Konvention (User-Spec)**: Nach dem Header kommt
+                        // IMMER zuerst die „Ausgewählte Listen"-Card — dann
+                        // folgt der Rest modulspezifisch.
                         flashcardsListSelectionCard
 
                         // Direction-Row ist in den Header gewandert
                         // (FR-DE-Toggle rechts oben im ModuleHeaderCard).
-                        // Frühere `SessionDirectionRow()` hier entfallen —
-                        // identisches Pattern wie Quiz/Training.
 
                         if isDictionarySelectedInStack {
                             flashcardDictionaryLevelCard
@@ -229,6 +292,12 @@ extension FlashcardsView {
                             flashcardCountLimitCard
                             flashcardMasteryThresholdCard
                         }
+
+                        // **User-Revision 2026-04-22**: Meine-Stapel-
+                        // Entry-Button wandert UNTER die Mechanik-Cards.
+                        // Der Hauptflow (Listen + Kartenanzahl + Mastery)
+                        // steht oben, die optionale Stapel-Auswahl darunter.
+                        personalDeckSection
 
                         // `flashcardHungerCard` + `flashcardStatsTrioCard` sind
                         // mit der Master-Setup-Migration ersatzlos entfallen:
@@ -267,7 +336,11 @@ extension FlashcardsView {
                     // Konstante hebt ihn um 10 pt an und bringt ihn auf
                     // exakt die gleiche Distanz zum Footer wie alle anderen
                     // Setup-Screens.
-                    VStack(spacing: 14) {
+                    // **User-Revision 2026-04-22**: Spacing zwischen
+                    // Punkte-Bar und „Los geht's"-CTA reduziert (14 → 8 pt),
+                    // damit die beiden Elemente optisch näher
+                    // zusammengehören.
+                    VStack(spacing: 8) {
                         SessionGamificationBar(estimate: flashcardsSessionEstimate)
 
                         SessionPrimaryCTA(
@@ -276,7 +349,13 @@ extension FlashcardsView {
                         ) {
                             startFlashcardsFromSetup(autoplayPrompt: true)
                         }
-                        .padding(.bottom, AppLayout.sessionCTABottomClearance)
+                        // **User-Revision 2026-04-22**: Karteikarten-spezifisch
+                        // etwas näher an den Footer ran (−14 pt gegenüber der
+                        // systemweiten `sessionCTABottomClearance`). Ankündigungs-
+                        // Bar + CTA rutschen dadurch gemeinsam tiefer — alle
+                        // anderen Setup-Screens bleiben unverändert auf der
+                        // System-Konstanten.
+                        .padding(.bottom, max(0, AppLayout.sessionCTABottomClearance - 14))
                     }
                 }
                 .onChange(of: isCardCountFieldFocused) { _, isFocused in
@@ -315,6 +394,9 @@ extension FlashcardsView {
                 setup.showingStackComposer = false
             }
         }
+        // (NavigationDestination für PersonalDecksView ist nach
+        // `flashcardsBodyContent` gewandert — siehe Bug-Fix-Kommentar
+        // dort. Hier nicht mehr deklarieren, sonst doppelt.)
     }
 
     /// Custom Listen-Auswahl-Card im Speed-Round-Stil — analog zu den

@@ -25,8 +25,17 @@ extension ListsView {
     var screenContent: some View {
         ZStack(alignment: .top) {
             ZStack(alignment: .bottom) {
-                if isDirectListLaunch && !showingListDetail {
-                    // Hide content while sheet is about to open — prevents flash
+                // **Direct-Launch-Bypass** (Bug-Fix 2026-04-23 abends):
+                // wenn der User aus dem Import-Fertig-Screen via
+                // „Liste ansehen" kommt, soll NICHT die „Listen
+                // verwalten"-Übersicht aufflackern. Vorher zeigte
+                // diese Stelle `Color.clear` als Inhalt — der App-
+                // Top-/Bottom-Bar (`appLocalChrome`) blieb aber
+                // sichtbar und der Header „Listen verwalten" tauchte
+                // kurz auf. Lösung: `listsPrimaryContent` einfach
+                // gar nicht rendern, sondern eine ruhige
+                // Hintergrundfläche, bis das Sheet darüber sitzt.
+                if isDirectListLaunch {
                     Color.clear
                 } else {
                     listsPrimaryContent
@@ -51,7 +60,11 @@ extension ListsView {
         .appAmbientWormBackground(sectionStyle)
         .dismissKeyboardOnTap()
         .toolbar(.hidden, for: .navigationBar)
-        .appLocalChrome(enabled: !usesGlobalChrome) {
+        // **Bug-Fix 2026-04-23**: Bei Direct-Launch (aus Import-Fertig)
+        // den lokalen Chrome (TopBar + BottomBar) komplett unterdrücken
+        // — sonst flackert der „Listen verwalten"-Header sichtbar auf,
+        // bevor das Detail-Sheet sich aufschiebt.
+        .appLocalChrome(enabled: !usesGlobalChrome && !isDirectListLaunch) {
             AppTopBar(onBack: { dismiss() }, onInfo: openInfo)
                 .padding(.horizontal, AppLayout.screenPadding)
                 .padding(.top, AppLayout.topBarInsetTop)

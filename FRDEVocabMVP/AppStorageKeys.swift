@@ -33,10 +33,45 @@ let appElumiBestStreakKey = "elumi.gamification.bestStreak.v1"
 let appElumiLastRewardDayIndexKey = "elumi.gamification.lastRewardDayIndex.v1"
 let appElumiArcadeHighScoreKey = "elumi.arcade.highscore.v1"
 let appArcadeCreditsKey = "elumi.arcade.credits.v1"
+/// **Elumi-Play-Credits** (2026-04-24 Test-System) — isolierter
+/// Credit-Pool NUR für das Elumi-Arcade-Spiel. Wird durch die Slot
+/// Machine im Trainingsgenerator gefüllt (1/3/6 pro Elumi-Treffer),
+/// im Spiel verbraucht für Hilfen (Rescue, Skip). Bewusst getrennt
+/// vom `appArcadeCreditsKey` (GameHub-„1 Credit = 1 Spiel starten").
+/// Word Runner greift **nicht** darauf zu.
+let appElumiPlayCreditsKey = "elumi.play.credits.v1"
+/// **Word Runner** — persistierte Lifetime-Stats für den Start-Screen:
+/// Best-Score (höchste Runden-Punkte je erreicht) + Trophies (Summe
+/// aller je eingesammelten Collectibles). Werden nach jedem Run
+/// aktualisiert und im Start-Screen als Stats-Card angezeigt.
+let appWordRunnerBestScoreKey = "elumi.wordrunner.bestScore.v1"
+let appWordRunnerTotalTrophiesKey = "elumi.wordrunner.totalTrophies.v1"
+/// **Zuletzt in WR gewählte Liste** (UUID als String). Wird beim
+/// Listen-Wechsel im WR-Start-Screen gespeichert und beim nächsten
+/// Aufruf der Ansicht wiederhergestellt — sodass der Spieler nicht
+/// jedes Mal neu auswählen muss, auch wenn andere Module (Quiz,
+/// Training, Flashcards) zwischendurch die globale Listen-ID
+/// verändert haben.
+let appWordRunnerLastListIDKey = "elumi.wordrunner.lastListID.v1"
 let appTrainingSelectedListIDsKey = "training.selectedListIDs.v1"
 let appQuizSelectedListIDsKey = "quiz.selectedListIDs.v1"
 let appFlashcardsSelectedListIDsKey = "flashcards.selectedListIDs.v1"
 let appFlashcardsMasteryThresholdKey = "flashcards.masteryThreshold.v1"
+
+// **Persönlicher Trainingsmodus** (Phase 8): bis zu zwei persistierte
+// User-Stapel. JSON-Array von `PersonalDeck` (Codable), verwaltet von
+// `PersonalDeckStore.shared`. Die Sessions-Logik lebt weiter im normalen
+// FlashcardSessionStore — dieser Key speichert nur die Stapel-Definitionen
+// (Listenquellen, einmalig gemischte Reihenfolge, Fortschritts-Cursor,
+// gemeisterte Karten).
+let appPersonalDecksKey = "elumi.flashcards.personalDecks.v1"
+
+// **Voice-System** (Phase 9): User-Wahl der Apple-Stimmen pro Sprache.
+// NUR die Auswahl wird hier gespeichert — die Sprach-Dateien selbst
+// leben systemweit auf dem iPhone und werden in den iPhone-Einstellungen
+// unter „Bedienungshilfen → Gesprochene Inhalte" verwaltet.
+let appVoiceGermanSelectionKey = "elumi.voice.de.selection"
+let appVoiceFrenchSelectionKey = "elumi.voice.fr.selection"
 
 // MARK: - Gameplay Settings
 // Zentraler Key für die globale Speed-Round-Dauer — einziger Wahrheits-

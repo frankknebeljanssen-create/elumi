@@ -11,7 +11,14 @@ extension FlashcardSessionStore {
 
         resetGamificationCounters()
         let ids = selectedDeck.cards.map(\.id)
-        let firstID = ids.randomElement()
+        // **Personal-Deck-Resume (User-Revision 2026-04-22)**: Wenn ein
+        // Personal-Deck aktiv ist, hat der Aufrufer die Karten BEREITS
+        // in der richtigen Reihenfolge (ab `deck.currentIndex`) übergeben.
+        // Wir starten daher bei `ids.first`, NICHT zufällig — sonst wirft
+        // der Resume den gespeicherten Cursor weg.
+        let firstID: String? = (activePersonalDeckID != nil)
+            ? ids.first
+            : ids.randomElement()
         session = FlashcardSessionState(
             deckID: selectedDeck.id,
             direction: selectedDirection,
@@ -105,6 +112,36 @@ extension FlashcardSessionStore {
             return
         }
 
+        self.session = session
+        chooseNextCard(avoiding: currentCardID)
+    }
+
+    /// **Peek-Protection (User-Revision 2026-04-22)**: Setzt den
+    /// `consecutiveCorrect`-Counter einer Karte hart auf 0 zurück und
+    /// markiert sie als „falsch". Wird aufgerufen, wenn der User die
+    /// Karte manuell umdreht, ohne sie beantwortet zu haben —
+    /// „spicken" darf keine Streaks bauen.
+    ///
+    /// Unterschied zu `markWrong()`: hier wird kein `wrongCount` erhöht,
+    /// keine Combo gebrochen und das Lernstatus-Signal nicht getriggert —
+    /// es ist ein reiner Mastery-Reset, kein echter Falsch-Tap.
+    func resetMasteryDueToPeek(cardID: String) {
+        guard var session else { return }
+        var mastery = session.cardMastery[cardID] ?? CardMastery()
+        mastery.consecutiveCorrect = 0
+        mastery.hasBeenWrong = true
+        session.cardMastery[cardID] = mastery
+        self.session = session
+    }
+
+    /// Verschiebt die aktuelle Karte ans Ende des `remainingCardIDs`-
+    /// Arrays und wählt die nächste Karte. Wird vom Peek-Flow
+    /// aufgerufen, damit eine gepeekte Karte im aktuellen Durchgang
+    /// nochmal drankommt — ohne dass ein „richtig" gewertet wird.
+    func moveCurrentCardToEndAndAdvance() {
+        guard var session, let currentCardID = session.currentCardID else { return }
+        session.remainingCardIDs.removeAll { $0 == currentCardID }
+        session.remainingCardIDs.append(currentCardID)
         self.session = session
         chooseNextCard(avoiding: currentCardID)
     }

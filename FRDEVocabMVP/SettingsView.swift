@@ -42,6 +42,22 @@ struct SettingsView: View {
     /// `ScanSettings.smartRegionCropEnabled` gelesen.
     @AppStorage(appScanSmartRegionCropKey) private var scanSmartRegionCropEnabled: Bool = false
 
+    /// Sub-Zeile unter der „Stimme"-Card — zeigt die aktuelle User-Wahl
+    /// pro Sprache kompakt (z. B. „Deutsch: Anna · Französisch:
+    /// Systemstandard"). Die Namen sind dynamisch — was der User
+    /// tatsächlich auf seinem Gerät wählt, nicht eine feste Liste.
+    private var voiceSettingsSubline: String {
+        let de = SpeechVoiceService.shared.selectedOption(
+            forRecord: VoiceSettingsStore.shared.germanRecord,
+            language: .german
+        ).displayName
+        let fr = SpeechVoiceService.shared.selectedOption(
+            forRecord: VoiceSettingsStore.shared.frenchRecord,
+            language: .french
+        ).displayName
+        return "Deutsch: \(de) · Französisch: \(fr)"
+    }
+
     /// Sub-Zeile unter der „Meine Accounts"-Card: zeigt den aktiven
     /// Account-Namen plus, falls es mehrere gibt, die Gesamtzahl.
     /// Beispiel: „Frank · 1 weiterer" / „Frank · 2 weitere".
@@ -54,6 +70,19 @@ struct SettingsView: View {
         if others == 1 { return "\(active.displayName) · 1 weiterer" }
         return "\(active.displayName) · \(others) weitere"
     }
+
+    /// **Voice-Settings-Sheet (Phase 9)** — Gate für die Stimme-
+    /// Auswahl-View. Eigener Flag, damit die Präsentation klar vom
+    /// Account-Switcher / Dictionary-Sheet / Arcade-Sheet getrennt ist.
+    @State private var isShowingVoiceSettings: Bool = false
+
+    /// **Developer-Gruppe (User-Revision 2026-04-22)** — faltet
+    /// Icon-Stil, Spiel-Events-Test, „Eigene Listen löschen" und (in
+    /// DEBUG) den Entwicklungs-Spielstand-Reset in eine einzige
+    /// ausklappbare Section zusammen. Entlastet die Haupt-Settings-
+    /// Liste und trennt optisch User-relevante Aktionen (oben) vom
+    /// Developer-Kram (unten, ausgeklappt bei Bedarf).
+    @State private var isDeveloperExpanded: Bool = false
 
     /// Footer-Clearance analog zu `HomeView` / `InfoView`: die Card-
     /// Liste wird sonst von der globalen Bottom-Bar verdeckt — der User
@@ -90,7 +119,7 @@ struct SettingsView: View {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Mein Konto")
-                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
                         Text("Vorname und Profil")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
@@ -119,7 +148,7 @@ struct SettingsView: View {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Meine Accounts")
-                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
                         Text(accountSwitcherSubline)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
@@ -176,13 +205,42 @@ struct SettingsView: View {
             .padding(14)
             .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
 
+            // **Stimme** (Phase 9) — Apple-interne TTS-Stimmen wählen
+            // (Vicki / Yannick / Thomas + Systemstandards). Details
+            // siehe `VoiceSettingsView` — der Screen führt den User
+            // inkl. Deep-Link in die iPhone-Einstellungen, wenn eine
+            // empfohlene Stimme noch nicht installiert ist.
+            Button {
+                isShowingVoiceSettings = true
+            } label: {
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Stimme")
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                        Text(voiceSettingsSubline)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "waveform.circle.fill")
+                        .font(.system(size: 36, weight: .bold))
+                        .foregroundStyle(sectionStyle.accent)
+                        .frame(width: 56, height: 56)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(18)
+                .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
+            }
+            .buttonStyle(.plain)
+
             Button {
                 openInfo()
             } label: {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Info")
-                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
                         Text("Hilfe und Hinweise zur App")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
@@ -207,31 +265,18 @@ struct SettingsView: View {
 
             scanSmartRegionCard
 
-            // **Icon-Stil-Wahl** (auch Release sichtbar): User wechselt
-            // global zwischen Set A (Original) und Set B (alternativer
-            // Stil). Saubere Trennung über `AppIconRegistry` — keine
-            // Mischzustände möglich. Neustart empfohlen, damit alle
-            // bereits gerenderten Views ihre Assets neu laden.
-            iconStyleCard
-
-            // **Testmodus Arcade** (auch Release sichtbar): User-
-            // gesteuerte Power-Up-Trigger fürs Arcade-Spiel. Früher
-            // DEBUG-only, aber im realen Gerät brauchst du die
-            // manchmal (Familien-Tester, TestFlight). Klar als
-            // „Testmodus" gelabelt, damit niemand unabsichtlich
-            // damit herumspielt.
-            testModusArcadeCard
-
-            // User-sichtbare Reset-Cards (Release + DEBUG). Bewusst
-            // zwei getrennte Cards — Spielstand-Reset ist sicher
-            // (Inhalte bleiben), Listen-Reset ist destruktiv. Eigene
-            // Alerts verhindern versehentliches Auslösen.
+            // **Credits zurücksetzen** (User-Revision 2026-04-22):
+            // eigenständige Card, weil es die einzige reine User-
+            // Aktion in diesem Block ist (alles andere wandert in die
+            // Developer-Section darunter).
             gameStateResetCard
-            customListsResetCard
 
-            #if DEBUG
-            devResetCard
-            #endif
+            // **Developer-Section** — ausklappbare Gruppe mit Entwickler-
+            // nahen Reglern: Icon-Stil-Wahl, Spiel-Events-Testmodus,
+            // Custom-Listen-Löschen und (im DEBUG-Build) dem
+            // Entwicklungs-Spielstand-Reset. Nicht mehr einzeln im
+            // Haupt-Flow — wird bei Bedarf aufgeklappt.
+            developerSection
 
             Spacer(minLength: 0)
         }
@@ -257,6 +302,9 @@ struct SettingsView: View {
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $isShowingAccountSwitcher) {
             AccountSwitcherSheet(accountStore: accountStore)
+        }
+        .sheet(isPresented: $isShowingVoiceSettings) {
+            VoiceSettingsView()
         }
         .appLocalChrome(enabled: !usesGlobalChrome) {
             AppTopBar(onBack: { dismiss() }, onInfo: openInfo)
@@ -287,7 +335,7 @@ struct SettingsView: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("\(SpeedRoundTerminology.name) Dauer")
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
                     Text("Gilt für alle \(SpeedRoundTerminology.name)s in der App")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -349,7 +397,7 @@ struct SettingsView: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Text enger zuschneiden")
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
                     Text("Scan: Freier Text")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -395,7 +443,7 @@ struct SettingsView: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Wörterbuch")
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
                     if dictionaryStats.total > 0 {
                         Text("\(dictionaryStats.total.formatted(.number.locale(Locale(identifier: "de_DE")))) Einträge")
                             .font(.subheadline)
@@ -431,7 +479,7 @@ struct SettingsView: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Elumi Spiel")
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
                     Text("Spielregeln & Icons")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -452,6 +500,64 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - Developer-Section (Phase 9)
+
+    /// Kollabierbare Gruppe mit Entwickler-nahen Reglern. Default
+    /// collapsed — expandiert auf Tap-Header. Enthält (in dieser
+    /// Reihenfolge): Icon-Stil → Spiel-Events-Test → Eigene Listen
+    /// löschen → (DEBUG) Entwicklungs-Spielstand-Reset.
+    private var developerSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.22)) {
+                    isDeveloperExpanded.toggle()
+                }
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "wrench.and.screwdriver.fill")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .frame(width: 36, height: 36)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Developer")
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                        Text(isDeveloperExpanded
+                             ? "Regler für Tester:innen & Entwicklung"
+                             : "Icon-Stil, Spiel-Events, Listen-Reset")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+
+                    Spacer(minLength: 0)
+
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .rotationEffect(.degrees(isDeveloperExpanded ? 180 : 0))
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(18)
+                .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
+            }
+            .buttonStyle(.plain)
+
+            if isDeveloperExpanded {
+                VStack(spacing: 14) {
+                    iconStyleCard
+                    testModusArcadeCard
+                    customListsResetCard
+                    #if DEBUG
+                    devResetCard
+                    #endif
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+    }
+
     // MARK: - User-sichtbare Resets
 
     /// Spielstand-Reset — user-sichtbar (Release + DEBUG). Ruhige,
@@ -462,21 +568,19 @@ struct SettingsView: View {
     /// Scope identisch zum Debug-Reset (`GameStateResetService`):
     /// XP, Streak, Credits, Highscore, Sammelwerte, Tages-Challenge,
     /// Session-Resume-Snapshots. Profil und Custom-Listen bleiben.
+    /// **User-Revision 2026-04-22**: Card umbenannt zu „Credits
+    /// zurücksetzen" + graue Subline-Erklärung entfernt. Fachlich
+    /// unverändert — `GameStateResetService.resetGameState()` setzt
+    /// Credits, XP, Streak, Tagesaufgabe zurück und vergibt dadurch
+    /// wieder neue Credits beim nächsten Start.
     private var gameStateResetCard: some View {
         Button {
             isShowingGameStateResetAlert = true
         } label: {
             HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Spielstand zurücksetzen")
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                    Text("XP, Streak, Spiele und Tagesaufgabe auf null. Profil und Listen bleiben.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+                Text("Credits zurücksetzen")
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
 
                 Spacer(minLength: 0)
 
@@ -490,13 +594,13 @@ struct SettingsView: View {
             .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
         }
         .buttonStyle(.plain)
-        .alert("Spielstand zurücksetzen?", isPresented: $isShowingGameStateResetAlert) {
+        .alert("Credits zurücksetzen?", isPresented: $isShowingGameStateResetAlert) {
             Button("Abbrechen", role: .cancel) { }
             Button("Zurücksetzen", role: .destructive) {
                 GameStateResetService.resetGameState()
             }
         } message: {
-            Text("XP, Streak, Spiele, Tagesaufgabe und alle offenen Sessions werden auf den Ausgangszustand gesetzt. Profil und eigene Listen bleiben erhalten.")
+            Text("Credits, XP, Streak und Tagesaufgabe werden auf den Ausgangszustand gesetzt. Beim nächsten Start werden neue Credits vergeben. Profil und eigene Listen bleiben erhalten.")
         }
     }
 
@@ -514,7 +618,7 @@ struct SettingsView: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Eigene Listen löschen")
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                     Text("Entfernt alle selbst angelegten Vokabel-Listen. Nicht rückgängig zu machen.")
                         .font(.subheadline)

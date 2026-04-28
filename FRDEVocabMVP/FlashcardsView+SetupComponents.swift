@@ -153,7 +153,11 @@ extension FlashcardsView {
     }
 
     var flashcardCountLimitCard: some View {
-        let maxCards = max(selectedStackCardCount, 1)
+        // **User-Revision 2026-04-22**: Hard-Cap bei 200 Karten in der
+        // Auswahl-Card. Größere Listen werden intern weiterhin geladen,
+        // aber der Setup-Slider erlaubt maximal 200 — wer mehr will,
+        // splittet seine Session sauber in mehrere Durchläufe.
+        let maxCards = min(max(selectedStackCardCount, 1), 200)
         let minSlider = min(5, maxCards)
         let sliderValue = Binding<Double>(
             get: {
@@ -174,12 +178,18 @@ extension FlashcardsView {
             // kleine Mini-Stapel (in derselben roten Farbe), dann der Slider.
             HStack(alignment: .center, spacing: 6) {
                 Text("\(displayCount)")
-                    // 36 → 33 pt (−3 pt User-Wunsch).
-                    .font(.system(size: 33, weight: .black, design: .rounded))
+                    // **User-Revision**: Font nicht mehr bold (.black →
+                    // .regular). 31 pt reicht visuell auch ohne Bold-
+                    // Gewicht, die rote Farbe trägt die Auffälligkeit.
+                    .font(.system(size: 31, weight: .regular, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.error)
                     .contentTransition(.numericText())
                     .animation(.spring(response: 0.3, dampingFraction: 0.7), value: displayCount)
                     .frame(minWidth: 60, alignment: .leading)
+                    // **User-Revision 2026-04-22**: Zahl 4 pt nach
+                    // rechts verschieben, damit sie nicht direkt auf
+                    // der linken Card-Kante klebt.
+                    .padding(.leading, 4)
 
                 ZStack {
                     let visibleCards = max(1, Int(progress * 5) + 1)
@@ -196,12 +206,12 @@ extension FlashcardsView {
                 }
                 .frame(width: 36, height: 36)
                 // Mini-Stapel sitzt visuell zwischen der großen roten Zahl
-                // und dem Slider. 15 pt nach links rückt den Stapel näher
-                // an die Zahl heran; 5 pt nach unten holt ihn auf die
-                // Mitte zwischen Zahl-Baseline und Slider-Track — Feintuning
-                // gegenüber der ersten 10-pt-Variante, damit der Stapel
-                // nicht zu tief unter der Zahl sitzt.
-                .offset(x: -15, y: 5)
+                // und dem Slider. **User-Revision**: `x: -15` → `x: -9`,
+                // damit der Stapel ein Stück weiter nach rechts rückt und
+                // die Zahl etwas Luft hat. `y: 5` bleibt unverändert, der
+                // Stapel sitzt weiterhin mittig zwischen Zahl-Baseline
+                // und Slider-Track.
+                .offset(x: -9, y: 5)
                 .animation(.spring(response: 0.3, dampingFraction: 0.7), value: displayCount)
 
                 if maxCards > minSlider {
@@ -218,22 +228,28 @@ extension FlashcardsView {
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 18)
-        // User-Request: Card ist 10 pt höher → +5 pt oben, +5 pt unten
-        // (12 → 17). Icon/Slider/Position sind unverändert, nur die
-        // innere Luft wurde großzügiger.
+        // **User-Revision 2026-04-22**: Card noch einen Tick kompakter
+        // (12 → 9 pt vertikal). Slider + Zahl füllen den Platz bei der
+        // reduzierten Höhe weiterhin souverän.
+        // **User-Revision 2026-04-22 (Revert)**: Card wieder auf die
+        // ursprüngliche Größe zurückgesetzt (17 pt vertikal).
         .padding(.vertical, 17)
         .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
 
     /// Card zur Auswahl, wie viele richtige Antworten hintereinander nötig
-    /// sind, bis eine Karte aus dem Stapel fällt (1x / 2x / 3x).
+    /// sind, bis eine Karte aus dem Stapel fällt (1x / 2x / 3x / 4x).
+    /// **User-Revision 2026-04-22**: „4x Intensiv" ergänzt — alle vier
+    /// Optionen liegen nebeneinander in einer Reihe. Button-Breite wird
+    /// automatisch auf 1/4 der Card verteilt, `spacing: 6` bleibt.
     /// Platzierung: direkt unter `flashcardCountLimitCard` im Setup.
     var flashcardMasteryThresholdCard: some View {
         let labels: [(count: Int, label: String)] = [
             (1, "Schnell"),
             (2, "Normal"),
-            (3, "Gründlich")
+            (3, "Gründlich"),
+            (4, "Intensiv")
         ]
         return VStack(alignment: .leading, spacing: 10) {
             flashcardSetupCardLabelLarge("Karte fällt raus nach")
@@ -245,8 +261,8 @@ extension FlashcardsView {
                         setup.masteryThreshold = entry.count
                     } label: {
                         VStack(spacing: 2) {
-                            // User-Request: 1x/2x/3x und Schnell/Normal/
-                            // Gründlich um 1 pt größer — zieht die
+                            // User-Request: 1x/2x/3x/4x und Schnell/Normal/
+                            // Gründlich/Intensiv um 1 pt größer — zieht die
                             // Mechanik-Card optisch in eine Reihe mit
                             // dem größeren Label darüber.
                             Text("\(entry.count)x")
@@ -255,8 +271,12 @@ extension FlashcardsView {
                             Text(entry.label)
                                 .font(.system(size: 12, weight: .medium, design: .rounded))
                                 .foregroundStyle(Color(hex: "#888888"))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.75)
                         }
                         .frame(maxWidth: .infinity)
+                        // **User-Revision 2026-04-22 (Revert)**: innere
+                        // Button-Höhe zurück auf 56 pt (ursprüngliche Größe).
                         .frame(minHeight: 56)
                         .background(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -276,8 +296,10 @@ extension FlashcardsView {
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 18)
-        // Analog zur „Anzahl der Karten"-Card: 10 pt höher (12 → 17).
-        .padding(.vertical, 17)
+        // **User-Revision 2026-04-22 (Feinschliff)**: Card vertical
+        // padding 12 → 8 pt, zusammen mit den reduzierten Button-Höhen
+        // wirkt die Mechanik-Card jetzt kompakter.
+        .padding(.vertical, 8)
         .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
@@ -311,12 +333,16 @@ extension FlashcardsView {
     /// Effektive Karten-Anzahl für die kommende Übung — berücksichtigt
     /// den Slider-Wert (oder „alle" wenn 0). Wird sowohl in der Hunger-Card
     /// als auch in der Geschätzte-Zeit-Tile verwendet.
+    ///
+    /// **User-Revision 2026-04-22**: On 200-Karten-Cap pro Session —
+    /// derselbe Hard-Limit wie in `effectiveSelectedCardCount(for:)`.
     var flashcardEffectiveCardCount: Int {
-        let max = max(selectedStackCardCount, 0)
-        guard max > 0 else { return 0 }
+        let rawMax = Swift.max(selectedStackCardCount, 0)
+        guard rawMax > 0 else { return 0 }
+        let cappedMax = Swift.min(rawMax, FlashcardsSetupController.maxCardsPerSession)
         return setup.selectedCardCount == 0
-            ? max
-            : Swift.min(setup.selectedCardCount, max)
+            ? cappedMax
+            : Swift.min(setup.selectedCardCount, cappedMax)
     }
 
     // `flashcardHungerCard`, `flashcardStatsTrioCard` und
@@ -336,7 +362,12 @@ extension FlashcardsView {
         range: ClosedRange<Double>,
         step: Double = 1
     ) -> some View {
-        let handleSize: CGFloat = 22
+        // **User-Revision 2026-04-22**: Handle war mit 22 pt zu dominant
+        // gegenüber dem restlichen Inhalt der Card — 22 → 16 pt. Track-
+        // Höhe unverändert (6 pt), bleibt gut tappbar durch die
+        // `contentShape(Rectangle())`-Gesture über die volle Track-
+        // Fläche weiter unten.
+        let handleSize: CGFloat = 16
         let trackHeight: CGFloat = 6
 
         GeometryReader { geo in

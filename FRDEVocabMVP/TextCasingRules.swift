@@ -199,6 +199,17 @@ enum TextNormalizationEngine {
         var normalizedTokens: [String] = []
         normalizedTokens.reserveCapacity(tokens.count)
 
+        // Index des LETZTEN nicht-leeren Tokens — gebraucht für die
+        // Nomen-Erkennung nach Artikel: ein Adjektiv zwischen Artikel
+        // und Nomen darf nicht großgeschrieben werden („das saubere
+        // Geschirrtuch", nicht „das Saubere Geschirrtuch").
+        let lastMeaningfulIndex: Int = {
+            for i in stride(from: tokens.count - 1, through: 0, by: -1) where !tokens[i].isEmpty {
+                return i
+            }
+            return -1
+        }()
+
         for (index, token) in tokens.enumerated() {
             guard !token.isEmpty else {
                 normalizedTokens.append(token)
@@ -206,10 +217,15 @@ enum TextNormalizationEngine {
             }
 
             let previousLower = index > 0 ? tokens[index - 1].lowercased() : nil
+            let isLastMeaningful = index == lastMeaningfulIndex
             var processed: String
             switch language {
             case .german:
-                processed = normalizeGermanToken(token, previousTokenLower: previousLower)
+                processed = normalizeGermanToken(
+                    token,
+                    previousTokenLower: previousLower,
+                    isLastMeaningfulToken: isLastMeaningful
+                )
             case .french:
                 processed = normalizeFrenchToken(token)
             }
@@ -226,7 +242,11 @@ enum TextNormalizationEngine {
 
     // MARK: - Private: Deutsch
 
-    private static func normalizeGermanToken(_ token: String, previousTokenLower: String?) -> String {
+    private static func normalizeGermanToken(
+        _ token: String,
+        previousTokenLower: String?,
+        isLastMeaningfulToken: Bool
+    ) -> String {
         let lower = token.lowercased()
         let lowerStem = letterStem(of: lower)
         let originallyCapitalized = startsWithUppercaseLetter(token)
@@ -247,11 +267,34 @@ enum TextNormalizationEngine {
             return lower
         }
 
-        // 4) Nach Artikel/Präp-Artikel → groß
+        // 4) Nach Artikel/Präp-Artikel → groß — ABER nur, wenn dieses Token
+        //    tatsächlich das letzte Content-Token ist (= das Nomen). Steht
+        //    zwischen Artikel und Nomen noch ein Adjektiv („das saubere
+        //    Geschirrtuch"), darf das Adjektiv nicht großgeschrieben werden.
+        //    Bug-Fix 2026-04-22 — vorher wurde jedes Token nach einem
+        //    Artikel kapitalisiert, was bei „das saubere Geschirrtuch" zu
+        //    „das Saubere Geschirrtuch" geführt hat.
+        //
+        //    Follow-up 2026-04-22 (abends): in Kompositum-Phrasen wie
+        //    „den Regenschutz für den Kinderwagen vorbereiten" ist das
+        //    Token nach dem Artikel („Regenschutz") ZWAR nicht das letzte
+        //    — aber sehr wohl ein Nomen. Der naive „nicht letztes →
+        //    lowercase"-Pfad hätte es kleingeschrieben. Deshalb: vor
+        //    dem Lowercase-Fallback im Nomen-Lookup nachschauen. Treffer
+        //    → Großschreibung. Kein Treffer → Adjektiv-Annahme und klein.
         if let prev = previousTokenLower {
             let prevStem = letterStem(of: prev)
             if germanArticles.contains(prevStem) || germanPrepArticle.contains(prevStem) {
-                return capitalizeFirstLetter(lower)
+                if isLastMeaningfulToken {
+                    return capitalizeFirstLetter(lower)
+                } else {
+                    // Kompositum-Disambiguierung: bekanntes Nomen → groß,
+                    // sonst Adjektiv/Modifier-Annahme → klein.
+                    if StandardVocabularyLoader.germanNounSet.contains(lowerStem) {
+                        return capitalizeFirstLetter(lower)
+                    }
+                    return lower
+                }
             }
         }
 

@@ -65,10 +65,16 @@ struct HomeView: View {
             //   Tools → Footer:             +24 pt unten (Tools „klebt"
             //                               nicht mehr am Footer)
             VStack(alignment: .leading, spacing: 0) {
+                // **Entry-Stagger** (Phase 7.6 — App-weites Micro-
+                // Interaction-System): Header → Hero → Weitere →
+                // Tools blenden nacheinander ein (Fade + 8 pt Slide-
+                // Up, je +50 ms Delay). Insgesamt < 400 ms — „leicht
+                // lebendig, nicht lang".
                 HomeHeader(
                     greeting: Personalization.homeGreeting(for: profileStore.profile?.displayName),
                     streakDays: currentStreak
                 )
+                .appEntryTransition()
 
                 // Hero-Grid (2×2) — Hauptentscheidung des Screens.
                 // Näher an den Header gerückt, weil die frühere
@@ -77,11 +83,13 @@ struct HomeView: View {
                     onSelect: { module in openHomeScreen(module.screen) }
                 )
                 .padding(.top, 12)
+                .appEntryTransition(delay: 0.05)
 
                 HomeMoreExercisesSection(
                     onSelect: { module in openHomeScreen(module.screen) }
                 )
                 .padding(.top, 22)
+                .appEntryTransition(delay: 0.1)
 
                 HomeToolsSection(
                     onSelectScan: { openHomeScreen(.scan) },
@@ -92,6 +100,7 @@ struct HomeView: View {
                 .padding(.top, 22)
                 // Klarer Abstand zum Footer — Tools klebt nicht mehr.
                 .padding(.bottom, 24)
+                .appEntryTransition(delay: 0.15)
 
                 Color.clear.frame(height: homeFooterClearance)
             }

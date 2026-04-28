@@ -21,11 +21,11 @@ final class FlashcardsSetupController: ObservableObject {
     @Published var loadedDictionaryStackList: VocabularyList?
 
     /// Wie viele richtige Antworten hintereinander nötig sind, bis die Karte
-    /// aus dem Stapel fällt. User-konfigurierbar: 1 (schneller Abschluss),
-    /// 2 (Default, zweimal sicher), 3 (anspruchsvoller).
+    /// aus dem Stapel fällt. User-konfigurierbar: 1 (Schnell), 2 (Normal,
+    /// Default), 3 (Gründlich), 4 (Intensiv — User-Revision 2026-04-22).
     @Published var masteryThreshold: Int = FlashcardsSetupController.loadMasteryThreshold() {
         didSet {
-            let clamped = max(1, min(3, masteryThreshold))
+            let clamped = max(1, min(4, masteryThreshold))
             if clamped != masteryThreshold {
                 masteryThreshold = clamped
                 return
@@ -36,7 +36,7 @@ final class FlashcardsSetupController: ObservableObject {
 
     private static func loadMasteryThreshold() -> Int {
         let raw = UserDefaults.standard.integer(forKey: appFlashcardsMasteryThresholdKey)
-        if raw < 1 || raw > 3 { return 2 }
+        if raw < 1 || raw > 4 { return 2 }
         return raw
     }
 
