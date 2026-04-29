@@ -85,6 +85,17 @@ let appPersonalDecksKey = "elumi.flashcards.personalDecks.v1"
 let appVoiceGermanSelectionKey = "elumi.voice.de.selection"
 let appVoiceFrenchSelectionKey = "elumi.voice.fr.selection"
 
+/// **Trainings-Generator Onboarding-Hinweis** (UX Stufe 4, 2026-04-29) —
+/// wird beim ersten Öffnen des Generators auf dem Elumi-Tab gezeigt
+/// („So geht's"-Card mit 3 Schritten + „Los geht's"-CTA). Nach Tap
+/// auf den CTA persistent ausgeblendet.
+///
+/// Per-Account namespaced via `AccountStore.namespacedKey(...)` —
+/// gehört in `AccountScopedKeys.userDefaultsKeys`. Begründung: ein
+/// neu angelegter Familien-Account soll den Hint einmal sehen, auch
+/// wenn der Owner-Account ihn schon weggeklickt hat.
+let appTrainingGeneratorOnboardingSeenKey = "elumi.training.generator.onboarding.seen.v1"
+
 // MARK: - Gameplay Settings
 // Zentraler Key für die globale Speed-Round-Dauer — einziger Wahrheits-
 // zustand appweit. Alle Module (Training, Verbformen, Akzente, …) lesen
