@@ -169,3 +169,52 @@ Polish"-Branch zusammen mit Item 2.
 Empty-Pool, leichte Spec-Erweiterung.
 
 ---
+
+### 5. Filename-Cleanup `AppIconRegistry.swift` → `UUIDExtensions.swift`
+
+Aus dem Stufe-6-Icon-Cleanup (Tag `v2-icon-cleanup`, 2026-04-29):
+nach Entfernen der gesamten Icon-Set-A/B-Switch-Maschinerie enthält
+`AppIconRegistry.swift` nur noch eine Zwei-Zeiler-Convenience-
+Extension `UUID.shortID` für kompakte Scanner-Logs. Filename ist
+irreführend.
+
+**Empfehlung:**
+- Datei umbenennen `AppIconRegistry.swift` → `UUIDExtensions.swift`
+  o.ä.
+- pbxproj-Eintrag entsprechend anpassen
+- File-Header-Comment anpassen (aktuell dokumentiert er den
+  Cleanup-Hintergrund — kann reduziert werden auf einen kurzen
+  „UUID-Convenience"-Header)
+
+**Branch-Vorschlag:** `chore/rename-app-icon-registry-to-uuid-extensions`
+
+**Priorität:** Niedrig — Hygiene, kein Funktions-Impact. Wegen
+pbxproj-Touch eigener Branch (Lessons-Learned aus dem
+TrainingGeneratorView-Cleanup: File-Renames in pbxproj sind ihr
+eigenes Build-Verify-Risiko).
+
+---
+
+### 6. Verwaister UserDefaults-Key `appIconSet`
+
+Aus dem Stufe-6-Icon-Cleanup (Tag `v2-icon-cleanup`, 2026-04-29):
+beim Removal der Icon-Set-A/B-Switch-Settings-UI wurde der
+`UserDefaults["appIconSet"]`-Key bewusst **nicht** aktiv aus den
+Geräten gelöscht. Auf existierenden User-Geräten liegt der Eintrag
+weiterhin verwaist herum und wird nie wieder gelesen.
+
+**Status:** Harmlos für Funktionalität (kein Code referenziert den
+Key mehr). Datensparsamkeits-/Hygiene-mäßig nicht ideal, aber kein
+akutes Problem.
+
+**Empfehlung:**
+- **Nicht** als eigener Migration-Pfad — der Aufwand für einen
+  Delete-on-Launch-Hook für genau einen Key lohnt sich nicht.
+- **Bei nächstem ohnehin notwendigen Migration-Pfad** (z. B.
+  Schema-Bump im `AccountStore` oder anderer Persistenz-Layer-
+  Wechsel) den Key in der Migrations-Liste mit-aufräumen.
+- Sonst nichts.
+
+**Priorität:** Niedrig — passiv, wartet auf Anlass.
+
+---
