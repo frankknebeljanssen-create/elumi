@@ -109,7 +109,11 @@ enum AccountScopedKeys {
         appTrainingSelectedListIDsKey,
         appQuizSelectedListIDsKey,
         appFlashcardsSelectedListIDsKey,
-        appFlashcardsMasteryThresholdKey
+        appFlashcardsMasteryThresholdKey,
+        // Onboarding-Hints (UX Stufe 4) — neu angelegte Accounts
+        // sollen den Trainings-Generator-Hint einmal sehen, auch wenn
+        // der Owner-Account ihn schon weggeklickt hat.
+        appTrainingGeneratorOnboardingSeenKey
     ]
 }
 

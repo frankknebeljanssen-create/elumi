@@ -86,6 +86,18 @@ struct ElumiTabView: View {
     /// Anzahl bereits abgeschlossener Spins (0…maxSpins).
     @State private var currentSpinNumber: Int = 0
 
+    // MARK: - Onboarding-Overlay (UX Stufe 4, 2026-04-29)
+    //
+    // Beim ersten Öffnen des Trainings-Generators auf dem Elumi-Tab
+    // zeigen wir eine „So geht's"-Card mit 3 Schritten. Persistenz
+    // per-Account namespaced (siehe `appTrainingGeneratorOnboardingSeenKey`
+    // in AppStorageKeys + AccountScopedKeys).
+    //
+    // Read aus dem account-namespaced Slot via
+    // `AccountStore.shared.namespacedKey(...)` — dieselbe Strategie
+    // wie `appOnboardingCompletedKey` in `ProfileStore`.
+    @State private var showOnboarding: Bool = false
+
     /// Können noch Spins getriggert werden?
     private var hasRemainingSpins: Bool { currentSpinNumber < maxSpins }
 
@@ -148,6 +160,134 @@ struct ElumiTabView: View {
         // entfernt — sie war die „halb sichtbar unter Footer"-Card.
         // Kein `.safeAreaInset(.bottom)` mehr → bottom-padding deutlich
         // reduziert, damit nichts mehr unter dem AppBottomBar hängt.
+        ZStack {
+            mainContent
+            // **UX Stufe 4 (2026-04-29)** — Onboarding-Overlay über
+            // dem gesamten Tab-Inhalt, blockiert Interaktion bis der
+            // User „Los geht's" tippt. Tap auf Backdrop ist no-op
+            // (kein versehentliches Wegtippen).
+            if showOnboarding {
+                onboardingOverlay
+                    .zIndex(20)
+                    .transition(.opacity.combined(with: .scale(scale: 0.96)))
+            }
+        }
+        .animation(.spring(response: 0.45, dampingFraction: 0.8), value: showOnboarding)
+        .onAppear {
+            checkOnboardingState()
+        }
+    }
+
+    /// Liest den account-namespaced Onboarding-Seen-Wert. Wenn der Hint
+    /// noch nicht weggetippt wurde, zeigt das Overlay sich — der
+    /// State-Toggle ist in `withAnimation` gewrappt, damit die
+    /// `.transition(...)` am Card-View garantiert anspringt (implicit
+    /// `.animation(value:)` reicht hier nicht zuverlässig, weil der
+    /// State-Change in einer Funktion außerhalb des View-Bodys passiert).
+    private func checkOnboardingState() {
+        let scopedKey = AccountStore.shared.namespacedKey(appTrainingGeneratorOnboardingSeenKey)
+        let seen = UserDefaults.standard.bool(forKey: scopedKey)
+        if !seen {
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
+                showOnboarding = true
+            }
+        }
+    }
+
+    /// Schreibt den account-namespaced Seen-Marker und blendet das
+    /// Overlay aus. Spring-Wrapping wie in `checkOnboardingState()` —
+    /// damit die Exit-Transition zuverlässig sichtbar ist.
+    private func dismissOnboarding() {
+        let scopedKey = AccountStore.shared.namespacedKey(appTrainingGeneratorOnboardingSeenKey)
+        UserDefaults.standard.set(true, forKey: scopedKey)
+        withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
+            showOnboarding = false
+        }
+    }
+
+    // MARK: - Onboarding-Overlay (UX Stufe 4)
+
+    /// Modal-Layer mit Dimm-Backdrop + Card. Kein Tap-Dismiss auf dem
+    /// Backdrop — User muss bewusst „Los geht's" tippen. Begründung:
+    /// die Card ist das einzige Bedienelement beim allerersten
+    /// Generator-Aufruf; ein versehentliches Wegtippen würde den
+    /// User direkt in einen leeren Setup-Screen schicken, ohne den
+    /// Hint je gesehen zu haben.
+    private var onboardingOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.92)
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture { /* intentional no-op */ }
+
+            VStack(spacing: 18) {
+                // Header — Modul-Icon + Titel
+                VStack(spacing: 8) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundStyle(sectionStyle.accent)
+                    Text("So geht's")
+                        .font(.system(size: 22, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .multilineTextAlignment(.center)
+                }
+
+                // 3 Schritte mit Number-Bubbles
+                VStack(alignment: .leading, spacing: 14) {
+                    onboardingStep(number: 1, text: "Wähle deine Trainingszeit")
+                    onboardingStep(number: 2, text: "Starte die Slotmaschine")
+                    onboardingStep(number: 3, text: "Tippe auf \u{201E}Jetzt \u{00FC}ben\u{201C}")
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                // CTA „Los geht's"
+                Button {
+                    dismissOnboarding()
+                } label: {
+                    Text("Los geht's")
+                        .font(.system(size: 17, weight: .black, design: .rounded))
+                        .foregroundStyle(.black)
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 48)
+                }
+                .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
+                .accessibilityLabel(Text("Los geht's"))
+                .accessibilityHint(Text("Schließt den Hinweis und zeigt den Trainings-Generator"))
+            }
+            .padding(20)
+            .frame(maxWidth: 340)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color(hex: "#101522"))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(sectionStyle.accent.opacity(0.35), lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(0.55), radius: 24, x: 0, y: 8)
+            .padding(.horizontal, 24)
+        }
+    }
+
+    private func onboardingStep(number: Int, text: String) -> some View {
+        HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(sectionStyle.accent.opacity(0.22))
+                    .frame(width: 48, height: 48)
+                Text("\(number)")
+                    .font(.system(size: 22, weight: .black, design: .rounded))
+                    .foregroundStyle(sectionStyle.accent)
+            }
+            Text(text)
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var mainContent: some View {
         ScrollView(.vertical, showsIndicators: false) {
             // **2026-04-24 Layout-Finaler-Pass** (User-Spec):
             //   • VStack-Spacing 8pt (weiter kompakt).
