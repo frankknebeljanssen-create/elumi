@@ -117,7 +117,14 @@ enum AccountScopedKeys {
         // Trainings-Generator Default-Trainingsdauer (Sache B,
         // 2026-04-29) — pro Account isoliert, sodass jeder Nutzer
         // seine eigene zuletzt gewählte Dauer behält.
-        appTrainingGeneratorDurationKey
+        appTrainingGeneratorDurationKey,
+        // Globale Listen-Auswahl (Stufe 5, 2026-04-29) — Toggle +
+        // UUID-Set. Pro Account isoliert: jeder Familien-Account hat
+        // seine eigene globale Auswahl bzw. seinen eigenen Toggle-
+        // State (Default `true`). Beim Account-Switch greifen die
+        // Werte des neuen Accounts.
+        appUseGlobalListSelectionKey,
+        appGlobalSelectedListIDsKey
     ]
 }
 

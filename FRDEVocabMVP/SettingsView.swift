@@ -261,6 +261,8 @@ struct SettingsView: View {
 
             dictionaryStatsCard
 
+            globalListSelectionCard
+
             arcadeInfoCard
 
             scanSmartRegionCard
@@ -469,6 +471,75 @@ struct SettingsView: View {
         .sheet(isPresented: $dictionaryDetailActive) {
             DictionaryStatsDetailSheet(stats: dictionaryStats, sectionStyle: sectionStyle)
         }
+    }
+
+    /// **Globale Listen-Auswahl** (Stufe 5, 2026-04-29). Master-Switch:
+    /// wenn aktiv, nutzen alle Lern-Module dieselbe Listen-Auswahl. Wenn
+    /// aus, behält jedes Modul seine eigene Auswahl. Akzente und
+    /// persönliche Stapel sind außerhalb dieses Schalters.
+    ///
+    /// **Initial-Default-Logik (im Setter):** wenn der User den Toggle
+    /// von OFF auf ON wechselt UND die globale Auswahl aktuell leer/nil
+    /// ist, wird sie mit der UUID der „A1 Grundwortschatz"-Liste
+    /// initialisiert. Spec 5: „Beim Aktivieren wird die globale Auswahl
+    /// auf Grundwortschatz A1 zurückgesetzt." Bei Re-Aktivierung mit
+    /// vorhandener Auswahl wird diese **nicht** überschrieben — der
+    /// User-Workflow „mal eben ausschalten und wieder ein" verliert
+    /// keine Wahl.
+    private var globalListSelectionCard: some View {
+        @AppStorage(appUseGlobalListSelectionKey) var useGlobal: Bool = true
+
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "list.bullet.rectangle")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.elumiBlue)
+                Text("Globale Listen-Auswahl")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+            }
+            Text("Wenn aktiv, nutzen Karteikarten, Quiz, Training und Word Runner dieselbe Listen-Auswahl. Wenn aus, behält jedes Modul seine eigene. Akzente und persönliche Stapel sind unabhängig.")
+                .font(.system(size: 12, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Toggle(isOn: Binding(
+                get: { useGlobal },
+                set: { newValue in
+                    // Initial-Default-Logik: erste Aktivierung füllt die
+                    // globale Auswahl mit der „A1 Grundwortschatz"-UUID,
+                    // damit kein leerer Pool entsteht. Re-Aktivierung
+                    // (Auswahl bereits vorhanden) lässt den State intakt.
+                    if newValue, VocabularyListSelectionResolver.currentGlobalSelectedListIDs() == nil {
+                        VocabularyListSelectionResolver.setGlobalSelectedListIDs(
+                            [VocabularyListSelectionResolver.defaultGlobalSelectionListID]
+                        )
+                    }
+                    useGlobal = newValue
+                }
+            )) {
+                Text("Aktivieren")
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+            }
+            .toggleStyle(.switch)
+
+            Text("Beim Aktivieren wird die globale Auswahl auf Grundwortschatz A1 zurückgesetzt. Du kannst sie danach jederzeit anpassen.")
+                .font(.system(size: 11, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .opacity(0.85)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                .fill(AppTheme.Colors.surface)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                .stroke(AppTheme.Colors.elumiBlue.opacity(0.30), lineWidth: 1)
+        )
     }
 
     /// Arcade-Spielregeln-Header — Tap öffnet Detail-Sheet mit Icons + Erklärungen.
