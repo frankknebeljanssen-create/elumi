@@ -56,11 +56,19 @@ struct ElumiTabView: View {
     /// verbraucht.
     @ObservedObject private var playCredits = ElumiCreditsStore.shared
 
-    /// User-gewählte Trainingsdauer in Minuten. **2026-04-24**: jetzt
-    /// optional — der „Los geht's"-Button ist erst aktiv, sobald der
-    /// User eine Zeit gewählt hat. Vorher war Default 10 und der Spin
-    /// konnte ohne explizite User-Aktion gestartet werden.
-    @State private var selectedDuration: Int? = nil
+    /// **User-gewählte Trainingsdauer in Minuten — Sache B Stufe 1
+    /// (2026-04-29).** Persistiert via `@AppStorage` (Account-namespaced
+    /// über `AccountScopedKeys.userDefaultsKeys`). Default-Wert kommt
+    /// aus `Self.durationDefault` (= 10) — der `@AppStorage`-Init liefert
+    /// 10 zurück, solange kein Wert persistiert ist. Nach dem ersten
+    /// Modal-Close (Stufe 2) wird der aktuelle Wert idempotent in
+    /// UserDefaults geschrieben.
+    ///
+    /// **Vorgängerstand:** `@State Int? = nil` — Forcing-Function für
+    /// bewusste Wahl. Mit Sache B aufgegeben zugunsten konsistenter
+    /// Modal-Dismiss-Semantik (immer Backdrop-tappable, immer Preselect).
+    @AppStorage(appTrainingGeneratorDurationKey)
+    private var selectedDuration: Int = ElumiTabView.durationDefault
     /// Slot-Phase — externe Sicht der State-Maschine in `SlotMachineView`.
     @State private var slotPhase: SlotPhase = .idle
     /// Trigger-Token — Setzen auf `true` startet einen Spin.
@@ -152,6 +160,13 @@ struct ElumiTabView: View {
     @State private var resultHighlightGlow: Double = 0.0
 
     private static let durationOptions: [Int] = [10, 15, 20]
+
+    /// **Single Source für die Default-Trainingsdauer** (Sache B Stufe 1,
+    /// 2026-04-29). Wird sowohl als `@AppStorage`-Initialwert für
+    /// `selectedDuration` verwendet als auch — ab Stufe 2 — als Modal-
+    /// Preselect beim allerersten Open. Keine Duplikation an anderen
+    /// Stellen: alle „falls nichts gewählt"-Pfade lesen diesen Wert.
+    static let durationDefault: Int = 10
 
     // MARK: - Body
 
@@ -477,97 +492,63 @@ struct ElumiTabView: View {
         //   1. ZStack mit Background + Stroke + Label — alles EINE
         //      zusammenhängende View (kein Button-Wrapper, der seine
         //      eigene Hit-Area ableitet).
-        //   2. `.frame(maxWidth: .infinity, minHeight: 52)` — klar
-        //      großzügige Tap-Area (>= 44pt Apple HIG) und expliziter
-        //      Full-Width-Stretch, damit der ganze 1/3-Slot tappbar ist.
+        //   2. `.frame(maxWidth: .infinity, minHeight: 44)` — Apple-
+        //      HIG-kompatible Tap-Area, expliziter Full-Width-Stretch,
+        //      damit der ganze 1/3-Slot tappbar ist.
         //   3. `.contentShape(Rectangle())` NACH dem Background — setzt
-        //      die Hit-Area auf das volle Rechteck. Hätte `.contentShape`
-        //      VOR dem Background gestanden, wäre die Hit-Area auf den
-        //      Content-Zustand eingefroren.
+        //      die Hit-Area auf das volle Rechteck.
         //   4. `.onTapGesture { ... }` — schneller, reliabler Tap-
-        //      Handler. Kein `withAnimation`-Wrapping um die State-
-        //      Mutation: SwiftUI re-rendert synchron, der nächste Tap
-        //      trifft garantiert die frische View.
+        //      Handler ohne Button-Wrapper-Overhead.
         //   5. Farb-Transition kommt über `.animation(_, value:)` auf
-        //      der Chip-Ebene — nur auf Color-Änderung, nicht auf den
-        //      Input-Pfad.
+        //      der Chip-Ebene — nur auf Color-Änderung.
         //
-        // Zusätzlich `#if DEBUG`-Print-Logs, damit im Console direkt
-        // sichtbar ist, dass jeder Tap ankommt und der State umspringt.
-        // **2026-04-25 Attention-Pulse (User-Spec „solange noch kein
-        // Wahl getroffen wurde, blinken um User zu animieren")**.
-        //
-        // `needsAttention = selectedDuration == nil` — alle drei Chips
-        // pulsieren so lange NICHTS ausgewählt ist. Mit leichtem
-        // `stagger` pro Chip-Wert (10/15/20) entsteht eine Wellen-
-        // Bewegung von links nach rechts, die klar zur Auswahl
-        // einlädt ohne nervig zu wirken. Sobald der User einen Chip
-        // tippt, geht `selectedDuration` auf einen Wert → Pulse endet
-        // sofort, Selected-State übernimmt.
+        // **Sache B Stufe 1 (2026-04-29)**: Pulse-Animation entfernt.
+        // Vorher pulsierten alle drei Chips so lange `selectedDuration
+        // == nil`, um zur Wahl einzuladen. Mit der `@AppStorage`-Migration
+        // ist `selectedDuration` immer gesetzt (Default = `durationDefault`),
+        // ergo kein nil-State mehr → der Pulse wäre tot. Die TimelineView
+        // + wave/stagger/glow-Mechanik ist daher entfallen; der Chip ist
+        // jetzt rein state-driven. Stufe 3 ersetzt diese ganze Card durch
+        // eine Display-Card (XXL-Zahl + Pencil-Pill); diese Funktion
+        // verschwindet dann komplett.
         let moduleColor = sectionStyle.accent
-        return TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
-            let isSelected = selectedDuration == minutes
-            let needsAttention = selectedDuration == nil
-            let t = context.date.timeIntervalSinceReferenceDate
-            // Wellen-Stagger: 10min → offset 0, 15min → 0.22s,
-            // 20min → 0.44s. Cycle 1.2s → gemütliches Pulsen.
-            let cycle: Double = 1.2
-            let stagger = Double(minutes - 10) / 5.0 * 0.22
-            let rawPhase = (t + stagger).truncatingRemainder(dividingBy: cycle) / cycle
-            let wave = (sin(rawPhase * 2 * .pi) + 1) / 2  // 0…1
-            let attentionBorderOpacity = needsAttention ? 0.3 + 0.55 * wave : 0
-            let attentionGlow = needsAttention ? 0.25 + 0.45 * wave : 0
-            let attentionScale: CGFloat = needsAttention
-                ? CGFloat(1.0 + 0.012 * wave)
-                : 1.0
-
-            return ZStack {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(
-                        isSelected
-                            ? moduleColor.opacity(0.25)
-                            : AppTheme.Colors.secondarySurface
-                    )
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(
-                        isSelected
-                            ? moduleColor
-                            : (needsAttention
-                                ? moduleColor.opacity(attentionBorderOpacity)
-                                : Color.clear),
-                        lineWidth: isSelected ? 2 : (needsAttention ? 1.5 : 0)
-                    )
-                HStack(alignment: .firstTextBaseline, spacing: 3) {
-                    Text("\(minutes)")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                    Text("min")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(AppTheme.Colors.textPrimary.opacity(0.78))
-                }
+        let isSelected = selectedDuration == minutes
+        return ZStack {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(
+                    isSelected
+                        ? moduleColor.opacity(0.25)
+                        : AppTheme.Colors.secondarySurface
+                )
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(
+                    isSelected ? moduleColor : Color.clear,
+                    lineWidth: isSelected ? 2 : 0
+                )
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text("\(minutes)")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                Text("min")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(AppTheme.Colors.textPrimary.opacity(0.78))
             }
-            .frame(maxWidth: .infinity, minHeight: 44)
-            .opacity(isSelected ? 1.0 : 0.85)
-            .scaleEffect(isSelected ? 1.03 : attentionScale)
-            .shadow(
-                color: needsAttention ? moduleColor.opacity(attentionGlow) : .clear,
-                radius: 12,
-                x: 0,
-                y: 0
-            )
-            .contentShape(Rectangle())
-            .onTapGesture {
-                #if DEBUG
-                print("🕒 [DurationChip] tap on \(minutes) (prev=\(selectedDuration.map(String.init) ?? "nil"))")
-                #endif
-                selectedDuration = minutes
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                #if DEBUG
-                print("🕒 [DurationChip] selectedDuration → \(minutes) ✓")
-                #endif
-            }
-            .animation(.easeInOut(duration: 0.15), value: isSelected)
         }
+        .frame(maxWidth: .infinity, minHeight: 44)
+        .opacity(isSelected ? 1.0 : 0.85)
+        .scaleEffect(isSelected ? 1.03 : 1.0)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            #if DEBUG
+            print("🕒 [DurationChip] tap on \(minutes) (prev=\(selectedDuration))")
+            #endif
+            selectedDuration = minutes
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            #if DEBUG
+            print("🕒 [DurationChip] selectedDuration → \(minutes) ✓")
+            #endif
+        }
+        .animation(.easeInOut(duration: 0.15), value: isSelected)
     }
 
     // MARK: - Unified CTA „Los geht's" / „Nochmal drehen + Jetzt üben" / „Jetzt üben"
@@ -701,11 +682,13 @@ struct ElumiTabView: View {
         .accessibilityHint(Text("Startet die generierte Trainingseinheit"))
     }
 
-    /// **Spin-Gate** (User-Spec 2026-04-24): Spin ist nur dann erlaubt,
-    /// wenn (a) die Phase es zulässt, (b) eine Zeit gewählt wurde UND
-    /// (c) noch Versuche übrig sind.
+    /// **Spin-Gate** — Sache B Stufe 1 (2026-04-29): vereinfacht auf
+    /// (a) Phase-Erlaubnis und (b) verbleibende Versuche. Die ehemalige
+    /// `selectedDuration != nil`-Bedingung ist entfallen, weil
+    /// `selectedDuration` jetzt non-optional persistiert ist und stets
+    /// einen sinnvollen Default (`Self.durationDefault` = 10) hält.
     private var canTriggerSpin: Bool {
-        isSpinAllowed && selectedDuration != nil && hasRemainingSpins
+        isSpinAllowed && hasRemainingSpins
     }
 
     /// Spin ist nur in `.idle` und `.revealed` erlaubt — während
@@ -1023,17 +1006,16 @@ struct ElumiTabView: View {
     /// Generiert die echte Trainings-Session aus der gewählten Dauer
     /// (Fokus = .mixed als V1-Default — Fokus-Auswahl-Screen wurde
     /// per User-Spec entfernt) und navigiert zum ersten Block.
-    /// **2026-04-24**: `selectedDuration` ist jetzt optional — wenn
-    /// nicht gewählt (sollte UI-seitig nicht passieren, weil der CTA
-    /// dann nicht aktiv ist), defensiver Fallback auf 10 Min.
+    /// **Sache B Stufe 1 (2026-04-29)**: `selectedDuration` ist jetzt
+    /// non-optional via `@AppStorage` — kein Fallback nötig, der Wert
+    /// ist immer gesetzt (Default `Self.durationDefault` = 10).
     ///
     /// **Versuchslogik-Reset**: Vor der Navigation setzen wir
     /// `currentSpinNumber` auf 0 + räumen das lastSpinResult auf.
     /// Damit hat der Nutzer bei Rückkehr zum Tab frische 3 Versuche.
     private func startTraining() {
-        let duration = selectedDuration ?? 10
         let session = TrainingGenerator.generate(
-            duration: duration,
+            duration: selectedDuration,
             focus: .mixed
         )
         generatorStore.storeSession(session)
