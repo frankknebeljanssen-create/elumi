@@ -94,17 +94,22 @@ struct ElumiTabView: View {
     /// Anzahl bereits abgeschlossener Spins (0…maxSpins).
     @State private var currentSpinNumber: Int = 0
 
-    // MARK: - Onboarding-Overlay (UX Stufe 4, 2026-04-29)
+    // MARK: - Setup-Modal (Sache B Stufe 2, 2026-04-29)
     //
-    // Beim ersten Öffnen des Trainings-Generators auf dem Elumi-Tab
-    // zeigen wir eine „So geht's"-Card mit 3 Schritten. Persistenz
-    // per-Account namespaced (siehe `appTrainingGeneratorOnboardingSeenKey`
-    // in AppStorageKeys + AccountScopedKeys).
+    // Erstmaliges Öffnen des Trainings-Generators auf dem Elumi-Tab
+    // zeigt ein Setup-Modal mit Zeit-Chips (10/15/20) + „Los geht's"-
+    // CTA. Default-Preselect ist `Self.durationDefault` (= 10), Backdrop-
+    // Tap ist erlaubt (übernimmt aktuellen Preselect). Persistenz des
+    // Seen-Flags per-Account namespaced (siehe
+    // `appTrainingGeneratorOnboardingSeenKey` — Key-Name unverändert
+    // zur ursprünglichen Onboarding-Stufe, weil's konzeptionell derselbe
+    // „erstmaliger Öffnungs-Hint"-Slot ist; nur das Modal ist umgewidmet
+    // von Steps-Erklärung zu funktionaler Zeit-Wahl).
     //
     // Read aus dem account-namespaced Slot via
     // `AccountStore.shared.namespacedKey(...)` — dieselbe Strategie
     // wie `appOnboardingCompletedKey` in `ProfileStore`.
-    @State private var showOnboarding: Bool = false
+    @State private var showSetupModal: Bool = false
 
     /// Können noch Spins getriggert werden?
     private var hasRemainingSpins: Bool { currentSpinNumber < maxSpins }
@@ -177,87 +182,131 @@ struct ElumiTabView: View {
         // reduziert, damit nichts mehr unter dem AppBottomBar hängt.
         ZStack {
             mainContent
-            // **UX Stufe 4 (2026-04-29)** — Onboarding-Overlay über
-            // dem gesamten Tab-Inhalt, blockiert Interaktion bis der
-            // User „Los geht's" tippt. Tap auf Backdrop ist no-op
-            // (kein versehentliches Wegtippen).
-            if showOnboarding {
-                onboardingOverlay
+            // **Sache B Stufe 2 (2026-04-29)** — Setup-Modal über dem
+            // gesamten Tab-Inhalt. Vor Sache B war das ein Onboarding-
+            // Hint mit 3 Schritten und nicht-tappable Backdrop. Jetzt:
+            // funktionales Setup-Modal mit Zeit-Chips, Backdrop-Tap
+            // dismisst (übernimmt aktuellen Preselect — kein „undefined
+            // state" möglich, weil `selectedDuration` immer einen
+            // sinnvollen Wert hält).
+            if showSetupModal {
+                setupModalOverlay
                     .zIndex(20)
                     .transition(.opacity.combined(with: .scale(scale: 0.96)))
             }
         }
-        .animation(.spring(response: 0.45, dampingFraction: 0.8), value: showOnboarding)
+        .animation(.spring(response: 0.45, dampingFraction: 0.8), value: showSetupModal)
         .onAppear {
-            checkOnboardingState()
+            checkSetupModalState()
         }
     }
 
-    /// Liest den account-namespaced Onboarding-Seen-Wert. Wenn der Hint
-    /// noch nicht weggetippt wurde, zeigt das Overlay sich — der
-    /// State-Toggle ist in `withAnimation` gewrappt, damit die
+    /// Liest den account-namespaced Seen-Marker. Wenn das Setup-Modal
+    /// noch nie weggetippt wurde, zeigt es sich beim Tab-Mount.
+    ///
+    /// **Sache B Stufe 2 (2026-04-29)**: ehemals `checkOnboardingState()`.
+    /// Logik unverändert — der Seen-Marker (`appTrainingGeneratorOnboarding-
+    /// SeenKey`) ist derselbe Slot wie zuvor; nur das Modal ist umgewidmet
+    /// von „Steps-Erklärung" zu „funktionaler Zeit-Wahl mit Chips".
+    /// Der State-Toggle ist in `withAnimation` gewrappt, damit die
     /// `.transition(...)` am Card-View garantiert anspringt (implicit
     /// `.animation(value:)` reicht hier nicht zuverlässig, weil der
     /// State-Change in einer Funktion außerhalb des View-Bodys passiert).
-    private func checkOnboardingState() {
+    private func checkSetupModalState() {
         let scopedKey = AccountStore.shared.namespacedKey(appTrainingGeneratorOnboardingSeenKey)
         let seen = UserDefaults.standard.bool(forKey: scopedKey)
         if !seen {
             withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
-                showOnboarding = true
+                showSetupModal = true
             }
         }
     }
 
     /// Schreibt den account-namespaced Seen-Marker und blendet das
-    /// Overlay aus. Spring-Wrapping wie in `checkOnboardingState()` —
-    /// damit die Exit-Transition zuverlässig sichtbar ist.
-    private func dismissOnboarding() {
+    /// Setup-Modal aus.
+    ///
+    /// **Idempotenz-Hinweis** (Sache B Stufe 2): Diese Funktion schreibt
+    /// NICHT den Duration-Key — `selectedDuration` ist via `@AppStorage`
+    /// markiert und persistiert sich automatisch bei jeder Chip-Tap-
+    /// Mutation. Das gilt für alle Pfade, über die das Modal geschlossen
+    /// werden kann (CTA-Tap, Backdrop-Tap, ggf. später Pencil-Re-Edit-
+    /// Schließen aus Stufe 3). Der Backdrop-Tap nimmt also den aktuellen
+    /// Preselect des Modals als Wahl mit, ohne dass diese Funktion etwas
+    /// dafür tun muss — `selectedDuration` ist beim Backdrop-Tap-Zeitpunkt
+    /// bereits auf dem Wert, den der User zuletzt im Modal ausgewählt hatte
+    /// (oder dem Default, falls nichts angetippt wurde).
+    ///
+    /// Spring-Wrapping wie in `checkSetupModalState()` — damit die Exit-
+    /// Transition zuverlässig sichtbar ist.
+    private func dismissSetupModal() {
         let scopedKey = AccountStore.shared.namespacedKey(appTrainingGeneratorOnboardingSeenKey)
         UserDefaults.standard.set(true, forKey: scopedKey)
         withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
-            showOnboarding = false
+            showSetupModal = false
         }
     }
 
-    // MARK: - Onboarding-Overlay (UX Stufe 4)
+    // MARK: - Setup-Modal (Sache B Stufe 2)
 
-    /// Modal-Layer mit Dimm-Backdrop + Card. Kein Tap-Dismiss auf dem
-    /// Backdrop — User muss bewusst „Los geht's" tippen. Begründung:
-    /// die Card ist das einzige Bedienelement beim allerersten
-    /// Generator-Aufruf; ein versehentliches Wegtippen würde den
-    /// User direkt in einen leeren Setup-Screen schicken, ohne den
-    /// Hint je gesehen zu haben.
-    private var onboardingOverlay: some View {
+    /// Modal-Layer mit Dimm-Backdrop + Card. **Backdrop-Tap dismisst**
+    /// (Sache B Stufe 2): da das Modal mit einem sinnvollen Default-
+    /// Preselect (`Self.durationDefault` = 10) öffnet, kann der User
+    /// keinen „undefined state" produzieren. Backdrop-Tap übernimmt den
+    /// aktuellen Preselect — `selectedDuration` ist schon via
+    /// `@AppStorage` persistiert, der Dismiss-Pfad braucht nichts
+    /// zusätzlich zu schreiben (siehe `dismissSetupModal()`-Doc).
+    ///
+    /// Begründung der Dismissable-Decision: konsistente Modal-Semantik
+    /// über Erstöffnung und Re-Edit (Stufe 3) — Forcing-Function bei
+    /// einer Low-Stakes-10/15/20-Wahl wäre unnötige Reibung.
+    private var setupModalOverlay: some View {
         ZStack {
             Color.black.opacity(0.92)
                 .ignoresSafeArea()
                 .contentShape(Rectangle())
-                .onTapGesture { /* intentional no-op */ }
+                .onTapGesture {
+                    dismissSetupModal()
+                }
 
             VStack(spacing: 18) {
-                // Header — Modul-Icon + Titel
+                // Header — Sparkles-Icon + Frage
                 VStack(spacing: 8) {
                     Image(systemName: "sparkles")
                         .font(.system(size: 28, weight: .bold))
                         .foregroundStyle(sectionStyle.accent)
-                    Text("So geht's")
+                    Text("Wie lange willst du üben?")
                         .font(.system(size: 22, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .multilineTextAlignment(.center)
                 }
 
-                // 3 Schritte mit Number-Bubbles
-                VStack(alignment: .leading, spacing: 14) {
-                    onboardingStep(number: 1, text: "Wähle deine Trainingszeit")
-                    onboardingStep(number: 2, text: "Starte die Slotmaschine")
-                    onboardingStep(number: 3, text: "Tippe auf \u{201E}Jetzt \u{00FC}ben\u{201C}")
+                // Zeit-Chips (10/15/20) — wiederverwendetes
+                // `durationChip(minutes:)` aus dem Setup-Screen, damit
+                // die visuelle Sprache konsistent bleibt. Stufe 3
+                // ersetzt die Setup-Screen-Card durch eine Display-
+                // Card; der Chip-Helper bleibt dann für das Modal.
+                //
+                // **Layout-Hinweis** (Sache B Stufe 2): Das explizite
+                // `.frame(maxWidth: .infinity)` am HStack ist nötig,
+                // weil das umschließende `.frame(maxWidth: 340)` am
+                // VStack die Width-Constraint nicht zuverlässig zu
+                // den `maxWidth: .infinity`-Chips propagiert. Ohne
+                // diese Direktive nimmt der HStack seine intrinsische
+                // Größe und die Chips rendern aufgeblasen — Pattern
+                // analog zur ehemaligen `durationCard`, die ihrerseits
+                // einen Outer-`maxWidth: .infinity`-Container hatte.
+                HStack(spacing: 12) {
+                    ForEach(Self.durationOptions, id: \.self) { minutes in
+                        durationChip(minutes: minutes)
+                    }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity)
 
-                // CTA „Los geht's"
+                // CTA „Los geht's" — schließt das Modal mit aktuellem
+                // Preselect. Pfad ist semantisch identisch zum
+                // Backdrop-Tap (idempotent), nur explizit als Button.
                 Button {
-                    dismissOnboarding()
+                    dismissSetupModal()
                 } label: {
                     Text("Los geht's")
                         .font(.system(size: 17, weight: .black, design: .rounded))
@@ -267,10 +316,21 @@ struct ElumiTabView: View {
                 }
                 .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
                 .accessibilityLabel(Text("Los geht's"))
-                .accessibilityHint(Text("Schließt den Hinweis und zeigt den Trainings-Generator"))
+                .accessibilityHint(Text("Übernimmt die gewählte Trainingsdauer und schließt den Setup-Dialog"))
             }
             .padding(20)
             .frame(maxWidth: 340)
+            // **Layout-Fix** (Sache B Stufe 2): `.fixedSize(vertical:
+            // true)` zwingt die Modal-VStack zur intrinsischen
+            // Vertikal-Höhe. Sonst proposed der äußere ZStack (mit
+            // dem screen-füllenden Backdrop) volle Screen-Höhe an
+            // die VStack, die diese auf flexible Kinder (HStack der
+            // Chips mit `minHeight: 44` und ohne `maxHeight`)
+            // verteilt — Chips würden mehrere hundert Punkte hoch
+            // gerendert. `.fixedSize` koppelt die VStack-Höhe an
+            // die Summe der intrinsischen Kind-Höhen (~218pt) und
+            // hält die Modal-Card kompakt.
+            .fixedSize(horizontal: false, vertical: true)
             .background(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(Color(hex: "#101522"))
@@ -281,24 +341,6 @@ struct ElumiTabView: View {
             )
             .shadow(color: Color.black.opacity(0.55), radius: 24, x: 0, y: 8)
             .padding(.horizontal, 24)
-        }
-    }
-
-    private func onboardingStep(number: Int, text: String) -> some View {
-        HStack(spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(sectionStyle.accent.opacity(0.22))
-                    .frame(width: 48, height: 48)
-                Text("\(number)")
-                    .font(.system(size: 22, weight: .black, design: .rounded))
-                    .foregroundStyle(sectionStyle.accent)
-            }
-            Text(text)
-                .font(.system(size: 15, weight: .semibold, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-                .lineLimit(2)
-                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -885,10 +927,19 @@ struct ElumiTabView: View {
 
     /// Wird vom Spin-CTA aufgerufen — startet einen frischen Spin
     /// und versteckt das alte Ergebnis (Reset-Verhalten per Spec).
-    /// **2026-04-24 Gate**: läuft nur, wenn auch eine Zeit gewählt
-    /// wurde. Ohne Zeit kein Spin.
+    /// **2026-04-24 Gate**: läuft nur wenn die Phase es erlaubt und
+    /// noch Versuche übrig sind (siehe `canTriggerSpin`).
     private func triggerSpin() {
         guard canTriggerSpin else { return }
+        // **Sache B Stufe 2 Future-Insurance** (2026-04-29): zusätzlicher
+        // Guard gegen den Fall, dass ein zukünftiger Auto-Spin / Push-
+        // Trigger / Background-Notification den Spin programmatisch
+        // anstoßen will, während das Setup-Modal offen ist. Aktuell
+        // unmöglich, weil der Modal-Backdrop alle UI-Tap-Pfade blockiert
+        // und es keinen externen Trigger-Pfad gibt — billige Versicherung
+        // gegen Race-Conditions in V2/V3, falls jemand einen
+        // programmatischen Spin-Pfad einführt.
+        guard !showSetupModal else { return }
         feedbackPlayer.playTabSwitch()
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
 
