@@ -24,19 +24,17 @@ enum HomeModuleIcon: String, CaseIterable, Hashable {
     /// reguläre Home-Tile auf Seite 3 zusammen mit Listen.
     case scan
 
-    /// Asset-Name im Catalog. **Stufe 6 Schritt 1 (2026-04-29)**: liefert
-    /// hartkodiert den Set-B-Namen (`baseAssetName + "B"`), nachdem der
-    /// `AppIconRegistry.resolved(...)`-Resolver entfernt wurde. Schritt 3
-    /// benennt die `*B.imageset` zu `*.imageset` um und der Suffix
-    /// verschwindet aus dieser Stelle.
+    /// Asset-Name im Catalog. **Stufe 6 Schritt 3 (2026-04-29)**:
+    /// nach dem Imageset-Rename `*B.imageset` → `*.imageset` liefert
+    /// `assetName` direkt den Base-Namen — kein Resolver, kein Suffix.
     var assetName: String {
-        baseAssetName + "B"
+        baseAssetName
     }
 
-    /// Set-A-Basisname (vor dem Set-A-Removal in Stufe 6). Während des
-    /// Übergangs wird in `assetName` `+ "B"` angehängt; nach Schritt 3
-    /// ist der Suffix wieder weg und dieser Property-Name kann zu
-    /// `baseName` o.ä. vereinfacht werden.
+    /// Asset-Catalog-Name pro Enum-Case. Vor Stufe 6 gab es ein zweites
+    /// Set mit `B`-Suffix, das zur Laufzeit per Resolver gewählt wurde;
+    /// nach dem Set-A-Removal und dem B-Rename ist der Catalog flach
+    /// und dieser Wert ist 1:1 der Asset-Name.
     private var baseAssetName: String {
         switch self {
         case .karteikarten: return "HomeIconKarteikarten"

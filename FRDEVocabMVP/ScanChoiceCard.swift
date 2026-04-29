@@ -52,10 +52,7 @@ struct ScanChoiceCard: View {
             HStack(spacing: 14) {
                 // Icon mit subtilem Glow im Pressed-State (statt rotem
                 // Outline-Ring auf der Card).
-                // **Stufe 6 Schritt 1 (2026-04-29)**: `Image(appIcon:)` ist
-                // entfernt — Set-B-Asset via Suffix hartkodiert. Schritt 3
-                // benennt die Imagesets um, der `+ "B"` verschwindet dann.
-                Image(illustrationName + "B")
+                Image(illustrationName)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 68, height: 68)
@@ -182,8 +179,7 @@ struct ScanModeSelectionCard: View {
         } label: {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .center, spacing: 0) {
-                    // Stufe 6 Schritt 1: Set-B-Name hartkodiert (Schritt 3 dropt das B).
-                    Image(illustrationName + "B")
+                    Image(illustrationName)
                         .resizable()
                         .scaledToFit()
                         .frame(width: 40, height: 40)
