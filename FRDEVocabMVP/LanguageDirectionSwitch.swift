@@ -26,9 +26,6 @@ struct LanguageDirectionSwitch: View {
     }
 
     @AppStorage(appDirectionKey) private var selectedDirectionRaw = Direction.frenchToGerman.rawValue
-    /// Live-Switch-Gate für Icon-Set A ↔ B. Triggert Re-Render bei
-    /// Settings-Wechsel, damit das Asset sofort tauscht (ohne Neustart).
-    @AppStorage(AppIconRegistry.storageKey) private var iconSetRaw: String = AppIconSet.a.rawValue
 
     /// Kompressions-Flag für die Tap-Animation (Scale-Down bei Tap,
     /// Snap-Back nach ~100 ms). Lebt pro Komponente — zwei Instanzen

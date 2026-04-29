@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" fill="none">
   <title>Ton aus</title>
-  <path d="M12 38 L26 38 L42 22 L42 74 L26 58 L12 58 Q8 58 8 54 L8 42 Q8 38 12 38 Z" fill="#8899AA"/>
-  <path d="M12 38 L26 38 L42 22 L42 74 L26 58 L12 58 Q8 58 8 54 L8 42 Q8 38 12 38 Z" fill="none" stroke="#4A5A6B" stroke-width="2.5" stroke-linejoin="round"/>
-  <line x1="54" y1="36" x2="78" y2="60" stroke="#C99530" stroke-width="3.5" stroke-linecap="round"/>
-  <line x1="78" y1="36" x2="54" y2="60" stroke="#C99530" stroke-width="3.5" stroke-linecap="round"/>
+  <ellipse cx="40" cy="86" rx="32" ry="5" fill="#000" opacity="0.25"/>
+  <path d="M14 42 L28 42 L44 24 L44 78 L28 60 L14 60 Q8 60 8 54 L8 48 Q8 42 14 42 Z" fill="#4A5060"/>
+  <path d="M14 36 L28 36 L44 18 L44 72 L28 54 L14 54 Q8 54 8 48 L8 42 Q8 36 14 36 Z" fill="#8A96A5"/>
+  <path d="M14 36 L28 36 L44 18 L44 72 L28 54 L14 54 Q8 54 8 48 L8 42 Q8 36 14 36 Z" fill="none" stroke="#1A1A2E" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="M14 38 Q28 34 44 20" stroke="#B8C0CC" stroke-width="4" stroke-linecap="round" opacity="0.25"/>
+  <circle cx="14" cy="40" r="2" fill="#FFF" opacity="0.2"/>
+  <line x1="56" y1="30" x2="84" y2="62" stroke="#8A2020" stroke-width="7" stroke-linecap="round"/>
+  <line x1="56" y1="30" x2="84" y2="62" stroke="#FF4040" stroke-width="5" stroke-linecap="round"/>
+  <line x1="84" y1="30" x2="56" y2="62" stroke="#8A2020" stroke-width="7" stroke-linecap="round"/>
+  <line x1="84" y1="30" x2="56" y2="62" stroke="#FF4040" stroke-width="5" stroke-linecap="round"/>
 </svg>

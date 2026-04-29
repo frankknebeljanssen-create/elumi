@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" fill="none">
   <title>Foto-Album</title>
-  <rect x="14" y="18" width="68" height="60" rx="5" fill="#FFFFFF"/>
-  <rect x="14" y="18" width="68" height="60" rx="5" fill="none" stroke="#4A5A6B" stroke-width="2.5"/>
-  <rect x="22" y="26" width="52" height="44" rx="3" fill="#E8EEF5"/>
-  <rect x="22" y="26" width="52" height="44" rx="3" fill="none" stroke="#4A5A6B" stroke-width="2"/>
-  <circle cx="34" cy="40" r="4" fill="#C99530"/>
-  <path d="M22 70 L22 58 L36 46 L46 52 L60 42 L74 54 L74 70 Z" fill="#4A7FB8"/>
-  <path d="M22 70 L22 58 L36 46 L46 52 L60 42 L74 54 L74 70" fill="none" stroke="#2A4F78" stroke-width="2"/>
+  <ellipse cx="48" cy="86" rx="36" ry="5" fill="#000" opacity="0.25"/>
+  <rect x="10" y="18" width="72" height="60" rx="8" fill="#3A2A6A"/>
+  <rect x="10" y="12" width="72" height="60" rx="8" fill="#A78BFA" stroke="#1A1A2E" stroke-width="2.5"/>
+  <path d="M16 18 Q46 14 76 18" stroke="#C4B9F0" stroke-width="4" stroke-linecap="round" opacity="0.35"/>
+  <circle cx="16" cy="18" r="2" fill="#FFF" opacity="0.35"/>
+  <rect x="16" y="20" width="60" height="42" rx="4" fill="#E6E0FF" stroke="#1A1A2E" stroke-width="2"/>
+  <circle cx="28" cy="30" r="4.5" fill="#8B5A00"/>
+  <circle cx="28" cy="28" r="4.5" fill="#FFD166" stroke="#1A1A2E" stroke-width="1.5"/>
+  <circle cx="26" cy="26" r="1.5" fill="#FFF" opacity="0.4"/>
+  <path d="M16 62 L16 50 L30 38 L42 46 L56 34 L76 50 L76 62 Z" fill="#2EC4A9"/>
+  <path d="M16 62 L16 50 L30 38 L42 46 L56 34 L76 50 L76 62" fill="none" stroke="#1A6B4A" stroke-width="2"/>
+  <path d="M16 62 L22 56 L32 58 L42 52 L56 54 L76 58 L76 62 Z" fill="#1A6B4A"/>
+  <g transform="translate(60 4) rotate(12)">
+    <rect x="0" y="2" width="22" height="26" rx="2" fill="#A82A5A"/>
+    <rect x="0" y="0" width="22" height="26" rx="2" fill="#FF4D80" stroke="#1A1A2E" stroke-width="2"/>
+    <rect x="3" y="3" width="16" height="14" rx="1" fill="#FFF0F3"/>
+    <circle cx="11" cy="8" r="3" fill="#FFD166"/>
+    <circle cx="4" cy="4" r="1" fill="#FFF" opacity="0.4"/>
+  </g>
 </svg>

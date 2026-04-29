@@ -24,15 +24,17 @@ enum HomeModuleIcon: String, CaseIterable, Hashable {
     /// reguläre Home-Tile auf Seite 3 zusammen mit Listen.
     case scan
 
-    /// Asset-Name im Catalog. Geht **immer** durch
-    /// `AppIconRegistry.resolved(...)`, damit der globale Set-Schalter
-    /// (Set A vs. Set B) automatisch greift — keine Mischzustände.
+    /// Asset-Name im Catalog. **Stufe 6 Schritt 3 (2026-04-29)**:
+    /// nach dem Imageset-Rename `*B.imageset` → `*.imageset` liefert
+    /// `assetName` direkt den Base-Namen — kein Resolver, kein Suffix.
     var assetName: String {
-        AppIconRegistry.resolved(baseAssetName)
+        baseAssetName
     }
 
-    /// Set-A-Basisname (ohne Resolver). Set-B-Pendant ist immer
-    /// `<baseAssetName>B` im Asset-Catalog.
+    /// Asset-Catalog-Name pro Enum-Case. Vor Stufe 6 gab es ein zweites
+    /// Set mit `B`-Suffix, das zur Laufzeit per Resolver gewählt wurde;
+    /// nach dem Set-A-Removal und dem B-Rename ist der Catalog flach
+    /// und dieser Wert ist 1:1 der Asset-Name.
     private var baseAssetName: String {
         switch self {
         case .karteikarten: return "HomeIconKarteikarten"
@@ -82,13 +84,6 @@ struct HomeModuleIconView: View {
     /// Tint, der nur für Fallback-Glyph-Icons (ohne Asset) genutzt wird.
     /// Normale Assets bringen ihren eigenen Stil mit.
     var glyphTint: Color = AppTheme.Colors.textPrimary
-
-    /// **Live-Switch-Gate**: das `@AppStorage` zwingt SwiftUI, den View-
-    /// Body neu zu evaluieren, sobald der User den Icon-Stil in den
-    /// Settings ändert. Ohne diese Property würde nur der erste Render
-    /// das aktuelle Set sehen — Settings-Wechsel wären erst nach
-    /// App-Neustart sichtbar.
-    @AppStorage(AppIconRegistry.storageKey) private var iconSetRaw: String = AppIconSet.a.rawValue
 
     var body: some View {
         if let glyph = icon.fallbackGlyph {

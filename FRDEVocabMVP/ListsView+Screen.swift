@@ -110,7 +110,10 @@ extension ListsView {
                 // Eigenständige SVG-Icons aus dem Catalog (nicht SF-Symbols).
                 // Bounding-Box 46pt — etwas größer als vorher (40), damit die
                 // Kategorie-Illustrationen auch in der Row sichtbar „atmen".
-                Image(appIcon: iconAsset)
+                // Stufe 6 Schritt 3 (2026-04-29): nach Set-A-Removal +
+                // Imageset-Rename ist der Catalog flach; Asset-Name wird
+                // 1:1 verwendet, kein Resolver, kein Suffix.
+                Image(iconAsset)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 46, height: 46)
@@ -187,7 +190,7 @@ extension ListsView {
                         // Icon synchron zum Alle-Listen-Icon gewachsen
                         // (48 → 54), damit beide Hero-Icons auf dem Screen
                         // dieselbe Gewichtung haben.
-                        Image(appIcon: "ListIconNeueListe")
+                        Image("ListIconNeueListe")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 54, height: 54)
