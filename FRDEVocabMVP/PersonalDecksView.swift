@@ -129,7 +129,24 @@ struct PersonalDecksView: View {
                 lists: allLists,
                 selectedListIDs: [],
                 language: language,
-                cardTypeFilter: cardTypeFilter
+                cardTypeFilter: cardTypeFilter,
+                // Empty-Pool-Hint (2026-04-29): Pre-Save-Check, ob aus
+                // der aktuellen Selection unter dem aktiven Lernjahr-
+                // Filter überhaupt Karten resultieren würden. Wenn
+                // nein, gibt der Closure den Fehler-String zurück und
+                // das Sheet bleibt offen statt silent zu schließen.
+                // Selection-leer fällt durch: dann hat der User nichts
+                // ausgewählt und der bestehende `selectedIDs.isEmpty`-
+                // Guard in `createDeck` macht weiterhin no-op.
+                validate: { selectedIDs in
+                    guard !selectedIDs.isEmpty else { return nil }
+                    let selectedLists = allLists.filter { selectedIDs.contains($0.id) }
+                    let cardIDs = PersonalDeck.buildCardOrderSnapshot(from: selectedLists)
+                    if cardIDs.isEmpty {
+                        return "In deinem aktuellen Lernjahr-Range ergeben diese Listen keine Karten — w\u{00E4}hle andere Listen oder erweitere den Range."
+                    }
+                    return nil
+                }
             ) { selectedIDs in
                 createDeck(fromSelectedListIDs: selectedIDs)
                 showingCreateSheet = false
@@ -142,7 +159,24 @@ struct PersonalDecksView: View {
                 lists: allLists,
                 selectedListIDs: Set(editing.sourceListIDs),
                 language: language,
-                cardTypeFilter: cardTypeFilter
+                cardTypeFilter: cardTypeFilter,
+                // Empty-Pool-Hint (2026-04-29): symmetrisch zur Create-
+                // Sheet — verhindert, dass der User die Listen so
+                // tauscht, dass keine Karten mehr resultieren. Im Edit-
+                // Pfad würde sonst die alte `cardOrder` als „Notfall-
+                // Inhalt" stehen bleiben (siehe `updateDeck`-Else-
+                // Branch), während die neuen `sourceListIDs` schon
+                // gespeichert wären — inkonsistenter Zwischenstand.
+                // Der Hint zwingt zur sinnvollen Auswahl.
+                validate: { selectedIDs in
+                    guard !selectedIDs.isEmpty else { return nil }
+                    let selectedLists = allLists.filter { selectedIDs.contains($0.id) }
+                    let cardIDs = PersonalDeck.buildCardOrderSnapshot(from: selectedLists)
+                    if cardIDs.isEmpty {
+                        return "In deinem aktuellen Lernjahr-Range ergeben diese Listen keine Karten — w\u{00E4}hle andere Listen oder erweitere den Range."
+                    }
+                    return nil
+                }
             ) { selectedIDs in
                 updateDeck(editing, withSelectedListIDs: selectedIDs)
                 deckBeingEdited = nil

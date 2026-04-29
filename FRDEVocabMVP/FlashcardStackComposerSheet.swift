@@ -7,9 +7,46 @@ struct FlashcardStackComposerSheet: View {
     let selectedListIDs: Set<UUID>
     let language: StudyLanguage
     let cardTypeFilter: CardType?
+    /// **Empty-Pool-Hint (2026-04-29)**: optionale Pre-Save-Validierung.
+    /// Wird beim „Fertig"-Tap VOR `onSave` aufgerufen. Gibt der Closure
+    /// einen non-nil String zurück, bleibt das Sheet offen und zeigt
+    /// den String als Inline-Fehler unter der Info-Card. Returnt sie
+    /// nil (oder ist die Validierung gar nicht gesetzt), läuft der
+    /// bisherige Pfad: `onSave` + `dismiss`. Default `nil` =
+    /// keine Validation, vollständig backward-kompatibel zu Callern,
+    /// die keine Empty-Pool-Bedingung prüfen müssen (Quiz-/Karteikarten-
+    /// Standard-Picker setzen nur eine Selection-Variable).
+    let validate: ((Set<UUID>) -> String?)?
     let onSave: (Set<UUID>) -> Void
 
+    /// Expliziter Init mit Default für `validate` — Swifts auto-
+    /// memberwise-Init übernimmt `let`-mit-Default nicht als Parameter,
+    /// daher hier ausgeschrieben. Backward-Kompat zu existierenden
+    /// Callern, die `validate` weglassen (Quiz, Karteikarten-Setup).
+    init(
+        style: AppSectionStyle,
+        lists: [VocabularyList],
+        selectedListIDs: Set<UUID>,
+        language: StudyLanguage,
+        cardTypeFilter: CardType?,
+        validate: ((Set<UUID>) -> String?)? = nil,
+        onSave: @escaping (Set<UUID>) -> Void
+    ) {
+        self.style = style
+        self.lists = lists
+        self.selectedListIDs = selectedListIDs
+        self.language = language
+        self.cardTypeFilter = cardTypeFilter
+        self.validate = validate
+        self.onSave = onSave
+    }
+
     @State private var localSelection: Set<UUID> = []
+    /// Inline-Fehler unter der Info-Card. Quelle: `validate`-Closure
+    /// vom Caller. Wird beim nächsten Selection-Change zurückgesetzt,
+    /// damit der User nicht den alten Fehler liest, während er bereits
+    /// eine andere Auswahl trifft.
+    @State private var errorMessage: String? = nil
 
     private var displayedLists: [VocabularyList] {
         lists.sorted { lhs, rhs in
@@ -50,6 +87,16 @@ struct FlashcardStackComposerSheet: View {
                 trailingTint: style.accent,
                 onLeading: { dismiss() },
                 onTrailing: {
+                    // Empty-Pool-Hint (2026-04-29): wenn der Caller eine
+                    // Validierung mitgeschickt hat, fragen wir die zuerst.
+                    // Non-nil Return = Fehler → Sheet bleibt offen, Inline-
+                    // Hint erscheint. Sonst Standard-Pfad.
+                    if let validate, let error = validate(localSelection) {
+                        withAnimation(.easeInOut(duration: 0.22)) {
+                            errorMessage = error
+                        }
+                        return
+                    }
                     onSave(localSelection)
                     dismiss()
                 }
@@ -67,6 +114,36 @@ struct FlashcardStackComposerSheet: View {
             .padding(AppTheme.Spacing.md)
             .background(AppTheme.Colors.success.opacity(0.85))
             .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
+
+            // Empty-Pool-Hint Inline-Fehler (2026-04-29). Erscheint NUR
+            // wenn der Caller eine Validierung gesetzt hat UND diese
+            // beim letzten „Fertig"-Tap einen Fehler zurückgegeben hat.
+            // Wird beim nächsten Selection-Change zurückgesetzt
+            // (`onChange(of: localSelection)` weiter unten), damit der
+            // User nicht den alten Fehler liest, während er bereits
+            // eine andere Liste tippt.
+            if let errorMessage {
+                HStack(spacing: 10) {
+                    Image(systemName: "exclamationmark.circle.fill")
+                        .foregroundStyle(AppTheme.Colors.warning)
+                    Text(errorMessage)
+                        .font(AppTheme.Typography.body)
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .lineLimit(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity)
+                .background(AppTheme.Colors.surface.opacity(0.98))
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                        .stroke(AppTheme.Colors.warning.opacity(0.3), lineWidth: 1)
+                )
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
 
             ScrollView {
                 VStack(spacing: 6) {
@@ -109,6 +186,17 @@ struct FlashcardStackComposerSheet: View {
         .appScreenBackground(style)
         .onAppear {
             localSelection = selectedListIDs
+        }
+        .onChange(of: localSelection) { _, _ in
+            // Empty-Pool-Hint (2026-04-29): bestehenden Fehler verwerfen,
+            // sobald der User eine andere Auswahl trifft. Sonst klebt
+            // der alte „keine Karten"-Hint, während die neue Auswahl
+            // bereits gültig wäre.
+            if errorMessage != nil {
+                withAnimation(.easeInOut(duration: 0.22)) {
+                    errorMessage = nil
+                }
+            }
         }
     }
 
