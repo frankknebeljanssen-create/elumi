@@ -96,15 +96,15 @@ struct ElumiTabView: View {
         "Versuch \(min(currentSpinNumber + 1, maxSpins))/\(maxSpins)"
     }
 
-    /// **CTA-Label-Dynamik (2026-04-25 User-Spec)**:
-    /// Der Primär-Button ändert seinen Text basierend auf dem Spin-
-    /// Fortschritt. Ein einziger Button im Layout — nur Text wechselt,
-    /// kein Layout-Sprung.
-    ///   • 0 Spins → „Los geht's!" (erster Versuch)
-    ///   • 1–2 Spins → „Nochmal!" (noch Spins übrig)
-    ///   • 3 Spins → `trainingModeButton` übernimmt (siehe `spinCTA`)
+    /// **CTA-Label-Dynamik** (UX Stufe 3, 2026-04-29):
+    ///   • 0 Spins → ein Button „Los geht's!" (erster Versuch, full-width)
+    ///   • 1–2 Spins → zwei Buttons nebeneinander („Nochmal drehen" links,
+    ///     „Jetzt üben" rechts) + Caption „Versuch X von 3" darüber
+    ///   • 3 Spins → ein Button „Jetzt üben" (Spin-Phase vorbei)
+    /// Das Label „Jetzt üben" bleibt identisch zwischen 2-Button-State
+    /// und post-Spin-3-State — Konsistenz für den User.
     private var spinPrimaryLabel: String {
-        currentSpinNumber == 0 ? "Los geht's!" : "Nochmal?"
+        currentSpinNumber == 0 ? "Los geht's!" : "Nochmal drehen"
     }
 
     private let sectionStyle: AppSectionStyle = .elumi
@@ -430,71 +430,125 @@ struct ElumiTabView: View {
         }
     }
 
-    // MARK: - Unified CTA „Los geht's" / „Training starten"
+    // MARK: - Unified CTA „Los geht's" / „Nochmal drehen + Jetzt üben" / „Jetzt üben"
 
-    /// **User-Spec 2026-04-24 Versuchslogik**: Der CTA ist jetzt
-    /// **eine** Card mit zwei Zuständen — kein konkurrierender zweiter
-    /// Button mehr. Vor dem 3. Spin zeigt die Card „Los geht's!" mit
-    /// Versuchszähler, nach dem 3. Spin transformiert sie zu
-    /// „Training starten".
+    /// **UX Stufe 3 (2026-04-29)** — drei States, klar getrennt:
     ///
-    /// Transition-Logik:
-    ///   • `hasRemainingSpins` → Spin-Mode (Accent-Farbe, Versuchs-
-    ///     anzeige).
-    ///   • `!hasRemainingSpins` → Training-Mode (CTA-Farbe, Play-Icon).
-    ///
-    /// Die zwei Branches rendern denselben Frame (52pt Höhe), damit
-    /// der Layout-Sprung minimal ist.
+    ///   1. `currentSpinNumber == 0` → ein Full-Width-Button „Los geht's!"
+    ///      (erster Versuch, kein Versuchszähler).
+    ///   2. `currentSpinNumber > 0 && hasRemainingSpins` → zwei
+    ///      gleichwertige Buttons nebeneinander („Nochmal drehen" links,
+    ///      „Jetzt üben" rechts), beide gelb gefüllt
+    ///      (`AppPrimaryButtonStyle(color: ctaYellow)`). Versuchszähler
+    ///      „Versuch X von 3" als separate Caption darüber — nicht im
+    ///      Button-Sublabel, weil zwei Buttons mit unterschiedlichen
+    ///      Sublabel-Strukturen das equal-weight-Prinzip optisch brechen
+    ///      würden.
+    ///   3. `!hasRemainingSpins` → ein Full-Width-Button „Jetzt üben"
+    ///      (Single-CTA, ehrliche Kommunikation: Spin-Phase vorbei,
+    ///      jetzt wird trainiert). Label bleibt „Jetzt üben" identisch
+    ///      zum 2-Button-State — Konsistenz für den User.
     @ViewBuilder
     private var spinCTA: some View {
-        if hasRemainingSpins {
-            spinModeButton
-        } else {
-            trainingModeButton
+        VStack(spacing: 8) {
+            // Caption „Versuch X von 3" nur sichtbar wenn 2-Button-State
+            // (= mind. 1 Spin gemacht UND noch Versuche übrig).
+            if currentSpinNumber > 0 && hasRemainingSpins {
+                Text(currentAttemptDisplay)
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .contentTransition(.numericText())
+                    .frame(maxWidth: .infinity, alignment: .center)
+            }
+
+            if currentSpinNumber == 0 {
+                singleSpinButton
+            } else if hasRemainingSpins {
+                twinCTAs
+            } else {
+                singleTrainingButton
+            }
         }
     }
 
-    private var spinModeButton: some View {
-        // **2026-04-25 CTA-Pass**:
-        //   • Label dynamisch: „Los geht's!" → „Nochmal!" nach dem
-        //     ersten Spin. Kein zusätzlicher Button, kein Layout-Sprung
-        //     (gleiche VStack-Struktur, nur Text wechselt).
-        //   • Farbe: Gelb (`ctaYellow` = `#FFD54F`) mit dunkler Schrift —
-        //     identisch zum `trainingModeButton` und zum App-weiten
-        //     Primary-CTA-Style. Kein Pink mehr.
+    /// State 1: erster Versuch — ein Full-Width-Button „Los geht's!".
+    private var singleSpinButton: some View {
         Button {
             triggerSpin()
         } label: {
-            VStack(spacing: 2) {
-                Text(spinPrimaryLabel)
-                    .font(.system(size: 19, weight: .black, design: .rounded))
-                    .foregroundStyle(.black)
-                    .contentTransition(.opacity)
-                Text(currentAttemptDisplay)
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.black.opacity(0.65))
-                    .contentTransition(.numericText())
-            }
-            .frame(maxWidth: .infinity)
-            .frame(minHeight: 52)
+            Text(spinPrimaryLabel)
+                .font(.system(size: 19, weight: .black, design: .rounded))
+                .foregroundStyle(.black)
+                .contentTransition(.opacity)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 52)
         }
         .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
         .disabled(!canTriggerSpin)
         .opacity(canTriggerSpin ? 1.0 : 0.45)
         .transition(.opacity.combined(with: .scale(scale: 0.98)))
+        .accessibilityLabel(Text("Los geht's"))
+        .accessibilityHint(Text("Startet den ersten Slot-Spin"))
     }
 
-    private var trainingModeButton: some View {
-        // Identisches Gelb wie `spinModeButton` — einheitlicher Primary-
-        // CTA-Style über alle drei Zustände (Los geht's / Nochmal! /
-        // Training starten).
+    /// State 2: 2-Button-State nach erstem Spin, solange Versuche übrig.
+    /// Beide Buttons gelb gefüllt, gleiche Höhe, gleiche Schriftgröße,
+    /// `frame(maxWidth: .infinity)` → 50/50-Aufteilung.
+    private var twinCTAs: some View {
+        HStack(spacing: 12) {
+            Button {
+                triggerSpin()
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.2.circlepath")
+                        .font(.system(size: 14, weight: .bold))
+                    Text(spinPrimaryLabel)
+                        .font(.system(size: 15, weight: .black, design: .rounded))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+                .foregroundStyle(.black)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 52)
+            }
+            .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
+            .disabled(!canTriggerSpin)
+            .opacity(canTriggerSpin ? 1.0 : 0.45)
+            .accessibilityLabel(Text(spinPrimaryLabel))
+            .accessibilityHint(Text("\(currentAttemptDisplay). Erzeugt eine andere zufällige Trainings-Zusammenstellung."))
+
+            Button {
+                startTraining()
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "play.circle.fill")
+                        .font(.system(size: 14, weight: .bold))
+                    Text("Jetzt üben")
+                        .font(.system(size: 15, weight: .black, design: .rounded))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+                .foregroundStyle(.black)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 52)
+            }
+            .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
+            .accessibilityLabel(Text("Jetzt üben"))
+            .accessibilityHint(Text("Startet die generierte Trainingseinheit sofort"))
+        }
+        .transition(.opacity.combined(with: .scale(scale: 0.98)))
+    }
+
+    /// State 3: alle Versuche aufgebraucht — ein Full-Width-Button
+    /// „Jetzt üben". Label-Konsistenz zur 2-Button-Phase.
+    private var singleTrainingButton: some View {
         Button {
             startTraining()
         } label: {
             HStack(spacing: 8) {
                 Image(systemName: "play.circle.fill")
                     .font(.system(size: 18, weight: .bold))
-                Text("Training starten")
+                Text("Jetzt üben")
                     .font(.system(size: 19, weight: .black, design: .rounded))
             }
             .foregroundStyle(.black)
@@ -503,6 +557,8 @@ struct ElumiTabView: View {
         }
         .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
         .transition(.opacity.combined(with: .scale(scale: 0.98)))
+        .accessibilityLabel(Text("Jetzt üben"))
+        .accessibilityHint(Text("Startet die generierte Trainingseinheit"))
     }
 
     /// **Spin-Gate** (User-Spec 2026-04-24): Spin ist nur dann erlaubt,
