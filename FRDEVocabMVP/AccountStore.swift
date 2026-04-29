@@ -113,7 +113,11 @@ enum AccountScopedKeys {
         // Onboarding-Hints (UX Stufe 4) — neu angelegte Accounts
         // sollen den Trainings-Generator-Hint einmal sehen, auch wenn
         // der Owner-Account ihn schon weggeklickt hat.
-        appTrainingGeneratorOnboardingSeenKey
+        appTrainingGeneratorOnboardingSeenKey,
+        // Trainings-Generator Default-Trainingsdauer (Sache B,
+        // 2026-04-29) — pro Account isoliert, sodass jeder Nutzer
+        // seine eigene zuletzt gewählte Dauer behält.
+        appTrainingGeneratorDurationKey
     ]
 }
 

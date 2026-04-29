@@ -96,6 +96,19 @@ let appVoiceFrenchSelectionKey = "elumi.voice.fr.selection"
 /// wenn der Owner-Account ihn schon weggeklickt hat.
 let appTrainingGeneratorOnboardingSeenKey = "elumi.training.generator.onboarding.seen.v1"
 
+/// **Trainings-Generator Default-Trainingsdauer** (Sache B, 2026-04-29) —
+/// persistierte User-Wahl der Trainingsdauer in Minuten (10/15/20).
+/// Default-Wert wird zentral in `ElumiTabView.durationDefault` (= 10)
+/// definiert und vom `@AppStorage`-Init referenziert. Ab Stufe 2 wird
+/// der Wert beim Modal-Close idempotent geschrieben (Backdrop-Tap und
+/// CTA übernehmen den aktuellen Preselect — kein „undefined state").
+///
+/// Per-Account namespaced via `AccountStore.namespacedKey(...)` —
+/// gehört in `AccountScopedKeys.userDefaultsKeys`. Begründung:
+/// Familien-Account und Owner-Account dürfen unterschiedliche
+/// Default-Trainingsdauern haben.
+let appTrainingGeneratorDurationKey = "elumi.training.generator.duration.v1"
+
 // MARK: - Gameplay Settings
 // Zentraler Key für die globale Speed-Round-Dauer — einziger Wahrheits-
 // zustand appweit. Alle Module (Training, Verbformen, Akzente, …) lesen

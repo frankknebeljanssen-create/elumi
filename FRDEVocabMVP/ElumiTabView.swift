@@ -56,11 +56,19 @@ struct ElumiTabView: View {
     /// verbraucht.
     @ObservedObject private var playCredits = ElumiCreditsStore.shared
 
-    /// User-gewählte Trainingsdauer in Minuten. **2026-04-24**: jetzt
-    /// optional — der „Los geht's"-Button ist erst aktiv, sobald der
-    /// User eine Zeit gewählt hat. Vorher war Default 10 und der Spin
-    /// konnte ohne explizite User-Aktion gestartet werden.
-    @State private var selectedDuration: Int? = nil
+    /// **User-gewählte Trainingsdauer in Minuten — Sache B Stufe 1
+    /// (2026-04-29).** Persistiert via `@AppStorage` (Account-namespaced
+    /// über `AccountScopedKeys.userDefaultsKeys`). Default-Wert kommt
+    /// aus `Self.durationDefault` (= 10) — der `@AppStorage`-Init liefert
+    /// 10 zurück, solange kein Wert persistiert ist. Nach dem ersten
+    /// Modal-Close (Stufe 2) wird der aktuelle Wert idempotent in
+    /// UserDefaults geschrieben.
+    ///
+    /// **Vorgängerstand:** `@State Int? = nil` — Forcing-Function für
+    /// bewusste Wahl. Mit Sache B aufgegeben zugunsten konsistenter
+    /// Modal-Dismiss-Semantik (immer Backdrop-tappable, immer Preselect).
+    @AppStorage(appTrainingGeneratorDurationKey)
+    private var selectedDuration: Int = ElumiTabView.durationDefault
     /// Slot-Phase — externe Sicht der State-Maschine in `SlotMachineView`.
     @State private var slotPhase: SlotPhase = .idle
     /// Trigger-Token — Setzen auf `true` startet einen Spin.
@@ -86,17 +94,22 @@ struct ElumiTabView: View {
     /// Anzahl bereits abgeschlossener Spins (0…maxSpins).
     @State private var currentSpinNumber: Int = 0
 
-    // MARK: - Onboarding-Overlay (UX Stufe 4, 2026-04-29)
+    // MARK: - Setup-Modal (Sache B Stufe 2, 2026-04-29)
     //
-    // Beim ersten Öffnen des Trainings-Generators auf dem Elumi-Tab
-    // zeigen wir eine „So geht's"-Card mit 3 Schritten. Persistenz
-    // per-Account namespaced (siehe `appTrainingGeneratorOnboardingSeenKey`
-    // in AppStorageKeys + AccountScopedKeys).
+    // Erstmaliges Öffnen des Trainings-Generators auf dem Elumi-Tab
+    // zeigt ein Setup-Modal mit Zeit-Chips (10/15/20) + „Los geht's"-
+    // CTA. Default-Preselect ist `Self.durationDefault` (= 10), Backdrop-
+    // Tap ist erlaubt (übernimmt aktuellen Preselect). Persistenz des
+    // Seen-Flags per-Account namespaced (siehe
+    // `appTrainingGeneratorOnboardingSeenKey` — Key-Name unverändert
+    // zur ursprünglichen Onboarding-Stufe, weil's konzeptionell derselbe
+    // „erstmaliger Öffnungs-Hint"-Slot ist; nur das Modal ist umgewidmet
+    // von Steps-Erklärung zu funktionaler Zeit-Wahl).
     //
     // Read aus dem account-namespaced Slot via
     // `AccountStore.shared.namespacedKey(...)` — dieselbe Strategie
     // wie `appOnboardingCompletedKey` in `ProfileStore`.
-    @State private var showOnboarding: Bool = false
+    @State private var showSetupModal: Bool = false
 
     /// Können noch Spins getriggert werden?
     private var hasRemainingSpins: Bool { currentSpinNumber < maxSpins }
@@ -125,16 +138,21 @@ struct ElumiTabView: View {
     //
     // Exakte Hex-Werte aus dem User-Spec — Single Source of Truth,
     // damit die Farben screen-übergreifend konsistent bleiben.
-
-    /// Mint-Background der Zeit-Card, ruhig und neutral.
-    private let durationCardBackground: Color = Color(hex: "#E8F7F4")
-    /// Leichte Mint-Umrandung der Zeit-Card.
-    private let durationCardBorder: Color = Color(hex: "#CFEDE7")
+    //
+    // **Sache B Stufe 3 (2026-04-29) Cleanup**: die Tokens
+    // `durationCardBackground` (#E8F7F4) und `durationCardBorder`
+    // (#CFEDE7) sind entfernt. Sie waren ein legacy Mint-Hintergrund-
+    // Versuch der ehemaligen `durationCard`, der bereits 2026-04-25
+    // zugunsten von `appSetupCardBackground()` rückgängig gemacht
+    // wurde. Mit dem Wegfall der `durationCard` (jetzt `timeDisplayCard`)
+    // sind die Tokens auch konzeptionell tot.
+    //
     // **2026-04-25 Kontrast-Pass**: Chip-Farben aus den App-Standard-
     // Tokens — hell-auf-hell (mint-auf-mint) war nicht ausreichend
     // lesbar. Unselected = `secondarySurface` (app-weit für
     // Auswahl-Elemente), Selected = `textPrimary` (dunkel) + weiße
     // Schrift für maximalen Kontrast. Keine neuen Farben erfunden.
+
     /// Primärer CTA-Gelbton — derselbe Yellow für alle Primary-Buttons
     /// im Trainingsgenerator. Dunkle Schrift für maximalen Kontrast.
     private let ctaYellow: Color = Color(hex: "#FFD54F")
@@ -153,6 +171,13 @@ struct ElumiTabView: View {
 
     private static let durationOptions: [Int] = [10, 15, 20]
 
+    /// **Single Source für die Default-Trainingsdauer** (Sache B Stufe 1,
+    /// 2026-04-29). Wird sowohl als `@AppStorage`-Initialwert für
+    /// `selectedDuration` verwendet als auch — ab Stufe 2 — als Modal-
+    /// Preselect beim allerersten Open. Keine Duplikation an anderen
+    /// Stellen: alle „falls nichts gewählt"-Pfade lesen diesen Wert.
+    static let durationDefault: Int = 10
+
     // MARK: - Body
 
     var body: some View {
@@ -162,87 +187,131 @@ struct ElumiTabView: View {
         // reduziert, damit nichts mehr unter dem AppBottomBar hängt.
         ZStack {
             mainContent
-            // **UX Stufe 4 (2026-04-29)** — Onboarding-Overlay über
-            // dem gesamten Tab-Inhalt, blockiert Interaktion bis der
-            // User „Los geht's" tippt. Tap auf Backdrop ist no-op
-            // (kein versehentliches Wegtippen).
-            if showOnboarding {
-                onboardingOverlay
+            // **Sache B Stufe 2 (2026-04-29)** — Setup-Modal über dem
+            // gesamten Tab-Inhalt. Vor Sache B war das ein Onboarding-
+            // Hint mit 3 Schritten und nicht-tappable Backdrop. Jetzt:
+            // funktionales Setup-Modal mit Zeit-Chips, Backdrop-Tap
+            // dismisst (übernimmt aktuellen Preselect — kein „undefined
+            // state" möglich, weil `selectedDuration` immer einen
+            // sinnvollen Wert hält).
+            if showSetupModal {
+                setupModalOverlay
                     .zIndex(20)
                     .transition(.opacity.combined(with: .scale(scale: 0.96)))
             }
         }
-        .animation(.spring(response: 0.45, dampingFraction: 0.8), value: showOnboarding)
+        .animation(.spring(response: 0.45, dampingFraction: 0.8), value: showSetupModal)
         .onAppear {
-            checkOnboardingState()
+            checkSetupModalState()
         }
     }
 
-    /// Liest den account-namespaced Onboarding-Seen-Wert. Wenn der Hint
-    /// noch nicht weggetippt wurde, zeigt das Overlay sich — der
-    /// State-Toggle ist in `withAnimation` gewrappt, damit die
+    /// Liest den account-namespaced Seen-Marker. Wenn das Setup-Modal
+    /// noch nie weggetippt wurde, zeigt es sich beim Tab-Mount.
+    ///
+    /// **Sache B Stufe 2 (2026-04-29)**: ehemals `checkOnboardingState()`.
+    /// Logik unverändert — der Seen-Marker (`appTrainingGeneratorOnboarding-
+    /// SeenKey`) ist derselbe Slot wie zuvor; nur das Modal ist umgewidmet
+    /// von „Steps-Erklärung" zu „funktionaler Zeit-Wahl mit Chips".
+    /// Der State-Toggle ist in `withAnimation` gewrappt, damit die
     /// `.transition(...)` am Card-View garantiert anspringt (implicit
     /// `.animation(value:)` reicht hier nicht zuverlässig, weil der
     /// State-Change in einer Funktion außerhalb des View-Bodys passiert).
-    private func checkOnboardingState() {
+    private func checkSetupModalState() {
         let scopedKey = AccountStore.shared.namespacedKey(appTrainingGeneratorOnboardingSeenKey)
         let seen = UserDefaults.standard.bool(forKey: scopedKey)
         if !seen {
             withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
-                showOnboarding = true
+                showSetupModal = true
             }
         }
     }
 
     /// Schreibt den account-namespaced Seen-Marker und blendet das
-    /// Overlay aus. Spring-Wrapping wie in `checkOnboardingState()` —
-    /// damit die Exit-Transition zuverlässig sichtbar ist.
-    private func dismissOnboarding() {
+    /// Setup-Modal aus.
+    ///
+    /// **Idempotenz-Hinweis** (Sache B Stufe 2): Diese Funktion schreibt
+    /// NICHT den Duration-Key — `selectedDuration` ist via `@AppStorage`
+    /// markiert und persistiert sich automatisch bei jeder Chip-Tap-
+    /// Mutation. Das gilt für alle Pfade, über die das Modal geschlossen
+    /// werden kann (CTA-Tap, Backdrop-Tap, ggf. später Pencil-Re-Edit-
+    /// Schließen aus Stufe 3). Der Backdrop-Tap nimmt also den aktuellen
+    /// Preselect des Modals als Wahl mit, ohne dass diese Funktion etwas
+    /// dafür tun muss — `selectedDuration` ist beim Backdrop-Tap-Zeitpunkt
+    /// bereits auf dem Wert, den der User zuletzt im Modal ausgewählt hatte
+    /// (oder dem Default, falls nichts angetippt wurde).
+    ///
+    /// Spring-Wrapping wie in `checkSetupModalState()` — damit die Exit-
+    /// Transition zuverlässig sichtbar ist.
+    private func dismissSetupModal() {
         let scopedKey = AccountStore.shared.namespacedKey(appTrainingGeneratorOnboardingSeenKey)
         UserDefaults.standard.set(true, forKey: scopedKey)
         withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
-            showOnboarding = false
+            showSetupModal = false
         }
     }
 
-    // MARK: - Onboarding-Overlay (UX Stufe 4)
+    // MARK: - Setup-Modal (Sache B Stufe 2)
 
-    /// Modal-Layer mit Dimm-Backdrop + Card. Kein Tap-Dismiss auf dem
-    /// Backdrop — User muss bewusst „Los geht's" tippen. Begründung:
-    /// die Card ist das einzige Bedienelement beim allerersten
-    /// Generator-Aufruf; ein versehentliches Wegtippen würde den
-    /// User direkt in einen leeren Setup-Screen schicken, ohne den
-    /// Hint je gesehen zu haben.
-    private var onboardingOverlay: some View {
+    /// Modal-Layer mit Dimm-Backdrop + Card. **Backdrop-Tap dismisst**
+    /// (Sache B Stufe 2): da das Modal mit einem sinnvollen Default-
+    /// Preselect (`Self.durationDefault` = 10) öffnet, kann der User
+    /// keinen „undefined state" produzieren. Backdrop-Tap übernimmt den
+    /// aktuellen Preselect — `selectedDuration` ist schon via
+    /// `@AppStorage` persistiert, der Dismiss-Pfad braucht nichts
+    /// zusätzlich zu schreiben (siehe `dismissSetupModal()`-Doc).
+    ///
+    /// Begründung der Dismissable-Decision: konsistente Modal-Semantik
+    /// über Erstöffnung und Re-Edit (Stufe 3) — Forcing-Function bei
+    /// einer Low-Stakes-10/15/20-Wahl wäre unnötige Reibung.
+    private var setupModalOverlay: some View {
         ZStack {
             Color.black.opacity(0.92)
                 .ignoresSafeArea()
                 .contentShape(Rectangle())
-                .onTapGesture { /* intentional no-op */ }
+                .onTapGesture {
+                    dismissSetupModal()
+                }
 
             VStack(spacing: 18) {
-                // Header — Modul-Icon + Titel
+                // Header — Sparkles-Icon + Frage
                 VStack(spacing: 8) {
                     Image(systemName: "sparkles")
                         .font(.system(size: 28, weight: .bold))
                         .foregroundStyle(sectionStyle.accent)
-                    Text("So geht's")
+                    Text("Wie lange willst du üben?")
                         .font(.system(size: 22, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .multilineTextAlignment(.center)
                 }
 
-                // 3 Schritte mit Number-Bubbles
-                VStack(alignment: .leading, spacing: 14) {
-                    onboardingStep(number: 1, text: "Wähle deine Trainingszeit")
-                    onboardingStep(number: 2, text: "Starte die Slotmaschine")
-                    onboardingStep(number: 3, text: "Tippe auf \u{201E}Jetzt \u{00FC}ben\u{201C}")
+                // Zeit-Chips (10/15/20) — wiederverwendetes
+                // `durationChip(minutes:)` aus dem Setup-Screen, damit
+                // die visuelle Sprache konsistent bleibt. Stufe 3
+                // ersetzt die Setup-Screen-Card durch eine Display-
+                // Card; der Chip-Helper bleibt dann für das Modal.
+                //
+                // **Layout-Hinweis** (Sache B Stufe 2): Das explizite
+                // `.frame(maxWidth: .infinity)` am HStack ist nötig,
+                // weil das umschließende `.frame(maxWidth: 340)` am
+                // VStack die Width-Constraint nicht zuverlässig zu
+                // den `maxWidth: .infinity`-Chips propagiert. Ohne
+                // diese Direktive nimmt der HStack seine intrinsische
+                // Größe und die Chips rendern aufgeblasen — Pattern
+                // analog zur ehemaligen `durationCard`, die ihrerseits
+                // einen Outer-`maxWidth: .infinity`-Container hatte.
+                HStack(spacing: 12) {
+                    ForEach(Self.durationOptions, id: \.self) { minutes in
+                        durationChip(minutes: minutes)
+                    }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity)
 
-                // CTA „Los geht's"
+                // CTA „Los geht's" — schließt das Modal mit aktuellem
+                // Preselect. Pfad ist semantisch identisch zum
+                // Backdrop-Tap (idempotent), nur explizit als Button.
                 Button {
-                    dismissOnboarding()
+                    dismissSetupModal()
                 } label: {
                     Text("Los geht's")
                         .font(.system(size: 17, weight: .black, design: .rounded))
@@ -252,10 +321,21 @@ struct ElumiTabView: View {
                 }
                 .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
                 .accessibilityLabel(Text("Los geht's"))
-                .accessibilityHint(Text("Schließt den Hinweis und zeigt den Trainings-Generator"))
+                .accessibilityHint(Text("Übernimmt die gewählte Trainingsdauer und schließt den Setup-Dialog"))
             }
             .padding(20)
             .frame(maxWidth: 340)
+            // **Layout-Fix** (Sache B Stufe 2): `.fixedSize(vertical:
+            // true)` zwingt die Modal-VStack zur intrinsischen
+            // Vertikal-Höhe. Sonst proposed der äußere ZStack (mit
+            // dem screen-füllenden Backdrop) volle Screen-Höhe an
+            // die VStack, die diese auf flexible Kinder (HStack der
+            // Chips mit `minHeight: 44` und ohne `maxHeight`)
+            // verteilt — Chips würden mehrere hundert Punkte hoch
+            // gerendert. `.fixedSize` koppelt die VStack-Höhe an
+            // die Summe der intrinsischen Kind-Höhen (~218pt) und
+            // hält die Modal-Card kompakt.
+            .fixedSize(horizontal: false, vertical: true)
             .background(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(Color(hex: "#101522"))
@@ -266,24 +346,6 @@ struct ElumiTabView: View {
             )
             .shadow(color: Color.black.opacity(0.55), radius: 24, x: 0, y: 8)
             .padding(.horizontal, 24)
-        }
-    }
-
-    private func onboardingStep(number: Int, text: String) -> some View {
-        HStack(spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(sectionStyle.accent.opacity(0.22))
-                    .frame(width: 48, height: 48)
-                Text("\(number)")
-                    .font(.system(size: 22, weight: .black, design: .rounded))
-                    .foregroundStyle(sectionStyle.accent)
-            }
-            Text(text)
-                .font(.system(size: 15, weight: .semibold, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-                .lineLimit(2)
-                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -305,8 +367,11 @@ struct ElumiTabView: View {
                     onBack: { dismiss() }
                 )
 
-                // 1) Zeit-Card oben.
-                durationCard
+                // 1) Trainingszeit-Anzeige (Sache B Stufe 3): XXL-Zahl
+                //    + Pencil-Pill für Re-Edit. Statt der alten
+                //    `durationCard` mit drei Chips. Die Chips leben
+                //    jetzt im Setup-Modal (`setupModalOverlay`).
+                timeDisplayCard
 
                 // 2) Slot Machine.
                 slotMachineArea
@@ -438,34 +503,85 @@ struct ElumiTabView: View {
         .frame(maxWidth: .infinity)
     }
 
-    // MARK: - Zeit-Card („Wie lange willst du üben?") — IMMER sichtbar
+    // MARK: - Trainingszeit-Anzeige (Sache B Stufe 3) — IMMER sichtbar
 
-    /// Card oberhalb der Slot Machine (User-Spec 2026-04-24).
-    /// Drei Zeit-Chips, immer sichtbar. Auswahl entscheidet, ob
-    /// „Los geht's!" aktiv wird.
-    private var durationCard: some View {
-        // **2026-04-25 System-Consistency-Final** (User-Spec „surfaceSecondary
-        // / appSetupCardBackground, keine hellen Flächen"). Das App-Theme
-        // ist DARK (surface=elumiMidnight, textPrimary=cream) — der zuvor
-        // probierte Mint-Hintergrund `#E8F7F4` passte nicht zum System.
-        // Zurück zum kanonischen `appSetupCardBackground()`-Modifier.
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Wie lange willst du üben?")
-                .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
+    /// XXL-Anzeige der gewählten Trainingsdauer + Pencil-Pill für
+    /// Re-Edit. Ersetzt die ehemalige `durationCard` mit drei Chips
+    /// (User-Spec Sache B 2026-04-29): nach dem Setup-Modal-Refactor
+    /// (Stufe 2) ist die Chip-Wahl ins Modal gewandert; hier zeigt die
+    /// Card jetzt nur noch die persistierte Wahl groß.
+    ///
+    /// Komponenten:
+    ///   • Section-Label „TRAININGSZEIT" via `setupCardLabel(...)`-Helper
+    ///   • XXL-Zahl in 56pt black rounded, accent-Color, mit
+    ///     `.contentTransition(.numericText())` für smoothes Update
+    ///     beim Re-Edit
+    ///   • „min"-Suffix in 16pt semibold, dezent in `textSecondary`
+    ///   • Pencil-Pill (40×40 Circle, accent.opacity(0.14)) rechts
+    ///     bündig — Pattern analog zu `SessionContextCard`
+    ///   • Pencil ist `disabled(!isSpinAllowed)` — kein Re-Edit
+    ///     während die Slot-Machine rollt (Edge-Case E2)
+    private var timeDisplayCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            setupCardLabel("TRAININGSZEIT")
 
-            HStack(spacing: 12) {
-                ForEach(Self.durationOptions, id: \.self) { minutes in
-                    durationChip(minutes: minutes)
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text("\(selectedDuration)")
+                    .font(.system(size: 56, weight: .black, design: .rounded))
+                    .foregroundStyle(sectionStyle.accent)
+                    .contentTransition(.numericText())
+
+                Text("min")
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+
+                Spacer(minLength: 0)
+
+                Button {
+                    openSetupModalForReEdit()
+                } label: {
+                    Image(systemName: "pencil")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(sectionStyle.accent)
+                        .frame(width: 40, height: 40)
+                        .background(
+                            Circle().fill(sectionStyle.accent.opacity(0.14))
+                        )
                 }
+                .buttonStyle(.plain)
+                .disabled(!isSpinAllowed)
+                .opacity(isSpinAllowed ? 1.0 : 0.45)
+                .accessibilityLabel(Text("Trainingsdauer ändern"))
+                .accessibilityHint(Text("Öffnet den Setup-Dialog mit der aktuellen Wahl preselected"))
             }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .appSetupCardBackground()
+        .animation(.easeInOut(duration: 0.20), value: selectedDuration)
+        .animation(.easeInOut(duration: 0.20), value: isSpinAllowed)
     }
 
+    /// Re-Edit-Pfad — Pencil-Tap im Setup-Screen öffnet das Setup-Modal
+    /// mit der persistierten Wahl preselected. Animation-Strategie ist
+    /// Single-Source: `withAnimation` um den State-Toggle gewrappt,
+    /// die View-Transition läuft über `.animation(value: showSetupModal)`
+    /// am ZStack-Wrapper + `.transition(...)` am Mount-Site (Stufe 2).
+    /// Erstmaliges Modal-Erscheinen und Re-Edit nutzen denselben Pfad —
+    /// keine duplizierte Animation, keine getrennten States.
+    private func openSetupModalForReEdit() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
+            showSetupModal = true
+        }
+    }
+
+    /// Pro-Chip-Renderer für das Setup-Modal (Sache B Stufe 2). Vor
+    /// Stufe 3 wurde dieser Helper auch von der ehemaligen
+    /// `durationCard` im Setup-Screen genutzt; mit dem Wechsel zur
+    /// `timeDisplayCard` (XXL + Pencil) ist das Modal jetzt der einzige
+    /// Call-Site.
     private func durationChip(minutes: Int) -> some View {
         // **2026-04-24 Tap-Reliability-Fix** (User-Report: „1–2 Taps
         // gehen, dann nicht mehr"). Frühere Varianten mit `Button {}
@@ -477,97 +593,61 @@ struct ElumiTabView: View {
         //   1. ZStack mit Background + Stroke + Label — alles EINE
         //      zusammenhängende View (kein Button-Wrapper, der seine
         //      eigene Hit-Area ableitet).
-        //   2. `.frame(maxWidth: .infinity, minHeight: 52)` — klar
-        //      großzügige Tap-Area (>= 44pt Apple HIG) und expliziter
-        //      Full-Width-Stretch, damit der ganze 1/3-Slot tappbar ist.
+        //   2. `.frame(maxWidth: .infinity, minHeight: 44)` — Apple-
+        //      HIG-kompatible Tap-Area, expliziter Full-Width-Stretch,
+        //      damit der ganze 1/3-Slot tappbar ist.
         //   3. `.contentShape(Rectangle())` NACH dem Background — setzt
-        //      die Hit-Area auf das volle Rechteck. Hätte `.contentShape`
-        //      VOR dem Background gestanden, wäre die Hit-Area auf den
-        //      Content-Zustand eingefroren.
+        //      die Hit-Area auf das volle Rechteck.
         //   4. `.onTapGesture { ... }` — schneller, reliabler Tap-
-        //      Handler. Kein `withAnimation`-Wrapping um die State-
-        //      Mutation: SwiftUI re-rendert synchron, der nächste Tap
-        //      trifft garantiert die frische View.
+        //      Handler ohne Button-Wrapper-Overhead.
         //   5. Farb-Transition kommt über `.animation(_, value:)` auf
-        //      der Chip-Ebene — nur auf Color-Änderung, nicht auf den
-        //      Input-Pfad.
+        //      der Chip-Ebene — nur auf Color-Änderung.
         //
-        // Zusätzlich `#if DEBUG`-Print-Logs, damit im Console direkt
-        // sichtbar ist, dass jeder Tap ankommt und der State umspringt.
-        // **2026-04-25 Attention-Pulse (User-Spec „solange noch kein
-        // Wahl getroffen wurde, blinken um User zu animieren")**.
-        //
-        // `needsAttention = selectedDuration == nil` — alle drei Chips
-        // pulsieren so lange NICHTS ausgewählt ist. Mit leichtem
-        // `stagger` pro Chip-Wert (10/15/20) entsteht eine Wellen-
-        // Bewegung von links nach rechts, die klar zur Auswahl
-        // einlädt ohne nervig zu wirken. Sobald der User einen Chip
-        // tippt, geht `selectedDuration` auf einen Wert → Pulse endet
-        // sofort, Selected-State übernimmt.
+        // **Sache B Stufe 1 (2026-04-29)**: Pulse-Animation entfernt.
+        // Vorher pulsierten alle drei Chips so lange `selectedDuration
+        // == nil`, um zur Wahl einzuladen. Mit der `@AppStorage`-Migration
+        // ist `selectedDuration` immer gesetzt (Default = `durationDefault`),
+        // ergo kein nil-State mehr → der Pulse wäre tot. Die TimelineView
+        // + wave/stagger/glow-Mechanik ist daher entfallen; der Chip ist
+        // jetzt rein state-driven.
         let moduleColor = sectionStyle.accent
-        return TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
-            let isSelected = selectedDuration == minutes
-            let needsAttention = selectedDuration == nil
-            let t = context.date.timeIntervalSinceReferenceDate
-            // Wellen-Stagger: 10min → offset 0, 15min → 0.22s,
-            // 20min → 0.44s. Cycle 1.2s → gemütliches Pulsen.
-            let cycle: Double = 1.2
-            let stagger = Double(minutes - 10) / 5.0 * 0.22
-            let rawPhase = (t + stagger).truncatingRemainder(dividingBy: cycle) / cycle
-            let wave = (sin(rawPhase * 2 * .pi) + 1) / 2  // 0…1
-            let attentionBorderOpacity = needsAttention ? 0.3 + 0.55 * wave : 0
-            let attentionGlow = needsAttention ? 0.25 + 0.45 * wave : 0
-            let attentionScale: CGFloat = needsAttention
-                ? CGFloat(1.0 + 0.012 * wave)
-                : 1.0
-
-            return ZStack {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(
-                        isSelected
-                            ? moduleColor.opacity(0.25)
-                            : AppTheme.Colors.secondarySurface
-                    )
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(
-                        isSelected
-                            ? moduleColor
-                            : (needsAttention
-                                ? moduleColor.opacity(attentionBorderOpacity)
-                                : Color.clear),
-                        lineWidth: isSelected ? 2 : (needsAttention ? 1.5 : 0)
-                    )
-                HStack(alignment: .firstTextBaseline, spacing: 3) {
-                    Text("\(minutes)")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                    Text("min")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(AppTheme.Colors.textPrimary.opacity(0.78))
-                }
+        let isSelected = selectedDuration == minutes
+        return ZStack {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(
+                    isSelected
+                        ? moduleColor.opacity(0.25)
+                        : AppTheme.Colors.secondarySurface
+                )
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(
+                    isSelected ? moduleColor : Color.clear,
+                    lineWidth: isSelected ? 2 : 0
+                )
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text("\(minutes)")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                Text("min")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(AppTheme.Colors.textPrimary.opacity(0.78))
             }
-            .frame(maxWidth: .infinity, minHeight: 44)
-            .opacity(isSelected ? 1.0 : 0.85)
-            .scaleEffect(isSelected ? 1.03 : attentionScale)
-            .shadow(
-                color: needsAttention ? moduleColor.opacity(attentionGlow) : .clear,
-                radius: 12,
-                x: 0,
-                y: 0
-            )
-            .contentShape(Rectangle())
-            .onTapGesture {
-                #if DEBUG
-                print("🕒 [DurationChip] tap on \(minutes) (prev=\(selectedDuration.map(String.init) ?? "nil"))")
-                #endif
-                selectedDuration = minutes
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                #if DEBUG
-                print("🕒 [DurationChip] selectedDuration → \(minutes) ✓")
-                #endif
-            }
-            .animation(.easeInOut(duration: 0.15), value: isSelected)
         }
+        .frame(maxWidth: .infinity, minHeight: 44)
+        .opacity(isSelected ? 1.0 : 0.85)
+        .scaleEffect(isSelected ? 1.03 : 1.0)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            #if DEBUG
+            print("🕒 [DurationChip] tap on \(minutes) (prev=\(selectedDuration))")
+            #endif
+            selectedDuration = minutes
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            #if DEBUG
+            print("🕒 [DurationChip] selectedDuration → \(minutes) ✓")
+            #endif
+        }
+        .animation(.easeInOut(duration: 0.15), value: isSelected)
     }
 
     // MARK: - Unified CTA „Los geht's" / „Nochmal drehen + Jetzt üben" / „Jetzt üben"
@@ -701,11 +781,13 @@ struct ElumiTabView: View {
         .accessibilityHint(Text("Startet die generierte Trainingseinheit"))
     }
 
-    /// **Spin-Gate** (User-Spec 2026-04-24): Spin ist nur dann erlaubt,
-    /// wenn (a) die Phase es zulässt, (b) eine Zeit gewählt wurde UND
-    /// (c) noch Versuche übrig sind.
+    /// **Spin-Gate** — Sache B Stufe 1 (2026-04-29): vereinfacht auf
+    /// (a) Phase-Erlaubnis und (b) verbleibende Versuche. Die ehemalige
+    /// `selectedDuration != nil`-Bedingung ist entfallen, weil
+    /// `selectedDuration` jetzt non-optional persistiert ist und stets
+    /// einen sinnvollen Default (`Self.durationDefault` = 10) hält.
     private var canTriggerSpin: Bool {
-        isSpinAllowed && selectedDuration != nil && hasRemainingSpins
+        isSpinAllowed && hasRemainingSpins
     }
 
     /// Spin ist nur in `.idle` und `.revealed` erlaubt — während
@@ -902,10 +984,19 @@ struct ElumiTabView: View {
 
     /// Wird vom Spin-CTA aufgerufen — startet einen frischen Spin
     /// und versteckt das alte Ergebnis (Reset-Verhalten per Spec).
-    /// **2026-04-24 Gate**: läuft nur, wenn auch eine Zeit gewählt
-    /// wurde. Ohne Zeit kein Spin.
+    /// **2026-04-24 Gate**: läuft nur wenn die Phase es erlaubt und
+    /// noch Versuche übrig sind (siehe `canTriggerSpin`).
     private func triggerSpin() {
         guard canTriggerSpin else { return }
+        // **Sache B Stufe 2 Future-Insurance** (2026-04-29): zusätzlicher
+        // Guard gegen den Fall, dass ein zukünftiger Auto-Spin / Push-
+        // Trigger / Background-Notification den Spin programmatisch
+        // anstoßen will, während das Setup-Modal offen ist. Aktuell
+        // unmöglich, weil der Modal-Backdrop alle UI-Tap-Pfade blockiert
+        // und es keinen externen Trigger-Pfad gibt — billige Versicherung
+        // gegen Race-Conditions in V2/V3, falls jemand einen
+        // programmatischen Spin-Pfad einführt.
+        guard !showSetupModal else { return }
         feedbackPlayer.playTabSwitch()
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
 
@@ -1023,17 +1114,16 @@ struct ElumiTabView: View {
     /// Generiert die echte Trainings-Session aus der gewählten Dauer
     /// (Fokus = .mixed als V1-Default — Fokus-Auswahl-Screen wurde
     /// per User-Spec entfernt) und navigiert zum ersten Block.
-    /// **2026-04-24**: `selectedDuration` ist jetzt optional — wenn
-    /// nicht gewählt (sollte UI-seitig nicht passieren, weil der CTA
-    /// dann nicht aktiv ist), defensiver Fallback auf 10 Min.
+    /// **Sache B Stufe 1 (2026-04-29)**: `selectedDuration` ist jetzt
+    /// non-optional via `@AppStorage` — kein Fallback nötig, der Wert
+    /// ist immer gesetzt (Default `Self.durationDefault` = 10).
     ///
     /// **Versuchslogik-Reset**: Vor der Navigation setzen wir
     /// `currentSpinNumber` auf 0 + räumen das lastSpinResult auf.
     /// Damit hat der Nutzer bei Rückkehr zum Tab frische 3 Versuche.
     private func startTraining() {
-        let duration = selectedDuration ?? 10
         let session = TrainingGenerator.generate(
-            duration: duration,
+            duration: selectedDuration,
             focus: .mixed
         )
         generatorStore.storeSession(session)
