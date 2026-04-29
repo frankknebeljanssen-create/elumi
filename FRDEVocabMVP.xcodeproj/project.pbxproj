@@ -481,8 +481,6 @@
 		FE1234567890123456789100 /* TrainingGeneratorModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789101 /* TrainingGeneratorModels.swift */; };
 		FE1234567890123456789102 /* TrainingGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789103 /* TrainingGenerator.swift */; };
 		FE1234567890123456789104 /* TrainingGeneratorStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789105 /* TrainingGeneratorStore.swift */; };
-		FE1234567890123456789106 /* TrainingGeneratorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789107 /* TrainingGeneratorView.swift */; };
-		FE1234567890123456789108 /* TrainingGeneratorShuffleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789109 /* TrainingGeneratorShuffleView.swift */; };
 		FE1234567890123456789110 /* VoiceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789111 /* VoiceModels.swift */; };
 		FE1234567890123456789112 /* SpeechVoiceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789113 /* SpeechVoiceService.swift */; };
 		FE1234567890123456789114 /* VoiceSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789115 /* VoiceSettingsStore.swift */; };
@@ -1043,8 +1041,6 @@
 		FE1234567890123456789101 /* TrainingGeneratorModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGeneratorModels.swift; path = FRDEVocabMVP/TrainingGeneratorModels.swift; sourceTree = "<group>"; };
 		FE1234567890123456789103 /* TrainingGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGenerator.swift; path = FRDEVocabMVP/TrainingGenerator.swift; sourceTree = "<group>"; };
 		FE1234567890123456789105 /* TrainingGeneratorStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGeneratorStore.swift; path = FRDEVocabMVP/TrainingGeneratorStore.swift; sourceTree = "<group>"; };
-		FE1234567890123456789107 /* TrainingGeneratorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGeneratorView.swift; path = FRDEVocabMVP/TrainingGeneratorView.swift; sourceTree = "<group>"; };
-		FE1234567890123456789109 /* TrainingGeneratorShuffleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGeneratorShuffleView.swift; path = FRDEVocabMVP/TrainingGeneratorShuffleView.swift; sourceTree = "<group>"; };
 		FE1234567890123456789111 /* VoiceModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VoiceModels.swift; path = FRDEVocabMVP/VoiceModels.swift; sourceTree = "<group>"; };
 		FE1234567890123456789113 /* SpeechVoiceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SpeechVoiceService.swift; path = FRDEVocabMVP/SpeechVoiceService.swift; sourceTree = "<group>"; };
 		FE1234567890123456789115 /* VoiceSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VoiceSettingsStore.swift; path = FRDEVocabMVP/VoiceSettingsStore.swift; sourceTree = "<group>"; };
@@ -1176,8 +1172,6 @@
 				FE1234567890123456789101 /* TrainingGeneratorModels.swift */,
 				FE1234567890123456789103 /* TrainingGenerator.swift */,
 				FE1234567890123456789105 /* TrainingGeneratorStore.swift */,
-				FE1234567890123456789107 /* TrainingGeneratorView.swift */,
-				FE1234567890123456789109 /* TrainingGeneratorShuffleView.swift */,
 				FE1234567890123456789111 /* VoiceModels.swift */,
 				FE1234567890123456789113 /* SpeechVoiceService.swift */,
 				FE1234567890123456789115 /* VoiceSettingsStore.swift */,
@@ -2111,8 +2105,6 @@
 				FE1234567890123456789100 /* TrainingGeneratorModels.swift in Sources */,
 				FE1234567890123456789102 /* TrainingGenerator.swift in Sources */,
 				FE1234567890123456789104 /* TrainingGeneratorStore.swift in Sources */,
-				FE1234567890123456789106 /* TrainingGeneratorView.swift in Sources */,
-				FE1234567890123456789108 /* TrainingGeneratorShuffleView.swift in Sources */,
 				FE1234567890123456789110 /* VoiceModels.swift in Sources */,
 				FE1234567890123456789112 /* SpeechVoiceService.swift in Sources */,
 				FE1234567890123456789114 /* VoiceSettingsStore.swift in Sources */,
