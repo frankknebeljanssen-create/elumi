@@ -85,13 +85,6 @@ struct HomeModuleIconView: View {
     /// Normale Assets bringen ihren eigenen Stil mit.
     var glyphTint: Color = AppTheme.Colors.textPrimary
 
-    /// **Live-Switch-Gate**: das `@AppStorage` zwingt SwiftUI, den View-
-    /// Body neu zu evaluieren, sobald der User den Icon-Stil in den
-    /// Settings ändert. Ohne diese Property würde nur der erste Render
-    /// das aktuelle Set sehen — Settings-Wechsel wären erst nach
-    /// App-Neustart sichtbar.
-    @AppStorage(AppIconRegistry.storageKey) private var iconSetRaw: String = AppIconSet.a.rawValue
-
     var body: some View {
         if let glyph = icon.fallbackGlyph {
             // Fallback-Rendering für Icons ohne Asset (z. B. Akzente — bis

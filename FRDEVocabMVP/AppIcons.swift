@@ -106,9 +106,6 @@ struct ElumiIconView: View {
     /// Action-Buttons in Training und Settings-Rows.
     var size: CGFloat = 28
 
-    /// **Live-Switch-Gate** für Set A ↔ Set B. Siehe `HomeModuleIconView`.
-    @AppStorage(AppIconRegistry.storageKey) private var iconSetRaw: String = AppIconSet.a.rawValue
-
     var body: some View {
         Image(icon.assetName)
             .resizable()

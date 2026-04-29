@@ -36,9 +36,6 @@ struct ScanChoiceCard: View {
     let action: () -> Void
 
     @State private var isPressed = false
-    /// Live-Switch-Gate für Set A ↔ Set B. Triggert Re-Render bei
-    /// Settings-Wechsel.
-    @AppStorage(AppIconRegistry.storageKey) private var iconSetRaw: String = AppIconSet.a.rawValue
 
     var body: some View {
         Button {
@@ -159,8 +156,6 @@ struct ScanModeSelectionCard: View {
     let onTap: () -> Void
 
     @State private var checkScale: CGFloat = 1.0
-    /// Live-Switch-Gate für Set A ↔ Set B.
-    @AppStorage(AppIconRegistry.storageKey) private var iconSetRaw: String = AppIconSet.a.rawValue
 
     var body: some View {
         Button {

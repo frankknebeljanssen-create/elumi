@@ -546,7 +546,6 @@ struct SettingsView: View {
 
             if isDeveloperExpanded {
                 VStack(spacing: 14) {
-                    iconStyleCard
                     testModusArcadeCard
                     customListsResetCard
                     #if DEBUG
@@ -809,53 +808,12 @@ struct SettingsView: View {
     /// dass das eine Test-/Experiment-Funktion ist, nicht eine
     /// normale Einstellung. Kein Reset-Risiko (nur kosmetische
     /// In-Game-Effekte).
-    /// **Icon-Stil-Karte** (Set A vs. Set B, Release-sichtbar).
-    /// Schreibt in `UserDefaults["appIconSet"]` — `AppIconRegistry`
-    /// liest denselben Slot. Hinweis: „Neustart empfohlen" macht
-    /// klar, dass der Wechsel über den globalen Resolver greift,
-    /// aber bereits gerenderte Views erst nach Cold-Start ihre
-    /// Assets neu auflösen.
-    private var iconStyleCard: some View {
-        @AppStorage(AppIconRegistry.storageKey) var iconSetRaw: String = AppIconSet.a.rawValue
-
-        return VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Image(systemName: "paintpalette.fill")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(AppTheme.Colors.elumiBlue)
-                Text("Icon-Stil")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-            }
-            Text("Wähle den globalen Stil aller App-Icons. Beide Sets bringen denselben Funktionsumfang mit — kein Layout wechselt, nur die Optik.")
-                .font(.system(size: 12, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-            Picker("Icon-Stil", selection: Binding(
-                get: { AppIconSet(rawValue: iconSetRaw) ?? .a },
-                set: { iconSetRaw = $0.rawValue }
-            )) {
-                ForEach(AppIconSet.allCases, id: \.self) { set in
-                    Text(set.displayName).tag(set)
-                }
-            }
-            .pickerStyle(.segmented)
-            Text("Neustart der App empfohlen, damit alle Bildschirme die neuen Icons frisch laden.")
-                .font(.system(size: 11, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-                .opacity(0.85)
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                .fill(AppTheme.Colors.surface)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                .stroke(AppTheme.Colors.elumiBlue.opacity(0.30), lineWidth: 1)
-        )
-    }
+    // **Stufe 6 Schritt 4 (2026-04-29)**: `iconStyleCard` (Icon-Set-A/B-
+    // Toggle) entfernt. Set A wurde aus dem Asset-Catalog gelöscht, der
+    // Resolver ist weg, das Toggle hatte keine Wirkung mehr. Verwaister
+    // UserDefaults-Key `appIconSet` bleibt auf existierenden Geräten —
+    // harmlos, kein Migration-Pfad nötig (Backlog: bei nächstem ohnehin
+    // notwendigen Migration-Pfad mit-aufräumen).
 
     private var testModusArcadeCard: some View {
         VStack(alignment: .leading, spacing: 12) {
