@@ -108,17 +108,6 @@ struct AppDestinationHost: View {
                 openInfo: openInfo,
                 navigate: navigate
             )
-        case .trainingGenerator:
-            // **Training-Generator** (Phase 8) — automatisch kuratierte
-            // Session aus 2–4 Blöcken. Dauer + Fokus im Setup, kurze
-            // Slot-Shuffle-Animation, Result-Screen mit Start/Neu-Mischen.
-            TrainingGeneratorView(
-                feedbackPlayer: feedbackPlayer,
-                goHome: goHome,
-                openSettings: openSettings,
-                openInfo: openInfo,
-                navigate: navigate
-            )
         }
     }
 

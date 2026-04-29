@@ -32,12 +32,6 @@ enum AppScreen: Hashable {
     /// keine Tools. Abgrenzung zu Home (Auswahl) / Spielen / Fortschritt /
     /// Wörterbuch: Elumi = „dein nächster Schritt".
     case elumi
-    /// **Training-Generator** (Phase 8) — separater Einstieg aus dem
-    /// Elumi-Tab. Lässt Elumi auto-kurationisiert eine Session aus 2–4
-    /// Blöcken bauen. Kein Umbau bestehender Trainings-Pfade — der
-    /// Generator liefert nur den Bauplan und startet den ersten Block
-    /// über die existierenden Module.
-    case trainingGenerator
 }
 
 private struct AppOpenAccountActionKey: EnvironmentKey {
