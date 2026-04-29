@@ -58,7 +58,51 @@ extension TrainingView {
             // gleichzeitig feuern (passiert durch den Cooldown praktisch
             // nicht, der Overlay ist trotzdem sauber getrennt).
             MilestoneOverlayView()
+
+            // Empty-Pool-Toast (2026-04-29) — Last-Line-of-Defense-
+            // Feedback wenn der User „Los geht's" tippt, der Pre-Tap-
+            // Defense (`canStartTraining`) aber den Cache-Stale-Edge-
+            // Case durchgelassen hat und der Deck dann doch leer baut.
+            // Pattern analog `ListsView`-Toast (Z. 44-48), aber Top-
+            // Edge-Slide statt Bottom — damit nichts mit dem CTA am
+            // unteren Rand kollidiert. Auto-Dismiss in `showEmptyPoolToast()`.
+            if let message = emptyPoolToastMessage {
+                emptyPoolToastView(message: message)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .padding(.horizontal, AppLayout.screenPadding)
+                    .padding(.top, AppLayout.screenHeaderTopPadding + 8)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .allowsHitTesting(false)
+            }
         }
+    }
+
+    /// Empty-Pool-Toast-Zelle — Warning-Style (orange Akzent, Achtung-
+    /// Icon), inhaltlich identisches Layout wie `ListsView.toastView`
+    /// im `isSuccess: false`-Pfad.
+    private func emptyPoolToastView(message: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "exclamationmark.circle.fill")
+                .foregroundStyle(AppTheme.Colors.warning)
+
+            Text(message)
+                .font(AppTheme.Typography.body)
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+                .lineLimit(3)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity)
+        .background(AppTheme.Colors.surface.opacity(0.98))
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                .stroke(AppTheme.Colors.warning.opacity(0.3), lineWidth: 1)
+        )
+        .shadow(color: AppTheme.Shadow.card.color, radius: 10, x: 0, y: 4)
     }
 
     /// Zentrale Session-Summary für das Training-Modul (Vokabeln, Nomen,

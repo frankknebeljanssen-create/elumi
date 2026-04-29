@@ -106,6 +106,15 @@ struct TrainingView: View {
     @State var nounsListPickerActive: Bool = false
     @State var articlesListPickerActive: Bool = false
 
+    // Empty-Pool-Hint (2026-04-29): Toast für den Last-Line-of-Defense-Pfad
+    // im Setup, wenn `canStartTraining` (Pre-Tap-Defense) `true` lieferte,
+    // aber `buildTrainingDeck()` dann doch leer baut (Cache-Stale-Edge-Case
+    // — typisch bei .verbs-Mode mit kürzlich geänderter `lernjahrMax`-
+    // Filter-Konfiguration). Pattern analog `ListsView`-Toast: optional
+    // String hält die Message, DispatchWorkItem treibt das Auto-Dismiss.
+    @State var emptyPoolToastMessage: String? = nil
+    @State var emptyPoolToastDismissWorkItem: DispatchWorkItem? = nil
+
     // Cache: Lemma-Liste für die aktuelle Setup-Card. Wird bei Selection- oder
     // Mode-Wechsel via onChange neu berechnet, NICHT bei jedem Render — sonst
     // hängt die App ab ~4 großen Listen (verbformsLemmasFromSelectedLists ist

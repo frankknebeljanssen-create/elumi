@@ -210,7 +210,8 @@ extension TrainingView {
             launchContext: launchContext,
             selectedAppDirection: selectedAppDirection
         ) else {
-            print("🏋️ [Training] ❌ startTraining failed")
+            print("🏋️ [Training] ❌ startTraining failed — empty pool")
+            showEmptyPoolToast()
             resetTrainingSession()
             return
         }
@@ -315,5 +316,36 @@ extension TrainingView {
         lhs.prompt == rhs.prompt
             && lhs.answer == rhs.answer
             && lhs.category == rhs.category
+    }
+
+    // MARK: - Empty-Pool-Hint (2026-04-29)
+
+    /// Zeigt den Empty-Pool-Toast und plant das Auto-Dismiss.
+    ///
+    /// **Auto-Dismiss-Dauer 2.5s** — bewusst länger als das ListsView-
+    /// Pattern (1.8s). Begründung: ListsView-Toasts sind „erfolgreich-
+    /// gespeichert"-Bestätiger, die User nur kurz wahrnehmen müssen.
+    /// Hier ist die Message **erklärend** — User muss verstehen, dass
+    /// die Auswahl leer ist UND was zu tun ist (andere Liste / mehr
+    /// Lernjahre). 2.5s deckt zwei Lese-Durchgänge ab.
+    ///
+    /// Pattern analog `ListsView.showToast(...)`: re-entrant safe via
+    /// Cancel des vorigen DispatchWorkItem, animierter Eintritt/Austritt
+    /// per `.transition(...)` am Render-Site, kein Tap-to-Dismiss
+    /// (ListsView-Pattern hat das auch nicht — keine Aufbohrung nur
+    /// für diesen Use-Case).
+    func showEmptyPoolToast() {
+        emptyPoolToastDismissWorkItem?.cancel()
+        withAnimation(.easeInOut(duration: 0.22)) {
+            emptyPoolToastMessage = "F\u{00FC}r deine Auswahl gibt es keine Eintr\u{00E4}ge. W\u{00E4}hle eine andere Liste oder erweitere die Lernjahre."
+        }
+
+        let work = DispatchWorkItem {
+            withAnimation(.easeInOut(duration: 0.22)) {
+                emptyPoolToastMessage = nil
+            }
+        }
+        emptyPoolToastDismissWorkItem = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5, execute: work)
     }
 }
