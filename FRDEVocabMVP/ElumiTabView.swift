@@ -138,16 +138,21 @@ struct ElumiTabView: View {
     //
     // Exakte Hex-Werte aus dem User-Spec — Single Source of Truth,
     // damit die Farben screen-übergreifend konsistent bleiben.
-
-    /// Mint-Background der Zeit-Card, ruhig und neutral.
-    private let durationCardBackground: Color = Color(hex: "#E8F7F4")
-    /// Leichte Mint-Umrandung der Zeit-Card.
-    private let durationCardBorder: Color = Color(hex: "#CFEDE7")
+    //
+    // **Sache B Stufe 3 (2026-04-29) Cleanup**: die Tokens
+    // `durationCardBackground` (#E8F7F4) und `durationCardBorder`
+    // (#CFEDE7) sind entfernt. Sie waren ein legacy Mint-Hintergrund-
+    // Versuch der ehemaligen `durationCard`, der bereits 2026-04-25
+    // zugunsten von `appSetupCardBackground()` rückgängig gemacht
+    // wurde. Mit dem Wegfall der `durationCard` (jetzt `timeDisplayCard`)
+    // sind die Tokens auch konzeptionell tot.
+    //
     // **2026-04-25 Kontrast-Pass**: Chip-Farben aus den App-Standard-
     // Tokens — hell-auf-hell (mint-auf-mint) war nicht ausreichend
     // lesbar. Unselected = `secondarySurface` (app-weit für
     // Auswahl-Elemente), Selected = `textPrimary` (dunkel) + weiße
     // Schrift für maximalen Kontrast. Keine neuen Farben erfunden.
+
     /// Primärer CTA-Gelbton — derselbe Yellow für alle Primary-Buttons
     /// im Trainingsgenerator. Dunkle Schrift für maximalen Kontrast.
     private let ctaYellow: Color = Color(hex: "#FFD54F")
@@ -362,8 +367,11 @@ struct ElumiTabView: View {
                     onBack: { dismiss() }
                 )
 
-                // 1) Zeit-Card oben.
-                durationCard
+                // 1) Trainingszeit-Anzeige (Sache B Stufe 3): XXL-Zahl
+                //    + Pencil-Pill für Re-Edit. Statt der alten
+                //    `durationCard` mit drei Chips. Die Chips leben
+                //    jetzt im Setup-Modal (`setupModalOverlay`).
+                timeDisplayCard
 
                 // 2) Slot Machine.
                 slotMachineArea
@@ -495,34 +503,85 @@ struct ElumiTabView: View {
         .frame(maxWidth: .infinity)
     }
 
-    // MARK: - Zeit-Card („Wie lange willst du üben?") — IMMER sichtbar
+    // MARK: - Trainingszeit-Anzeige (Sache B Stufe 3) — IMMER sichtbar
 
-    /// Card oberhalb der Slot Machine (User-Spec 2026-04-24).
-    /// Drei Zeit-Chips, immer sichtbar. Auswahl entscheidet, ob
-    /// „Los geht's!" aktiv wird.
-    private var durationCard: some View {
-        // **2026-04-25 System-Consistency-Final** (User-Spec „surfaceSecondary
-        // / appSetupCardBackground, keine hellen Flächen"). Das App-Theme
-        // ist DARK (surface=elumiMidnight, textPrimary=cream) — der zuvor
-        // probierte Mint-Hintergrund `#E8F7F4` passte nicht zum System.
-        // Zurück zum kanonischen `appSetupCardBackground()`-Modifier.
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Wie lange willst du üben?")
-                .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
+    /// XXL-Anzeige der gewählten Trainingsdauer + Pencil-Pill für
+    /// Re-Edit. Ersetzt die ehemalige `durationCard` mit drei Chips
+    /// (User-Spec Sache B 2026-04-29): nach dem Setup-Modal-Refactor
+    /// (Stufe 2) ist die Chip-Wahl ins Modal gewandert; hier zeigt die
+    /// Card jetzt nur noch die persistierte Wahl groß.
+    ///
+    /// Komponenten:
+    ///   • Section-Label „TRAININGSZEIT" via `setupCardLabel(...)`-Helper
+    ///   • XXL-Zahl in 56pt black rounded, accent-Color, mit
+    ///     `.contentTransition(.numericText())` für smoothes Update
+    ///     beim Re-Edit
+    ///   • „min"-Suffix in 16pt semibold, dezent in `textSecondary`
+    ///   • Pencil-Pill (40×40 Circle, accent.opacity(0.14)) rechts
+    ///     bündig — Pattern analog zu `SessionContextCard`
+    ///   • Pencil ist `disabled(!isSpinAllowed)` — kein Re-Edit
+    ///     während die Slot-Machine rollt (Edge-Case E2)
+    private var timeDisplayCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            setupCardLabel("TRAININGSZEIT")
 
-            HStack(spacing: 12) {
-                ForEach(Self.durationOptions, id: \.self) { minutes in
-                    durationChip(minutes: minutes)
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text("\(selectedDuration)")
+                    .font(.system(size: 56, weight: .black, design: .rounded))
+                    .foregroundStyle(sectionStyle.accent)
+                    .contentTransition(.numericText())
+
+                Text("min")
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+
+                Spacer(minLength: 0)
+
+                Button {
+                    openSetupModalForReEdit()
+                } label: {
+                    Image(systemName: "pencil")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(sectionStyle.accent)
+                        .frame(width: 40, height: 40)
+                        .background(
+                            Circle().fill(sectionStyle.accent.opacity(0.14))
+                        )
                 }
+                .buttonStyle(.plain)
+                .disabled(!isSpinAllowed)
+                .opacity(isSpinAllowed ? 1.0 : 0.45)
+                .accessibilityLabel(Text("Trainingsdauer ändern"))
+                .accessibilityHint(Text("Öffnet den Setup-Dialog mit der aktuellen Wahl preselected"))
             }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .appSetupCardBackground()
+        .animation(.easeInOut(duration: 0.20), value: selectedDuration)
+        .animation(.easeInOut(duration: 0.20), value: isSpinAllowed)
     }
 
+    /// Re-Edit-Pfad — Pencil-Tap im Setup-Screen öffnet das Setup-Modal
+    /// mit der persistierten Wahl preselected. Animation-Strategie ist
+    /// Single-Source: `withAnimation` um den State-Toggle gewrappt,
+    /// die View-Transition läuft über `.animation(value: showSetupModal)`
+    /// am ZStack-Wrapper + `.transition(...)` am Mount-Site (Stufe 2).
+    /// Erstmaliges Modal-Erscheinen und Re-Edit nutzen denselben Pfad —
+    /// keine duplizierte Animation, keine getrennten States.
+    private func openSetupModalForReEdit() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
+            showSetupModal = true
+        }
+    }
+
+    /// Pro-Chip-Renderer für das Setup-Modal (Sache B Stufe 2). Vor
+    /// Stufe 3 wurde dieser Helper auch von der ehemaligen
+    /// `durationCard` im Setup-Screen genutzt; mit dem Wechsel zur
+    /// `timeDisplayCard` (XXL + Pencil) ist das Modal jetzt der einzige
+    /// Call-Site.
     private func durationChip(minutes: Int) -> some View {
         // **2026-04-24 Tap-Reliability-Fix** (User-Report: „1–2 Taps
         // gehen, dann nicht mehr"). Frühere Varianten mit `Button {}
@@ -550,9 +609,7 @@ struct ElumiTabView: View {
         // ist `selectedDuration` immer gesetzt (Default = `durationDefault`),
         // ergo kein nil-State mehr → der Pulse wäre tot. Die TimelineView
         // + wave/stagger/glow-Mechanik ist daher entfallen; der Chip ist
-        // jetzt rein state-driven. Stufe 3 ersetzt diese ganze Card durch
-        // eine Display-Card (XXL-Zahl + Pencil-Pill); diese Funktion
-        // verschwindet dann komplett.
+        // jetzt rein state-driven.
         let moduleColor = sectionStyle.accent
         let isSelected = selectedDuration == minutes
         return ZStack {
