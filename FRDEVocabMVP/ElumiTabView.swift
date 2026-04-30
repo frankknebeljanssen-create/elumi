@@ -169,7 +169,12 @@ struct ElumiTabView: View {
     /// stark aktiviert (Initial-Burst), dann sanft pulsierend.
     @State private var resultHighlightGlow: Double = 0.0
 
-    private static let durationOptions: [Int] = [10, 15, 20]
+    /// **Setup-Tweaks v2 — C2 (2026-04-30)**: Erweitert auf 4 Optionen
+    /// inkl. neuer 5min-Variante (kürzeste Übungseinheit). 5min wird
+    /// vom `TrainingGenerator` via `buildFiveMinute(focus:)` korrekt
+    /// in 2 Blöcke (Warmup 2 + Kern 3min) aufgeteilt — verifiziert
+    /// vor dem Branch-Start. Default bleibt 10min (`durationDefault`).
+    private static let durationOptions: [Int] = [5, 10, 15, 20]
 
     /// **Single Source für die Default-Trainingsdauer** (Sache B Stufe 1,
     /// 2026-04-29). Wird sowohl als `@AppStorage`-Initialwert für
@@ -296,22 +301,27 @@ struct ElumiTabView: View {
                         .multilineTextAlignment(.center)
                 }
 
-                // Zeit-Chips (10/15/20) — wiederverwendetes
-                // `durationChip(minutes:)` aus dem Setup-Screen, damit
-                // die visuelle Sprache konsistent bleibt. Stufe 3
-                // ersetzt die Setup-Screen-Card durch eine Display-
-                // Card; der Chip-Helper bleibt dann für das Modal.
+                // Zeit-Chips — wiederverwendetes `durationChip(minutes:)`
+                // aus dem Setup-Screen, damit die visuelle Sprache
+                // konsistent bleibt.
+                //
+                // **Setup-Tweaks v2 — C2 (2026-04-30)**: 4 Optionen
+                // (5/10/15/20) in einem 2×2-Grid via `LazyVGrid`. Vorher
+                // 3-Chip-HStack. Spacing 12pt für Columns + Rows = das
+                // gleiche Vor-Stufe-2-Spacing innerhalb der Reihe.
                 //
                 // **Layout-Hinweis** (Sache B Stufe 2): Das explizite
-                // `.frame(maxWidth: .infinity)` am HStack ist nötig,
-                // weil das umschließende `.frame(maxWidth: 340)` am
-                // VStack die Width-Constraint nicht zuverlässig zu
-                // den `maxWidth: .infinity`-Chips propagiert. Ohne
-                // diese Direktive nimmt der HStack seine intrinsische
-                // Größe und die Chips rendern aufgeblasen — Pattern
-                // analog zur ehemaligen `durationCard`, die ihrerseits
-                // einen Outer-`maxWidth: .infinity`-Container hatte.
-                HStack(spacing: 12) {
+                // `.frame(maxWidth: .infinity)` am Grid ist nötig, weil
+                // das umschließende `.frame(maxWidth: 340)` am VStack
+                // die Width-Constraint nicht zuverlässig zu den
+                // `maxWidth: .infinity`-Chips propagiert.
+                LazyVGrid(
+                    columns: [
+                        GridItem(.flexible(), spacing: 12),
+                        GridItem(.flexible(), spacing: 12)
+                    ],
+                    spacing: 12
+                ) {
                     ForEach(Self.durationOptions, id: \.self) { minutes in
                         durationChip(minutes: minutes)
                     }
