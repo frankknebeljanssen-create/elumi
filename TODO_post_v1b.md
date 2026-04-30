@@ -218,3 +218,59 @@ akutes Problem.
 **Priorität:** Niedrig — passiv, wartet auf Anlass.
 
 ---
+
+### 7. Akzente-Integration in den globalen Listen-Auswahl-Modus
+
+Aus Stufe 5 (Tag `v2-global-list-selection`, 2026-04-30): das Akzente-
+Modul ist bewusst **außerhalb** der globalen Listen-Auswahl belassen
+worden. Begründung: Akzente nutzt aktuell `@State selectedListID:
+UUID` mit optionalem `AccentsLaunchContext`-Override — eine **Single-
+Pick-mit-Session-Scope**-Architektur, die nicht zum Multi-Set-Pool
+der globalen Auswahl passt. Akzente persistiert seine Wahl heute
+nicht über Sessions hinweg.
+
+**Trigger für eine spätere Integration:** sobald Akzente Multi-List-
+Support bekommt (User wählt mehrere Listen für Akzent-Übung) oder
+eine Persistenz-Schicht für den Listen-Picker eingeführt wird, kann
+Akzente analog zu Quiz/Flashcards/Training/Word Runner über die
+`VocabularyListSelectionResolver.effectiveSelectedListIDs(...)`-Helper
+ans globale System angeschlossen werden.
+
+**Empfehlung:**
+- Kein vorgezogener Refactor — die aktuelle Single-UUID-Architektur
+  ist konsistent mit dem Akzente-Use-Case (User wählt EINE Quelle
+  zum Üben).
+- Bei nächstem Akzente-Feature-Touch den Punkt mit-bewerten.
+
+**Priorität:** Niedrig — keine UX-Asymmetrie für Bestandsfunktionalität,
+nur ein offenes Architektur-Anschluss-Stelle für künftige Erweiterungen.
+
+**Branch-Vorschlag:** `feature/accents-global-list-integration` (wenn
+zusammen mit Multi-List-Support geplant).
+
+---
+
+### Doku-Note: Personal-Decks bleiben außerhalb der globalen Auswahl
+
+**Kein Backlog-Item — bewusste Spec-Entscheidung der Stufe-5-
+Diskussion (2026-04-29).**
+
+Persönliche Stapel speichern ihre Quell-Listen als Teil der Deck-
+Identität in `PersonalDeck.sourceListIDs` und einen einmal gemischten
+`cardOrder`-Snapshot. Die Listen-Auswahl ist **nicht** ein modul-
+weiter Selection-State, sondern eine **Eigenschaft des Stapels**.
+Wenn Stufe 5 hier eingreifen würde, würden sich beim Toggle-On
+plötzlich die Quell-Listen aller Decks ändern — User-Daten
+würden effektiv mutiert, Mastery-Snapshots wären invalidiert.
+
+**Konsequenz:** der globale Toggle hat **keine Wirkung** auf
+existierende oder neue Personal-Decks. Die List-Selection-Sheet
+beim Deck-Erstellen/Bearbeiten zeigt weiterhin den vollen Catalog,
+die Auswahl wird in den Deck eingefroren.
+
+Diese Note ist hier dokumentiert, damit Future-You / Future-Claude
+beim Lesen der Stufe-5-Spec nicht den Reflex bekommt, „Personal-
+Decks vergessen — nachträglich integrieren". Es war kein Vergessen,
+es war eine Architektur-Entscheidung.
+
+---
