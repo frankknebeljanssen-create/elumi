@@ -328,13 +328,19 @@ struct ElumiArcadeGameView: View {
     /// **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`)** — Zeitstempel
     /// des letzten Lebens-Verlusts. Wird in `triggerLifeLossVisual()`
     /// gesetzt; das Layout-Overlay rendert basierend auf dieser Zeit
-    /// einen kurzen roten Flash über dem Charakter (~0.5s) plus einen
-    /// Scale-Zucker. Sichtbares Feedback bei jedem `misses += 1`-
-    /// Event, damit der User merkt: er hat gerade ein Leben verloren.
-    /// User-Report: „wenn elumi ein leben verliert muss man das an
-    /// ihm sehen — vorschlag? Blitz? zucken, zumindest was, was
-    /// sichtbar ist".
+    /// einen roten Flash + Bolt-Icon über dem Charakter (~0.8s) plus
+    /// einen Scale-Zucker mit Bounce + Opacity-Flash. Sichtbares
+    /// Feedback bei jedem `misses += 1`-Event, damit der User merkt:
+    /// er hat gerade ein Leben verloren.
     @State var lifeLostFlashAt: Date?
+
+    /// **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`, 2. Iteration)** —
+    /// Animierte Charakter-Opacity beim Lebens-Verlust. 1.0 = normal,
+    /// 0.40 = getroffen-und-blass. Wird in `triggerLifeLossVisual()`
+    /// gepulst (kurz auf 0.40, dann zurück). Multiplikativ mit der
+    /// Visibility-Logik (Suction-Hide etc.) im Layout — `elumiVisible
+    /// ? characterOpacityHit : 0` gibt den finalen Opacity-Wert.
+    @State var characterOpacityHit: Double = 1.0
     @State var gameOverTitle = "Game Over"
     @State var gameOverSubtitle = ""
     @State var round = 1

@@ -673,34 +673,60 @@ extension ElumiArcadeGameView {
         }
     }
 
-    /// **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`)** — Sichtbares
-    /// Feedback bei jedem Lebens-Verlust. Drei kombinierte Effekte:
-    ///   1. **Screen-Shake** (existing `triggerScreenShake`).
-    ///   2. **Character-Scale-Zucker** (1.0 → 0.85 → 1.0 in ~280ms) —
-    ///      analog zum Hit-Bounce-Pattern, aber mit Schrumpfen statt
-    ///      Vergrößern, was den „Treffer/Schaden"-Eindruck verstärkt.
-    ///   3. **Roter Flash-Overlay** über Charakter (~0.5s, gesteuert
-    ///      durch `lifeLostFlashAt`-Zeitstempel im Layout-Overlay).
-    ///   4. **Error-Haptic** — `.notificationOccurred(.error)` ist
-    ///      stärker als die `.heavy`-Impacts an anderen Stellen, das
-    ///      verstärkt den „etwas Schlimmes ist passiert"-Eindruck.
+    /// **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`, 2. Iteration)** —
+    /// Sichtbares Feedback bei jedem Lebens-Verlust. User-Report nach
+    /// 1. Iteration: „noch zu schwach". 2. Iteration mit ALLEN
+    /// Verstärkern kombiniert (Variante v aus dem Spec-Vorschlag):
     ///
-    /// User-Report: „wenn elumi ein leben verliert muss man das an
-    /// ihm sehen". Wird aus allen drei `misses += 1`-Pfaden aufgerufen
+    ///   1. **Screen-Shake** (existing `triggerScreenShake`).
+    ///   2. **Character-Scale-Zucker mit Bounce** — 1.0 → 0.70 → 1.05 → 1.0
+    ///      (~450ms). Stärkeres Schrumpfen + Overshoot-Bounce zurück
+    ///      simuliert „Treffer + Erholung".
+    ///   3. **Charakter-Opacity-Flash** — 1.0 → 0.40 → 1.0 (synchron
+    ///      mit dem Scale-Zucker). „Getroffen-und-sichtbar-blass"-
+    ///      Effekt — der Charakter wirkt für einen kurzen Moment
+    ///      verletzt.
+    ///   4. **Roter Flash-Overlay** vergrößert (140pt statt 100pt) +
+    ///      länger sichtbar (0.8s statt 0.5s, gesteuert über
+    ///      `lifeLostFlashAt`-Zeitstempel im Layout-Overlay).
+    ///   5. **Bolt-Icon** als Overlay über dem Charakter (~0.6s),
+    ///      „Schlag/Damage"-Symbol für den Treffer-Moment.
+    ///   6. **Error-Haptic** — `.notificationOccurred(.error)`.
+    ///
+    /// Wird aus allen drei `misses += 1`-Pfaden aufgerufen
     /// (`triggerFriendEaten`, off-screen-Snack-Miss, Quallen-Sting bei
     /// >=3). Existierende `triggerScreenShake()` an diesen Stellen
     /// wird durch diesen kombinierten Helper ersetzt.
     func triggerLifeLossVisual() {
         lifeLostFlashAt = Date()
         triggerScreenShake()
-        withAnimation(.easeOut(duration: 0.10)) {
-            characterScale = 0.85
+
+        // Scale-Zucker mit Bounce: kurz hart schrumpfen, dann mit
+        // Overshoot zurück.
+        withAnimation(.easeOut(duration: 0.12)) {
+            characterScale = 0.70
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.10) {
-            withAnimation(.easeOut(duration: 0.18)) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+            withAnimation(.spring(response: 0.30, dampingFraction: 0.55)) {
+                self.characterScale = 1.05
+            }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.42) {
+            withAnimation(.easeOut(duration: 0.20)) {
                 self.characterScale = 1.0
             }
         }
+
+        // Opacity-Flash: schnell halbtransparent, dann zurück.
+        withAnimation(.easeOut(duration: 0.10)) {
+            characterOpacityHit = 0.40
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+            withAnimation(.easeIn(duration: 0.20)) {
+                self.characterOpacityHit = 1.0
+            }
+        }
+
         UINotificationFeedbackGenerator().notificationOccurred(.error)
     }
 

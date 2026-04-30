@@ -190,9 +190,30 @@ extension ElumiArcadeGameView {
         jellyfishStingCount = 0
         isGameOver = false
         isPlaying = true
-        // Kein `restartGame()` — wir wollen nahtlos weiterspielen,
-        // keinen Fresh-Restart. Das Spiel läuft mit dem existierenden
-        // Score einfach weiter.
+
+        // **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`,
+        // 2. Iteration)** — User-Report nach 1. Iteration: „retten:
+        // elumi ist da, musik an alles da, nur keine snacks, freunde
+        // etc". Root Cause: die Spawn-Loop (`beginSnackSpawnTask`-
+        // Pattern via `.task(id: gameSeed)` in Layout.swift) lief
+        // während des Game-Over aus, weil ihre while-Bedingung
+        // `isPlaying && !isGameOver` false wurde → Task hat sich
+        // sauber beendet. Setzen von `isGameOver = false` reicht
+        // nicht — der Task ist tot, eine neue Iteration startet nicht
+        // automatisch. SwiftUI startet den `.task`-Closure nur neu,
+        // wenn die `id` ändert. Daher hier `gameSeed = UUID()`
+        // setzen — das cancelt einen evtl. noch laufenden Task und
+        // startet die Spawn-Loop frisch. Wave-Stream-Reset ist
+        // akzeptabel: Score / Round / Welt-State bleiben unangetastet
+        // (gameSeed steuert nur die Spawn-Task-ID, keine Wave-
+        // Geometrie). User sieht: Charakter da + Musik an + Snacks
+        // beginnen wieder zu fallen.
+        gameSeed = UUID()
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.65)) {
+            elumiVisible = true
+        }
+        ArcadeMusicPlayer.shared.startNewRun()
+
         UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
         feedbackPlayer.playAchievement()
     }
@@ -200,24 +221,44 @@ extension ElumiArcadeGameView {
     /// Skip konsumieren: 1 Credit abziehen, Runde sofort beenden,
     /// Banner für nächste Runde triggern. Race-safe — guarded durch
     /// `playCreditsSkipEnabled`.
+    ///
+    /// **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`, 2. Iteration)** —
+    /// User-Report: „Skip → Spiel-Hintergrund läuft, aber Musik ist
+    /// aus und nichts passiert".
+    ///
+    /// **Iteration 1** versuchte direkt `advanceToNextRound()` zu rufen —
+    /// hat das Hänger-Problem nicht gelöst. Vermutung: das überspringt
+    /// den natürlichen Round-End-Flow (round-clear-Sound, Banner-Phase 0,
+    /// 2s-Wait), den Music-Player oder andere Systeme erwarten.
+    ///
+    /// **Iteration 2 (jetzt)**: den **natürlichen Round-Complete-Trigger**
+    /// simulieren — `roundCatchCount` auf den Schwellwert
+    /// (`snacksForRound(round)`) setzen. Im nächsten `updateGame`-Tick
+    /// erkennt der bestehende Round-End-Check
+    /// (`roundCatchCount >= snacksForRound(round) && !showingRoundBanner`)
+    /// das Round-End und ruft `triggerRoundComplete()`. Dadurch läuft
+    /// der vollständige normale Round-End-Flow durch:
+    /// Round-Clear-Sound + Banner-Phase 0 (2s) + advance zum nächsten
+    /// Round + Ready-Blink + Auto-Dismiss. Music bleibt durchgängig
+    /// laufen weil kein Pfad das anfasst. Plus: Bonus-Round-Detection
+    /// (alle 3 Runden) wird natürlich mit-getriggert.
     func consumePlayCreditSkipRound() {
         guard playCreditsSkipEnabled else { return }
         guard playCredits.useCredit() else { return }
 
-        // Aktive Snacks/Tentakel aufräumen, Sting zurücksetzen,
-        // Runde inkrementieren. Der bestehende Runden-Wechsel-Flow
-        // übernimmt den Rest (Banner, Ready-Blink).
-        activeSnacks.removeAll()
-        activeTentacles.removeAll()
-        jellyfishStingCount = 0
-        round += 1
-        roundCatchCount = 0
-        roundSuctionSpawned = false
-        ambientEventFiredThisRound = false
-        showingRoundBanner = true
-        roundBannerPhase = 0
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         feedbackPlayer.playTabSwitch()
+
+        // **Round-End-Trigger** via natural flow:
+        //   • `roundCatchCount` auf Schwellwert setzen → nächster
+        //     `updateGame`-Tick triggert `triggerRoundComplete()`
+        //     automatisch.
+        //   • Aktive Bedrohungen (Tentakel, Quallen-Stings) räumen wir
+        //     selbst auf, damit der User in der 2s-Banner-Wartezeit
+        //     keinen Schaden nimmt.
+        roundCatchCount = snacksForRound(round)
+        activeTentacles.removeAll()
+        jellyfishStingCount = 0
     }
 
     /// Aufzurufen, wenn eine neue Game-Over-Episode beginnt — damit
