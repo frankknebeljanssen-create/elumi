@@ -609,7 +609,11 @@ struct ElumiTabView: View {
             }
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 6)
+        // **2026-04-30 Fine-Tuning**: vertikales Padding 6 → 2pt
+        // (User-Spec „10 % weniger Höhe"). Spart 8pt Card-Höhe (~9,6 %),
+        // alle anderen Werte (Zahl-Größe, Pencil-Frame, VStack-Spacing,
+        // Section-Label) unverändert.
+        .padding(.vertical, 2)
         .frame(maxWidth: .infinity, alignment: .leading)
         .appSetupCardBackground()
         .animation(.easeInOut(duration: 0.20), value: selectedDuration)
