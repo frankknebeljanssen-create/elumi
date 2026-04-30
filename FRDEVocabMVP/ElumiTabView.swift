@@ -691,24 +691,19 @@ struct ElumiTabView: View {
     ///      zum 2-Button-State — Konsistenz für den User.
     @ViewBuilder
     private var spinCTA: some View {
-        VStack(spacing: 8) {
-            // Caption „Versuch X von 3" nur sichtbar wenn 2-Button-State
-            // (= mind. 1 Spin gemacht UND noch Versuche übrig).
-            if currentSpinNumber > 0 && hasRemainingSpins {
-                Text(currentAttemptDisplay)
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .contentTransition(.numericText())
-                    .frame(maxWidth: .infinity, alignment: .center)
-            }
-
-            if currentSpinNumber == 0 {
-                singleSpinButton
-            } else if hasRemainingSpins {
-                twinCTAs
-            } else {
-                singleTrainingButton
-            }
+        // **Setup-Tweaks v2 — C4 (2026-04-30)**: die separate
+        // „Versuch X von 3"-Caption-Zeile oberhalb der Twin-CTAs ist
+        // entfernt. Der Counter lebt jetzt als Sub-Label im
+        // „Nochmal drehen"-Button (siehe `twinCTAs`). Damit verschwindet
+        // der vertikale Layout-Sprung beim Phase-Übergang
+        // (revealed → spinning) — der Button-Block hat jetzt eine
+        // konstante Höhe über alle Slot-Phasen.
+        if currentSpinNumber == 0 {
+            singleSpinButton
+        } else if hasRemainingSpins {
+            twinCTAs
+        } else {
+            singleTrainingButton
         }
     }
 
@@ -735,22 +730,37 @@ struct ElumiTabView: View {
     /// State 2: 2-Button-State nach erstem Spin, solange Versuche übrig.
     /// Beide Buttons gelb gefüllt, gleiche Höhe, gleiche Schriftgröße,
     /// `frame(maxWidth: .infinity)` → 50/50-Aufteilung.
+    ///
+    /// **Setup-Tweaks v2 — C4 (2026-04-30)**: Versuch-Counter
+    /// (`currentAttemptDisplay`) ist jetzt **Sub-Label im Re-Spin-
+    /// Button**, nicht mehr eine separate Caption-Zeile oberhalb. Der
+    /// „Jetzt üben"-Button bekommt eine unsichtbare Reserve-Slot-Zeile
+    /// (`Text(" ")` mit identischer Schrift), damit beide Buttons
+    /// dieselbe Höhe halten und es keine vertikalen Layout-Sprünge
+    /// beim Phase-Wechsel mehr gibt.
     private var twinCTAs: some View {
         HStack(spacing: 12) {
             Button {
                 triggerSpin()
             } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "arrow.2.circlepath")
-                        .font(.system(size: 14, weight: .bold))
-                    Text(spinPrimaryLabel)
-                        .font(.system(size: 15, weight: .black, design: .rounded))
+                VStack(spacing: 2) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "arrow.2.circlepath")
+                            .font(.system(size: 14, weight: .bold))
+                        Text(spinPrimaryLabel)
+                            .font(.system(size: 15, weight: .black, design: .rounded))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                    Text(currentAttemptDisplay)
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .opacity(0.7)
+                        .contentTransition(.numericText())
                         .lineLimit(1)
-                        .minimumScaleFactor(0.8)
                 }
                 .foregroundStyle(.black)
                 .frame(maxWidth: .infinity)
-                .frame(minHeight: 52)
+                .frame(minHeight: 56)
             }
             .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
             .disabled(!canTriggerSpin)
@@ -761,20 +771,32 @@ struct ElumiTabView: View {
             Button {
                 startTraining()
             } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "play.circle.fill")
-                        .font(.system(size: 14, weight: .bold))
-                    Text("Jetzt üben")
-                        .font(.system(size: 15, weight: .black, design: .rounded))
+                VStack(spacing: 2) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "play.circle.fill")
+                            .font(.system(size: 14, weight: .bold))
+                        Text("Jetzt üben")
+                            .font(.system(size: 15, weight: .black, design: .rounded))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                    // Sub-Label: gewählte Trainings-Dauer in Klammern.
+                    // Identische Schrift wie der Versuch-Counter im
+                    // Re-Spin-Button (User-Spec 2026-04-30) — damit
+                    // beide Buttons visuell symmetrisch zweizeilig
+                    // wirken und gleich hoch bleiben.
+                    Text("(\(selectedDuration) min)")
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .opacity(0.7)
+                        .contentTransition(.numericText())
                         .lineLimit(1)
-                        .minimumScaleFactor(0.8)
                 }
                 .foregroundStyle(.black)
                 .frame(maxWidth: .infinity)
-                .frame(minHeight: 52)
+                .frame(minHeight: 56)
             }
             .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
-            .accessibilityLabel(Text("Jetzt üben"))
+            .accessibilityLabel(Text("Jetzt \u{00FC}ben \(selectedDuration) Minuten"))
             .accessibilityHint(Text("Startet die generierte Trainingseinheit sofort"))
         }
         .transition(.opacity.combined(with: .scale(scale: 0.98)))
