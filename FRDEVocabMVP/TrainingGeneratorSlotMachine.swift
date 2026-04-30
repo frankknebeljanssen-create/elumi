@@ -354,6 +354,10 @@ struct SlotMachineView: View {
         // Alle drei stehen
         phase = .landed
         print("🎰 [runSpinSequence] Phase → .landed")
+        // **Slot-Audio (2026-04-30)** — Settle-Sound bei Stillstand
+        // aller Reels. System-Sound 1057 (Tink) als Platzhalter, wird
+        // später durch echtes Settle-Sample ersetzt.
+        SlotAudioPlayer.shared.playSettle()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + landedHoldDuration) {
             guard phase == .landed else {
@@ -367,6 +371,17 @@ struct SlotMachineView: View {
                 centerSymbols: centerSymbols.compactMap { $0 }
             )
             onLanded(result)
+            // **Slot-Audio (2026-04-30)** — Win/Jackpot-Branching
+            // basierend auf elumiCount (Game-Symbol-Anzahl im Result):
+            //   • 3 → Jackpot-Sound (System-Sound 1306, Stufe-6 ersetzt
+            //     durch echten Feuerwerk-Sound)
+            //   • ≥ 2 → Win-Sound (System-Sound 1025)
+            //   • < 2 → kein zusätzlicher Sound, der Settle oben reicht.
+            if result.elumiCount == 3 {
+                SlotAudioPlayer.shared.playJackpot()
+            } else if result.elumiCount >= 2 {
+                SlotAudioPlayer.shared.playWin()
+            }
             // KEIN weiterer Timer, KEIN Glow-Reset, KEINE Auto-Navigation.
         }
     }
@@ -401,6 +416,13 @@ struct SlotReelView: View {
     /// Zeitpunkt des aktuellen Spin-Starts — Referenz für die Ramp-Up-
     /// Geschwindigkeitskurve in `startSpin`.
     @State private var spinStartTime: Date = Date()
+    /// **Slot-Audio (Branch `feature/slot-machine-sounds`, 2026-04-30)** —
+    /// Letzter ganzzahliger `offsetSlots`-Wert. In jedem Tick prüfen wir,
+    /// ob `Int(offsetSlots)` gegenüber diesem Wert gestiegen ist. Wenn
+    /// ja → ein neuer Reel-Symbol-Slot ist durch die Mittelreihe
+    /// gefahren → `SlotAudioPlayer.shared.playClick()` (mit internem
+    /// 60ms-Throttle).
+    @State private var lastWholeOffsetSlots: Int = 0
 
     // MARK: - Animation-Tuning (V4.4 Mechanical-Feel)
 
@@ -601,6 +623,10 @@ struct SlotReelView: View {
         spinTimer?.invalidate()
         isStopping = false
         spinStartTime = Date()
+        // **Slot-Audio (2026-04-30)** — Tracking-Variable resetten,
+        // damit der erste Tick im neuen Spin keinen falschen „Click"
+        // beim Initial-State auslöst.
+        lastWholeOffsetSlots = Int(offsetSlots)
         let rampDur = Self.rampUpDuration
         let maxSpeed = Self.maxSlotsPerFrame
         spinTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true) { _ in
@@ -612,6 +638,18 @@ struct SlotReelView: View {
                 // (sauberer Übergang in die konstante Laufphase).
                 let eased = rampProgress * rampProgress * (3.0 - 2.0 * rampProgress)
                 offsetSlots += maxSpeed * eased
+                // **Click-Audio-Hook (2026-04-30)** — Wenn der
+                // ganzzahlige Offset gewachsen ist, ist mindestens ein
+                // neues Symbol durch die Mittelreihe gefahren →
+                // Click-Sound. Throttle (60ms) liegt im Player; bei
+                // voller Ramp-Up-Geschwindigkeit (~30 Symbole/Sek.)
+                // landen wir bei ~16 hörbaren Clicks/Sek. — passt zur
+                // Slot-Machine-Klangcharakteristik.
+                let currentWhole = Int(offsetSlots)
+                if currentWhole > lastWholeOffsetSlots {
+                    lastWholeOffsetSlots = currentWhole
+                    SlotAudioPlayer.shared.playClick()
+                }
             }
         }
     }
