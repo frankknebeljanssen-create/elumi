@@ -243,8 +243,16 @@ extension ElumiArcadeGameView {
                     arcadeCredits -= ArcadeCreditSystem.gamesCost
                     startGame()
                 } else {
+                    // **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`)**:
+                    // „Lernen starten" führt jetzt direkt zur Startseite
+                    // (popToRoot via `goHome`), statt nur eine Ebene zu
+                    // poppen (= zum GameHub). User-Erwartung „Lernen
+                    // starten = ich will jetzt lernen, also Home wo
+                    // alle Module sind", nicht „zurück zum Spiele-Hub".
+                    // Fallback `dismiss()`, falls `goHome` nicht
+                    // gesetzt ist (Tests etc.).
                     exitArcadeSilently()
-                    dismiss()
+                    if let goHome { goHome() } else { dismiss() }
                 }
             },
             onBack: {
@@ -483,8 +491,14 @@ extension ElumiArcadeGameView {
                     arcadeCredits -= ArcadeCreditSystem.gamesCost
                     restartGame()
                 } else {
+                    // **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`)**:
+                    // „Lernen starten" geht zur Startseite (`goHome`)
+                    // statt zum GameHub (vorheriges `dismiss()`-
+                    // Verhalten). User-Erwartung „Lernen starten = Home
+                    // mit allen Modulen", nicht „eine Ebene zurück".
+                    // Siehe identischer Patch im `startOverlay` oben.
                     exitArcadeSilently()
-                    dismiss()
+                    if let goHome { goHome() } else { dismiss() }
                 }
             },
             secondaryCTALabel: "Zur Startseite",

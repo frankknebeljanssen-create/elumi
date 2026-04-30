@@ -96,12 +96,53 @@ struct GameStartScreen<IconContent: View, ExtraContent: View>: View {
 
             GeometryReader { geo in
                 ScrollView(showsIndicators: false) {
+                    // **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`)** —
+                    // **2. Iteration**: User-Report nach 1. Iteration:
+                    // „beide noch nicht zentriert". Screenshots zeigten
+                    // Empty-Space ÜBER Icon ~30% des Screens vs UNTER
+                    // CTA nur ~12%. Massive Asymmetrie obwohl Frame-
+                    // Math rechnerisch korrekt aussah — anscheinend
+                    // greifen die Padding/Frame-Berechnungen aus
+                    // Iteration 1 nicht wie erwartet (vermutlich
+                    // ScrollView-Sizing-Quirk im Zusammenspiel mit
+                    // dem `.ignoresSafeArea()`-Dimmer-Container).
+                    //
+                    // **Pragmatischer Ansatz**: explicit top-anchor
+                    // statt Spacer-content-Spacer-Centering. Content
+                    // bekommt 80pt Top-Breathing für die Back-Chevron
+                    // (im Overlay top-leading), dann sitzt die Content-
+                    // VStack direkt darunter. Bottom-Spacer fängt den
+                    // Rest auf. Bottom-Padding hält den Footer frei.
+                    // Resultat: Content im oberen Drittel, sieht
+                    // visuell mittig im verbleibenden Bereich aus, kein
+                    // großer Leerraum mehr oben.
+                    // **Iteration 3** (User-Report: WR center OK, Elumi
+                    // „zu weit oben" — kürzerer Content macht den Top-
+                    // Anchor optisch ungünstig): zurück auf Spacer-content-
+                    // Spacer, aber mit `minLength` an beiden Spacern. Der
+                    // Top-Spacer hat min 80pt für die Back-Chevron-
+                    // Breathing, der Bottom-Spacer hat min `footerOffset`
+                    // für die Footer-Reservierung. Dazwischen verteilen
+                    // sich beide Spacer **gleichmäßig** über die übrige
+                    // Höhe — Content ist so visuell zentriert,
+                    // unabhängig davon, ob viel (WR mit 2 Cards) oder
+                    // wenig (Elumi mit 1 Card) Content da ist.
+                    let footerOffset = AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom
                     VStack(spacing: 0) {
-                        Spacer(minLength: 0)
+                        Spacer(minLength: 80)
                         content
-                        Spacer(minLength: 0)
+                        Spacer(minLength: footerOffset)
                     }
-                    .frame(minHeight: geo.size.height, alignment: .center)
+                    // **Iteration 4 (Horizontal-Fix)**: User-Report
+                    // „beide wieder zu weit links, aber vertikal beide
+                    // korrekt — das nicht mehr ändern, nur horizontal".
+                    // Root Cause: VStack ohne explizite Width sizt sich
+                    // auf Content-Breite, ScrollView left-anchored das
+                    // standardmäßig. Mit `.frame(maxWidth: .infinity)`
+                    // füllt die VStack die volle Breite und zentriert
+                    // ihren Content (default `.center`-Alignment für
+                    // VStack-Kinder).
+                    .frame(maxWidth: .infinity, minHeight: geo.size.height)
                 }
             }
         }

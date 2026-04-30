@@ -80,7 +80,15 @@ extension ElumiArcadeGameView {
                             sparkleBurst: sparkleBurst
                         )
                         .scaleEffect(elumiVisible ? suctionDockScale : 0.4)
-                        .opacity(elumiVisible ? 1 : 0)
+                        // **Quick-Fix 2026-04-30 — 2. Iteration**: Opacity-
+                        // Hit-Multiplier für das Lebens-Verlust-Feedback.
+                        // `characterOpacityHit` wird in `triggerLifeLossVisual()`
+                        // kurz auf 0.40 gepulst und zurück auf 1.0 — der
+                        // Charakter wirkt für einen kurzen Moment „blass/
+                        // getroffen". Multiplikativ mit der Visibility-Logik:
+                        // wenn der Charakter aus anderen Gründen unsichtbar
+                        // ist (Suction-Hide), bleibt er das.
+                        .opacity(elumiVisible ? characterOpacityHit : 0)
                         .overlay {
                             // Sting flash overlay
                             if jellyfishStingCount > 0 {
@@ -90,6 +98,49 @@ extension ElumiArcadeGameView {
                                     .fill(Color.red.opacity(blinkOn ? 0.45 : 0))
                                     .frame(width: 80, height: 80)
                                     .allowsHitTesting(false)
+                            }
+                        }
+                        .overlay {
+                            // **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`,
+                            // 2. Iteration)** — Lebens-Verlust-Flash + Bolt-
+                            // Icon. Dauer ~0.8s (vorher 0.5s zu kurz, User-
+                            // Report: „noch zu schwach"). Größerer Flash-
+                            // Kreis (140pt statt 100pt) deckt den Charakter
+                            // komplett ab. Plus ein zucker-Bolt-Icon
+                            // („bolt.fill") als Damage-Symbol mit Scale-In/
+                            // Out-Animation in der ersten Hälfte des Flashes.
+                            if let lostAt = lifeLostFlashAt {
+                                let elapsed = context.date.timeIntervalSince(lostAt)
+                                if elapsed < 0.8 {
+                                    let circleOpacity = max(0, 0.7 - elapsed * 0.875)
+                                    Circle()
+                                        .fill(Color.red.opacity(circleOpacity))
+                                        .frame(width: 140, height: 140)
+                                        .allowsHitTesting(false)
+                                }
+                                if elapsed < 0.6 {
+                                    // Bolt-Icon: scale-in (0..0.15s),
+                                    // halten (0.15..0.40s), scale-out
+                                    // (0.40..0.60s).
+                                    let boltScale: CGFloat = {
+                                        if elapsed < 0.15 {
+                                            return CGFloat(elapsed / 0.15) * 1.4
+                                        } else if elapsed < 0.40 {
+                                            return 1.4
+                                        } else {
+                                            let t = (elapsed - 0.40) / 0.20
+                                            return 1.4 * CGFloat(1.0 - t)
+                                        }
+                                    }()
+                                    let boltOpacity = max(0, 1.0 - (elapsed / 0.6))
+                                    Image(systemName: "bolt.fill")
+                                        .font(.system(size: 42, weight: .black))
+                                        .foregroundStyle(.yellow)
+                                        .shadow(color: .red.opacity(0.6), radius: 8, x: 0, y: 0)
+                                        .scaleEffect(boltScale)
+                                        .opacity(boltOpacity)
+                                        .allowsHitTesting(false)
+                                }
                             }
                         }
                         .overlay {
