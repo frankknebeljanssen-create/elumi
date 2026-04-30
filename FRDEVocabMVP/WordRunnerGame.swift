@@ -118,7 +118,13 @@ final class WordRunnerGame: ObservableObject {
     // ersten Fehler neu zu starten).
 
     /// Start-Leben pro Run. Bei 0 → `enterGameOver(reason: .wrongChoice)`.
-    static let startingLives = 3
+    ///
+    /// **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`)** — von
+    /// 3 auf 4 erhöht, damit Word Runner mit der gleichen Lebens-
+    /// Anzahl wie das Elumi-Spiel startet (`ElumiArcadeGameView.maxMisses
+    /// == 4`). User-Spec: „word runner muss beim start auch 4 leben
+    /// haben (nicht nur 3) elumi hats auch".
+    static let startingLives = 4
 
     @Published private(set) var lives: Int = startingLives
 
@@ -202,8 +208,15 @@ final class WordRunnerGame: ObservableObject {
     /// Max-Grenzen für den User-Speed — damit Kinder das Spiel nicht
     /// zum Stillstand bringen oder in Sekundenbruchteilen fliegen. Wird
     /// in der View beim Drag-Mapping geclampt.
+    ///
+    /// **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`)** —
+    /// `userSpeedMax` von 1.6 auf 3.2 verdoppelt. User-Report:
+    /// „word runner; nach oben draggen erhöht ja die geschwindigkeit:
+    /// speed max verdoppeln". Damit kann der User durch Drag-up das
+    /// Spiel deutlich schneller machen — fühlt sich nach „Boost" an
+    /// statt nur einer leichten Beschleunigung.
     static let userSpeedMin: CGFloat = 0.5
-    static let userSpeedMax: CGFloat = 1.6
+    static let userSpeedMax: CGFloat = 3.2
 
     /// **Fisch-Event** (visuelles Ambient-Event). Maximal eines pro
     /// Run; wird beim `start()` mit zufälligem Delay (25–40 s)
@@ -1062,6 +1075,14 @@ final class WordRunnerGame: ObservableObject {
                 // **Priority** (SFX-Spec): Life-Loss überlagert
                 // Wrong — wir spielen NUR Life-Loss, niemals beide.
                 WordRunnerSFXPlayer.shared.play(.lifeLoss)
+                // **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`)** —
+                // Haptik-Pattern an Elumi-Spiel angeglichen. User-
+                // Report: „haptik bei lebensverlust bei word runner
+                // auch so machen wie bei elumi". Elumi nutzt
+                // `notificationOccurred(.error)` (siehe
+                // `triggerLifeLossVisual()` in
+                // ElumiArcadeGameView+Gameplay.swift).
+                UINotificationFeedbackGenerator().notificationOccurred(.error)
                 if lives == 0 {
                     enterGameOver(reason: reasonFor(obstacle: obs))
                     return
