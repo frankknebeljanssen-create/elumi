@@ -16,7 +16,7 @@ import SwiftUI
 ///   Card: „Wie lange willst du üben?" (10/15/20 Chips)  ← IMMER sichtbar
 ///   Slot Machine (immer sichtbar)
 ///   CTA „Los geht's!" — disabled bis Zeit gewählt
-///   Card: „Dein Training" (flach)                       ← IMMER sichtbar
+///   Card: „Dein Ergebnis" (flach)                       ← IMMER sichtbar
 ///       • vor Spin: Placeholder-Slots + „Deine Übungsmodule erscheinen hier"
 ///       • nach Reveal: 3 gezogene Symbole
 ///   CTA „Training starten" (nur nach Reveal)
@@ -876,7 +876,7 @@ struct ElumiTabView: View {
         slotPhase == .idle || slotPhase == .revealed
     }
 
-    // MARK: - „Dein Training"-Card — IMMER sichtbar
+    // MARK: - „Dein Ergebnis"-Card — IMMER sichtbar
 
     /// Flache Card unter der Slot Machine. Zeigt vor dem Spin einen
     /// ruhigen Placeholder (drei Geist-Slots + Hinweis), nach dem Spin
@@ -933,7 +933,7 @@ struct ElumiTabView: View {
     /// und nur die Pulse-Werte re-rendern pro Frame.
     private var trainingResultCardContent: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Dein Training")
+            Text("Dein Ergebnis")
                 .font(.system(size: 15, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
 
