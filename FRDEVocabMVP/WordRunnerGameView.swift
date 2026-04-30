@@ -2039,7 +2039,17 @@ struct WordRunnerGameView: View {
                 let baseOffset = (fraction - 0.5) * canvasSize.width
                 let steps = Int((outerExtraY - horizonY) / Self.stripeSpacing) + 2
                 for i in 0..<steps {
-                    let y = horizonY + CGFloat(i) * Self.stripeSpacing - offset
+                    // **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`)**:
+                    // `- offset` → `+ offset`. Vorher liefen die
+                    // Lane-Stripes von Spieler-Seite Richtung Horizont
+                    // (Y nahm ab über die Zeit) — das simulierte
+                    // Rückwärtsfahren. User-Report: „strasse bewegt
+                    // sich in die falsche richtung, als ob man rückärts
+                    // fährt — bewegungsrichtung umdrehen, sonst nichts
+                    // ändern". Forward-Driving = Stripes kommen aus
+                    // Horizont und wandern Richtung Spieler (Y wächst
+                    // über die Zeit, also `+ offset`).
+                    let y = horizonY + CGFloat(i) * Self.stripeSpacing + offset
                     guard y >= horizonY && y <= outerExtraY else { continue }
                     let z = WordRunnerGame.Tuning.depth(forWaveY: y, screenHeight: canvasSize.height)
                     let clampedZ = max(0, min(1.3, z))
