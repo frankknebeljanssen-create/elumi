@@ -235,3 +235,55 @@ Decks vergessen — nachträglich integrieren". Es war kein Vergessen,
 es war eine Architektur-Entscheidung.
 
 ---
+
+## Sache-B-Spec-Erweiterungen (Tags `v2-elumi-setup-always-show` + `v2-elumi-setup-tweaks-v2`, 2026-04-30)
+
+Das ursprüngliche Sache-B-Setup-Modal-Design (Tag
+`v2-time-picker-modal`, 2026-04-29 — Modal nur einmal beim
+Erstöffnen, danach Re-Edit über Pencil) wurde am 2026-04-30 in
+zwei Iterationen weiterentwickelt:
+
+**Iteration 1** (Tag `v2-elumi-setup-always-show`, 3 Commits):
+- Modal erscheint jetzt **bei jedem** Elumi-Tab-Open, nicht mehr
+  nur einmalig. `appTrainingGeneratorOnboardingSeenKey` ist
+  deprecated (Wert wird nicht mehr gelesen oder geschrieben),
+  bleibt aus Backward-Compat in `AppStorageKeys.swift` und
+  `AccountScopedKeys.userDefaultsKeys` registriert.
+- Process-Hint-Zeile im Modal („Zeit wählen → Slot starten →
+  Üben") als dezente `.caption`-Orientierung.
+- `timeDisplayCard` kompakter: XXL-Zahl 56 → 46pt, vertikales
+  Padding 10 → 6pt, damit der „Los geht's!"-Spin-CTA komplett
+  über dem Footer sichtbar bleibt.
+
+**Iteration 2** (Tag `v2-elumi-setup-tweaks-v2`, 5 Commits):
+- Versuch-Counter „Versuch X/3" verschoben aus separater
+  Caption-Zeile **in den „Nochmal drehen"-Button** als Sub-Label
+  (`.caption2` Schrift). Der Jetzt-üben-Button bekam einen
+  symmetrischen Sub-Label-Slot mit der gewählten Trainings-Dauer
+  in Klammern (z. B. `(15 min)`). Damit verschwand der
+  vertikale Layout-Sprung beim Slot-Phase-Wechsel (revealed →
+  spinning) — beide Buttons sind durchgehend gleich hoch.
+- 4 Zeit-Optionen statt 3: `[5, 10, 15, 20]`, im Modal als
+  2×2-`LazyVGrid`. `TrainingGenerator.generate(duration: 5,
+  focus:)` wurde vor dem Branch-Start verifiziert (liefert
+  `buildFiveMinute(focus:)` → 2 Blöcke: Warmup 2min + Kern 3min).
+  Default bleibt 10min.
+- `timeDisplayCard`-Inhalt **horizontal zentriert**: Section-
+  Header „TRAININGSZEIT" und XXL-Wert beide mittig, mit
+  Spacer-Spacer-Pattern. Links 40pt-Reserve-Slot, rechts 40pt-
+  Pencil — ehrliche Card-Mitte.
+- Pre-Spin-Result-Slots: kleine Sparkle-im-Circle + „—"-Caption
+  ersetzt durch **großes zentriertes Fragezeichen** (28pt
+  questionmark in Section-Accent-Color, opacity 0.75).
+  Card-Dimensions unverändert.
+- Result-Card-Icons (Reveal-State) skaliert:
+  HomeModuleIconView 40 → 52pt (+30%), Elumi-Cartoon-Assets
+  38×38 → 50×50 (+32%). Card-Dimensions unverändert.
+
+Der ursprüngliche Sache-B-Stand (Modal-only-once, 3 Chips, Card-
+Layout 1.0) ist damit obsolet. Falls Future-You / Future-Claude
+in den Sache-B-Commits liest und sich wundert „warum sieht es
+heute anders aus": die hier gelisteten Tweaks sind die Antwort.
+Kein Bug, sondern Spec-Iterationen nach realer Nutzung.
+
+---
