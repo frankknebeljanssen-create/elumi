@@ -96,12 +96,31 @@ struct GameStartScreen<IconContent: View, ExtraContent: View>: View {
 
             GeometryReader { geo in
                 ScrollView(showsIndicators: false) {
+                    // **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`)**:
+                    // Die Spacer-content-Spacer-Centering basierte auf
+                    // `geo.size.height`, das die volle Container-Höhe
+                    // inkl. Footer-Bereich zurückgab. Dadurch landeten
+                    // die Inhalte (Character + Title + Cards + CTA)
+                    // visuell im unteren Drittel statt zentriert,
+                    // weil der Footer ~110pt am unteren Bildrand
+                    // belegt aber nicht aus dem Centering-Frame
+                    // herausgerechnet wurde. Plus eine kleine Top-
+                    // Reserve fürs Back-Chevron-Overlay (~60pt). User-
+                    // Report: „Elumi Spiel start screen ist nicht
+                    // zentriert, fixen; word runner auch nicht".
+                    let footerOffset = AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom
+                    let topReserve: CGFloat = 60
                     VStack(spacing: 0) {
                         Spacer(minLength: 0)
                         content
                         Spacer(minLength: 0)
                     }
-                    .frame(minHeight: geo.size.height, alignment: .center)
+                    .frame(
+                        minHeight: max(0, geo.size.height - footerOffset - topReserve),
+                        alignment: .center
+                    )
+                    .padding(.top, topReserve)
+                    .padding(.bottom, footerOffset)
                 }
             }
         }
