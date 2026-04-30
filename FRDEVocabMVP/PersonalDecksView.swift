@@ -39,6 +39,12 @@ struct PersonalDecksView: View {
     @State private var showingCreateSheet: Bool = false
     @State private var deckBeingEdited: PersonalDeck? = nil
     @State private var deckPendingAction: PersonalDeck? = nil
+    /// **Stufe 5 Polish (2026-04-30)**: dedicated Delete-Confirmation-
+    /// Pfad. Vom neuen Context-Menu-Long-Press getriggert. Separat von
+    /// `deckPendingAction` (= Rename/Delete-Combo-Alert), damit der
+    /// Long-Press-Pfad direkt zu einer Destructive-only-Bestätigung
+    /// führt, statt zur Combo-UI mit TextField.
+    @State private var deckPendingDelete: PersonalDeck? = nil
     @State private var renameText: String = ""
 
     // MARK: - Body
@@ -99,6 +105,9 @@ struct PersonalDecksView: View {
                             onRenameOrDelete: {
                                 renameText = deck.name
                                 deckPendingAction = deck
+                            },
+                            onDelete: {
+                                deckPendingDelete = deck
                             }
                         )
                     }
@@ -205,6 +214,43 @@ struct PersonalDecksView: View {
             }
         } message: { _ in
             Text("Gib einen neuen Namen ein oder lösche den Stapel.")
+        }
+        // **Stufe 5 Polish (2026-04-30)** — Destructive-Bestätigung
+        // für den Long-Press-Delete-Pfad. Separat vom Rename-Alert
+        // oben, damit der User beim Long-Press direkt zur Lösch-
+        // Bestätigung kommt (ohne Umweg über TextField).
+        //
+        // **Sim-Smoke-Test-Iteration (2026-04-30)**: erste Variante
+        // nutzte `.confirmationDialog` — auf iOS 26 wurde der als
+        // kompakter Popover gerendert mit hellem Hintergrund und
+        // verschlucktem Cancel-Button (User sah keinen Abbrechen-
+        // Pfad). Umgestellt auf `.alert`, das einen klassischen
+        // zwei-Button-Layout mit Modal-Background liefert — beide
+        // Buttons garantiert sichtbar, rote Destructive-Schrift
+        // sauber lesbar gegen System-Background.
+        .alert(
+            "Stapel löschen?",
+            isPresented: Binding(
+                get: { deckPendingDelete != nil },
+                set: { if !$0 { deckPendingDelete = nil } }
+            ),
+            presenting: deckPendingDelete
+        ) { deck in
+            Button("Abbrechen", role: .cancel) {
+                deckPendingDelete = nil
+            }
+            Button("L\u{00F6}schen", role: .destructive) {
+                personalDeckStore.remove(id: deck.id)
+                deckPendingDelete = nil
+            }
+        } message: { deck in
+            // **Wichtig**: explizit klarstellen, dass NUR der Stapel
+            // (User-Curation + Mastery-Daten) gelöscht wird — nicht die
+            // zugrunde liegenden Quelllisten. Der `deck.name`-Auto-Wert
+            // (z. B. „Buch Unite 1 · A1 Grundwortschatz") sieht aus wie
+            // eine Listen-Bezeichnung; ohne den Reassurance-Satz könnte
+            // der User denken, er löscht den Grundwortschatz selbst.
+            Text("Der Stapel \u{201E}\(deck.name)\u{201C} und dein Lernfortschritt werden gel\u{00F6}scht. Die Quelllisten bleiben erhalten.")
         }
     }
 
@@ -342,6 +388,13 @@ struct PersonalDeckDetailCard: View {
     let onStart: () -> Void
     let onEditList: () -> Void
     let onRenameOrDelete: () -> Void
+    /// **Stufe 5 Polish (2026-04-30)**: dedicated destructive-Delete-
+    /// Pfad. Wird vom neuen Context-Menu-Long-Press getriggert; der
+    /// Caller zeigt eine `.confirmationDialog` mit „{Name} löschen"
+    /// als einzelner Destructive-Button. Vorher ging Delete nur via
+    /// „Bearbeiten"-Text-Button → kombinierter Rename/Delete-Alert,
+    /// der für viele User unentdeckbar war.
+    let onDelete: () -> Void
 
     private var dotColor: Color { PersonalDeck.color(for: deck.colorIndex) }
 
@@ -433,6 +486,32 @@ struct PersonalDeckDetailCard: View {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .stroke(dotColor.opacity(0.35), lineWidth: 1)
         )
+        // **Stufe 5 Polish (2026-04-30)** — iOS-natives Long-Press-
+        // Pattern: Context-Menu mit allen drei Bearbeitungs-Aktionen.
+        // Vorher war nur ein subtiler „Bearbeiten"-Text-Button im
+        // Card-Header der Trigger; User-Report 2026-04-29: „löschen
+        // option fehlt". Diagnose: Trigger zwar funktional, aber
+        // unentdeckbar. Fix: Long-Press auf die Card surface alle
+        // Aktionen — natürlich für iOS-User, ohne Card-Layout zu
+        // brechen. Der existierende Text-Button-Pfad bleibt parallel
+        // erhalten, kein Regress.
+        .contextMenu {
+            Button {
+                onRenameOrDelete()
+            } label: {
+                Label("Bearbeiten", systemImage: "pencil")
+            }
+            Button {
+                onEditList()
+            } label: {
+                Label("Listen ändern", systemImage: "list.bullet.rectangle")
+            }
+            Button(role: .destructive) {
+                onDelete()
+            } label: {
+                Label("Löschen", systemImage: "trash")
+            }
+        }
     }
 
     private func statChip(value: String, label: String) -> some View {
