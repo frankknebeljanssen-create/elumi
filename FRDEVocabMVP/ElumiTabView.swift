@@ -962,37 +962,20 @@ struct ElumiTabView: View {
     }
 
     private var placeholderModuleSlot: some View {
-        // **2026-04-25 Visibility-Pass** (User-Feedback „leere Slots
-        // zu dunkel, wirken unfertig"). Vorher: secondarySurface.opacity(0.4)
-        // + dashed-border-opacity(0.45) → fast unsichtbar auf der
-        // hellen Card. Jetzt:
-        //   • Bg deutlich heller — volle `secondarySurface`-Fläche mit
-        //     leichter `surface`-Aufhellung → wirkt wie eine
-        //     vorbereitete Karte.
-        //   • Dashed Outer-Border intensiver (opacity 0.75, stride
-        //     5/3), der „noch nicht gefüllt"-Charakter ist klar.
-        //   • Circle stärker sichtbar: Fill `surface`, dashed stroke
-        //     mit sichtbarer Border-Farbe, größere 32pt statt 28pt.
-        //   • Hint-Symbol („+"-Sparkle) im Circle, signalisiert dass
-        //     hier gleich ein Modul erscheint.
-        VStack(spacing: 5) {
-            ZStack {
-                Circle()
-                    .fill(AppTheme.Colors.surface)
-                    .frame(width: 32, height: 32)
-                Circle()
-                    .stroke(
-                        AppTheme.Colors.border,
-                        style: StrokeStyle(lineWidth: 1.4, dash: [3, 2])
-                    )
-                    .frame(width: 32, height: 32)
-                Image(systemName: "sparkle")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.65))
-            }
-            Text("—")
-                .font(.system(size: 11, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.75))
+        // **Setup-Tweaks v2 — C5 (User-Spec 2026-04-30)**: kleine
+        // Circle-Sparkle + „—"-Label ersetzt durch **großes zentriertes
+        // Fragezeichen** in der Card-Akzent-Farbe. Card-Dimensions
+        // unverändert — das Q wirkt dominant „hier kommt was rein".
+        //
+        // Vorgeschichte (2026-04-25 Visibility-Pass): die kleinen
+        // Sparkle-Circles hatten den Slot zu zaghaft markiert. Das
+        // dominante Q ist die nächste Iteration und kommuniziert
+        // klarer „Slot ist noch leer, Spin füllt ihn".
+        VStack(spacing: 0) {
+            Image(systemName: "questionmark")
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundStyle(sectionStyle.accent.opacity(0.75))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
