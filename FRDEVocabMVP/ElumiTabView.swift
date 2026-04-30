@@ -1003,17 +1003,22 @@ struct ElumiTabView: View {
         // **2026-04-25 (User „keine Pills, Icons größer")**: Der
         // Circle-Pill um das Icon ist entfernt. Das Icon steht jetzt
         // direkt im Card-Rahmen — klarer Fokus, weniger Layer-Rauschen.
-        // Icon-Größen dadurch nochmal hoch:
-        //   • HomeModuleIconView 32 → 40 (+25%)
-        //   • Elumi-Asset 30 → 38 (+27%)
+        //
+        // **Setup-Tweaks v2 — C6 (User-Spec 2026-04-30)**: Icon-Größen
+        // nochmal hoch — Card-Dimensions sind unverändert geblieben,
+        // Platz war da. Iteration:
+        //   • HomeModuleIconView 32 → 40 (+25%, 2026-04-25)
+        //   • HomeModuleIconView 40 → 52 (+30%, 2026-04-30)
+        //   • Elumi-Asset 30 → 38 (+27%, 2026-04-25)
+        //   • Elumi-Asset 38 → 50 (+32%, 2026-04-30)
         VStack(spacing: 5) {
             if let module = symbol.homeModule {
-                HomeModuleIconView(icon: module.icon, size: 40)
+                HomeModuleIconView(icon: module.icon, size: 52)
             } else if let assetName = symbol.assetImage {
                 Image(assetName)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 38, height: 38)
+                    .frame(width: 50, height: 50)
             }
             Text(symbol.label)
                 .font(.system(size: 12, weight: .bold, design: .rounded))
