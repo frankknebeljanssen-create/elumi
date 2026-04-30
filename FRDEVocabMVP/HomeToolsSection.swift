@@ -55,7 +55,12 @@ private struct ToolCard: View {
             HStack(spacing: 12) {
                 HomeModuleIconView(
                     icon: icon,
-                    size: 58,
+                    // **Home-Polish 2026-04-30**: Icon 58 → 48 pt — die
+                    // Tools-Cards sollen leicht weniger dominant wirken
+                    // (User-Spec „etwas flacher, gleiche Position"). 48
+                    // matcht die Höhe-Reduktion proportional und hält
+                    // das Glyph noch klar lesbar.
+                    size: 48,
                     // Glyph-Tint behält die Original-Modul-Farbe —
                     // das Tool-Icon ist mehrfarbig (Pink/Rosa-Inhalt
                     // im Scan-Rahmen, Foto-Apparat in Cyan-Rosa für
@@ -76,9 +81,13 @@ private struct ToolCard: View {
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 14)
-            .padding(.vertical, 10)
+            // **Home-Polish 2026-04-30**: vertical 10 → 8 pt + minHeight
+            // 58 → 48 pt — gleicher proportionaler Trim wie das Icon,
+            // damit die Cards „etwas flacher" wirken ohne den
+            // Type-Rhythmus zu zerreißen.
+            .padding(.vertical, 8)
             .frame(maxWidth: .infinity)
-            .frame(minHeight: 58)
+            .frame(minHeight: 48)
             // Gradient-Background statt 3-Lagen-Pop-Look (User-Spec):
             // subtiler Verlauf 0.95 → 0.75 vom topLeading nach
             // bottomTrailing, keine harten Flächen-Trennungen mehr.

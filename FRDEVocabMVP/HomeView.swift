@@ -91,16 +91,40 @@ struct HomeView: View {
                 .padding(.top, 22)
                 .appEntryTransition(delay: 0.1)
 
+                // **Home-Polish 2026-04-30 (User-Spec)**: leichter
+                // Querstrich als visueller Trenner zwischen den
+                // Übungs-Sektionen und den Tools („Scannen"/„Listen"
+                // sind Werkzeuge, keine Lernmodule). Dezent
+                // gehalten — Weiß bei 22 % Opacity (dunkler Home-BG
+                // verlangt einen helleren Ton als das pink-getönte
+                // `textSecondary`, das auf Dark zu warm/dunkel rüber-
+                // kommt), 1 pt dünn — fürs Auge ein klarer Schnitt,
+                // ohne dass die Linie selbst Aufmerksamkeit zieht.
+                // Padding-top matcht den Tools-Top-Padding-Wert davor
+                // (22 pt) für gleichmäßiges Atmen über und unter dem
+                // Strich.
+                Rectangle()
+                    .fill(Color.white.opacity(0.22))
+                    .frame(height: 1)
+                    .padding(.top, 22)
+                    .appEntryTransition(delay: 0.15)
+
                 HomeToolsSection(
                     onSelectScan: { openHomeScreen(.scan) },
                     onSelectLists: { openHomeScreen(.lists(nil)) }
                 )
-                // Tools-Block (Headline + beide Cards) etwas weiter
-                // nach unten: 12 → 22 pt.
-                .padding(.top, 22)
+                // **Home-Polish 2026-04-30**: Top-Padding 22 → 14 pt.
+                // Der vorgelagerte Divider hat selbst 22 pt nach oben;
+                // unter dem Strich reichen 14 pt damit die „Deine
+                // Tools"-Headline sauber aber nicht zu locker auf den
+                // Trenner folgt. Insgesamt liegt damit jetzt mehr Luft
+                // (22 + 1 + 14 = 37 pt) zwischen MoreExercises und
+                // Tools-Headline als zuvor (22 pt) — der Cut ist
+                // visuell präsenter, wie vom User gewünscht.
+                .padding(.top, 14)
                 // Klarer Abstand zum Footer — Tools klebt nicht mehr.
                 .padding(.bottom, 24)
-                .appEntryTransition(delay: 0.15)
+                .appEntryTransition(delay: 0.2)
 
                 Color.clear.frame(height: homeFooterClearance)
             }
