@@ -287,3 +287,76 @@ heute anders aus": die hier gelisteten Tweaks sind die Antwort.
 Kein Bug, sondern Spec-Iterationen nach realer Nutzung.
 
 ---
+
+## 🛠️ Spec-Wissen: Vokabel-Cleanup im SQLite-Bundle
+
+**Erstmals dokumentiert 2026-04-30, Tag `v2-vocab-cleanup-milchtritt`** —
+falls weitere User-Reports „Wort X ist sinnlos / falsch übersetzt, bitte
+löschen" auflaufen, ist der Cleanup-Pfad jetzt erprobt:
+
+**Quelle:** `FRDEVocabMVP/FRDEMasterLexicon.sqlite` (~65 MB Bundle-DB).
+6 Tabellen: `entries`, `senses`, `forms`, `examples`, `pronunciations`,
+`relations`. Jede Vokabel hat eine `entry_id` (Primary Key in `entries`),
+auf die alle anderen Tabellen via Foreign-Key-Spalte zeigen.
+
+**Workflow:**
+
+1. **Eintrag identifizieren** (case-insensitive, mehrere Felder):
+   ```sql
+   SELECT entry_id, lemma_fr, lemma_de, word_class FROM entries
+   WHERE lemma_fr LIKE '%suchwort%' OR lemma_de LIKE '%suchwort%';
+   ```
+   Plus `senses.translation_de`, `forms.form` durchsuchen — das zu
+   löschende Wort kann in mehreren Tabellen-Spalten als String stehen.
+
+2. **Ähnlich aussehende, aber andere Vokabeln prüfen** — `le patou`
+   (Pyrenäenberghund) sieht aus wie `le patounage` (Milchtritt), darf
+   aber nicht mit-gelöscht werden. Manuelle Inspection vor DELETE.
+
+3. **Volle Reihenfolge der Tabellen-Cleanups** in einer Transaction
+   (Foreign-Key-Order, Eltern zuletzt):
+   ```sql
+   BEGIN TRANSACTION;
+   DELETE FROM relations WHERE entry_id IN (X, Y) OR related_entry_id IN (X, Y);
+   DELETE FROM examples WHERE entry_id IN (X, Y);
+   DELETE FROM forms    WHERE entry_id IN (X, Y);
+   DELETE FROM senses   WHERE entry_id IN (X, Y);
+   DELETE FROM entries  WHERE entry_id IN (X, Y);
+   COMMIT;
+   VACUUM;
+   ```
+   Wichtig: `relations` hat **bidirektionale** Verlinkung
+   (`entry_id` UND `related_entry_id`) — beide Seiten löschen, sonst
+   bleiben tote Pointer auf benachbarte Vokabeln zurück.
+
+4. **VACUUM** nicht vergessen — sonst bleibt die DB-Datei gleich groß
+   trotz gelöschter Rows. Bei Milchtritt-Cleanup hat VACUUM 3 MB
+   reklamiert (65 → 62 MB).
+
+5. **Verifikations-Query nach Delete:**
+   ```sql
+   SELECT COUNT(*) FROM entries WHERE entry_id IN (X, Y);  -- sollte 0
+   SELECT COUNT(*) FROM forms   WHERE entry_id IN (X, Y);  -- sollte 0
+   -- … für alle 5 abhängigen Tabellen
+   ```
+
+6. **Build-verify** — die DB ist im App-Bundle, Build muss erfolgreich
+   durchlaufen (sollte er, da binary asset, kein Schema-Bezug im Code).
+
+7. **User-Daten nicht anfassen.** Lernfortschritt, Personal-Decks, alte
+   Lexikon-Caches in UserDefaults referenzieren ggf. die gelöschten
+   `entry_id`s. Tote Referenzen werden im UI als „Vokabel nicht
+   gefunden" silently übersprungen — Cleanup von User-State ist
+   Migration-Territorium und wäre ein eigener Branch mit explizitem
+   Spec.
+
+8. **Random-Shuffle-Test im Sim** ist bei einzelnen Vokabel-Cleanups
+   unverlässlich (Treffer-Wahrscheinlichkeit niedrig). DB-Grep
+   verifiziert vollständige Entfernung aus Source-Set zuverlässiger.
+
+**Tools-Hinweis:** `sqlite3` ist auf macOS Standard verfügbar. Keine
+Node.js / Python-Helper nötig. Datei ist im Repo getrackt — Diff
+zeigt nur „Binary files differ", aber `git revert` / `git checkout
+HEAD~1 -- file.sqlite` funktioniert normal.
+
+---
