@@ -473,7 +473,6 @@
 		FE12345678901234567890E3 /* ElumiTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890E4 /* ElumiTabView.swift */; };
 		FE12345678901234567890E5 /* PersonalDeck.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890E6 /* PersonalDeck.swift */; };
 		FE12345678901234567890E7 /* PersonalDeckStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890E8 /* PersonalDeckStore.swift */; };
-		FE12345678901234567890E9 /* PersonalDeckSlotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890EA /* PersonalDeckSlotView.swift */; };
 		FE12345678901234567890EB /* CreatePersonalDeckSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890EC /* CreatePersonalDeckSheet.swift */; };
 		FE12345678901234567890ED /* FlashcardsView+PersonalDeck.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890EE /* FlashcardsView+PersonalDeck.swift */; };
 		FE12345678901234567890F1 /* WordRunnerSpawner.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890F2 /* WordRunnerSpawner.swift */; };
@@ -1033,7 +1032,6 @@
 		FE12345678901234567890E4 /* ElumiTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElumiTabView.swift; path = FRDEVocabMVP/ElumiTabView.swift; sourceTree = "<group>"; };
 		FE12345678901234567890E6 /* PersonalDeck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PersonalDeck.swift; path = FRDEVocabMVP/PersonalDeck.swift; sourceTree = "<group>"; };
 		FE12345678901234567890E8 /* PersonalDeckStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PersonalDeckStore.swift; path = FRDEVocabMVP/PersonalDeckStore.swift; sourceTree = "<group>"; };
-		FE12345678901234567890EA /* PersonalDeckSlotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PersonalDeckSlotView.swift; path = FRDEVocabMVP/PersonalDeckSlotView.swift; sourceTree = "<group>"; };
 		FE12345678901234567890EC /* CreatePersonalDeckSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CreatePersonalDeckSheet.swift; path = FRDEVocabMVP/CreatePersonalDeckSheet.swift; sourceTree = "<group>"; };
 		FE12345678901234567890EE /* FlashcardsView+PersonalDeck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FlashcardsView+PersonalDeck.swift"; path = "FRDEVocabMVP/FlashcardsView+PersonalDeck.swift"; sourceTree = "<group>"; };
 		FE12345678901234567890F2 /* WordRunnerSpawner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerSpawner.swift; path = FRDEVocabMVP/WordRunnerSpawner.swift; sourceTree = "<group>"; };
@@ -1166,7 +1164,6 @@
 				FE12345678901234567890E4 /* ElumiTabView.swift */,
 				FE12345678901234567890E6 /* PersonalDeck.swift */,
 				FE12345678901234567890E8 /* PersonalDeckStore.swift */,
-				FE12345678901234567890EA /* PersonalDeckSlotView.swift */,
 				FE12345678901234567890EC /* CreatePersonalDeckSheet.swift */,
 				FE12345678901234567890EE /* FlashcardsView+PersonalDeck.swift */,
 				FE1234567890123456789101 /* TrainingGeneratorModels.swift */,
@@ -2099,7 +2096,6 @@
 				FE12345678901234567890E3 /* ElumiTabView.swift in Sources */,
 				FE12345678901234567890E5 /* PersonalDeck.swift in Sources */,
 				FE12345678901234567890E7 /* PersonalDeckStore.swift in Sources */,
-				FE12345678901234567890E9 /* PersonalDeckSlotView.swift in Sources */,
 				FE12345678901234567890EB /* CreatePersonalDeckSheet.swift in Sources */,
 				FE12345678901234567890ED /* FlashcardsView+PersonalDeck.swift in Sources */,
 				FE1234567890123456789100 /* TrainingGeneratorModels.swift in Sources */,
