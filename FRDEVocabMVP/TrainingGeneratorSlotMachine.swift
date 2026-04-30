@@ -95,15 +95,28 @@ struct ReelSymbol: Identifiable, Equatable {
 
 extension ReelSymbol {
 
-    /// Zentrales Elumi-Spezial-Symbol. **Korrigiert 2026-04-25**:
-    /// `ElumiWasserfloh` war falsch (das ist der Wasserfloh-Snack,
-    /// NICHT die Elumi-Spielfigur). Jetzt `IconElumiSpiel` — das
-    /// echte Elumi-Identitäts-Icon aus dem Asset-Catalog.
+    /// Zentrales Bonus-Symbol — Match auf 3× gibt einen Game-Credit.
+    /// Iterations-Historie:
+    ///   • Initial: `ElumiWasserfloh` (Wasserfloh-Snack) — falsch zugeordnet
+    ///   • 2026-04-25: `IconElumiSpiel` (Game-Console) — Identitäts-Korrektur
+    ///   • 2026-04-30: `SplashCharacter` (Axolotl-Maskottchen) +
+    ///     Label `Game`. Begründung: das Maskottchen ist das app-weit
+    ///     etablierte Visual (Splash, Arcade-Hero, Word-Runner, Footer,
+    ///     ~12 Refs); das Game-Console-Icon war ein generisches Symbol
+    ///     ohne Bezug zur Elumi-Identität. Label-Rename `Elumi` → `Game`
+    ///     macht klar, **wofür** der Match-Reward zählt (Game-Credit
+    ///     für die Arcade), nicht **wer** ihn bringt.
+    /// Match-Identität ist `kind: .elumi` (für `isElumi` / `elumiCount`-
+    /// Zählung) — der enum-case-Name bleibt aus Backward-Compat zum
+    /// existierenden Reward-Code (Z. 1147-1162 in `ElumiTabView.swift`)
+    /// erhalten. Innerhalb der App ist das Symbol ab jetzt das
+    /// „Game"-Symbol; die `.elumi`-Bezeichnung lebt rein als
+    /// Code-internes Match-Token weiter.
     static let elumi = ReelSymbol(
         kind: .elumi,
         homeModule: nil,
-        assetImage: "IconElumiSpiel",
-        label: "Elumi",
+        assetImage: "SplashCharacter",
+        label: "Game",
         tint: Color(hex: "#FFD166")
     )
 
