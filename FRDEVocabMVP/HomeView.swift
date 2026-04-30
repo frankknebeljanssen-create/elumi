@@ -124,17 +124,18 @@ struct HomeView: View {
                     onSelectScan: { openHomeScreen(.scan) },
                     onSelectLists: { openHomeScreen(.lists(nil)) }
                 )
-                // **Home-Polish 2026-04-30 — Iteration 2**: 14 → 20 pt.
-                // Der Strich ist (siehe oben) auf 34 pt nach oben
-                // gerückt; zusätzlich bekommt die „Deine Tools"-
-                // Headline mehr Atem darunter, damit Strich UND
-                // Headline beide gleichmäßig „runter" wandern, wie
-                // vom User explizit gefordert. Gesamtluft jetzt
-                // 34 + 1 + 20 = 55 pt zwischen MoreExercises-Ende und
-                // Tools-Headline (vorher 37 pt).
-                .padding(.top, 20)
-                // Klarer Abstand zum Footer — Tools klebt nicht mehr.
-                .padding(.bottom, 24)
+                // **Home-Polish 2026-04-30 — Iteration 4 (User-Spec
+                // „listen und tools mittig zwischen dem oberen trenner
+                // und der linie am footer (also ein bisschen nach
+                // oben)")**: top 20 → 12 pt, bottom 24 → 32 pt. Der
+                // Tools-Block (Headline + Card-Reihe, ~84 pt) rutscht
+                // dadurch um 8 pt nach oben, und die Card-Reihe sitzt
+                // jetzt visuell mittig zwischen dem oberen Querstrich
+                // und der Footer-Top-Linie. Der Divider selbst (mit
+                // `padding(.top, 34)`) bleibt unverändert — User
+                // explizit „oberer trenner bliebt auch wo er ist".
+                .padding(.top, 12)
+                .padding(.bottom, 32)
                 .appEntryTransition(delay: 0.2)
 
                 Color.clear.frame(height: homeFooterClearance)
