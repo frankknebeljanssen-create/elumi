@@ -77,7 +77,13 @@ struct ElumiTabView: View {
     /// (`TrainingGenerator.swift`, `TrainingGeneratorStore.swift`,
     /// `TrainingGeneratorModels.swift`) sind als Dead-Code markiert,
     /// Removal als Backlog-Item in TODO_post_v1b.md.
-    @StateObject private var chainStore = TrainingChainStore()
+    ///
+    /// **Stufe 2 (2026-04-30)**: aus `@StateObject` auf
+    /// `@ObservedObject … .shared` umgestellt. Der Chain-Store wird ab
+    /// Stufe 2 von zwei Stellen referenziert (hier zum Befüllen, plus
+    /// `TrainingChainOverviewView` für Back-Chevron-Clear via Closure).
+    /// Singleton-Pattern matcht `ProgressStore.shared`/`AccountStore.shared`.
+    @ObservedObject private var chainStore = TrainingChainStore.shared
     @StateObject private var dropRate = ElumiDropRateControllerStore()
     @StateObject private var budget = SlotMachineSpinBudgetStore()
     // **Pool-Vereinheitlichung 2026-04-30 (Stufe 1b)**: der frühere
@@ -110,6 +116,23 @@ struct ElumiTabView: View {
     @State private var spinTargets: [ReelSymbol?] = [nil, nil, nil]
     /// Letztes Spin-Ergebnis — Quelle für die Ergebnis-Sektion.
     @State private var lastSpinResult: SlotSpinResult?
+
+    /// **Stufe 2 (2026-04-30, Branch `feature/training-session-flow`)** —
+    /// Idempotenz-Flag für den Credit-Grant in `startTraining()`. Wird
+    /// in `handleSlotLanded` für jeden neuen Spin auf `false` zurück­
+    /// gesetzt, in `startTraining()` nach erfolgreichem Grant auf `true`
+    /// gesetzt. Verhindert die „Re-Roll-Cheat-Variante 2": User tappt
+    /// „Jetzt üben" → kassiert Tickets → Back-Chevron auf dem Pre-
+    /// Screen → tappt erneut „Jetzt üben" → würde sonst nochmal Tickets
+    /// kassieren (selber Spin-Ergebnis). Mit dem Flag ist der zweite
+    /// Tap idempotent: Chain wird neu gebaut, Pre-Screen wieder
+    /// gepusht, aber **keine** Tickets gutgeschrieben.
+    ///
+    /// Variante 1 (mehrere Drehungen ohne „Jetzt üben") ist davon
+    /// unabhängig — die ist über die `pendingResult`-Konstante in
+    /// `startTraining` schon abgedeckt: nur das **letzte**
+    /// `lastSpinResult` wird verwertet.
+    @State private var creditGrantConsumed: Bool = false
 
     // MARK: - Versuchslogik (2026-04-24 User-Spec)
     //
@@ -1384,6 +1407,11 @@ struct ElumiTabView: View {
     /// erreicht, Versuche gehen nicht verloren.
     private func handleSlotLanded(_ result: SlotSpinResult) {
         lastSpinResult = result
+        // **Stufe 2 (2026-04-30)** — neuer Spin = neuer Grant erlaubt.
+        // Erst beim „Jetzt üben"-Tap wird der Flag auf `true` gesetzt.
+        // Solange der User dreht (Re-Roll), bleibt der nächste Grant
+        // wieder offen.
+        creditGrantConsumed = false
         currentSpinNumber = min(currentSpinNumber + 1, maxSpins)
         dropRate.registerSpinResult(elumiCount: result.elumiCount)
         budget.awardBonusCredits(for: result.elumiCount)
@@ -1427,34 +1455,48 @@ struct ElumiTabView: View {
     /// `currentSpinNumber` auf 0 + räumen das lastSpinResult auf.
     /// Damit hat der Nutzer bei Rückkehr zum Tab frische 3 Versuche.
     ///
-    /// **Stufe 1 — kein UI-Effekt sichtbar**: Chain läuft mit
-    /// `currentIndex=0`; das gestartete Modul verhält sich wie bisher
-    /// (Done-CTA „Weiter lernen" → zurück zum Modul-Setup, kein
-    /// Chain-Step-2-Übergang). Stufe 2 verbindet die Done-CTAs an
-    /// `chainStore`.
+    /// **Stufe 2 (2026-04-30)** — Pre-Screen-Verkettung. Statt direkt
+    /// aufs erste Modul zu pushen, navigieren wir auf
+    /// `.trainingChainOverview(chain)`. Der Pre-Screen rendert den Plan
+    /// und pusht beim CTA-Tap selbst auf das erste Modul (über
+    /// `HomeHeroModule.chainScreen(...)` im `AppDestinationHost`).
+    ///
+    /// **Slot-State bleibt sichtbar (R12)**: die früheren Resets
+    /// (`currentSpinNumber = 0`, `lastSpinResult = nil`,
+    /// `slotPhase = .idle`, `resultHighlight*`) sind entfernt. Wenn der
+    /// User auf dem Pre-Screen den Back-Chevron tappt, soll er sein
+    /// Spin-Ergebnis im Tab unverändert wiedersehen — sonst wirkt der
+    /// Chevron wie ein Hard-Reset. Der Chain-Reset selbst läuft via
+    /// `TrainingChainStore.shared.clear()` aus dem Pre-Screen.
+    ///
+    /// **Idempotenz (creditGrantConsumed)**: verhindert die
+    /// Re-Roll-Cheat-Variante 2, in der der User „Jetzt üben → Back →
+    /// Jetzt üben" mit demselben `lastSpinResult` mehrfach durchläuft.
+    /// Tickets gibt's nur beim ersten Tap; jeder weitere Tap mit
+    /// demselben Ergebnis baut zwar die Chain neu (Pre-Screen erscheint
+    /// erneut), gibt aber keine Tickets mehr. Spin/Re-Roll setzt das
+    /// Flag in `handleSlotLanded` zurück.
+    ///
+    /// **Jackpot-Pfad (3× Game)**: `TrainingChainContext.make(...)`
+    /// liefert seit Stufe 2 auch hier einen gültigen Context (mit
+    /// leerem `plannedSteps`). Pre-Screen rendert nur Game-Cards und
+    /// ein disabled-CTA. Credits werden trotzdem gutgeschrieben (+6).
     private func startTraining() {
         feedbackPlayer.playTabSwitch()
 
-        // Versuchszähler zurücksetzen, Ergebnis löschen — bei Rückkehr
-        // sieht der User wieder „Versuch 1/3". Wir ziehen `lastSpinResult`
-        // in eine lokale Konstante, BEVOR wir den State auf nil setzen,
-        // damit der Chain-Builder noch auf das Spin-Ergebnis zugreifen kann.
-        let pendingResult = lastSpinResult
-        currentSpinNumber = 0
-        lastSpinResult = nil
-        slotPhase = .idle
-        resultHighlightScale = 1.0
-        resultHighlightGlow = 0.0
+        guard let pendingResult = lastSpinResult else { return }
 
         // **Credit-Grant beim 'Jetzt üben'-Tap** (Stufe 1b Patch,
         // 2026-04-30): nur die Drehung, mit der der User tatsächlich
         // ins Training geht, gibt Tickets — verhindert Re-Roll-Farming.
-        // Steht VOR dem Chain-Build, damit auch der Jackpot-Pfad
-        // (3× Game → `make(...)` returnt nil) die +6 Credits noch
-        // gutgeschrieben bekommt, bevor `startTraining` früh returnt.
         // Mapping aus `slotCreditGrantTable` (1×→+1, 2×→+3, 3×→+6).
-        if let pending = pendingResult {
-            let granted = Self.slotCreditGrantTable[pending.elumiCount] ?? 0
+        //
+        // **Stufe 2 Idempotenz (2026-04-30)**: zusätzlich gegen
+        // `creditGrantConsumed` geguarded. Erst nach erfolgreichem
+        // Grant wird das Flag auf `true` gesetzt. Re-Spin (in
+        // `handleSlotLanded`) setzt es wieder auf `false`.
+        if !creditGrantConsumed {
+            let granted = Self.slotCreditGrantTable[pendingResult.elumiCount] ?? 0
             if granted > 0 {
                 ProgressStore.shared.mutate { progress in
                     progress.arcadeCredits += granted
@@ -1464,29 +1506,30 @@ struct ElumiTabView: View {
                 // den neuen Wert sofort sieht.
                 arcadeCredits = ProgressStore.shared.progress.arcadeCredits
                 #if DEBUG
-                print("🎫 [ElumiTab] Credit-Grant on 'Jetzt üben' — Elumis=\(pending.elumiCount), Credits+\(granted) → arcadeCredits=\(arcadeCredits)")
+                print("🎫 [ElumiTab] Credit-Grant on 'Jetzt üben' — Elumis=\(pendingResult.elumiCount), Credits+\(granted) → arcadeCredits=\(arcadeCredits)")
                 #endif
             }
+            creditGrantConsumed = true
         }
 
         // Chain-Build aus Slot-Result. Game-Slots sind in `make(...)`
         // bereits aus `plannedSteps` gefiltert (sourceCenterSymbolKinds
-        // bewahrt sie für End-Summary in Stufe 4). Bei 3× Game →
-        // `nil` → Jackpot-Pfad (Stufe 5 implementiert die Jackpot-UI;
-        // Stufe 1 fällt hier still zurück, kein Crash). Credits sind
-        // an dieser Stelle bereits gutgeschrieben.
-        guard let result = pendingResult,
-              let chain = TrainingChainContext.make(
-                  from: result,
-                  totalDuration: selectedDuration
-              )
-        else { return }
+        // bewahrt sie für End-Summary in Stufe 4). Bei Jackpot (3× Game)
+        // ist `plannedSteps` leer — Pre-Screen rendert dann nur die
+        // Game-Cards und disabled-CTA mit Hint „Drehe noch mal für
+        // Übungen" (siehe `TrainingChainContext.isJackpot`).
+        let chain = TrainingChainContext.make(
+            from: pendingResult,
+            totalDuration: selectedDuration
+        )
 
         // Chain-Start: Resume-Stores werden im Store geleert (R5).
         chainStore.start(chain)
 
-        guard let firstStep = chain.currentStep else { return }
-        navigate(screenForChainStep(firstStep, chainContext: chain))
+        // **Stufe 2 Navigation**: Pre-Screen statt direktes Modul-Push.
+        // Der Pre-Screen pusht beim „Übung starten"-CTA selbst auf den
+        // ersten Chain-Step (Logik im `AppDestinationHost`-Wiring).
+        navigate(.trainingChainOverview(chain))
     }
 
     /// Mappt einen Chain-Step (HomeHeroModule) auf den passenden
@@ -1498,43 +1541,17 @@ struct ElumiTabView: View {
     /// **R4**: Vokabeln/Nomen/Artikel/Verben/Verbformen laufen alle
     /// über `.train(TrainingLaunchContext)`, der `preferredMode` schaltet
     /// die TrainingView intern auf den richtigen Modus.
+    ///
+    /// **Stufe 2 (2026-04-30)**: Wrapper um `HomeHeroModule.chainScreen(...)`
+    /// — die Logik ist nach `AppNavigationModels.swift` umgezogen, weil
+    /// auch `AppDestinationHost` (Pre-Screen-CTA-Closure) den Mapping
+    /// braucht. Hier bleibt nur der Wrapper damit existing Call-Sites
+    /// unverändert bleiben.
     private func screenForChainStep(
         _ step: HomeHeroModule,
         chainContext: TrainingChainContext
     ) -> AppScreen {
-        switch step {
-        case .karteikarten:
-            return .flashcards(FlashcardLaunchContext(
-                shouldAutoStart: true,
-                chainContext: chainContext
-            ))
-        case .quiz:
-            return .quiz(QuizLaunchContext(
-                shouldAutoStart: true,
-                chainContext: chainContext
-            ))
-        case .akzente:
-            return .accents(AccentsLaunchContext(
-                preferredMode: .uben,
-                shouldAutoStart: true,
-                chainContext: chainContext
-            ))
-        case .nomen, .artikel, .verben, .verbformen, .vokabeln:
-            let mode: TrainingMode
-            switch step {
-            case .nomen:      mode = .nouns
-            case .artikel:    mode = .articles
-            case .verben:     mode = .verbs
-            case .verbformen: mode = .verbforms
-            case .vokabeln:   mode = .vocabulary
-            default:          mode = .vocabulary
-            }
-            return .train(TrainingLaunchContext(
-                preferredMode: mode,
-                shouldAutoStart: true,
-                chainContext: chainContext
-            ))
-        }
+        step.chainScreen(chainContext: chainContext)
     }
 
     // MARK: - Result-Highlight (2026-04-25 User-Spec)

@@ -105,6 +105,37 @@ struct AppDestinationHost: View {
                 openInfo: openInfo,
                 navigate: navigate
             )
+        case .trainingChainOverview(let chain):
+            // **Trainings-Chain Pre-Screen** (Stufe 2, 2026-04-30,
+            // Branch `feature/training-session-flow`). Zwischen Slot-
+            // Reveal und erstem Modul-Open gepusht. Render-Logik in
+            // `TrainingChainOverviewView`.
+            //
+            // **`onStartTraining`** baut den AppScreen für den ersten
+            // Chain-Step (über `HomeHeroModule.chainScreen(chainContext:)`)
+            // und pusht ihn — der User wechselt vom Pre-Screen zur
+            // ersten Modul-Session. Bei Jackpot (`chain.isJackpot`)
+            // ist der CTA in der View selbst disabled, Closure wird
+            // nicht aufgerufen.
+            //
+            // **`onBack`** ruft `TrainingChainStore.shared.clear()` —
+            // Pre-Screen-Eigene `dismiss()` (via @Environment) pop-t
+            // den Stack. `lastSpinResult` im ElumiTab bleibt
+            // unangetastet (R12-Spec).
+            TrainingChainOverviewView(
+                chain: chain,
+                onStartTraining: { [chain] in
+                    guard let firstStep = chain.currentStep else { return }
+                    navigate(firstStep.chainScreen(chainContext: chain))
+                },
+                onBack: {
+                    TrainingChainStore.shared.clear()
+                },
+                goHome: goHome,
+                openSettings: openSettings,
+                openInfo: openInfo,
+                feedbackPlayer: feedbackPlayer
+            )
         case .elumi:
             // **Elumi-Tab** (Phase 8) — persönlicher Begleiter-Screen:
             // Begrüßung + Axolotl, eine Empfehlungs-Card (V1 Karteikarten),

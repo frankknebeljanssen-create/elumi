@@ -467,6 +467,7 @@
 		CC11A1AA00000000ABCDEF01 /* TrainingChainContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC11A1AA00000000ABCDEF02 /* TrainingChainContext.swift */; };
 		CC55AA0000000000ABCDEF01 /* TrainingChainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC55AA0000000000ABCDEF02 /* TrainingChainStore.swift */; };
 		CC15FF0000000000ABCDEF01 /* ChainListSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0000000000ABCDEF02 /* ChainListSelectionSheet.swift */; };
+		CC22BB0000000000ABCDEF01 /* TrainingChainOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC22BB0000000000ABCDEF02 /* TrainingChainOverviewView.swift */; };
 		FE12345678901234567890B1 /* ScanTuning.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890B2 /* ScanTuning.swift */; };
 		FE12345678901234567890BA /* HomeHeroLearningSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890BB /* HomeHeroLearningSection.swift */; };
 		FE12345678901234567890C1 /* WordRunnerGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890C2 /* WordRunnerGameView.swift */; };
@@ -1030,6 +1031,7 @@
 		CC11A1AA00000000ABCDEF02 /* TrainingChainContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingChainContext.swift; path = FRDEVocabMVP/TrainingChainContext.swift; sourceTree = "<group>"; };
 		CC55AA0000000000ABCDEF02 /* TrainingChainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingChainStore.swift; path = FRDEVocabMVP/TrainingChainStore.swift; sourceTree = "<group>"; };
 		CC15FF0000000000ABCDEF02 /* ChainListSelectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChainListSelectionSheet.swift; path = FRDEVocabMVP/ChainListSelectionSheet.swift; sourceTree = "<group>"; };
+		CC22BB0000000000ABCDEF02 /* TrainingChainOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingChainOverviewView.swift; path = FRDEVocabMVP/TrainingChainOverviewView.swift; sourceTree = "<group>"; };
 		FE12345678901234567890B2 /* ScanTuning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanTuning.swift; path = FRDEVocabMVP/ScanTuning.swift; sourceTree = "<group>"; };
 		FE12345678901234567890BB /* HomeHeroLearningSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeHeroLearningSection.swift; path = FRDEVocabMVP/HomeHeroLearningSection.swift; sourceTree = "<group>"; };
 		FE12345678901234567890C2 /* WordRunnerGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerGameView.swift; path = FRDEVocabMVP/WordRunnerGameView.swift; sourceTree = "<group>"; };
@@ -1162,6 +1164,7 @@
 				CC11A1AA00000000ABCDEF02 /* TrainingChainContext.swift */,
 				CC55AA0000000000ABCDEF02 /* TrainingChainStore.swift */,
 				CC15FF0000000000ABCDEF02 /* ChainListSelectionSheet.swift */,
+				CC22BB0000000000ABCDEF02 /* TrainingChainOverviewView.swift */,
 				FE12345678901234567890B2 /* ScanTuning.swift */,
 				FE12345678901234567890C2 /* WordRunnerGameView.swift */,
 				FE12345678901234567890D2 /* WordRunnerModels.swift */,
@@ -2098,6 +2101,7 @@
 				CC11A1AA00000000ABCDEF01 /* TrainingChainContext.swift in Sources */,
 				CC55AA0000000000ABCDEF01 /* TrainingChainStore.swift in Sources */,
 				CC15FF0000000000ABCDEF01 /* ChainListSelectionSheet.swift in Sources */,
+				CC22BB0000000000ABCDEF01 /* TrainingChainOverviewView.swift in Sources */,
 				AA00CCC1ABCD0003AA00AA00 /* SlotAudioPlayer.swift in Sources */,
 				FE12345678901234567890B1 /* ScanTuning.swift in Sources */,
 				FE12345678901234567890C1 /* WordRunnerGameView.swift in Sources */,

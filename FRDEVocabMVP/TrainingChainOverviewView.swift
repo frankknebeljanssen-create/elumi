@@ -1,0 +1,317 @@
+import SwiftUI
+
+/// **Trainings-Chain Pre-Screen** (Stufe 2, 2026-04-30, Branch
+/// `feature/training-session-flow`).
+///
+/// Zwischen-Screen, der nach „Jetzt üben" im Elumi-Tab erscheint und
+/// VOR dem ersten Modul-Open. Zweck: dem User vor dem Start ein
+/// klares Bild der gleich anstehenden Trainings-Sequenz geben — welche
+/// Module, in welcher Reihenfolge, wie viel Zeit pro Modul, welche
+/// Game-Slots ihm wie viele Tickets eingebracht haben.
+///
+/// **Layout-Architektur:**
+///   • ModuleHeaderCard mit Back-Chevron oben
+///   • Hero-Section: „Dein Trainingsplan" + Total-Dauer-Hint
+///     („12 Minuten · 3 Übungen")
+///   • Mini-Cards-Stack pro Source-Slot (alle 3, in Slot-Reihenfolge):
+///       - Modul-Slot: Modul-Icon + Modul-Name + perStep-Zeit
+///       - Game-Slot:  🎫-Icon + „+1 Ticket" (knapp) + „kein Training"
+///   • „Übung starten"-CTA unten; bei Jackpot disabled + Hint-Text
+///
+/// **Navigations-Verhalten:**
+///   • CTA → Push aufs erste Modul via `onStartTraining` (Caller
+///     berechnet den `screenForChainStep`-AppScreen).
+///   • Back-Chevron (`onBack`) → Caller räumt Chain ab via
+///     `chainStore.clear()` und pop-t Navigation. `lastSpinResult` im
+///     Tab bleibt sichtbar — R12-Spec konform.
+///
+/// **Game-Slot-Layout:** zeigt knapp das Tickets-Reward + „kein
+/// Training" (User-Spec). Die Tickets selbst sind beim
+/// `startTraining`-Tap im ElumiTab schon gutgeschrieben (Pre-Screen
+/// sieht keinen Re-Grant), die Card hier ist rein informativ.
+struct TrainingChainOverviewView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.appUsesGlobalChrome) private var usesGlobalChrome
+
+    let chain: TrainingChainContext
+
+    /// Wird beim Tap auf „Übung starten" aufgerufen — der Caller pusht
+    /// daraus den ersten Modul-AppScreen via `screenForChainStep`. Wenn
+    /// `chain.isJackpot`, ist der CTA disabled, dieser Closure wird
+    /// nicht ausgelöst.
+    let onStartTraining: () -> Void
+
+    /// Caller-Handler für Back-Chevron. Soll
+    /// `chainStore.clear()` rufen und Navigation pop-en. `lastSpinResult`
+    /// im Tab bleibt unangetastet (R12).
+    let onBack: () -> Void
+
+    /// Caller-Handler für Footer-Home / globale Chrome-Buttons.
+    let goHome: () -> Void
+    let openSettings: () -> Void
+    let openInfo: () -> Void
+
+    @ObservedObject var feedbackPlayer: FeedbackPlayer
+
+    private let sectionStyle: AppSectionStyle = .home
+
+    // MARK: - Derived
+
+    /// Total-Dauer-Anzeige im Hero. Bei Jackpot leer.
+    private var totalDurationText: String {
+        guard !chain.plannedSteps.isEmpty else { return "" }
+        let total = chain.plannedSteps.count * chain.perStepDurationMin
+        return "\(total) Minuten · \(chain.plannedSteps.count) \(chain.plannedSteps.count == 1 ? "Übung" : "Übungen")"
+    }
+
+    /// Tickets, die der User durch den aktuellen Slot-Spin bekommt
+    /// (1×→1, 2×→3, 3×→6). Aus dem `slotCreditGrantTable`-Mapping
+    /// nachgebaut, weil der Pre-Screen den Wert nicht aus dem Store
+    /// liest — er zeigt ihn nur an.
+    private var ticketsFromGameSlots: Int {
+        let gameCount = chain.sourceCenterSymbolKinds.filter { kind in
+            if case .game = kind { return true }
+            return false
+        }.count
+        switch gameCount {
+        case 1: return 1
+        case 2: return 3
+        case 3: return 6
+        default: return 0
+        }
+    }
+
+    // MARK: - Body
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                ModuleHeaderCard(
+                    systemImage: "list.bullet.rectangle.fill",
+                    title: "Dein Trainingsplan",
+                    accent: sectionStyle.accent,
+                    onBack: onBack
+                )
+
+                heroBlock
+
+                slotCardsStack
+
+                if chain.isJackpot {
+                    jackpotHint
+                }
+
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, AppLayout.screenPadding)
+            .padding(.top, AppLayout.screenHeaderTopPadding)
+            // Bottom-Padding lässt Platz für Footer + sticky CTA.
+            .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 100)
+            .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .top)
+        }
+        .overlay(alignment: .bottom) {
+            startCTA
+                .padding(.horizontal, AppLayout.screenPadding)
+                .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.md)
+        }
+        .tint(sectionStyle.accent)
+        .appAmbientWormBackground(sectionStyle)
+        .toolbar(.hidden, for: .navigationBar)
+        .appLocalChrome(enabled: !usesGlobalChrome) {
+            AppTopBar(onBack: onBack, onInfo: openInfo)
+                .padding(.horizontal, AppLayout.screenPadding)
+                .padding(.top, AppLayout.topBarInsetTop)
+        } bottomBar: {
+            AppBottomBar(
+                feedbackPlayer: feedbackPlayer,
+                onHome: goHome,
+                onFavorite: nil,
+                onScan: nil,
+                onSettings: openSettings
+            )
+        }
+    }
+
+    // MARK: - Hero
+
+    private var heroBlock: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(chain.isJackpot ? "Jackpot — kein Training!" : "Bereit?")
+                .font(.system(size: 22, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+
+            if !chain.isJackpot {
+                Text(totalDurationText)
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 4)
+    }
+
+    // MARK: - Slot-Cards-Stack
+
+    /// Eine Card pro Slot-Position des Spin-Results, in Original-
+    /// Reihenfolge (linker Slot zuerst). Modul-Slots zeigen Zeit-
+    /// Anteil, Game-Slots zeigen Tickets-Reward.
+    private var slotCardsStack: some View {
+        VStack(spacing: 10) {
+            ForEach(Array(chain.sourceCenterSymbolKinds.enumerated()), id: \.offset) { idx, kind in
+                slotCard(slotIndex: idx, kind: kind)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func slotCard(slotIndex: Int, kind: TrainingChainContext.SourceSlotKind) -> some View {
+        switch kind {
+        case .module(let module):
+            moduleSlotCard(slotIndex: slotIndex, module: module)
+        case .game:
+            gameSlotCard(slotIndex: slotIndex)
+        }
+    }
+
+    /// Modul-Card: Index („Reel 1") + Modul-Icon + Modul-Name +
+    /// Zeit-Anteil als Pill rechts.
+    private func moduleSlotCard(slotIndex: Int, module: HomeHeroModule) -> some View {
+        HStack(spacing: 14) {
+            HomeModuleIconView(icon: module.icon, size: 44)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Reel \(slotIndex + 1)")
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .textCase(.uppercase)
+                Text(module.title)
+                    .font(.system(size: 17, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+            }
+
+            Spacer(minLength: 0)
+
+            // Zeit-Pill: „4 min" — gerundet auf perStepDurationMin.
+            // User-Spec: gerundete Anzeige (5/10-Sekunden-Schritte hier
+            // nicht relevant, weil perStepDurationMin = totalDuration/N
+            // mit N = Anzahl Modul-Slots immer ein ganzzahliges
+            // Minuten-Ergebnis liefert: 6/2=3, 12/3=4, 18/2=9, etc.)
+            Text("\(chain.perStepDurationMin) min")
+                .font(.system(size: 13, weight: .black, design: .rounded))
+                .foregroundStyle(module.accent)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(
+                    Capsule()
+                        .fill(module.accent.opacity(0.18))
+                )
+                .overlay(
+                    Capsule()
+                        .stroke(module.accent.opacity(0.40), lineWidth: 1)
+                )
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(AppTheme.Colors.surface)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(module.accent.opacity(0.30), lineWidth: 1)
+        )
+    }
+
+    /// Game-Card: Index („Reel N") + 🎫-Icon + „+1 Ticket" + „kein
+    /// Training". Bewusst knapp — User-Spec.
+    private func gameSlotCard(slotIndex: Int) -> some View {
+        HStack(spacing: 14) {
+            // SF-Symbol „ticket.fill" mit Warning-Color (Yellow), gleiches
+            // Visual wie der HUD-Chip im Arcade-Spiel — Wiedererkennung.
+            Image(systemName: "ticket.fill")
+                .font(.system(size: 28, weight: .bold))
+                .foregroundStyle(AppTheme.Colors.warning)
+                .frame(width: 44, height: 44)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Reel \(slotIndex + 1)")
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .textCase(.uppercase)
+                Text("+1 Ticket")
+                    .font(.system(size: 17, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+            }
+
+            Spacer(minLength: 0)
+
+            Text("kein Training")
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(AppTheme.Colors.surface)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(AppTheme.Colors.warning.opacity(0.30), lineWidth: 1)
+        )
+    }
+
+    // MARK: - Jackpot-Hint
+
+    /// Hinweis-Card statt Übungen, wenn alle 3 Slots Game waren.
+    /// Zeigt das Total-Tickets-Reward + Aufforderung neu zu drehen.
+    /// Stufe 5 wird hier eine Feier-Animation ergänzen — der Hint-Text
+    /// bleibt davon unabhängig nützlich für die Funktionalität.
+    private var jackpotHint: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Du hast +\(ticketsFromGameSlots) Tickets bekommen.")
+                .font(.system(size: 15, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+
+            Text("Drehe noch mal, um Übungen freizuspielen.")
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(AppTheme.Colors.warning.opacity(0.12))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(AppTheme.Colors.warning.opacity(0.40), lineWidth: 1)
+        )
+    }
+
+    // MARK: - CTA
+
+    /// Sticky Bottom-CTA „Übung starten". Disabled bei Jackpot. Wird
+    /// als Overlay über dem ScrollView platziert, damit der CTA immer
+    /// sichtbar bleibt unabhängig vom Scroll-State.
+    private var startCTA: some View {
+        Button {
+            guard !chain.isJackpot else { return }
+            onStartTraining()
+        } label: {
+            Text(chain.isJackpot ? "Zurück zum Setup" : "Übung starten")
+                .font(.system(size: 17, weight: .black, design: .rounded))
+                .foregroundStyle(.black)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 52)
+        }
+        .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+        .opacity(chain.isJackpot ? 0.45 : 1.0)
+        .disabled(chain.isJackpot)
+        .accessibilityLabel(chain.isJackpot ? "Zurück zum Setup" : "Erste Übung starten")
+    }
+}

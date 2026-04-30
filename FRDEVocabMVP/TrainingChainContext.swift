@@ -76,23 +76,42 @@ struct TrainingChainContext: Hashable {
     /// Gesamt-Step-Zahl für UI-Anzeige (immer == plannedSteps.count).
     var totalStepCount: Int { plannedSteps.count }
 
-    /// Builder aus dem Slot-Ergebnis. Filtert Game-Slots aus den
-    /// `plannedSteps` heraus, behält aber das vollständige Original
-    /// in `sourceCenterSymbolKinds` für die End-Summary (Stufe 4).
+    /// **Stufe 2 (2026-04-30)** — alle 3 Slots waren Game (3× Game).
+    /// Pre-Screen rendert dann nur Game-Cards, „Übung starten"-CTA ist
+    /// disabled, Hint-Text fordert zum Neu-Drehen auf. Credits sind in
+    /// `ElumiTabView.startTraining` schon gutgeschrieben (Jackpot-
+    /// Pfad +6 Tickets), bevor zum Pre-Screen navigiert wird. Stufe 5
+    /// baut auf dieser Property die Feier-Animation auf.
+    var isJackpot: Bool {
+        plannedSteps.isEmpty
+            && !sourceCenterSymbolKinds.isEmpty
+            && sourceCenterSymbolKinds.allSatisfy { kind in
+                if case .game = kind { return true }
+                return false
+            }
+    }
+
+    /// **Stufe 2 Update (2026-04-30)**: Builder returnt jetzt
+    /// **non-Optional** — auch im Jackpot-Fall (3× Game) wird ein
+    /// gültiger Context erzeugt, mit leerem `plannedSteps`-Array. Der
+    /// Pre-Screen rendert dann die Game-Cards und disabled-CTA. Vorher
+    /// returnte `nil` und der Caller fiel still zurück; das war
+    /// inkonsistent mit der Stufe-2-Spec „Pre-Screen ist immer der
+    /// Übergang nach Slot-Reveal".
+    ///
+    /// Filtert Game-Slots aus den `plannedSteps` heraus, behält aber
+    /// das vollständige Original in `sourceCenterSymbolKinds` für die
+    /// End-Summary (Stufe 4) und das Pre-Screen-Layout (Stufe 2 —
+    /// Game-Cards werden visuell mit angezeigt).
     ///
     /// **Stufe-3-Spezialfall (5min)**: bei `totalDuration == 5` wird
     /// `plannedSteps` auf max 1 Eintrag begrenzt — Steps 2+ tauchen
     /// nur im End-Summary auf. Stufe-1-Implementierung führt diesen
     /// Cap noch nicht aus; Stufe 3 erweitert die Logik.
-    ///
-    /// **Jackpot-Pfad (3× Game)**: alle Slots sind `.elumi` → Filter
-    /// liefert leeres `plannedSteps`-Array → Builder gibt `nil` zurück.
-    /// Caller (ElumiTabView) erkennt `nil` und triggert in Stufe 5 die
-    /// Jackpot-UI statt Chain-Navigation.
     static func make(
         from slotResult: SlotSpinResult,
         totalDuration: Int
-    ) -> TrainingChainContext? {
+    ) -> TrainingChainContext {
         let kinds: [SourceSlotKind] = slotResult.centerSymbols.map { symbol in
             if symbol.isElumi { return .game }
             if let module = symbol.homeModule { return .module(module) }
@@ -105,13 +124,16 @@ struct TrainingChainContext: Hashable {
             if case .module(let m) = kind { return m }
             return nil
         }
-        // Wenn alle 3 Slots Game waren (Jackpot-Pfad), gibt's keine
-        // Chain — Caller (ElumiTabView) erkennt das via `nil`-Return
-        // und fährt den Jackpot-Pfad (Stufe 5).
-        guard !modulesOnly.isEmpty else { return nil }
 
+        // Bei Jackpot (alle 3 Slots Game) ist `modulesOnly` leer. Der
+        // perStepDurationMin-Wert ist in dem Fall semantisch leer →
+        // wir setzen 0 als Sentinel. Pre-Screen prüft `isJackpot`/
+        // `plannedSteps.isEmpty` bevor er den Wert anzeigt, sodass die
+        // 0 nicht durchschlägt. Bei mind. 1 Modul-Slot: gleichmäßige
+        // Verteilung der Gesamtdauer.
         let stepsCount = modulesOnly.count
-        let perStep = max(1, totalDuration / stepsCount)
+        let perStep = stepsCount > 0 ? max(1, totalDuration / stepsCount) : 0
+
         return TrainingChainContext(
             id: UUID(),
             plannedSteps: modulesOnly,

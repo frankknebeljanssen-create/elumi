@@ -24,6 +24,16 @@ import Combine
 ///   • `clear()`: Setzt alles zurück — am Chain-Ende oder bei Abbruch.
 @MainActor
 final class TrainingChainStore: ObservableObject {
+    /// **Stufe 2 (2026-04-30)** — Singleton. Pattern analog zu
+    /// `ProgressStore.shared`, `AccountStore.shared`,
+    /// `ElumiCreditsStore.shared`. Begründung: ab Stufe 2 wird der
+    /// Store von mindestens **zwei Stellen** referenziert
+    /// (`ElumiTabView` für Slot-Spin → Chain-Init, plus
+    /// `TrainingChainOverviewView` für Back-Chevron-Clear). Singleton
+    /// vermeidet Pass-Through über AppRuntimeContainer und matcht
+    /// existierendes Codebase-Pattern für In-Memory-only Stores.
+    static let shared = TrainingChainStore()
+
     @Published private(set) var currentChain: TrainingChainContext?
     @Published private(set) var stepOutcomes: [SessionRewardOutcome] = []
 

@@ -32,6 +32,17 @@ enum AppScreen: Hashable {
     /// keine Tools. Abgrenzung zu Home (Auswahl) / Spielen / Fortschritt /
     /// Wörterbuch: Elumi = „dein nächster Schritt".
     case elumi
+
+    /// **Trainings-Chain Pre-Screen** (Stufe 2, 2026-04-30, Branch
+    /// `feature/training-session-flow`). Wird zwischen Slot-Reveal und
+    /// erstem Modul-Open gepusht. Zeigt Mini-Cards für jeden Slot des
+    /// aktuellen Spin-Results (Modul-Slots mit Zeit-Anteil, Game-Slots
+    /// mit Tickets-Marker), erlaubt dem User einen letzten
+    /// „Plan-anschauen"-Moment vor dem Start. „Übung starten"-CTA pusht
+    /// aufs erste Modul; Back-Chevron räumt die Chain ab und kehrt zum
+    /// Tab zurück (slot-result bleibt sichtbar, R12-Spec). Bei Jackpot
+    /// (3× Game): CTA disabled, Hint „Drehe noch mal für Übungen".
+    case trainingChainOverview(TrainingChainContext)
 }
 
 private struct AppOpenAccountActionKey: EnvironmentKey {
@@ -247,5 +258,64 @@ struct ImportCompletionContext: Hashable {
 
     var listLaunchContext: ListLaunchContext {
         ListLaunchContext(preferredListID: targetListID)
+    }
+}
+
+// MARK: - HomeHeroModule → AppScreen (Chain-Aware)
+
+extension HomeHeroModule {
+    /// **Stufe 2 (2026-04-30, Branch `feature/training-session-flow`)** —
+    /// Mappt einen Modul-Slot der Trainings-Chain auf den `AppScreen`,
+    /// der gepusht werden soll, inkl. injiziertem `chainContext` damit
+    /// die Modul-View den Done-CTA „Weiter (Step n+1)" rendern kann.
+    ///
+    /// Vorher lebte die Logik privat in `ElumiTabView.screenForChainStep`.
+    /// Stufe 2 braucht dieselbe Mapping-Funktion zusätzlich im
+    /// `AppDestinationHost` (Pre-Screen-CTA-Closure ruft sie für den
+    /// ersten Chain-Step auf), darum die Hochziehung in eine Extension.
+    /// `screenForChainStep` ist jetzt nur noch Wrapper.
+    ///
+    /// **R4-Mapping:** Vokabeln/Nomen/Artikel/Verben/Verbformen laufen
+    /// alle über `.train(TrainingLaunchContext)`, der `preferredMode`
+    /// schaltet die TrainingView intern auf den richtigen Modus.
+    /// Karteikarten → `.flashcards`, Quiz → `.quiz`, Akzente →
+    /// `.accents` mit `preferredMode = .uben` (Üben-Modus).
+    ///
+    /// `shouldAutoStart` ist immer `true` — die Modul-Views starten
+    /// direkt in die Session, kein Setup-Modal.
+    func chainScreen(chainContext: TrainingChainContext) -> AppScreen {
+        switch self {
+        case .karteikarten:
+            return .flashcards(FlashcardLaunchContext(
+                shouldAutoStart: true,
+                chainContext: chainContext
+            ))
+        case .quiz:
+            return .quiz(QuizLaunchContext(
+                shouldAutoStart: true,
+                chainContext: chainContext
+            ))
+        case .akzente:
+            return .accents(AccentsLaunchContext(
+                preferredMode: .uben,
+                shouldAutoStart: true,
+                chainContext: chainContext
+            ))
+        case .nomen, .artikel, .verben, .verbformen, .vokabeln:
+            let mode: TrainingMode
+            switch self {
+            case .nomen:      mode = .nouns
+            case .artikel:    mode = .articles
+            case .verben:     mode = .verbs
+            case .verbformen: mode = .verbforms
+            case .vokabeln:   mode = .vocabulary
+            default:          mode = .vocabulary
+            }
+            return .train(TrainingLaunchContext(
+                preferredMode: mode,
+                shouldAutoStart: true,
+                chainContext: chainContext
+            ))
+        }
     }
 }
