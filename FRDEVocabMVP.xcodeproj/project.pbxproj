@@ -462,7 +462,7 @@
 		FE1234567890123456789071 /* Sounds/fish_theme_01.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789072 /* Sounds/fish_theme_01.mp3 */; };
 		FE1234567890123456789081 /* MusicCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789082 /* MusicCatalog.swift */; };
 		FE1234567890123456789091 /* TrophyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1234567890123456789092 /* TrophyView.swift */; };
-		FE12345678901234567890A1 /* AppIconRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890A2 /* AppIconRegistry.swift */; };
+		FE12345678901234567890A1 /* UUIDExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890A2 /* UUIDExtensions.swift */; };
 		FE12345678901234567890B1 /* ScanTuning.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890B2 /* ScanTuning.swift */; };
 		FE12345678901234567890BA /* HomeHeroLearningSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890BB /* HomeHeroLearningSection.swift */; };
 		FE12345678901234567890C1 /* WordRunnerGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890C2 /* WordRunnerGameView.swift */; };
@@ -1021,7 +1021,7 @@
 		FE1234567890123456789072 /* Sounds/fish_theme_01.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/fish_theme_01.mp3; sourceTree = "<group>"; };
 		FE1234567890123456789082 /* MusicCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MusicCatalog.swift; path = FRDEVocabMVP/MusicCatalog.swift; sourceTree = "<group>"; };
 		FE1234567890123456789092 /* TrophyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrophyView.swift; path = FRDEVocabMVP/TrophyView.swift; sourceTree = "<group>"; };
-		FE12345678901234567890A2 /* AppIconRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppIconRegistry.swift; path = FRDEVocabMVP/AppIconRegistry.swift; sourceTree = "<group>"; };
+		FE12345678901234567890A2 /* UUIDExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UUIDExtensions.swift; path = FRDEVocabMVP/UUIDExtensions.swift; sourceTree = "<group>"; };
 		FE12345678901234567890B2 /* ScanTuning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanTuning.swift; path = FRDEVocabMVP/ScanTuning.swift; sourceTree = "<group>"; };
 		FE12345678901234567890BB /* HomeHeroLearningSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeHeroLearningSection.swift; path = FRDEVocabMVP/HomeHeroLearningSection.swift; sourceTree = "<group>"; };
 		FE12345678901234567890C2 /* WordRunnerGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerGameView.swift; path = FRDEVocabMVP/WordRunnerGameView.swift; sourceTree = "<group>"; };
@@ -1150,7 +1150,7 @@
 				A1B2C3D4E5F60708090A0E09 /* LernstatusView.swift */,
 				C4908A2A5A962323D3A36B07 /* HomeModuleIcon.swift */,
 				A1B2C3D4E5F60708091C0D02 /* AppIcons.swift */,
-				FE12345678901234567890A2 /* AppIconRegistry.swift */,
+				FE12345678901234567890A2 /* UUIDExtensions.swift */,
 				FE12345678901234567890B2 /* ScanTuning.swift */,
 				FE12345678901234567890C2 /* WordRunnerGameView.swift */,
 				FE12345678901234567890D2 /* WordRunnerModels.swift */,
@@ -2082,7 +2082,7 @@
 				A1B2C3D4E5F60708090A0E0A /* LernstatusView.swift in Sources */,
 				21539C42B3F8DFAF90B3E180 /* HomeModuleIcon.swift in Sources */,
 				A1B2C3D4E5F60708091C0D01 /* AppIcons.swift in Sources */,
-				FE12345678901234567890A1 /* AppIconRegistry.swift in Sources */,
+				FE12345678901234567890A1 /* UUIDExtensions.swift in Sources */,
 				FE12345678901234567890B1 /* ScanTuning.swift in Sources */,
 				FE12345678901234567890C1 /* WordRunnerGameView.swift in Sources */,
 				FE12345678901234567890D1 /* WordRunnerModels.swift in Sources */,
