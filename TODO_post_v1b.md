@@ -360,3 +360,51 @@ zeigt nur „Binary files differ", aber `git revert` / `git checkout
 HEAD~1 -- file.sqlite` funktioniert normal.
 
 ---
+
+## 🎮 Player-Level-System (Super Learner etc.) — Spec offen
+
+**Erfasst 2026-04-30** beim Pool-Vereinheitlichungs-Branch
+(`feature/training-session-flow`, Tag-Folge `v2-vocab-cleanup-milchtritt`
+→ noch in Arbeit). Mit der Zusammenführung von `arcadeCredits` +
+`playCredits` zu einem einzigen Pool wurde der vorherige separate
+Power-Up-Pool (`ElumiCreditsStore`, durch Slot-Spin gefüllt für
+Rescue/Skip im Arcade) verdrängt — Rescue + Skip kosten ab Stufe 1b
+aus demselben Ticket-Pool wie der Spielstart. **Konsequenz: ohne
+Player-Level-Boni bezahlt der User Power-Ups aus dem gleichen
+Topf wie Spielstarts.**
+
+**Geplante Boni (Spec-Skizze, nicht abgeschlossen):**
+  • **Extra Rescue/Skip pro Spiel ab bestimmtem Player-Level** —
+    z.B. ab Level 10: 1 kostenfreier Rescue pro Run, ab Level 20:
+    1 kostenfreier Skip zusätzlich. So wird das Power-Up zu einem
+    Level-Reward, nicht einem Pool-Verbrauch.
+  • **Pro-Tickets** — separate Sub-Kategorie der Tickets, höherer
+    Wert (z.B. „Pro-Tickets" für Premium-Modi). Architektur:
+    weiterer optionaler Pool oder Markierung am Ticket-Eintrag.
+  • **Bonus-XP-Multiplikator** — Tier-Boost (z.B. ab Level 15:
+    +10 % XP, ab Level 25: +20 %). Greift in `ProgressService`
+    beim Award-Pfad.
+
+**Architektur-Hook:** Rescue + Skip könnten von festem Pool-Verbrauch
+zu Level-Bonus umgestellt werden — siehe
+`ElumiArcadeGameView+PlayCredits.consumePlayCreditRescue()` und
+`consumePlayCreditSkipRound()`. Heute hartes `arcadeCredits -= 1`;
+mit Level-System würde dort zuerst geprüft, ob ein kostenfreier
+Use-Slot frei ist (Counter pro Run), erst danach Pool-Verbrauch.
+
+**Naming-Note:** Die `playCredit…`-Symbol-Namen in
+`ElumiArcadeGameView+PlayCredits.swift` sind aus Backward-Compat-
+Gründen erhalten (8 Stellen). Bei Player-Level-Refactoring bietet
+sich an, das gemeinsam in `arcadePowerUp…`-Namen umzubenennen — die
+heutigen Doc-Comments machen klar dass die Pool-Quelle ohnehin
+`arcadeCredits` ist.
+
+**Priorität:** Mittel — kein Blocker, aber im Bestand der App fehlt
+die Differenzierung zwischen „Eintritt zahlen" und „Hilfe nutzen"
+sichtbar, was die Tickets-Mechanik fad wirken lässt sobald der User
+sich an den einen Pool gewöhnt hat.
+
+**Erstellt am:** 2026-04-30 (Stufe 1b Pool-Vereinheitlichung,
+Branch `feature/training-session-flow`)
+
+---
