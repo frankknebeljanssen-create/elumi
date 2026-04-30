@@ -145,28 +145,14 @@ bisher. Kein Regress am bestehenden Empty-Pool-Hint.
 
 ---
 
-### 5. Filename-Cleanup `AppIconRegistry.swift` → `UUIDExtensions.swift`
+### ✅ 5. Filename-Cleanup `AppIconRegistry.swift` → `UUIDExtensions.swift` — ERLEDIGT 2026-04-30 in `v2-uuid-extensions-rename`
 
-Aus dem Stufe-6-Icon-Cleanup (Tag `v2-icon-cleanup`, 2026-04-29):
-nach Entfernen der gesamten Icon-Set-A/B-Switch-Maschinerie enthält
-`AppIconRegistry.swift` nur noch eine Zwei-Zeiler-Convenience-
-Extension `UUID.shortID` für kompakte Scanner-Logs. Filename ist
-irreführend.
-
-**Empfehlung:**
-- Datei umbenennen `AppIconRegistry.swift` → `UUIDExtensions.swift`
-  o.ä.
-- pbxproj-Eintrag entsprechend anpassen
-- File-Header-Comment anpassen (aktuell dokumentiert er den
-  Cleanup-Hintergrund — kann reduziert werden auf einen kurzen
-  „UUID-Convenience"-Header)
-
-**Branch-Vorschlag:** `chore/rename-app-icon-registry-to-uuid-extensions`
-
-**Priorität:** Niedrig — Hygiene, kein Funktions-Impact. Wegen
-pbxproj-Touch eigener Branch (Lessons-Learned aus dem
-TrainingGeneratorView-Cleanup: File-Renames in pbxproj sind ihr
-eigenes Build-Verify-Risiko).
+Datei umbenannt via `git mv` (File-History erhalten), pbxproj-
+Einträge mit-aktualisiert (4 Stellen), File-Header reduziert
+(historischer Cleanup-Kontext jetzt nur noch im Repo-Log + Backlog).
+`import SwiftUI` zurückgestuft auf `import Foundation` (UUID lebt
+dort, SwiftUI-Import war historisches Relikt aus den jetzt
+entfernten `Image`-Extensions).
 
 ---
 
