@@ -118,7 +118,13 @@ final class WordRunnerGame: ObservableObject {
     // ersten Fehler neu zu starten).
 
     /// Start-Leben pro Run. Bei 0 → `enterGameOver(reason: .wrongChoice)`.
-    static let startingLives = 3
+    ///
+    /// **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`)** — von
+    /// 3 auf 4 erhöht, damit Word Runner mit der gleichen Lebens-
+    /// Anzahl wie das Elumi-Spiel startet (`ElumiArcadeGameView.maxMisses
+    /// == 4`). User-Spec: „word runner muss beim start auch 4 leben
+    /// haben (nicht nur 3) elumi hats auch".
+    static let startingLives = 4
 
     @Published private(set) var lives: Int = startingLives
 
