@@ -115,15 +115,21 @@ let appPersonalDecksKey = "elumi.flashcards.personalDecks.v1"
 let appVoiceGermanSelectionKey = "elumi.voice.de.selection"
 let appVoiceFrenchSelectionKey = "elumi.voice.fr.selection"
 
-/// **Trainings-Generator Onboarding-Hinweis** (UX Stufe 4, 2026-04-29) —
-/// wird beim ersten Öffnen des Generators auf dem Elumi-Tab gezeigt
-/// („So geht's"-Card mit 3 Schritten + „Los geht's"-CTA). Nach Tap
-/// auf den CTA persistent ausgeblendet.
+/// **Deprecated 2026-04-30** — historischer Seen-Marker für den
+/// einmaligen Onboarding-Hinweis im Trainings-Generator (UX Stufe 4,
+/// 2026-04-29). Mit der Spec-Änderung „Setup-Modal erscheint bei jedem
+/// Tab-Open" wird der Wert nicht mehr gelesen oder geschrieben. Der
+/// Key bleibt aus zwei Gründen erhalten:
+///   • Backward-Compat: existierende User haben den Eintrag in
+///     UserDefaults — kein Migration-Pfad nötig, der Eintrag liegt
+///     einfach verwaist herum (analog zum `appIconSet`-Key aus
+///     Stufe 6).
+///   • `AccountScopedKeys.userDefaultsKeys`-Registrierung bleibt
+///     erhalten, damit beim Account-Wechsel keine Stale-Pointer in
+///     den Cleanup-Pfaden auftauchen.
 ///
-/// Per-Account namespaced via `AccountStore.namespacedKey(...)` —
-/// gehört in `AccountScopedKeys.userDefaultsKeys`. Begründung: ein
-/// neu angelegter Familien-Account soll den Hint einmal sehen, auch
-/// wenn der Owner-Account ihn schon weggeklickt hat.
+/// Bei nächstem ohnehin notwendigen Migration-Pfad (Schema-Bump im
+/// AccountStore o. ä.) den Key in der Migrations-Liste mit-aufräumen.
 let appTrainingGeneratorOnboardingSeenKey = "elumi.training.generator.onboarding.seen.v1"
 
 /// **Trainings-Generator Default-Trainingsdauer** (Sache B, 2026-04-29) —

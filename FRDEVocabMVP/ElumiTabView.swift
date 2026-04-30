@@ -206,46 +206,48 @@ struct ElumiTabView: View {
         }
     }
 
-    /// Liest den account-namespaced Seen-Marker. Wenn das Setup-Modal
-    /// noch nie weggetippt wurde, zeigt es sich beim Tab-Mount.
+    /// Zeigt das Setup-Modal beim Tab-Mount **immer** (Spec-Update
+    /// 2026-04-30): das Modal ist jetzt der primäre Setup-Touchpoint
+    /// vor jeder Trainings-Session, nicht mehr ein einmaliger
+    /// Onboarding-Hint. Der bisherige `appTrainingGeneratorOnboarding-
+    /// SeenKey`-Lesepfad ist hier weg; die persistierte
+    /// `selectedDuration` (Sache-B-Stufe-1-`@AppStorage`) sorgt
+    /// automatisch für den richtigen Preselect — User sieht beim
+    /// nächsten Tab-Open seine zuletzt gewählte Zeit (z. B. 15 min),
+    /// nicht den Default 10.
     ///
-    /// **Sache B Stufe 2 (2026-04-29)**: ehemals `checkOnboardingState()`.
-    /// Logik unverändert — der Seen-Marker (`appTrainingGeneratorOnboarding-
-    /// SeenKey`) ist derselbe Slot wie zuvor; nur das Modal ist umgewidmet
-    /// von „Steps-Erklärung" zu „funktionaler Zeit-Wahl mit Chips".
+    /// Der Seen-Marker bleibt auf existierenden Geräten als toter
+    /// Wert in UserDefaults — siehe Doc in `AppStorageKeys.swift`.
     /// Der State-Toggle ist in `withAnimation` gewrappt, damit die
     /// `.transition(...)` am Card-View garantiert anspringt (implicit
     /// `.animation(value:)` reicht hier nicht zuverlässig, weil der
     /// State-Change in einer Funktion außerhalb des View-Bodys passiert).
     private func checkSetupModalState() {
-        let scopedKey = AccountStore.shared.namespacedKey(appTrainingGeneratorOnboardingSeenKey)
-        let seen = UserDefaults.standard.bool(forKey: scopedKey)
-        if !seen {
-            withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
-                showSetupModal = true
-            }
+        withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
+            showSetupModal = true
         }
     }
 
-    /// Schreibt den account-namespaced Seen-Marker und blendet das
-    /// Setup-Modal aus.
+    /// Blendet das Setup-Modal aus.
     ///
-    /// **Idempotenz-Hinweis** (Sache B Stufe 2): Diese Funktion schreibt
-    /// NICHT den Duration-Key — `selectedDuration` ist via `@AppStorage`
-    /// markiert und persistiert sich automatisch bei jeder Chip-Tap-
-    /// Mutation. Das gilt für alle Pfade, über die das Modal geschlossen
-    /// werden kann (CTA-Tap, Backdrop-Tap, ggf. später Pencil-Re-Edit-
-    /// Schließen aus Stufe 3). Der Backdrop-Tap nimmt also den aktuellen
-    /// Preselect des Modals als Wahl mit, ohne dass diese Funktion etwas
-    /// dafür tun muss — `selectedDuration` ist beim Backdrop-Tap-Zeitpunkt
-    /// bereits auf dem Wert, den der User zuletzt im Modal ausgewählt hatte
-    /// (oder dem Default, falls nichts angetippt wurde).
+    /// **Spec-Update 2026-04-30**: Modal erscheint jetzt bei jedem
+    /// Tab-Open — der Seen-Marker-Write ist deshalb obsolet (wird
+    /// nicht mehr gelesen) und entfernt. Auf existierenden Geräten
+    /// bleibt der UserDefaults-Eintrag liegen; harmlos, kein Migration-
+    /// Pfad nötig (analog zum verwaisten `appIconSet`-Key aus Stufe 6).
+    ///
+    /// **Idempotenz-Hinweis** (Sache B Stufe 2 — bleibt gültig): Diese
+    /// Funktion schreibt NICHT den Duration-Key — `selectedDuration`
+    /// ist via `@AppStorage` markiert und persistiert sich automatisch
+    /// bei jeder Chip-Tap-Mutation. Das gilt für alle Pfade, über die
+    /// das Modal geschlossen werden kann (CTA-Tap, Backdrop-Tap,
+    /// Pencil-Re-Edit-Schließen). Der Backdrop-Tap nimmt also den
+    /// aktuellen Preselect des Modals als Wahl mit, ohne dass diese
+    /// Funktion etwas dafür tun muss.
     ///
     /// Spring-Wrapping wie in `checkSetupModalState()` — damit die Exit-
     /// Transition zuverlässig sichtbar ist.
     private func dismissSetupModal() {
-        let scopedKey = AccountStore.shared.namespacedKey(appTrainingGeneratorOnboardingSeenKey)
-        UserDefaults.standard.set(true, forKey: scopedKey)
         withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
             showSetupModal = false
         }
@@ -282,6 +284,15 @@ struct ElumiTabView: View {
                     Text("Wie lange willst du üben?")
                         .font(.system(size: 22, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .multilineTextAlignment(.center)
+                    // **Setup-Modal-Tweaks 2/3 (2026-04-30)** — Process-
+                    // Zeile als Mini-Orientierung. Bewusst dezent
+                    // gehalten (`.caption`, secondary-Farbe), damit es
+                    // nicht wie ein Tutorial-Schritt wirkt — nur ein
+                    // ruhiger „so läuft's"-Hinweis unter der Frage.
+                    Text("Zeit w\u{00E4}hlen \u{2192} Slot starten \u{2192} \u{00DC}ben")
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
                         .multilineTextAlignment(.center)
                 }
 
@@ -522,12 +533,22 @@ struct ElumiTabView: View {
     ///   • Pencil ist `disabled(!isSpinAllowed)` — kein Re-Edit
     ///     während die Slot-Machine rollt (Edge-Case E2)
     private var timeDisplayCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        // **Setup-Modal-Tweaks 3/3 (2026-04-30)**: Card kompakter
+        // gemacht, damit der „Los geht's!"-Spin-CTA komplett über
+        // dem Footer sichtbar bleibt. Drei Anpassungen:
+        //   • XXL-Zahl 56 → 46pt (visuell stimmiger mit dem 40pt-
+        //     Pencil-Pill rechts daneben — vorher dominierte die
+        //     Zahl die Card-Höhe deutlich)
+        //   • VStack-Spacing 8 → 4pt (Section-Label und Wert rücken
+        //     näher zusammen)
+        //   • Vertical-Padding 10 → 6pt (Card-Frame insgesamt
+        //     niedriger)
+        VStack(alignment: .leading, spacing: 4) {
             setupCardLabel("TRAININGSZEIT")
 
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text("\(selectedDuration)")
-                    .font(.system(size: 56, weight: .black, design: .rounded))
+                    .font(.system(size: 46, weight: .black, design: .rounded))
                     .foregroundStyle(sectionStyle.accent)
                     .contentTransition(.numericText())
 
@@ -556,7 +577,7 @@ struct ElumiTabView: View {
             }
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.vertical, 6)
         .frame(maxWidth: .infinity, alignment: .leading)
         .appSetupCardBackground()
         .animation(.easeInOut(duration: 0.20), value: selectedDuration)
