@@ -533,12 +533,22 @@ struct ElumiTabView: View {
     ///   • Pencil ist `disabled(!isSpinAllowed)` — kein Re-Edit
     ///     während die Slot-Machine rollt (Edge-Case E2)
     private var timeDisplayCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        // **Setup-Modal-Tweaks 3/3 (2026-04-30)**: Card kompakter
+        // gemacht, damit der „Los geht's!"-Spin-CTA komplett über
+        // dem Footer sichtbar bleibt. Drei Anpassungen:
+        //   • XXL-Zahl 56 → 46pt (visuell stimmiger mit dem 40pt-
+        //     Pencil-Pill rechts daneben — vorher dominierte die
+        //     Zahl die Card-Höhe deutlich)
+        //   • VStack-Spacing 8 → 4pt (Section-Label und Wert rücken
+        //     näher zusammen)
+        //   • Vertical-Padding 10 → 6pt (Card-Frame insgesamt
+        //     niedriger)
+        VStack(alignment: .leading, spacing: 4) {
             setupCardLabel("TRAININGSZEIT")
 
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text("\(selectedDuration)")
-                    .font(.system(size: 56, weight: .black, design: .rounded))
+                    .font(.system(size: 46, weight: .black, design: .rounded))
                     .foregroundStyle(sectionStyle.accent)
                     .contentTransition(.numericText())
 
@@ -567,7 +577,7 @@ struct ElumiTabView: View {
             }
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.vertical, 6)
         .frame(maxWidth: .infinity, alignment: .leading)
         .appSetupCardBackground()
         .animation(.easeInOut(duration: 0.20), value: selectedDuration)
