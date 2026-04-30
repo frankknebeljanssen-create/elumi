@@ -601,8 +601,12 @@ extension ElumiArcadeGameView {
             triggerShieldBubbleImpact(at: gameClock)
             return
         }
-        triggerScreenShake()
         misses += 1
+        // **Quick-Fix 2026-04-30** — `triggerScreenShake()` ersetzt
+        // durch `triggerLifeLossVisual()` (= Shake + Character-Zucker
+        // + Red-Flash + Error-Haptic). User-Spec: Lebens-Verlust muss
+        // am Charakter sichtbar sein.
+        triggerLifeLossVisual()
         feedbackPlayer.playSnackMiss()
         showComboBanner("Elumi-Freund! −1 Leben", duration: 1500)
         resetCombo()
@@ -667,6 +671,37 @@ extension ElumiArcadeGameView {
             }
             screenShakeOffset = 0
         }
+    }
+
+    /// **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`)** — Sichtbares
+    /// Feedback bei jedem Lebens-Verlust. Drei kombinierte Effekte:
+    ///   1. **Screen-Shake** (existing `triggerScreenShake`).
+    ///   2. **Character-Scale-Zucker** (1.0 → 0.85 → 1.0 in ~280ms) —
+    ///      analog zum Hit-Bounce-Pattern, aber mit Schrumpfen statt
+    ///      Vergrößern, was den „Treffer/Schaden"-Eindruck verstärkt.
+    ///   3. **Roter Flash-Overlay** über Charakter (~0.5s, gesteuert
+    ///      durch `lifeLostFlashAt`-Zeitstempel im Layout-Overlay).
+    ///   4. **Error-Haptic** — `.notificationOccurred(.error)` ist
+    ///      stärker als die `.heavy`-Impacts an anderen Stellen, das
+    ///      verstärkt den „etwas Schlimmes ist passiert"-Eindruck.
+    ///
+    /// User-Report: „wenn elumi ein leben verliert muss man das an
+    /// ihm sehen". Wird aus allen drei `misses += 1`-Pfaden aufgerufen
+    /// (`triggerFriendEaten`, off-screen-Snack-Miss, Quallen-Sting bei
+    /// >=3). Existierende `triggerScreenShake()` an diesen Stellen
+    /// wird durch diesen kombinierten Helper ersetzt.
+    func triggerLifeLossVisual() {
+        lifeLostFlashAt = Date()
+        triggerScreenShake()
+        withAnimation(.easeOut(duration: 0.10)) {
+            characterScale = 0.85
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.10) {
+            withAnimation(.easeOut(duration: 0.18)) {
+                self.characterScale = 1.0
+            }
+        }
+        UINotificationFeedbackGenerator().notificationOccurred(.error)
     }
 
     func pointsForCaughtSnack(_ snack: ElumiArcadeSnackState, at date: Date) -> Int {
@@ -1086,6 +1121,11 @@ extension ElumiArcadeGameView {
             if progress >= 1.04 {
                 misses += 1
                 missedAnySnack = true
+                // **Quick-Fix 2026-04-30** — Visuelles Feedback bei
+                // Off-Screen-Snack-Miss (vorher kein sichtbarer Cue,
+                // nur ein Sound). User-Spec: Lebens-Verlust muss am
+                // Charakter sichtbar sein.
+                triggerLifeLossVisual()
                 feedbackPlayer.playSnackMiss()
                 continue
             }
@@ -1272,6 +1312,11 @@ extension ElumiArcadeGameView {
                 if jellyfishStingCount >= 3 {
                     misses += 1
                     jellyfishStingCount = 0
+                    // **Quick-Fix 2026-04-30** — Visuelles Feedback bei
+                    // Quallen-Lebens-Verlust (vorher nur die kleineren
+                    // Per-Sting-Shakes oben). User-Spec: Lebens-Verlust
+                    // muss am Charakter sichtbar sein.
+                    triggerLifeLossVisual()
                     feedbackPlayer.playSnackMiss()
                     resetCombo()
                 }

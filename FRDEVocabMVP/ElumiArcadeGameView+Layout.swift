@@ -93,6 +93,27 @@ extension ElumiArcadeGameView {
                             }
                         }
                         .overlay {
+                            // **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`)**
+                            // — Lebens-Verlust-Flash. Dauer ~0.5s,
+                            // Opacity fadet 0.6 → 0 linear. Wird durch
+                            // `triggerLifeLossVisual()` getriggert
+                            // (setzt `lifeLostFlashAt` auf Date()).
+                            // Damit hat jeder `misses += 1`-Pfad
+                            // (Friend-Eaten, Off-Screen-Snack-Miss,
+                            // Quallen-3rd-Sting) einen sichtbaren
+                            // Charakter-Cue, nicht nur Sound + Shake.
+                            if let lostAt = lifeLostFlashAt {
+                                let elapsed = context.date.timeIntervalSince(lostAt)
+                                if elapsed < 0.5 {
+                                    let opacity = max(0, 0.6 - elapsed * 1.2)
+                                    Circle()
+                                        .fill(Color.red.opacity(opacity))
+                                        .frame(width: 100, height: 100)
+                                        .allowsHitTesting(false)
+                                }
+                            }
+                        }
+                        .overlay {
                             // **Schutz-Bubble Aktiv-Zustand**: weiche
                             // Seifenblasen-Hülle um den Spieler.
                             // Rendert sich direkt als Overlay auf den

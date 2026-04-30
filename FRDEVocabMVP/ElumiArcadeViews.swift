@@ -324,6 +324,17 @@ struct ElumiArcadeGameView: View {
     /// Screen liegen. Wird von `spawnSnack()` vor jedem Roll konsultiert.
     @State var powerUpSpawnGate = ArcadePowerUpSpawnGate()
     @State var screenShakeOffset: CGFloat = 0
+
+    /// **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`)** — Zeitstempel
+    /// des letzten Lebens-Verlusts. Wird in `triggerLifeLossVisual()`
+    /// gesetzt; das Layout-Overlay rendert basierend auf dieser Zeit
+    /// einen kurzen roten Flash über dem Charakter (~0.5s) plus einen
+    /// Scale-Zucker. Sichtbares Feedback bei jedem `misses += 1`-
+    /// Event, damit der User merkt: er hat gerade ein Leben verloren.
+    /// User-Report: „wenn elumi ein leben verliert muss man das an
+    /// ihm sehen — vorschlag? Blitz? zucken, zumindest was, was
+    /// sichtbar ist".
+    @State var lifeLostFlashAt: Date?
     @State var gameOverTitle = "Game Over"
     @State var gameOverSubtitle = ""
     @State var round = 1
