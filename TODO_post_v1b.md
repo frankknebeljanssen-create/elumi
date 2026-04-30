@@ -81,55 +81,42 @@ neuer Shuffle). Konsistent zum globalen Filter-Verhalten. Kein Bug.
 
 ## Offene Backlog-Items (nach `v2-empty-pool-hint`-Merge)
 
-### 1. Dead-Code-Cleanup `FlashcardsView+PersonalDeck.swift`
+### ✅ 1. Dead-Code-Cleanup `FlashcardsView+PersonalDeck.swift` — ERLEDIGT 2026-04-30 in `v2-personal-deck-polish`
 
-`createPersonalDeck(fromSelectedListIDs:)` und
-`updatePersonalDeck(_:withSelectedListIDs:)` in
-`FlashcardsView+PersonalDeck.swift` (ab Zeile 133 bzw. 160) haben
-**keine Caller** (verifiziert via `grep -rn`-Suche während
-Empty-Pool-Hint-Audit). Der echte Personal-Deck-Create/Update-Flow
-läuft über `PersonalDecksView.swift:219` (createDeck) + `:235`
-(updateDeck).
+`createPersonalDeck(fromSelectedListIDs:)`, `updatePersonalDeck(_:withSelectedListIDs:)`
+und der private `autoName(fromLists:)`-Helper aus
+`FlashcardsView+PersonalDeck.swift` sind entfernt (Commit `2f5f51b`).
+Keine Caller waren vorhanden — der echte Personal-Deck-Create/Update-
+Flow läuft über `PersonalDecksView.swift:325/364`.
 
-`TODO_post_v1b.md` hatte vor diesem Eintrag den falschen Pfad
-referenziert (`:138` als „Quelle der Empty-Pool-Bug"). Beim Empty-
-Pool-Hint-Implement wurde an der echten Stelle (PersonalDecksView)
-gehängt, der Dead-Code blieb unberührt.
-
-**Empfehlung:**
-- Beide Funktionen entfernen
-- File ggf. ganz löschen falls sonst nichts mehr drin steht
-- pbxproj-Inspektion vor Commit
-
-**Priorität:** Niedrig — Hygiene, keine User-sichtbaren Auswirkungen.
-
-**Branch-Vorschlag:** `chore/remove-dead-personal-deck-helpers`
+Mit-aufgeräumt: `PersonalDeckSlotView.swift` (gesamt 209 LoC) als
+toter Datei-Removal mit pbxproj-Cleanup (4 Einträge). Die einzig
+lebende Definition daraus — die `PersonalDeck.color(for:)`-
+Extension — wurde nach `PersonalDeck.swift` (Model-File) migriert.
 
 ---
 
-### 2. Personal-Deck-Löschen-Bug
+### ✅ 2. Personal-Deck-Löschen-Bug — ERLEDIGT 2026-04-30 in `v2-personal-deck-polish`
 
-User-gemeldet während Empty-Pool-Hint-Smoke-Test (2026-04-29):
-„löschen option fehlt". Code dafür existiert in
-`PersonalDecksView.swift:165` als Alert mit
-`Button("Löschen", role: .destructive)`, getriggert via
-`deckPendingAction != nil`-Binding. **Trigger-Pfad zur Alert-
-Aktivierung scheint nicht zu funktionieren** — User konnte den
-Lösch-Button nicht erreichen.
+User-gemeldet aus dem Empty-Pool-Hint-Smoke-Test: „löschen option
+fehlt". Diagnose: der Delete-Pfad existierte technisch (über den
+„Bearbeiten"-Text-Button → kombinierter Rename/Delete-Alert), aber
+der Trigger war ein subtiler `Color.white.opacity(0.55)`-Text-Button
+im Card-Header — auf einer dunklen Card unentdeckbar.
 
-**Nicht reproduziert** im Empty-Pool-Hint-Branch (Scope war anders).
+Fix (Commit `92f011f`):
+- Long-Press-Context-Menu auf der Stapel-Card mit drei Aktionen
+  (Bearbeiten / Listen ändern / Löschen)
+- Dedicated `.alert`-Bestätigung mit zwei klar sichtbaren Buttons
+  (Abbrechen + Löschen)
+- Message stellt explizit klar, dass nur der Stapel + Lernfortschritt
+  gelöscht werden — die Quelllisten (z. B. Grundwortschatz) bleiben
+  erhalten
 
-**Empfohlene Diagnose:**
-- Wo wird `deckPendingAction` gesetzt? Long-Press-Gesture? Context-
-  Menu? Tap auf Pencil-Icon?
-- Funktioniert die Setter-Action im aktuellen Zustand?
-- Funktioniert das Alert-Modal im aktuellen iOS-Sim?
-- Falls Trigger korrekt ist: ist der Alert-Render-Pfad gebrochen?
-
-**Branch-Vorschlag:** `fix/personal-deck-delete-trigger`
-
-**Priorität:** Mittel — wenn der User keine Stapel löschen kann,
-hängt er beim 2-Stapel-Limit fest (siehe nächstes Backlog-Item).
+Implementations-Note: erste Iteration nutzte `.confirmationDialog` —
+auf iOS 26 rendert das als kompakter Popover mit verschluckten
+Cancel-Button und schwer lesbarer Destructive-Schrift. Umgestellt
+auf klassisches `.alert`.
 
 ---
 
@@ -147,26 +134,14 @@ das Limit. Falls die Bemerkung zukünftig zur Spec-Diskussion führt
 
 ---
 
-### 4. Selection-leer bei „Fertig"-Tap im Personal-Deck-Sheet
+### ✅ 4. Selection-leer bei „Fertig"-Tap im Personal-Deck-Sheet — ERLEDIGT 2026-04-30 in `v2-personal-deck-polish`
 
-User tippt im `FlashcardStackComposerSheet` „Fertig" **ohne Listen-
-Auswahl** → Sheet schließt, kein Deck wird angelegt. Silent no-op
-durch `guard !selectedIDs.isEmpty` in `createDeck`/`updateDeck`.
-
-**Vor-existent**, **nicht** durch Empty-Pool-Hint-Branch eingeführt
-oder gelöst. Mein `validate`-Closure hat diesen Fall absichtlich
-durchgelassen (Spec-Scope war nur Empty-Pool-after-Filter).
-
-**Trivialer Fix:** validate-Closure-Erweiterung — wenn `selectedIDs.isEmpty`,
-String zurückgeben („Wähle mindestens eine Liste."). Kein Code-Pfad-
-Umbau nötig, der Sheet hat das Inline-Render bereits.
-
-**Branch-Vorschlag:** `fix/empty-selection-personal-deck` oder als
-zweiter Commit in einem zusammengefassten „Personal-Deck-Validation-
-Polish"-Branch zusammen mit Item 2.
-
-**Priorität:** Niedrig — kosmetischer UX-Bug, gleicher Pattern wie
-Empty-Pool, leichte Spec-Erweiterung.
+Fix (Commit `c7f91dc`): die `validate`-Closure aus dem Empty-Pool-
+Hint (sowohl Create- als auch Edit-Sheet) gibt jetzt bei leerer
+Selection den Inline-Fehler „Wähle mindestens eine Liste, aus der
+dein Stapel bestehen soll." zurück. Sheet bleibt offen, Inline-
+Fehler erscheint, Auto-Reset bei nächster Selection-Change wie
+bisher. Kein Regress am bestehenden Empty-Pool-Hint.
 
 ---
 
