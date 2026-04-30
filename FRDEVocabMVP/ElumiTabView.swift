@@ -169,7 +169,12 @@ struct ElumiTabView: View {
     /// stark aktiviert (Initial-Burst), dann sanft pulsierend.
     @State private var resultHighlightGlow: Double = 0.0
 
-    private static let durationOptions: [Int] = [10, 15, 20]
+    /// **Setup-Tweaks v2 — C2 (2026-04-30)**: Erweitert auf 4 Optionen
+    /// inkl. neuer 5min-Variante (kürzeste Übungseinheit). 5min wird
+    /// vom `TrainingGenerator` via `buildFiveMinute(focus:)` korrekt
+    /// in 2 Blöcke (Warmup 2 + Kern 3min) aufgeteilt — verifiziert
+    /// vor dem Branch-Start. Default bleibt 10min (`durationDefault`).
+    private static let durationOptions: [Int] = [5, 10, 15, 20]
 
     /// **Single Source für die Default-Trainingsdauer** (Sache B Stufe 1,
     /// 2026-04-29). Wird sowohl als `@AppStorage`-Initialwert für
@@ -296,22 +301,27 @@ struct ElumiTabView: View {
                         .multilineTextAlignment(.center)
                 }
 
-                // Zeit-Chips (10/15/20) — wiederverwendetes
-                // `durationChip(minutes:)` aus dem Setup-Screen, damit
-                // die visuelle Sprache konsistent bleibt. Stufe 3
-                // ersetzt die Setup-Screen-Card durch eine Display-
-                // Card; der Chip-Helper bleibt dann für das Modal.
+                // Zeit-Chips — wiederverwendetes `durationChip(minutes:)`
+                // aus dem Setup-Screen, damit die visuelle Sprache
+                // konsistent bleibt.
+                //
+                // **Setup-Tweaks v2 — C2 (2026-04-30)**: 4 Optionen
+                // (5/10/15/20) in einem 2×2-Grid via `LazyVGrid`. Vorher
+                // 3-Chip-HStack. Spacing 12pt für Columns + Rows = das
+                // gleiche Vor-Stufe-2-Spacing innerhalb der Reihe.
                 //
                 // **Layout-Hinweis** (Sache B Stufe 2): Das explizite
-                // `.frame(maxWidth: .infinity)` am HStack ist nötig,
-                // weil das umschließende `.frame(maxWidth: 340)` am
-                // VStack die Width-Constraint nicht zuverlässig zu
-                // den `maxWidth: .infinity`-Chips propagiert. Ohne
-                // diese Direktive nimmt der HStack seine intrinsische
-                // Größe und die Chips rendern aufgeblasen — Pattern
-                // analog zur ehemaligen `durationCard`, die ihrerseits
-                // einen Outer-`maxWidth: .infinity`-Container hatte.
-                HStack(spacing: 12) {
+                // `.frame(maxWidth: .infinity)` am Grid ist nötig, weil
+                // das umschließende `.frame(maxWidth: 340)` am VStack
+                // die Width-Constraint nicht zuverlässig zu den
+                // `maxWidth: .infinity`-Chips propagiert.
+                LazyVGrid(
+                    columns: [
+                        GridItem(.flexible(), spacing: 12),
+                        GridItem(.flexible(), spacing: 12)
+                    ],
+                    spacing: 12
+                ) {
                     ForEach(Self.durationOptions, id: \.self) { minutes in
                         durationChip(minutes: minutes)
                     }
@@ -533,28 +543,50 @@ struct ElumiTabView: View {
     ///   • Pencil ist `disabled(!isSpinAllowed)` — kein Re-Edit
     ///     während die Slot-Machine rollt (Edge-Case E2)
     private var timeDisplayCard: some View {
-        // **Setup-Modal-Tweaks 3/3 (2026-04-30)**: Card kompakter
-        // gemacht, damit der „Los geht's!"-Spin-CTA komplett über
-        // dem Footer sichtbar bleibt. Drei Anpassungen:
-        //   • XXL-Zahl 56 → 46pt (visuell stimmiger mit dem 40pt-
-        //     Pencil-Pill rechts daneben — vorher dominierte die
-        //     Zahl die Card-Höhe deutlich)
-        //   • VStack-Spacing 8 → 4pt (Section-Label und Wert rücken
-        //     näher zusammen)
-        //   • Vertical-Padding 10 → 6pt (Card-Frame insgesamt
-        //     niedriger)
-        VStack(alignment: .leading, spacing: 4) {
-            setupCardLabel("TRAININGSZEIT")
+        // **Setup-Modal-Tweaks 3/3 (2026-04-30) + v2 — C3**: Card
+        // kompakter gemacht (Vertical-Padding 10 → 6, VStack-Spacing
+        // 8 → 4, XXL-Zahl 56 → 46pt) und Inhalt **horizontal
+        // zentriert**. Das Section-Label „TRAININGSZEIT" bleibt
+        // linksbündig oben (Section-Header-Konvention), aber die
+        // Wert-Zeile (Zahl + „min") ist via Spacer-Spacer-Pattern
+        // ehrlich mittig — links 40pt-Reserve-Slot (gleicher Width
+        // wie der Pencil-Pill rechts), Wert in der Mitte mit
+        // Spacern auf beiden Seiten, Pencil rechts unverändert.
+        VStack(spacing: 4) {
+            // **Setup-Tweaks v2 — C3 (User-Spec 2026-04-30)**: Label
+            // ist hier zentriert (nicht der Standard-`setupCardLabel(...)`-
+            // Helper, der `.alignment: .leading` hartkodiert). Inline-
+            // Definition mit identischen Styles aus dem Helper, nur
+            // mit `.center`-Frame-Alignment + `multilineTextAlignment`.
+            // Ergebnis: Section-Header und Wert-Zeile sind beide
+            // ehrlich zentriert.
+            Text("TRAININGSZEIT")
+                .font(.system(size: 10, weight: .semibold, design: .rounded))
+                .tracking(1.5)
+                .foregroundStyle(AppTheme.Colors.cardLabel)
+                .textCase(.uppercase)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, alignment: .center)
 
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text("\(selectedDuration)")
-                    .font(.system(size: 46, weight: .black, design: .rounded))
-                    .foregroundStyle(sectionStyle.accent)
-                    .contentTransition(.numericText())
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                // Reserve-Slot links — gleich breit wie der Pencil
+                // rechts (40pt), damit die Wert-VStack in der echten
+                // Mitte sitzt (nicht links-versetzt durch den
+                // Pencil-Asymmetrie-Effekt).
+                Color.clear.frame(width: 40, height: 40)
 
-                Text("min")
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                Spacer(minLength: 0)
+
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text("\(selectedDuration)")
+                        .font(.system(size: 46, weight: .black, design: .rounded))
+                        .foregroundStyle(sectionStyle.accent)
+                        .contentTransition(.numericText())
+
+                    Text("min")
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                }
 
                 Spacer(minLength: 0)
 
@@ -691,24 +723,19 @@ struct ElumiTabView: View {
     ///      zum 2-Button-State — Konsistenz für den User.
     @ViewBuilder
     private var spinCTA: some View {
-        VStack(spacing: 8) {
-            // Caption „Versuch X von 3" nur sichtbar wenn 2-Button-State
-            // (= mind. 1 Spin gemacht UND noch Versuche übrig).
-            if currentSpinNumber > 0 && hasRemainingSpins {
-                Text(currentAttemptDisplay)
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .contentTransition(.numericText())
-                    .frame(maxWidth: .infinity, alignment: .center)
-            }
-
-            if currentSpinNumber == 0 {
-                singleSpinButton
-            } else if hasRemainingSpins {
-                twinCTAs
-            } else {
-                singleTrainingButton
-            }
+        // **Setup-Tweaks v2 — C4 (2026-04-30)**: die separate
+        // „Versuch X von 3"-Caption-Zeile oberhalb der Twin-CTAs ist
+        // entfernt. Der Counter lebt jetzt als Sub-Label im
+        // „Nochmal drehen"-Button (siehe `twinCTAs`). Damit verschwindet
+        // der vertikale Layout-Sprung beim Phase-Übergang
+        // (revealed → spinning) — der Button-Block hat jetzt eine
+        // konstante Höhe über alle Slot-Phasen.
+        if currentSpinNumber == 0 {
+            singleSpinButton
+        } else if hasRemainingSpins {
+            twinCTAs
+        } else {
+            singleTrainingButton
         }
     }
 
@@ -735,22 +762,37 @@ struct ElumiTabView: View {
     /// State 2: 2-Button-State nach erstem Spin, solange Versuche übrig.
     /// Beide Buttons gelb gefüllt, gleiche Höhe, gleiche Schriftgröße,
     /// `frame(maxWidth: .infinity)` → 50/50-Aufteilung.
+    ///
+    /// **Setup-Tweaks v2 — C4 (2026-04-30)**: Versuch-Counter
+    /// (`currentAttemptDisplay`) ist jetzt **Sub-Label im Re-Spin-
+    /// Button**, nicht mehr eine separate Caption-Zeile oberhalb. Der
+    /// „Jetzt üben"-Button bekommt eine unsichtbare Reserve-Slot-Zeile
+    /// (`Text(" ")` mit identischer Schrift), damit beide Buttons
+    /// dieselbe Höhe halten und es keine vertikalen Layout-Sprünge
+    /// beim Phase-Wechsel mehr gibt.
     private var twinCTAs: some View {
         HStack(spacing: 12) {
             Button {
                 triggerSpin()
             } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "arrow.2.circlepath")
-                        .font(.system(size: 14, weight: .bold))
-                    Text(spinPrimaryLabel)
-                        .font(.system(size: 15, weight: .black, design: .rounded))
+                VStack(spacing: 2) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "arrow.2.circlepath")
+                            .font(.system(size: 14, weight: .bold))
+                        Text(spinPrimaryLabel)
+                            .font(.system(size: 15, weight: .black, design: .rounded))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                    Text(currentAttemptDisplay)
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .opacity(0.7)
+                        .contentTransition(.numericText())
                         .lineLimit(1)
-                        .minimumScaleFactor(0.8)
                 }
                 .foregroundStyle(.black)
                 .frame(maxWidth: .infinity)
-                .frame(minHeight: 52)
+                .frame(minHeight: 56)
             }
             .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
             .disabled(!canTriggerSpin)
@@ -761,20 +803,32 @@ struct ElumiTabView: View {
             Button {
                 startTraining()
             } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "play.circle.fill")
-                        .font(.system(size: 14, weight: .bold))
-                    Text("Jetzt üben")
-                        .font(.system(size: 15, weight: .black, design: .rounded))
+                VStack(spacing: 2) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "play.circle.fill")
+                            .font(.system(size: 14, weight: .bold))
+                        Text("Jetzt üben")
+                            .font(.system(size: 15, weight: .black, design: .rounded))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                    // Sub-Label: gewählte Trainings-Dauer in Klammern.
+                    // Identische Schrift wie der Versuch-Counter im
+                    // Re-Spin-Button (User-Spec 2026-04-30) — damit
+                    // beide Buttons visuell symmetrisch zweizeilig
+                    // wirken und gleich hoch bleiben.
+                    Text("(\(selectedDuration) min)")
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .opacity(0.7)
+                        .contentTransition(.numericText())
                         .lineLimit(1)
-                        .minimumScaleFactor(0.8)
                 }
                 .foregroundStyle(.black)
                 .frame(maxWidth: .infinity)
-                .frame(minHeight: 52)
+                .frame(minHeight: 56)
             }
             .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
-            .accessibilityLabel(Text("Jetzt üben"))
+            .accessibilityLabel(Text("Jetzt \u{00FC}ben \(selectedDuration) Minuten"))
             .accessibilityHint(Text("Startet die generierte Trainingseinheit sofort"))
         }
         .transition(.opacity.combined(with: .scale(scale: 0.98)))
@@ -908,37 +962,20 @@ struct ElumiTabView: View {
     }
 
     private var placeholderModuleSlot: some View {
-        // **2026-04-25 Visibility-Pass** (User-Feedback „leere Slots
-        // zu dunkel, wirken unfertig"). Vorher: secondarySurface.opacity(0.4)
-        // + dashed-border-opacity(0.45) → fast unsichtbar auf der
-        // hellen Card. Jetzt:
-        //   • Bg deutlich heller — volle `secondarySurface`-Fläche mit
-        //     leichter `surface`-Aufhellung → wirkt wie eine
-        //     vorbereitete Karte.
-        //   • Dashed Outer-Border intensiver (opacity 0.75, stride
-        //     5/3), der „noch nicht gefüllt"-Charakter ist klar.
-        //   • Circle stärker sichtbar: Fill `surface`, dashed stroke
-        //     mit sichtbarer Border-Farbe, größere 32pt statt 28pt.
-        //   • Hint-Symbol („+"-Sparkle) im Circle, signalisiert dass
-        //     hier gleich ein Modul erscheint.
-        VStack(spacing: 5) {
-            ZStack {
-                Circle()
-                    .fill(AppTheme.Colors.surface)
-                    .frame(width: 32, height: 32)
-                Circle()
-                    .stroke(
-                        AppTheme.Colors.border,
-                        style: StrokeStyle(lineWidth: 1.4, dash: [3, 2])
-                    )
-                    .frame(width: 32, height: 32)
-                Image(systemName: "sparkle")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.65))
-            }
-            Text("—")
-                .font(.system(size: 11, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.75))
+        // **Setup-Tweaks v2 — C5 (User-Spec 2026-04-30)**: kleine
+        // Circle-Sparkle + „—"-Label ersetzt durch **großes zentriertes
+        // Fragezeichen** in der Card-Akzent-Farbe. Card-Dimensions
+        // unverändert — das Q wirkt dominant „hier kommt was rein".
+        //
+        // Vorgeschichte (2026-04-25 Visibility-Pass): die kleinen
+        // Sparkle-Circles hatten den Slot zu zaghaft markiert. Das
+        // dominante Q ist die nächste Iteration und kommuniziert
+        // klarer „Slot ist noch leer, Spin füllt ihn".
+        VStack(spacing: 0) {
+            Image(systemName: "questionmark")
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundStyle(sectionStyle.accent.opacity(0.75))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
@@ -966,17 +1003,22 @@ struct ElumiTabView: View {
         // **2026-04-25 (User „keine Pills, Icons größer")**: Der
         // Circle-Pill um das Icon ist entfernt. Das Icon steht jetzt
         // direkt im Card-Rahmen — klarer Fokus, weniger Layer-Rauschen.
-        // Icon-Größen dadurch nochmal hoch:
-        //   • HomeModuleIconView 32 → 40 (+25%)
-        //   • Elumi-Asset 30 → 38 (+27%)
+        //
+        // **Setup-Tweaks v2 — C6 (User-Spec 2026-04-30)**: Icon-Größen
+        // nochmal hoch — Card-Dimensions sind unverändert geblieben,
+        // Platz war da. Iteration:
+        //   • HomeModuleIconView 32 → 40 (+25%, 2026-04-25)
+        //   • HomeModuleIconView 40 → 52 (+30%, 2026-04-30)
+        //   • Elumi-Asset 30 → 38 (+27%, 2026-04-25)
+        //   • Elumi-Asset 38 → 50 (+32%, 2026-04-30)
         VStack(spacing: 5) {
             if let module = symbol.homeModule {
-                HomeModuleIconView(icon: module.icon, size: 40)
+                HomeModuleIconView(icon: module.icon, size: 52)
             } else if let assetName = symbol.assetImage {
                 Image(assetName)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 38, height: 38)
+                    .frame(width: 50, height: 50)
             }
             Text(symbol.label)
                 .font(.system(size: 12, weight: .bold, design: .rounded))
