@@ -47,6 +47,14 @@ struct GameHubView: View {
     private let livesPerCredit = 4   // sichtbare Credit → Leben Zuordnung
     private let xpPerCredit = ArcadeCreditSystem.xpPerCredit  // 20 XP = 1 Credit (Live-Wert)
 
+    /// **Quick-Fix 2026-04-30 (`v2-unify-game-tile-disabled`)** — wenn der
+    /// User auf eine disabled Game-Tile tippt, erscheint dieser Alert mit
+    /// Single-OK-CTA. Vorher: Elumi-Tile war disabled (Tap = no-op),
+    /// Word-Runner-Tile war fälschlich antippbar (kostet aber 1 Credit
+    /// beim Spielstart → User wurde überrascht). Mit dem Fix: beide
+    /// Tiles disabled bei 0 Credits, Tap zeigt expliziten Hinweis.
+    @State private var showNoTicketsAlert: Bool = false
+
     // MARK: - Derived
 
     private var hasCredits: Bool {
@@ -96,6 +104,17 @@ struct GameHubView: View {
         .appAmbientWormBackground(sectionStyle)
         .dismissKeyboardOnTap()
         .toolbar(.hidden, for: .navigationBar)
+        // **Quick-Fix 2026-04-30 (`v2-unify-game-tile-disabled`)** —
+        // Acknowledge-Alert für disabled Game-Tile-Tap. Single-OK-CTA,
+        // kein Cancel: User soll nur informiert werden, dass er Tickets
+        // verdienen muss. Wording konsistent zum Empty-State-Text unter
+        // den Tiles („Trainingsgenerator" als App-eigene Bezeichnung
+        // statt „Slot drehen").
+        .alert("Keine Tickets", isPresented: $showNoTicketsAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Du hast aktuell keine Tickets. Verdiene welche durchs Lernen oder durch den Trainingsgenerator.")
+        }
         .appLocalChrome(enabled: !usesGlobalChrome) {
             AppTopBar(onBack: { dismiss() }, onInfo: openInfo)
                 .padding(.horizontal, AppLayout.screenPadding)
@@ -235,6 +254,16 @@ struct GameHubView: View {
             //     Runner starten" (User-Spec „Elumi im U-Boot").
             // Vorher waren beide vertauscht — der Dateiname
             // `IconElumiSpiel` klang nach Elumi, zeigt aber ein U-Boot.
+            //
+            // **Quick-Fix 2026-04-30 (`v2-unify-game-tile-disabled`)**:
+            // beide Tiles werden jetzt einheitlich auf `hasCredits`
+            // gegated, weil beide Spiele beim Start 1 Ticket
+            // verbrauchen (siehe `WordRunnerGameView.swift:2943` und
+            // `ElumiArcadeGameView+Overlays.swift:243`). Vorher war
+            // Word Runner fälschlich antippbar trotz Verbrauch — User
+            // wurde nach dem Tap überrascht. Jetzt: Tile zeigt den
+            // 0-Tickets-State explizit, Tap auf disabled-Tile öffnet
+            // Acknowledge-Alert.
             gameStartButton(
                 title: "Elumi starten",
                 // Drei Snack-Icons nebeneinander (User-Spec) — zeigt
@@ -242,22 +271,26 @@ struct GameHubView: View {
                 // Wurm, Wasserfloh, Algenkugel.
                 assetNames: ["ElumiWuermchen", "ElumiWasserfloh", "ElumiAlgenkugel"],
                 enabled: hasCredits,
-                action: startGameTapped
+                action: startGameTapped,
+                onDisabledTap: { showNoTicketsAlert = true }
             )
 
             gameStartButton(
                 title: "Word Runner starten",
                 assetNames: ["IconElumiSpiel"],
-                enabled: true,
-                action: { navigate?(.wordRunner) }
+                enabled: hasCredits,
+                action: { navigate?(.wordRunner) },
+                onDisabledTap: { showNoTicketsAlert = true }
             )
 
-            // Hinweis-Zeile **nur** im Empty-State — die generische
-            // „X Spiele werden verwendet"-Zeile (User-Spec: raus) ist
-            // entfallen, da sie keine neue Info über den bereits
-            // sichtbaren Credits-Block liefert.
+            // Hinweis-Zeile **nur** im Empty-State. Wording bewusst mit
+            // dem App-internen Begriff „Trainingsgenerator" — analog
+            // zur App-eigenen Bezeichnung der Slot-Machine im
+            // Elumi-Tab. Vorher hieß die Zeile „Keine Spiele für
+            // Elumi — Word Runner kannst du trotzdem starten" und war
+            // unhonest, weil WR auch 1 Credit kostet.
             if !hasCredits {
-                Text("Keine Spiele für Elumi — spiel eine Runde Lernen, um welche zu verdienen. Word Runner kannst du trotzdem starten.")
+                Text("Du hast keine Tickets mehr. Verdiene welche durch Lernen oder durch den Trainingsgenerator.")
                     .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .multilineTextAlignment(.center)
@@ -282,32 +315,63 @@ struct GameHubView: View {
         title: String,
         assetNames: [String],
         enabled: Bool,
-        action: @escaping () -> Void
+        action: @escaping () -> Void,
+        onDisabledTap: (() -> Void)? = nil
     ) -> some View {
+        // **Quick-Fix 2026-04-30 (`v2-unify-game-tile-disabled`)**: Bei
+        // disabled Tile (= keine Tickets) zeigen wir einen Lock-Icon-
+        // Slot statt der Asset-Icons + ein „0 🎫"-Pill am rechten
+        // Rand des Buttons. So sieht der User auf einen Blick warum
+        // Tap nicht funktioniert — und der Tap-Pfad triggert
+        // `onDisabledTap` (Acknowledge-Alert) statt no-op.
         Button {
-            guard enabled else { return }
-            action()
+            if enabled {
+                action()
+            } else {
+                onDisabledTap?()
+            }
         } label: {
             HStack(spacing: 12) {
                 HStack(spacing: 4) {
-                    ForEach(assetNames, id: \.self) { name in
-                        Image(name)
-                            .resizable()
-                            .scaledToFit()
-                            // Bei einem Single-Asset bleibt es bei der
-                            // großen 52-pt-Darstellung (User-Spec
-                            // „doppelt so groß"). Bei mehreren Icons
-                            // nebeneinander etwas kleiner (36 pt) —
-                            // sonst sprengt die Icon-Reihe die Button-
-                            // Breite und drückt das Label raus.
-                            .frame(
-                                width: assetNames.count > 1 ? 36 : 52,
-                                height: assetNames.count > 1 ? 36 : 52
-                            )
+                    if enabled {
+                        ForEach(assetNames, id: \.self) { name in
+                            Image(name)
+                                .resizable()
+                                .scaledToFit()
+                                // Bei einem Single-Asset bleibt es bei der
+                                // großen 52-pt-Darstellung (User-Spec
+                                // „doppelt so groß"). Bei mehreren Icons
+                                // nebeneinander etwas kleiner (36 pt) —
+                                // sonst sprengt die Icon-Reihe die Button-
+                                // Breite und drückt das Label raus.
+                                .frame(
+                                    width: assetNames.count > 1 ? 36 : 52,
+                                    height: assetNames.count > 1 ? 36 : 52
+                                )
+                        }
+                    } else {
+                        Image(systemName: "lock.fill")
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                            .frame(width: 52, height: 52)
                     }
                 }
                 Text(title)
                     .font(.system(size: 16, weight: .black, design: .rounded))
+
+                if !enabled {
+                    Spacer(minLength: 4)
+                    Text("0 🎫")
+                        .font(.system(size: 12, weight: .black, design: .rounded))
+                        .monospacedDigit()
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(
+                            Capsule()
+                                .fill(AppTheme.Colors.textSecondary.opacity(0.20))
+                        )
+                }
             }
             .frame(maxWidth: .infinity)
             // minHeight wächst mit dem Icon-Set: Single-Icon 60 pt
@@ -316,8 +380,11 @@ struct GameHubView: View {
             .frame(minHeight: assetNames.count > 1 ? 52 : 60)
         }
         .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-        .disabled(!enabled)
-        .opacity(enabled ? 1.0 : 0.5)
+        .opacity(enabled ? 1.0 : 0.50)
+        // **Wichtig**: KEIN `.disabled(!enabled)` mehr — Button bleibt
+        // tappable, weil wir bei disabled-Tap den Acknowledge-Alert
+        // zeigen wollen. Die `enabled`-Verzweigung im Action-Closure
+        // routet zum richtigen Pfad.
     }
 
     private func startGameTapped() {
