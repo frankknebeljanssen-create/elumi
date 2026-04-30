@@ -39,7 +39,16 @@ struct AppDestinationHost: View {
             // Arcade als echte Navigation-Destination — Footer bleibt
             // während des Start-Overlays sichtbar, verschwindet erst,
             // wenn das Spiel tatsächlich beginnt (via Immersive-Flag).
-            ElumiArcadeGameView(feedbackPlayer: feedbackPlayer, autoStart: autoStart)
+            //
+            // **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`)** —
+            // `goHome` wird durchgereicht, damit die „Lernen starten"-
+            // CTAs in den Overlays direkt zur Startseite zurückkehren
+            // statt nur eine Stack-Ebene zu poppen (= zum GameHub).
+            ElumiArcadeGameView(
+                feedbackPlayer: feedbackPlayer,
+                autoStart: autoStart,
+                goHome: goHome
+            )
         case .wordRunner:
             // Word Runner als echte Nav-Destination (Phase 7.5) — der
             // globale Footer bleibt während des Start-Screens sichtbar;

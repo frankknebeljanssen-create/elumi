@@ -254,6 +254,18 @@ struct ElumiArcadeGameView: View {
     /// bisherige Verhalten für den Footer-Elumi-Quick-Launch.
     var autoStart: Bool = false
 
+    /// **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`)** —
+    /// Optionaler Home-Navigations-Closure, vom AppDestinationHost
+    /// durchgereicht. Wird von der „Lernen starten"-CTA (im
+    /// `gameOverOverlay` und im `startOverlay`) genutzt, um den User
+    /// bei 0 Credits zur Startseite zurückzubringen statt nur eine
+    /// Nav-Stack-Ebene zu poppen (was vorher fälschlich zum Spiele-
+    /// Screen führte). Pattern analog zu `WordRunnerGameView.onClose`.
+    /// Optional, damit bestehende Call-Sites (Tests etc.) nicht
+    /// brechen — die regulären App-Pfade reichen den Closure jetzt
+    /// durch.
+    var goHome: (() -> Void)? = nil
+
     @State var gameSeed = UUID()
     @State var gameSize: CGSize = .zero
     @State var gameClock = Date()
