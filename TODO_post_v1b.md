@@ -408,3 +408,44 @@ sich an den einen Pool gewöhnt hat.
 Branch `feature/training-session-flow`)
 
 ---
+
+## 📋 Lernjahr-UI fehlt in 3 Modul-Sheets (Pre-existing seit V1)
+
+**Symptom:** Lernjahr-Filter ist global (`appLernjahrMaxKey`), greift in allen
+Modulen. Aber Lernjahr-UI (Edit-Möglichkeit) existiert nur in:
+- `ListPickerSheet` (Listen, Akzente, Word Runner)
+- `ChainListSelectionSheet` (Chain-Setup-Modal, ab `v2-training-session-flow`)
+
+Karteikarten / Quiz / Training (Vokabeln, Verben, Verbformen, Nomen,
+Artikel) nutzen `ListSelectionSheet` bzw. `FlashcardStackComposerSheet` —
+kein Lernjahr-UI.
+
+**Discovery-Problem:** User der primär über Karteikarten / Quiz /
+Training einsteigt, kann das Lernjahr-Setting nirgends finden. Filter
+wirkt trotzdem (Default 99 = alles, oder zuletzt-gesetzter Wert), aber
+editieren geht nur über andere Module.
+
+**Lösungs-Optionen:**
+- **(a) Eines der 3 Sheet-Patterns als Standard wählen, andere
+  migrieren.** Vereinheitlicht UX, aber großer Refactor (3 Sheets,
+  alle Module-Setups touched).
+- **(b) Lernjahr-Setting in Settings-View als zentralen Edit-Punkt
+  ergänzen.** Klein, schnell — User kann Wert global überall finden.
+  Aber bricht das Modul-lokale-Edit-Pattern in Listen/Akzente/Word
+  Runner.
+- **(c) Beides** — Settings als zentraler Edit-Punkt sofort, Sheet-
+  Vereinheitlichung später als größerer Refactor.
+
+**Spec-Diskussion nötig** vor Implementation. Eigener Branch:
+`chore/unify-list-pickers-with-lernjahr` (oder kurzfristig
+`chore/lernjahr-in-settings`).
+
+**Erfasst beim:** Stufe 1c (Branch `feature/training-session-flow`,
+2026-04-30) — User hat den Gap im Smoke-Test entdeckt, dass Lernjahr
+im Chain-Setup-Modal sichtbar ist, in Karteikarten/Quiz/Training aber
+nicht.
+
+**Priorität:** Mittel — Discovery-Problem, nicht nur Kosmetik.
+Funktional kein Bug (Filter wirkt korrekt), aber UX-Inkonsistenz.
+
+---
