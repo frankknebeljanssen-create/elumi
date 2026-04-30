@@ -94,34 +94,45 @@ struct HomeView: View {
                 // **Home-Polish 2026-04-30 (User-Spec)**: leichter
                 // Querstrich als visueller Trenner zwischen den
                 // Übungs-Sektionen und den Tools („Scannen"/„Listen"
-                // sind Werkzeuge, keine Lernmodule). Dezent
-                // gehalten — Weiß bei 22 % Opacity (dunkler Home-BG
-                // verlangt einen helleren Ton als das pink-getönte
-                // `textSecondary`, das auf Dark zu warm/dunkel rüber-
-                // kommt), 1 pt dünn — fürs Auge ein klarer Schnitt,
-                // ohne dass die Linie selbst Aufmerksamkeit zieht.
-                // Padding-top matcht den Tools-Top-Padding-Wert davor
-                // (22 pt) für gleichmäßiges Atmen über und unter dem
-                // Strich.
+                // sind Werkzeuge, keine Lernmodule).
+                //
+                // **Iteration 3 (User-Spec „trenne etwas weniger
+                // sichtbar und links und recht bis zum rand, so wie
+                // die linie über dem footer")**: visuelle Angleichung
+                // an die Footer-Top-Border in `AppBottomBarSurface-
+                // Modifier`. Dort: `Rectangle().fill(AppTheme.Colors.
+                // border).frame(height: 1)` — `border` ist
+                // `elumiCream.opacity(0.12)`, also dezenter als die
+                // vorherigen 22 % Weiß. Edge-to-edge erreichen wir
+                // mit negativem Horizontal-Padding, das das
+                // VStack-Wrapper-Padding (`AppLayout.screenPadding`)
+                // negiert — der Strich läuft jetzt durch die ganze
+                // Bildschirmbreite, identisch zur Footer-Linie.
+                //
+                // **Iteration 2 (Position)**: Top-Padding 22 → 34 pt —
+                // der Strich rutscht weiter nach unten, der Cut sitzt
+                // tiefer im Layout. „Deine Tools" rutscht durch den
+                // erhöhten Padding-Below ebenfalls mit (siehe unten).
                 Rectangle()
-                    .fill(Color.white.opacity(0.22))
+                    .fill(AppTheme.Colors.border)
                     .frame(height: 1)
-                    .padding(.top, 22)
+                    .padding(.horizontal, -AppLayout.screenPadding)
+                    .padding(.top, 34)
                     .appEntryTransition(delay: 0.15)
 
                 HomeToolsSection(
                     onSelectScan: { openHomeScreen(.scan) },
                     onSelectLists: { openHomeScreen(.lists(nil)) }
                 )
-                // **Home-Polish 2026-04-30**: Top-Padding 22 → 14 pt.
-                // Der vorgelagerte Divider hat selbst 22 pt nach oben;
-                // unter dem Strich reichen 14 pt damit die „Deine
-                // Tools"-Headline sauber aber nicht zu locker auf den
-                // Trenner folgt. Insgesamt liegt damit jetzt mehr Luft
-                // (22 + 1 + 14 = 37 pt) zwischen MoreExercises und
-                // Tools-Headline als zuvor (22 pt) — der Cut ist
-                // visuell präsenter, wie vom User gewünscht.
-                .padding(.top, 14)
+                // **Home-Polish 2026-04-30 — Iteration 2**: 14 → 20 pt.
+                // Der Strich ist (siehe oben) auf 34 pt nach oben
+                // gerückt; zusätzlich bekommt die „Deine Tools"-
+                // Headline mehr Atem darunter, damit Strich UND
+                // Headline beide gleichmäßig „runter" wandern, wie
+                // vom User explizit gefordert. Gesamtluft jetzt
+                // 34 + 1 + 20 = 55 pt zwischen MoreExercises-Ende und
+                // Tools-Headline (vorher 37 pt).
+                .padding(.top, 20)
                 // Klarer Abstand zum Footer — Tools klebt nicht mehr.
                 .padding(.bottom, 24)
                 .appEntryTransition(delay: 0.2)
