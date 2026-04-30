@@ -1,6 +1,22 @@
 import Foundation
 import Combine
 
+// MARK: - ⚠️ DEPRECATED — Removal-Backlog
+//
+// **2026-04-30, Branch `feature/training-session-flow`, Stufe 1**:
+// Persistent-Wrapper um `GeneratedTrainingSession` (out of
+// `TrainingGenerator.generate`). Mit dem Chain-Builder-Pfad
+// (`TrainingChainContext.make(from:slotResult)`) ist die Persistenz
+// einer „letzten generierten Session" überflüssig — die Chain selbst
+// ist In-Memory und überlebt App-Restart bewusst nicht.
+//
+// Verifikation 2026-04-30: einzige Live-Call-Sites waren
+// `ElumiTabView.swift:48` (@StateObject) + `:1196` (storeSession) —
+// beide entfernt. Keine weiteren Referenzen im Code.
+//
+// Removal mit `TrainingGenerator.swift` und `TrainingGeneratorModels.swift`
+// als gemeinsamer Backlog-Item nach Merge des Chain-Branches.
+
 /// **Training-Generator-Store** — persistiert die zuletzt generierte
 /// Session, die zuletzt gewählte Dauer und den zuletzt gewählten Fokus
 /// in UserDefaults. Singleton, weil Screen + Tab-Card beide lesen und

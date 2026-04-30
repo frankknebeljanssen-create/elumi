@@ -45,7 +45,20 @@ struct ElumiTabView: View {
 
     // MARK: - Slot-Machine + Trainingsgenerator-State (vorher in TrainingGeneratorView)
 
-    @StateObject private var generatorStore = TrainingGeneratorStore.shared
+    /// **Trainings-Chain-Store** (Stufe 1, 2026-04-30, Branch
+    /// `feature/training-session-flow`). In-Memory-State für die
+    /// auto-verkettete Übungs-Sequenz aus dem Slot-Ergebnis. Wird beim
+    /// `startTraining()`-Tap befüllt; Stufe 2 verbindet die Modul-Done-
+    /// CTAs daran. Persistiert nicht — Chain überlebt App-Restart nicht.
+    ///
+    /// Der frühere `@StateObject generatorStore = TrainingGeneratorStore`
+    /// ist mit Stufe 1 obsolet (Audit-Verifikation 2026-04-30: einzige
+    /// Live-Call-Site war `startTraining()`, jetzt durch Chain-Builder
+    /// ersetzt). Die 3 Generator-Files
+    /// (`TrainingGenerator.swift`, `TrainingGeneratorStore.swift`,
+    /// `TrainingGeneratorModels.swift`) sind als Dead-Code markiert,
+    /// Removal als Backlog-Item in TODO_post_v1b.md.
+    @StateObject private var chainStore = TrainingChainStore()
     @StateObject private var dropRate = ElumiDropRateControllerStore()
     @StateObject private var budget = SlotMachineSpinBudgetStore()
     /// **Elumi-Play-Credits** (Test-System 2026-04-24). Getrennt vom
@@ -174,14 +187,27 @@ struct ElumiTabView: View {
     /// vom `TrainingGenerator` via `buildFiveMinute(focus:)` korrekt
     /// in 2 Blöcke (Warmup 2 + Kern 3min) aufgeteilt — verifiziert
     /// vor dem Branch-Start. Default bleibt 10min (`durationDefault`).
-    private static let durationOptions: [Int] = [5, 10, 15, 20]
+    /// **Spec-1 (2026-04-30, Branch `feature/training-session-flow`)** — die
+    /// Trainingsdauer-Optionen sind von [5, 10, 15, 20] auf [6, 12, 18]
+    /// umgestellt. Begründung: 6/12/18 sind sauber durch 2 und 3 teilbar
+    /// und passen damit zur 3-Reel-Chain (Modul-Slots können gleichmäßig
+    /// die Gesamtdauer aufteilen, ohne Restzeit-Kosmetik). Default ist
+    /// 12 min (mittlere Option, ein Stufe drüber dem alten 10er-Default).
+    ///
+    /// **Migration für existierende User**: defensive-on-Launch in
+    /// `mainContent.onAppear` — wenn `selectedDuration` nicht in
+    /// `durationOptions` ist (z.B. User hatte 10/15/20 gespeichert), wird
+    /// einmalig auf `durationDefault` (= 12) gesetzt. Idempotent: der
+    /// Korrekturpfad wird beim ersten Open ausgeführt und bei allen
+    /// Folge-Opens als no-op übersprungen.
+    private static let durationOptions: [Int] = [6, 12, 18]
 
     /// **Single Source für die Default-Trainingsdauer** (Sache B Stufe 1,
     /// 2026-04-29). Wird sowohl als `@AppStorage`-Initialwert für
     /// `selectedDuration` verwendet als auch — ab Stufe 2 — als Modal-
     /// Preselect beim allerersten Open. Keine Duplikation an anderen
     /// Stellen: alle „falls nichts gewählt"-Pfade lesen diesen Wert.
-    static let durationDefault: Int = 10
+    static let durationDefault: Int = 12
 
     // MARK: - Body
 
@@ -207,6 +233,19 @@ struct ElumiTabView: View {
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.8), value: showSetupModal)
         .onAppear {
+            // **Spec-1 Migration (2026-04-30)**: Defensive-on-Launch.
+            // User mit altem `selectedDuration` (5/10/15/20) → einmal
+            // auf neuen Default (12) korrigieren. Idempotent — bei allen
+            // Folge-Opens, sobald der Wert in `durationOptions` liegt,
+            // ist der Korrekturpfad ein no-op. Schreibung erfolgt nur
+            // wenn der gespeicherte Wert ungültig ist (kein Schema-Bump,
+            // kein Migration-Flag, multi-device-safe).
+            if !Self.durationOptions.contains(selectedDuration) {
+                #if DEBUG
+                print("🕒 [DurationMigration] selectedDuration=\(selectedDuration) ∉ \(Self.durationOptions) → reset to \(Self.durationDefault)")
+                #endif
+                selectedDuration = Self.durationDefault
+            }
             checkSetupModalState()
         }
     }
@@ -305,23 +344,20 @@ struct ElumiTabView: View {
                 // aus dem Setup-Screen, damit die visuelle Sprache
                 // konsistent bleibt.
                 //
-                // **Setup-Tweaks v2 — C2 (2026-04-30)**: 4 Optionen
-                // (5/10/15/20) in einem 2×2-Grid via `LazyVGrid`. Vorher
-                // 3-Chip-HStack. Spacing 12pt für Columns + Rows = das
-                // gleiche Vor-Stufe-2-Spacing innerhalb der Reihe.
+                // **Spec-1 (2026-04-30, Branch `feature/training-session-flow`)**:
+                // 3 Optionen (6/12/18) in einer einzigen HStack, weil mit
+                // dem Wechsel von 4 → 3 Chips ein 2×2-Grid keinen Mehrwert
+                // mehr bietet — die drei Chips passen breit nebeneinander
+                // bei 340pt Modal-Width. Vorher: LazyVGrid 2×2 (4 Chips
+                // 5/10/15/20). Spacing 12pt zwischen Chips identisch zum
+                // Grid-Spacing.
                 //
-                // **Layout-Hinweis** (Sache B Stufe 2): Das explizite
-                // `.frame(maxWidth: .infinity)` am Grid ist nötig, weil
-                // das umschließende `.frame(maxWidth: 340)` am VStack
-                // die Width-Constraint nicht zuverlässig zu den
-                // `maxWidth: .infinity`-Chips propagiert.
-                LazyVGrid(
-                    columns: [
-                        GridItem(.flexible(), spacing: 12),
-                        GridItem(.flexible(), spacing: 12)
-                    ],
-                    spacing: 12
-                ) {
+                // **Layout-Hinweis** (übernommen aus Sache B Stufe 2): Das
+                // explizite `.frame(maxWidth: .infinity)` an der HStack ist
+                // nötig, damit die Chips mit `maxWidth: .infinity` die
+                // Modal-Breite (340pt minus Padding) gleichmäßig
+                // aufteilen.
+                HStack(spacing: 12) {
                     ForEach(Self.durationOptions, id: \.self) { minutes in
                         durationChip(minutes: minutes)
                     }
@@ -581,7 +617,15 @@ struct ElumiTabView: View {
                     Text("\(selectedDuration)")
                         .font(.system(size: 46, weight: .black, design: .rounded))
                         .foregroundStyle(sectionStyle.accent)
-                        .contentTransition(.numericText())
+                        // **Spec-1 (2026-04-30)** — `.identity` statt
+                        // `.numericText()`. Begründung: mit den neuen
+                        // Optionen 6/12/18 wechselt die Anzeige zwischen
+                        // 1- und 2-stelligen Werten (6 ↔ 12). Die
+                        // numericText-Animation ist dafür nicht ausgelegt
+                        // (sie morpht digit-für-digit gleicher Stelle) und
+                        // erzeugt einen unsauberen Sprung. `.identity` ist
+                        // ein harter Crossfade ohne Glyph-Morphing.
+                        .contentTransition(.identity)
 
                     Text("min")
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
@@ -1178,32 +1222,105 @@ struct ElumiTabView: View {
     // `playCredits` bleibt erhalten (wird in `handleSlotLanded`
     // befüllt), nur die Card in diesem Tab ist weg.
 
-    /// Generiert die echte Trainings-Session aus der gewählten Dauer
-    /// (Fokus = .mixed als V1-Default — Fokus-Auswahl-Screen wurde
-    /// per User-Spec entfernt) und navigiert zum ersten Block.
-    /// **Sache B Stufe 1 (2026-04-29)**: `selectedDuration` ist jetzt
-    /// non-optional via `@AppStorage` — kein Fallback nötig, der Wert
-    /// ist immer gesetzt (Default `Self.durationDefault` = 10).
+    /// Baut aus dem Slot-Ergebnis eine `TrainingChainContext` und
+    /// navigiert zum ersten Modul-Step.
+    ///
+    /// **Stufe 1 (2026-04-30, Branch `feature/training-session-flow`)**:
+    /// Der frühere Pfad über `TrainingGenerator.generate(...)` ist
+    /// abgelöst — der Slot-Spin selbst diktiert jetzt die Modul-
+    /// Reihenfolge. Game-Slots sind in `TrainingChainContext.make(...)`
+    /// bereits gefiltert; bei reinem Game-Jackpot (3× Game) ist das
+    /// Builder-Result `nil`, und wir fallen still zurück (Stufe 5
+    /// führt das Jackpot-UI ein).
     ///
     /// **Versuchslogik-Reset**: Vor der Navigation setzen wir
     /// `currentSpinNumber` auf 0 + räumen das lastSpinResult auf.
     /// Damit hat der Nutzer bei Rückkehr zum Tab frische 3 Versuche.
+    ///
+    /// **Stufe 1 — kein UI-Effekt sichtbar**: Chain läuft mit
+    /// `currentIndex=0`; das gestartete Modul verhält sich wie bisher
+    /// (Done-CTA „Weiter lernen" → zurück zum Modul-Setup, kein
+    /// Chain-Step-2-Übergang). Stufe 2 verbindet die Done-CTAs an
+    /// `chainStore`.
     private func startTraining() {
-        let session = TrainingGenerator.generate(
-            duration: selectedDuration,
-            focus: .mixed
-        )
-        generatorStore.storeSession(session)
-        guard let firstBlock = session.blocks.first else { return }
         feedbackPlayer.playTabSwitch()
+
         // Versuchszähler zurücksetzen, Ergebnis löschen — bei Rückkehr
-        // sieht der User wieder „Versuch 1/3".
+        // sieht der User wieder „Versuch 1/3". Wir ziehen `lastSpinResult`
+        // in eine lokale Konstante, BEVOR wir den State auf nil setzen,
+        // damit der Chain-Builder noch auf das Spin-Ergebnis zugreifen kann.
+        let pendingResult = lastSpinResult
         currentSpinNumber = 0
         lastSpinResult = nil
         slotPhase = .idle
         resultHighlightScale = 1.0
         resultHighlightGlow = 0.0
-        navigate(routeForBlock(firstBlock))
+
+        // Chain-Build aus Slot-Result. Game-Slots sind in `make(...)`
+        // bereits aus `plannedSteps` gefiltert (sourceCenterSymbolKinds
+        // bewahrt sie für End-Summary in Stufe 4). Bei 3× Game →
+        // `nil` → Jackpot-Pfad (Stufe 5 implementiert die Jackpot-UI;
+        // Stufe 1 fällt hier still zurück, kein Crash).
+        guard let result = pendingResult,
+              let chain = TrainingChainContext.make(
+                  from: result,
+                  totalDuration: selectedDuration
+              )
+        else { return }
+
+        // Chain-Start: Resume-Stores werden im Store geleert (R5).
+        chainStore.start(chain)
+
+        guard let firstStep = chain.currentStep else { return }
+        navigate(screenForChainStep(firstStep, chainContext: chain))
+    }
+
+    /// Mappt einen Chain-Step (HomeHeroModule) auf den passenden
+    /// `AppScreen` mit injiziertem `chainContext` und
+    /// `shouldAutoStart=true` (Setup-Screen überspringen).
+    ///
+    /// **R3 (Audit-Spec)**: Akzente nutzt `.uben` als Chain-Default —
+    /// Speed-Round bleibt manueller Pfad und kommt nicht aus dem Slot.
+    /// **R4**: Vokabeln/Nomen/Artikel/Verben/Verbformen laufen alle
+    /// über `.train(TrainingLaunchContext)`, der `preferredMode` schaltet
+    /// die TrainingView intern auf den richtigen Modus.
+    private func screenForChainStep(
+        _ step: HomeHeroModule,
+        chainContext: TrainingChainContext
+    ) -> AppScreen {
+        switch step {
+        case .karteikarten:
+            return .flashcards(FlashcardLaunchContext(
+                shouldAutoStart: true,
+                chainContext: chainContext
+            ))
+        case .quiz:
+            return .quiz(QuizLaunchContext(
+                shouldAutoStart: true,
+                chainContext: chainContext
+            ))
+        case .akzente:
+            return .accents(AccentsLaunchContext(
+                preferredMode: .uben,
+                shouldAutoStart: true,
+                chainContext: chainContext
+            ))
+        case .nomen, .artikel, .verben, .verbformen, .vokabeln:
+            let mode: TrainingMode
+            switch step {
+            case .nomen:      mode = .nouns
+            case .artikel:    mode = .articles
+            case .verben:     mode = .verbs
+            case .verbformen: mode = .verbforms
+            case .vokabeln:   mode = .vocabulary
+            default:          mode = .vocabulary
+            }
+            return .train(TrainingLaunchContext(
+                preferredMode: mode,
+                shouldAutoStart: true,
+                chainContext: chainContext
+            ))
+        }
     }
 
     // MARK: - Result-Highlight (2026-04-25 User-Spec)
@@ -1226,21 +1343,11 @@ struct ElumiTabView: View {
         }
     }
 
-    /// Maps `TrainingExerciseType` auf die beste verfügbare App-Route.
-    private func routeForBlock(_ block: TrainingBlock) -> AppScreen {
-        switch block.exerciseType {
-        case .warmup, .flashcards, .review:
-            return .flashcards(nil)
-        case .quiz:
-            return .quiz(nil)
-        case .speed, .writing, .match:
-            return .train(nil)
-        case .articles:
-            return .train(nil)
-        case .accents:
-            return .accents(nil)
-        }
-    }
+    // **Stufe 1 (2026-04-30)**: `routeForBlock(_:)` entfernt — der
+    // `TrainingExerciseType`→`AppScreen`-Mapper war auf den alten
+    // `TrainingGenerator`-Pfad gemünzt. Chain-Routing geht jetzt über
+    // `screenForChainStep(_:chainContext:)` direkt aus
+    // `HomeHeroModule`-Slots (siehe oben).
 
     // **2026-04-24 Vereinfachung**: statusCard + statusMetric +
     // statusDivider entfernt. Sie waren am Footer gepinnt und

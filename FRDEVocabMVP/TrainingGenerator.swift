@@ -1,5 +1,21 @@
 import Foundation
 
+// MARK: - ⚠️ DEPRECATED — Removal-Backlog
+//
+// **2026-04-30, Branch `feature/training-session-flow`, Stufe 1**:
+// Mit der Trainings-Session-Auto-Verkettung (Slot-Spin diktiert die
+// Modul-Reihenfolge direkt, siehe `TrainingChainContext.make(...)`) ist
+// dieser dramaturgische Block-Generator obsolet. **Verifiziert per
+// `grep -rn "TrainingGenerator.generate\|TrainingGenerator(" --include="*.swift"`
+// am 2026-04-30**: einzige Live-Call-Site war `ElumiTabView.startTraining()`,
+// jetzt durch Chain-Builder ersetzt. Keine weiteren Referenzen im Code.
+//
+// Die 3 Files (`TrainingGenerator.swift`, `TrainingGeneratorStore.swift`,
+// `TrainingGeneratorModels.swift` ≈ 16KB / ~330 LoC) bleiben in Stufe 1
+// erhalten, damit der Chain-Branch atomar bleibt. Removal als
+// separates Backlog-Item in `TODO_post_v1b.md` nach Merge des
+// `feature/training-session-flow`-Branches.
+
 /// **Training-Generator** — baut aus Dauer + Fokus eine komplette
 /// `GeneratedTrainingSession`. Reine Logik, keine Side-Effects, keine
 /// UI-Referenzen — leicht unit-testbar und später durch echte

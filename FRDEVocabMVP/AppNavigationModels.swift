@@ -132,6 +132,11 @@ struct TrainingLaunchContext: Hashable {
     let preferredCardType: CardType?
     let preferredMode: TrainingMode?
     let shouldAutoStart: Bool
+    /// **Stufe 1 (2026-04-30)**: optionaler Chain-Context, gesetzt wenn
+    /// das Modul als Step einer auto-verketteten Trainings-Sequenz
+    /// gestartet wird. `nil` = normale Modul-Sitzung. Stufe 2 nutzt
+    /// das Feld in den Done-CTAs zum Weiter-Springen.
+    let chainContext: TrainingChainContext?
 
     init(
         preferredListID: UUID? = nil,
@@ -139,7 +144,8 @@ struct TrainingLaunchContext: Hashable {
         preferredDirection: Direction? = nil,
         preferredCardType: CardType? = nil,
         preferredMode: TrainingMode? = nil,
-        shouldAutoStart: Bool = false
+        shouldAutoStart: Bool = false,
+        chainContext: TrainingChainContext? = nil
     ) {
         self.preferredListID = preferredListID
         self.preferredLanguage = preferredLanguage
@@ -147,6 +153,7 @@ struct TrainingLaunchContext: Hashable {
         self.preferredCardType = preferredCardType
         self.preferredMode = preferredMode
         self.shouldAutoStart = shouldAutoStart
+        self.chainContext = chainContext
     }
 }
 
@@ -157,11 +164,43 @@ struct FlashcardLaunchContext: Hashable {
     let preferredCardType: CardType?
     let preferredItemIDs: [UUID]?
     let shouldAutoStart: Bool
+    /// **Stufe 1 (2026-04-30)**: siehe `TrainingLaunchContext.chainContext`.
+    let chainContext: TrainingChainContext?
+
+    init(
+        preferredListID: UUID? = nil,
+        preferredLanguage: StudyLanguage? = nil,
+        preferredDirection: Direction? = nil,
+        preferredCardType: CardType? = nil,
+        preferredItemIDs: [UUID]? = nil,
+        shouldAutoStart: Bool = false,
+        chainContext: TrainingChainContext? = nil
+    ) {
+        self.preferredListID = preferredListID
+        self.preferredLanguage = preferredLanguage
+        self.preferredDirection = preferredDirection
+        self.preferredCardType = preferredCardType
+        self.preferredItemIDs = preferredItemIDs
+        self.shouldAutoStart = shouldAutoStart
+        self.chainContext = chainContext
+    }
 }
 
 struct QuizLaunchContext: Hashable {
     let preferredListID: UUID?
     let shouldAutoStart: Bool
+    /// **Stufe 1 (2026-04-30)**: siehe `TrainingLaunchContext.chainContext`.
+    let chainContext: TrainingChainContext?
+
+    init(
+        preferredListID: UUID? = nil,
+        shouldAutoStart: Bool = false,
+        chainContext: TrainingChainContext? = nil
+    ) {
+        self.preferredListID = preferredListID
+        self.shouldAutoStart = shouldAutoStart
+        self.chainContext = chainContext
+    }
 }
 
 struct ListLaunchContext: Hashable {

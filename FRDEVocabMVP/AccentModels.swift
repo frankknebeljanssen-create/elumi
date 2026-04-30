@@ -215,10 +215,21 @@ struct AccentsLaunchContext: Hashable {
     let preferredListID: UUID?
     let preferredMode: AccentMode?
     let shouldAutoStart: Bool
+    /// **Stufe 1 (2026-04-30, Branch `feature/training-session-flow`)**:
+    /// optionaler Chain-Context, gesetzt wenn Akzente als Step einer
+    /// auto-verketteten Trainings-Sequenz gestartet wird. Stufe 2 nutzt
+    /// das Feld im Done-CTA zum Weiter-Springen.
+    let chainContext: TrainingChainContext?
 
-    init(preferredListID: UUID? = nil, preferredMode: AccentMode? = nil, shouldAutoStart: Bool = false) {
+    init(
+        preferredListID: UUID? = nil,
+        preferredMode: AccentMode? = nil,
+        shouldAutoStart: Bool = false,
+        chainContext: TrainingChainContext? = nil
+    ) {
         self.preferredListID = preferredListID
         self.preferredMode = preferredMode
         self.shouldAutoStart = shouldAutoStart
+        self.chainContext = chainContext
     }
 }

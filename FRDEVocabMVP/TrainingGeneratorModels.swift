@@ -1,5 +1,17 @@
 import Foundation
 
+// MARK: - ⚠️ DEPRECATED — Removal-Backlog
+//
+// **2026-04-30, Branch `feature/training-session-flow`, Stufe 1**:
+// Datenstrukturen für den dramaturgischen `TrainingGenerator`-Pfad —
+// mit der Chain-Builder-Architektur obsolet. `TrainingExerciseType` /
+// `TrainingFocus` / `TrainingBlock` / `GeneratedTrainingSession`
+// werden ausschließlich in den 3 Generator-Files referenziert
+// (verifiziert 2026-04-30).
+//
+// Removal als gemeinsamer Backlog-Item mit `TrainingGenerator.swift`
+// und `TrainingGeneratorStore.swift` nach Merge des Chain-Branches.
+
 /// **Training-Generator V1** (Phase 8) — datenstrukturelle Basis für den
 /// neuen Elumi-Training-Modus. Jede Session besteht aus 2–4
 /// `TrainingBlock`-Einheiten mit klarer Dramaturgie (Warmup → Kern →
