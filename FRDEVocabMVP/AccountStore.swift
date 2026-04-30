@@ -107,6 +107,18 @@ enum AccountScopedKeys {
         appElumiLastRewardDayIndexKey,
         appElumiArcadeHighScoreKey,
         appTrainingSelectedListIDsKey,
+        // **Pre-existing-Bugfix Stufe 5 Schritt 2 (2026-04-30)**: die
+        // Per-Mode-v2-Keys (vocabulary/nouns/articles/verbs/verbforms)
+        // waren bisher NICHT account-scoped, obwohl ihre v1-Legacy-
+        // Variante (`appTrainingSelectedListIDsKey`) registriert ist.
+        // Side-Effect: bei Account-Wechsel haben Trainings-Modes ihre
+        // Listen-Selektion vom alten Account behalten. Mit der Global-
+        // Listen-Auswahl-Migration räumen wir das jetzt mit auf.
+        trainingSelectedListIDsKey(for: TrainingMode.vocabulary.storageKey),
+        trainingSelectedListIDsKey(for: TrainingMode.nouns.storageKey),
+        trainingSelectedListIDsKey(for: TrainingMode.articles.storageKey),
+        trainingSelectedListIDsKey(for: TrainingMode.verbs.storageKey),
+        trainingSelectedListIDsKey(for: TrainingMode.verbforms.storageKey),
         appQuizSelectedListIDsKey,
         appFlashcardsSelectedListIDsKey,
         appFlashcardsMasteryThresholdKey,
@@ -117,7 +129,14 @@ enum AccountScopedKeys {
         // Trainings-Generator Default-Trainingsdauer (Sache B,
         // 2026-04-29) — pro Account isoliert, sodass jeder Nutzer
         // seine eigene zuletzt gewählte Dauer behält.
-        appTrainingGeneratorDurationKey
+        appTrainingGeneratorDurationKey,
+        // Globale Listen-Auswahl (Stufe 5, 2026-04-29) — Toggle +
+        // UUID-Set. Pro Account isoliert: jeder Familien-Account hat
+        // seine eigene globale Auswahl bzw. seinen eigenen Toggle-
+        // State (Default `true`). Beim Account-Switch greifen die
+        // Werte des neuen Accounts.
+        appUseGlobalListSelectionKey,
+        appGlobalSelectedListIDsKey
     ]
 }
 

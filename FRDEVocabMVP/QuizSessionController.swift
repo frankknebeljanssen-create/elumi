@@ -54,16 +54,33 @@ final class QuizSessionController: ObservableObject {
         let lernjahrMax: Int?
     }
 
+    /// **Stufe 5 Schritt 2 (2026-04-30)**: Read-Pfad routet jetzt über
+    /// `VocabularyListSelectionResolver.effectiveSelectedListIDs(...)`.
+    /// Bei Toggle ON liefert der Resolver die globale Auswahl; bei OFF
+    /// wird die Per-Modul-Quiz-Selection aus dem alten Key gelesen
+    /// (Closure-Fallback) — Verhalten unverändert zur Pre-Stufe-5-Welt.
     func restoreSelectedListIDs() {
-        guard let data = UserDefaults.standard.data(forKey: appQuizSelectedListIDsKey),
-              let ids = try? JSONDecoder().decode(Set<UUID>.self, from: data),
-              !ids.isEmpty else { return }
+        let ids = VocabularyListSelectionResolver.effectiveSelectedListIDs {
+            // Per-Modul-Fallback: wie bisher aus dem Quiz-spezifischen Key.
+            guard let data = UserDefaults.standard.data(forKey: appQuizSelectedListIDsKey),
+                  let decoded = try? JSONDecoder().decode(Set<UUID>.self, from: data) else {
+                return []
+            }
+            return decoded
+        }
+        guard !ids.isEmpty else { return }
         selectedListIDs = ids
     }
 
+    /// **Stufe 5 Schritt 2 (2026-04-30)**: Write-Pfad routet jetzt über
+    /// `VocabularyListSelectionResolver.persistSelectedListIDs(...)`.
+    /// Bei Toggle ON wird in den globalen Slot geschrieben (alle anderen
+    /// Module sehen die neue Auswahl); bei OFF in den Per-Modul-Quiz-Key.
     private func persistSelectedListIDs() {
-        guard let data = try? JSONEncoder().encode(selectedListIDs) else { return }
-        UserDefaults.standard.set(data, forKey: appQuizSelectedListIDsKey)
+        VocabularyListSelectionResolver.persistSelectedListIDs(selectedListIDs) { ids in
+            guard let data = try? JSONEncoder().encode(ids) else { return }
+            UserDefaults.standard.set(data, forKey: appQuizSelectedListIDsKey)
+        }
     }
 
     /// Debounce-Wrapper für `persistSelectedListIDs`. Der eigentliche
@@ -71,12 +88,17 @@ final class QuizSessionController: ObservableObject {
     /// debounce), ohne den Main-Thread zu blockieren. Snapshot der IDs
     /// wird **beim Planen** genommen, damit der spätere Task auf einem
     /// konsistenten Wert arbeitet.
+    ///
+    /// **Stufe 5 Schritt 2 (2026-04-30)**: nutzt jetzt denselben Routing-
+    /// Helper wie der synchrone `persistSelectedListIDs`-Pfad.
     private func scheduleListIDsPersistence() {
         pendingListIDsPersist?.cancel()
         let snapshot = selectedListIDs
         let item = DispatchWorkItem {
-            guard let data = try? JSONEncoder().encode(snapshot) else { return }
-            UserDefaults.standard.set(data, forKey: appQuizSelectedListIDsKey)
+            VocabularyListSelectionResolver.persistSelectedListIDs(snapshot) { ids in
+                guard let data = try? JSONEncoder().encode(ids) else { return }
+                UserDefaults.standard.set(data, forKey: appQuizSelectedListIDsKey)
+            }
         }
         pendingListIDsPersist = item
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.15, execute: item)

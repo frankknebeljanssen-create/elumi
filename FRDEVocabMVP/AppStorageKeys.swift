@@ -66,6 +66,36 @@ let appTrainingSelectedListIDsKey = "training.selectedListIDs.v1"
 /// Single-Source-of-Truth-Lookup via
 /// `VocabularyListSelectionResolver.currentLernjahrMax()`.
 let appLernjahrMaxKey = "elumi.lernjahrMax.v1"
+
+/// **Globale Listen-Auswahl — Toggle** (Stufe 5, 2026-04-29).
+/// Master-Switch: wenn `true`, nutzen alle Lern-Module (Karteikarten,
+/// Quiz, Training, Word Runner) dieselbe Listen-Auswahl
+/// (`appGlobalSelectedListIDsKey`). Wenn `false`, behält jedes Modul
+/// seine bisherige Per-Modul-Auswahl. Akzente und Personal-Decks
+/// bleiben außerhalb dieses Schalters (eigene Persistenz-Architekturen).
+///
+/// Default `true` (Spec 5.2). Single-Source-of-Truth-Lookup via
+/// `VocabularyListSelectionResolver.currentUseGlobalListSelection()`.
+/// Per-Account namespaced (siehe `AccountScopedKeys.userDefaultsKeys`)
+/// — jeder Account/Familienmitglied hat eigene Präferenz.
+let appUseGlobalListSelectionKey = "elumi.lists.useGlobalSelection.v1"
+
+/// **Globale Listen-Auswahl — UUIDs** (Stufe 5, 2026-04-29).
+/// Codable-JSON-Array der UUIDs der gewählten Listen. Wirkt nur,
+/// wenn `appUseGlobalListSelectionKey = true`. Initial-Default beim
+/// allerersten Toggle-On (oder per Default-Verhalten beim First-Launch
+/// auf neuen Accounts) ist die UUID der „A1 Grundwortschatz"-Liste:
+/// `F1E1EEE1-A100-4000-A000-000000000001` aus dem
+/// `StandardVocabularyLoader.levelLists`-Set.
+///
+/// User-Listen UND Built-In-Listen sind im selben Pool — Variante (iii)
+/// der Spec-Punkt-5.4-Diskussion: visuelle Separation in den Pickern
+/// bleibt, der Selection-Pool ist gemeinsam.
+///
+/// Per-Account namespaced. Single-Source-Lookup via
+/// `VocabularyListSelectionResolver.currentGlobalSelectedListIDs()`.
+let appGlobalSelectedListIDsKey = "elumi.lists.globalSelection.v1"
+
 let appQuizSelectedListIDsKey = "quiz.selectedListIDs.v1"
 let appFlashcardsSelectedListIDsKey = "flashcards.selectedListIDs.v1"
 let appFlashcardsMasteryThresholdKey = "flashcards.masteryThreshold.v1"

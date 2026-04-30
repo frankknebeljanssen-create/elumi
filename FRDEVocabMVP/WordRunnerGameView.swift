@@ -2580,17 +2580,25 @@ struct WordRunnerGameView: View {
             }
         )
         .onAppear {
-            // **Phase 7.6** — WR-spezifisches Listen-Recall: wenn wir
-            // beim letzten WR-Run eine Liste ausgewählt haben,
-            // stellen wir die Auswahl hier wieder her (selbst wenn
-            // ein anderes Modul zwischendurch die globale
-            // `selectedListID` geändert hat).
+            // **Phase 7.6 + Stufe 5 Schritt 2 (2026-04-30)**: WR-Listen-
+            // Recall jetzt mit globalem Modus-Routing über den Resolver-
+            // Helper. Bei Toggle ON wird die ERSTE UUID aus der globalen
+            // Auswahl genommen (WR ist Single-Pick — die globale Multi-
+            // Set-Auswahl wird auf eine Liste kollabiert). Bei OFF gilt
+            // der bisherige WR-spezifische `wordRunnerLastListIDRaw` —
+            // damit eine WR-spezifische Auswahl Module-Wechsel überlebt.
+            let effective = VocabularyListSelectionResolver.effectiveSelectedListIDs {
+                guard let savedID = UUID(uuidString: wordRunnerLastListIDRaw) else {
+                    return []
+                }
+                return [savedID]
+            }
             if let store = listStoreRef.backing,
-               let savedID = UUID(uuidString: wordRunnerLastListIDRaw),
-               store.selectedListID != savedID,
-               store.allLists.contains(where: { $0.id == savedID })
-                || store.builtInList.id == savedID {
-                store.selectedListID = savedID
+               let candidate = effective.first,
+               store.selectedListID != candidate,
+               store.allLists.contains(where: { $0.id == candidate })
+                || store.builtInList.id == candidate {
+                store.selectedListID = candidate
             }
             recomputeHasUsableList()
             // Phase 7.6 — Audio-Preload, damit `startNewRun` sofort
@@ -2600,10 +2608,16 @@ struct WordRunnerGameView: View {
         .onChange(of: listStoreRef.backing?.selectedListID) { _, newID in
             recomputeHasUsableList()
             game.refreshLiveContent()
-            // WR-spezifisch persistieren — damit die Auswahl auch
-            // nach Modul-Wechseln (Quiz/Training ändert globalen
-            // Store) für die nächste WR-Session erhalten bleibt.
-            if let newID { wordRunnerLastListIDRaw = newID.uuidString }
+            // **Stufe 5 Schritt 2 (2026-04-30)**: Persistenz routet
+            // jetzt über den Resolver. Bei Toggle ON wird die globale
+            // Auswahl auf `[newID]` kollabiert — alle anderen Module
+            // sehen jetzt nur diese eine Liste. Bei OFF wird wie zuvor
+            // in den WR-spezifischen Key geschrieben (damit eine
+            // dedizierte WR-Auswahl Module-Wechsel übersteht).
+            guard let newID else { return }
+            VocabularyListSelectionResolver.persistSelectedListIDs([newID]) { _ in
+                wordRunnerLastListIDRaw = newID.uuidString
+            }
         }
     }
 

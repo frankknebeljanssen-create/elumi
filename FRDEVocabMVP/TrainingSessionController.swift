@@ -238,21 +238,30 @@ final class TrainingSessionController: ObservableObject {
     /// Fällt zurück auf den Legacy-Key (`appTrainingSelectedListIDsKey`), falls für
     /// diesen Modus noch nie eine Auswahl gespeichert wurde — damit Bestandsnutzer
     /// ihren bisherigen Zustand behalten.
+    ///
+    /// **Stufe 5 Schritt 2 (2026-04-30)**: Read-Pfad routet jetzt über
+    /// `VocabularyListSelectionResolver.effectiveSelectedListIDs(...)`.
+    /// Bei Toggle ON liefert der Resolver die globale Auswahl — alle 5
+    /// Trainings-Modes (vocabulary/nouns/articles/verbs/verbforms)
+    /// teilen sich dann ein Set mit Quiz/Flashcards/Word Runner.
+    /// Bei OFF läuft der existierende Per-Mode-Pfad unverändert
+    /// (mit Legacy-Key-Fallback für Bestandsnutzer).
     private func loadSelectedListIDsForCurrentMode() {
-        let modeKey = trainingSelectedListIDsKey(for: trainingMode.storageKey)
-        let defaults = UserDefaults.standard
-        let restoredIDs: Set<UUID>?
-        if let data = defaults.data(forKey: modeKey),
-           let ids = try? JSONDecoder().decode(Set<UUID>.self, from: data) {
-            restoredIDs = ids
-        } else if let legacy = defaults.data(forKey: appTrainingSelectedListIDsKey),
-                  let ids = try? JSONDecoder().decode(Set<UUID>.self, from: legacy),
-                  !ids.isEmpty {
-            restoredIDs = ids
-        } else {
-            restoredIDs = nil
+        let restored = VocabularyListSelectionResolver.effectiveSelectedListIDs {
+            // Per-Modul-Fallback: bestehende Per-Mode-Logik mit Legacy-Fallback.
+            let modeKey = trainingSelectedListIDsKey(for: trainingMode.storageKey)
+            let defaults = UserDefaults.standard
+            if let data = defaults.data(forKey: modeKey),
+               let ids = try? JSONDecoder().decode(Set<UUID>.self, from: data) {
+                return ids
+            } else if let legacy = defaults.data(forKey: appTrainingSelectedListIDsKey),
+                      let ids = try? JSONDecoder().decode(Set<UUID>.self, from: legacy),
+                      !ids.isEmpty {
+                return ids
+            }
+            return []
         }
-        guard let restored = restoredIDs else {
+        guard !restored.isEmpty else {
             // Kein persistierter Zustand → aktuelle Auswahl leeren, sonst bleibt
             // beim Modus-Wechsel fälschlich die vorherige Auswahl stehen.
             if !selectedTrainingListIDs.isEmpty {
@@ -267,9 +276,16 @@ final class TrainingSessionController: ObservableObject {
         isRestoringSelectedListIDs = false
     }
 
+    /// **Stufe 5 Schritt 2 (2026-04-30)**: Write-Pfad routet jetzt über
+    /// `VocabularyListSelectionResolver.persistSelectedListIDs(...)`.
+    /// Bei Toggle ON wird in den globalen Slot geschrieben (alle anderen
+    /// Module sehen die neue Auswahl); bei OFF in den Per-Mode-Key des
+    /// aktuell aktiven `trainingMode`.
     private func persistSelectedListIDs() {
-        guard let data = try? JSONEncoder().encode(selectedTrainingListIDs) else { return }
-        let modeKey = trainingSelectedListIDsKey(for: trainingMode.storageKey)
-        UserDefaults.standard.set(data, forKey: modeKey)
+        VocabularyListSelectionResolver.persistSelectedListIDs(selectedTrainingListIDs) { ids in
+            guard let data = try? JSONEncoder().encode(ids) else { return }
+            let modeKey = trainingSelectedListIDsKey(for: trainingMode.storageKey)
+            UserDefaults.standard.set(data, forKey: modeKey)
+        }
     }
 }
