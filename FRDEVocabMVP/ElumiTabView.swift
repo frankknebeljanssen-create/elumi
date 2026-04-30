@@ -285,6 +285,15 @@ struct ElumiTabView: View {
                         .font(.system(size: 22, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .multilineTextAlignment(.center)
+                    // **Setup-Modal-Tweaks 2/3 (2026-04-30)** — Process-
+                    // Zeile als Mini-Orientierung. Bewusst dezent
+                    // gehalten (`.caption`, secondary-Farbe), damit es
+                    // nicht wie ein Tutorial-Schritt wirkt — nur ein
+                    // ruhiger „so läuft's"-Hinweis unter der Frage.
+                    Text("Zeit w\u{00E4}hlen \u{2192} Slot starten \u{2192} \u{00DC}ben")
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .multilineTextAlignment(.center)
                 }
 
                 // Zeit-Chips (10/15/20) — wiederverwendetes
