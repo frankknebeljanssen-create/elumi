@@ -413,11 +413,14 @@ extension ElumiArcadeGameView {
                 arcadeStatPill(icon: "xmark.circle.fill", label: "Verloren \(misses)", tint: AppTheme.Colors.error)
             }
 
-            // **Play-Credits-Row** (2026-04-24): kleine, dezente Zeile
-            // mit aktuellem Credit-Stand + Skip-Button. Nur sichtbar,
-            // solange Credits > 0 ODER Skip-fähig ist (sonst nimmt die
-            // Zeile unnötig Platz im HUD).
-            if playCredits.credits > 0 || playCreditsSkipEnabled {
+            // **Tickets-Row** (2026-04-24, Pool-Vereinheitlichung
+            // 2026-04-30 Stufe 1b): kleine, dezente Zeile mit
+            // aktuellem Credit-Stand + Skip-Button. Nur sichtbar,
+            // solange Credits > 0 ODER Skip-fähig ist (sonst nimmt
+            // die Zeile unnötig Platz im HUD). Quelle: `arcadeCredits`
+            // (vorher `playCredits.credits` aus dem entfernten
+            // `ElumiCreditsStore`).
+            if arcadeCredits > 0 || playCreditsSkipEnabled {
                 HStack(spacing: 8) {
                     playCreditsHUDChip
                     Spacer(minLength: 0)

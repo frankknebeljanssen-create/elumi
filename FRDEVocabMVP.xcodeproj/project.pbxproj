@@ -383,7 +383,6 @@
 		A00000000000000000000766 /* FlashcardsSessionController+AnswerFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000767 /* FlashcardsSessionController+AnswerFlow.swift */; };
 		A00000000000000000000768 /* FlashcardsView+PromptResponseComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000769 /* FlashcardsView+PromptResponseComponents.swift */; };
 		A00000000000000000000770 /* FlashcardsView+InputActionComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000771 /* FlashcardsView+InputActionComponents.swift */; };
-		A00000000000000000000772 /* ElumiCreditsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000773 /* ElumiCreditsStore.swift */; };
 		A00000000000000000000774 /* ElumiArcadeGameView+PlayCredits.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000775 /* ElumiArcadeGameView+PlayCredits.swift */; };
 		A00000000000000000000776 /* GermanNounCapitalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000777 /* GermanNounCapitalization.swift */; };
 		A00000000000000000000778 /* VocabularyListSelectionResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000779 /* VocabularyListSelectionResolver.swift */; };
@@ -949,7 +948,6 @@
 		A00000000000000000000767 /* FlashcardsSessionController+AnswerFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsSessionController+AnswerFlow.swift"; sourceTree = "<group>"; };
 		A00000000000000000000769 /* FlashcardsView+PromptResponseComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsView+PromptResponseComponents.swift"; sourceTree = "<group>"; };
 		A00000000000000000000771 /* FlashcardsView+InputActionComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsView+InputActionComponents.swift"; sourceTree = "<group>"; };
-		A00000000000000000000773 /* ElumiCreditsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElumiCreditsStore.swift; sourceTree = "<group>"; };
 		A00000000000000000000775 /* ElumiArcadeGameView+PlayCredits.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ElumiArcadeGameView+PlayCredits.swift"; sourceTree = "<group>"; };
 		A00000000000000000000777 /* GermanNounCapitalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GermanNounCapitalization.swift; sourceTree = "<group>"; };
 		A00000000000000000000779 /* VocabularyListSelectionResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyListSelectionResolver.swift; sourceTree = "<group>"; };
@@ -1286,7 +1284,6 @@
 				A00000000000000000000377 /* AppBottomBarComponents.swift */,
 				A00000000000000000000379 /* ElumiFooterFeastButton.swift */,
 				A00000000000000000000231 /* ElumiArcadeViews.swift */,
-				A00000000000000000000773 /* ElumiCreditsStore.swift */,
 				A00000000000000000000775 /* ElumiArcadeGameView+PlayCredits.swift */,
 				A00000000000000000000777 /* GermanNounCapitalization.swift */,
 				A00000000000000000000779 /* VocabularyListSelectionResolver.swift */,
@@ -1938,7 +1935,6 @@
 				A00000000000000000000378 /* ElumiFooterFeastButton.swift in Sources */,
 				A00000000000000000000380 /* UnderwaterRevealOverlay.swift in Sources */,
 				A00000000000000000000230 /* ElumiArcadeViews.swift in Sources */,
-				A00000000000000000000772 /* ElumiCreditsStore.swift in Sources */,
 				A00000000000000000000774 /* ElumiArcadeGameView+PlayCredits.swift in Sources */,
 				A00000000000000000000776 /* GermanNounCapitalization.swift in Sources */,
 				A00000000000000000000778 /* VocabularyListSelectionResolver.swift in Sources */,

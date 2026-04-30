@@ -42,6 +42,19 @@ struct ElumiTabView: View {
     @ObservedObject private var profileStore = ProfileStore.shared
     @AppStorage(appElumiCurrentStreakKey) private var currentStreak = 0
     @AppStorage(appElumiXPKey) private var collectedXP = 0
+    /// **Pool-Vereinheitlichung 2026-04-30 (Stufe 1b)** — `@AppStorage`-
+    /// Mirror auf den bare `appArcadeCreditsKey`. Wird nach Slot-Spin-
+    /// Increment aus `ProgressStore.shared.progress.arcadeCredits`
+    /// gespiegelt, damit der Footer-Badge (`AppBottomBarView`) und
+    /// andere bare-Key-Reader sofort den neuen Wert sehen. Pattern
+    /// identisch zu FlashcardsView+SessionComponents:42,
+    /// TrainingView+SessionFlow:61/89, QuizView+Flow:262.
+    ///
+    /// **Hintergrund:** ProgressStore namespaces den Key per Account,
+    /// `@AppStorage` liest aber den bare-Key. Die Bestand-App lebt mit
+    /// dem Dual-Write-Pattern; wir folgen ihm hier statt eine
+    /// Architektur-Sanierung als Side-Quest aufzumachen.
+    @AppStorage(appArcadeCreditsKey) private var arcadeCredits = 0
 
     // MARK: - Slot-Machine + Trainingsgenerator-State (vorher in TrainingGeneratorView)
 
@@ -61,13 +74,14 @@ struct ElumiTabView: View {
     @StateObject private var chainStore = TrainingChainStore()
     @StateObject private var dropRate = ElumiDropRateControllerStore()
     @StateObject private var budget = SlotMachineSpinBudgetStore()
-    /// **Elumi-Play-Credits** (Test-System 2026-04-24). Getrennt vom
-    /// `SlotMachineSpinBudgetStore` (der ist Slot-intern für weitere
-    /// Spins) und vom GameHub-`arcadeCredits` (der ist „1 = 1 Spiel
-    /// starten"). Dieser Pool wandert **persistent** mit dem Nutzer
-    /// in das Elumi-Arcade-Spiel und wird dort für Rescue/Skip
-    /// verbraucht.
-    @ObservedObject private var playCredits = ElumiCreditsStore.shared
+    // **Pool-Vereinheitlichung 2026-04-30 (Stufe 1b)**: der frühere
+    // `@ObservedObject playCredits = ElumiCreditsStore.shared` ist
+    // entfernt. Der Slot-Spin schreibt jetzt direkt auf
+    // `appArcadeCreditsKey` via `ProgressStore.shared.mutate` (siehe
+    // `handleSlotLanded`). Rescue/Skip im Arcade-Spiel verbrauchen
+    // ebenfalls aus dem `arcadeCredits`-Pool. Single-Source-of-Truth
+    // ist `ProgressStore.shared.progress.arcadeCredits` (mit
+    // `@AppStorage`-Mirror in den Modul-Views).
 
     /// **User-gewählte Trainingsdauer in Minuten — Sache B Stufe 1
     /// (2026-04-29).** Persistiert via `@AppStorage` (Account-namespaced
@@ -201,6 +215,13 @@ struct ElumiTabView: View {
     /// Korrekturpfad wird beim ersten Open ausgeführt und bei allen
     /// Folge-Opens als no-op übersprungen.
     private static let durationOptions: [Int] = [6, 12, 18]
+
+    /// **Slot-Spin Credit-Mapping** (Pool-Vereinheitlichung 2026-04-30,
+    /// Stufe 1b). Aus dem ehemaligen `ElumiCreditsStore.GrantTable`
+    /// in den Tab gezogen, weil der Store entfernt wurde. Mapping
+    /// unverändert: 1× Game → +1 Credit, 2× → +3, 3× → +6. Wird in
+    /// `handleSlotLanded` konsumiert.
+    private static let slotCreditGrantTable: [Int: Int] = [1: 1, 2: 3, 3: 6]
 
     /// **Single Source für die Default-Trainingsdauer** (Sache B Stufe 1,
     /// 2026-04-29). Wird sowohl als `@AppStorage`-Initialwert für
@@ -1176,14 +1197,15 @@ struct ElumiTabView: View {
     /// Wird von `SlotMachineView` aufgerufen, sobald die komplette
     /// Spin-Sequenz (inkl. Reveal) durch ist.
     ///
-    /// **2026-04-24**: Zusätzlich zum internen Spin-Budget-Bonus
-    /// (`budget.awardBonusCredits`) vergeben wir hier auch
-    /// **persistente Play-Credits** an `ElumiCreditsStore`. Regeln
-    /// identisch (1/3/6), aber anderer Pool: Play-Credits folgen dem
-    /// Nutzer ins Arcade-Spiel und helfen dort (Rescue). Die
-    /// Vergabe läuft **nach** dem vollständigen Reel-Stop (dieser
-    /// Callback wird von der Slot-Phase `.revealed` exakt einmal
-    /// ausgelöst) — dadurch kein Doppel-Grant möglich.
+    /// **2026-04-30 Credit-Grant-Verlagerung (Stufe 1b, Patch)**: die
+    /// Credit-Vergabe wandert vom Slot-Stop **zum „Jetzt üben"-Tap** —
+    /// siehe `startTraining()`. Begründung: bisher gutgeschriebene
+    /// Tickets pro Drehung erlaubten Re-Roll-Farming (User dreht 3×,
+    /// kassiert Tickets aus allen drei Drehungen, drückt nicht „Jetzt
+    /// üben"). Neue Regel: nur die EINE Drehung, mit der der User in
+    /// die Übung geht, zählt. Dieser Callback inkrementiert daher nur
+    /// noch Spin-Budget-Bonus (intern für mehr Spins) und Drop-Rate-
+    /// Statistik — keine `arcadeCredits`-Änderung.
     ///
     /// **Versuchslogik**: Hier — und NUR hier — wird
     /// `currentSpinNumber` inkrementiert. Bei bloßem Button-Tap oder
@@ -1194,12 +1216,9 @@ struct ElumiTabView: View {
         currentSpinNumber = min(currentSpinNumber + 1, maxSpins)
         dropRate.registerSpinResult(elumiCount: result.elumiCount)
         budget.awardBonusCredits(for: result.elumiCount)
-        // Play-Credits persistieren für Rescue/Skip im Arcade-Spiel.
-        let granted = playCredits.grantForSlot(elumiCount: result.elumiCount)
         #if DEBUG
-        print("🎰 [ElumiTab] Spin abgeschlossen — currentSpinNumber=\(currentSpinNumber)/\(maxSpins), Elumis=\(result.elumiCount), Credits+\(granted)")
+        print("🎰 [ElumiTab] Spin abgeschlossen — currentSpinNumber=\(currentSpinNumber)/\(maxSpins), Elumis=\(result.elumiCount) (Credit-Grant erfolgt erst beim 'Jetzt üben'-Tap)")
         #endif
-        _ = granted
         // **V4.4 Final-Result-Sound**:
         //   • Elumi-Treffer (1+) → Achievement-Sound (bonusbubble)
         //     + heavy Haptic → spürbarer Gewinn-Moment.
@@ -1216,11 +1235,11 @@ struct ElumiTabView: View {
         }
     }
 
-    // **2026-04-24 User-Spec**: Der separate `playCreditsChip` ist
-    // entfallen — Credits werden im Arcade-Spiel-HUD angezeigt
-    // (siehe `ElumiArcadeGameView+PlayCredits.swift`). Der Store
-    // `playCredits` bleibt erhalten (wird in `handleSlotLanded`
-    // befüllt), nur die Card in diesem Tab ist weg.
+    // **2026-04-24 User-Spec + Pool-Vereinheitlichung 2026-04-30**: Der
+    // separate `playCreditsChip` ist entfallen — Credits werden im
+    // Arcade-Spiel-HUD und im Footer-Badge angezeigt. Mit dem Pool-
+    // Merge in Stufe 1b sind Footer-Badge und In-Game-Anzeige derselbe
+    // `arcadeCredits`-Wert.
 
     /// Baut aus dem Slot-Ergebnis eine `TrainingChainContext` und
     /// navigiert zum ersten Modul-Step.
@@ -1256,11 +1275,35 @@ struct ElumiTabView: View {
         resultHighlightScale = 1.0
         resultHighlightGlow = 0.0
 
+        // **Credit-Grant beim 'Jetzt üben'-Tap** (Stufe 1b Patch,
+        // 2026-04-30): nur die Drehung, mit der der User tatsächlich
+        // ins Training geht, gibt Tickets — verhindert Re-Roll-Farming.
+        // Steht VOR dem Chain-Build, damit auch der Jackpot-Pfad
+        // (3× Game → `make(...)` returnt nil) die +6 Credits noch
+        // gutgeschrieben bekommt, bevor `startTraining` früh returnt.
+        // Mapping aus `slotCreditGrantTable` (1×→+1, 2×→+3, 3×→+6).
+        if let pending = pendingResult {
+            let granted = Self.slotCreditGrantTable[pending.elumiCount] ?? 0
+            if granted > 0 {
+                ProgressStore.shared.mutate { progress in
+                    progress.arcadeCredits += granted
+                }
+                // Mirror auf bare `@AppStorage`-Key — siehe Pattern aus
+                // FlashcardsView+SessionComponents:42, damit Footer-Badge
+                // den neuen Wert sofort sieht.
+                arcadeCredits = ProgressStore.shared.progress.arcadeCredits
+                #if DEBUG
+                print("🎫 [ElumiTab] Credit-Grant on 'Jetzt üben' — Elumis=\(pending.elumiCount), Credits+\(granted) → arcadeCredits=\(arcadeCredits)")
+                #endif
+            }
+        }
+
         // Chain-Build aus Slot-Result. Game-Slots sind in `make(...)`
         // bereits aus `plannedSteps` gefiltert (sourceCenterSymbolKinds
         // bewahrt sie für End-Summary in Stufe 4). Bei 3× Game →
         // `nil` → Jackpot-Pfad (Stufe 5 implementiert die Jackpot-UI;
-        // Stufe 1 fällt hier still zurück, kein Crash).
+        // Stufe 1 fällt hier still zurück, kein Crash). Credits sind
+        // an dieser Stelle bereits gutgeschrieben.
         guard let result = pendingResult,
               let chain = TrainingChainContext.make(
                   from: result,

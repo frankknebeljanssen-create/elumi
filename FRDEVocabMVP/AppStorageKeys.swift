@@ -33,13 +33,15 @@ let appElumiBestStreakKey = "elumi.gamification.bestStreak.v1"
 let appElumiLastRewardDayIndexKey = "elumi.gamification.lastRewardDayIndex.v1"
 let appElumiArcadeHighScoreKey = "elumi.arcade.highscore.v1"
 let appArcadeCreditsKey = "elumi.arcade.credits.v1"
-/// **Elumi-Play-Credits** (2026-04-24 Test-System) — isolierter
-/// Credit-Pool NUR für das Elumi-Arcade-Spiel. Wird durch die Slot
-/// Machine im Trainingsgenerator gefüllt (1/3/6 pro Elumi-Treffer),
-/// im Spiel verbraucht für Hilfen (Rescue, Skip). Bewusst getrennt
-/// vom `appArcadeCreditsKey` (GameHub-„1 Credit = 1 Spiel starten").
-/// Word Runner greift **nicht** darauf zu.
-let appElumiPlayCreditsKey = "elumi.play.credits.v1"
+// **Pool-Vereinheitlichung 2026-04-30** (Branch
+// `feature/training-session-flow`, Stufe 1b): der frühere
+// `appElumiPlayCreditsKey` (Test-System 2026-04-24, isolierter Pool
+// für Rescue/Skip im Arcade-Spiel) ist entfernt. Slot-Spin füllt
+// jetzt direkt `appArcadeCreditsKey` (1×→+1, 2×→+3, 3×→+6 Mapping
+// erhalten); Rescue + Skip im Spiel verbrauchen ebenfalls aus diesem
+// einen Pool. User-Wahrnehmung: ein einziger „Tickets"-Counter im
+// Footer für sowohl Spielstart als auch In-Game-Hilfen. Stale Keys
+// auf existierenden Geräten werden bei nächstem App-Open ignoriert.
 /// **Word Runner** — persistierte Lifetime-Stats für den Start-Screen:
 /// Best-Score (höchste Runden-Punkte je erreicht) + Trophies (Summe
 /// aller je eingesammelten Collectibles). Werden nach jedem Run

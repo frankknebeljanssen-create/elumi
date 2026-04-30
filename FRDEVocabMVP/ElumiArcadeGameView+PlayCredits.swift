@@ -1,10 +1,14 @@
 import SwiftUI
 
-/// **Play-Credits-Integration in das Arcade-Spiel** (2026-04-24).
+/// **Tickets-Integration in das Arcade-Spiel** (2026-04-24, Pool-
+/// Vereinheitlichung 2026-04-30 Stufe 1b).
 ///
-/// Isolierte Extension für die Credit-Interaktionen. Keine Änderung
-/// an bestehenden Gameplay-Regeln, keine Konflikte mit dem globalen
-/// `arcadeCredits`-System (GameHub „1 Credit = 1 Spiel starten").
+/// Isolierte Extension für die Credit-Interaktionen. Mit der Pool-
+/// Vereinheitlichung verbrauchen Rescue + Skip aus dem **selben
+/// Pool** wie der Spielstart (`appArcadeCreditsKey`). Vorher gab es
+/// einen separaten `playCredits`-Pool im jetzt entfernten
+/// `ElumiCreditsStore`. Das Mapping ist transparent: ein Ticket =
+/// ein Spielstart ODER eine Hilfe (Rescue/Skip).
 ///
 /// **Features:**
 ///   • `playCreditsHUDChip` — kleiner Chip im Header während des
@@ -20,19 +24,25 @@ import SwiftUI
 ///   • `consumePlayCreditRescue()` / `consumePlayCreditSkipRound()`
 ///     — zentrale API-Eingangspunkte, zentralisieren die Consume-
 ///     Race-Protection.
+///
+/// **Naming-Note:** Die `playCredit…`-Symbol-Namen sind aus historischen
+/// Gründen erhalten geblieben (Rescue/Skip-Mechanik, Call-Sites in
+/// `ElumiArcadeGameView+Layout.swift`). Code-intern ist klar: gemeint
+/// ist ab Stufe 1b der `arcadeCredits`-Pool.
 extension ElumiArcadeGameView {
 
     // MARK: - HUD: Credits-Anzeige
 
     /// Dezenter Credits-Chip im HeaderBar während Spiel läuft.
     /// Spec #2: „kleine Anzeige oben: Credits: X — unauffällig,
-    /// aber sichtbar".
+    /// aber sichtbar". Liest direkt aus `arcadeCredits` (Pool-
+    /// Vereinheitlichung 2026-04-30).
     var playCreditsHUDChip: some View {
         HStack(spacing: 5) {
             Image(systemName: "ticket.fill")
                 .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(AppTheme.Colors.warning)
-            Text("Credits: \(playCredits.credits)")
+            Text("Credits: \(arcadeCredits)")
                 .font(.system(size: 12, weight: .bold, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
                 .monospacedDigit()
@@ -48,7 +58,7 @@ extension ElumiArcadeGameView {
             Capsule()
                 .stroke(AppTheme.Colors.warning.opacity(0.35), lineWidth: 1)
         )
-        .animation(.easeInOut(duration: 0.2), value: playCredits.credits)
+        .animation(.easeInOut(duration: 0.2), value: arcadeCredits)
     }
 
     /// Skip-Chip neben dem Credits-Chip. Nur aktiv, wenn der User
@@ -80,9 +90,10 @@ extension ElumiArcadeGameView {
 
     /// Gate für den Skip-Button: Credits > 0 UND es läuft gerade
     /// ein regulärer Run (kein Start-Overlay, kein Game-Over, keine
-    /// Banner, keine Bonusrunde).
+    /// Banner, keine Bonusrunde). Pool-Quelle: `arcadeCredits`
+    /// (Vereinheitlichung 2026-04-30).
     var playCreditsSkipEnabled: Bool {
-        guard playCredits.credits > 0 else { return false }
+        guard arcadeCredits > 0 else { return false }
         guard !isGameOver, !showingStartOverlay else { return false }
         guard !showingRoundBanner, !bonusRoundWaitingForTap else { return false }
         guard !isBonusRound else { return false }
@@ -163,22 +174,28 @@ extension ElumiArcadeGameView {
     }
 
     /// Gate für das Rescue-Prompt: Spiel ist beendet, Credits > 0,
-    /// und der Nutzer hat noch nicht entschieden.
+    /// und der Nutzer hat noch nicht entschieden. Pool-Quelle:
+    /// `arcadeCredits` (Vereinheitlichung 2026-04-30).
     var shouldShowRescueOffer: Bool {
         isGameOver
-            && playCredits.credits > 0
+            && arcadeCredits > 0
             && !rescueConsumedForCurrentGameOver
     }
 
     // MARK: - Consume-API (zentrale Eingänge, Race-sicher)
 
-    /// Rescue konsumieren: 1 Credit abziehen, Game-Over rückgängig
-    /// machen, ein Leben zurückgeben, Sting-Count reset, Spiel wieder
-    /// laufen lassen. Race-safe durch den `rescueConsumedForCurrentGameOver`-
-    /// Flag — zweiter Tap wird ignoriert.
+    /// Rescue konsumieren: 1 Credit (`arcadeCredits`) abziehen,
+    /// Game-Over rückgängig machen, ein Leben zurückgeben, Sting-Count
+    /// reset, Spiel wieder laufen lassen. Race-safe durch den
+    /// `rescueConsumedForCurrentGameOver`-Flag — zweiter Tap wird
+    /// ignoriert. Plus expliziter `arcadeCredits > 0`-Guard, damit der
+    /// Decrement nicht in den Negativ-Bereich rutscht (auch wenn der
+    /// Trigger-Pfad das normalerweise schon über `shouldShowRescueOffer`
+    /// abfängt).
     func consumePlayCreditRescue() {
         guard !rescueConsumedForCurrentGameOver else { return }
-        guard playCredits.useCredit() else { return }
+        guard arcadeCredits > 0 else { return }
+        arcadeCredits -= 1
         rescueConsumedForCurrentGameOver = true
 
         // Leben zurückgeben + States neutralisieren.
@@ -197,12 +214,13 @@ extension ElumiArcadeGameView {
         feedbackPlayer.playAchievement()
     }
 
-    /// Skip konsumieren: 1 Credit abziehen, Runde sofort beenden,
-    /// Banner für nächste Runde triggern. Race-safe — guarded durch
-    /// `playCreditsSkipEnabled`.
+    /// Skip konsumieren: 1 Credit (`arcadeCredits`) abziehen, Runde
+    /// sofort beenden, Banner für nächste Runde triggern. Race-safe —
+    /// guarded durch `playCreditsSkipEnabled` (das implizit
+    /// `arcadeCredits > 0` prüft).
     func consumePlayCreditSkipRound() {
         guard playCreditsSkipEnabled else { return }
-        guard playCredits.useCredit() else { return }
+        arcadeCredits -= 1
 
         // Aktive Snacks/Tentakel aufräumen, Sting zurücksetzen,
         // Runde inkrementieren. Der bestehende Runden-Wechsel-Flow

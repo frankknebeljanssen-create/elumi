@@ -239,11 +239,14 @@ struct ElumiArcadeGameView: View {
     @ObservedObject var feedbackPlayer: FeedbackPlayer
     @AppStorage(appElumiArcadeHighScoreKey) var highScore = 0
     @AppStorage(appArcadeCreditsKey) var arcadeCredits = 0
-    /// **Play-Credits** (2026-04-24 Test-System) — persistent durch
-    /// Slot-Spins verdient, im Spiel für Rescue (Tot-abwenden) und
-    /// Skip (Runde überspringen) verbraucht. Bewusst getrennt vom
-    /// globalen `arcadeCredits` („1 Credit = 1 Spielstart").
-    @ObservedObject var playCredits = ElumiCreditsStore.shared
+    // **Pool-Vereinheitlichung 2026-04-30 (Stufe 1b)**: der frühere
+    // `@ObservedObject playCredits = ElumiCreditsStore.shared` ist
+    // entfernt. Rescue + Skip im Arcade verbrauchen jetzt aus dem
+    // selben `arcadeCredits`-Pool wie der Spielstart (1 Ticket =
+    // 1 Spielstart ODER 1 In-Game-Hilfe). Slot-Spin füllt diesen Pool
+    // weiter mit dem Mapping 1×→+1, 2×→+3, 3×→+6
+    // (`ElumiTabView.slotCreditGrantTable`). Keine separate Pool-
+    // Trennung mehr im UI sichtbar.
     /// Wenn `true`, ist bereits eine Rescue-Entscheidung für das
     /// aktuelle Game-Over gefallen (Accept oder Skip). Verhindert
     /// Doppel-Taps und das wiederholte Anzeigen des Prompts.
