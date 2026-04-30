@@ -543,28 +543,50 @@ struct ElumiTabView: View {
     ///   • Pencil ist `disabled(!isSpinAllowed)` — kein Re-Edit
     ///     während die Slot-Machine rollt (Edge-Case E2)
     private var timeDisplayCard: some View {
-        // **Setup-Modal-Tweaks 3/3 (2026-04-30)**: Card kompakter
-        // gemacht, damit der „Los geht's!"-Spin-CTA komplett über
-        // dem Footer sichtbar bleibt. Drei Anpassungen:
-        //   • XXL-Zahl 56 → 46pt (visuell stimmiger mit dem 40pt-
-        //     Pencil-Pill rechts daneben — vorher dominierte die
-        //     Zahl die Card-Höhe deutlich)
-        //   • VStack-Spacing 8 → 4pt (Section-Label und Wert rücken
-        //     näher zusammen)
-        //   • Vertical-Padding 10 → 6pt (Card-Frame insgesamt
-        //     niedriger)
-        VStack(alignment: .leading, spacing: 4) {
-            setupCardLabel("TRAININGSZEIT")
+        // **Setup-Modal-Tweaks 3/3 (2026-04-30) + v2 — C3**: Card
+        // kompakter gemacht (Vertical-Padding 10 → 6, VStack-Spacing
+        // 8 → 4, XXL-Zahl 56 → 46pt) und Inhalt **horizontal
+        // zentriert**. Das Section-Label „TRAININGSZEIT" bleibt
+        // linksbündig oben (Section-Header-Konvention), aber die
+        // Wert-Zeile (Zahl + „min") ist via Spacer-Spacer-Pattern
+        // ehrlich mittig — links 40pt-Reserve-Slot (gleicher Width
+        // wie der Pencil-Pill rechts), Wert in der Mitte mit
+        // Spacern auf beiden Seiten, Pencil rechts unverändert.
+        VStack(spacing: 4) {
+            // **Setup-Tweaks v2 — C3 (User-Spec 2026-04-30)**: Label
+            // ist hier zentriert (nicht der Standard-`setupCardLabel(...)`-
+            // Helper, der `.alignment: .leading` hartkodiert). Inline-
+            // Definition mit identischen Styles aus dem Helper, nur
+            // mit `.center`-Frame-Alignment + `multilineTextAlignment`.
+            // Ergebnis: Section-Header und Wert-Zeile sind beide
+            // ehrlich zentriert.
+            Text("TRAININGSZEIT")
+                .font(.system(size: 10, weight: .semibold, design: .rounded))
+                .tracking(1.5)
+                .foregroundStyle(AppTheme.Colors.cardLabel)
+                .textCase(.uppercase)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, alignment: .center)
 
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text("\(selectedDuration)")
-                    .font(.system(size: 46, weight: .black, design: .rounded))
-                    .foregroundStyle(sectionStyle.accent)
-                    .contentTransition(.numericText())
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                // Reserve-Slot links — gleich breit wie der Pencil
+                // rechts (40pt), damit die Wert-VStack in der echten
+                // Mitte sitzt (nicht links-versetzt durch den
+                // Pencil-Asymmetrie-Effekt).
+                Color.clear.frame(width: 40, height: 40)
 
-                Text("min")
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                Spacer(minLength: 0)
+
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text("\(selectedDuration)")
+                        .font(.system(size: 46, weight: .black, design: .rounded))
+                        .foregroundStyle(sectionStyle.accent)
+                        .contentTransition(.numericText())
+
+                    Text("min")
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                }
 
                 Spacer(minLength: 0)
 
