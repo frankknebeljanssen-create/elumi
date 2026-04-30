@@ -39,6 +39,12 @@ struct ElumiTabView: View {
     let openInfo: () -> Void
     let navigate: (AppScreen) -> Void
 
+    /// **Stufe 1c (2026-04-30)** — VocabularyListStore wird vom
+    /// AppDestinationHost durchgereicht, damit das Setup-Modal die
+    /// Listen-Auswahl-Card mit echten Listen-Namen befüllen und der
+    /// `ChainListSelectionSheet` `allLists` rendern kann.
+    @ObservedObject var listStore: VocabularyListStore
+
     @ObservedObject private var profileStore = ProfileStore.shared
     @AppStorage(appElumiCurrentStreakKey) private var currentStreak = 0
     @AppStorage(appElumiXPKey) private var collectedXP = 0
@@ -137,6 +143,30 @@ struct ElumiTabView: View {
     // `AccountStore.shared.namespacedKey(...)` — dieselbe Strategie
     // wie `appOnboardingCompletedKey` in `ProfileStore`.
     @State private var showSetupModal: Bool = false
+
+    // MARK: - Listen-Auswahl-Card (Stufe 1c, 2026-04-30)
+
+    /// Sheet-Trigger für den `ChainListSelectionSheet` (Multi-Select
+    /// der globalen Listen-Auswahl). Tap auf die Listen-Card im Setup-
+    /// Modal setzt diesen auf `true`; das Sheet persistiert beim
+    /// „Fertig"-Tap und schreibt zurück in `globalSelectedListIDs`.
+    @State private var showListPicker: Bool = false
+
+    /// Lokaler Mirror der globalen Listen-Auswahl. Initialisiert in
+    /// `mainContent.onAppear` aus
+    /// `VocabularyListSelectionResolver.currentGlobalSelectedListIDs()`,
+    /// nach Sheet-Close via `onCommit`-Callback aktualisiert. Wird in
+    /// der Listen-Card im Setup-Modal als Source angezeigt und treibt
+    /// die `Los geht's`-CTA-Disable-Logik (leer → CTA disabled).
+    ///
+    /// **Empty-State-Note (Spec)**: Wenn der Resolver `nil` zurückgibt
+    /// (User hat noch nie etwas Globales gewählt), bleibt dieses Set
+    /// leer — Card zeigt „Keine Liste gewählt", CTA ist disabled. Der
+    /// User MUSS aktiv mindestens eine Liste wählen, bevor er ins
+    /// Training geht. (Settings-Toggle-Initial-Default
+    /// `Grundwortschatz A1` greift nur, wenn der Toggle erstmals
+    /// aktiviert wird — der Chain-Pfad ist davon unabhängig.)
+    @State private var globalSelectedListIDs: Set<UUID> = []
 
     /// Können noch Spins getriggert werden?
     private var hasRemainingSpins: Bool { currentSpinNumber < maxSpins }
@@ -267,6 +297,13 @@ struct ElumiTabView: View {
                 #endif
                 selectedDuration = Self.durationDefault
             }
+            // **Stufe 1c (2026-04-30)**: Initial-Load der globalen
+            // Listen-Auswahl in den lokalen `@State`-Mirror. Wenn der
+            // Resolver `nil` zurückgibt (User hat noch nie etwas global
+            // gewählt), bleibt das Set leer — Card zeigt Empty-State,
+            // CTA wird disabled. Read passiert auf jedem Tab-Open, damit
+            // externe Änderungen (z.B. via Settings) reflektiert werden.
+            globalSelectedListIDs = VocabularyListSelectionResolver.currentGlobalSelectedListIDs() ?? []
             checkSetupModalState()
         }
     }
@@ -385,9 +422,22 @@ struct ElumiTabView: View {
                 }
                 .frame(maxWidth: .infinity)
 
+                // **Stufe 1c (2026-04-30)** — Listen-Auswahl-Card.
+                // Zeigt die aktuelle globale Listen-Auswahl (gemeinsam
+                // genutzt mit Karteikarten/Quiz/Word Runner/Training),
+                // editierbar via Pencil-Tap → `ChainListSelectionSheet`.
+                // Empty-State (`globalSelectedListIDs.isEmpty`) zeigt
+                // Warning-Border + Hint-Text, CTA wird disabled.
+                listSelectionCard
+
                 // CTA „Los geht's" — schließt das Modal mit aktuellem
                 // Preselect. Pfad ist semantisch identisch zum
                 // Backdrop-Tap (idempotent), nur explizit als Button.
+                //
+                // **Stufe 1c (2026-04-30)**: disabled wenn keine Liste
+                // gewählt (`globalSelectedListIDs.isEmpty`). User muss
+                // aktiv mindestens eine Liste wählen, bevor er ins
+                // Training geht — sonst hat das Training keinen Pool.
                 Button {
                     dismissSetupModal()
                 } label: {
@@ -398,6 +448,8 @@ struct ElumiTabView: View {
                         .frame(minHeight: 48)
                 }
                 .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
+                .disabled(globalSelectedListIDs.isEmpty)
+                .opacity(globalSelectedListIDs.isEmpty ? 0.45 : 1.0)
                 .accessibilityLabel(Text("Los geht's"))
                 .accessibilityHint(Text("Übernimmt die gewählte Trainingsdauer und schließt den Setup-Dialog"))
             }
@@ -424,6 +476,118 @@ struct ElumiTabView: View {
             )
             .shadow(color: Color.black.opacity(0.55), radius: 24, x: 0, y: 8)
             .padding(.horizontal, 24)
+        }
+        .sheet(isPresented: $showListPicker) {
+            // **Stufe 1c (2026-04-30)** — Multi-Select-Sheet für die
+            // globale Listen-Auswahl. Schreibt direkt via
+            // `setGlobalSelectedListIDs(...)` (R11: Toggle-State wird
+            // ignoriert) und gibt die neue Selection per `onCommit`
+            // zurück, damit die Card im Setup-Modal sofort aktualisiert.
+            ChainListSelectionSheet(
+                allLists: listStore.allLists,
+                initialSelection: globalSelectedListIDs,
+                onCommit: { newSelection in
+                    globalSelectedListIDs = newSelection
+                }
+            )
+        }
+    }
+
+    /// **Listen-Auswahl-Card im Setup-Modal** (Stufe 1c, 2026-04-30).
+    ///
+    /// Zeigt die aktuelle globale Listen-Auswahl (gemeinsam genutzt mit
+    /// Karteikarten/Quiz/Word Runner/Training). Tap auf die Card oder
+    /// das Pencil-Icon öffnet den `ChainListSelectionSheet` für
+    /// Multi-Select-Editing.
+    ///
+    /// **Anzeige-Logik:**
+    ///   • Empty (`globalSelectedListIDs.isEmpty`) → Warning-Border,
+    ///     Text „Keine Liste gewählt — tippen, um zu wählen"
+    ///   • 1 Liste  → Listen-Name als zentrale Zeile
+    ///   • 2 Listen → beide Namen untereinander
+    ///   • 3+ Listen → erste 2 Namen + „+N weitere"-Hinweis
+    ///
+    /// Begründung der 2-Zeilen-Limit: Modal-Card ist 340pt breit, der
+    /// Lesbarkeit halber begrenzen wir die Anzeige; eine längere
+    /// Auswahl wird über die Sheet-Liste editierbar / komplett sichtbar.
+    private var listSelectionCard: some View {
+        let isEmpty = globalSelectedListIDs.isEmpty
+        let borderColor: Color = isEmpty ? AppTheme.Colors.warning : sectionStyle.accent.opacity(0.35)
+
+        return Button {
+            showListPicker = true
+        } label: {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "list.bullet.rectangle.fill")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(isEmpty ? AppTheme.Colors.warning : sectionStyle.accent)
+                    .frame(width: 28, height: 28)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(isEmpty ? "Keine Liste gewählt" : "Aktive Listen")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+
+                    if isEmpty {
+                        Text("Tippen, um zu wählen")
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                    } else {
+                        listSummaryView
+                    }
+                }
+
+                Spacer(minLength: 0)
+
+                Image(systemName: "pencil")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(sectionStyle.accent)
+                    .frame(width: 32, height: 32)
+                    .background(
+                        Circle().fill(sectionStyle.accent.opacity(0.14))
+                    )
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(AppTheme.Colors.secondarySurface.opacity(0.55))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(borderColor, lineWidth: isEmpty ? 1.5 : 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// Sub-View für die nicht-leere Anzeige in `listSelectionCard`.
+    /// Resolved die UUIDs auf Display-Namen via `listStore.allLists`
+    /// und zeigt bis zu 2 Namen + Restzähler.
+    @ViewBuilder
+    private var listSummaryView: some View {
+        let resolvedNames: [String] = globalSelectedListIDs
+            .compactMap { id in listStore.allLists.first(where: { $0.id == id })?.name }
+            .sorted { $0.localizedCompare($1) == .orderedAscending }
+
+        let visibleNames = Array(resolvedNames.prefix(2))
+        let hiddenCount = max(0, resolvedNames.count - visibleNames.count)
+
+        VStack(alignment: .leading, spacing: 2) {
+            ForEach(visibleNames, id: \.self) { name in
+                Text("• \(name)")
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
+            if hiddenCount > 0 {
+                Text("+\(hiddenCount) weitere")
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
         }
     }
 

@@ -101,13 +101,27 @@ struct AppDestinationHost: View {
             // Begrüßung + Axolotl, eine Empfehlungs-Card (V1 Karteikarten),
             // kompakter Streak/Level/XP-Status. Bewusst schlank, klar
             // abgegrenzt von Home/Spielen/Fortschritt/Wörterbuch.
-            ElumiTabView(
-                feedbackPlayer: feedbackPlayer,
-                goHome: goHome,
-                openSettings: openSettings,
-                openInfo: openInfo,
-                navigate: navigate
-            )
+            //
+            // **Stufe 1c (2026-04-30)**: `listStore` durchgereicht für
+            // die Listen-Auswahl-Card im Setup-Modal (Multi-Select-Sheet
+            // schreibt in die globale Listen-Auswahl). Während Warmup
+            // kann `runtime.listStore` theoretisch noch nil sein — wir
+            // entscheiden uns hier defensiv für einen leeren Fallback,
+            // damit der Tab nicht crasht; das Setup-Modal zeigt dann
+            // nur „Keine Listen verfügbar" bis der Store ready ist.
+            if let listStore = runtime.listStore {
+                ElumiTabView(
+                    feedbackPlayer: feedbackPlayer,
+                    goHome: goHome,
+                    openSettings: openSettings,
+                    openInfo: openInfo,
+                    navigate: navigate,
+                    listStore: listStore
+                )
+            } else {
+                Color.clear
+                    .onAppear { _ = runtime.ensureListStoreReady() }
+            }
         }
     }
 
