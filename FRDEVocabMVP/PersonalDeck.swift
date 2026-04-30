@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 /// **Persönlicher Trainingsmodus (Phase 8)** — ein vom User erstellter
 /// Kartenstapel aus einer oder mehreren Vokabel-Listen, der einmalig
@@ -106,5 +107,25 @@ struct PersonalDeck: Codable, Identifiable, Equatable {
                 lernjahrMax: lernjahrMax
             )
         }.map(\.id)
+    }
+}
+
+// MARK: - Color-Lookup
+
+extension PersonalDeck {
+    /// Zentrale Color-Lookup für den `colorIndex`. Hartcodierte
+    /// Werte — siehe Spec.
+    ///
+    /// **Personal-Deck-Polish 3/3 (2026-04-30)**: hierher migriert aus
+    /// dem entfernten `PersonalDeckSlotView.swift`. Die Slot-View war
+    /// dead code (kein Caller), aber diese Extension war live (genutzt
+    /// von `PersonalDecksView` und `FlashcardsView+Layout`). Beim
+    /// Cleanup mit-restored, im Model-File abgelegt — semantisch
+    /// passender, weil die Color-Map Teil des Deck-Datenmodells ist.
+    static func color(for index: Int) -> Color {
+        switch index {
+        case 1:  return Color(hex: "#5B9CF5") // Blau
+        default: return Color(hex: "#FF4D80") // Pink (Default/Fallback)
+        }
     }
 }
