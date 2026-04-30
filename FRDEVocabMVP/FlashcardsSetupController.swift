@@ -54,17 +54,35 @@ final class FlashcardsSetupController: ObservableObject {
     /// Lädt die zuletzt persistierte Karteikarten-Listenauswahl aus UserDefaults.
     /// Analog zu `TrainingSessionController.restoreSelectedListIDs`, damit der
     /// User beim erneuten Öffnen des Moduls seine Listen wieder vorfindet.
+    ///
+    /// **Stufe 5 Schritt 2 (2026-04-30)**: Read-Pfad routet jetzt über
+    /// `VocabularyListSelectionResolver.effectiveSelectedListIDs(...)`.
+    /// Bei Toggle ON liefert der Resolver die globale Auswahl; bei OFF
+    /// wird die Per-Modul-Flashcards-Selection aus dem alten Key geladen
+    /// (Closure-Fallback) — Verhalten unverändert zur Pre-Stufe-5-Welt.
     func restoreSelectedStackListIDs() {
-        guard let data = UserDefaults.standard.data(forKey: appFlashcardsSelectedListIDsKey),
-              let ids = try? JSONDecoder().decode(Set<UUID>.self, from: data),
-              !ids.isEmpty else { return }
+        let ids = VocabularyListSelectionResolver.effectiveSelectedListIDs {
+            // Per-Modul-Fallback: wie bisher aus dem Flashcards-spezifischen Key.
+            guard let data = UserDefaults.standard.data(forKey: appFlashcardsSelectedListIDsKey),
+                  let decoded = try? JSONDecoder().decode(Set<UUID>.self, from: data) else {
+                return []
+            }
+            return decoded
+        }
+        guard !ids.isEmpty else { return }
         isRestoringStackListIDs = true
         selectedStackListIDs = ids
         isRestoringStackListIDs = false
     }
 
+    /// **Stufe 5 Schritt 2 (2026-04-30)**: Write-Pfad routet jetzt über
+    /// `VocabularyListSelectionResolver.persistSelectedListIDs(...)`.
+    /// Bei Toggle ON wird in den globalen Slot geschrieben; bei OFF in
+    /// den Per-Modul-Flashcards-Key.
     private func persistSelectedStackListIDs() {
-        guard let data = try? JSONEncoder().encode(selectedStackListIDs) else { return }
-        UserDefaults.standard.set(data, forKey: appFlashcardsSelectedListIDsKey)
+        VocabularyListSelectionResolver.persistSelectedListIDs(selectedStackListIDs) { ids in
+            guard let data = try? JSONEncoder().encode(ids) else { return }
+            UserDefaults.standard.set(data, forKey: appFlashcardsSelectedListIDsKey)
+        }
     }
 }

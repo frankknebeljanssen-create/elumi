@@ -122,4 +122,46 @@ enum VocabularyListSelectionResolver {
     /// nachgezogen werden — sonst zeigt der Initial-Default ins Leere.
     static let defaultGlobalSelectionListID: UUID =
         UUID(uuidString: "F1E1EEE1-A100-4000-A000-000000000001")!
+
+    // MARK: - Effective-Selection-Helper (Stufe 5 Schritt 2, 2026-04-30)
+
+    /// **Master-Read-Helper** für Quiz/Flashcards/Training/Word Runner.
+    /// Routet zwischen globaler und Per-Modul-Auswahl auf Basis des
+    /// Toggle-States in `appUseGlobalListSelectionKey`.
+    ///
+    ///   • Toggle ON → globale Auswahl (oder Default `Grundwortschatz A1`,
+    ///     falls nichts persistiert war). Caller bekommt das gemeinsame
+    ///     Set, das auch alle anderen Module sehen.
+    ///   • Toggle OFF → Caller-spezifischer Fallback wird ausgeführt
+    ///     (Per-Modul-UserDefaults-Key, mit historischem Migrations-Pfad
+    ///     im Modul-Code).
+    ///
+    /// Closure-basierter Fallback: das Modul kapselt seine eigene
+    /// Lese-Logik (z. B. JSON-Decoding aus seinem Per-Modul-Key oder
+    /// Mode-spezifische Keys bei Training). Der Resolver kennt diese
+    /// Details bewusst nicht.
+    static func effectiveSelectedListIDs(
+        perModuleFallback: () -> Set<UUID>
+    ) -> Set<UUID> {
+        if currentUseGlobalListSelection() {
+            return currentGlobalSelectedListIDs() ?? [defaultGlobalSelectionListID]
+        }
+        return perModuleFallback()
+    }
+
+    /// **Master-Write-Helper** für Quiz/Flashcards/Training/Word Runner.
+    /// Schreibt entweder in die globale Auswahl (Toggle ON) oder ruft
+    /// den Per-Modul-Persist-Closure (Toggle OFF). Damit muss der Caller
+    /// nur EINE Funktion aufrufen, wenn der User im Picker eine neue
+    /// Auswahl trifft — die Routing-Entscheidung sitzt zentral.
+    static func persistSelectedListIDs(
+        _ ids: Set<UUID>,
+        perModulePersist: (Set<UUID>) -> Void
+    ) {
+        if currentUseGlobalListSelection() {
+            setGlobalSelectedListIDs(ids)
+            return
+        }
+        perModulePersist(ids)
+    }
 }
