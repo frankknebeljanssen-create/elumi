@@ -37,6 +37,8 @@
 		6A9A9076F4D245A9AF3530F5 /* Sounds/elumi_levelup.wav in Resources */ = {isa = PBXBuildFile; fileRef = 6D35D1BF6D2D4C5093A40F4E /* Sounds/elumi_levelup.wav */; };
 		721DFC0B52424F55A89930EB /* SessionSetupComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C5A4B8C09644DDA8E9DC8B5 /* SessionSetupComponents.swift */; };
 		729A713080B546A1B10C5ACA /* Sounds/elumi_toggle.wav in Resources */ = {isa = PBXBuildFile; fileRef = 32C43DE8F494458D929C4AE1 /* Sounds/elumi_toggle.wav */; };
+		AA00CCC1ABCD0001AA00AA00 /* Sounds/slot_reel_click.wav in Resources */ = {isa = PBXBuildFile; fileRef = AA00CCC1ABCD0002AA00AA00 /* Sounds/slot_reel_click.wav */; };
+		AA00CCC1ABCD0003AA00AA00 /* SlotAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00CCC1ABCD0004AA00AA00 /* SlotAudioPlayer.swift */; };
 		7D3B0E4411A243619FB50261 /* Sounds/elumi_saugstart.wav in Resources */ = {isa = PBXBuildFile; fileRef = F9E9A871DD9141F488C32488 /* Sounds/elumi_saugstart.wav */; };
 		7FCB5FF760B64B1BB8AAFCCE /* FeedbackTiming.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4DE9771408424DBF4CA080 /* FeedbackTiming.swift */; };
 		82DF25EBA98C4C9094BC3EFD /* Sounds/elumi_cardwrong.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1607A964426A474FA6D8367C /* Sounds/elumi_cardwrong.wav */; };
@@ -572,6 +574,8 @@
 		21594A50F0B744E68ED245F2 /* Sounds/elumi_quizcomplete.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_quizcomplete.wav; sourceTree = "<group>"; };
 		2E74EDA8D2904AA7A3E9F688 /* Sounds/elumi_slowmostart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_slowmostart.wav; sourceTree = "<group>"; };
 		32C43DE8F494458D929C4AE1 /* Sounds/elumi_toggle.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_toggle.wav; sourceTree = "<group>"; };
+		AA00CCC1ABCD0002AA00AA00 /* Sounds/slot_reel_click.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/slot_reel_click.wav; sourceTree = "<group>"; };
+		AA00CCC1ABCD0004AA00AA00 /* SlotAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlotAudioPlayer.swift; sourceTree = "<group>"; };
 		35F654EF57484ACA8C074FF2 /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileStore.swift; path = FRDEVocabMVP/ProfileStore.swift; sourceTree = "<group>"; };
 		3A58F580B36740F78ED60FD0 /* Personalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Personalization.swift; path = FRDEVocabMVP/Personalization.swift; sourceTree = "<group>"; };
 		3AF0AA02FEF444D2BD481B5B /* GameHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GameHubView.swift; path = FRDEVocabMVP/GameHubView.swift; sourceTree = "<group>"; };
@@ -1389,6 +1393,8 @@
 				4C1FD5616CFA427DBAB4CE9D /* LexiconTextUtility.swift */,
 				F5A9F51ED0654E5F94E00A68 /* Sounds/elumi_wrong.wav */,
 				32C43DE8F494458D929C4AE1 /* Sounds/elumi_toggle.wav */,
+				AA00CCC1ABCD0002AA00AA00 /* Sounds/slot_reel_click.wav */,
+				AA00CCC1ABCD0004AA00AA00 /* SlotAudioPlayer.swift */,
 				F2F037219E904D3680DD724E /* Sounds/elumi_tabswitch.wav */,
 				427B3F68D7FB4FBFA24DBD17 /* Sounds/elumi_streak.wav */,
 				3CC12181E32D4557B70AA0CF /* Sounds/elumi_stackcomplete.wav */,
@@ -1828,6 +1834,7 @@
 				0956E1BD7D8A4C2CA60FF949 /* Sounds/elumi_streak.wav in Resources */,
 				114BC2757EED4D78B9EFADEA /* Sounds/elumi_tabswitch.wav in Resources */,
 				729A713080B546A1B10C5ACA /* Sounds/elumi_toggle.wav in Resources */,
+				AA00CCC1ABCD0001AA00AA00 /* Sounds/slot_reel_click.wav in Resources */,
 				99AE414AD9F8468D8DF3007D /* Sounds/elumi_wrong.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2083,6 +2090,7 @@
 				21539C42B3F8DFAF90B3E180 /* HomeModuleIcon.swift in Sources */,
 				A1B2C3D4E5F60708091C0D01 /* AppIcons.swift in Sources */,
 				FE12345678901234567890A1 /* UUIDExtensions.swift in Sources */,
+				AA00CCC1ABCD0003AA00AA00 /* SlotAudioPlayer.swift in Sources */,
 				FE12345678901234567890B1 /* ScanTuning.swift in Sources */,
 				FE12345678901234567890C1 /* WordRunnerGameView.swift in Sources */,
 				FE12345678901234567890D1 /* WordRunnerModels.swift in Sources */,

@@ -360,3 +360,48 @@ zeigt nur „Binary files differ", aber `git revert` / `git checkout
 HEAD~1 -- file.sqlite` funktioniert normal.
 
 ---
+
+## 🔊 Slot-Machine Sounds — fehlende Sound-Files (Branch `feature/slot-machine-sounds`, 2026-04-30)
+
+**Erstmals aufgesetzt** in commit `855ce93` mit
+`SlotAudioPlayer.swift` und dem Click-Sample
+`Sounds/slot_reel_click.wav`. Drei weitere Sound-Events laufen
+aktuell mit **iOS-System-Sound-Platzhaltern** und müssen durch
+echte Files ersetzt werden:
+
+  • **Settle** (Reel-Stillstand, `phase == .landed`) — aktuell
+    System-Sound 1057 (Tink). Brauche: kurzer „Klacken"-Sound,
+    ~150-300 ms, ähnlich einem Mechanik-Stop.
+  • **Win** (Reveal mit `elumiCount == 2`) — aktuell System-Sound
+    1025. Brauche: kurzes positives Cue, ~400-600 ms, „kleiner
+    Erfolg".
+  • **Jackpot** (Reveal mit `elumiCount == 3`) — aktuell System-
+    Sound 1306. Brauche: längerer feierlicher Sound, ~1-2 Sek.,
+    deutlich opulenter als Win. Wird in **Stufe 6** des
+    `feature/training-session-flow`-Branches bei der Feuerwerk-
+    Animation auch visuell gespiegelt.
+
+**Beschaffungs-Pfad** (laut Project-Konvention): Freesound oder
+ElevenLabs (Sound-Generation) — dann ins `Sounds/`-Verzeichnis
+ablegen, pbxproj-Eintrag (BuildFile + FileReference + Group +
+Resources-Phase, vier Stellen wie für `slot_reel_click.wav`).
+**Konfigurations-Punkt** in `SlotAudioPlayer.swift`: aktuell sind
+die System-Sound-IDs hart-codiert in `playSettle/playWin/playJackpot`
+(je `AudioServicesPlaySystemSound(ID)`-Aufruf). Beim Swap auf echte
+Files: API-Wechsel auf den AVAudioPlayer-Pool-Pattern (analog
+zur Click-Implementation), oder zentrales File-Mapping in der
+Klasse.
+
+**Audio-Mute-Toggle**: existiert bereits, lebt im
+`FeedbackPlayer.areSoundsEnabled`-Toggle (Footer-Sound-Toast).
+`SlotAudioPlayer` respektiert ihn via UserDefaults-Read auf
+`soundsEnabledKey`. Bei Sound-Erweiterungen (echte Settle/Win/
+Jackpot-Files) sollten **alle Play-Pfade weiterhin den Mute-State
+respektieren** — Pattern ist die `guard soundsEnabled else { return }`-
+Zeile am Anfang jeder Play-Methode.
+
+**Priorität:** Mittel — die System-Sound-Platzhalter sind funktional,
+aber stilistisch nicht App-konsistent (iOS-System-Klang sticht
+gegen die App-eigene Sound-Welt heraus).
+
+---

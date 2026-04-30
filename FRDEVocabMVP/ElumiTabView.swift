@@ -515,9 +515,16 @@ struct ElumiTabView: View {
                 // aktiv — nachfolgende Reel-Stops klingen dann sofort
                 // ohne Anlauf-Delay.
                 feedbackPlayer.sp.ensureAudioSession()
-                feedbackPlayer.playLaunch()
+                // **Start-Sound entfernt** (Branch
+                // `feature/slot-machine-sounds`, 2026-04-30) — der frühere
+                // `playLaunch()` (kraftvoller Start-Sound) war ein
+                // hörbarer Cue *vor* dem neuen Click-Stream und wirkte
+                // gegenüber dem realistischen Reel-Click redundant /
+                // konkurrierend. User-Spec: „start sound muss weg
+                // (der vor dem neuen click sound kommt)". Haptik und
+                // Session-Priming bleiben — beides ist nicht hörbar.
                 #if DEBUG
-                print("🔊 [Slot] Spin-Start-Sound (session primed)")
+                print("🔊 [Slot] Spin gestartet (session primed, kein Launch-Sound mehr)")
                 #endif
             }
         )
