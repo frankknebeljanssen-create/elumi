@@ -220,7 +220,18 @@ struct SlotMachineView: View {
     //
     // Gesamt-Runtime ≈ 3.2 + 1.0 + 2.8 + 0.65 ≈ 7.65 s.
     // Vorher ~6.0 s. Click-Abstand 0.5 s — spürbar, nicht gehetzt.
-    private let spinDuration: Double = 3.20
+    /// **Slot-Slowdown-Refactor (`feature/slot-machine-sounds`,
+    /// 2026-04-30)**: vorher 3.20s konstanter Spin + 1.65s SwiftUI-
+    /// Snap-Animation (`.easeOut`). Während des Snaps feuerten **keine
+    /// Clicks**, weil der Timer in `performStop` invalidiert wurde —
+    /// Click-Hook lebt im Timer-Body. User wollte aber „Casino-Feeling":
+    /// hörbar verlangsamender Click-Stream während des Auslaufens.
+    /// Lösung: Timer bleibt während Slowdown aktiv (siehe
+    /// `slowdownDuration` + Slowdown-Branch im Timer-Body), Snap-
+    /// Animation entfällt. `spinDuration` daher auf 2.20s reduziert,
+    /// damit Total-Runtime pro Reel (linker Reel = 2.20 + 1.0 = 3.20s,
+    /// wie vorher) erhalten bleibt.
+    private let spinDuration: Double = 2.20
     // **V4.7.1 (2026-04-25)** — User-Feedback „2. Reel mehr Abstand
     // zur 1.". Gap Reel-0 → Reel-1 auf 0.85s erhöht (war 0.50),
     // Reel-1 → Reel-2 bleibt 0.50s. Click-Timing am finalen Stop ist
@@ -237,7 +248,12 @@ struct SlotMachineView: View {
     // aber ohne den slow-mo-Crawl am Ende. Die Animation-Konstante
     // selbst wird in `performStop()` verwendet, hier definieren wir
     // nur die Dauer.
-    private let settleDuration: Double = 1.65
+    /// **Vorher (V4.7.3)**: 1.65s — die SwiftUI `.easeOut`-Snap-Animation
+    /// nach dem Timer-Invalidate. Mit dem Slowdown-Refactor 2026-04-30
+    /// jetzt nur noch ein **Hard-Snap-Padding** für Edge-Cases (Race-
+    /// Conditions zwischen Timer-Stop und onSettle). 0.05s — kürzer
+    /// als der Timer-Tick-Abstand, also de-facto sofortig.
+    private let settleDuration: Double = 0.05
     /// Zeit zwischen "alle Reels stehen" und `.revealed` — kurzer,
     /// inszenierter Stillstand bevor das Ergebnis gehighlightet wird.
     private let landedHoldDuration: Double = 0.65
@@ -424,6 +440,25 @@ struct SlotReelView: View {
     /// 60ms-Throttle).
     @State private var lastWholeOffsetSlots: Int = 0
 
+    // MARK: - Slowdown-Phase State (`feature/slot-machine-sounds`, 2026-04-30)
+
+    /// Zeitpunkt, an dem die **Slowdown-Phase** gestartet wurde. nil =
+    /// kein Slowdown aktiv (regulärer konstanter Spin oder Idle). Wird
+    /// in `performStop` gesetzt; der Timer-Body branched darauf und
+    /// rendert die Position-Kurve. Click-Hook bleibt aktiv, Frequenz
+    /// folgt automatisch der abnehmenden Speed.
+    @State private var slowdownStartAt: Date?
+    /// `offsetSlots`-Wert beim Slowdown-Start (Anker für die
+    /// Position-Interpolation).
+    @State private var slowdownStartOffset: Double = 0
+    /// Ziel-`offsetSlots`-Wert am Ende der Slowdown-Phase. Errechnet
+    /// in `performStop` analog zur alten Logik (3 extra Revolutions
+    /// + Snap-Residue).
+    @State private var slowdownTargetOffset: Double = 0
+    /// Ziel-Symbol für `onSettle`-Callback. Wird in `performStop`
+    /// gesetzt und bei Slowdown-Ende durchgereicht.
+    @State private var slowdownTargetSymbol: ReelSymbol?
+
     // MARK: - Animation-Tuning (V4.4 Mechanical-Feel)
 
     /// Ramp-Up-Dauer vom Stillstand auf Maximalgeschwindigkeit.
@@ -434,6 +469,20 @@ struct SlotReelView: View {
     /// 0.50 slots/frame = 30 slots/sec — nach Ramp-Up wird das bis
     /// zum Stop-Befehl gehalten.
     private static let maxSlotsPerFrame: Double = 0.50
+
+    /// **Slowdown-Phase** (`feature/slot-machine-sounds`, 2026-04-30) —
+    /// Dauer der hörbaren Verlangsamung am Ende jedes Reel-Spins.
+    /// Position-Curve `1-(1-t)²` (quadratic ease-out). Click-Frequenz
+    /// folgt automatisch der abnehmenden Speed (Click-Hook im Timer-
+    /// Body feuert bei jedem `Int(offsetSlots)`-Increment, das mit
+    /// der reduzierten Speed seltener wird).
+    ///
+    /// **Iteration 2 (User-Spec „slowdown zu kurz, verdoppeln")**:
+    /// 1.0s → 2.0s. Längere Verlangsamung gibt dem Click-Ramp-Down
+    /// mehr Raum, casino-mäßiger Ausklang. Total-Runtime pro Reel
+    /// damit ~2.20s konstant + 2.00s slowdown = 4.20s (vorher 3.20s).
+    /// Stagger bleibt unverändert.
+    private static let slowdownDuration: Double = 2.0
 
     private func resolvedPool() -> [ReelSymbol] {
         var pool = symbols
@@ -627,10 +676,59 @@ struct SlotReelView: View {
         // damit der erste Tick im neuen Spin keinen falschen „Click"
         // beim Initial-State auslöst.
         lastWholeOffsetSlots = Int(offsetSlots)
+        // **Slowdown-State resetten** (Slowdown-Refactor 2026-04-30) —
+        // bei einem frischen Spin ist der vorherige Slowdown-State
+        // obsolet.
+        slowdownStartAt = nil
         let rampDur = Self.rampUpDuration
         let maxSpeed = Self.maxSlotsPerFrame
+        let slowdownDur = Self.slowdownDuration
         spinTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true) { _ in
             DispatchQueue.main.async {
+                // **Branch 1 — Slowdown-Phase aktiv** (Refactor 2026-04-30).
+                // `performStop` hat `slowdownStartAt` gesetzt; statt den
+                // Timer zu invalidieren und eine SwiftUI-Animation zu
+                // starten, treiben wir `offsetSlots` jetzt manuell mit
+                // einer Position-Kurve. Vorteil: Click-Hook unten feuert
+                // weiter, Frequenz folgt der abnehmenden Speed
+                // (Casino-Feeling).
+                if let stopAt = slowdownStartAt {
+                    let elapsed = Date().timeIntervalSince(stopAt)
+                    let t = min(1.0, elapsed / slowdownDur)
+                    // Position-Curve `1 - (1-t)²` (quadratic ease-out).
+                    // Bei t=0 → progress 0 (Anfang der Slowdown), bei
+                    // t=1 → progress 1 (Ende = `slowdownTargetOffset`).
+                    // Speed = Ableitung = 2*(1-t) → von voll auf 0.
+                    let progress = 1.0 - (1.0 - t) * (1.0 - t)
+                    offsetSlots = slowdownStartOffset
+                        + (slowdownTargetOffset - slowdownStartOffset) * progress
+
+                    // Click-Hook (gleicher Code wie unten, dupliziert weil
+                    // beide Branches Int-Increment-Detection brauchen).
+                    let currentWhole = Int(offsetSlots)
+                    if currentWhole > lastWholeOffsetSlots {
+                        lastWholeOffsetSlots = currentWhole
+                        SlotAudioPlayer.shared.playClick()
+                    }
+
+                    // **Slowdown-Ende**: Hard-Snap auf Target,
+                    // Timer invalidieren, onSettle rufen.
+                    if t >= 1.0 {
+                        offsetSlots = slowdownTargetOffset
+                        spinTimer?.invalidate()
+                        spinTimer = nil
+                        let symbol = slowdownTargetSymbol
+                        slowdownStartAt = nil
+                        #if DEBUG
+                        print("🎰 [slowdown-done] offsetSlots=\(offsetSlots) target=\(symbol?.label ?? "nil")")
+                        #endif
+                        onSettle(symbol)
+                    }
+                    return
+                }
+
+                // **Branch 2 — Reguläre Spin-Phase** (Ramp-Up + konstanter
+                // Speed). Unverändert gegenüber V4.4.
                 let elapsed = Date().timeIntervalSince(spinStartTime)
                 let rampProgress = min(1.0, elapsed / rampDur)
                 // Smoothstep: weiche Ease-In-Out-Kurve. Bei t=0 ist
@@ -657,12 +755,18 @@ struct SlotReelView: View {
     private func performStop() {
         guard !isStopping else { return }
         isStopping = true
-        spinTimer?.invalidate()
-        spinTimer = nil
+        // **Slowdown-Refactor (2026-04-30)**: Timer NICHT mehr hier
+        // invalidieren — der Timer-Body übernimmt die Slowdown-Phase
+        // (siehe `Branch 1` in `startSpin`). Invalidate-Zeitpunkt
+        // wandert ans Ende der Slowdown-Phase, im Timer-Body bei
+        // `t >= 1.0`. Dadurch feuert der Click-Hook weiter während
+        // die Speed sinkt — User-Spec „Casino-Feeling".
 
         let pool = resolvedPool()
         let n = pool.count
         guard n > 0 else {
+            spinTimer?.invalidate()
+            spinTimer = nil
             onSettle(nil)
             return
         }
@@ -698,35 +802,23 @@ struct SlotReelView: View {
 
         #if DEBUG
         let finalOffsetPixels = -CGFloat(desiredResidue) * slotHeight
-        print("🎰 [performStop] target=\(pool[targetIndex].label) targetIndex=\(targetIndex) desiredResidue=\(desiredResidue) target_s=\(target_s) finalOffset=\(finalOffsetPixels)pt (from offsetSlots=\(current))")
+        print("🎰 [performStop] target=\(pool[targetIndex].label) targetIndex=\(targetIndex) desiredResidue=\(desiredResidue) target_s=\(target_s) finalOffset=\(finalOffsetPixels)pt (from offsetSlots=\(current)) — handing to slowdown branch")
         #endif
 
-        // **Snap-Fix V4.2**: `.easeOut` statt `.spring(damping:0.62)`.
+        // **Slowdown-Refactor (2026-04-30)**: statt `withAnimation(
+        // .easeOut)` setzen wir hier nur die Slowdown-State-Vars.
+        // Timer-Body (Branch 1 in `startSpin`) interpoliert
+        // `offsetSlots` von `slowdownStartOffset` zu
+        // `slowdownTargetOffset` über `slowdownDuration` mit
+        // Position-Curve `1 - (1-t)²`. Bei t≥1 invalidiert der Timer
+        // sich selbst und ruft `onSettle(slowdownTargetSymbol)`.
         //
-        // Der unterdämpfte Spring überschoss `target_s` um 1–2 Slots,
-        // was durch den Modulo-Wrap im `visualOffset` als kurzzeitiges
-        // Flimmern eines falschen Icons im Fenster sichtbar wurde,
-        // bevor er sich einschwang. `.easeOut` hat **kein Overshoot** —
-        // die Walze nähert sich asymptotisch an `target_s` und endet
-        // exakt dort. Damit rastet das Icon pixelgenau in der
-        // Mittelreihe ein.
-        withAnimation(.easeOut(duration: settleDuration)) {
-            offsetSlots = target_s
-        }
-
-        // **Hard-Snap (V4.2)**: nach der Animation `offsetSlots`
-        // explizit auf den Ganzzahl-Zielwert setzen. Idempotent in
-        // dem Sinne, dass die Animation ohnehin auf `target_s` endet,
-        // aber defensiv gegen Floating-Point-Drift und gegen frühe
-        // Animation-Unterbrechungen (Re-Spin o.ä.).
-        DispatchQueue.main.asyncAfter(deadline: .now() + settleDuration + 0.02) {
-            offsetSlots = target_s
-            #if DEBUG
-            let snappedVisualOffset = -CGFloat(Int(target_s.truncatingRemainder(dividingBy: Double(n)))) * slotHeight
-            print("🎰 [performStop-done] offsetSlots=\(offsetSlots) snappedVisualOffset=\(snappedVisualOffset)pt — Icon \(pool[targetIndex].label) zentriert in Mittelreihe")
-            #endif
-            onSettle(pool[targetIndex])
-        }
+        // Vorteil ggü. SwiftUI-Animation: Click-Hook im Timer-Body
+        // bleibt aktiv, Frequenz fällt natürlich mit der Speed.
+        slowdownStartOffset = current
+        slowdownTargetOffset = target_s
+        slowdownTargetSymbol = pool[targetIndex]
+        slowdownStartAt = Date()
     }
 }
 
