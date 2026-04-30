@@ -503,13 +503,13 @@ struct SlotReelView: View {
 
     // MARK: - Symbol-Cell (mit expliziter vertikaler Zentrierung)
 
-    /// Eine Zelle zeigt Icon + Label. V4.3: explizite Spacer oben/unten,
+    /// Eine Zelle zeigt das Modul-Icon. V4.3: explizite Spacer oben/unten,
     /// damit der Content garantiert in der Cell-Mitte sitzt — unabhängig
     /// von SwiftUI-VStack-Layout-Quirks. Vorher war `.frame(maxHeight:
     /// .infinity)` ohne Spacer, was in einigen Build-Konfigs zu Top-
     /// Packing führte (Icon oben im Cell-Rect statt zentriert).
     private func symbolCell(_ symbol: ReelSymbol) -> some View {
-        VStack(spacing: 3) {
+        VStack(spacing: 0) {
             Spacer(minLength: 0)
             // **V4.8 Icon-Migration (2026-04-25)**: Pur Home-Icons.
             //   • `homeModule` → `HomeModuleIconView` mit der exakt
@@ -519,23 +519,22 @@ struct SlotReelView: View {
             //     generischen Symbole"). Wenn weder homeModule noch
             //     assetImage gesetzt — Cell bleibt leer, signalisiert
             //     Mapping-Lücke, die gefixt werden muss.
-            // **2026-04-25**: Icon-Größe 36 → 44 (+22%) — klarer
-            // sichtbar in den 72pt-Reel-Cells. Content (Icon + 3pt +
-            // 12pt Text = 59pt) passt weiterhin bequem in die Cell-
-            // Höhe, Spacer oben/unten je 6-7pt.
+            //
+            // Icon-Größen-Iterations-Historie:
+            //   • 36pt (Initial)
+            //   • 44pt (2026-04-25, +22%)
+            //   • 58pt (2026-04-30, +32%) — Text-Label entfernt, Icon
+            //     übernimmt die volle Cell-Höhe-Mitte. Cell-Höhe
+            //     `slotHeight` (~72pt) bleibt unverändert; Spacer oben/
+            //     unten halten das Icon zentriert.
             if let module = symbol.homeModule {
-                HomeModuleIconView(icon: module.icon, size: 44)
+                HomeModuleIconView(icon: module.icon, size: 58)
             } else if let assetName = symbol.assetImage {
                 Image(assetName)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 44, height: 44)
+                    .frame(width: 54, height: 54)
             }
-            Text(symbol.label)
-                .font(.system(size: 10, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color.white.opacity(0.72))
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity)
