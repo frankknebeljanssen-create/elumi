@@ -148,7 +148,16 @@ struct PersonalDecksView: View {
                 // ausgewählt und der bestehende `selectedIDs.isEmpty`-
                 // Guard in `createDeck` macht weiterhin no-op.
                 validate: { selectedIDs in
-                    guard !selectedIDs.isEmpty else { return nil }
+                    // **Personal-Deck-Polish 2/3 (2026-04-30)**:
+                    // 0-Selection-Fall fängt jetzt einen eigenen Inline-
+                    // Fehler ab. Vorher ging die Closure mit `return nil`
+                    // durch und das Sheet schloss sich trotzdem ohne
+                    // Effekt (der createDeck/updateDeck-`isEmpty`-Guard
+                    // war silent). Jetzt: User sieht direkt was zu tun
+                    // ist, ohne dass das Sheet wegklappt.
+                    if selectedIDs.isEmpty {
+                        return "W\u{00E4}hle mindestens eine Liste, aus der dein Stapel bestehen soll."
+                    }
                     let selectedLists = allLists.filter { selectedIDs.contains($0.id) }
                     let cardIDs = PersonalDeck.buildCardOrderSnapshot(from: selectedLists)
                     if cardIDs.isEmpty {
@@ -178,7 +187,16 @@ struct PersonalDecksView: View {
                 // gespeichert wären — inkonsistenter Zwischenstand.
                 // Der Hint zwingt zur sinnvollen Auswahl.
                 validate: { selectedIDs in
-                    guard !selectedIDs.isEmpty else { return nil }
+                    // **Personal-Deck-Polish 2/3 (2026-04-30)**:
+                    // 0-Selection-Fall fängt jetzt einen eigenen Inline-
+                    // Fehler ab. Vorher ging die Closure mit `return nil`
+                    // durch und das Sheet schloss sich trotzdem ohne
+                    // Effekt (der createDeck/updateDeck-`isEmpty`-Guard
+                    // war silent). Jetzt: User sieht direkt was zu tun
+                    // ist, ohne dass das Sheet wegklappt.
+                    if selectedIDs.isEmpty {
+                        return "W\u{00E4}hle mindestens eine Liste, aus der dein Stapel bestehen soll."
+                    }
                     let selectedLists = allLists.filter { selectedIDs.contains($0.id) }
                     let cardIDs = PersonalDeck.buildCardOrderSnapshot(from: selectedLists)
                     if cardIDs.isEmpty {
