@@ -116,6 +116,31 @@ extension FlashcardSessionStore {
         chooseNextCard(avoiding: currentCardID)
     }
 
+    /// **Stufe 4b-1 (2026-05-01, Branch `feature/training-session-flow`)** —
+    /// Forciert das Session-Ende durch den Chain-Timer-Soft-Cutoff.
+    /// Wird vom `FlashcardsSessionController.scheduleNextPrompt`-Pfad
+    /// gerufen, sobald die laufende Eval-Auswertung komplett durch ist
+    /// und der Chain-Timer abgelaufen war (`TrainingChainStore.shared.
+    /// timerExpired == true`). Setzt `isCompleted = true` plus räumt
+    /// `currentCardID` ab — das ist genau die Mutation, die auch der
+    /// natürliche „letzte Karte erledigt"-Pfad oben (Z. 108-113)
+    /// vornimmt. Folgewirkung: `flashcardCompletionCard` rendert,
+    /// `consumeFlashcardSessionReward()` läuft, und der Chain-aware
+    /// Done-CTA aus Stufe 3 (`appChainAdvanceAction`) wird beim Tap
+    /// auf „Weiter zu …" gerufen.
+    ///
+    /// Idempotent: ein zweiter Aufruf während der Done-Card sichtbar
+    /// ist, ist ein No-Op (`isCompleted` ist schon `true`).
+    func markCurrentSessionDoneFromChainTimer() {
+        guard var session = self.session, !session.isCompleted else { return }
+        session.currentCardID = nil
+        session.isCompleted = true
+        self.session = session
+        #if DEBUG
+        print("🛑 [Flashcards] Force-Done via chain-timer-soft-cutoff")
+        #endif
+    }
+
     /// **Peek-Protection (User-Revision 2026-04-22)**: Setzt den
     /// `consecutiveCorrect`-Counter einer Karte hart auf 0 zurück und
     /// markiert sie als „falsch". Wird aufgerufen, wenn der User die

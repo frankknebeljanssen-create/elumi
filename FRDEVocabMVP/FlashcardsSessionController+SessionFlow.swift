@@ -85,6 +85,30 @@ extension FlashcardsSessionController {
                 return
             }
 
+            // **Stufe 4b-1 (2026-05-01)** — Soft-Cutoff-Force-Done für
+            // den Chain-Timer. Wenn der User auf einer Chain-Step-
+            // Session sitzt UND der Chain-Timer im
+            // `TrainingChainStore` schon abgelaufen ist, schließen wir
+            // die Karteikarten-Session HIER ab — nach kompletter Eval
+            // der gerade getippten Karte (R7-Schutz: aktueller Submit
+            // läuft komplett durch, dieser Pfad ist im
+            // „natural-transition-zur-nächsten-Karte"-Punkt). Folge:
+            // `flashcardCompletionCard` rendert, der Chain-aware
+            // Done-CTA aus Stufe 3 zeigt „Weiter zu …" oder
+            // „Training abschließen".
+            //
+            // **Singleton-Zugriff**: bewusst direkt
+            // `TrainingChainStore.shared.timerExpired` gelesen, statt
+            // den Store als Init-Param durchzureichen — der Controller
+            // bleibt damit Chain-agnostic für Non-Chain-Sessions
+            // (Default false, kein Effekt). Pattern matcht
+            // `ProgressService.shared` etc. an anderen Stellen.
+            if TrainingChainStore.shared.timerExpired,
+               sessionStore.session != nil {
+                sessionStore.markCurrentSessionDoneFromChainTimer()
+                return
+            }
+
             if let speaker, areSoundsEnabled {
                 Task { @MainActor in
                     try? await Task.sleep(nanoseconds: 80_000_000)
