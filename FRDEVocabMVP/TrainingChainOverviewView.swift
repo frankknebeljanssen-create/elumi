@@ -145,6 +145,20 @@ struct TrainingChainOverviewView: View {
                 Text(totalDurationText)
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
+
+                // **Bugfix 2026-05-01** — Total-Tickets-Subtitle. Wird
+                // nur gerendert, wenn der Spin überhaupt Game-Slots
+                // hatte (sonst „+0 Tickets"-Zeile = visueller Lärm).
+                // Jackpot-Pfad zeigt das Total separat in `jackpotHint`,
+                // deshalb hier explizit `!chain.isJackpot` (das oberste
+                // `if` deckt das schon ab — Defense-in-Depth-Kommentar).
+                // Wording-Stil: Singular bei +1, Plural sonst — analog
+                // `totalDurationText` („1 Übung" vs „X Übungen").
+                if ticketsFromGameSlots > 0 {
+                    Text("🎫 +\(ticketsFromGameSlots) \(ticketsFromGameSlots == 1 ? "Ticket" : "Tickets")")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.warning)
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -224,8 +238,15 @@ struct TrainingChainOverviewView: View {
         )
     }
 
-    /// Game-Card: Index („Reel N") + 🎫-Icon + „+1 Ticket" + „kein
-    /// Training". Bewusst knapp — User-Spec.
+    /// Game-Card: Index („Reel N") + 🎫-Icon + Label „Game" + Subtitel
+    /// „kein Training" rechts. Bewusst knapp — User-Spec.
+    ///
+    /// **Bugfix 2026-05-01**: das frühere `Text("+1 Ticket")` als
+    /// Hauptbeschriftung pro Card war irreführend, weil bei 2-Game-
+    /// Spins die tatsächliche Tickets-Vergabe +3 ist (Slot-Grant-Table
+    /// 1→1, 2→3, 3→6), die summierte Card-Anzeige aber 2× +1 = 2
+    /// suggerierte. Total-Tickets wandern jetzt in die `heroBlock`-
+    /// Subtitle (siehe dort); die Card selbst bleibt rein deskriptiv.
     private func gameSlotCard(slotIndex: Int) -> some View {
         HStack(spacing: 14) {
             // SF-Symbol „ticket.fill" mit Warning-Color (Yellow), gleiches
@@ -240,7 +261,7 @@ struct TrainingChainOverviewView: View {
                     .font(.system(size: 11, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .textCase(.uppercase)
-                Text("+1 Ticket")
+                Text("Game")
                     .font(.system(size: 17, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
             }
