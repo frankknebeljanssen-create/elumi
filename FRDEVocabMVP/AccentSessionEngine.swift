@@ -234,6 +234,37 @@ final class AccentSessionEngine: ObservableObject {
     func advance() {
         feedback = nil
         lastChosenAnswer = nil
+
+        // **Stufe 4b-2 (2026-05-01, Branch `feature/training-session-flow`)** —
+        // Soft-Cutoff-Force-Done für den Chain-Timer. Wenn der User
+        // auf einer Chain-Step-Session sitzt UND der Chain-Timer im
+        // `TrainingChainStore` schon abgelaufen ist, schließen wir
+        // die Akzent-Session HIER ab — nach kompletter Eval der
+        // gerade beantworteten Aufgabe (R7-Schutz: `submitAnswer`
+        // hat `feedback` + `answerRecords` schon geschrieben + Resume-
+        // Snapshot persistiert; `advance()` ist explizit der „User
+        // tippt Weiter"-Trigger, der hier abgefangen wird).
+        // `forceFinishFromChainTimer()` setzt `isFinished = true` →
+        // `AccentsSessionView` beobachtet via `onChange(of: engine.
+        // isFinished)` und triggert den Done-Screen-Pfad mit dem
+        // Stufe-3-Chain-aware-CTA.
+        //
+        // **Singleton-Zugriff**: bewusst direkt
+        // `TrainingChainStore.shared.timerExpired` gelesen — Engine
+        // bleibt damit Chain-agnostic, im Non-Chain-Modus (kein
+        // aktiver Chain-Timer) ist `timerExpired` per Default `false`
+        // und der Branch ein No-Op. Pattern matcht 4b-1 für
+        // Karteikarten.
+        //
+        // **R9 (Speed-Round-Konflikt)**: Chain-Mapping in
+        // `HomeHeroModule.chainScreen` injiziert `preferredMode =
+        // .uben` für Akzente — d.h. kein Speed-Round-Timer läuft
+        // parallel zum Chain-Timer. Bereits in 4a-Smoke verifiziert.
+        if TrainingChainStore.shared.timerExpired, !isFinished {
+            forceFinishFromChainTimer()
+            return
+        }
+
         if currentIndex + 1 >= exercises.count {
             isFinished = true
             // Session-Ende → Snapshot verwerfen, sonst würde der User
@@ -246,6 +277,26 @@ final class AccentSessionEngine: ObservableObject {
             // exakt auf der nächsten ungesehenen Aufgabe landet.
             persistResumeSnapshotIfEligible()
         }
+    }
+
+    /// **Stufe 4b-2 (2026-05-01, Branch `feature/training-session-flow`)** —
+    /// Forciert das Session-Ende durch den Chain-Timer-Soft-Cutoff.
+    /// Setzt `isFinished = true` + räumt den Resume-Snapshot ab —
+    /// dieselbe Mutation wie der natürliche „letzte Aufgabe"-Pfad
+    /// in `advance()` (Z. 237-242). Folgewirkung: `AccentsSessionView`
+    /// reagiert via `onChange(of: engine.isFinished)` und wechselt
+    /// in den Result-Screen, der den Stufe-3-Chain-aware-CTA
+    /// („Weiter zu …" / „Training abschließen") rendert.
+    ///
+    /// Idempotent: ein zweiter Aufruf während `isFinished` schon
+    /// `true` ist, ist ein No-Op.
+    func forceFinishFromChainTimer() {
+        guard !isFinished else { return }
+        isFinished = true
+        AccentSessionResumeStore.clear()
+        #if DEBUG
+        print("🛑 [Akzente] Force-Done via chain-timer-soft-cutoff")
+        #endif
     }
 
     /// Speichert den aktuellen Session-Stand für spätere Wiederherstellung.
