@@ -471,6 +471,7 @@
 		CC33CC0000000000ABCDEF01 /* TrainingChainCompletePlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC33CC0000000000ABCDEF02 /* TrainingChainCompletePlaceholderView.swift */; };
 		CC44DD0000000000ABCDEF01 /* ChainStepTimerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC44DD0000000000ABCDEF02 /* ChainStepTimerBar.swift */; };
 		CC55EE0000000000ABCDEF01 /* ChainTimerOverlayModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC55EE0000000000ABCDEF02 /* ChainTimerOverlayModifier.swift */; };
+		CC66FF0000000000ABCDEF01 /* ChainCutoffToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC66FF0000000000ABCDEF02 /* ChainCutoffToast.swift */; };
 		FE12345678901234567890B1 /* ScanTuning.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890B2 /* ScanTuning.swift */; };
 		FE12345678901234567890BA /* HomeHeroLearningSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890BB /* HomeHeroLearningSection.swift */; };
 		FE12345678901234567890C1 /* WordRunnerGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890C2 /* WordRunnerGameView.swift */; };
@@ -1038,6 +1039,7 @@
 		CC33CC0000000000ABCDEF02 /* TrainingChainCompletePlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingChainCompletePlaceholderView.swift; path = FRDEVocabMVP/TrainingChainCompletePlaceholderView.swift; sourceTree = "<group>"; };
 		CC44DD0000000000ABCDEF02 /* ChainStepTimerBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChainStepTimerBar.swift; path = FRDEVocabMVP/ChainStepTimerBar.swift; sourceTree = "<group>"; };
 		CC55EE0000000000ABCDEF02 /* ChainTimerOverlayModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChainTimerOverlayModifier.swift; path = FRDEVocabMVP/ChainTimerOverlayModifier.swift; sourceTree = "<group>"; };
+		CC66FF0000000000ABCDEF02 /* ChainCutoffToast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChainCutoffToast.swift; path = FRDEVocabMVP/ChainCutoffToast.swift; sourceTree = "<group>"; };
 		FE12345678901234567890B2 /* ScanTuning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanTuning.swift; path = FRDEVocabMVP/ScanTuning.swift; sourceTree = "<group>"; };
 		FE12345678901234567890BB /* HomeHeroLearningSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeHeroLearningSection.swift; path = FRDEVocabMVP/HomeHeroLearningSection.swift; sourceTree = "<group>"; };
 		FE12345678901234567890C2 /* WordRunnerGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerGameView.swift; path = FRDEVocabMVP/WordRunnerGameView.swift; sourceTree = "<group>"; };
@@ -1174,6 +1176,7 @@
 				CC33CC0000000000ABCDEF02 /* TrainingChainCompletePlaceholderView.swift */,
 				CC44DD0000000000ABCDEF02 /* ChainStepTimerBar.swift */,
 				CC55EE0000000000ABCDEF02 /* ChainTimerOverlayModifier.swift */,
+				CC66FF0000000000ABCDEF02 /* ChainCutoffToast.swift */,
 				FE12345678901234567890B2 /* ScanTuning.swift */,
 				FE12345678901234567890C2 /* WordRunnerGameView.swift */,
 				FE12345678901234567890D2 /* WordRunnerModels.swift */,
@@ -2114,6 +2117,7 @@
 				CC33CC0000000000ABCDEF01 /* TrainingChainCompletePlaceholderView.swift in Sources */,
 				CC44DD0000000000ABCDEF01 /* ChainStepTimerBar.swift in Sources */,
 				CC55EE0000000000ABCDEF01 /* ChainTimerOverlayModifier.swift in Sources */,
+				CC66FF0000000000ABCDEF01 /* ChainCutoffToast.swift in Sources */,
 				AA00CCC1ABCD0003AA00AA00 /* SlotAudioPlayer.swift in Sources */,
 				FE12345678901234567890B1 /* ScanTuning.swift in Sources */,
 				FE12345678901234567890C1 /* WordRunnerGameView.swift in Sources */,

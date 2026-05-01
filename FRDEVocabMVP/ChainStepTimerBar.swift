@@ -3,32 +3,22 @@ import SwiftUI
 /// **Trainings-Chain Step-Timer-Bar** (Stufe 4a, 2026-05-01,
 /// Branch `feature/training-session-flow`).
 ///
-/// Schmale Status-Zeile, die während eines aktiven Chain-Steps oben
-/// in jedem Modul-View eingeblendet wird (via `ChainTimerOverlay-
-/// Modifier`). Zeigt:
-///   • links: Step-Indikator („Übung 2 von 3") + Modul-Name
-///   • rechts: verbleibende Zeit als „M:SS"
-///   • unten: dünner Progress-Balken (von voll → leer, normiert auf
-///     `stepTotalSeconds`)
-///   • Urgency-State < 10 s: Farbe wechselt auf `error` (rot), Pulse-
-///     Animation auf der Sekunden-Zahl
+/// Schmale, **kompakte** Status-Zeile, die während eines aktiven
+/// Chain-Steps ganz oben (zwischen Status-Bar und Modul-Header)
+/// eingeblendet wird (via `ChainTimerOverlayModifier`).
 ///
-/// Bewusst **schlanker** als `SpeedRoundTimerCard` — der Chain-Timer
-/// ist kein Rundenscore (kein Treffer-Count), nur eine Soft-Cutoff-
-/// Anzeige. Layout ist eine Zeile, kein Card. Background ist halb-
-/// transparent damit die Bar sich klar vom Modul-Content abhebt,
-/// aber nicht visuell dominiert.
+/// **Layout-Update 2026-05-01 (Stufe 4a-Fix)**:
+/// Vorherige Variante war zu groß (~43 pt zweizeilig). Neue Variante:
+///   • EINE Zeile: „⏳ ÜBUNG X VON Y · [Modul-Name] · MM:SS"
+///   • Dünner 2-pt-Progress-Strip darunter
+///   • Vertical-Padding 4 pt → Total-Höhe ~30 pt
+///   • Soft-Cutoff-Banner ist **rausgenommen** — dafür nutzt Stufe 4a
+///     jetzt einen mittigen `ChainCutoffToast` (siehe Modifier).
 ///
-/// Eingaben:
-///   • `stepNumber` — 1-basierter Index („Übung X von Y"); aus
-///     `chain.displayStepNumber`
-///   • `totalSteps` — Gesamtzahl Module-Steps; aus
-///     `chain.totalStepCount`
-///   • `moduleName` — Anzeige-Name des aktuellen Steps; aus
-///     `chain.currentStep?.title`
-///   • `remainingSeconds` / `totalSeconds` — beide aus
-///     `TrainingChainStore.shared.stepRemainingSeconds` /
-///     `stepTotalSeconds`
+/// **Urgency-Verhalten:**
+///   • Sekunden ≤ 10 → Sekunden-Zahl rot + leichter Scale-Bounce
+///   • Sekunden = 0 (timerExpired) → Komplettzeile in Warning-Rot
+///     („0:00" bleibt sichtbar als persistentes Signal)
 struct ChainStepTimerBar: View {
     let stepNumber: Int
     let totalSteps: Int
@@ -36,14 +26,13 @@ struct ChainStepTimerBar: View {
     let remainingSeconds: Int
     let totalSeconds: Int
 
-    /// Schwelle für Urgency-Highlight — gleiche 10-s-Konvention wie
-    /// `SpeedRoundTimerCard.isUrgent`, damit Look-Konsistenz im
-    /// Codebase erhalten bleibt.
+    /// Schwelle für Urgency-Highlight (rote Sekunden-Zahl + Bounce).
+    /// Konsistent mit `SpeedRoundTimerCard.isUrgent` (10-s-Konvention).
     private var isUrgent: Bool { remainingSeconds <= 10 && remainingSeconds > 0 }
 
-    /// 0 Sekunden → Soft-Cutoff erreicht. Bar bleibt sichtbar mit
-    /// Progress = 0, das Banner darunter (im Modifier) übernimmt die
-    /// Hinweis-Kommunikation.
+    /// 0 Sekunden → Soft-Cutoff erreicht. Zeile bleibt sichtbar mit
+    /// Progress = 0 und Warning-Rot — der Toast (im Modifier) übernimmt
+    /// die einmalige Hinweis-Kommunikation.
     private var isExpired: Bool { remainingSeconds <= 0 }
 
     private var formattedTime: String {
@@ -59,34 +48,34 @@ struct ChainStepTimerBar: View {
     }
 
     var body: some View {
-        VStack(spacing: 6) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
+        VStack(spacing: 3) {
+            HStack(alignment: .center, spacing: 6) {
                 Image(systemName: "hourglass")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(foregroundForTime)
 
-                Text("Übung \(stepNumber) von \(totalSteps)")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                Text("ÜBUNG \(stepNumber) VON \(totalSteps)")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .textCase(.uppercase)
 
                 Text("·")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
 
                 Text(moduleName)
-                    .font(.system(size: 13, weight: .black, design: .rounded))
+                    .font(.system(size: 12, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.8)
+                    .minimumScaleFactor(0.85)
 
-                Spacer(minLength: 8)
+                Spacer(minLength: 6)
 
                 Text(formattedTime)
-                    .font(.system(size: 17, weight: .black, design: .rounded))
+                    .font(.system(size: 13, weight: .black, design: .rounded))
                     .foregroundStyle(foregroundForTime)
                     .monospacedDigit()
-                    .scaleEffect(isUrgent ? 1.08 : 1.0)
+                    .scaleEffect(isUrgent ? 1.06 : 1.0)
                     .animation(.easeInOut(duration: 0.3), value: remainingSeconds)
             }
 
@@ -102,23 +91,10 @@ struct ChainStepTimerBar: View {
                         .animation(.linear(duration: 1.0), value: remainingSeconds)
                 }
             }
-            .frame(height: 4)
+            .frame(height: 2)
             .clipShape(Capsule())
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(AppTheme.Colors.surface.opacity(0.95))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(
-                    isUrgent || isExpired
-                        ? AppTheme.Colors.error.opacity(0.5)
-                        : AppTheme.Colors.border,
-                    lineWidth: 1
-                )
-        )
+        .padding(.vertical, 4)
     }
 }

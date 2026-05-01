@@ -59,6 +59,15 @@ final class TrainingChainStore: ObservableObject {
     /// Auto-Advance zu triggern.
     @Published private(set) var timerExpired: Bool = false
 
+    /// **Stufe 4a-Fix (2026-05-01)** — One-shot-Flag pro Step für den
+    /// `ChainCutoffToast`. Wenn der Timer abläuft, blendet der
+    /// `ChainTimerOverlayModifier` einen mittigen Toast einmalig ein
+    /// und setzt anschließend dieses Flag auf `true`. Re-Renders der
+    /// Modul-View triggern damit keinen Re-Show des Toasts. Wird beim
+    /// nächsten `startStepTimer()` (Step-Wechsel) und in
+    /// `clearStepTimer()` zurück auf `false` gesetzt.
+    @Published private(set) var hasShownExpirationToast: Bool = false
+
     /// Aktiver Sekunden-Counter. Tickt in `scheduleStepTick()`. Wird
     /// bei Background pausiert (`pauseStepTimer()`), bei Foreground
     /// weitergeführt (`resumeStepTimer()`), und bei `clear()` /
@@ -221,6 +230,9 @@ final class TrainingChainStore: ObservableObject {
         stepTotalSeconds = totalSeconds
         stepRemainingSeconds = totalSeconds
         timerExpired = false
+        // **Stufe 4a-Fix**: Toast pro Step nur einmal — Reset bei
+        // jedem Step-Start (frischer Step erlaubt frischen Toast).
+        hasShownExpirationToast = false
         pausedRemainingSeconds = nil
         scheduleStepTick()
 
@@ -300,6 +312,16 @@ final class TrainingChainStore: ObservableObject {
         stepRemainingSeconds = 0
         stepTotalSeconds = 0
         timerExpired = false
+        hasShownExpirationToast = false
         pausedRemainingSeconds = nil
+    }
+
+    /// **Stufe 4a-Fix (2026-05-01)** — wird vom
+    /// `ChainTimerOverlayModifier` aufgerufen, sobald der mittige
+    /// `ChainCutoffToast` einmalig animiert eingeblendet wurde. Setzt
+    /// das One-shot-Flag, damit Re-Renders der Modul-View keinen
+    /// Re-Show triggern. Reset im nächsten `startStepTimer()`.
+    func markExpirationToastShown() {
+        hasShownExpirationToast = true
     }
 }
