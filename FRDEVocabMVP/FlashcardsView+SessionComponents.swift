@@ -5,12 +5,30 @@ extension FlashcardsView {
         // Übergangs-Lösung: zeigt die neue `SessionSummaryView` mit dem
         // Outcome aus `ProgressService.record(session:)` an. Reward-Vergabe
         // findet einmal pro Session statt (Schutz via `sessionRewardConsumed`).
-        SessionSummaryView(
-            outcome: flashcardSessionOutcome ?? .empty,
+        //
+        // **Stufe 3 (2026-05-01, Branch `feature/training-session-flow`)** —
+        // Chain-Mode-Branching: bei aktivem `chainContext` wechselt der
+        // Primary-CTA-Label/Action auf „Weiter zu …" / „Training
+        // abschließen" und ruft den `appChainAdvanceAction`-Closure
+        // mit dem Outcome. Andernfalls Bestand-Verhalten („Weiter
+        // lernen" → Setup-Reset).
+        let outcome = flashcardSessionOutcome ?? .empty
+        let chain = launchContext?.chainContext
+        let nextStepTitle = chain?.nextStep?.title
+        let isChain = chain != nil
+        let primaryLabel: String = isChain
+            ? (nextStepTitle.map { "Weiter zu \($0)" } ?? "Training abschließen")
+            : "Weiter lernen"
+        return SessionSummaryView(
+            outcome: outcome,
             progress: ProgressStore.shared.progress,
-            primaryCTALabel: "Weiter lernen",
+            primaryCTALabel: primaryLabel,
             onPrimaryCTA: {
-                returnToFlashcardSetup()
+                if isChain {
+                    chainAdvance?(outcome)
+                } else {
+                    returnToFlashcardSetup()
+                }
             }
             // „Zur Startseite"-Secondary-CTA entfernt — das Karteikarten-
             // Summary wurde damit für kleinere Screens zu lang. Der User

@@ -3,6 +3,9 @@ import SwiftUI
 struct QuizView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.appUsesGlobalChrome) var usesGlobalChrome
+    /// **Stufe 3 (2026-05-01)** — Chain-Advance-Closure (siehe
+    /// FlashcardsView.swift:Doc).
+    @Environment(\.appChainAdvanceAction) var chainAdvance
     @AppStorage(appDirectionKey) var selectedAppDirectionRaw = Direction.frenchToGerman.rawValue
     @AppStorage(appQuizHeartsKey) var collectedWorms = 0
     @AppStorage(appElumiWaterflohKey) var collectedWaterfloh = 0

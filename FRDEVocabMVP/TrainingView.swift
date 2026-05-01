@@ -3,6 +3,11 @@ import SwiftUI
 struct TrainingView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.appUsesGlobalChrome) var usesGlobalChrome
+    /// **Stufe 3 (2026-05-01)** — Chain-Advance-Closure (siehe
+    /// FlashcardsView.swift:Doc). Wird sowohl im
+    /// `trainingSummaryScreen` als auch `verbformsResultScreen`
+    /// gelesen, weil beide Done-CTAs das Chain-Pattern unterstützen.
+    @Environment(\.appChainAdvanceAction) var chainAdvance
     @AppStorage(appDirectionKey) var selectedAppDirectionRaw = Direction.frenchToGerman.rawValue
     @AppStorage(appArcadeCreditsKey) var arcadeCredits = 0
     /// Globale Speed-Round-Dauer — liest aus dem gemeinsamen App-Storage-

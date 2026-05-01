@@ -113,15 +113,27 @@ extension TrainingView {
         VStack(spacing: 16) {
             trainingCompactHeader
 
+            // **Stufe 3 (2026-05-01)** — Chain-Mode-Branching
+            // (siehe FlashcardsView+SessionComponents.swift für Doc).
+            let chain = launchContext?.chainContext
+            let nextStepTitle = chain?.nextStep?.title
+            let isChain = chain != nil
+            let primaryLabel: String = isChain
+                ? (nextStepTitle.map { "Weiter zu \($0)" } ?? "Training abschließen")
+                : "Weiter lernen"
             SessionSummaryView(
                 outcome: outcome,
                 progress: progressStore.progress,
-                primaryCTALabel: "Weiter lernen",
+                primaryCTALabel: primaryLabel,
                 onPrimaryCTA: {
-                    trainingSessionOutcome = nil
+                    if isChain {
+                        chainAdvance?(outcome)
+                    } else {
+                        trainingSessionOutcome = nil
+                    }
                 },
-                secondaryCTALabel: "Zur Startseite",
-                onSecondaryCTA: {
+                secondaryCTALabel: isChain ? nil : "Zur Startseite",
+                onSecondaryCTA: isChain ? nil : {
                     dismissToHome()
                 }
             )
@@ -1955,16 +1967,34 @@ extension TrainingView {
         VStack(spacing: 16) {
             trainingSessionCompactHeader
 
+            // **Stufe 3 (2026-05-01)** — Chain-Mode-Branching für
+            // Verbformen-Pfad. Verbformen läuft NICHT als
+            // `.train(...)` durchs Chain-Mapping, sondern als
+            // `HomeHeroModule.verbformen` → `.train(preferredMode:
+            // .verbforms, ...)` (siehe `HomeHeroModule.chainScreen`).
+            // Erkenntnis: `launchContext?.chainContext` ist also auch
+            // hier gesetzt, wenn Verbformen ein Chain-Step ist.
+            let verbformsOutcome = verbformsSessionOutcome ?? .empty
+            let chain = launchContext?.chainContext
+            let nextStepTitle = chain?.nextStep?.title
+            let isChain = chain != nil
+            let primaryLabel: String = isChain
+                ? (nextStepTitle.map { "Weiter zu \($0)" } ?? "Training abschließen")
+                : "Weiter lernen"
             SessionSummaryView(
-                outcome: verbformsSessionOutcome ?? .empty,
+                outcome: verbformsOutcome,
                 progress: progressStore.progress,
-                primaryCTALabel: "Weiter lernen",
+                primaryCTALabel: primaryLabel,
                 onPrimaryCTA: {
-                    verbformsSessionOutcome = nil
-                    verbformsSession.reset()
+                    if isChain {
+                        chainAdvance?(verbformsOutcome)
+                    } else {
+                        verbformsSessionOutcome = nil
+                        verbformsSession.reset()
+                    }
                 },
-                secondaryCTALabel: "Zur Startseite",
-                onSecondaryCTA: {
+                secondaryCTALabel: isChain ? nil : "Zur Startseite",
+                onSecondaryCTA: isChain ? nil : {
                     dismissToHome()
                 }
             )

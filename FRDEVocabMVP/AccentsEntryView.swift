@@ -22,6 +22,9 @@ struct AccentsEntryView: View {
 
     /// Optional vom Launch-Context vorgegeben.
     let launchContext: AccentsLaunchContext?
+    /// **Stufe 3 (2026-05-01)** — Chain-Advance-Closure (siehe
+    /// FlashcardsView.swift:Doc).
+    @Environment(\.appChainAdvanceAction) private var chainAdvance
 
     /// V3: persistente Adaptive-Confidence — wird für die Seed-Gewichtung
     /// in `AccentContentBuilder` und das Result-Screen-Ranking genutzt.
@@ -189,19 +192,37 @@ struct AccentsEntryView: View {
                 return Self.speedRoundSummaryHeadline(correct: correct)
             }()
 
+            // **Stufe 3 (2026-05-01)** — Chain-Mode-Branching. Im
+            // Chain-Modus ignorieren wir den speedRound-Pfad-spezifischen
+            // „Noch eine Runde"-Label und nehmen die einheitliche
+            // „Weiter zu …"/"Training abschließen"-Wording.
+            let accentsOutcome = sessionOutcome ?? .empty
+            let chain = launchContext?.chainContext
+            let nextStepTitle = chain?.nextStep?.title
+            let isChain = chain != nil
+            let primaryLabel: String = {
+                if isChain {
+                    return nextStepTitle.map { "Weiter zu \($0)" } ?? "Training abschließen"
+                }
+                return result.mode == .speedRound ? "Noch eine Runde" : "Weiter lernen"
+            }()
             SessionSummaryView(
-                outcome: sessionOutcome ?? .empty,
+                outcome: accentsOutcome,
                 progress: ProgressStore.shared.progress,
                 resultHeadline: effectiveHeadline,
-                primaryCTALabel: result.mode == .speedRound ? "Noch eine Runde" : "Weiter lernen",
+                primaryCTALabel: primaryLabel,
                 onPrimaryCTA: {
-                    showingResult = nil
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                        startSession(mode: result.mode)
+                    if isChain {
+                        chainAdvance?(accentsOutcome)
+                    } else {
+                        showingResult = nil
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                            startSession(mode: result.mode)
+                        }
                     }
                 },
-                secondaryCTALabel: "Zur Startseite",
-                onSecondaryCTA: {
+                secondaryCTALabel: isChain ? nil : "Zur Startseite",
+                onSecondaryCTA: isChain ? nil : {
                     showingResult = nil
                     goHome()
                 }

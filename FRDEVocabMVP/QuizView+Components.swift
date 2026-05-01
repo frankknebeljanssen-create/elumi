@@ -303,15 +303,28 @@ var quizResultScreen: some View {
         // Modul-interne State ist unabhängig davon. Eine spätere Cleanup-
         // Runde kann den Sheet + den Presenter entfernen, sobald das neue
         // Pattern freigegeben ist.
+        // **Stufe 3 (2026-05-01)** — Chain-Mode-Branching, siehe
+        // FlashcardsView+SessionComponents.swift für Doc.
+        let outcome = quizSessionOutcome ?? .empty
+        let chain = launchContext?.chainContext
+        let nextStepTitle = chain?.nextStep?.title
+        let isChain = chain != nil
+        let primaryLabel: String = isChain
+            ? (nextStepTitle.map { "Weiter zu \($0)" } ?? "Training abschließen")
+            : "Weiter lernen"
         SessionSummaryView(
-            outcome: quizSessionOutcome ?? .empty,
+            outcome: outcome,
             progress: progressStore.progress,
-            primaryCTALabel: "Weiter lernen",
+            primaryCTALabel: primaryLabel,
             onPrimaryCTA: {
-                resetQuizToSetup()
+                if isChain {
+                    chainAdvance?(outcome)
+                } else {
+                    resetQuizToSetup()
+                }
             },
-            secondaryCTALabel: "Zur Startseite",
-            onSecondaryCTA: {
+            secondaryCTALabel: isChain ? nil : "Zur Startseite",
+            onSecondaryCTA: isChain ? nil : {
                 dismissToHome()
             }
         )

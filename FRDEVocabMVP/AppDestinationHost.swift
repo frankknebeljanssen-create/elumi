@@ -8,7 +8,30 @@ struct AppDestinationHost: View {
     let openSettings: () -> Void
     let openInfo: () -> Void
     let navigate: (AppScreen) -> Void
+    /// **Stufe 3 (2026-05-01, Branch `feature/training-session-flow`)** —
+    /// Push-with-Replace fürs Chain-Advance-Pattern (siehe
+    /// `AppNavigationCoordinator.replaceTopWith`). Wird vom Host als
+    /// Closure in `appChainAdvanceAction`-Environment installiert,
+    /// damit der NavigationStack während einer Chain konstant tief
+    /// bleibt. RootContentView wired diesen Param an
+    /// `coordinator.replaceTopWith(_:)`.
+    let replaceTop: (AppScreen) -> Void
     let markFlashcardsOpenTiming: (String) -> Void
+
+    /// **Stufe 3 Helper**: zentrale Closure, die bei einem Modul-Chain-
+    /// Done-CTA-Tap aufgerufen wird. Kümmert sich um: Outcome
+    /// einsammeln (`TrainingChainStore.advanceChain(...)`), nächstes
+    /// Ziel berechnen, dann via `replaceTop(...)` pushen. Wird per
+    /// `.environment(\.appChainAdvanceAction, …)` an die Modul-Cases
+    /// gebunden, damit der Modul-Code keine Kenntnis vom Chain-Store
+    /// oder der Navigation-Coordinator-Mechanik braucht.
+    private func chainAdvanceClosure() -> (SessionRewardOutcome?) -> Void {
+        { outcome in
+            if let next = TrainingChainStore.shared.advanceChain(recordedOutcome: outcome) {
+                replaceTop(next)
+            }
+        }
+    }
 
     var body: some View {
         switch screen {
@@ -126,6 +149,21 @@ struct AppDestinationHost: View {
                 chain: chain,
                 onStartTraining: { [chain] in
                     guard let firstStep = chain.currentStep else { return }
+                    // **Stufe 3 (2026-05-01)** — Index-0-Restart bei
+                    // Re-Entry. Wenn der User nach „Back aus Modul N"
+                    // wieder auf dem Pre-Screen landet, ist die
+                    // `chainStore.currentChain.currentIndex` ggf. > 0
+                    // (durch advance-Calls aus den Modulen). Der
+                    // Pre-Screen hält aber die ORIGINAL-Chain via
+                    // Navigation-Route (frozen bei Index 0). `start(chain)`
+                    // re-initialisiert den Store mit der frischen
+                    // (Index-0-)Chain — gleichzeitig werden
+                    // `stepOutcomes` geleert. Semantik: Pre-Screen-
+                    // Re-Entry = neue Session, kein Pause-Resume.
+                    // Beim Erst-Eintritt ist das ein No-Op (Store
+                    // wurde von ElumiTab.startTraining schon mit
+                    // derselben Chain initialisiert).
+                    TrainingChainStore.shared.start(chain)
                     navigate(firstStep.chainScreen(chainContext: chain))
                 },
                 onBack: {
@@ -135,6 +173,18 @@ struct AppDestinationHost: View {
                 openSettings: openSettings,
                 openInfo: openInfo,
                 feedbackPlayer: feedbackPlayer
+            )
+        case .trainingChainComplete:
+            // **Stufe 3 (2026-05-01)** — Platzhalter für die End-
+            // Summary-View, die in Stufe 5 über
+            // `TrainingChainStore.shared.stepOutcomes` rendert.
+            // Aktuell minimal: Headline + ein „Zur Startseite"-CTA,
+            // der die Chain räumt und Home öffnet. Stufe 5 ersetzt
+            // das durch eine richtige aggregierte Summary.
+            TrainingChainCompletePlaceholderView(
+                feedbackPlayer: feedbackPlayer,
+                goHome: goHome,
+                openSettings: openSettings
             )
         case .elumi:
             // **Elumi-Tab** (Phase 8) — persönlicher Begleiter-Screen:
@@ -198,6 +248,16 @@ struct AppDestinationHost: View {
     @ViewBuilder
     private func trainDestination(launchContext: TrainingLaunchContext?) -> some View {
         if let listStore = runtime.listStore {
+            // **Stufe 3 R4-Safety (2026-05-01)** — `id(...)` erzwingt
+            // beim Wechsel zwischen zwei `.train`-Modi (z. B. Vokabeln
+            // → Verben in derselben Chain) ein Fresh-Re-Mount. SwiftUI
+            // sollte das durch unterschiedliche AppScreen-Hashable-
+            // Werte schon tun; der explizite ID-Trigger ist defensives
+            // Net, falls SwiftUI bei replaceTopWith differential reuse
+            // wählt. ID-Quelle: TrainingMode-RawValue + Chain-Index
+            // (eindeutig pro Step im Chain-Verlauf).
+            let modeKey = launchContext?.preferredMode?.rawValue ?? "train"
+            let chainIdx = launchContext?.chainContext?.currentIndex ?? -1
             TrainingView(
                 listStore: listStore,
                 runtimeSpeechController: runtime.speechController,
@@ -211,6 +271,8 @@ struct AppDestinationHost: View {
                     await runtime.ensureTrainingDependenciesReady()
                 }
             )
+            .id("train:\(modeKey):\(chainIdx)")
+            .environment(\.appChainAdvanceAction, chainAdvanceClosure())
         } else {
             loadingDestinationView("Trainieren wird vorbereitet") {
                 await runtime.ensureTrainingDependenciesReady()
@@ -236,6 +298,7 @@ struct AppDestinationHost: View {
                 openSettings: openSettings,
                 openInfo: openInfo
             )
+            .environment(\.appChainAdvanceAction, chainAdvanceClosure())
         } else {
             let _ = markFlashcardsOpenTiming("destination_showing_loader")
             loadingDestinationView("Karteikarten werden vorbereitet") {
@@ -256,6 +319,7 @@ struct AppDestinationHost: View {
                 openSettings: openSettings,
                 openInfo: openInfo
             )
+            .environment(\.appChainAdvanceAction, chainAdvanceClosure())
         } else {
             loadingDestinationView("Quiz wird vorbereitet") {
                 await runtime.ensureQuizDependenciesReady()
@@ -325,6 +389,7 @@ struct AppDestinationHost: View {
                 openSettings: openSettings,
                 launchContext: launchContext
             )
+            .environment(\.appChainAdvanceAction, chainAdvanceClosure())
         } else {
             loadingDestinationView("Akzente wird vorbereitet") {
                 await runtime.ensureListDrivenDependenciesReady()

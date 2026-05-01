@@ -162,6 +162,28 @@ final class AppNavigationCoordinator: ObservableObject {
         navigateInstant { navigationPath.append(screen) }
     }
 
+    /// **Stufe 3 (2026-05-01, Branch `feature/training-session-flow`)** —
+    /// Push mit gleichzeitigem Pop des aktuellen Top-Screens. Wird im
+    /// Chain-Modus benutzt, damit der NavigationStack auf konstanter
+    /// Tiefe bleibt: aus `[Tab, PreScreen, ModulA]` → `[Tab, PreScreen,
+    /// ModulB]` statt `[Tab, PreScreen, ModulA, ModulB, …]`. Folge:
+    /// Back-Chevron in Modul N pop-t zum Pre-Screen, Pre-Screen-Back
+    /// räumt die Chain (siehe Stufe-2-Wiring).
+    ///
+    /// `removeLast` + `append` in derselben Frame — SwiftUI führt das
+    /// als Push+Pop-Animation aus, fühlt sich wie ein normaler Push
+    /// an. Defensive: bei leerem Stack (kein Top zum Replacen) wird
+    /// einfach gepusht — das passiert in der Praxis nicht im
+    /// Chain-Pfad, schadet aber auch nicht.
+    func replaceTopWith(_ screen: AppScreen) {
+        navigateInstant {
+            if !navigationPath.isEmpty {
+                navigationPath.removeLast()
+            }
+            navigationPath.append(screen)
+        }
+    }
+
     func completeSplashAndEnsureMenuReady(immediate: Bool) {
         guard !Self.isSplashTemporarilyDisabled else {
             didCompleteSplashAnimation = true

@@ -3,6 +3,12 @@ import SwiftUI
 struct FlashcardsView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.appUsesGlobalChrome) var usesGlobalChrome
+    /// **Stufe 3 (2026-05-01, Branch `feature/training-session-flow`)** —
+    /// Chain-Advance-Closure aus dem `AppDestinationHost`-Wiring. Wenn
+    /// `nil` → kein Chain-Modus, Bestand-CTA-Pfad. Sonst: Modul-Done-
+    /// CTA ruft den Closure mit dem Session-Outcome auf, der Host
+    /// kümmert sich um Outcome-Aggregation + nächsten Step pushen.
+    @Environment(\.appChainAdvanceAction) var chainAdvance
     // **Personal-Deck-Teardown (Phase 8)**: Scene-Phase in der Hand, um
     // den Stapel-Fortschritt beim Übergang Background/Inactive abzusichern.
     @Environment(\.scenePhase) var scenePhase

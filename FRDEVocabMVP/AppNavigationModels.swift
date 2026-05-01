@@ -43,6 +43,16 @@ enum AppScreen: Hashable {
     /// Tab zurück (slot-result bleibt sichtbar, R12-Spec). Bei Jackpot
     /// (3× Game): CTA disabled, Hint „Drehe noch mal für Übungen".
     case trainingChainOverview(TrainingChainContext)
+
+    /// **Trainings-Chain End-Summary-Platzhalter** (Stufe 3, 2026-05-01,
+    /// Branch `feature/training-session-flow`). Wird gepusht, wenn der
+    /// letzte Modul-Step der Chain via „Training abschließen"-CTA
+    /// abgeschlossen ist. Stufe 5 ersetzt die View durch eine
+    /// aggregierte End-Summary auf Basis von
+    /// `TrainingChainStore.shared.stepOutcomes`. Stufe 3 zeigt einen
+    /// minimalen Platzhalter mit einem „Zur Startseite"-CTA, der die
+    /// Chain räumt und nach Home zurücknavigiert.
+    case trainingChainComplete
 }
 
 private struct AppOpenAccountActionKey: EnvironmentKey {
@@ -94,6 +104,23 @@ private struct AppUsesGlobalChromeKey: EnvironmentKey {
     static let defaultValue = false
 }
 
+/// **Trainings-Chain Advance Action** (Stufe 3, 2026-05-01, Branch
+/// `feature/training-session-flow`). Wird vom `AppDestinationHost`
+/// pro Modul-Destination als Environment installiert. Modul-Views
+/// rufen diesen Closure aus dem `onPrimaryCTA`-Pfad ihres
+/// `SessionSummaryView`s auf, sobald der User „Weiter zu …" oder
+/// „Training abschließen" tippt — der optionale `outcome` wird im
+/// `TrainingChainStore` für die spätere End-Summary-Aggregation
+/// (Stufe 5) abgelegt; danach räumt der Host via `replaceTopWith(...)`
+/// den Modul-Screen aus dem Stack und pusht den nächsten Step (oder
+/// die `trainingChainComplete`-Platzhalter-Route).
+///
+/// Default = `nil` → Modul-Views erkennen daran „nicht im Chain-
+/// Modus", branchen also auf das vorhandene Setup-Reset/Home-CTA.
+private struct AppChainAdvanceActionKey: EnvironmentKey {
+    static let defaultValue: ((SessionRewardOutcome?) -> Void)? = nil
+}
+
 extension EnvironmentValues {
     var appOpenAccountAction: (() -> Void)? {
         get { self[AppOpenAccountActionKey.self] }
@@ -133,6 +160,11 @@ extension EnvironmentValues {
     var appUsesGlobalChrome: Bool {
         get { self[AppUsesGlobalChromeKey.self] }
         set { self[AppUsesGlobalChromeKey.self] = newValue }
+    }
+
+    var appChainAdvanceAction: ((SessionRewardOutcome?) -> Void)? {
+        get { self[AppChainAdvanceActionKey.self] }
+        set { self[AppChainAdvanceActionKey.self] = newValue }
     }
 }
 

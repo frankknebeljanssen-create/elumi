@@ -79,6 +79,35 @@ final class TrainingChainStore: ObservableObject {
         stepOutcomes.append(outcome)
     }
 
+    /// **Stufe 3 (2026-05-01, Branch `feature/training-session-flow`)** —
+    /// Combo-Helper für die Modul-Done-CTAs: optional ein Outcome
+    /// einsammeln, dann `advance()` aufrufen, anschließend den
+    /// `AppScreen` zurückgeben, der als nächstes gepusht/replaced
+    /// werden soll:
+    ///
+    ///   • Wenn nach dem Advance noch ein `currentStep` da ist →
+    ///     `step.chainScreen(chainContext: currentChain!)` (nächstes
+    ///     Modul im Chain-Modus, mit aktualisiertem `chainContext`-
+    ///     Index für die korrekte „Weiter zu …"-Anzeige im Folge-CTA).
+    ///   • Wenn nicht (Chain durch) → `.trainingChainComplete`
+    ///     (Stufe-5-Platzhalter; End-Summary kommt dort).
+    ///
+    /// Returnt `nil` nur, wenn keine aktive Chain existiert — Caller
+    /// fällt dann silent zurück (sollte im Chain-Mode-CTA-Pfad nicht
+    /// vorkommen, defensive Absicherung).
+    @discardableResult
+    func advanceChain(recordedOutcome: SessionRewardOutcome? = nil) -> AppScreen? {
+        if let outcome = recordedOutcome {
+            recordOutcome(outcome)
+        }
+        advance()
+        guard let chain = currentChain else { return nil }
+        if let nextStep = chain.currentStep {
+            return nextStep.chainScreen(chainContext: chain)
+        }
+        return .trainingChainComplete
+    }
+
     /// Räumt den Store komplett ab. Wird am Chain-Ende (nach
     /// End-Summary-CTA) oder beim manuellen Abbruch aufgerufen.
     func clear() {

@@ -116,6 +116,15 @@ struct ContentView: View {
                             openSettings: { openSettingsScreen() },
                             openInfo: { openInfoScreen() },
                             navigate: { nextScreen in navigation.navigationPath.append(nextScreen) },
+                            // **Stufe 3 (2026-05-01)** — Push-with-Replace
+                            // für Chain-Advance. Modul-Done-CTA → Host-
+                            // closure ruft `chainStore.advanceChain(...)`
+                            // → wir replacen den Modul-Screen oben im
+                            // Stack durch den nächsten Step (oder
+                            // `.trainingChainComplete`-Platzhalter), damit
+                            // der Stack während einer Chain konstant tief
+                            // bleibt. Siehe `AppNavigationCoordinator.replaceTopWith`.
+                            replaceTop: { nextScreen in navigation.replaceTopWith(nextScreen) },
                             markFlashcardsOpenTiming: markFlashcardsOpenTiming
                         )
                         // **Direkt auf die Destination** dieselben
