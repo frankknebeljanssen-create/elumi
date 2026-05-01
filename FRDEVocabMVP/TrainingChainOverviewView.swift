@@ -238,8 +238,8 @@ struct TrainingChainOverviewView: View {
         )
     }
 
-    /// Game-Card: Index („Reel N") + 🎫-Icon + Label „Game" + Subtitel
-    /// „kein Training" rechts. Bewusst knapp — User-Spec.
+    /// Game-Card: Index („Reel N") + Axolotl-Icon + Label „Game" +
+    /// Subtitel „kein Training" rechts. Bewusst knapp — User-Spec.
     ///
     /// **Bugfix 2026-05-01**: das frühere `Text("+1 Ticket")` als
     /// Hauptbeschriftung pro Card war irreführend, weil bei 2-Game-
@@ -247,13 +247,19 @@ struct TrainingChainOverviewView: View {
     /// 1→1, 2→3, 3→6), die summierte Card-Anzeige aber 2× +1 = 2
     /// suggerierte. Total-Tickets wandern jetzt in die `heroBlock`-
     /// Subtitle (siehe dort); die Card selbst bleibt rein deskriptiv.
+    ///
+    /// **Visual-Tweak 2026-05-01**: Game-Icon vom SF-Symbol
+    /// `ticket.fill` (yellow) auf das Axolotl-Maskottchen-Asset
+    /// `SplashCharacter` umgestellt. Konsistent zu `ReelSymbol.elumi`
+    /// (gleiches Asset, gleicher Match-Identitäts-Visual auf der
+    /// Slot Machine — Wiedererkennung „dieser Slot war ein Game-
+    /// Slot"). Tickets-Visual lebt jetzt zentral im Footer-Badge
+    /// und in der Hero-Subtitle.
     private func gameSlotCard(slotIndex: Int) -> some View {
         HStack(spacing: 14) {
-            // SF-Symbol „ticket.fill" mit Warning-Color (Yellow), gleiches
-            // Visual wie der HUD-Chip im Arcade-Spiel — Wiedererkennung.
-            Image(systemName: "ticket.fill")
-                .font(.system(size: 28, weight: .bold))
-                .foregroundStyle(AppTheme.Colors.warning)
+            Image("SplashCharacter")
+                .resizable()
+                .scaledToFit()
                 .frame(width: 44, height: 44)
 
             VStack(alignment: .leading, spacing: 2) {
