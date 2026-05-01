@@ -273,6 +273,7 @@ struct AppDestinationHost: View {
             )
             .id("train:\(modeKey):\(chainIdx)")
             .environment(\.appChainAdvanceAction, chainAdvanceClosure())
+            .modifier(ChainTimerOverlayModifier())
         } else {
             loadingDestinationView("Trainieren wird vorbereitet") {
                 await runtime.ensureTrainingDependenciesReady()
@@ -299,6 +300,7 @@ struct AppDestinationHost: View {
                 openInfo: openInfo
             )
             .environment(\.appChainAdvanceAction, chainAdvanceClosure())
+            .modifier(ChainTimerOverlayModifier())
         } else {
             let _ = markFlashcardsOpenTiming("destination_showing_loader")
             loadingDestinationView("Karteikarten werden vorbereitet") {
@@ -320,6 +322,7 @@ struct AppDestinationHost: View {
                 openInfo: openInfo
             )
             .environment(\.appChainAdvanceAction, chainAdvanceClosure())
+            .modifier(ChainTimerOverlayModifier())
         } else {
             loadingDestinationView("Quiz wird vorbereitet") {
                 await runtime.ensureQuizDependenciesReady()
@@ -390,6 +393,7 @@ struct AppDestinationHost: View {
                 launchContext: launchContext
             )
             .environment(\.appChainAdvanceAction, chainAdvanceClosure())
+            .modifier(ChainTimerOverlayModifier())
         } else {
             loadingDestinationView("Akzente wird vorbereitet") {
                 await runtime.ensureListDrivenDependenciesReady()

@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import Combine
+import UIKit
 
 /// **Trainings-Session-Auto-Verkettung — Chain-Store**
 /// (Stufe 1, 2026-04-30, Branch `feature/training-session-flow`).
@@ -37,6 +38,65 @@ final class TrainingChainStore: ObservableObject {
     @Published private(set) var currentChain: TrainingChainContext?
     @Published private(set) var stepOutcomes: [SessionRewardOutcome] = []
 
+    // MARK: - Stufe 4a: Step-Countdown-Timer (2026-05-01)
+
+    /// **Stufe 4a (2026-05-01, Branch `feature/training-session-flow`)** —
+    /// Verbleibende Sekunden im aktuellen Chain-Step. 0 = Zeit ist um
+    /// (Soft-Cutoff, siehe `timerExpired`). Wird vom UI-Layer
+    /// (`ChainStepTimerBar` via `ChainTimerOverlayModifier`) live
+    /// observiert.
+    @Published private(set) var stepRemainingSeconds: Int = 0
+
+    /// Gesamtdauer des aktuellen Chain-Steps in Sekunden (immer
+    /// `chain.perStepDurationMin * 60`, außer im Smoke-Test-Override).
+    /// Wird für die Progress-Bar-Normierung in der Timer-Bar gebraucht.
+    @Published private(set) var stepTotalSeconds: Int = 0
+
+    /// Soft-Cutoff-Flag: `true` heißt „Zeit ist um, Banner darf
+    /// erscheinen". In Stufe 4a rein deskriptiv — der User kann
+    /// trotzdem weitermachen, kein Force-Done. In Stufe 4b koppeln
+    /// wir den nächsten Submit-Tap im Modul an dieses Flag, um
+    /// Auto-Advance zu triggern.
+    @Published private(set) var timerExpired: Bool = false
+
+    /// Aktiver Sekunden-Counter. Tickt in `scheduleStepTick()`. Wird
+    /// bei Background pausiert (`pauseStepTimer()`), bei Foreground
+    /// weitergeführt (`resumeStepTimer()`), und bei `clear()` /
+    /// `start()` / `advance()` (zum nächsten Step) aufgeräumt.
+    private var stepTimer: Timer?
+
+    /// Bei Background-Pause: hier landet der zum Pause-Zeitpunkt
+    /// gültige `stepRemainingSeconds`-Wert, damit `resumeStepTimer()`
+    /// von dort weiterzählt — ohne Drift, weil wir Sekunden-Counter
+    /// verwenden statt Wall-Clock-Diffs (für 4-min-Steps reicht das,
+    /// siehe Audit-Antwort 6).
+    private var pausedRemainingSeconds: Int? = nil
+
+    /// **Stufe 4a (2026-05-01)** — `private init` damit das
+    /// Singleton-Pattern stabil bleibt (Default war implicit-public);
+    /// dasselbe `init` registriert die App-Lifecycle-Notifications
+    /// für Timer-Pause/Resume.
+    private init() {
+        registerLifecycleObservers()
+    }
+
+    private func registerLifecycleObservers() {
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.willResignActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.pauseStepTimer() }
+        }
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.resumeStepTimer() }
+        }
+    }
+
     /// Initialisiert eine neue Chain. Clear-t **vorab** alle drei
     /// expliziten Resume-Stores (Pattern aus
     /// `GameStateResetService.swift` Z. 57-59), damit Chain-Steps nicht
@@ -57,6 +117,15 @@ final class TrainingChainStore: ObservableObject {
         let path = chain.plannedSteps.map(\.rawValue).joined(separator: " → ")
         print("🔗 [TrainingChainStore] start — id=\(chain.id.shortID), steps=[\(path)], perStep=\(chain.perStepDurationMin)min")
         #endif
+
+        // **Stufe 4a (2026-05-01)** — Step-Timer für ersten Step
+        // starten. Nur wenn die Chain einen `currentStep` hat (kein
+        // Jackpot-Pfad mit leeren plannedSteps).
+        if chain.currentStep != nil {
+            startStepTimer()
+        } else {
+            clearStepTimer()
+        }
     }
 
     /// Rotiert den Index +1. Wird in Stufe 2 von den Modul-CTAs
@@ -70,6 +139,16 @@ final class TrainingChainStore: ObservableObject {
         let total = currentChain?.totalStepCount ?? 0
         print("🔗 [TrainingChainStore] advance — index=\(idx)/\(total)")
         #endif
+
+        // **Stufe 4a (2026-05-01)** — Timer für den nächsten Step
+        // neu starten. Wenn die Chain durch ist (kein currentStep
+        // mehr), Timer komplett aufräumen — `trainingChainComplete`-
+        // Platzhalter zeigt keine Zeit-Anzeige.
+        if currentChain?.currentStep != nil {
+            startStepTimer()
+        } else {
+            clearStepTimer()
+        }
     }
 
     /// Sammelt das Outcome eines abgeschlossenen Steps für die spätere
@@ -114,8 +193,113 @@ final class TrainingChainStore: ObservableObject {
         currentChain = nil
         stepOutcomes = []
 
+        // **Stufe 4a (2026-05-01)** — Timer mit räumen, sonst
+        // tickt er weiter wenn die Chain abgebrochen wird (z.B. via
+        // Pre-Screen-Back-Chevron oder ChainComplete-„Zur Startseite").
+        clearStepTimer()
+
         #if DEBUG
         print("🔗 [TrainingChainStore] clear")
         #endif
+    }
+
+    // MARK: - Stufe 4a: Step-Timer-Mechanik
+
+    /// Startet den Countdown für den aktuellen `currentStep`. Setzt
+    /// Total + Remaining auf `chain.perStepDurationMin * 60`,
+    /// resettet `timerExpired`, killed einen ggf. laufenden Timer und
+    /// scheduled den 1-Sekunden-Tick.
+    func startStepTimer() {
+        guard let chain = currentChain, chain.currentStep != nil else {
+            clearStepTimer()
+            return
+        }
+        let totalSeconds = max(1, chain.perStepDurationMin * 60)
+
+        stepTimer?.invalidate()
+        stepTimer = nil
+        stepTotalSeconds = totalSeconds
+        stepRemainingSeconds = totalSeconds
+        timerExpired = false
+        pausedRemainingSeconds = nil
+        scheduleStepTick()
+
+        #if DEBUG
+        print("⏱️ [TrainingChainStore] step timer started — \(totalSeconds)s for step \(chain.currentStep?.rawValue ?? "?")")
+        #endif
+    }
+
+    /// Ein 1-Sekunden-Repeating-Timer. Dekrementiert
+    /// `stepRemainingSeconds`. Bei 0 → `stepTimer.invalidate()` +
+    /// `timerExpired = true`. Kein automatischer Force-Done in 4a —
+    /// das ist 4b.
+    private func scheduleStepTick() {
+        stepTimer?.invalidate()
+        stepTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                guard let self = self else { return }
+                guard self.stepRemainingSeconds > 0 else {
+                    self.stepTimer?.invalidate()
+                    self.stepTimer = nil
+                    self.timerExpired = true
+                    return
+                }
+                self.stepRemainingSeconds -= 1
+                if self.stepRemainingSeconds == 0 {
+                    self.stepTimer?.invalidate()
+                    self.stepTimer = nil
+                    self.timerExpired = true
+                    #if DEBUG
+                    print("⏱️ [TrainingChainStore] step timer EXPIRED — soft-cutoff banner shown")
+                    #endif
+                }
+            }
+        }
+    }
+
+    /// App geht in den Hintergrund: aktuellen Remaining-Wert
+    /// einfrieren, Timer killen. Notification-Trigger:
+    /// `UIApplication.willResignActiveNotification`.
+    private func pauseStepTimer() {
+        guard stepTimer != nil else { return }
+        pausedRemainingSeconds = stepRemainingSeconds
+        stepTimer?.invalidate()
+        stepTimer = nil
+        #if DEBUG
+        print("⏱️ [TrainingChainStore] step timer paused @ \(stepRemainingSeconds)s")
+        #endif
+    }
+
+    /// App kommt nach vorne: Remaining-Wert wiederherstellen, Timer
+    /// neu scheduled, sofern noch Zeit übrig ist. Bei `paused == 0`
+    /// (Timer war beim Background schon abgelaufen) wird kein neuer
+    /// Tick gescheduled, aber `timerExpired` bleibt korrekt true.
+    /// Notification-Trigger: `UIApplication.didBecomeActiveNotification`.
+    private func resumeStepTimer() {
+        guard let paused = pausedRemainingSeconds, currentChain != nil else { return }
+        stepRemainingSeconds = paused
+        pausedRemainingSeconds = nil
+        if paused > 0 {
+            scheduleStepTick()
+            #if DEBUG
+            print("⏱️ [TrainingChainStore] step timer resumed @ \(paused)s")
+            #endif
+        } else {
+            timerExpired = true
+            #if DEBUG
+            print("⏱️ [TrainingChainStore] step timer resume: was 0, banner stays")
+            #endif
+        }
+    }
+
+    /// Räumt Timer + State komplett ab. Wird in `clear()` und in
+    /// `start()` / `advance()` (vor dem Neu-Start) gerufen.
+    private func clearStepTimer() {
+        stepTimer?.invalidate()
+        stepTimer = nil
+        stepRemainingSeconds = 0
+        stepTotalSeconds = 0
+        timerExpired = false
+        pausedRemainingSeconds = nil
     }
 }
