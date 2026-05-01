@@ -83,7 +83,24 @@ struct ElumiTabView: View {
     /// Stufe 2 von zwei Stellen referenziert (hier zum Befüllen, plus
     /// `TrainingChainOverviewView` für Back-Chevron-Clear via Closure).
     /// Singleton-Pattern matcht `ProgressStore.shared`/`AccountStore.shared`.
-    @ObservedObject private var chainStore = TrainingChainStore.shared
+    ///
+    /// **Performance-Fix 2026-05-01 (Hypothese A)**: `@ObservedObject`
+    /// entfernt zugunsten eines direkten Singleton-Aufrufs in
+    /// `startTraining()`. Hintergrund: ab Stufe 4a hat der Store einen
+    /// 1-Hz-Timer mit vier zusätzlichen `@Published`-Properties
+    /// (`stepRemainingSeconds`, `stepTotalSeconds`, `timerExpired`,
+    /// `hasShownExpirationToast`). Während eine Chain läuft (z.B.
+    /// nachdem User aus Modul ohne `clear()` zurück zum Tab kommt) feuert
+    /// der Store jede Sekunde `objectWillChange` → ElumiTabView
+    /// re-renderte mit. Der 60fps-Slot-Spin-Loop hatte dadurch
+    /// sichtbare Hakler. Da ElumiTabView den Store ausschließlich
+    /// schreibend nutzt (nur `chainStore.start(chain)` in
+    /// `startTraining()`, keine reactive Reads im Body), war der
+    /// `@ObservedObject`-Wrapper überflüssig — der Direkt-Singleton-
+    /// Call entkoppelt das Re-Render-Verhalten komplett. Andere
+    /// Konsumenten der Timer-State (`ChainTimerOverlayModifier`)
+    /// observieren weiter, wie es by design sein soll, weil sie die
+    /// Timer-Bar live aktualisieren.
     @StateObject private var dropRate = ElumiDropRateControllerStore()
     @StateObject private var budget = SlotMachineSpinBudgetStore()
     // **Pool-Vereinheitlichung 2026-04-30 (Stufe 1b)**: der frühere
@@ -1524,7 +1541,11 @@ struct ElumiTabView: View {
         )
 
         // Chain-Start: Resume-Stores werden im Store geleert (R5).
-        chainStore.start(chain)
+        // **Performance-Fix 2026-05-01**: direkter Singleton-Call
+        // statt observed-store, siehe Doc beim `@StateObject dropRate`-
+        // Block oben. Verhalten unverändert — nur die Re-Render-
+        // Cascade ist weg.
+        TrainingChainStore.shared.start(chain)
 
         // **Stufe 2 Navigation**: Pre-Screen statt direktes Modul-Push.
         // Der Pre-Screen pusht beim „Übung starten"-CTA selbst auf den
@@ -1586,3 +1607,4 @@ struct ElumiTabView: View {
     // bleiben im Trophy-Tab sichtbar — der Elumi-Tab fokussiert sich
     // jetzt nur auf die Slot-Machine.
 }
+
