@@ -29,6 +29,14 @@ extension QuizView {
                 } else {
                     TextField("Antwort eingeben", text: $typingInput)
                         .font(.system(size: 18, weight: .semibold, design: .rounded))
+                        // **Quick-Fix (2026-05-02)**: ohne expliziten
+                        // `foregroundStyle` rendert SwiftUI den User-Text
+                        // im Default-System-Schwarz auf dem dunklen
+                        // `secondarySurface`-Background — unleserlich.
+                        // Mit `textPrimary` (cream/off-white) ist der
+                        // Tipp-Text klar lesbar, konsistent zu den
+                        // anderen Text-Tokens auf Card-Surfaces.
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 12)
