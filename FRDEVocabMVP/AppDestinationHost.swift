@@ -393,7 +393,16 @@ struct AppDestinationHost: View {
                 launchContext: launchContext
             )
             .environment(\.appChainAdvanceAction, chainAdvanceClosure())
-            .modifier(ChainTimerOverlayModifier())
+            // **Stufe 4b-Modal-Refactor (2026-05-02)** — Chain-Timer-
+            // Overlay-Mount für Akzente sitzt **nicht mehr hier**: die
+            // tatsächliche Session läuft in einem `.fullScreenCover` der
+            // EntryView, ein Modifier auf der EntryView wäre hinter dem
+            // Cover gerendert (visuell unsichtbar). Stattdessen mountet
+            // `AccentsSessionView` (= Cover-Content) den Modifier selbst,
+            // damit die Timer-Bar und das Cutoff-Modal über dem
+            // tatsächlichen Session-Content erscheinen. Closure-
+            // Registration für „Jetzt weiter" liegt dort am gleichen Ort
+            // mit Engine-Zugriff.
         } else {
             loadingDestinationView("Akzente wird vorbereitet") {
                 await runtime.ensureListDrivenDependenciesReady()

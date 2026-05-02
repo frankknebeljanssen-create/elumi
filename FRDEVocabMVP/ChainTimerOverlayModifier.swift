@@ -12,37 +12,36 @@ import SwiftUI
 ///      sauber nach unten, kein Overlap mit AppTopBar oder
 ///      Modul-Content.
 ///
-///   2. **`ChainCutoffToast`** als mittiger Overlay-Hint, der genau
-///      einmal pro Step erscheint, sobald `timerExpired` von `false`
-///      auf `true` wechselt. Auto-Fade-Animation: Scale-In 0.92→1.0
-///      (200 ms) + Hold 3.5 s + Fade-Out (500 ms). Show-Once via
-///      `chainStore.hasShownExpirationToast`-Flag + lokalem
-///      `toastVisible`-State.
+///   2. **`ChainCutoffModal`** als blockierender Overlay-Backdrop +
+///      zentrierte Card mit zwei CTAs („Aufgabe fertigmachen" und
+///      „Jetzt weiter"). Erscheint genau einmal pro Step, sobald
+///      `timerExpired` von `false` auf `true` wechselt. Show-Once via
+///      `chainStore.hasShownExpirationToast`-Flag, Visibility live
+///      über `chainStore.cutoffModalVisible`.
 ///
 /// **Layout-Update 2026-05-01 (Stufe 4a-Fix)**: vorherige Variante
 /// hatte den Hinweis als Banner unmittelbar unter der Timer-Bar —
 /// nahm zu viel vertikalen Platz, kollidierte mit Modul-Content.
-/// Jetzt: Bar bleibt schlank (~30 pt), Hinweis ist flüchtig + mittig.
+/// Jetzt: Bar bleibt schlank (~30 pt), Hinweis als mittiger Toast.
 ///
-/// **Stufe-4a-Verhalten** (rein deskriptiv): Toast triggert KEINEN
-/// Force-Done. Stufe 4b ergänzt die Force-Done-Hooks pro Modul.
+/// **Stufe 4b-Modal-Refactor (2026-05-02)**: Toast wird durch das
+/// `ChainCutoffModal` ersetzt — User muss aktiv zwischen „Aufgabe
+/// fertigmachen" (Soft-Cutoff bleibt aktiv, nächster Submit löst
+/// Auto-Advance über die existierenden Modul-Hooks) und „Jetzt weiter"
+/// (sofortiger Force-Done über die `appChainForceAdvanceAction`-
+/// Environment-Closure des aktiven Moduls) wählen. Modal blockiert
+/// Modul-Interaktion via Backdrop. Auto-Fade-Logik (Stufe 4a) komplett
+/// entfernt — Modal bleibt offen bis User reagiert.
 struct ChainTimerOverlayModifier: ViewModifier {
     @ObservedObject private var chainStore = TrainingChainStore.shared
-    @State private var toastVisible: Bool = false
-
-    /// Auto-Hide-Schedule-Werte. Hold-Phase + Fade-Out-Phase werden
-    /// hier zentral gehalten, damit zukünftige UX-Änderungen nicht
-    /// drei Stellen anfassen müssen.
-    private let toastHoldSeconds: Double = 3.5
-    private let toastFadeOutSeconds: Double = 0.5
 
     func body(content: Content) -> some View {
         content
             .safeAreaInset(edge: .top, spacing: 0) {
                 topBarOverlay
             }
-            .overlay(alignment: .top) {
-                toastOverlay
+            .overlay {
+                cutoffModalOverlay
             }
             .onChange(of: chainStore.timerExpired) { _, newValue in
                 handleTimerExpiredChange(newValue)
@@ -85,61 +84,52 @@ struct ChainTimerOverlayModifier: ViewModifier {
         }
     }
 
-    // MARK: - Toast (mittig, flüchtig)
+    // MARK: - Cutoff-Modal (blockierend)
 
-    /// Mittiger Soft-Cutoff-Toast. Erscheint via Scale + Opacity
-    /// `transition`, wenn `toastVisible == true`. Position: oberer
-    /// Drittel-Bereich (35 % der Container-Höhe), damit der Toast
-    /// klar unter dem Modul-Header sichtbar wird, aber nicht den
-    /// Modul-Content komplett überdeckt.
+    /// Full-screen Cutoff-Modal mit Backdrop. Erscheint via Scale +
+    /// Opacity-Transition, wenn `chainStore.cutoffModalVisible == true`.
+    /// Render-Position: full-overlay über dem Modul, Backdrop fängt
+    /// jegliche Touches ab — Modul-Content ist nicht mehr klickbar bis
+    /// User eine der beiden CTAs tappt.
     @ViewBuilder
-    private var toastOverlay: some View {
-        if toastVisible {
-            GeometryReader { proxy in
-                ChainCutoffToast()
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 16)
-                    .position(
-                        x: proxy.size.width / 2,
-                        y: proxy.size.height * 0.32
-                    )
-            }
+    private var cutoffModalOverlay: some View {
+        if chainStore.cutoffModalVisible {
+            ChainCutoffModal(
+                moduleName: chainStore.currentChain?.currentStep?.title,
+                onFinishTask: {
+                    // Soft-Cutoff bleibt aktiv: `timerExpired = true`
+                    // unverändert, damit der nächste Modul-Submit
+                    // über die existierenden Hooks (4b-1/2/3/4)
+                    // als Auto-Advance auflöst. Nur Modal verschwindet.
+                    chainStore.dismissCutoffModal()
+                },
+                // Primary „Jetzt weiter" wird nur dann angeboten, wenn
+                // das aktive Modul einen Force-Done-Handler im Store
+                // registriert hat (siehe `registerForceAdvanceHandler`
+                // in `TrainingChainStore`). Ohne Handler → `nil` → das
+                // Modal versteckt den Primary-Button und User hat nur
+                // den „Aufgabe fertigmachen"-Pfad. Tap auf Primary
+                // schließt Modal + ruft den Handler aus dem Store.
+                onAdvanceNow: chainStore.hasForceAdvanceHandler
+                    ? { chainStore.forceAdvanceFromCutoffModal() }
+                    : nil
+            )
             .transition(
                 .scale(scale: 0.92).combined(with: .opacity)
             )
-            // Toast soll keine User-Taps abfangen — er ist rein
-            // informativ, der User soll weiter mit dem Modul
-            // interagieren können (wischen, Mikrofon, Tippen, etc.).
-            .allowsHitTesting(false)
         }
     }
 
     // MARK: - Show/Hide-Logik
 
     /// Wird vom `.onChange(of: chainStore.timerExpired)`-Handler
-    /// gerufen. Zeigt den Toast genau dann, wenn der Timer gerade
-    /// abgelaufen ist UND der Toast für diesen Step noch nicht
-    /// gezeigt wurde. Schedules Auto-Hide nach Hold + Fade-Out.
+    /// gerufen. Triggert das Modal genau dann, wenn der Timer gerade
+    /// abgelaufen ist UND das Modal für diesen Step noch nicht
+    /// gezeigt wurde. `presentCutoffModal()` enthält die Show-Once-
+    /// Guard, damit ein App-Re-Mount (z.B. Background-Resume mit
+    /// `timerExpired == true`) keinen erneuten Trigger bedeutet.
     private func handleTimerExpiredChange(_ expired: Bool) {
-        // Nur bei Übergang false → true und nur wenn Toast diesem
-        // Step noch nicht angezeigt wurde. Beide Bedingungen sind
-        // wichtig: ohne `expired` würden wir bei Step-Wechsel
-        // (timerExpired auf false) den Toast triggern; ohne das
-        // Store-Flag würde ein App-Re-Mount (z.B. Background-
-        // Resume) den Toast erneut anzeigen.
-        guard expired, !chainStore.hasShownExpirationToast else { return }
-
-        chainStore.markExpirationToastShown()
-        withAnimation(.easeOut(duration: 0.2)) {
-            toastVisible = true
-        }
-        // Hold + Fade-Out. Nutzt Wall-Clock-Delays, kein Timer-State
-        // im Store — der Toast ist UI-only, der Store-Flag schützt
-        // gegen Re-Show.
-        DispatchQueue.main.asyncAfter(deadline: .now() + toastHoldSeconds) {
-            withAnimation(.easeIn(duration: toastFadeOutSeconds)) {
-                toastVisible = false
-            }
-        }
+        guard expired else { return }
+        chainStore.presentCutoffModal()
     }
 }

@@ -38,6 +38,10 @@ struct AccentsSessionView: View {
     /// `shuffledOptions()` neu auf und mischte die Grid-Items).
     @State private var shuffledOptionsByID: [UUID: [String]] = [:]
     @State private var shuffledLettersByID: [UUID: [String]] = [:]
+    /// **Stufe 4b-Modal-Refactor (2026-05-02)** — Token der aktuellen
+    /// `TrainingChainStore`-Force-Advance-Handler-Registration. Siehe
+    /// `FlashcardsView.forceAdvanceHandlerToken` für Doc.
+    @State private var forceAdvanceHandlerToken: UUID?
 
 
     init(
@@ -162,6 +166,31 @@ struct AccentsSessionView: View {
             // die Session vorzeitig verlässt.
             speaker.stop()
             engine.cancelSpeedRound()
+        }
+        // **Stufe 4b-Modal-Refactor (2026-05-02)** — der Chain-Timer-
+        // Overlay-Modifier wird hier in der SessionView gemountet
+        // (nicht mehr in `AppDestinationHost` auf der EntryView), weil
+        // die Session in einem `.fullScreenCover` der EntryView läuft
+        // und ein Modifier auf der EntryView hinter dem Cover wäre
+        // (visuell unsichtbar). Hier mountet sich der Modifier
+        // direkt auf den Cover-Content — Timer-Bar und Cutoff-Modal
+        // erscheinen sichtbar über der laufenden Akzente-Session.
+        .modifier(ChainTimerOverlayModifier())
+        // **Stufe 4b-Modal-Refactor (2026-05-02)** — registriert den
+        // modul-spezifischen Force-Done-Closure für den „Jetzt
+        // weiter"-CTA des `ChainCutoffModal` direkt am
+        // `TrainingChainStore`. Store-Registration ist mount-
+        // layering-agnostic. Closure ruft den existierenden 4b-2-
+        // Helper auf der `AccentSessionEngine` — Idempotenz-Guard
+        // ist dort eingebaut (`!isFinished`).
+        .onAppear {
+            forceAdvanceHandlerToken = TrainingChainStore.shared.registerForceAdvanceHandler { [weak engine] in
+                engine?.forceFinishFromChainTimer()
+            }
+        }
+        .onDisappear {
+            TrainingChainStore.shared.unregisterForceAdvanceHandler(token: forceAdvanceHandlerToken)
+            forceAdvanceHandlerToken = nil
         }
         // Auto-Advance per-Question ist im Speed Round **nicht mehr nötig**:
         // Der 45-Sekunden-Global-Timer begrenzt die Gesamtzeit, der User

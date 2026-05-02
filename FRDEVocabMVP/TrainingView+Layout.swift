@@ -1668,7 +1668,10 @@ extension TrainingView {
             Button {
                 guard canContinue else { return }
                 feedbackPlayer.playStudySuccess()
-                verbformsSession.next()
+                // **Stufe 4b-5 (2026-05-02)** — Chain-Timer-aware
+                // Wrapper. Bei abgelaufenem Chain-Timer wird Force-
+                // Done getriggert, sonst Pass-through.
+                handleVerbformsNext()
             } label: {
                 Text(canContinue ? "Weiter" : "Noch \(remaining) zu lösen")
                     .font(AppTheme.Typography.button)
@@ -1887,7 +1890,10 @@ extension TrainingView {
         if verbformsSession.isLocked, !verbformsSession.isSpeedRound {
             Spacer(minLength: 8)
             Button {
-                verbformsSession.next()
+                // **Stufe 4b-5 (2026-05-02)** — Chain-Timer-aware
+                // Wrapper, siehe oberen Aufruf in der Multiple-Choice-
+                // Variante.
+                handleVerbformsNext()
             } label: {
                 Text("Weiter")
                     .font(AppTheme.Typography.button)
@@ -2204,9 +2210,27 @@ extension TrainingView {
                 handleTrainingAppear()
                 if isVerbformsMode { loadVerbformsAvailableTenses() }
                 refreshSetupCardLemmas()
+                // **Stufe 4b-Modal-Refactor (2026-05-02)** —
+                // registriert je nach aktivem Modus den passenden
+                // Force-Done-Closure für den „Jetzt weiter"-CTA des
+                // `ChainCutoffModal`. TrainingView hostet zwei Modi:
+                // Verbformen-Layout und das reguläre Training-Layout
+                // (vocabulary/nouns/articles/verbs). Closure
+                // entscheidet beim Fire anhand `isVerbformsMode`,
+                // welcher Helper läuft. Token-basiert für Race-
+                // Safety bei Chain-Step-Transitions zwischen Modi.
+                forceAdvanceHandlerToken = TrainingChainStore.shared.registerForceAdvanceHandler {
+                    if isVerbformsMode {
+                        forceVerbformsDoneFromChainTimer()
+                    } else {
+                        forceTrainingDoneFromChainTimer()
+                    }
+                }
             }
             .onDisappear {
                 stopSpeedRoundTimer()
+                TrainingChainStore.shared.unregisterForceAdvanceHandler(token: forceAdvanceHandlerToken)
+                forceAdvanceHandlerToken = nil
             }
             // **Stufe 4b-5 (2026-05-02)** — Verbformen Setup-Skip im
             // Chain-Modus. `handleTrainingAppear` triggert

@@ -277,6 +277,25 @@ extension TrainingView {
     }
 
     func loadNextTrainingCard() {
+        // **Stufe 4b-4 (2026-05-02, Branch `feature/training-session-flow`)** —
+        // Soft-Cutoff-Force-Done für den Chain-Timer im Training-
+        // Modus (vocabulary / nouns / articles / verbs). Wenn der User
+        // auf einer Chain-Step-Training-Session sitzt UND der Chain-
+        // Timer im `TrainingChainStore` schon abgelaufen ist,
+        // schließen wir die Session HIER ab — beim natürlichen
+        // Übergang zur nächsten Karte. Der gerade beantwortete Card-
+        // Submit ist zu diesem Zeitpunkt komplett ausgewertet
+        // (R7-Schutz: scheduleNextCard hat 0.55s Eval-Delay vor diesem
+        // Aufruf). Statt zur nächsten Karte zu wechseln, springen wir
+        // direkt auf den `trainingSummaryScreen` mit dem Stufe-3-
+        // Chain-aware-CTA. Verbformen-Pfad läuft nicht hier durch,
+        // siehe `handleVerbformsNext()` für den dortigen Hook.
+        if TrainingChainStore.shared.timerExpired,
+           !isVerbformsMode,
+           trainingSessionOutcome == nil {
+            forceTrainingDoneFromChainTimer()
+            return
+        }
         speechController?.transcript = ""
         speechController?.recordError = nil
         lastResult = nil
@@ -284,6 +303,87 @@ extension TrainingView {
         showingTypedAnswerInput = false
         typedAnswerFieldFocused = false
         session.loadNextTrainingCard()
+    }
+
+    /// **Stufe 4b-4 (2026-05-02)** — Forciert das Training-Session-
+    /// Ende durch den Chain-Timer-Soft-Cutoff. Stoppt Speed-Round-
+    /// Timer + TTS + Mikrofon-Listening, ruft `awardTrainingXPIfNeeded`
+    /// (idempotent über `session.sessionRewardConsumed`). Falls der
+    /// User noch nicht eine einzige Aufgabe beantwortet hat (0/0 →
+    /// `awardTrainingXPIfNeeded` early-returns), setzen wir
+    /// `trainingSessionOutcome` defensiv auf `.empty` damit die
+    /// View-Branch in `trainingRootContent` (Z. 33-38) zum
+    /// `trainingSummaryScreen` wechselt — sonst hängt der User auf
+    /// dem Session-Screen mit aktiver Modal-Backdrop oder schwarzer
+    /// Card-Anzeige. Idempotent gegen Re-Call via
+    /// `trainingSessionOutcome != nil`-Guard.
+    func forceTrainingDoneFromChainTimer() {
+        guard trainingSessionOutcome == nil else { return }
+        // Defensive Cleanup analog zum natürlichen Speed-Round-Ende
+        // (Z. 189-194 in dieser Datei): Timer killen, Audio-Pfade
+        // stoppen, Pending-Eval canceln. Verhindert dass nach Force-
+        // Done noch ein Auto-Advance / TTS / Speech-Recognition-Tick
+        // im Hintergrund weiterläuft.
+        session.speedRoundTimer?.invalidate()
+        session.speedRoundTimer = nil
+        runtimeSpeaker?.stop()
+        speechController?.stopRecording()
+        cancelPendingFeedback()
+        awardTrainingXPIfNeeded()
+        if trainingSessionOutcome == nil {
+            trainingSessionOutcome = .empty
+        }
+        #if DEBUG
+        print("🛑 [Training] Force-Done via chain-timer-soft-cutoff")
+        #endif
+    }
+
+    /// **Stufe 4b-5 (2026-05-02)** — View-Wrapper um
+    /// `verbformsSession.next()`. Schaltet bei abgelaufenem Chain-
+    /// Timer auf `forceVerbformsDoneFromChainTimer()` um — sonst
+    /// regulärer Pass-through. Wird von beiden „Weiter"-Buttons im
+    /// Verbformen-Layout (Z. 1644 in der Multiple-Choice-Variante,
+    /// Z. 1863 in der Typing-Variante) aufgerufen statt direkt
+    /// `verbformsSession.next()`. R7-Schutz: der vorhergehende
+    /// Match/Submit hat seine Eval (Audio + Animation + State) bereits
+    /// komplett abgeschlossen, der „Weiter"-Tap ist der explizite
+    /// User-Trigger zur nächsten Aufgabe — der Cutoff-Check sitzt
+    /// genau hier am natural-transition-to-next-Punkt.
+    func handleVerbformsNext() {
+        if TrainingChainStore.shared.timerExpired,
+           !verbformsSession.isFinished {
+            forceVerbformsDoneFromChainTimer()
+            return
+        }
+        verbformsSession.next()
+    }
+
+    /// **Stufe 4b-5 (2026-05-02)** — Forciert das Verbformen-Session-
+    /// Ende. Setzt `verbformsSession.isFinished = true` (mirror des
+    /// natürlichen Endes in `VerbformsSessionController.next()` Z. 298,
+    /// Z. 374, Z. 383, Z. 436). View-Branch in `trainingRootContent`
+    /// (Z. 28-30) wechselt daraufhin zum `verbformsResultScreen`,
+    /// dessen `.onAppear` (Z. 2009-2018) ruft
+    /// `awardVerbformsXPIfNeeded()` synchron — wir rufen es hier
+    /// trotzdem schon explizit, damit `verbformsSessionOutcome`
+    /// garantiert vor dem Render gesetzt ist. Falls 0/0 (User hat
+    /// noch nichts beantwortet), setzen wir das Outcome defensiv auf
+    /// `.empty` für saubere Summary-Render. Idempotent gegen Re-Call
+    /// via `!verbformsSession.isFinished`-Guard.
+    func forceVerbformsDoneFromChainTimer() {
+        guard !verbformsSession.isFinished else { return }
+        verbformsSession.isFinished = true
+        verbformsSession.isActive = false
+        verbformsSession.stopSpeedRoundTimer()
+        runtimeSpeaker?.stop()
+        speechController?.stopRecording()
+        awardVerbformsXPIfNeeded()
+        if verbformsSessionOutcome == nil {
+            verbformsSessionOutcome = .empty
+        }
+        #if DEBUG
+        print("🛑 [Verbformen] Force-Done via chain-timer-soft-cutoff")
+        #endif
     }
 
     func revealSolution() {

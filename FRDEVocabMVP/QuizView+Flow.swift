@@ -194,6 +194,52 @@ extension QuizView {
     func completeCurrentQuestion(correct: Bool) {
         resetPerQuestionState()
         session.completeCurrentQuestion(correct: correct)
+
+        // **Stufe 4b-3 (2026-05-02, Branch `feature/training-session-flow`)** —
+        // Soft-Cutoff-Force-Done für den Chain-Timer. Wenn der User
+        // auf einer Chain-Step-Quiz-Session sitzt UND der Chain-Timer
+        // im `TrainingChainStore` schon abgelaufen ist, schließen wir
+        // das Quiz HIER ab — nach kompletter Eval der gerade
+        // abgeschickten Antwort (R7-Schutz: alle 4(+1) Submit-Pfade —
+        // MC / Typing / Matching / FillBlanks / Combo-Verben — laufen
+        // durch ihren jeweiligen `scheduleAdvance(after:)`-Callback,
+        // erst dort fällt `completeCurrentQuestion(correct:)`. Eval-
+        // Audio + Animation + answeredResults + Lernstatus + Streak +
+        // Snapshot sind beim Eintritt in diesen Wrapper alle
+        // geschrieben). Statt zur nächsten Frage zu wechseln, springen
+        // wir direkt auf den Result-Screen mit dem Stufe-3-Chain-
+        // aware-CTA. R9 (Parallel-Timer): N/A — Quiz hat keinen
+        // Mode-Split (kein Speed Round, kein Üben/Lernen).
+        if TrainingChainStore.shared.timerExpired, !session.isShowingResult {
+            forceQuizDoneFromChainTimer()
+            return
+        }
+    }
+
+    /// **Stufe 4b-3 (2026-05-02)** — Forciert das Quiz-Session-Ende
+    /// durch den Chain-Timer-Soft-Cutoff. Setzt `session.isShowingResult
+    /// = true` + räumt den Resume-Snapshot ab — exakt dieselben
+    /// Mutationen wie der natürliche „letzte Frage"-Pfad in
+    /// `QuizSessionController.completeCurrentQuestion(correct:)`
+    /// (Z. 24-31). Direkt im Anschluss laufen `prepareQuizRewards()` +
+    /// `persistHeartsIfNeeded()` synchron im Helper, damit
+    /// `quizSessionOutcome` (gespeist aus
+    /// `ProgressService.shared.record(...)`) garantiert vor dem ersten
+    /// Render des Result-Screens gesetzt ist. Beide Reward-Helper
+    /// haben eigene Idempotenz-Guards (`didPersistHearts`,
+    /// `session.sessionRewardConsumed`) — der nachträgliche natürliche
+    /// Trigger via `onChange(of: isShowingResult)` + Result-View-
+    /// `onAppear` ist damit ein safe-no-op. Idempotent gegen Re-Call
+    /// während `isShowingResult` schon true.
+    func forceQuizDoneFromChainTimer() {
+        guard !session.isShowingResult else { return }
+        session.isShowingResult = true
+        QuizSessionResumeStore.clear()
+        prepareQuizRewards()
+        persistHeartsIfNeeded()
+        #if DEBUG
+        print("🛑 [Quiz] Force-Done via chain-timer-soft-cutoff")
+        #endif
     }
 
     func prepareQuizRewards() {

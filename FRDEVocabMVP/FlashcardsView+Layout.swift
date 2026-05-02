@@ -120,6 +120,22 @@ extension FlashcardsView {
 
     var body: some View {
         flashcardsLifecycleContent
+            // **Stufe 4b-Modal-Refactor (2026-05-02)** — registriert
+            // den modul-spezifischen Force-Done-Closure für den
+            // „Jetzt weiter"-CTA des `ChainCutoffModal` direkt am
+            // Store. Token-basiert für Race-Safety bei Chain-Step-
+            // Transitions. Closure läuft über den existierenden
+            // 4b-1-Helper auf dem `FlashcardSessionStore` —
+            // Idempotenz-Guard ist dort eingebaut (`isCompleted`).
+            .onAppear {
+                forceAdvanceHandlerToken = TrainingChainStore.shared.registerForceAdvanceHandler { [weak sessionStore] in
+                    sessionStore?.markCurrentSessionDoneFromChainTimer()
+                }
+            }
+            .onDisappear {
+                TrainingChainStore.shared.unregisterForceAdvanceHandler(token: forceAdvanceHandlerToken)
+                forceAdvanceHandlerToken = nil
+            }
     }
 
     var flashcardSessionScreen: some View {

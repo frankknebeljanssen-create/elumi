@@ -88,5 +88,21 @@ extension QuizView {
             .onDisappear {
                 handleQuizDisappear()
             }
+            // **Stufe 4b-Modal-Refactor (2026-05-02)** — registriert
+            // den Quiz-spezifischen Force-Done-Closure für den
+            // „Jetzt weiter"-CTA des `ChainCutoffModal`. Token-
+            // basiert für Race-Safety bei Chain-Step-Transitions.
+            // Closure läuft über `forceQuizDoneFromChainTimer()` —
+            // Idempotenz-Guard dort eingebaut
+            // (`!session.isShowingResult`).
+            .onAppear {
+                forceAdvanceHandlerToken = TrainingChainStore.shared.registerForceAdvanceHandler {
+                    forceQuizDoneFromChainTimer()
+                }
+            }
+            .onDisappear {
+                TrainingChainStore.shared.unregisterForceAdvanceHandler(token: forceAdvanceHandlerToken)
+                forceAdvanceHandlerToken = nil
+            }
     }
 }

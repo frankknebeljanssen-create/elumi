@@ -34,6 +34,10 @@ struct TrainingView: View {
     }
 
     @StateObject var session = TrainingSessionController()
+    /// **Stufe 4b-Modal-Refactor (2026-05-02)** — Token der aktuellen
+    /// `TrainingChainStore`-Force-Advance-Handler-Registration. Siehe
+    /// `FlashcardsView.forceAdvanceHandlerToken` für Doc.
+    @State var forceAdvanceHandlerToken: UUID?
     @State var lastResult: ScoreResult?
     @State var shouldEvaluateAfterStop = false
     @State var pendingFeedbackTask: DispatchWorkItem?

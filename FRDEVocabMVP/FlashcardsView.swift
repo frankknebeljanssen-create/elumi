@@ -62,6 +62,14 @@ struct FlashcardsView: View {
     /// gesetzt; danach läuft der Auto-Switch nicht mehr.
     @State var hasHandledInitialFlashcardsAppear: Bool = false
 
+    /// **Stufe 4b-Modal-Refactor (2026-05-02)** — Token der aktuellen
+    /// `TrainingChainStore`-Force-Advance-Handler-Registration. Wird
+    /// im `.onAppear` gesetzt und im `.onDisappear` zum sicheren
+    /// Unregister benutzt — verhindert Lifecycle-Race bei Chain-Step-
+    /// Transitions, wo eine neue View-Instance vor dem `.onDisappear`
+    /// der alten mountet.
+    @State var forceAdvanceHandlerToken: UUID?
+
     var currentCard: FlashcardDeckCard? {
         sessionStore.currentCard
     }

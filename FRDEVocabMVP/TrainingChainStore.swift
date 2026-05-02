@@ -60,13 +60,61 @@ final class TrainingChainStore: ObservableObject {
     @Published private(set) var timerExpired: Bool = false
 
     /// **Stufe 4a-Fix (2026-05-01)** — One-shot-Flag pro Step für den
-    /// `ChainCutoffToast`. Wenn der Timer abläuft, blendet der
-    /// `ChainTimerOverlayModifier` einen mittigen Toast einmalig ein
-    /// und setzt anschließend dieses Flag auf `true`. Re-Renders der
-    /// Modul-View triggern damit keinen Re-Show des Toasts. Wird beim
-    /// nächsten `startStepTimer()` (Step-Wechsel) und in
-    /// `clearStepTimer()` zurück auf `false` gesetzt.
+    /// `ChainCutoffModal` (vorher: `ChainCutoffToast`). Wenn der Timer
+    /// abläuft, blendet der `ChainTimerOverlayModifier` das Cutoff-
+    /// Modal einmalig ein und setzt anschließend dieses Flag auf
+    /// `true`. Re-Renders der Modul-View triggern damit keinen Re-Show
+    /// des Modals. Wird beim nächsten `startStepTimer()` (Step-
+    /// Wechsel) und in `clearStepTimer()` zurück auf `false` gesetzt.
     @Published private(set) var hasShownExpirationToast: Bool = false
+
+    /// **Stufe 4b-Modal-Refactor (2026-05-02)** — Live-Visibility-Flag
+    /// für den `ChainCutoffModal`. Wechselt von `false` → `true` durch
+    /// `presentCutoffModal()` (gated über `hasShownExpirationToast`)
+    /// und von `true` → `false` durch `dismissCutoffModal()` bzw.
+    /// `forceAdvanceFromCutoffModal()` (User-Tap auf Secondary
+    /// „Aufgabe fertigmachen" oder Primary „Jetzt weiter").
+    /// Reset auf `false` parallel zu den anderen Step-Flags in
+    /// `startStepTimer()` / `clearStepTimer()`.
+    @Published private(set) var cutoffModalVisible: Bool = false
+
+    /// **Stufe 4b-Modal-Refactor (2026-05-02)** — Modul-spezifischer
+    /// Force-Done-Closure für den „Jetzt weiter"-CTA. Vom aktiven
+    /// Modul-View über `registerForceAdvanceHandler(_:)` (in
+    /// `.onAppear`) gesetzt + via `unregisterForceAdvanceHandler(token:)`
+    /// (in `.onDisappear`) gelöscht.
+    ///
+    /// Begründung der Store-basierten Registration (statt SwiftUI-
+    /// `@Environment`): der `ChainTimerOverlayModifier` umschließt
+    /// die Modul-View von außen — Environment-Werte, die der Modul-
+    /// View intern setzt, propagieren zu Children, NICHT zu dem
+    /// wrapping Modifier. Eine Store-Registration umgeht dieses
+    /// Layering-Problem mount-agnostic.
+    ///
+    /// **Token-basiert**: bei Chain-Step-Transition (z.B. Verben →
+    /// Vokabeln innerhalb derselben TrainingView via `.id`-Reset)
+    /// feuert in SwiftUI das `.onAppear` der neuen View-Instance VOR
+    /// dem `.onDisappear` der alten. Ohne Token-Check würde der Late-
+    /// Unregister der alten Instance die gerade gesetzte
+    /// Registration der neuen Instance wegnuken → Modal versteckt
+    /// Primary auf Step 2+. Mit Token: der alte `unregister`-Call
+    /// sieht „mein Token ist nicht mehr aktiv" und ist ein No-Op.
+    private var forceAdvanceHandler: (() -> Void)?
+
+    /// Identitäts-Token der aktuell registrierten `forceAdvanceHandler`-
+    /// Closure. Jeder `registerForceAdvanceHandler(_:)`-Call generiert
+    /// eine frische UUID, gibt sie zurück, und der Caller speichert
+    /// sie in seinem View-`@State`. `unregisterForceAdvanceHandler(token:)`
+    /// löscht nur bei Match.
+    private var forceAdvanceHandlerToken: UUID?
+
+    /// **Stufe 4b-Modal-Refactor (2026-05-02)** — reaktive Visibility-
+    /// Sicht auf `forceAdvanceHandler != nil`. `ChainCutoffModal`
+    /// observiert dieses Flag und versteckt den Primary „Jetzt
+    /// weiter"-CTA, wenn das aktive Modul (noch) keinen Force-Done-
+    /// Helper bereitstellt — Secondary („Aufgabe fertigmachen")
+    /// bleibt sichtbar.
+    @Published private(set) var hasForceAdvanceHandler: Bool = false
 
     /// Aktiver Sekunden-Counter. Tickt in `scheduleStepTick()`. Wird
     /// bei Background pausiert (`pauseStepTimer()`), bei Foreground
@@ -240,16 +288,24 @@ final class TrainingChainStore: ObservableObject {
             clearStepTimer()
             return
         }
+        // SMOKE-OVERRIDE Commit-2 Smoke (uncommitted) — kürzt Step-
+        // Timer auf 30s. MUSS vor dem Commit zurückgerollt werden.
+        #if DEBUG
+        let totalSeconds = 30
+        #else
         let totalSeconds = max(1, chain.perStepDurationMin * 60)
+        #endif
 
         stepTimer?.invalidate()
         stepTimer = nil
         stepTotalSeconds = totalSeconds
         stepRemainingSeconds = totalSeconds
         timerExpired = false
-        // **Stufe 4a-Fix**: Toast pro Step nur einmal — Reset bei
-        // jedem Step-Start (frischer Step erlaubt frischen Toast).
+        // **Stufe 4a-Fix / 4b-Modal-Refactor**: Modal pro Step nur
+        // einmal — Reset bei jedem Step-Start (frischer Step erlaubt
+        // frisches Modal).
         hasShownExpirationToast = false
+        cutoffModalVisible = false
         pausedRemainingSeconds = nil
         scheduleStepTick()
 
@@ -330,15 +386,86 @@ final class TrainingChainStore: ObservableObject {
         stepTotalSeconds = 0
         timerExpired = false
         hasShownExpirationToast = false
+        cutoffModalVisible = false
         pausedRemainingSeconds = nil
     }
 
-    /// **Stufe 4a-Fix (2026-05-01)** — wird vom
-    /// `ChainTimerOverlayModifier` aufgerufen, sobald der mittige
-    /// `ChainCutoffToast` einmalig animiert eingeblendet wurde. Setzt
-    /// das One-shot-Flag, damit Re-Renders der Modul-View keinen
-    /// Re-Show triggern. Reset im nächsten `startStepTimer()`.
-    func markExpirationToastShown() {
+    // MARK: - Stufe 4b-Modal-Refactor (2026-05-02)
+
+    /// Zeigt das `ChainCutoffModal` — wird vom
+    /// `ChainTimerOverlayModifier` gerufen, sobald `timerExpired` von
+    /// `false` auf `true` wechselt. Idempotent via
+    /// `hasShownExpirationToast`-Flag: ein Re-Render oder ein App-
+    /// Foreground-Resume nach Background triggert kein zweites Modal
+    /// pro Step. Replaced den Stufe-4a-Fix-Helper
+    /// `markExpirationToastShown()` (gleiche Semantik, jetzt
+    /// kombiniert mit dem Visibility-Toggle).
+    func presentCutoffModal() {
+        guard !hasShownExpirationToast else { return }
         hasShownExpirationToast = true
+        cutoffModalVisible = true
+        #if DEBUG
+        print("⏱️ [TrainingChainStore] cutoff modal presented")
+        #endif
+    }
+
+    /// „Aufgabe fertigmachen"-Pfad. Schließt nur das Modal — lässt
+    /// `timerExpired = true` und `hasShownExpirationToast = true`
+    /// stehen, damit (a) der nächste User-Submit im Modul über die
+    /// existierenden Force-Done-Hooks (4b-1 KK / 4b-2 Akzente / 4b-3
+    /// Quiz / 4b-4 Training / 4b-5 Verbformen) trotzdem als Auto-
+    /// Advance auflöst, und (b) das Modal nicht erneut erscheint.
+    /// Der Modul-Content ist nach Dismiss wieder klickbar (Backdrop
+    /// weg).
+    func dismissCutoffModal() {
+        cutoffModalVisible = false
+    }
+
+    /// „Jetzt weiter"-Pfad. Schließt das Modal sofort und ruft den
+    /// vom aktiven Modul-View registrierten Force-Done-Closure
+    /// (siehe `registerForceAdvanceHandler(_:)`). Der Closure führt
+    /// die modul-spezifische `markCurrentSessionDoneFromChainTimer`/
+    /// `forceFinishFromChainTimer`-etc. aus — das navigiert das
+    /// Modul i.d.R. weg (Done-Card / Result-Cover) und der
+    /// `ChainTimerOverlayModifier` verschwindet mit. Falls kein
+    /// Modul einen Handler registriert hat: no-op, Modal-Dismiss
+    /// bleibt aber aktiv (User soll nicht auf einem Backdrop
+    /// hängenbleiben).
+    func forceAdvanceFromCutoffModal() {
+        cutoffModalVisible = false
+        let handler = forceAdvanceHandler
+        #if DEBUG
+        print("⏱️ [TrainingChainStore] force-advance from cutoff modal (handler=\(handler != nil ? "registered" : "nil"))")
+        #endif
+        handler?()
+    }
+
+    /// Wird vom aktiven Modul-View in seinem `.onAppear` aufgerufen.
+    /// Gibt einen Token zurück, den der Caller in `@State` speichert
+    /// und beim späteren `unregisterForceAdvanceHandler(token:)`
+    /// mitgibt — schützt vor Late-Disappear-Race bei Chain-Step-
+    /// Transitions.
+    @discardableResult
+    func registerForceAdvanceHandler(_ handler: @escaping () -> Void) -> UUID {
+        let token = UUID()
+        forceAdvanceHandler = handler
+        forceAdvanceHandlerToken = token
+        hasForceAdvanceHandler = true
+        return token
+    }
+
+    /// Komplement zu `registerForceAdvanceHandler(_:)` — wird vom
+    /// Modul-View in seinem `.onDisappear` mit dem im `.onAppear`
+    /// erhaltenen Token aufgerufen. Die Registration wird nur dann
+    /// tatsächlich gelöscht, wenn der Token mit dem aktuell
+    /// registrierten matcht. Das macht Late-Disappear-Calls aus
+    /// stale Views zum No-Op und verhindert dass sie eine
+    /// neuere Registration (von der nachfolgend gemounteten View)
+    /// überschreiben.
+    func unregisterForceAdvanceHandler(token: UUID?) {
+        guard let token, forceAdvanceHandlerToken == token else { return }
+        forceAdvanceHandler = nil
+        forceAdvanceHandlerToken = nil
+        hasForceAdvanceHandler = false
     }
 }
