@@ -284,7 +284,9 @@ struct ElumiTabView: View {
     /// einmalig auf `durationDefault` (= 12) gesetzt. Idempotent: der
     /// Korrekturpfad wird beim ersten Open ausgeführt und bei allen
     /// Folge-Opens als no-op übersprungen.
-    private static let durationOptions: [Int] = [6, 12, 18]
+    // TODO: 3 ist temporär für Smoke-Test (Stufe 4b-Chain-Tests),
+    // später wieder zurück zu 6 — Backlog: TODO_post_v1b.md.
+    private static let durationOptions: [Int] = [3, 12, 18]
 
     /// **Slot-Spin Credit-Mapping** (Pool-Vereinheitlichung 2026-04-30,
     /// Stufe 1b). Aus dem ehemaligen `ElumiCreditsStore.GrantTable`

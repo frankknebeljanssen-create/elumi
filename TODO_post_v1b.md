@@ -494,3 +494,30 @@ aber stilistisch nicht App-konsistent (iOS-System-Klang sticht
 gegen die App-eigene Sound-Welt heraus).
 
 ---
+
+## Duration-Card 3min temporär statt 6min — nach Stufe 4b-Tests rückbauen
+
+**Status:** Aktiv (Branch `feature/training-session-flow`).
+
+`ElumiTabView.swift` Z. 287 — `durationOptions: [Int] = [3, 12, 18]`.
+
+Die linke Zeit-Card im Setup-Modal wurde temporär von **6 min** auf
+**3 min** geändert, damit die Stufe-4b-Chain-Force-Done-Hooks
+(Karteikarten / Akzente / Quiz / Training) im Sim mit kurzen Step-
+Timern getestet werden können (3 min total / 3 Steps ≈ 1 min/Step).
+`durationDefault = 12` ist unverändert — die 3-min-Option ist also
+opt-in pro Spin, kein Default-Drift.
+
+**Migration**: defensive-on-Read in `mainContent.onAppear` fängt
+existierende User mit gespeichertem Wert `6` ab und resettet auf
+`durationDefault` (= 12). Idempotent. Kein Datenverlust.
+
+**Rückbau-Trigger**: nach Stufe 4b komplett (alle 5 Module-Hooks)
+und Stufe 4b-6 (Toast-Wording-Update) gemergt sind.
+
+**Rückbau-Schritt**:
+1. Zeile in `ElumiTabView.swift` Z. 287 zurück auf `[6, 12, 18]`
+2. Doc-Comment-TODO oberhalb derselben Zeile löschen
+3. Diesen Backlog-Eintrag markieren als „erledigt"
+
+**Priorität**: Niedrig — temporär, automatischer Rückbau geplant.
