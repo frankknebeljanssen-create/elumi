@@ -120,38 +120,26 @@ struct LanguageDirectionSwitch: View {
     private func spec(for size: Size) -> Spec {
         switch size {
         case .regular:
-            // SVG-ViewBox ist auf den Content-Bereich getrimmt (96×44 px
-            // statt 96×96) — der gerenderte Frame ist jetzt identisch mit
-            // der sichtbaren Fahnen-/Pfeil-Komposition, kein vertikaler
-            // Leerraum mehr innerhalb des Bildes. Dadurch wirkt das Icon
-            // bei gleicher Höhe wesentlich dichter; der alte 56-pt-Wert
-            // wäre mit dem getrimmten Asset optisch fast doppelt so groß.
-            // iconHeight: 32 → 28 → 24 → **20** pt (−15 % nach User-
-            // Request „fr-de de-fr icon überall bisschen kleiner").
-            // 20 pt bleibt gut lesbar und rückt den Home-Switch näher an
-            // das visuelle Gewicht der umliegenden Chips, statt als
-            // eigene Schwergewichts-Zeile zu wirken.
+            // **UX-Polish 2026-05-02 (User-Spec)**: iconHeight 20 → 40 pt.
+            // User-Befund: die Home-Flaggen waren zu klein, kaum sichtbar
+            // und schwer zu treffen. Verdoppelt — gleiche Optik
+            // (getrimmtes 96×44-Asset, gleiche Padding-Verhältnisse), nur
+            // doppelt so groß. Tap-Target wird damit von ~28 pt (mit
+            // Padding) auf ~48 pt (Apple-Mindest-Tap-Target erreicht).
             return Spec(
-                // Phase 7.6+: Flaggen-Icon halbiert (40 → 20 pt).
-                iconHeight: 20,
+                iconHeight: 40,
                 horizontalPadding: 16,
                 verticalPadding: 4,
                 expandsWidth: true
             )
         case .compact:
-            // Kompakt-Variante (Session-Setup-Zeile): nach User-Feedback
-            // („etwas größer, aber der riesige Abstand oben/unten muss
-            // weg") wurde die SVG-ViewBox von 96×96 auf 96×44 getrimmt —
-            // dadurch entfällt der bislang sichtbare 25-pt-Leerraum
-            // ober- und unterhalb der Flaggen, der aus dem quadratischen
-            // Canvas resultierte. iconHeight: 52 → 44 → 38 → **32** pt
-            // (−15 % nach User-Request „fr-de de-fr icon überall bisschen
-            // kleiner"). Der Setup-Switch rückt damit als Setting-
-            // Element näher an die Ausgewählte-Listen-Card darüber,
-            // ohne seine Lesbarkeit zu verlieren.
+            // **UX-Polish 2026-05-02 (User-Spec)**: iconHeight 32 → 64 pt.
+            // Setup-Variante mit, war zu klein um die Sprachrichtung
+            // klar als Setup-Setting zu kommunizieren. Verdoppelt analog
+            // zu .regular — Asset-Optik und Tap-Target unverändert in
+            // der Form, nur Größe.
             return Spec(
-                // Phase 7.6+: Flaggen-Icon halbiert (64 → 32 pt).
-                iconHeight: 32,
+                iconHeight: 64,
                 horizontalPadding: 12,
                 verticalPadding: 2,
                 expandsWidth: false

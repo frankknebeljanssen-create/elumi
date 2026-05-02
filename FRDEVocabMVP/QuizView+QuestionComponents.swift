@@ -317,13 +317,23 @@ extension QuizView {
     }
 
     private func buildFillBlanksAttributedText(before: String, blank: String, after: String, blankColor: Color, blankWeight: Font.Weight) -> AttributedString {
-        var result = AttributedString(before)
+        // **UX-Polish 2026-05-02 (User-Befund)**: ohne expliziten
+        // `foregroundColor` auf `before`/`after` rendert SwiftUI die
+        // FR-Frage-Schrift im System-Default-Schwarz auf dem dunklen
+        // `AppSurfaceCard`-Hintergrund — unlesbar. Nur das Blank-
+        // Glyph hatte explizit `blankColor` (sectionStyle.accent /
+        // success). Mit `textPrimary` (cream/off-white) ist die
+        // Frage jetzt klar lesbar, konsistent zu den anderen Text-
+        // Tokens auf Card-Surfaces. Analoger Quick-Fix wie für den
+        // Quiz-Typing-Input in Commit `6732570`.
+        var beforePart = AttributedString(before)
+        beforePart.foregroundColor = AppTheme.Colors.textPrimary
         var blankPart = AttributedString(blank)
         blankPart.foregroundColor = blankColor
         blankPart.font = .system(size: 18, weight: blankWeight, design: .rounded)
-        result += blankPart
-        result += AttributedString(after)
-        return result
+        var afterPart = AttributedString(after)
+        afterPart.foregroundColor = AppTheme.Colors.textPrimary
+        return beforePart + blankPart + afterPart
     }
 
     private func fillBlanksChipColor(_ option: String, correct: String) -> (text: Color, bg: Color) {

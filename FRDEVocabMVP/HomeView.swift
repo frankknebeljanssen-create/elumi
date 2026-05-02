@@ -91,16 +91,52 @@ struct HomeView: View {
                 .padding(.top, 22)
                 .appEntryTransition(delay: 0.1)
 
+                // **Home-Polish 2026-04-30 (User-Spec)**: leichter
+                // Querstrich als visueller Trenner zwischen den
+                // Übungs-Sektionen und den Tools („Scannen"/„Listen"
+                // sind Werkzeuge, keine Lernmodule).
+                //
+                // **Iteration 3 (User-Spec „trenne etwas weniger
+                // sichtbar und links und recht bis zum rand, so wie
+                // die linie über dem footer")**: visuelle Angleichung
+                // an die Footer-Top-Border in `AppBottomBarSurface-
+                // Modifier`. Dort: `Rectangle().fill(AppTheme.Colors.
+                // border).frame(height: 1)` — `border` ist
+                // `elumiCream.opacity(0.12)`, also dezenter als die
+                // vorherigen 22 % Weiß. Edge-to-edge erreichen wir
+                // mit negativem Horizontal-Padding, das das
+                // VStack-Wrapper-Padding (`AppLayout.screenPadding`)
+                // negiert — der Strich läuft jetzt durch die ganze
+                // Bildschirmbreite, identisch zur Footer-Linie.
+                //
+                // **Iteration 2 (Position)**: Top-Padding 22 → 34 pt —
+                // der Strich rutscht weiter nach unten, der Cut sitzt
+                // tiefer im Layout. „Deine Tools" rutscht durch den
+                // erhöhten Padding-Below ebenfalls mit (siehe unten).
+                Rectangle()
+                    .fill(AppTheme.Colors.border)
+                    .frame(height: 1)
+                    .padding(.horizontal, -AppLayout.screenPadding)
+                    .padding(.top, 34)
+                    .appEntryTransition(delay: 0.15)
+
                 HomeToolsSection(
                     onSelectScan: { openHomeScreen(.scan) },
                     onSelectLists: { openHomeScreen(.lists(nil)) }
                 )
-                // Tools-Block (Headline + beide Cards) etwas weiter
-                // nach unten: 12 → 22 pt.
-                .padding(.top, 22)
-                // Klarer Abstand zum Footer — Tools klebt nicht mehr.
-                .padding(.bottom, 24)
-                .appEntryTransition(delay: 0.15)
+                // **Home-Polish 2026-04-30 — Iteration 4 (User-Spec
+                // „listen und tools mittig zwischen dem oberen trenner
+                // und der linie am footer (also ein bisschen nach
+                // oben)")**: top 20 → 12 pt, bottom 24 → 32 pt. Der
+                // Tools-Block (Headline + Card-Reihe, ~84 pt) rutscht
+                // dadurch um 8 pt nach oben, und die Card-Reihe sitzt
+                // jetzt visuell mittig zwischen dem oberen Querstrich
+                // und der Footer-Top-Linie. Der Divider selbst (mit
+                // `padding(.top, 34)`) bleibt unverändert — User
+                // explizit „oberer trenner bliebt auch wo er ist".
+                .padding(.top, 12)
+                .padding(.bottom, 32)
+                .appEntryTransition(delay: 0.2)
 
                 Color.clear.frame(height: homeFooterClearance)
             }
