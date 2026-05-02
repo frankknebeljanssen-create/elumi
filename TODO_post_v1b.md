@@ -622,3 +622,23 @@ Plus Spec-Frage: bei Multi-Step-Chain während Step 2 → Back: zum Pre-Screen o
 **Verifikation post-Commit-2:** explizit mit Force-Set `nomen,nomen,nomen` und `vokabeln,vokabeln,vokabeln` testen — beide Symptome sollten nach Commit-2-Stash-Pop weg sein.
 
 **Priorität:** Niedrig — wird automatisch durch nächsten Commit gelöst.
+
+---
+
+## Chain-Modus: Retry-Loop bei falscher Antwort
+
+Im Non-Speed-Modus (Verben/Vokabeln/Nomen/Articles) hat der User
+unbegrenzte Retry-Versuche bei falscher Antwort (`maxAttempts = 999`).
+Im Chain-Modus kann das zu UX-Problem werden: User strandet bei
+schwieriger Aufgabe, Timer ist abgelaufen, kommt nicht zum nächsten
+Step.
+
+Future-Spec-Erwägung nach Commit 2 (mit Force-Done-Hooks):
+- Max-Attempts-Begrenzung im Chain-Modus (z.B. 2-3 Versuche, dann
+  Force-next-Card)
+- Alternative: existierender Skip-Button verfügbar machen falls
+  vorhanden
+
+Erst nach echtem Chain-Test mit Force-Done entscheiden ob nötig.
+
+Prio: Niedrig (User hat Modal mit „Jetzt weiter" als Notausgang).
