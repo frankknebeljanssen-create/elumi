@@ -642,3 +642,93 @@ Future-Spec-Erwägung nach Commit 2 (mit Force-Done-Hooks):
 Erst nach echtem Chain-Test mit Force-Done entscheiden ob nötig.
 
 Prio: Niedrig (User hat Modal mit „Jetzt weiter" als Notausgang).
+
+## App-Crash am Ende einer Chain (One-Off, 2026-05-02)
+
+User berichtet App-Crash während/nach 3. Modul der Chain. Beim
+zweiten Versuch nicht reproduzierbar.
+
+**Crash-Log-Befund:** Zwei `.ips`-Dateien vom 2026-05-02 in
+`~/Library/Logs/DiagnosticReports/` gefunden:
+- `myVoc-2026-05-02-152609.ips` (15:26)
+- `myVoc-2026-05-02-163436.ips` (16:34)
+
+Beide mit **identischer Stack-Signatur**:
+
+- Exception: `EXC_BAD_ACCESS / SIGSEGV / KERN_INVALID_ADDRESS at 0x0`
+- Triggered Thread: `com.apple.main-thread`
+- Crash-Frame: `swift::TargetMetadata::isCanonicalStaticallySpecializedGenericMetadata`
+  (NULL-Pointer beim Type-Metadata-Lookup)
+- Pfad: `_UIHostingView.beginTransaction` → `flushTransactions`
+  → `DynamicViewList.updateValue` → `_ConditionalContent.makeChildViewList`
+  → 7 Levels `ConditionalTypeDescriptor.project` → `_AppearanceActionModifier`
+  → `_ValueActionModifier2` (`onChange`) → `_OverlayModifier` (`overlay`)
+  → `_InsetViewModifier` (`safeAreaInset`)
+
+**Modifier-Stack matcht exakt `ChainTimerOverlayModifier`:**
+
+```swift
+content
+    .safeAreaInset(edge: .top, spacing: 0) { topBarOverlay }   // _InsetViewModifier
+    .overlay(alignment: .top) { toastOverlay }                  // _OverlayModifier
+    .onChange(of: chainStore.timerExpired) { ... }              // _ValueActionModifier2
+```
+
+**Hypothese:** SwiftUI-Runtime-Crash (iOS 26 / macOS 26) beim
+Mid-Transition-Re-Render eines Chain-aware Modul-Destinations,
+wenn `chainStore.currentChain` flippt während ein DynamicViewList
+(ForEach in Quiz/MC-Optionen, Matching-Pairs, FillBlank-Options)
+gerade re-evaluiert wird. Type-Metadata-Cache findet beim Generic-
+Spezialisieren der ConditionalContent-Hierarchie eine NULL-Slot.
+
+**Entwarnung-Faktor — Hot-Fix vom 2026-05-02 macht's
+unwahrscheinlicher:** Vorher leakte `currentChain` über `goHome()`
+und ChainComplete-Header-Back. Mit dem Hot-Fix räumt jeder Pop-
+nach-Root den Chain-Store ab (sequentiell vor / parallel zu
+`navigationPath.removeAll()`) — die Race-Window mit
+mid-flushTransactions-Update wird kleiner, weil currentChain nicht
+mehr mid-render von einer entfernten Subtree wegrutscht.
+
+**Beobachten ob Crash wiederkommt.** Bei Wiederholung detaillierte
+Reproduce-Bedingungen sammeln:
+- Welches 3. Modul war's (Karteikarten / Quiz / Akzente / Training-X)
+- Genau bei welchem UI-Übergang (Done-CTA-Tap / Force-Done /
+  ChainComplete-Render / Header-Back-Tap)
+- Ob Chain-Timer gerade abgelaufen war (timerExpired-Toast aktiv)
+
+**Mögliche Hypothesen-Bereiche** (für künftige Diagnose):
+- ChainTimerOverlayModifier — die safeAreaInset+overlay+onChange-
+  Kette ist in der Crash-Signatur exakt zu sehen. Möglicher
+  Mitigation: ChainTimerOverlayModifier-Body in eine `struct`-
+  Subview extrahieren statt direkt in `body` zu inlinen, damit
+  SwiftUI weniger nested generic-specialization braucht.
+- ChainComplete-Placeholder-Render-Pfad — Mount-Race wenn
+  `replaceTopWith` von `.train`/`.quiz`/etc. auf `.trainingChainComplete`
+  schaltet, während `currentChain` noch alten State hält.
+- Resume-Store-Cleanup-Race bei Final-Step — adressiert durch
+  Hot-Fix (clear() ist jetzt symmetrisch zu start()).
+- Force-Done-Hook-State-Race in einem der 5 Module — kommt mit
+  Commit 2 ins Spiel, beobachten ob Crash dort wiederkommt.
+- TrainingChainStore.advanceChain mit nil currentChain (Race) —
+  Code hat `guard let chain = currentChain else { return nil }`,
+  also defensiv abgesichert. Nicht der Crash-Pfad.
+
+Prio: Mittel (One-Off, aber Crashes generell ernst nehmen). Bei
+zweiter Sichtung: Repro sammeln, dann ChainTimerOverlayModifier
+in extrahierte Subview umbauen als ersten Mitigations-Versuch.
+
+## Jackpot-Feier-Mechanik (Stufe 6 im 8-Stufen-Plan)
+
+User-Spec aus 2026-05-02 Diskussion:
+- Feier soll schon beim Slot-Reveal kommen (3× Game), nicht erst
+  nach „Jetzt üben"
+- Sofortige Reaktion: Konfetti / Sound / großer JACKPOT-Text
+- CTA „Nochmal drehen" prominent statt „Zurück zum Setup"
+- Pre-Screen entfällt bei Jackpot komplett
+- Detail-Spec (Feier-Elemente, CTA-Mechanik, Auto-Reset) wird
+  vor Implementation finalisiert
+
+Aktuell: `TrainingChainCompletePlaceholderView` ist gedimmt,
+unfeierlich, „Zurück zum Setup" nicht führend, nicht kindgerecht.
+
+Implementation als Stufe 6 nach Sweep (Commit 2/3/4).
