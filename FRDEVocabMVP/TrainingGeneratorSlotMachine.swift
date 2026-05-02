@@ -121,34 +121,38 @@ extension ReelSymbol {
     )
 
     /// Drei Reel-Pools, befüllt **ausschließlich** aus `HomeHeroModule`.
-    /// Die 8 Home-Module werden über die Reels verteilt (mit leichter
-    /// Überschneidung pro Reel für mehr Spin-Vielfalt). Elumi wird
-    /// NICHT hier gepflanzt — pro Spin durch den Caller via
-    /// `spinTargets` injiziert.
+    /// **Volle Symmetrie (2026-05-02)** — alle 3 Reels enthalten alle
+    /// 8 Module für volle Erreichbarkeit (User-Erwartung „jedes Symbol
+    /// auf jedem Reel"). Eindeutigkeit pro Spin — also keine zwei
+    /// gleichen Module gleichzeitig auf der Center-Linie — wird über
+    /// den `usedModules`-Filter in
+    /// `ElumiTabView.computeSpinTargets()` (Z. 1394-1421)
+    /// sichergestellt, nicht durch Pool-Asymmetrien.
+    ///
+    /// **Historie**: bis 2026-05-01 hatten die Reels eine asymmetrische
+    /// Themen-Verteilung („Grundlagen + Vokabeln" / „Verben +
+    /// Produktion" / „Mix"). Spec war nur halbherzig umgesetzt — Quiz,
+    /// Akzente, Karteikarten, Vokabeln, Nomen, Artikel, Verben,
+    /// Verbformen waren je nur in 1-2 von 3 Reels — und führte dazu,
+    /// dass User z.B. Quiz niemals im linken Reel sehen konnten.
+    /// Symmetrie löst das, ohne dass die Spin-Diversität leidet — der
+    /// Eindeutigkeits-Filter sorgt weiterhin für 3 unterschiedliche
+    /// Module pro Spin.
+    ///
+    /// Elumi (Bonus-Symbol) wird NICHT hier gepflanzt — pro Spin durch
+    /// den Caller via `spinTargets` injiziert.
     static var standardReelPools: [[ReelSymbol]] {
-        [
-            // Reel 1 — Grundlagen + Vokabeln
-            [
-                .module(.karteikarten),
-                .module(.vokabeln),
-                .module(.nomen),
-                .module(.artikel)
-            ],
-            // Reel 2 — Verben + Produktion
-            [
-                .module(.verben),
-                .module(.verbformen),
-                .module(.quiz),
-                .module(.akzente)
-            ],
-            // Reel 3 — Mix aus beiden
-            [
-                .module(.karteikarten),
-                .module(.quiz),
-                .module(.vokabeln),
-                .module(.akzente)
-            ]
+        let allModules: [ReelSymbol] = [
+            .module(.karteikarten),
+            .module(.vokabeln),
+            .module(.nomen),
+            .module(.artikel),
+            .module(.verben),
+            .module(.verbformen),
+            .module(.quiz),
+            .module(.akzente)
         ]
+        return [allModules, allModules, allModules]
     }
 }
 
