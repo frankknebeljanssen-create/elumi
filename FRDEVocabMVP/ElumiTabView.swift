@@ -1074,7 +1074,14 @@ struct ElumiTabView: View {
                 .frame(maxWidth: .infinity)
                 .frame(minHeight: 56)
             }
-            .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
+            // **CTA-Differenzierung (2026-05-02)** — „Nochmal drehen"
+            // wird optisch vom „Jetzt üben"-CTA abgesetzt: Warning-Amber
+            // signalisiert „Retry-Aktion mit Verlust einer Spin-Chance",
+            // im Gegensatz zum Success-Grün der Confirmation-CTA daneben.
+            // Pre-Spin-CTA „Los geht's" (`singleSpinButton`) bleibt
+            // bewusst auf `ctaYellow` — dort gibt es noch keinen
+            // Differenzierungs-Bedarf.
+            .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.warning))
             .disabled(!canTriggerSpin)
             .opacity(canTriggerSpin ? 1.0 : 0.45)
             .accessibilityLabel(Text(spinPrimaryLabel))
@@ -1107,7 +1114,10 @@ struct ElumiTabView: View {
                 .frame(maxWidth: .infinity)
                 .frame(minHeight: 56)
             }
-            .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
+            // **CTA-Differenzierung (2026-05-02)** — „Jetzt üben"
+            // ist der Confirmation-CTA → Success-Grün, klar abgesetzt
+            // vom Warning-Amber des „Nochmal drehen"-Retry-CTA daneben.
+            .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.success))
             .accessibilityLabel(Text("Jetzt \u{00FC}ben \(selectedDuration) Minuten"))
             .accessibilityHint(Text("Startet die generierte Trainingseinheit sofort"))
         }
@@ -1130,7 +1140,11 @@ struct ElumiTabView: View {
             .frame(maxWidth: .infinity)
             .frame(minHeight: 52)
         }
-        .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
+        // **CTA-Differenzierung (2026-05-02)** — Single-CTA-Final-State
+        // (3/3, keine Retries mehr) hält Label-Konsistenz zur 2-Button-
+        // Phase und erbt deshalb auch die Success-Grün-Farbe vom
+        // „Jetzt üben"-Twin.
+        .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.success))
         .transition(.opacity.combined(with: .scale(scale: 0.98)))
         .accessibilityLabel(Text("Jetzt üben"))
         .accessibilityHint(Text("Startet die generierte Trainingseinheit"))
