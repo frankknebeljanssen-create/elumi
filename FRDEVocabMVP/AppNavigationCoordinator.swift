@@ -67,8 +67,20 @@ final class AppNavigationCoordinator: ObservableObject {
         withTransaction(transaction, change)
     }
 
+    /// **Hot-Fix 2026-05-02 — Chain-State-Cleanup auf goHome.**
+    /// Vorher: `goHome()` poppte nur den NavigationPath, ließ aber
+    /// `TrainingChainStore.shared.currentChain` aktiv. Folge: nach einem
+    /// abgebrochenen Chain-Step (z.B. via Footer-Home, ChainComplete-
+    /// Header-Back, Swipe-Back) leakte der Chain-State in die nächste
+    /// Modul-Session — `ChainTimerOverlayModifier` rendert seine
+    /// „ÜBUNG X VON Y"-Bar in jeder Chain-aware Modul-Destination,
+    /// solange `currentChain != nil`, unabhängig vom `launchContext`.
+    /// Jetzt: jeder Pop nach Root räumt auch den Chain-Store
+    /// (inkl. der drei Modul-Resume-Stores via `clear()`-Symmetrie).
+    /// Idempotent — `clear()` ist no-op auf nil-State.
     func goHome() {
         navigateInstant { navigationPath.removeAll() }
+        TrainingChainStore.shared.clear()
     }
 
     func openInfoScreen() {

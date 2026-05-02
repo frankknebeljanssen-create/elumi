@@ -198,6 +198,19 @@ final class TrainingChainStore: ObservableObject {
 
     /// Räumt den Store komplett ab. Wird am Chain-Ende (nach
     /// End-Summary-CTA) oder beim manuellen Abbruch aufgerufen.
+    ///
+    /// **Hot-Fix 2026-05-02 — Resume-Store-Symmetrie zu `start()`.**
+    /// Bisher räumte `start()` die drei Modul-Resume-Stores (R5: keine
+    /// Resume-Konflikte mit frisch-startender Chain), `clear()` aber
+    /// nicht. Folge: ein abgebrochener Chain-Step (z.B. Quiz nach
+    /// Initial-Batch von 1 Frage) hinterließ einen Resume-Snapshot,
+    /// den der nächste Home-Tile-Aufruf des Moduls fälschlich
+    /// restaurierte → Quiz mit „1 von 1"-Counter, nach 1 Antwort
+    /// Result-Screen. Jetzt symmetrisch: jeder Chain-End-Pfad räumt
+    /// auch die Resume-Stores. Idempotent (`*.clear()` ist no-op,
+    /// wenn nichts da ist) — kein Risiko für reguläre Non-Chain-
+    /// Sessions, weil deren Snapshots **vor** dem `clear()`-Call
+    /// im Modul-eigenen Done-CTA-Pfad bereits geräumt sind.
     func clear() {
         currentChain = nil
         stepOutcomes = []
@@ -206,6 +219,10 @@ final class TrainingChainStore: ObservableObject {
         // tickt er weiter wenn die Chain abgebrochen wird (z.B. via
         // Pre-Screen-Back-Chevron oder ChainComplete-„Zur Startseite").
         clearStepTimer()
+
+        TrainingSessionResumeStore.clear()
+        AccentSessionResumeStore.clear()
+        QuizSessionResumeStore.clear()
 
         #if DEBUG
         print("🔗 [TrainingChainStore] clear")

@@ -34,13 +34,32 @@ struct TrainingChainCompletePlaceholderView: View {
 
     private let sectionStyle: AppSectionStyle = .home
 
+    /// **Hot-Fix 2026-05-02 — alle drei Exit-Pfade räumen die Chain.**
+    /// Vorher: Body-CTA „Zur Startseite" (Z. 71) war der einzige Pfad,
+    /// der `TrainingChainStore.shared.clear()` rief. Header-Back,
+    /// AppTopBar-Back und Footer-Home dismissten nur — der
+    /// Chain-Store blieb mit `currentChain != nil` zurück und leakte
+    /// in die nächste Modul-Session (Timer-Bar erschien). Jetzt
+    /// räumt jeder Exit explizit. `goHome()` clear-t selbst zwar
+    /// schon (siehe `AppNavigationCoordinator.goHome`), aber das
+    /// hier ist Defense-in-Depth + Klarheit am Call-Site.
+    private func dismissWithChainCleanup() {
+        TrainingChainStore.shared.clear()
+        dismiss()
+    }
+
+    private func goHomeWithChainCleanup() {
+        TrainingChainStore.shared.clear()
+        goHome()
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
             ModuleHeaderCard(
                 systemImage: "checkmark.seal.fill",
                 title: "Training abgeschlossen",
                 accent: sectionStyle.accent,
-                onBack: { dismiss() }
+                onBack: { dismissWithChainCleanup() }
             )
 
             VStack(alignment: .leading, spacing: 12) {
@@ -88,13 +107,13 @@ struct TrainingChainCompletePlaceholderView: View {
         .appAmbientWormBackground(sectionStyle)
         .toolbar(.hidden, for: .navigationBar)
         .appLocalChrome(enabled: !usesGlobalChrome) {
-            AppTopBar(onBack: { dismiss() }, onInfo: nil)
+            AppTopBar(onBack: { dismissWithChainCleanup() }, onInfo: nil)
                 .padding(.horizontal, AppLayout.screenPadding)
                 .padding(.top, AppLayout.topBarInsetTop)
         } bottomBar: {
             AppBottomBar(
                 feedbackPlayer: feedbackPlayer,
-                onHome: goHome,
+                onHome: { goHomeWithChainCleanup() },
                 onFavorite: nil,
                 onScan: nil,
                 onSettings: openSettings
