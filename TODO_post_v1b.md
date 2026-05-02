@@ -521,3 +521,104 @@ und Stufe 4b-6 (Toast-Wording-Update) gemergt sind.
 3. Diesen Backlog-Eintrag markieren als „erledigt"
 
 **Priorität**: Niedrig — temporär, automatischer Rückbau geplant.
+
+---
+
+## Module-Done-Screens: Chain-CTA muss above-the-fold sichtbar sein
+
+**Status:** Aktiv (Branch `feature/training-session-flow`, entdeckt 2026-05-02 beim 4b-3-Smoke).
+
+**Symptom:** Auf dem Quiz-Done-Screen (`quizResultScreen` in `QuizView+Components.swift:220`) liegt der Chain-Primary-CTA („Weiter zu Quiz" / „Training abschließen") **unter dem sichtbaren Viewport**. User muss scrollen, um die wichtigste Aktion zu sehen. Im Stufe-3-Chain-Flow ist das die zentrale Übergangs-Stelle zum nächsten Modul — sie sollte unmittelbar erkennbar sein, ohne Scroll-Geste.
+
+**Vermutlich gleiche Issue bei** Karteikarten / Training / Verbformen / Akzente Done-Screens — alle nutzen `SessionSummaryView` als geteilte Komponente und bauen darum herum modul-spezifischen Reward-Content (Würmchen-Hero, Streak-Chips, „Perfekte Lektion!"-Text). Bei vollem Reward-Hero (Level-Up + Perfekt-Bonus + Multi-Reward-Chips) drückt der Content den CTA unter den Fold.
+
+**Quelle (Quiz)**: `QuizView+Components.swift:220-339` — `ScrollView` mit `quizResultHero` (groß), Reward-Card, Stats-Card, dann SessionSummaryView mit CTA. Vertikal ~700pt+, sichtbarer Viewport iPhone-Pro ~750pt minus Top-Bar-Inset/Bottom-Bar = effektiv ~500pt.
+
+**Lösungs-Skizzen** (zur Diskussion):
+1. **CTA als sticky-bottom**: SessionSummaryView-CTA-Footer als `.safeAreaInset(edge: .bottom)` rausziehen, immer sichtbar. Reward-Hero scrollt unter dem Footer durch.
+2. **Reward-Hero kompakter**: vertikale Höhe reduzieren — kleineres Würmchen-Icon, Stats und Reward-Headline in einer Zeile, kein „Perfekte Lektion!"-Block extra. Spart ~150pt.
+3. **CTA dupliziert**: zusätzlicher Mini-CTA oben (Top-Bar-Bereich) plus Voll-CTA unten. Redundant aber sicher sichtbar.
+4. **Layout-Reorder**: SessionSummaryView (mit CTA) ZUERST, Reward-Hero darunter. Verzichtet auf das „Celebration-zuerst"-Pattern aber maximiert CTA-Visibility.
+
+**Empfehlung (vorläufig)**: Variante 1 (sticky-bottom-CTA) — minimalste Layout-Änderung, behält Celebration-First-Pattern, CTA immer reachable. Bei Karteikarten / Training / Verbformen / Akzente analog ausrollen.
+
+**Trigger**: nach 4b-Sweep komplett, vor App-Release. Aktuell **Smoke-Test-Tauglichkeit ist gegeben** (CTA ist erreichbar, nur unter-dem-Fold) — kein Blocker für Stufe 4b.
+
+**Priorität**: Mittel — UX-relevant für die Chain-Flow-Erfahrung, aber kein Funktions-Bug.
+
+---
+
+## State-Leak: Akzente-Setup-Skip kann Chain-Step-Auswahl überschreiben
+
+**Status:** Aktiv (Branch `feature/training-session-flow`, beobachtet 2026-05-02 beim Commit-1-Smoke).
+
+**Symptom:** Nach mehreren Chain-Tests in derselben App-Session konnte das Tappen auf „Training starten" auf dem Pre-Screen einer KK-First-Chain zu **Akzente** (statt Karteikarten) führen. Reproduzierbar nur **ohne** App-Kill zwischen den Tests; nach frischem App-Start verschwindet das Verhalten.
+
+**Vermutete Wurzel:** `AccentsEntryView.handleAccentsAppear` (Stufe 4b-5 / Setup-Skip-Commit) feuert auf jedem `.onAppear`. Wenn AccentsEntryView noch im NavigationStack hängt von einer vorigen Akzente-Test-Session — z.B. weil ein `.fullScreenCover`-Dismiss + Re-Mount (Quiz/KK-Pop) die View revisit triggert — und der `launchContext` der alten View noch `shouldAutoStart=true` hält, öffnet das Cover-Sheet erneut. Effektiv überschreibt die Akzente-Cover-Layer das Karteikarten-Modul-View, das gerade frisch gepusht wurde.
+
+**Quelle:** `AccentsEntryView.swift:74-86` (`handleAccentsAppear()`):
+```swift
+private func handleAccentsAppear() {
+    guard launchContext?.shouldAutoStart == true,
+          activeSession == nil else {
+        return
+    }
+    let mode = launchContext?.preferredMode ?? .uben
+    startSession(mode: mode)
+}
+```
+
+Vermutete Fix-Skizze: zusätzlicher Guard auf `launchContext?.chainContext?.id == TrainingChainStore.shared.currentChain?.id` — Auto-Start nur, wenn der View-launchContext zur AKTUELL aktiven Chain im Store gehört, nicht zu einem alten. Alternativ: launchContext-„consumed"-Flag in `@State`, das nach erstem `startSession`-Aufruf gesetzt wird und Re-Triggern verhindert.
+
+**Reproduktion:** in einer App-Session 2-3 Chain-Tests durchspielen mit unterschiedlichen 1.-Steps; ggf. tritt der Bug nicht jedes Mal auf, weil's auch von Pop-Reihenfolge abhängt.
+
+**Workaround heute:** App-Kill + Neustart vor jedem Chain-Test.
+
+**Priorität:** Mittel — User-irritierend, aber nicht Daten-zerstörend, nur in Test-Sessions reproduzierbar (User würde im realen Lauf zwischen Chains pausieren). Nach 4b-Sweep aufnehmen, vor App-Release fixen.
+
+---
+
+## Chain-Mode Back-Navigation: aus Modul-Step zurück führt auf Pre-Screen statt Slot/Home
+
+**Status:** Aktiv (Branch `feature/training-session-flow`, beobachtet 2026-05-02 beim Commit-1-Smoke).
+
+**Symptom:** Im Chain-Modus, wenn der User aus einem Modul-Step (z.B. Karteikarten) per Back-Chevron zurück navigiert, landet er auf dem `TrainingChainOverviewView`-Pre-Screen — nicht direkt zurück auf der Slot-Maschine im ElumiTab oder auf der App-Home. Bei 1-Step-Chains wirkt das verwirrend, weil der Pre-Screen visuell ähnlich zum Modul-Setup-Screen ist und die Geste „Back" eher den ElumiTab erwarten lässt.
+
+**Quelle:** Module-spezifische `handleBackNavigation()`-Funktionen rufen alle `dismiss()` auf (FlashcardsView, AccentsEntryView, QuizView, TrainingView). `dismiss()` pop-t **eine** NavigationStack-Ebene → User landet auf der Ebene direkt darunter, im Chain-Modus immer der Pre-Screen.
+
+**Lösungs-Skizze**: in den Modul-`handleBackNavigation()`-Funktionen branchen auf `launchContext?.chainContext != nil`:
+```swift
+if launchContext?.chainContext != nil {
+    // Chain-Mode: 2 Ebenen poppen → Pre-Screen + Modul → ElumiTab
+    // ODER: chain abbrechen via TrainingChainStore.shared.clear()
+    //       und dann zur Root navigieren
+} else {
+    dismiss()
+}
+```
+
+Plus Spec-Frage: bei Multi-Step-Chain während Step 2 → Back: zum Pre-Screen oder zum vorigen Step? Macht keinen Sinn zum vorigen Step (war schon abgeschlossen). Vermutlich: immer zur Slot-Maschine mit Chain-Cancel-Hint („Chain abgebrochen, wieder einen Spin?").
+
+**Reproduktion:** ElumiTab → Spin → „Jetzt üben" → Pre-Screen → „Training starten" → in Modul → tap Back-Chevron oben links.
+
+**Priorität:** Mittel — UX-Friction in Chain-Tests; vor App-Release fixen, gehört zum Polish-Pass für die Chain-Navigation. Out-of-scope für Commit 1 (Setup-Skip + XP-Hide).
+
+---
+
+## Cutoff-Toast Auto-Fade verpasst Visibility (gelöst durch Commit-2-Modal-Refactor)
+
+**Status:** Beobachtet beim Commit-1-Smoke-Test 2026-05-02. **Gelöst durch Commit 2** (Modal-Refactor) — kein Standalone-Fix nötig.
+
+**Symptom 1 (Bug 2 aus Smoke):** Bei Vokabeln (Training-Modus, irgendein anderes Modul auch) zeigt der Cutoff-Toast altes Wording „du kannst manuell weitermachen" — kein Modal mit zwei Buttons. Erwartung: Modal mit „Aufgabe fertigmachen" + „Jetzt weiter".
+
+**Symptom 2 (Bug 3 aus Smoke):** Bei Nomen (Training-Modus, Choice-Variante) erscheint der Cutoff-Toast scheinbar gar nicht. Tatsächliche Ursache: Toast erscheint kurz (Scale-In 200ms + Hold 3.5s + Fade-Out 500ms = 4.2s total) und wird zwischen Submit-Eval-Animation/Mode-Card-Re-Render visuell verpasst.
+
+**Quelle:** `ChainTimerOverlayModifier.swift` aktueller Stand mountet `ChainCutoffToast` mit Auto-Fade-Schedule (Z. 139-143). Die im Stash@{0} liegende `ChainCutoffModal`-Component blockt mit Backdrop bis User aktiv reagiert — kein Auto-Fade.
+
+**Fix:** Modal-Refactor in Commit 2 löst beide Symptome:
+- Symptom 1: neues Modal-Wording mit zwei CTAs (Spec-konform)
+- Symptom 2: Modal bleibt sichtbar bis User-Tap, kein Auto-Fade-Window
+
+**Verifikation post-Commit-2:** explizit mit Force-Set `nomen,nomen,nomen` und `vokabeln,vokabeln,vokabeln` testen — beide Symptome sollten nach Commit-2-Stash-Pop weg sein.
+
+**Priorität:** Niedrig — wird automatisch durch nächsten Commit gelöst.

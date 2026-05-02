@@ -360,6 +360,21 @@ extension QuizView {
         // Im aktiven Abfragemodus zurück zur Listenauswahl/Setup-Card statt Home.
         // Result-Screen und Setup-Screen dismissen weiterhin wie bisher.
         let isInQuizSession = !session.questions.isEmpty && !session.isShowingResult
+
+        // **Chain-Mode Back-Chevron (2026-05-02)** — im Chain-Mode
+        // führt der Back-Chevron immer zum Pre-Screen (NavigationStack-
+        // Pop), unabhängig von Quiz-Session-Phase. `resetQuizToSetup()`
+        // würde sonst die Setup-Card mit Anzahl-Fragen-Slider zeigen
+        // (Setup-Skip-Verstoß). `cancelAdvanceTask()` stoppt einen
+        // ggf. laufenden Eval-Animation-Tick, damit kein delayed
+        // `completeCurrentQuestion`-Call nach Route-Pop noch State
+        // mutiert.
+        if launchContext?.chainContext != nil {
+            cancelAdvanceTask()
+            dismiss()
+            return
+        }
+
         if isInQuizSession {
             resetQuizToSetup()
         } else {

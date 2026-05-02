@@ -16,9 +16,76 @@ extension TrainingView {
         }
         // Auto-start only from Import Completion (shouldAutoStart)
         // From Home: show setup screen with list selection
-        if launchContext?.shouldAutoStart == true, !session.hasStartedTraining {
-            startTraining()
+        //
+        // **Stufe 4b-5 (2026-05-02)** — Verbformen läuft als
+        // `TrainingMode.verbforms` durch dieselbe TrainingView, hat
+        // aber einen eigenen Start-Pfad (`startVerbformsTraining`)
+        // und braucht `verbformsSession.availableTenses` populiert.
+        // Im Chain-Modus deshalb hier branchen: Verbformen-Versuch
+        // sofort, falls nicht möglich (Tenses noch async im
+        // Loading) → Retry läuft via
+        // `handleVerbformsAvailableTensesChange()` aus dem
+        // `.onChange(of: availableTenses.count)`-Handler in
+        // `TrainingView+Layout.body`.
+        if launchContext?.shouldAutoStart == true {
+            if isVerbformsMode {
+                tryAutoStartVerbformsIfReady()
+            } else if !session.hasStartedTraining {
+                startTraining()
+            }
         }
+    }
+
+    /// **Stufe 4b-5 (2026-05-02)** — Wird vom
+    /// `.onChange(of: verbformsSession.availableTenses.count)`-Handler
+    /// in `TrainingView+Layout.body` getriggert. Retry-Pfad für
+    /// Verbformen-Auto-Start nach asynchronem
+    /// `loadVerbformsAvailableTenses`-Laden — analog zum Quiz-
+    /// `handleQuizCandidatesChange`-Pattern.
+    func handleVerbformsAvailableTensesChange() {
+        guard launchContext?.shouldAutoStart == true,
+              isVerbformsMode else {
+            return
+        }
+        tryAutoStartVerbformsIfReady()
+    }
+
+    /// **Stufe 4b-5 (2026-05-02)** — gemeinsamer Auto-Start-Check für
+    /// Verbformen. Idempotent über `verbformsSession.isActive` /
+    /// `verbformsSession.isFinished`-Guards.
+    ///
+    /// **Race-Fix (2026-05-02 Commit 1)**: ursprünglich war der Guard
+    /// `verbformsCanStart` (= `setupCanStartCached &&
+    /// !availableTenses.isEmpty`). Beide Flags werden async populiert
+    /// (`refreshSetupCardLemmas` über `Task.detached`-Pipeline, plus
+    /// `loadVerbformsAvailableTenses`-Sync-Call mit eigener
+    /// `cachedStatistics`-Latenz). Da nur ein onChange-Retry-Pfad
+    /// existiert (`availableTenses.count`), konnte ein später
+    /// kommendes `setupCanStartCached = true` keinen weiteren
+    /// Auto-Start-Versuch triggern — Setup-Screen rendert dauerhaft
+    /// statt direkt in die Verbformen-Aufgabe zu starten.
+    ///
+    /// Im Chain-Mode ist `setupCanStartCached` aber konzeptionell
+    /// irrelevant — es ist der Setup-Card-CTA-Gate für den manuellen
+    /// „Los geht's"-Flow. Im Chain wird die Setup-Card ohnehin
+    /// übersprungen. Wir branchen daher: Chain-Pfad gated nur auf
+    /// `!availableTenses.isEmpty`, Out-of-Chain-Pfad behält das
+    /// bestehende `verbformsCanStart`-Gate (Schutz vor Start mit
+    /// leerer Listen-Auswahl).
+    private func tryAutoStartVerbformsIfReady() {
+        guard !verbformsSession.isActive,
+              !verbformsSession.isFinished else {
+            return
+        }
+        if launchContext?.chainContext != nil {
+            // Chain-Mode: nur availableTenses-Gate. setupCanStartCached
+            // wird hier ignoriert.
+            guard !verbformsSession.availableTenses.isEmpty else { return }
+        } else {
+            // Out-of-Chain: existing canStart-Gate (Listen + Tenses).
+            guard verbformsCanStart else { return }
+        }
+        startVerbformsTraining()
     }
 
     func handleTrainingDirectionChange() {

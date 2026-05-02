@@ -341,7 +341,16 @@ extension FlashcardsView {
                     // damit die beiden Elemente optisch näher
                     // zusammengehören.
                     VStack(spacing: 8) {
-                        SessionGamificationBar(estimate: flashcardsSessionEstimate)
+                        // **Chain-Mode XP-Card-Hide (2026-05-02)** —
+                        // Karteikarten rendert die Gamification-Bar
+                        // direkt (nicht über `SessionSetupScreen`-
+                        // Wrapper). Im Chain-Modus blenden wir sie aus,
+                        // weil per-Modul-XP-Schätzung im Chain-Kontext
+                        // irreführend wäre (Chain-Timer ist Begrenzung,
+                        // Reward läuft Chain-aggregiert).
+                        if launchContext?.chainContext == nil {
+                            SessionGamificationBar(estimate: flashcardsSessionEstimate)
+                        }
 
                         SessionPrimaryCTA(
                             title: "Los geht's!",

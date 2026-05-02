@@ -226,7 +226,11 @@ struct ElumiTabView: View {
     /// Das Label „Jetzt üben" bleibt identisch zwischen 2-Button-State
     /// und post-Spin-3-State — Konsistenz für den User.
     private var spinPrimaryLabel: String {
-        currentSpinNumber == 0 ? "Los geht's!" : "Nochmal drehen"
+        // Erster Spin: „Maschine starten" — macht klar dass es um die
+        // Slot-Machine geht, nicht um das eigentliche Training (das
+        // startet erst über die Pre-Screen-CTA „Training starten").
+        // Nach erstem Spin: „Nochmal drehen" für die Re-Spin-Variante.
+        currentSpinNumber == 0 ? "Maschine starten" : "Nochmal drehen"
     }
 
     private let sectionStyle: AppSectionStyle = .elumi

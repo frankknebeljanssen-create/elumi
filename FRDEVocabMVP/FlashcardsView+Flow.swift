@@ -13,6 +13,25 @@ extension FlashcardsView {
         print("🔙 returnToFlashcardSetup: cameFromPersonalDeck=\(cameFromPersonalDeck) activeID=\(String(describing: sessionStore.activePersonalDeckID))")
         syncPersonalDeckProgressIfNeeded()
         resetTransientState()
+
+        // **Chain-Mode Back-Chevron (2026-05-02)** — im Chain-Mode
+        // führt der Back-Chevron NICHT zur Listen-/Stack-Auswahl-
+        // Card zurück (das verstößt gegen Setup-Skip-Spec), sondern
+        // poppt die Modul-Route → User landet auf dem
+        // `TrainingChainOverviewView`-Pre-Screen. Personal-Deck-Sync
+        // + Transient-State-Cleanup laufen oben unverändert; die
+        // explizite `clearTransientCustomDeckState()` parallel zu
+        // `handleBackNavigation` (KK-Setup-Header-Pfad) räumt den
+        // Custom-Deck-Setup-State, falls aktiv. Speech-Recording /
+        // TTS / Resume-Snapshot werden via `handleFlashcardsDisappear`
+        // beim Route-Pop automatisch gestoppt — kein expliziter
+        // Cleanup hier nötig.
+        if launchContext?.chainContext != nil {
+            sessionStore.clearTransientCustomDeckState()
+            dismiss()
+            return
+        }
+
         setup.prepareReturnToSetup(
             selectedAppDirection: selectedAppDirection,
             sessionStore: sessionStore

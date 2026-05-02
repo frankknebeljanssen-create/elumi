@@ -34,6 +34,14 @@ var quizSetupScreen: some View {
         estimate: quizSessionEstimate,
         primaryButtonTitle: session.isPreparingQuiz ? "Quiz wird gestartet …" : "Quiz starten",
         isPrimaryEnabled: canStartQuiz && !session.isPreparingQuiz,
+        // **Chain-Mode XP-Card-Hide (2026-05-02)** — wenn Quiz als
+        // Chain-Step geöffnet wird (`launchContext?.chainContext != nil`),
+        // ist die per-Modul-XP-Schätzung („+90 XP · ~2 min") irreführend:
+        // der Chain-Timer ist die einzige Begrenzung, die Anzeige passt
+        // weder zum tatsächlichen Reward (Chain-aggregiert) noch zur
+        // tatsächlichen Dauer (Chain-Step-Sekunden). Default true bleibt
+        // für Home-Tile-Pfad unverändert.
+        showsGamificationBar: launchContext?.chainContext == nil,
         moduleIcon: .quiz,
         showsDirectionToggle: true,
         onBack: { handleBackNavigation() },

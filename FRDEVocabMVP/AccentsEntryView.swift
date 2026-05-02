@@ -34,6 +34,17 @@ struct AccentsEntryView: View {
     @State private var showingListPicker = false
     @State private var activeSession: ActiveSession?
     @State private var showingResult: SessionResult?
+    /// **Chain-Mode State-Leak-Guard (2026-05-02)** — once-only-Flag
+    /// für `handleAccentsAppear`. Beim ersten `.onAppear` mit
+    /// `shouldAutoStart=true` startet die Session und das Flag wird
+    /// auf `true` gesetzt. Subsequent `.onAppear`-Aufrufe (z.B. nach
+    /// Cover-Dismiss zurück zur AccentsEntryView) sehen das Flag und
+    /// re-triggern den Auto-Start NICHT — verhindert den vorher
+    /// dokumentierten State-Leak, bei dem nach Cover-Dismiss das
+    /// Cover sofort wieder aufpoppte. Bleibt für die View-Lifetime
+    /// gesetzt; bei Route-Pop wird die View destroy't und das Flag
+    /// resettet sich automatisch beim nächsten Mount.
+    @State private var hasAutoStarted: Bool = false
     /// Bindet die globale Speed-Round-Dauer live ins UI — Änderungen in
     /// den Settings werden auf der Setup-Card sofort sichtbar, ohne dass
     /// ein manueller Reload nötig ist. Der Wert landet auch auf dem
@@ -84,8 +95,45 @@ struct AccentsEntryView: View {
         .appAmbientWormBackground(sectionStyle)
         .dismissKeyboardOnTap()
         .toolbar(.hidden, for: .navigationBar)
+        // **Stufe 4b-Modal-Refactor / Chain-Auto-Start (2026-05-02)** —
+        // Pattern-Mirror von `QuizView+Lifecycle.swift:19` und
+        // `TrainingView+Lifecycle.swift:19`. Wenn die Akzente vom
+        // Chain-Step (oder einem anderen Caller mit
+        // `shouldAutoStart = true`) geöffnet werden, überspringen wir
+        // den Setup-Screen mit Liste/Mode-Cards und starten direkt
+        // die Session im vom Caller vorgegebenen Modus
+        // (`preferredMode`, Default `.uben`).
+        //
+        // **Idempotenz** über `activeSession == nil`-Guard — der
+        // `.onAppear` feuert auch beim Pop einer
+        // NavigationDestination und beim Dismiss eines Covers; wir
+        // wollen nicht jedes Mal eine neue Session bauen, sondern
+        // nur beim ersten Mount im Chain-Mode.
+        //
+        // **Out-of-chain-Pfad** (Home-Tile → Akzente, kein
+        // launchContext oder `shouldAutoStart = false`): Branch
+        // ist No-Op, Setup-Screen bleibt sichtbar wie heute.
+        .onAppear {
+            handleAccentsAppear()
+        }
         .appLocalChrome(enabled: !usesGlobalChrome) {
-            AppTopBar(onBack: { goHome() }, onInfo: nil)
+            // **Chain-Mode Back-Chevron (2026-05-02)** — defensiv: in
+            // Chain-Mode sollte der Setup-Screen mit Mode-Cards
+            // ohnehin nie sichtbar sein (Setup-Skip + Cover startet
+            // sofort), aber falls doch (z.B. State-Leak-Edge-Case),
+            // dismissen wir die Modul-Route → Pre-Screen, statt
+            // direkt zu Home zu springen. Out-of-chain Verhalten
+            // unverändert (User kam von Home → geht zurück nach Home).
+            AppTopBar(
+                onBack: {
+                    if launchContext?.chainContext != nil {
+                        dismiss()
+                    } else {
+                        goHome()
+                    }
+                },
+                onInfo: nil
+            )
                 .padding(.horizontal, AppLayout.screenPadding)
                 .padding(.top, AppLayout.topBarInsetTop)
         } bottomBar: {
@@ -125,7 +173,18 @@ struct AccentsEntryView: View {
                     feedbackPlayer: feedbackPlayer,
                     speaker: speaker,
                     onClose: {
+                        // **Chain-Mode Back-Chevron (2026-05-02)** — im
+                        // Chain-Mode reicht nicht nur Cover-Dismiss, sonst
+                        // landet User auf der AccentsEntryView Setup-
+                        // Card (Mode-Cards) → Setup-Skip-Verstoß. Wir
+                        // dismissen daher zusätzlich die Modul-Route
+                        // selbst → User landet auf Pre-Screen. Audio-
+                        // Cleanup läuft via SessionView's `.onDisappear`
+                        // (Cover-Dismiss-Trigger).
                         activeSession = nil
+                        if launchContext?.chainContext != nil {
+                            dismiss()
+                        }
                     },
                     onHome: goHome,
                     onSettings: openSettings,
@@ -206,27 +265,48 @@ struct AccentsEntryView: View {
                 }
                 return result.mode == .speedRound ? "Noch eine Runde" : "Weiter lernen"
             }()
-            SessionSummaryView(
-                outcome: accentsOutcome,
-                progress: ProgressStore.shared.progress,
-                resultHeadline: effectiveHeadline,
-                primaryCTALabel: primaryLabel,
-                onPrimaryCTA: {
-                    if isChain {
-                        chainAdvance?(accentsOutcome)
-                    } else {
-                        showingResult = nil
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                            startSession(mode: result.mode)
+            // **Full-Screen-Background-Wrapper (2026-05-02)** —
+            // `SessionSummaryView` ist eine Card ohne eigenen Full-
+            // Screen-Background; im AccentsEntryView läuft sie via
+            // `.fullScreenCover`, also ohne ParentView-Background-
+            // Quelle. Ohne expliziten ZStack-Wrapper rendert iOS den
+            // Cover mit System-Default-Hintergrund (weiß) — das war
+            // nicht sichtbar solange Chain-Mode den Result-Pfad nie
+            // erreichte. Wrapper repliziert das Pattern aus
+            // `AccentsSessionView.body`: `AppTheme.Colors.background`
+            // + `ignoresSafeArea` als Backdrop-Layer, ScrollView für
+            // sichere Vertikal-Aufnahme bei langen Summary-Inhalten.
+            ZStack {
+                AppTheme.Colors.background.ignoresSafeArea()
+                ScrollView(.vertical, showsIndicators: false) {
+                    SessionSummaryView(
+                        outcome: accentsOutcome,
+                        progress: ProgressStore.shared.progress,
+                        resultHeadline: effectiveHeadline,
+                        primaryCTALabel: primaryLabel,
+                        onPrimaryCTA: {
+                            if isChain {
+                                chainAdvance?(accentsOutcome)
+                            } else {
+                                showingResult = nil
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                    startSession(mode: result.mode)
+                                }
+                            }
+                        },
+                        secondaryCTALabel: isChain ? nil : "Zur Startseite",
+                        onSecondaryCTA: isChain ? nil : {
+                            showingResult = nil
+                            goHome()
                         }
-                    }
-                },
-                secondaryCTALabel: isChain ? nil : "Zur Startseite",
-                onSecondaryCTA: isChain ? nil : {
-                    showingResult = nil
-                    goHome()
+                    )
+                    .padding(.horizontal, AppLayout.screenPadding)
+                    .padding(.top, AppLayout.screenHeaderTopPadding)
+                    .padding(.bottom, AppLayout.screenPadding)
+                    .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .top)
+                    .frame(maxWidth: .infinity, alignment: .center)
                 }
-            )
+            }
         }
         .sheet(isPresented: $showingListPicker) {
             ListPickerSheet(
@@ -257,7 +337,16 @@ struct AccentsEntryView: View {
                         icon: .akzente,
                         title: "Akzente",
                         accent: sectionStyle.accent,
-                        onBack: { goHome() }
+                        // **Chain-Mode Back-Chevron (2026-05-02)** —
+                        // analog AppTopBar oben: Chain → dismiss
+                        // (Pre-Screen), out-of-chain → goHome.
+                        onBack: {
+                            if launchContext?.chainContext != nil {
+                                dismiss()
+                            } else {
+                                goHome()
+                            }
+                        }
                     )
 
                     listSelectorCard
@@ -478,6 +567,24 @@ struct AccentsEntryView: View {
         let seconds = SpeedRoundDuration(rawValue: speedRoundSecondsRaw)?.seconds
             ?? SpeedRoundDuration.defaultDuration.seconds
         return SpeedRoundTerminology.subtitle(forSeconds: seconds)
+    }
+
+    /// **Stufe 4b-Modal-Refactor / Chain-Auto-Start (2026-05-02)** —
+    /// `.onAppear`-Handler. Wenn die Akzente per `shouldAutoStart` aus
+    /// einem Chain-Step (oder einem anderen Auto-Start-Caller) geöffnet
+    /// werden, überspringt die View den Setup-Screen und startet
+    /// direkt die Session im vorgegebenen Modus. Pattern-Konsistenz zu
+    /// Quiz / Training. `activeSession == nil`-Guard sichert Idempotenz
+    /// gegen Re-Appear (z.B. nach Cover-Dismiss).
+    private func handleAccentsAppear() {
+        guard launchContext?.shouldAutoStart == true,
+              activeSession == nil,
+              !hasAutoStarted else {
+            return
+        }
+        hasAutoStarted = true
+        let mode = launchContext?.preferredMode ?? .uben
+        startSession(mode: mode)
     }
 
     private func startSession(mode: AccentMode) {

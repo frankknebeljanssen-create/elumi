@@ -55,6 +55,27 @@ extension QuizView {
         prepareQuizRewards()
     }
 
+    /// **Stufe 4b-Modal-Refactor / Chain-Auto-Start (2026-05-02)** —
+    /// Wird vom `.onChange(of: session.cachedCandidates.count)`-Handler
+    /// in `QuizView+Layout.body` getriggert. Retry-Pfad für Auto-Start
+    /// nach asynchronem Candidate-Loading: bei Modul-Mount mit
+    /// `shouldAutoStart=true` (Chain-Step oder Import-Completion) sind
+    /// die Candidates noch nicht gecachet, der Sync-Aufruf von
+    /// `startQuiz()` aus `handleQuizAppear` abortet, der Setup-Screen
+    /// rendert. Sobald die Candidates async ankommen (Count >= 2),
+    /// holen wir den Auto-Start nach. Guards halten den Pfad
+    /// idempotent — Re-Mounts oder Question-Count-Changes triggern
+    /// keinen unbeabsichtigten zweiten Start.
+    func handleQuizCandidatesChange(candidateCount: Int) {
+        guard launchContext?.shouldAutoStart == true,
+              session.questions.isEmpty,
+              !session.isPreparingQuiz,
+              candidateCount >= 2 else {
+            return
+        }
+        startQuiz()
+    }
+
     func handleQuizDisappear() {
         cancelAdvanceTask()
     }

@@ -53,6 +53,24 @@ extension QuizView {
             .onChange(of: session.questionCountOption) { _, _ in
                 handleQuizQuestionCountChange()
             }
+            // **Stufe 4b-Modal-Refactor / Chain-Auto-Start (2026-05-02)** —
+            // Quiz-spezifisches Async-Race-Fix. `handleQuizAppear` ruft
+            // `startQuiz()` direkt nach Mount, aber Candidates werden in
+            // `QuizSessionController+MergeFlow.rebuildMergedItems` über
+            // ein detached Task geladen (Z. 65-82). Beim sync-Aufruf
+            // direkt nach Mount sind `cachedCandidates` noch leer →
+            // `session.startQuiz(direction:)` abortet via
+            // `guard candidates.count >= 2`. Hier holen wir den Retry
+            // nach: wenn die Candidates async ankommen UND der
+            // ursprüngliche Auto-Start aus dem Chain-Context kam UND
+            // noch keine Quiz-Session läuft, triggern wir `startQuiz()`
+            // erneut. Idempotent über die Guards (questions.isEmpty,
+            // !isPreparingQuiz). Andere Module (Karteikarten, Training,
+            // Verbformen) sind nicht betroffen, weil dort der Deck-Bau
+            // synchron läuft.
+            .onChange(of: session.cachedCandidates.count) { _, newCount in
+                handleQuizCandidatesChange(candidateCount: newCount)
+            }
             .onChange(of: session.isShowingResult) { _, isShowingResult in
                 handleQuizResultVisibilityChange(isShowingResult)
             }

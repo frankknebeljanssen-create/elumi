@@ -348,7 +348,14 @@ extension TrainingView {
             primaryButtonTitle: ctaTitle,
             primarySubtitle: ctaSubtitle,
             isPrimaryEnabled: isVerbformsMode ? verbformsCanStart : canStartTraining,
-            showsGamificationBar: !isVocabMode,
+            // **Chain-Mode XP-Card-Hide (2026-05-02)** — zusätzlich zum
+            // bestehenden `!isVocabMode`-Filter (Vokabeln nutzt eigene
+            // Speed-Round-Card-XP-Anzeige) blenden wir die zentrale
+            // Gamification-Bar im Chain-Modus systemweit aus. Begründung
+            // wie bei Quiz: Chain-Timer ist Begrenzung, per-Modul-XP-
+            // Schätzung passt nicht. Default true bleibt für Home-Tile-
+            // Pfad.
+            showsGamificationBar: !isVocabMode && launchContext?.chainContext == nil,
             moduleIcon: moduleIconForMode,
             showsDirectionToggle: true,
             gamificationBarHintText: trainingGamificationHintText,
@@ -1439,9 +1446,29 @@ extension TrainingView {
             // Kompakter Header analog Karteikarten — Zurück resettet die
             // Verbformen-Session und führt zurück zur Setup-Card, nicht raus
             // zu Home. ScreenHeaderCard + großer Zurück-Button entfernt.
+            //
+            // **Chain-Mode Back-Chevron (2026-05-02)** — im Chain-Mode
+            // POPpen wir die Modul-Route stattdessen → Pre-Screen
+            // sichtbar (Setup-Skip-Spec-Konsistenz mit den anderen 4
+            // Modulen). XP wird idempotent vergeben (`sessionRewardConsumed`-
+            // Schutz), Speed-Round-Timer + TTS + Mikro werden vor
+            // dem Pop sauber gestoppt. Der `verbformsSession.reset()`-
+            // Pfad wird im Chain bewusst übersprungen — die View wird
+            // ohnehin gepopt, und ein Reset würde durch das `.onChange(of:
+            // verbformsSession.isFinished)` zusätzliche State-
+            // Mutations triggern.
             trainingHeaderShared {
-                verbformsSession.reset()
-                verbformsCountdown = nil
+                if launchContext?.chainContext != nil {
+                    awardVerbformsXPIfNeeded()
+                    verbformsSession.stopSpeedRoundTimer()
+                    verbformsCountdown = nil
+                    runtimeSpeaker?.stop()
+                    speechController?.stopRecording()
+                    dismiss()
+                } else {
+                    verbformsSession.reset()
+                    verbformsCountdown = nil
+                }
             }
 
             if let countdown = verbformsCountdown {
@@ -2180,6 +2207,19 @@ extension TrainingView {
             }
             .onDisappear {
                 stopSpeedRoundTimer()
+            }
+            // **Stufe 4b-5 (2026-05-02)** — Verbformen Setup-Skip im
+            // Chain-Modus. `handleTrainingAppear` triggert
+            // `startVerbformsTraining()` (siehe Lifecycle), aber
+            // `verbformsCanStart` braucht `availableTenses`
+            // populiert — diese werden async von
+            // `loadVerbformsAvailableTenses()` befüllt. Wenn die Tenses
+            // erst nach Mount ankommen, holen wir den Auto-Start
+            // hier nach. Idempotent über `verbformsSession.isActive` /
+            // `verbformsSession.isFinished` und `verbformsCanStart`.
+            // Pattern-Mirror zu Quiz `handleQuizCandidatesChange`.
+            .onChange(of: verbformsSession.availableTenses.count) { _, _ in
+                handleVerbformsAvailableTensesChange()
             }
             .onChange(of: session.direction) { _, _ in
                 handleTrainingDirectionChange()

@@ -20,6 +20,27 @@ extension TrainingView {
             && (session.hasStartedTraining || !session.isShowingSetup)
         if isInTrainingSession {
             awardTrainingXPIfNeeded()
+
+            // **Chain-Mode Back-Chevron (2026-05-02)** — im Chain-Mode
+            // poppen wir die Modul-Route statt zur Listen-/Mode-Card
+            // zurückzufallen (Setup-Skip-Verstoß). XP wurde oben
+            // idempotent vergeben (`sessionRewardConsumed`-Schutz).
+            // Audio-Cleanup explizit hier, damit TTS / Mikro nicht
+            // weiterläuft während der Pre-Screen rendert; `onDisappear`
+            // räumt zusätzlich auf, aber die UI-State-Resets in
+            // `resetTrainingSession()` (verbMC, articleAnswer, …)
+            // werden bewusst übersprungen — die View wird ohnehin
+            // gepopt + bei nächster Chain-Step-Push neu instanziiert.
+            if launchContext?.chainContext != nil {
+                cancelPendingFeedback()
+                speechController?.stopRecording()
+                speechController?.transcript = ""
+                speaker?.stop()
+                stopSpeedRoundTimer()
+                dismiss()
+                return
+            }
+
             resetTrainingSession()
         } else {
             // Auch im Verbformen-Flow: erst Reward (falls Fortschritt

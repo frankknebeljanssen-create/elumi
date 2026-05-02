@@ -83,6 +83,20 @@ struct TrainingChainOverviewView: View {
 
     // MARK: - Body
 
+    /// **Bug-Fix 2026-05-02** — Wrapper für die Back-Chevron-Aktion.
+    /// Der originale Doc-Comment in `AppDestinationHost` ging davon
+    /// aus, dass die Pre-Screen-Eigene `dismiss()` (via @Environment)
+    /// den Stack poppt zusätzlich zum Caller-`onBack`-Closure (Chain-
+    /// Store-Clear). Tatsächlich war `onBack` aber ungewrappt an
+    /// ModuleHeaderCard + AppTopBar weitergegeben → Back-Chevron tat
+    /// nur Store-Clear (unsichtbar) und ließ den Pre-Screen
+    /// stehen. Wrapper macht jetzt beides: Caller-Closure ausführen
+    /// (Store räumt), dann selbst poppen.
+    private func handleBackTap() {
+        onBack()
+        dismiss()
+    }
+
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
@@ -90,7 +104,7 @@ struct TrainingChainOverviewView: View {
                     systemImage: "list.bullet.rectangle.fill",
                     title: "Dein Trainingsplan",
                     accent: sectionStyle.accent,
-                    onBack: onBack
+                    onBack: handleBackTap
                 )
 
                 heroBlock
@@ -119,7 +133,7 @@ struct TrainingChainOverviewView: View {
         .appAmbientWormBackground(sectionStyle)
         .toolbar(.hidden, for: .navigationBar)
         .appLocalChrome(enabled: !usesGlobalChrome) {
-            AppTopBar(onBack: onBack, onInfo: openInfo)
+            AppTopBar(onBack: handleBackTap, onInfo: openInfo)
                 .padding(.horizontal, AppLayout.screenPadding)
                 .padding(.top, AppLayout.topBarInsetTop)
         } bottomBar: {
@@ -322,15 +336,19 @@ struct TrainingChainOverviewView: View {
 
     // MARK: - CTA
 
-    /// Sticky Bottom-CTA „Übung starten". Disabled bei Jackpot. Wird
+    /// Sticky Bottom-CTA „Training starten". Disabled bei Jackpot. Wird
     /// als Overlay über dem ScrollView platziert, damit der CTA immer
-    /// sichtbar bleibt unabhängig vom Scroll-State.
+    /// sichtbar bleibt unabhängig vom Scroll-State. Label wurde von
+    /// „Übung starten" auf „Training starten" angeglichen, damit's mit
+    /// der „Jetzt üben"-CTA aus dem Slot-Screen und der Modul-Card-Title-
+    /// Sprache („Training abschließen", „Trainingszeit abgelaufen")
+    /// konsistent bleibt.
     private var startCTA: some View {
         Button {
             guard !chain.isJackpot else { return }
             onStartTraining()
         } label: {
-            Text(chain.isJackpot ? "Zurück zum Setup" : "Übung starten")
+            Text(chain.isJackpot ? "Zurück zum Setup" : "Training starten")
                 .font(.system(size: 17, weight: .black, design: .rounded))
                 .foregroundStyle(.black)
                 .frame(maxWidth: .infinity)
@@ -339,6 +357,6 @@ struct TrainingChainOverviewView: View {
         .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
         .opacity(chain.isJackpot ? 0.45 : 1.0)
         .disabled(chain.isJackpot)
-        .accessibilityLabel(chain.isJackpot ? "Zurück zum Setup" : "Erste Übung starten")
+        .accessibilityLabel(chain.isJackpot ? "Zurück zum Setup" : "Training starten")
     }
 }
