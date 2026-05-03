@@ -395,6 +395,22 @@ extension TrainingView {
         speechController?.recordError = nil
         typedAnswerFieldFocused = false
         lastResult = ScoreResult(label: "Lösung", detail: currentCard.answer)
+
+        // **Mikro-Auto-Resume (2026-05-02)** — User-Spec: nach
+        // „Lösung anzeigen" soll das Mikro automatisch wieder
+        // anspringen, damit der User die jetzt-bekannte Lösung
+        // selbst sprechen kann ohne den Mikro-Button manuell
+        // antippen zu müssen. Kurzer Delay (0.4 s) gibt der oben
+        // gestoppten Audio-Session Zeit, sauber abzubauen, bevor
+        // wir per `beginAutomaticListeningIfNeeded` einen neuen
+        // Recording-Start triggern — direkter Restart riskiert
+        // einen iOS „Engine bereits aktiv"-Fehler. Self-gated über
+        // die Mode-Guards in `beginAutomaticListeningIfNeeded`:
+        // greift in Vokabeln- und Nomen-Speech-Modus, ist No-Op
+        // für Article-/Verb-/Noun-Choice-Modi.
+        scheduleFeedbackTask(after: 0.4) {
+            beginAutomaticListeningIfNeeded()
+        }
     }
 
     func repeatCurrentPrompt() {
