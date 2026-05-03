@@ -742,6 +742,9 @@ größer ist (Pattern wie Milchtritt-Cleanup).
 Bekannte Fehler:
 - „le mars" wird als „les mars" angezeigt (März fälschlich
   pluralisiert) — 2026-05-03
+- „desservir [...] Bärendienst erweisen" — zu komplex / zu
+  umgangssprachlich für A1/A2-Niveau, brauche bessere/einfachere
+  Übersetzung — 2026-05-03
 
 Beim Auftauchen weiterer Fehler: hier sammeln, nicht einzeln
 fixen. Massen-Migration nach Sammlung in eigenem Commit.
