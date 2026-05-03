@@ -195,11 +195,19 @@ extension FlashcardsView {
                 // Karte bleibt auf der Rückseite, User steuert den
                 // Wechsel selbst über „Weiter". Rote Hinweiszeile +
                 // CTA-Pill in Modul-Akzent.
+                //
+                // **Block 2.5 (2026-05-02, Subpunkt 2)** — User-Spec:
+                // im Chain-Mode den roten Text-Hint ausblenden, der
+                // „Weiter"-Button bleibt aber erhalten (User braucht
+                // den zum nächsten Card-Advance). Außerhalb Chain
+                // unverändert wie heute.
                 VStack(alignment: .center, spacing: 10) {
-                    Text("Falsch 😕 — schau dir die Lösung an")
-                        .font(AppTheme.Typography.body)
-                        .foregroundStyle(AppTheme.Colors.error)
-                        .frame(maxWidth: .infinity, alignment: .center)
+                    if launchContext?.chainContext == nil {
+                        Text("Falsch 😕 — schau dir die Lösung an")
+                            .font(AppTheme.Typography.body)
+                            .foregroundStyle(AppTheme.Colors.error)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
 
                     Button {
                         interaction.continueAfterWrongAnswer(

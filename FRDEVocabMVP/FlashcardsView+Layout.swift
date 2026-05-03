@@ -234,10 +234,20 @@ extension FlashcardsView {
                         }
                     }
 
-                    flashcardStatsRow
-                        .padding(.horizontal, flashcardSessionCardInset)
+                    // **Block 2.5 (2026-05-02)** — Stats-Row im Chain-
+                    // Mode ausblenden. Subpunkt 1 (User-Spec): die
+                    // drei Mini-Tiles („Kann ich" / „Offen" / „Nochmal")
+                    // dominieren im Chain-Mode-Pacing visuell; Chain-
+                    // Header trägt schon die Step-Identität, Stats-
+                    // Tracking ist während eines kurzen Chain-Step
+                    // weniger relevant. Außerhalb Chain unverändert
+                    // sichtbar.
+                    if launchContext?.chainContext == nil {
+                        flashcardStatsRow
+                            .padding(.horizontal, flashcardSessionCardInset)
 
-                    Spacer().frame(height: AppTheme.Spacing.sm)
+                        Spacer().frame(height: AppTheme.Spacing.sm)
+                    }
 
                     flashcardPromptCard
                         .padding(.horizontal, flashcardSessionCardInset)
