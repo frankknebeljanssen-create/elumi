@@ -254,6 +254,31 @@ enum StandardVocabularyLoader {
         return inflectionWordClassMap[key] == "verb"
     }
 
+    /// **Block C (2026-05-03)** — User-Spec: Verben-Modi ziehen
+    /// nur Single-Verb-Lemmas, keine Phrasen. Defensive Filter
+    /// für `.verbs` (Synthesis) und `.verbforms` (Pool-Filter), weil
+    /// die DB vereinzelt Multi-Word-Einträge als `wordClass == "verb"`
+    /// taggt (z.B. „aller voir un film") — Code-Filter schützt
+    /// gegen diese Daten-Drift.
+    ///
+    /// Akzeptiert:
+    ///   * **Single-Token** ohne Space (inkludiert Apostroph-geglue
+    ///     wie `s'amuser`, `n'entendre` — französische Apostroph-
+    ///     Verschmelzung zählt nicht als Token-Trenner).
+    ///   * **2 Tokens** wenn erste = `se` (reflexives Verb mit
+    ///     Space, z.B. `se laver`, `se promener`).
+    ///
+    /// Ablehnt: alles andere (Mehrwort-Phrasen, „aller voir",
+    /// „être en train de", …).
+    nonisolated static func isSingleVerbLemma(_ french: String) -> Bool {
+        let trimmed = french.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !trimmed.isEmpty else { return false }
+        let tokens = trimmed.split(separator: " ").map(String.init)
+        if tokens.count == 1 { return true }
+        if tokens.count == 2, tokens[0] == "se" { return true }
+        return false
+    }
+
     /// Fast lookup set of French nouns (lowercase, includes article-stripped + accent-stripped)
     static let nounSet: Set<String> = {
         var set = Set<String>()

@@ -140,7 +140,15 @@ extension TrainingSessionController {
             case .verbforms:
                 // Konjugations-Training: nur Einzelwort-Verben (Infinitive),
                 // weil wir eine sauber konjugierbare Lemma-Form brauchen.
-                return item.cardType == .words && StandardVocabularyLoader.isVerb(item.french)
+                // **Block C (2026-05-03)** — zusätzlich
+                // `isSingleVerbLemma`-Defense-Layer gegen DB-Tagging-
+                // Drift: ausschließt Mehrwort-Einträge wie „aller voir
+                // un film", die fälschlich `wordClass == "verb"` UND
+                // `cardType == .words` tragen können. Reflexive
+                // Verben (`s'amuser`, `se laver`) bleiben drin.
+                return item.cardType == .words
+                    && StandardVocabularyLoader.isVerb(item.french)
+                    && StandardVocabularyLoader.isSingleVerbLemma(item.french)
             }
         }
     }
@@ -156,7 +164,13 @@ extension TrainingSessionController {
     ) -> [VocabularyItem] {
         let stats = FrenchListStatisticsAggregator.cachedStatistics(for: items)
         var synthesized: [VocabularyItem] = []
-        for lemma in stats.verbLemmas {
+        // **Block C (2026-05-03)** — Defense-in-Depth gegen DB-
+        // Tagging-Drift: nur Single-Verb-Lemmas synthetisieren.
+        // Mehrwort-Einträge wie „aller voir un film", die fälschlich
+        // mit `wordClass == "verb"` getaggt sind, werden hier
+        // ausgefiltert. Reflexive Verben (`s'amuser`, `se laver`)
+        // bleiben drin — siehe `isSingleVerbLemma` Doc.
+        for lemma in stats.verbLemmas where StandardVocabularyLoader.isSingleVerbLemma(lemma) {
             // DE-Übersetzung aus der Master-DB (z.B. savoir → wissen, s'appeler → heißen)
             let germanRaw = SupplementalFreeDictLexicon.germanTranslation(
                 forFrenchLemma: lemma,
