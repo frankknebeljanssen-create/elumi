@@ -536,7 +536,6 @@
 		FEDEA20000000000000004A1 /* AccentSessionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20000000000000004A2 /* AccentSessionEngine.swift */; };
 		FEDEA20000000000000005A1 /* AccentsEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20000000000000005A2 /* AccentsEntryView.swift */; };
 		FEDEA20000000000000006A1 /* AccentsSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20000000000000006A2 /* AccentsSessionView.swift */; };
-		FEDEA20000000000000007A1 /* AccentsLearningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20000000000000007A2 /* AccentsLearningView.swift */; };
 		FEDEA20000000000000008A1 /* AccentsResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20000000000000008A2 /* AccentsResultView.swift */; };
 		FEDEA20100000000000023001 /* VocabDualFormMerger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20100000000000023002 /* VocabDualFormMerger.swift */; };
 		FEDEA20200000000000024001 /* VocabContextClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20200000000000024002 /* VocabContextClassifier.swift */; };
@@ -1104,7 +1103,6 @@
 		FEDEA20000000000000004A2 /* AccentSessionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentSessionEngine.swift; sourceTree = "<group>"; };
 		FEDEA20000000000000005A2 /* AccentsEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentsEntryView.swift; sourceTree = "<group>"; };
 		FEDEA20000000000000006A2 /* AccentsSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentsSessionView.swift; sourceTree = "<group>"; };
-		FEDEA20000000000000007A2 /* AccentsLearningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentsLearningView.swift; sourceTree = "<group>"; };
 		FEDEA20000000000000008A2 /* AccentsResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentsResultView.swift; sourceTree = "<group>"; };
 		FEDEA20100000000000023002 /* VocabDualFormMerger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabDualFormMerger.swift; sourceTree = "<group>"; };
 		FEDEA20200000000000024002 /* VocabContextClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabContextClassifier.swift; sourceTree = "<group>"; };
@@ -1723,7 +1721,6 @@
 				FEDEA210000000000000012 /* AccentsSessionHeader.swift */,
 				FEDEA22000000000000001A2 /* AccentAdaptiveStore.swift */,
 				FEDEA20000000000000006A2 /* AccentsSessionView.swift */,
-				FEDEA20000000000000007A2 /* AccentsLearningView.swift */,
 				FEDEA20000000000000008A2 /* AccentsResultView.swift */,
 			);
 			path = FRDEVocabMVP;
@@ -2365,7 +2362,6 @@
 				FEDEA210000000000000011 /* AccentsSessionHeader.swift in Sources */,
 				FEDEA22000000000000001A1 /* AccentAdaptiveStore.swift in Sources */,
 				FEDEA20000000000000006A1 /* AccentsSessionView.swift in Sources */,
-				FEDEA20000000000000007A1 /* AccentsLearningView.swift in Sources */,
 				FEDEA20000000000000008A1 /* AccentsResultView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

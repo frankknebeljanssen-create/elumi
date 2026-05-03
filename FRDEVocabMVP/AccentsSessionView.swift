@@ -2,8 +2,9 @@ import SwiftUI
 
 /// Aktive Übungs-Session für Akzente (Üben + Speed Round).
 ///
-/// Für den Lernen-Modus wird `AccentsLearningView` benutzt — diese View
-/// hier ist auf Exercise-Queues spezialisiert (A + B).
+/// **Stufe 6 (2026-05-02)** — der Lernen-Modus mit eigener
+/// `AccentsLearningView` ist appweit entfernt; diese View ist
+/// jetzt der einzige Akzente-Session-Renderer.
 ///
 /// Struktur:
 /// - Progress-Bar oben

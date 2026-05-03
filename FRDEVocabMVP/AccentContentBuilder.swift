@@ -160,24 +160,9 @@ enum AccentContentBuilder {
         return order
     }
 
-    /// Wenige Intro-Beispiele für den Lernen-Modus — je Akzenttyp ein
-    /// klassisches Beispiel + eine einfache pick-correct-word-Übung.
-    static func buildLearningCards() -> [LearningCard] {
-        AccentType.mvpActive.compactMap { type in
-            guard let exampleSeed = AccentWordCatalog.entries(for: type).first else { return nil }
-
-            // Demo-Übung zum Mit-Tippen: dieselbe Wort-Form wie auf der Karte.
-            let exercise = makeExercise(from: exampleSeed, kind: .pickCorrectWord)
-
-            return LearningCard(
-                accentType: type,
-                headlineGlyph: type.representativeGlyph,
-                title: type.germanLabel,
-                exampleWords: Array(AccentWordCatalog.entries(for: type).prefix(3).map { $0.correctWord }),
-                tapDemo: exercise
-            )
-        }
-    }
+    // **Stufe 6 (2026-05-02)** — `buildLearningCards()` und
+    // `LearningCard` (siehe unten) wurden mit dem Lernen-Modus
+    // entfernt; siehe `AccentMode`-Doc-Kommentar zum Cut.
 
     // MARK: - Seeds sammeln
 
@@ -526,15 +511,6 @@ enum AccentContentBuilder {
         }
     }
 
-    // MARK: - Learning Card
-
-    struct LearningCard: Identifiable {
-        let id = UUID()
-        let accentType: AccentType
-        let headlineGlyph: String
-        let title: String
-        let exampleWords: [String]
-        /// Optional: eine Demo-Übung am Ende der Karte.
-        let tapDemo: AccentExercise?
-    }
+    // **Stufe 6 (2026-05-02)** — `LearningCard` mit dem Lernen-Modus
+    // entfernt.
 }

@@ -137,7 +137,6 @@ struct AccentAnswerRecord: Hashable, Codable {
 // MARK: - Session-Modus
 
 enum AccentMode: String, Codable, Hashable {
-    case lernen
     case uben
     /// Der zeitbegrenzte Kurzmodus. Historisch hieß der Case `challenge` —
     /// appweit nutzen alle anderen Module den Begriff „Speed Round", und
@@ -147,9 +146,16 @@ enum AccentMode: String, Codable, Hashable {
     /// Launch-Contexts aus Bestandsnutzer-Sessions weiter lesbar sind.
     case speedRound = "challenge"
 
+    // **Stufe 6 (2026-05-02)** — der `.lernen`-Modus ist appweit
+    // entfernt. User-Spec: Lernen-Karten waren in der Praxis ein
+    // Skip-the-Setup-Pfad ohne echten Trainings-Wert; Üben mit
+    // direktem Feedback ist didaktisch dasselbe Mittel auf dem
+    // direkteren Weg. `rawValue` „lernen" wird in keinem persistierten
+    // Launch-Context gespeichert (Akzente nutzt nur das Live-
+    // Setup-Modal), darum ist der Cut sauber.
+
     var title: String {
         switch self {
-        case .lernen:     return "Lernen"
         case .uben:       return "Üben"
         // Zentrale Terminologie — ein späterer globaler Rename läuft
         // ausschließlich über `SpeedRoundTerminology.name`, nicht hier.
@@ -159,7 +165,6 @@ enum AccentMode: String, Codable, Hashable {
 
     var subtitle: String {
         switch self {
-        case .lernen:     return "Akzente entspannt kennenlernen"
         case .uben:       return "Trainieren mit direktem Feedback"
         case .speedRound: return "Gemischte Kurz-Session"
         }
@@ -173,7 +178,6 @@ enum AccentMode: String, Codable, Hashable {
     /// `AccentContentBuilder` die Seed-Länge implizit mit.
     var sessionLength: Int {
         switch self {
-        case .lernen:     return 0
         case .uben:       return 10
         case .speedRound: return 35
         }
@@ -184,7 +188,6 @@ enum AccentMode: String, Codable, Hashable {
     /// Üben und Speed Round mit — ca. 25–30 % der Session sind Audio.
     var allowedKinds: [AccentExercise.Kind] {
         switch self {
-        case .lernen:     return [.pickCorrectWord]
         case .uben:       return [.pickCorrectWord, .chooseAccent, .listenAndPick]
         case .speedRound: return [.pickCorrectWord, .chooseAccent, .listenAndPick]
         }

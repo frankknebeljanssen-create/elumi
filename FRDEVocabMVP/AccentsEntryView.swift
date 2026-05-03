@@ -146,25 +146,9 @@ struct AccentsEntryView: View {
             )
         }
         .fullScreenCover(item: $activeSession) { session in
-            if session.mode == .lernen {
-                // Lernen-Modus: Karten-View. Nach „Jetzt üben" direkt in
-                // eine Üben-Session rüber.
-                AccentsLearningView(
-                    cards: session.learningCards,
-                    accentColor: moduleAccentColor,
-                    onClose: { activeSession = nil },
-                    onStartPractice: {
-                        activeSession = nil
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                            startSession(mode: .uben)
-                        }
-                    },
-                    feedbackPlayer: feedbackPlayer,
-                    onHome: goHome,
-                    onSettings: openSettings
-                )
-            } else {
-                AccentsSessionView(
+            // **Stufe 6 (2026-05-02)** — Lernen-Modus entfernt; nur
+            // Üben + Speed Round laufen über `AccentsSessionView`.
+            AccentsSessionView(
                     mode: session.mode,
                     exercises: session.exercises,
                     resumeSnapshot: session.resumeSnapshot,
@@ -216,7 +200,6 @@ struct AccentsEntryView: View {
                         }
                     }
                 )
-            }
         }
         .fullScreenCover(item: $showingResult) { result in
             // Systemweiter Summary-Screen — **identisch** zu Flashcards,
@@ -451,13 +434,9 @@ struct AccentsEntryView: View {
     // MARK: - Mode Cards
 
     private var modeCards: some View {
+        // **Stufe 6 (2026-05-02)** — Lernen-Modus-Card entfernt;
+        // Setup-Trio reduziert auf Üben + Speed Round.
         VStack(spacing: AppTheme.Spacing.sm) {
-            modeCard(
-                mode: .lernen,
-                icon: "book.closed.fill",
-                headline: "Lernen",
-                subline: "Accents entspannt kennenlernen"
-            )
             modeCard(
                 mode: .uben,
                 icon: "scope",
@@ -589,15 +568,6 @@ struct AccentsEntryView: View {
 
     private func startSession(mode: AccentMode) {
         switch mode {
-        case .lernen:
-            // Lernen-Modus: eigene View mit Intro-Karten, keine Session-Engine nötig.
-            let cards = AccentContentBuilder.buildLearningCards()
-            activeSession = ActiveSession(
-                mode: .lernen,
-                exercises: [],
-                learningCards: cards
-            )
-
         case .uben:
             // Üben-Modus ist resumable — erst prüfen, ob ein passender
             // Snapshot vorliegt (gleicher Mode + gleiche Liste). Fällt
@@ -613,7 +583,6 @@ struct AccentsEntryView: View {
                 activeSession = ActiveSession(
                     mode: .uben,
                     exercises: snapshot.exercises,
-                    learningCards: [],
                     resumeSnapshot: snapshot
                 )
                 return
@@ -632,7 +601,6 @@ struct AccentsEntryView: View {
             activeSession = ActiveSession(
                 mode: .uben,
                 exercises: exercises,
-                learningCards: [],
                 resumeSnapshot: nil
             )
 
@@ -649,7 +617,6 @@ struct AccentsEntryView: View {
             activeSession = ActiveSession(
                 mode: .speedRound,
                 exercises: exercises,
-                learningCards: [],
                 resumeSnapshot: nil
             )
         }
@@ -663,7 +630,9 @@ private struct ActiveSession: Identifiable {
     let id = UUID()
     let mode: AccentMode
     let exercises: [AccentExercise]
-    let learningCards: [AccentContentBuilder.LearningCard]
+    // **Stufe 6 (2026-05-02)** — `learningCards` mit dem Lernen-
+    // Modus entfernt; ActiveSession trägt jetzt nur noch Üben-/
+    // Speed-Round-Exercises plus optionalen Resume-Snapshot.
     /// Wenn gesetzt, wird der Engine via `restoringFrom:` konstruiert —
     /// Queue, Index, Answer-Records, Reinsertion-Counter werden 1:1
     /// zurückgespielt. `nil` bei frischer Session.
@@ -672,12 +641,10 @@ private struct ActiveSession: Identifiable {
     init(
         mode: AccentMode,
         exercises: [AccentExercise],
-        learningCards: [AccentContentBuilder.LearningCard],
         resumeSnapshot: AccentSessionResumeState? = nil
     ) {
         self.mode = mode
         self.exercises = exercises
-        self.learningCards = learningCards
         self.resumeSnapshot = resumeSnapshot
     }
 }
