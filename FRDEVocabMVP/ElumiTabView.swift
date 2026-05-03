@@ -477,20 +477,22 @@ struct ElumiTabView: View {
                 // nötig, damit die Chips mit `maxWidth: .infinity` die
                 // Modal-Breite (340pt minus Padding) gleichmäßig
                 // aufteilen.
+                // **Block 4 (2026-05-03)** — Listen-Auswahl-Card oberhalb
+                // der Zeit-Cards. User-Spec: User muss bewusst Liste UND
+                // Zeit wählen, „Los geht's" disabled bis beide Wahlen
+                // durch. Reihenfolge im Modal vom 2026-04-30-Layout
+                // umgekehrt: vorher Zeit-Cards → Listen-Card; jetzt
+                // Listen-Card → Zeit-Cards. So sieht der User die
+                // wichtigste Inhaltswahl (Listen) als ersten Schritt
+                // im Setup-Funnel.
+                listSelectionCard
+
                 HStack(spacing: 12) {
                     ForEach(Self.durationOptions, id: \.self) { minutes in
                         durationChip(minutes: minutes)
                     }
                 }
                 .frame(maxWidth: .infinity)
-
-                // **Stufe 1c (2026-04-30)** — Listen-Auswahl-Card.
-                // Zeigt die aktuelle globale Listen-Auswahl (gemeinsam
-                // genutzt mit Karteikarten/Quiz/Word Runner/Training),
-                // editierbar via Pencil-Tap → `ChainListSelectionSheet`.
-                // Empty-State (`globalSelectedListIDs.isEmpty`) zeigt
-                // Warning-Border + Hint-Text, CTA wird disabled.
-                listSelectionCard
 
                 // CTA „Los geht's" — schließt das Modal mit aktuellem
                 // Preselect. Pfad ist semantisch identisch zum
@@ -562,101 +564,123 @@ struct ElumiTabView: View {
         }
     }
 
-    /// **Listen-Auswahl-Card im Setup-Modal** (Stufe 1c, 2026-04-30).
+    /// **Listen-Auswahl-Card im Setup-Modal** (Stufe 1c, 2026-04-30 /
+    /// Block 4 Restyle 2026-05-03).
     ///
     /// Zeigt die aktuelle globale Listen-Auswahl (gemeinsam genutzt mit
-    /// Karteikarten/Quiz/Word Runner/Training). Tap auf die Card oder
-    /// das Pencil-Icon öffnet den `ChainListSelectionSheet` für
-    /// Multi-Select-Editing.
+    /// Karteikarten/Quiz/Word Runner/Training). Tap auf die Card öffnet
+    /// den `ChainListSelectionSheet` für Multi-Select-Editing.
+    ///
+    /// **Block 4 (2026-05-03) Restyle**: Card-Stil von der eigenen
+    /// kompakten Layout-Variante (cornerRadius 12, Pencil-Pill, kleine
+    /// Icon-Plate) auf das Time-Card-Pattern (cornerRadius 14,
+    /// minHeight 88, Selected-State mit Modul-Akzent-Tönung) angeglichen
+    /// — User-Spec „selbe Höhe, Padding, Border, Background wie
+    /// Zeit-Cards". Pulsations-Hint solange noch keine Liste gewählt;
+    /// stoppt bei erster Auswahl, übergibt parallel an den Zeit-Cards-
+    /// und CTA-Pulse-Pfad.
     ///
     /// **Anzeige-Logik:**
-    ///   • Empty (`globalSelectedListIDs.isEmpty`) → Warning-Border,
-    ///     Text „Keine Liste gewählt — tippen, um zu wählen"
+    ///   • Empty → „Listen wählen" als Hinweis-Text (User muss tippen)
     ///   • 1 Liste  → Listen-Name als zentrale Zeile
     ///   • 2 Listen → beide Namen untereinander
     ///   • 3+ Listen → erste 2 Namen + „+N weitere"-Hinweis
-    ///
-    /// Begründung der 2-Zeilen-Limit: Modal-Card ist 340pt breit, der
-    /// Lesbarkeit halber begrenzen wir die Anzeige; eine längere
-    /// Auswahl wird über die Sheet-Liste editierbar / komplett sichtbar.
     private var listSelectionCard: some View {
         let isEmpty = globalSelectedListIDs.isEmpty
-        let borderColor: Color = isEmpty ? AppTheme.Colors.warning : sectionStyle.accent.opacity(0.35)
+        let isSelected = !isEmpty
+        let moduleColor = sectionStyle.accent
 
-        return Button {
-            showListPicker = true
-        } label: {
-            HStack(alignment: .top, spacing: 12) {
+        return ZStack {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(
+                    isSelected
+                        ? moduleColor.opacity(0.25)
+                        : AppTheme.Colors.secondarySurface
+                )
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(
+                    isSelected ? moduleColor : Color.clear,
+                    lineWidth: isSelected ? 2 : 0
+                )
+
+            HStack(alignment: .center, spacing: 12) {
                 Image(systemName: "list.bullet.rectangle.fill")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundStyle(isEmpty ? AppTheme.Colors.warning : sectionStyle.accent)
-                    .frame(width: 28, height: 28)
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(moduleColor)
+                    .frame(width: 32, height: 32)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(isEmpty ? "Keine Liste gewählt" : "Aktive Listen")
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-
-                    if isEmpty {
-                        Text("Tippen, um zu wählen")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textPrimary)
-                    } else {
-                        listSummaryView
-                    }
+                if isEmpty {
+                    Text("Listen wählen")
+                        .font(.system(size: 18, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
+                    listSummaryView
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
-                Spacer(minLength: 0)
-
-                Image(systemName: "pencil")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(sectionStyle.accent)
-                    .frame(width: 32, height: 32)
-                    .background(
-                        Circle().fill(sectionStyle.accent.opacity(0.14))
-                    )
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
             }
             .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(Rectangle())
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(AppTheme.Colors.secondarySurface.opacity(0.55))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(borderColor, lineWidth: isEmpty ? 1.5 : 1)
-            )
         }
-        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, minHeight: 88)
+        .opacity(isSelected ? 1.0 : 0.85)
+        .scaleEffect(isSelected ? 1.03 : 1.0)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            showListPicker = true
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        }
+        .animation(.easeInOut(duration: 0.15), value: isSelected)
+        // **Block 4 (2026-05-03)** — Pulsations-Hint solange keine
+        // Liste gewählt. Stoppt bei erster Auswahl. Glow in Modul-
+        // Akzent-Farbe analog zu den Zeit-Cards.
+        .pulsing(active: isEmpty, glowColor: moduleColor)
     }
 
     /// Sub-View für die nicht-leere Anzeige in `listSelectionCard`.
     /// Resolved die UUIDs auf Display-Namen via `listStore.allLists`
     /// und zeigt bis zu 2 Namen + Restzähler.
+    /// **Block 4 (2026-05-03)** — User-Spec-konformes Format:
+    ///   • 1-3 Listen → Namen kommagetrennt + Total-Einträge-Count
+    ///   • 4+ Listen  → „X Listen ausgewählt" + Total-Einträge-Count
+    /// Total-Count via `VocabularyListSelectionResolver.effectiveItems`
+    /// pro Liste, summiert. Lernjahr-Max wird respektiert (gleicher
+    /// Resolver wie Quiz/Karteikarten/Train).
     @ViewBuilder
     private var listSummaryView: some View {
-        let resolvedNames: [String] = globalSelectedListIDs
-            .compactMap { id in listStore.allLists.first(where: { $0.id == id })?.name }
-            .sorted { $0.localizedCompare($1) == .orderedAscending }
+        let resolvedLists: [VocabularyList] = globalSelectedListIDs
+            .compactMap { id in listStore.allLists.first(where: { $0.id == id }) }
+            .sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
 
-        let visibleNames = Array(resolvedNames.prefix(2))
-        let hiddenCount = max(0, resolvedNames.count - visibleNames.count)
+        let lernjahrMax = VocabularyListSelectionResolver.currentLernjahrMax()
+        let totalEntries = resolvedLists.reduce(0) { acc, list in
+            acc + VocabularyListSelectionResolver.effectiveItems(
+                for: list,
+                lernjahrMax: lernjahrMax
+            ).count
+        }
 
-        VStack(alignment: .leading, spacing: 2) {
-            ForEach(visibleNames, id: \.self) { name in
-                Text("• \(name)")
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
+        let listLine: String = {
+            if resolvedLists.count >= 4 {
+                return "\(resolvedLists.count) Listen ausgewählt"
             }
-            if hiddenCount > 0 {
-                Text("+\(hiddenCount) weitere")
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-            }
+            return resolvedLists.map(\.name).joined(separator: ", ")
+        }()
+
+        VStack(alignment: .leading, spacing: 3) {
+            Text(listLine)
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+                .lineLimit(2)
+                .minimumScaleFactor(0.85)
+                .truncationMode(.tail)
+
+            Text("\(totalEntries) Einträge gesamt")
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
         }
     }
 
