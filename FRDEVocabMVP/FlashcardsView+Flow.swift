@@ -189,8 +189,25 @@ extension FlashcardsView {
         if isFirstAppear {
             if setup.shouldAutoStartFromLaunch {
                 setup.shouldAutoStartFromLaunch = false
-                isWaitingToStart = true
+                // **Block A.2 (2026-05-03)** — Im Chain-Mode den
+                // „Zum Starten tippen"-Overlay überspringen. Chain-
+                // User hat die explizite Wahl auf dem Pre-Screen
+                // („Training starten"-CTA) bereits getroffen; ein
+                // weiterer Tap auf der ersten Karte fühlt sich nach
+                // Setup-Skip-Spec wie ein doppelter Setup-Schritt
+                // an. Im Chain: direkt erste Karte sichtbar +
+                // automatisches Card-Flip-Geräusch + TTS-Prompt
+                // (mirror der Tap-Handler-Logik aus dem Layout).
+                let isChain = launchContext?.chainContext != nil
+                isWaitingToStart = !isChain
                 startFlashcardsFromSetup(autoplayPrompt: false)
+                if isChain {
+                    feedbackPlayer.playCardFlip()
+                    Task { @MainActor in
+                        try? await Task.sleep(nanoseconds: 200_000_000)
+                        speakCurrentPrompt()
+                    }
+                }
             } else {
                 syncSetupSelection()
                 // Auto-Resume nur beim ersten Appear, NICHT bei jedem

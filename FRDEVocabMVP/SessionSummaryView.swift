@@ -156,9 +156,22 @@ struct SessionSummaryView: View {
 
             // CTA erscheint als Letztes — erst nachdem der User die
             // Belohnung wahrgenommen hat. Timing zentral in `FeedbackTiming`.
+            //
+            // **Block A.1 (2026-05-03)** — Im Chain-Mode-Mid-Step
+            // (`hidesDetailedStats == true`) wird der CTA-Reveal-Delay
+            // auf 0 gesetzt: User sieht „X von Y richtig" + Praise +
+            // CTA simultan in einem Render-Pass. Der vorherige Delay
+            // war an die XP-Hochzähl-/Reward-Animationen gekoppelt
+            // (User sollte die Belohnung wahrnehmen bevor er weiter-
+            // tappt) — im simplified Mid-Step-Modus gibt's diese
+            // Animationen aber nicht, der Delay erzeugt einen
+            // gefühlten „toten" Moment vor dem CTA-Erscheinen. Out-
+            // of-Chain (Done-Card mit allen Stats) bleibt der Delay
+            // wie bisher.
+            let ctaDelay: Double = hidesDetailedStats ? 0 : FeedbackTiming.ctaRevealDelay
             withAnimation(
                 .easeOut(duration: FeedbackTiming.ctaRevealDuration)
-                .delay(FeedbackTiming.ctaRevealDelay)
+                .delay(ctaDelay)
             ) {
                 ctaVisible = true
             }
