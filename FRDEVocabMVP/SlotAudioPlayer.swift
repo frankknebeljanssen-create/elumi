@@ -58,9 +58,15 @@ final class SlotAudioPlayer {
     /// gegen Rapid-Fire-Buzz bei voller Reel-Geschwindigkeit.
     private static let clickThrottleSeconds: TimeInterval = 0.06
 
-    /// Click-Volume (0.0–1.0). Bewusst gedämpft (~0.6), damit der
-    /// dichte Click-Stream nicht die anderen App-Sounds übertönt.
-    private static let clickVolume: Float = 0.6
+    /// Click-Volume (0.0–1.0). Bewusst gedämpft, damit der dichte
+    /// Click-Stream nicht die anderen App-Sounds übertönt.
+    /// **2026-05-02 (User-Befund „click noise bei slot drehen etwas
+    /// leiser machen, ist lauter als alles andere")**: 0.6 → 0.3 —
+    /// halbiert. Bei 16 Clicks/Sek. (max via Throttle) summieren
+    /// sich auch leise Einzelticks akustisch auf, deshalb ist die
+    /// effektive Lautstärke deutlich höher als ein single-shot
+    /// Sound mit gleichem `volume`-Wert.
+    private static let clickVolume: Float = 0.3
 
     // MARK: - State
 
