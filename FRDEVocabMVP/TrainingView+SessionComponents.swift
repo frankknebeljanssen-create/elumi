@@ -293,72 +293,77 @@ extension TrainingView {
 
 
     var actionButtons: some View {
+        // **Block B (2026-05-03)** — Layout-Vereinheitlichung mit
+        // Karteikarten: vorher rendrte Training jeden Audio-Button
+        // full-width untereinander (Mikro / Tastatur-Switch /
+        // Lautsprecher / Lösung+Nächstes), Karteikarten haben
+        // schon das User-Wunsch-Layout (Row 1: Mikro + Lautsprecher
+        // nebeneinander, Row 2: Tastatur full-width). Jetzt
+        // systemweit konsistent: Vokabeln/Nomen/Verben (Speech-Modi)
+        // bekommen identische Anordnung, Mikro + Lautsprecher
+        // teilen die obere Zeile, der Tastatur-Switch (= zweite
+        // Reihe) öffnet darunter den typed-input-Bereich.
         VStack(spacing: 10) {
-            Button {
-                toggleRecording()
-            } label: {
-                // Feedback-Texte und Idle/Recording-Icon müssen ihren
-                // Farb-Kontext getrennt halten: Texte und Stop-Symbol tragen
-                // die foregroundStyle-Tönung (weiß / rot), das Cartoon-
-                // Mikrofon kommt mit eigener Farbe und ignoriert Tints.
-                Group {
-                    if showsSuccessOnlyMessage {
-                        Text("Richtig 🙂")
-                            .font(.system(size: 26, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                    } else if showsRetryOnlyMessage {
-                        Text("Falsch 😕")
-                            .font(.system(size: 26, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                    } else if isSpeechRecording {
-                        // Recording: klassisches rotes Stop-Quadrat
-                        // (OS-Konvention, nicht Teil des Cartoon-Sets).
-                        Image(systemName: "stop.fill")
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundStyle(AppTheme.Colors.error)
-                    } else {
-                        // Idle: Cartoon-Mikrofon.
-                        ElumiIconView(icon: .mikrofon, size: 32)
+            HStack(spacing: 10) {
+                Button {
+                    toggleRecording()
+                } label: {
+                    // Feedback-Texte und Idle/Recording-Icon müssen ihren
+                    // Farb-Kontext getrennt halten: Texte und Stop-Symbol tragen
+                    // die foregroundStyle-Tönung (weiß / rot), das Cartoon-
+                    // Mikrofon kommt mit eigener Farbe und ignoriert Tints.
+                    Group {
+                        if showsSuccessOnlyMessage {
+                            Text("Richtig 🙂")
+                                .font(.system(size: 26, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                        } else if showsRetryOnlyMessage {
+                            Text("Falsch 😕")
+                                .font(.system(size: 26, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                        } else if isSpeechRecording {
+                            // Recording: klassisches rotes Stop-Quadrat
+                            // (OS-Konvention, nicht Teil des Cartoon-Sets).
+                            Image(systemName: "stop.fill")
+                                .font(.system(size: 28, weight: .bold))
+                                .foregroundStyle(AppTheme.Colors.error)
+                        } else {
+                            // Idle: Cartoon-Mikrofon.
+                            ElumiIconView(icon: .mikrofon, size: 48)
+                        }
                     }
-                }
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: actionButtonHeight)
-                .background(recordingButtonColor)
-                .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
-            }
-            .buttonStyle(.plain)
-            .overlay {
-                RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                    .stroke(Color.white.opacity(isSpeechRecording && isMicPulseVisible ? 0.28 : 0), lineWidth: 2)
-                    .animation(.easeInOut(duration: 0.55), value: isMicPulseVisible)
-            }
-            .disabled(!session.hasStartedTraining || currentCard == nil || !isAudioModeEnabled || !canUseSpeechRecognition)
-            .opacity(!session.hasStartedTraining || currentCard == nil || !isAudioModeEnabled || !canUseSpeechRecognition ? 0.45 : (isSpeechRecording && isMicPulseVisible ? 0.72 : 1))
-
-            typedAnswerControl
-
-            Button {
-                speakCurrentPrompt()
-            } label: {
-                // Cartoon-Lautsprecher statt SF `speaker.wave.2.fill`.
-                // State-Signal bleibt am Background (listeningButtonColor),
-                // das Icon selbst ist konstant farbig.
-                // **UX-Polish 2026-05-02 Iter 2 (User-Spec „Lautsprecher
-                // darunter auch 50 % größer")**: 32 → 48 pt. Skaliert
-                // mit dem Tastatur-Polish (32 → 64) als Cluster — beide
-                // Cartoon-Action-Icons in der Aktiv-Card-Reihe sind
-                // jetzt klar sichtbar, nicht mehr Mini-Affordances neben
-                // dem Mikrofon. `actionButtonHeight` unverändert, Icon
-                // skaliert intrinsisch.
-                ElumiIconView(icon: .lautsprecher, size: 48)
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: actionButtonHeight)
-                    .background(listeningButtonColor)
+                    .background(recordingButtonColor)
                     .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
+                }
+                .buttonStyle(.plain)
+                .overlay {
+                    RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                        .stroke(Color.white.opacity(isSpeechRecording && isMicPulseVisible ? 0.28 : 0), lineWidth: 2)
+                        .animation(.easeInOut(duration: 0.55), value: isMicPulseVisible)
+                }
+                .disabled(!session.hasStartedTraining || currentCard == nil || !isAudioModeEnabled || !canUseSpeechRecognition)
+                .opacity(!session.hasStartedTraining || currentCard == nil || !isAudioModeEnabled || !canUseSpeechRecognition ? 0.45 : (isSpeechRecording && isMicPulseVisible ? 0.72 : 1))
+
+                Button {
+                    speakCurrentPrompt()
+                } label: {
+                    // Cartoon-Lautsprecher statt SF `speaker.wave.2.fill`.
+                    // State-Signal bleibt am Background (listeningButtonColor),
+                    // das Icon selbst ist konstant farbig.
+                    ElumiIconView(icon: .lautsprecher, size: 48)
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: actionButtonHeight)
+                        .background(listeningButtonColor)
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
+                }
+                .buttonStyle(.plain)
+                .disabled(!session.hasStartedTraining || currentCard == nil || !isAudioModeEnabled)
+                .opacity(!session.hasStartedTraining || currentCard == nil || !isAudioModeEnabled ? 0.45 : 1)
             }
-            .buttonStyle(.plain)
-            .disabled(!session.hasStartedTraining || currentCard == nil || !isAudioModeEnabled)
-            .opacity(!session.hasStartedTraining || currentCard == nil || !isAudioModeEnabled ? 0.45 : 1)
+
+            typedAnswerControl
 
             // **Lesbarkeit-Fix 2026-05-02 (User-Befund „Lösung und
             // Nächstes Wort: font muss heller, nicht lesbar")**: bei
