@@ -125,6 +125,19 @@ struct ElumiTabView: View {
     /// Modal-Dismiss-Semantik (immer Backdrop-tappable, immer Preselect).
     @AppStorage(appTrainingGeneratorDurationKey)
     private var selectedDuration: Int = ElumiTabView.durationDefault
+
+    /// **UX-Polish 2026-05-02 (Stufe 7)** — pure View-State für die
+    /// Setup-Modal-Selektion. `selectedDuration` (oben) bleibt als
+    /// persistierter Slot-Screen-Anzeigewert. Im Modal verwenden wir
+    /// dagegen einen Optional-State, der bei jedem Modal-Open
+    /// **explizit auf `nil` zurückgesetzt** wird (siehe
+    /// `openSetupModalForReEdit`/`triggerStartTraining` Pfade) — User-
+    /// Spec: kein Default-Preselect, der User soll bewusst eine
+    /// Zeit wählen, bevor der „Los geht's"-CTA aktiv wird. Bei Tap
+    /// auf einen Chip wird sowohl `modalDurationSelection` als auch
+    /// `selectedDuration` gesetzt; CTA-Tap dismisst das Modal mit dem
+    /// (jetzt gültig persistierten) Wert.
+    @State private var modalDurationSelection: Int? = nil
     /// Slot-Phase — externe Sicht der State-Maschine in `SlotMachineView`.
     @State private var slotPhase: SlotPhase = .idle
     /// Trigger-Token — Setzen auf `true` startet einen Spin.
@@ -371,6 +384,9 @@ struct ElumiTabView: View {
     /// `.animation(value:)` reicht hier nicht zuverlässig, weil der
     /// State-Change in einer Funktion außerhalb des View-Bodys passiert).
     private func checkSetupModalState() {
+        // **UX-Polish 2026-05-02** — siehe `openSetupModalForReEdit`
+        // Doc: keine Vorselektion bei Modal-Open.
+        modalDurationSelection = nil
         withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
             showSetupModal = true
         }
@@ -484,6 +500,12 @@ struct ElumiTabView: View {
                 // gewählt (`globalSelectedListIDs.isEmpty`). User muss
                 // aktiv mindestens eine Liste wählen, bevor er ins
                 // Training geht — sonst hat das Training keinen Pool.
+                //
+                // **UX-Polish 2026-05-02 (Stufe 7)**: zusätzlich
+                // disabled bis User eine Zeit-Card gewählt hat
+                // (`modalDurationSelection != nil`). Pulse springt
+                // beim Card-Tap vom Card-Trio auf diesen CTA.
+                let isCTAReady = modalDurationSelection != nil && !globalSelectedListIDs.isEmpty
                 Button {
                     dismissSetupModal()
                 } label: {
@@ -494,8 +516,9 @@ struct ElumiTabView: View {
                         .frame(minHeight: 48)
                 }
                 .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
-                .disabled(globalSelectedListIDs.isEmpty)
-                .opacity(globalSelectedListIDs.isEmpty ? 0.45 : 1.0)
+                .disabled(!isCTAReady)
+                .opacity(isCTAReady ? 1.0 : 0.40)
+                .pulsing(active: isCTAReady, glowColor: ctaYellow)
                 .accessibilityLabel(Text("Los geht's"))
                 .accessibilityHint(Text("Übernimmt die gewählte Trainingsdauer und schließt den Setup-Dialog"))
             }
@@ -844,16 +867,26 @@ struct ElumiTabView: View {
 
             HStack(alignment: .firstTextBaseline, spacing: 0) {
                 // Reserve-Slot links — gleich breit wie der Pencil
-                // rechts (40pt), damit die Wert-VStack in der echten
+                // rechts, damit die Wert-VStack in der echten
                 // Mitte sitzt (nicht links-versetzt durch den
                 // Pencil-Asymmetrie-Effekt).
-                Color.clear.frame(width: 40, height: 40)
+                // **UX-Polish 2026-05-02 Iter 2**: Pencil 40 → 32pt
+                // (siehe unten), Reserve mitgezogen.
+                Color.clear.frame(width: 32, height: 32)
 
                 Spacer(minLength: 0)
 
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text("\(selectedDuration)")
-                        .font(.system(size: 46, weight: .black, design: .rounded))
+                        // **UX-Polish 2026-05-02 Iter 2 (User „zeitcard
+                        // oben etwas flacher machen, Slot-CTAs sind
+                        // teilweise vom Footer verdeckt")**: Number
+                        // 46 → 28 pt. Spart ~18 pt Card-Höhe und schiebt
+                        // den gesamten Slot-Screen-Content nach oben,
+                        // damit die Twin-CTAs („Nochmal drehen" /
+                        // „Jetzt üben") wieder klar über der Footer-
+                        // Linie sitzen.
+                        .font(.system(size: 28, weight: .black, design: .rounded))
                         .foregroundStyle(sectionStyle.accent)
                         // **Spec-1 (2026-04-30)** — `.identity` statt
                         // `.numericText()`. Begründung: mit den neuen
@@ -866,7 +899,7 @@ struct ElumiTabView: View {
                         .contentTransition(.identity)
 
                     Text("min")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
 
@@ -876,9 +909,13 @@ struct ElumiTabView: View {
                     openSetupModalForReEdit()
                 } label: {
                     Image(systemName: "pencil")
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(sectionStyle.accent)
-                        .frame(width: 40, height: 40)
+                        // **UX-Polish 2026-05-02 Iter 2** — Pencil-
+                        // Frame 40×40 → 32×32, damit die HStack-Höhe
+                        // mit dem kleineren Number-Glyph mitschrumpft.
+                        // Tap-Target bleibt mit 32 pt Apple-HIG-konform.
+                        .frame(width: 32, height: 32)
                         .background(
                             Circle().fill(sectionStyle.accent.opacity(0.14))
                         )
@@ -911,6 +948,10 @@ struct ElumiTabView: View {
     /// keine duplizierte Animation, keine getrennten States.
     private func openSetupModalForReEdit() {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        // **UX-Polish 2026-05-02** — bei jedem Modal-Open keine
+        // Vorselektion. User muss aktiv eine Zeit-Card antippen,
+        // bevor „Los geht's" aktiv wird (Pulsations-Hint führt ihn).
+        modalDurationSelection = nil
         withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
             showSetupModal = true
         }
@@ -949,44 +990,60 @@ struct ElumiTabView: View {
         // ergo kein nil-State mehr → der Pulse wäre tot. Die TimelineView
         // + wave/stagger/glow-Mechanik ist daher entfallen; der Chip ist
         // jetzt rein state-driven.
+        // **UX-Polish 2026-05-02** — Modal-Selektion ist jetzt
+        // optional (`modalDurationSelection`); bei Modal-Open kein
+        // Preselect. Selected-State liest den Modal-State, nicht
+        // `selectedDuration`. Tap setzt beide Werte (View-State +
+        // persistent storage).
         let moduleColor = sectionStyle.accent
-        let isSelected = selectedDuration == minutes
+        let isSelected = modalDurationSelection == minutes
+        let shouldPulse = modalDurationSelection == nil
         return ZStack {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(
                     isSelected
                         ? moduleColor.opacity(0.25)
                         : AppTheme.Colors.secondarySurface
                 )
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(
                     isSelected ? moduleColor : Color.clear,
                     lineWidth: isSelected ? 2 : 0
                 )
-            HStack(alignment: .firstTextBaseline, spacing: 3) {
+            // **UX-Polish 2026-05-02** — Number-Font 16 → 32 pt,
+            // Card-Höhe 44 → 88. Cards prominent als „bewusste Wahl"-
+            // Element, statt als Kleingedrucktes neben anderen Modal-
+            // Elementen.
+            VStack(alignment: .center, spacing: 2) {
                 Text("\(minutes)")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 32, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                 Text("min")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary.opacity(0.78))
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 44)
+        .frame(maxWidth: .infinity, minHeight: 88)
         .opacity(isSelected ? 1.0 : 0.85)
         .scaleEffect(isSelected ? 1.03 : 1.0)
         .contentShape(Rectangle())
         .onTapGesture {
             #if DEBUG
-            print("🕒 [DurationChip] tap on \(minutes) (prev=\(selectedDuration))")
+            print("🕒 [DurationChip] tap on \(minutes) (prev=\(String(describing: modalDurationSelection)))")
             #endif
+            modalDurationSelection = minutes
             selectedDuration = minutes
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
             #if DEBUG
-            print("🕒 [DurationChip] selectedDuration → \(minutes) ✓")
+            print("🕒 [DurationChip] modalDurationSelection → \(minutes) ✓")
             #endif
         }
         .animation(.easeInOut(duration: 0.15), value: isSelected)
+        // **UX-Polish 2026-05-02** — Pulsations-Hint solange noch
+        // keine Card gewählt. Bei erstem Tap stoppt die Pulse-
+        // Schleife (`shouldPulse = false`); Pulse springt auf den
+        // CTA „Los geht's" über.
+        .pulsing(active: shouldPulse, glowColor: moduleColor)
     }
 
     // MARK: - Unified CTA „Los geht's" / „Nochmal drehen + Jetzt üben" / „Jetzt üben"
@@ -1025,9 +1082,16 @@ struct ElumiTabView: View {
         }
     }
 
-    /// State 1: erster Versuch — ein Full-Width-Button „Los geht's!".
+    /// State 1: erster Versuch — ein Full-Width-Button „Maschine starten".
     private var singleSpinButton: some View {
-        Button {
+        // **UX-Polish 2026-05-02 (Stufe 7)** — pulsiert wenn der
+        // Slot ruht und noch nichts gedreht wurde (`slotPhase == .idle &&
+        // currentSpinNumber == 0`). User-Spec: nur dieser CTA + die
+        // Pre-Screen-„Bereit?"-Headline pulsieren auf dem Slot/Pre-
+        // Screen-Pfad — der „Nochmal drehen"/„Jetzt üben"-Twin-State
+        // bleibt ruhig.
+        let shouldPulse = slotPhase == .idle && currentSpinNumber == 0 && canTriggerSpin
+        return Button {
             triggerSpin()
         } label: {
             Text(spinPrimaryLabel)
@@ -1040,6 +1104,7 @@ struct ElumiTabView: View {
         .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
         .disabled(!canTriggerSpin)
         .opacity(canTriggerSpin ? 1.0 : 0.45)
+        .pulsing(active: shouldPulse, glowColor: ctaYellow)
         .transition(.opacity.combined(with: .scale(scale: 0.98)))
         .accessibilityLabel(Text("Los geht's"))
         .accessibilityHint(Text("Startet den ersten Slot-Spin"))
@@ -1271,6 +1336,13 @@ struct ElumiTabView: View {
         // Sparkle-Circles hatten den Slot zu zaghaft markiert. Das
         // dominante Q ist die nächste Iteration und kommuniziert
         // klarer „Slot ist noch leer, Spin füllt ihn".
+        //
+        // **UX-Polish 2026-05-02 (Stufe 7)** — Layout-Shift-Fix.
+        // Vorher: Placeholder ~44 pt vs Filled (`moduleResultCard`)
+        // ~92 pt → Card wechselt Höhe beim Spin-Reveal, CTA-Position
+        // wandert vertikal. Jetzt: fixe `frame(height: Self.resultSlotHeight)`
+        // an beiden Pfaden — CTA-Position konstant über alle Slot-
+        // Phasen.
         VStack(spacing: 0) {
             Image(systemName: "questionmark")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
@@ -1278,7 +1350,7 @@ struct ElumiTabView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
+        .frame(height: Self.resultSlotHeight)
         .background(
             RoundedRectangle(cornerRadius: 9, style: .continuous)
                 .fill(AppTheme.Colors.secondarySurface)
@@ -1291,6 +1363,13 @@ struct ElumiTabView: View {
                 )
         )
     }
+
+    /// **UX-Polish 2026-05-02** — fixe Höhe für Result-Slots
+    /// (Placeholder + Filled). Wert ist gewählt nach gemessener
+    /// Filled-Card-Höhe: 52 pt Icon + 5 pt Spacing + 12 pt Label +
+    /// 12 pt Vertical-Padding (6 pt × 2) = ~92 pt. Etwas Reserve
+    /// für Font-Metrics auf großen Dynamic-Type-Settings.
+    private static let resultSlotHeight: CGFloat = 92
 
     /// Result-Modul-Card — zeigt das gezogene Modul mit demselben
     /// Home-Icon wie im Home-Screen.
@@ -1327,7 +1406,10 @@ struct ElumiTabView: View {
                 .minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 6)
+        // **UX-Polish 2026-05-02** — fixe Höhe wie placeholder, damit
+        // `trainingResultCard` zwischen Pre-Spin/Post-Spin nicht
+        // mehr wächst. Siehe Doc bei `resultSlotHeight`.
+        .frame(height: Self.resultSlotHeight)
         .background(
             RoundedRectangle(cornerRadius: 9, style: .continuous)
                 .fill(AppTheme.Colors.secondarySurface)

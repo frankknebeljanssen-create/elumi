@@ -107,7 +107,19 @@ struct TrainingChainOverviewView: View {
                     onBack: handleBackTap
                 )
 
-                heroBlock
+                // **UX-Polish 2026-05-02 (Stufe 7)** — `heroBlock`
+                // („Bereit?" + Subtitle „X Min · 3 Übungen" + Tickets)
+                // ersetzt durch zwei separate Blöcke: erst die Time-
+                // Card oben (Konsistenz mit Slot/Setup-Layout), dann
+                // die alleinige pulsierende „Bereit?"-Headline. Subtitle-
+                // Zeile mit „Min · Übungen" und die Tickets-Zeile sind
+                // entfallen — die Total-Dauer steht in der Time-Card,
+                // Tickets sind im Footer-Badge sichtbar (R12).
+                if !chain.isJackpot {
+                    timeCardBlock
+                }
+
+                readyHeadline
 
                 slotCardsStack
 
@@ -149,34 +161,67 @@ struct TrainingChainOverviewView: View {
 
     // MARK: - Hero
 
-    private var heroBlock: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(chain.isJackpot ? "Jackpot — kein Training!" : "Bereit?")
-                .font(.system(size: 22, weight: .black, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
+    /// **UX-Polish 2026-05-02 (Stufe 7)** — Time-Card oben auf dem
+    /// Pre-Screen, visuell konsistent zum Slot-Screen-`timeDisplayCard`
+    /// (XL-Zahl + „min"-Suffix in zentriertem Setup-Card-Background),
+    /// jedoch **ohne** Pencil-Pill (auf dem Pre-Screen ist kein Re-Edit
+    /// vorgesehen — User hat die Zeit im Setup-Modal gewählt, der
+    /// Slot ist gedreht, jetzt ist es Read-Only). Total-Dauer =
+    /// `plannedSteps.count * perStepDurationMin`.
+    private var timeCardBlock: some View {
+        // **UX-Polish 2026-05-02 Iter 2 (User-Spec „zeitcard oben
+        // etwas flacher machen, das dann auch im Dein Trainingsplan
+        // genauso")**: Number 46 → 28 pt, vertical-padding 8 → 2 pt
+        // — identische Maße wie der Slot-Screen-`timeDisplayCard`.
+        // Pre-Screen sieht damit visuell konsistent zu Slot, plus
+        // das gespartene ~28 pt Card-Höhe schiebt die Übungs-Cards +
+        // CTA hoch, weg von der Footer-Linie.
+        let total = chain.plannedSteps.count * chain.perStepDurationMin
+        return VStack(spacing: 4) {
+            Text("TRAININGSZEIT")
+                .font(.system(size: 10, weight: .semibold, design: .rounded))
+                .tracking(1.5)
+                .foregroundStyle(AppTheme.Colors.cardLabel)
+                .textCase(.uppercase)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, alignment: .center)
 
-            if !chain.isJackpot {
-                Text(totalDurationText)
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text("\(total)")
+                    .font(.system(size: 28, weight: .black, design: .rounded))
+                    .foregroundStyle(sectionStyle.accent)
+                    .contentTransition(.identity)
+
+                Text("min")
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
-
-                // **Bugfix 2026-05-01** — Total-Tickets-Subtitle. Wird
-                // nur gerendert, wenn der Spin überhaupt Game-Slots
-                // hatte (sonst „+0 Tickets"-Zeile = visueller Lärm).
-                // Jackpot-Pfad zeigt das Total separat in `jackpotHint`,
-                // deshalb hier explizit `!chain.isJackpot` (das oberste
-                // `if` deckt das schon ab — Defense-in-Depth-Kommentar).
-                // Wording-Stil: Singular bei +1, Plural sonst — analog
-                // `totalDurationText` („1 Übung" vs „X Übungen").
-                if ticketsFromGameSlots > 0 {
-                    Text("🎫 +\(ticketsFromGameSlots) \(ticketsFromGameSlots == 1 ? "Ticket" : "Tickets")")
-                        .font(.system(size: 14, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.warning)
-                }
             }
+            .frame(maxWidth: .infinity, alignment: .center)
         }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 2)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 4)
+        .appSetupCardBackground()
+    }
+
+    /// **UX-Polish 2026-05-02 (Stufe 7)** — alleinige große Headline
+    /// „Bereit?" mit kontinuierlicher Pulsation. Kein Subtitle mehr,
+    /// keine Min-Count-/Übungs-Count-Zeile, kein Tickets-Hint — die
+    /// Headline soll als reiner Anker für die Aufmerksamkeit auf den
+    /// CTA „Training starten" wirken. Pulsation analog zum Slot-CTA
+    /// und den Setup-Modal-Time-Cards (zentral via `.pulsing(active:)`).
+    private var readyHeadline: some View {
+        Text(chain.isJackpot ? "Jackpot — kein Training!" : "Bereit?")
+            .font(.system(size: 32, weight: .black, design: .rounded))
+            .foregroundStyle(AppTheme.Colors.textPrimary)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.horizontal, 4)
+            .padding(.vertical, 8)
+            .pulsing(
+                active: !chain.isJackpot,
+                peakScale: 1.06,
+                glowColor: sectionStyle.accent
+            )
     }
 
     // MARK: - Slot-Cards-Stack
@@ -225,11 +270,27 @@ struct TrainingChainOverviewView: View {
             // nicht relevant, weil perStepDurationMin = totalDuration/N
             // mit N = Anzahl Modul-Slots immer ein ganzzahliges
             // Minuten-Ergebnis liefert: 6/2=3, 12/3=4, 18/2=9, etc.)
+            //
+            // **UX-Polish 2026-05-02 (Stufe 7) — Punkte 4 + 5**:
+            //   * **Lesbarkeit (Punkt 4)**: Foreground von `module.accent`
+            //     auf `AppTheme.Colors.textPrimary` umgestellt. Bei
+            //     dunklen Modul-Farben (z.B. Vokabeln Indigo-900
+            //     `#1E3A8A`) war dunkelblauer Pill-Text auf dunkelblau-
+            //     getöntem Pill-Hintergrund auf der dunklen Surface
+            //     unlesbar. textPrimary (cream/off-white) gibt sicheren
+            //     Kontrast unabhängig von der Modul-Akzent-Farbe; das
+            //     Pill-Tint (`accent.opacity(0.18)` Background +
+            //     `accent.opacity(0.40)` Border) trägt die Modul-
+            //     Identität weiter.
+            //   * **Größe (Punkt 5)**: Font 13 → 22 pt, Padding 10/4 →
+            //     14/8 pt. Pill verdoppelt sich optisch — Zeit-Anteil
+            //     pro Modul wird zur ablesbaren Info, nicht zum
+            //     Mini-Etikett.
             Text("\(chain.perStepDurationMin) min")
-                .font(.system(size: 13, weight: .black, design: .rounded))
-                .foregroundStyle(module.accent)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
+                .font(.system(size: 22, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
                 .background(
                     Capsule()
                         .fill(module.accent.opacity(0.18))
@@ -357,6 +418,14 @@ struct TrainingChainOverviewView: View {
         .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
         .opacity(chain.isJackpot ? 0.45 : 1.0)
         .disabled(chain.isJackpot)
+        // **UX-Polish 2026-05-02 Iter 2 (Stufe 7)** — pulsierender
+        // CTA wie auf dem Slot-Screen-„Maschine starten". Pulse läuft
+        // solange die Chain nicht im Jackpot-State ist (dann ist der
+        // CTA nur ein Reset-Pfad und braucht keine „tap me"-
+        // Affordance). Konsistente Pulse-Defaults via `pulsing(_:)`
+        // — gleiche Frequenz/Helligkeit wie Setup-Modal-CTAs +
+        // „Bereit?"-Headline.
+        .pulsing(active: !chain.isJackpot, glowColor: AppTheme.Colors.cta)
         .accessibilityLabel(chain.isJackpot ? "Zurück zum Setup" : "Training starten")
     }
 }
