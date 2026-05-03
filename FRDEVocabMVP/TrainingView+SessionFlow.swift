@@ -290,7 +290,19 @@ extension TrainingView {
         // direkt auf den `trainingSummaryScreen` mit dem Stufe-3-
         // Chain-aware-CTA. Verbformen-Pfad läuft nicht hier durch,
         // siehe `handleVerbformsNext()` für den dortigen Hook.
+        // **Modal-Race-Fix 2026-05-02** — User-Befund: bei Chain-
+        // Nomen-Wortauswahl mit kurzer Eval-Animation (~1.0–1.2 s)
+        // konnte der Force-Done-Pfad das `ChainCutoffModal` mid-render
+        // pre-empten. SwiftUI hat den Modal-State (`cutoffModalVisible
+        // = true`) zwar gesetzt, aber die View-Transition zum
+        // Summary-Screen löste die Modal-Animation auf, bevor sie
+        // sichtbar wurde. Lösung: solange das Modal sichtbar ist,
+        // hat der User-Choice Vorrang — Force-Done läuft entweder
+        // explizit über den „Jetzt weiter"-CTA des Modals oder über
+        // den nächsten Submit, NACHDEM User „Aufgabe fertigmachen"
+        // getappt hat (`cutoffModalVisible` zurück auf false).
         if TrainingChainStore.shared.timerExpired,
+           !TrainingChainStore.shared.cutoffModalVisible,
            !isVerbformsMode,
            trainingSessionOutcome == nil {
             forceTrainingDoneFromChainTimer()
@@ -350,7 +362,10 @@ extension TrainingView {
     /// User-Trigger zur nächsten Aufgabe — der Cutoff-Check sitzt
     /// genau hier am natural-transition-to-next-Punkt.
     func handleVerbformsNext() {
+        // **Modal-Race-Fix 2026-05-02** — siehe `loadNextTrainingCard`:
+        // Modal hat Vorrang vor Force-Done-Pre-Emption.
         if TrainingChainStore.shared.timerExpired,
+           !TrainingChainStore.shared.cutoffModalVisible,
            !verbformsSession.isFinished {
             forceVerbformsDoneFromChainTimer()
             return

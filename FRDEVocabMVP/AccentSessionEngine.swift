@@ -260,7 +260,13 @@ final class AccentSessionEngine: ObservableObject {
         // `HomeHeroModule.chainScreen` injiziert `preferredMode =
         // .uben` für Akzente — d.h. kein Speed-Round-Timer läuft
         // parallel zum Chain-Timer. Bereits in 4a-Smoke verifiziert.
-        if TrainingChainStore.shared.timerExpired, !isFinished {
+        // **Modal-Race-Fix 2026-05-02** — Modal hat Vorrang vor
+        // Force-Done-Pre-Emption. Siehe
+        // `TrainingView+SessionFlow.loadNextTrainingCard` für die
+        // ausführliche Begründung.
+        if TrainingChainStore.shared.timerExpired,
+           !TrainingChainStore.shared.cutoffModalVisible,
+           !isFinished {
             forceFinishFromChainTimer()
             return
         }

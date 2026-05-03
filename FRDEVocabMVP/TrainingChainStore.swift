@@ -288,13 +288,14 @@ final class TrainingChainStore: ObservableObject {
             clearStepTimer()
             return
         }
-        // SMOKE-OVERRIDE Commit-2 Smoke (uncommitted) — kürzt Step-
-        // Timer auf 30s. MUSS vor dem Commit zurückgerollt werden.
-        #if DEBUG
-        let totalSeconds = 30
-        #else
+        // **Smoke-Override-Cleanup 2026-05-02**: vorher (Commit `b142cdc`)
+        // war hier ein `#if DEBUG let totalSeconds = 30` als Smoke-
+        // Override für Commit-2-Testing — Comment „MUSS vor dem Commit
+        // zurückgerollt werden" verriet die Versehens-Inkludierung.
+        // Jetzt sauber auf den `chain.perStepDurationMin`-Wert
+        // zurückgesetzt (3 / 12 / 18 Min, je nach Setup-Wahl, geteilt
+        // durch Anzahl Modul-Slots).
         let totalSeconds = max(1, chain.perStepDurationMin * 60)
-        #endif
 
         stepTimer?.invalidate()
         stepTimer = nil

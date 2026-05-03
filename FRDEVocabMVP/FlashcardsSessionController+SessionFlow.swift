@@ -103,7 +103,12 @@ extension FlashcardsSessionController {
             // bleibt damit Chain-agnostic für Non-Chain-Sessions
             // (Default false, kein Effekt). Pattern matcht
             // `ProgressService.shared` etc. an anderen Stellen.
+            // **Modal-Race-Fix 2026-05-02** — Modal hat Vorrang vor
+            // Force-Done-Pre-Emption. Siehe
+            // `TrainingView+SessionFlow.loadNextTrainingCard` für die
+            // ausführliche Begründung.
             if TrainingChainStore.shared.timerExpired,
+               !TrainingChainStore.shared.cutoffModalVisible,
                sessionStore.session != nil {
                 sessionStore.markCurrentSessionDoneFromChainTimer()
                 return

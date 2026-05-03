@@ -210,7 +210,17 @@ extension QuizView {
         // wir direkt auf den Result-Screen mit dem Stufe-3-Chain-
         // aware-CTA. R9 (Parallel-Timer): N/A — Quiz hat keinen
         // Mode-Split (kein Speed Round, kein Üben/Lernen).
-        if TrainingChainStore.shared.timerExpired, !session.isShowingResult {
+        // **Modal-Race-Fix 2026-05-02** — Modal-Visibility hat
+        // Vorrang. Solange `cutoffModalVisible = true` ist, soll der
+        // User explizit per CTA wählen (Modal-„Jetzt weiter" ruft
+        // `forceQuizDoneFromChainTimer` über den Force-Advance-
+        // Handler-Pfad). Implizite Pre-Emption nur wenn Modal weg
+        // (User hat „Aufgabe fertigmachen" getappt). Siehe
+        // `TrainingView+SessionFlow.loadNextTrainingCard` für die
+        // ausführliche Begründung.
+        if TrainingChainStore.shared.timerExpired,
+           !TrainingChainStore.shared.cutoffModalVisible,
+           !session.isShowingResult {
             forceQuizDoneFromChainTimer()
             return
         }
