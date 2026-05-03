@@ -57,12 +57,11 @@ struct ChainTimerOverlayModifier: ViewModifier {
     @ViewBuilder
     private var topBarOverlay: some View {
         if let chain = chainStore.currentChain,
-           let step = chain.currentStep,
+           chain.currentStep != nil,
            chainStore.stepTotalSeconds > 0 {
             ChainStepTimerBar(
-                stepNumber: chain.displayStepNumber,
-                totalSteps: chain.totalStepCount,
-                moduleName: step.title,
+                sourceSlots: chain.sourceCenterSymbolKinds,
+                currentStepIndex: chain.currentIndex,
                 remainingSeconds: chainStore.stepRemainingSeconds,
                 totalSeconds: chainStore.stepTotalSeconds
             )
