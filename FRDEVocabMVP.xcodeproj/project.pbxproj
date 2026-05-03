@@ -473,6 +473,8 @@
 		CC66FF0000000000ABCDEF01 /* ChainCutoffModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC66FF0000000000ABCDEF02 /* ChainCutoffModal.swift */; };
 		CC77FF0000000000ABCDEF03 /* PulsingModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC77FF0000000000ABCDEF04 /* PulsingModifier.swift */; };
 		CC88FF0000000000ABCDEF05 /* TrainingChainCompleteSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC88FF0000000000ABCDEF06 /* TrainingChainCompleteSummaryView.swift */; };
+		CC99FF0000000000ABCDEF07 /* ConfettiBurst.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC99FF0000000000ABCDEF08 /* ConfettiBurst.swift */; };
+		CCAAFF0000000000ABCDEF09 /* JackpotCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCAAFF0000000000ABCDEF0A /* JackpotCelebrationView.swift */; };
 		FE12345678901234567890B1 /* ScanTuning.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890B2 /* ScanTuning.swift */; };
 		FE12345678901234567890BA /* HomeHeroLearningSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890BB /* HomeHeroLearningSection.swift */; };
 		FE12345678901234567890C1 /* WordRunnerGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890C2 /* WordRunnerGameView.swift */; };
@@ -1041,6 +1043,8 @@
 		CC66FF0000000000ABCDEF02 /* ChainCutoffModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChainCutoffModal.swift; path = FRDEVocabMVP/ChainCutoffModal.swift; sourceTree = "<group>"; };
 		CC77FF0000000000ABCDEF04 /* PulsingModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PulsingModifier.swift; path = FRDEVocabMVP/PulsingModifier.swift; sourceTree = "<group>"; };
 		CC88FF0000000000ABCDEF06 /* TrainingChainCompleteSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingChainCompleteSummaryView.swift; path = FRDEVocabMVP/TrainingChainCompleteSummaryView.swift; sourceTree = "<group>"; };
+		CC99FF0000000000ABCDEF08 /* ConfettiBurst.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ConfettiBurst.swift; path = FRDEVocabMVP/ConfettiBurst.swift; sourceTree = "<group>"; };
+		CCAAFF0000000000ABCDEF0A /* JackpotCelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = JackpotCelebrationView.swift; path = FRDEVocabMVP/JackpotCelebrationView.swift; sourceTree = "<group>"; };
 		FE12345678901234567890B2 /* ScanTuning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanTuning.swift; path = FRDEVocabMVP/ScanTuning.swift; sourceTree = "<group>"; };
 		FE12345678901234567890BB /* HomeHeroLearningSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeHeroLearningSection.swift; path = FRDEVocabMVP/HomeHeroLearningSection.swift; sourceTree = "<group>"; };
 		FE12345678901234567890C2 /* WordRunnerGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerGameView.swift; path = FRDEVocabMVP/WordRunnerGameView.swift; sourceTree = "<group>"; };
@@ -1178,6 +1182,8 @@
 				CC66FF0000000000ABCDEF02 /* ChainCutoffModal.swift */,
 				CC77FF0000000000ABCDEF04 /* PulsingModifier.swift */,
 				CC88FF0000000000ABCDEF06 /* TrainingChainCompleteSummaryView.swift */,
+				CC99FF0000000000ABCDEF08 /* ConfettiBurst.swift */,
+				CCAAFF0000000000ABCDEF0A /* JackpotCelebrationView.swift */,
 				FE12345678901234567890B2 /* ScanTuning.swift */,
 				FE12345678901234567890C2 /* WordRunnerGameView.swift */,
 				FE12345678901234567890D2 /* WordRunnerModels.swift */,
@@ -2119,6 +2125,8 @@
 				CC66FF0000000000ABCDEF01 /* ChainCutoffModal.swift in Sources */,
 				CC77FF0000000000ABCDEF03 /* PulsingModifier.swift in Sources */,
 				CC88FF0000000000ABCDEF05 /* TrainingChainCompleteSummaryView.swift in Sources */,
+				CC99FF0000000000ABCDEF07 /* ConfettiBurst.swift in Sources */,
+				CCAAFF0000000000ABCDEF09 /* JackpotCelebrationView.swift in Sources */,
 				AA00CCC1ABCD0003AA00AA00 /* SlotAudioPlayer.swift in Sources */,
 				FE12345678901234567890B1 /* ScanTuning.swift in Sources */,
 				FE12345678901234567890C1 /* WordRunnerGameView.swift in Sources */,

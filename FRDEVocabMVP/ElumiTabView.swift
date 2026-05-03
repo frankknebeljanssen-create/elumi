@@ -164,6 +164,21 @@ struct ElumiTabView: View {
     /// `lastSpinResult` wird verwertet.
     @State private var creditGrantConsumed: Bool = false
 
+    // MARK: - Jackpot-Feier (Block 5, 2026-05-03)
+    //
+    // Wird ausgelöst, sobald die Slot-Machine in `.revealed` wechselt
+    // und alle drei Reels ein Game-Symbol (`elumiCount == 3`) zeigen.
+    // Statt User auf den `TrainingChainOverviewView`-Pre-Screen mit
+    // „Jackpot — kein Training!" zu pushen, feiern wir an Ort und
+    // Stelle (siehe `JackpotCelebrationView`). Tickets-Grant findet
+    // bei der Reveal-Detection direkt statt (analog zur
+    // `startTraining`-Logik), damit der Counter im Overlay sofort
+    // hochzählen kann und der Footer-Badge synchron mitzieht.
+    @State private var showJackpotCelebration: Bool = false
+    @State private var jackpotConfettiStartDate: Date = .distantPast
+    @State private var jackpotTicketsBefore: Int = 0
+    @State private var jackpotTicketsGranted: Int = 0
+
     // MARK: - Versuchslogik (2026-04-24 User-Spec)
     //
     // Genau **drei** Versuche pro Trainings-Setup. Counter erhöht sich
@@ -340,8 +355,25 @@ struct ElumiTabView: View {
                     .zIndex(20)
                     .transition(.opacity.combined(with: .scale(scale: 0.96)))
             }
+            // **Jackpot-Feier-Overlay** (Block 5, 2026-05-03). Liegt
+            // über dem Setup-Modal-Layer, weil ein Jackpot logisch nach
+            // dem Setup kommt — ein gleichzeitiges Setup-Modal sollte
+            // ohnehin nie gleichzeitig sichtbar sein, aber höhere
+            // zIndex schützt gegen Race-Conditions.
+            if showJackpotCelebration {
+                JackpotCelebrationView(
+                    startDate: jackpotConfettiStartDate,
+                    ticketsBefore: jackpotTicketsBefore,
+                    ticketsGranted: jackpotTicketsGranted,
+                    onSpinAgain: handleJackpotSpinAgain,
+                    onGoHome: handleJackpotGoHome
+                )
+                .zIndex(30)
+                .transition(.opacity)
+            }
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.8), value: showSetupModal)
+        .animation(.easeInOut(duration: 0.3), value: showJackpotCelebration)
         .onAppear {
             // **Spec-1 Migration (2026-04-30)**: Defensive-on-Launch.
             // User mit altem `selectedDuration` (5/10/15/20) → einmal
@@ -750,6 +782,13 @@ struct ElumiTabView: View {
                 switch newPhase {
                 case .revealed:
                     triggerResultHighlight()
+                    // **Block 5 (2026-05-03)** — Jackpot-Feier-Trigger.
+                    // Wenn alle drei Reels Game-Symbole zeigen, fahren
+                    // wir das Overlay direkt hier hoch (statt den User
+                    // den „Jetzt üben"-CTA tappen zu lassen, der dann
+                    // den Pre-Screen mit „Jackpot — kein Training!"
+                    // gerendert hätte).
+                    triggerJackpotIfApplicable()
                 case .spinning, .stopping:
                     resultHighlightScale = 1.0
                     resultHighlightGlow = 0.0
@@ -1648,26 +1687,11 @@ struct ElumiTabView: View {
         // ins Training geht, gibt Tickets — verhindert Re-Roll-Farming.
         // Mapping aus `slotCreditGrantTable` (1×→+1, 2×→+3, 3×→+6).
         //
-        // **Stufe 2 Idempotenz (2026-04-30)**: zusätzlich gegen
-        // `creditGrantConsumed` geguarded. Erst nach erfolgreichem
-        // Grant wird das Flag auf `true` gesetzt. Re-Spin (in
-        // `handleSlotLanded`) setzt es wieder auf `false`.
-        if !creditGrantConsumed {
-            let granted = Self.slotCreditGrantTable[pendingResult.elumiCount] ?? 0
-            if granted > 0 {
-                ProgressStore.shared.mutate { progress in
-                    progress.arcadeCredits += granted
-                }
-                // Mirror auf bare `@AppStorage`-Key — siehe Pattern aus
-                // FlashcardsView+SessionComponents:42, damit Footer-Badge
-                // den neuen Wert sofort sieht.
-                arcadeCredits = ProgressStore.shared.progress.arcadeCredits
-                #if DEBUG
-                print("🎫 [ElumiTab] Credit-Grant on 'Jetzt üben' — Elumis=\(pendingResult.elumiCount), Credits+\(granted) → arcadeCredits=\(arcadeCredits)")
-                #endif
-            }
-            creditGrantConsumed = true
-        }
+        // **Block 5 (2026-05-03)**: Grant-Logik extrahiert nach
+        // `grantSpinTicketsIfNeeded(_:)` — wird auch vom Jackpot-Pfad
+        // (`triggerJackpotIfApplicable`) genutzt. Idempotenz via
+        // `creditGrantConsumed` bleibt unverändert.
+        _ = grantSpinTicketsIfNeeded(for: pendingResult)
 
         // Chain-Build aus Slot-Result. Game-Slots sind in `make(...)`
         // bereits aus `plannedSteps` gefiltert (sourceCenterSymbolKinds
@@ -1691,6 +1715,108 @@ struct ElumiTabView: View {
         // Der Pre-Screen pusht beim „Übung starten"-CTA selbst auf den
         // ersten Chain-Step (Logik im `AppDestinationHost`-Wiring).
         navigate(.trainingChainOverview(chain))
+    }
+
+    // MARK: - Tickets-Grant (extrahiert für Block 5, 2026-05-03)
+
+    /// Schreibt die Tickets-Belohnung für ein abgeschlossenes Spin-
+    /// Ergebnis ins `ProgressStore`. Idempotent über
+    /// `creditGrantConsumed` — ein und dieselbe Drehung kann nicht
+    /// doppelt gegrantet werden (Re-Roll-Cheat-Variante 2 wird hier
+    /// abgewehrt).
+    ///
+    /// Returns: Anzahl tatsächlich vergebener Tickets (`0` wenn schon
+    /// gegrantet oder kein Mapping-Eintrag).
+    ///
+    /// **Block 5**: aus `startTraining()` herausgezogen. Wird vom
+    /// Jackpot-Pfad (`triggerJackpotIfApplicable`) zur Reveal-Zeit
+    /// gerufen, damit der Counter im Overlay sofort den neuen Wert
+    /// im Footer-Badge widerspiegelt — und vom regulären
+    /// „Jetzt üben"-Pfad in `startTraining()` zur Tap-Zeit, wie bisher.
+    @discardableResult
+    private func grantSpinTicketsIfNeeded(for result: SlotSpinResult) -> Int {
+        guard !creditGrantConsumed else { return 0 }
+        let granted = Self.slotCreditGrantTable[result.elumiCount] ?? 0
+        if granted > 0 {
+            ProgressStore.shared.mutate { progress in
+                progress.arcadeCredits += granted
+            }
+            // Mirror auf bare `@AppStorage`-Key — siehe Pattern aus
+            // FlashcardsView+SessionComponents:42, damit Footer-Badge
+            // den neuen Wert sofort sieht.
+            arcadeCredits = ProgressStore.shared.progress.arcadeCredits
+        }
+        creditGrantConsumed = true
+        return granted
+    }
+
+    // MARK: - Jackpot-Feier-Trigger (Block 5, 2026-05-03)
+
+    /// Prüft das aktuelle `lastSpinResult` auf Jackpot-Konfiguration
+    /// (alle drei Reels = Game-Symbol) und löst gegebenenfalls die
+    /// In-Place-Feier aus.
+    ///
+    /// Wird aus `.onChange(of: slotPhase) → .revealed` gerufen, also
+    /// genau in dem Moment, in dem die Reels stillstehen. Tickets
+    /// werden hier — nicht erst beim Tap auf einen Folge-CTA —
+    /// gutgeschrieben, damit der Footer-Badge synchron mit dem
+    /// Counter-Animation im Overlay hochzählt.
+    ///
+    /// Bei Nicht-Jackpot-Spins ist diese Funktion ein No-Op.
+    private func triggerJackpotIfApplicable() {
+        guard let result = lastSpinResult else { return }
+        guard result.elumiCount == 3 else { return }
+        // Tickets-Counter-Werte VOR dem Grant einfangen, damit der
+        // Counter im Overlay sauber von alt → neu animiert.
+        let beforeBalance = ProgressStore.shared.progress.arcadeCredits
+        let granted = grantSpinTicketsIfNeeded(for: result)
+        // Falls schon gegrantet (defensiv — würde theoretisch nur bei
+        // Re-Render-Race auftreten): Counter trotzdem zeigen, aber mit
+        // Granted = 0. Praktisch: erste Reveal triggert hier, Folge-
+        // Renders sehen `creditGrantConsumed == true`.
+        jackpotTicketsBefore = beforeBalance
+        jackpotTicketsGranted = granted
+        jackpotConfettiStartDate = Date()
+
+        // Erfolgs-Haptik — additive Wuchtigkeit zum bestehenden
+        // `playJackpot()`-Sound aus `SlotMachineView.runSpinSequence`.
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+        // Layered Sound: zusätzlich Level-Up-Sound für tiefe Pointe
+        // (Jackpot-System-Sound 1306 läuft schon parallel aus dem
+        // Reel-Settle-Pfad; das Level-Up bringt einen warmen Layer
+        // dazu, der auch bei stummgeschalteten System-Sounds noch
+        // Punch hat).
+        feedbackPlayer.playLevelUp()
+
+        showJackpotCelebration = true
+    }
+
+    /// CTA-Closure aus `JackpotCelebrationView` — Primary „Nochmal
+    /// drehen!". Schließt das Overlay und triggert einen frischen Spin
+    /// (gleicher Code-Pfad wie der reguläre `triggerSpin`-CTA).
+    ///
+    /// Wir respektieren `canTriggerSpin` — wenn der User schon alle
+    /// drei Versuche durch hat (`!hasRemainingSpins`), darf hier
+    /// trotzdem nichts passieren. In der Praxis aber: Jackpot kann nur
+    /// nach einem Spin auftreten, also ist `currentSpinNumber >= 1`
+    /// und höchstens `== maxSpins`. Bei `currentSpinNumber == maxSpins`
+    /// hat der User keinen Re-Spin mehr — Button bleibt clickable, aber
+    /// der `triggerSpin()`-Guard verhindert den Spin und das Overlay
+    /// dismisst trotzdem (User-Feedback: Tap reagiert).
+    private func handleJackpotSpinAgain() {
+        showJackpotCelebration = false
+        triggerSpin()
+    }
+
+    /// CTA-Closure aus `JackpotCelebrationView` — Secondary „Zur
+    /// Startseite". Schließt das Overlay und navigiert zum Home-Tab.
+    /// Slot-State wird dabei *nicht* zurückgesetzt — der Slot-Tab
+    /// bleibt mit dem Jackpot-Result sichtbar, falls der User später
+    /// zurückkommt.
+    private func handleJackpotGoHome() {
+        showJackpotCelebration = false
+        goHome()
     }
 
     /// Mappt einen Chain-Step (HomeHeroModule) auf den passenden
