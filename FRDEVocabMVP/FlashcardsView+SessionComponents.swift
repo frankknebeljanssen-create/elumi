@@ -35,7 +35,8 @@ extension FlashcardsView {
             // kommt jederzeit über das Home-Icon in der AppBottomBar auf
             // die Startseite zurück, daher ist der explizite Secondary-
             // Button hier entbehrlich.
-            primaryCTAPulses: isChain
+            primaryCTAPulses: isChain,
+            hidesDetailedStats: isChain
         )
         .onAppear {
             consumeFlashcardSessionReward()

@@ -147,7 +147,8 @@ extension TrainingView {
                 onSecondaryCTA: isChain ? nil : {
                     dismissToHome()
                 },
-                primaryCTAPulses: isChain
+                primaryCTAPulses: isChain,
+                hidesDetailedStats: isChain
             )
 
             Spacer(minLength: 0)
@@ -2047,7 +2048,8 @@ extension TrainingView {
                 onSecondaryCTA: isChain ? nil : {
                     dismissToHome()
                 },
-                primaryCTAPulses: isChain
+                primaryCTAPulses: isChain,
+                hidesDetailedStats: isChain
             )
 
             Spacer(minLength: 0)

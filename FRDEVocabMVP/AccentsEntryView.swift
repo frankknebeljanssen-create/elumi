@@ -282,7 +282,8 @@ struct AccentsEntryView: View {
                             showingResult = nil
                             goHome()
                         },
-                        primaryCTAPulses: isChain
+                        primaryCTAPulses: isChain,
+                        hidesDetailedStats: isChain
                     )
                     .padding(.horizontal, AppLayout.screenPadding)
                     .padding(.top, AppLayout.screenHeaderTopPadding)

@@ -63,6 +63,17 @@ struct SessionSummaryView: View {
     /// (Setup-Modal-Cards, Slot-„Maschine starten", Pre-Screen-CTA).
     var primaryCTAPulses: Bool = false
 
+    /// **Block 3.5 (2026-05-03)** — User-Spec: im Chain-Mode-Mid-Step
+    /// (nach Step 1, Step 2 — NICHT am Final-Chain-End, der hat seine
+    /// eigene `TrainingChainCompleteSummaryView`) soll die Done-Card
+    /// drastisch vereinfacht sein. Nur Korrekt-Quote (groß + fett) +
+    /// Praise + Primary-CTA. XP, Combos, Richtung, Level, Streak,
+    /// Tickets sind raus, weil die Chain-Aggregation am Ende
+    /// passiert — pro-Modul-Detail zwischen Steps lenkt vom Pacing ab.
+    /// Out-of-Chain (Home → Modul direkt) bleibt mit allen Stats wie
+    /// heute (Default `false`).
+    var hidesDetailedStats: Bool = false
+
     /// Steuert die gestaffelten Einblend-Animationen der Reward-Chips beim
     /// ersten Erscheinen. So wirkt die Summary nicht statisch, sondern
     /// feiert dezent — ohne Arcade-Optik.
@@ -91,18 +102,28 @@ struct SessionSummaryView: View {
             // Direction steht direkt unter XP und vor Progress — dadurch
             // bekommt der User zuerst die Belohnung, dann den Kontext
             // („was hab ich gerade gelernt?"), dann Progress + Rewards.
+            //
+            // **Block 3.5 (2026-05-03)** — `hidesDetailedStats`-Branch
+            // für Chain-Mode-Mid-Step: alles zwischen Header und
+            // CTA-Footer ist verborgen, der `header`-Block bekommt
+            // einen vergrößerten Korrekt-Quote-Text (siehe
+            // `header`-Subview-Doc). Final-Chain-End nutzt eine
+            // dedizierte View (`TrainingChainCompleteSummaryView`),
+            // ist also nicht von dieser Vereinfachung betroffen.
             header
 
-            xpBreakdown
+            if !hidesDetailedStats {
+                xpBreakdown
 
-            directionRow
+                directionRow
 
-            divider
-            levelProgress
-
-            if hasRewards {
                 divider
-                rewardHighlights
+                levelProgress
+
+                if hasRewards {
+                    divider
+                    rewardHighlights
+                }
             }
 
             ctaFooter
@@ -183,9 +204,18 @@ struct SessionSummaryView: View {
             //   3. `isFlawless` → „Fehlerfrei!" (Success-Ton, emotional stärker)
             let effectiveHeadline = resultHeadline ?? outcome.session.resultHeadline
             let effectiveRating = performanceRating ?? outcome.session.accuracyRating
+            // **Block 3.5 (2026-05-03)** — Im Chain-Mid-Step ist der
+            // Korrekt-Quote-Text das einzige große Stat-Element auf
+            // der Card (XP/Streak/etc. sind verborgen). Damit's
+            // visuell nicht im Card-Whitespace verloren wirkt, kommt
+            // der Headline-Font dort von 22 → 32 pt hoch. Out-of-
+            // Chain (regulärer Done-Screen mit allen Stats) bleibt
+            // 22 pt — sonst dominiert die Headline die anderen
+            // Sektionen zu stark.
+            let headlineFontSize: CGFloat = hidesDetailedStats ? 32 : 22
             HStack(spacing: 8) {
                 Text(effectiveHeadline)
-                    .font(.system(size: 22, weight: .black, design: .rounded))
+                    .font(.system(size: headlineFontSize, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)

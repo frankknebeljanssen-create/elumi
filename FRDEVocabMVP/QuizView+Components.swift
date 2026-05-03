@@ -345,7 +345,8 @@ var quizResultScreen: some View {
             onSecondaryCTA: isChain ? nil : {
                 dismissToHome()
             },
-            primaryCTAPulses: isChain
+            primaryCTAPulses: isChain,
+            hidesDetailedStats: isChain
         )
     }
     .padding(.horizontal, AppLayout.screenPadding)
