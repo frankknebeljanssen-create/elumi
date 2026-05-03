@@ -53,6 +53,16 @@ struct SessionSummaryView: View {
     var secondaryCTALabel: String? = nil
     var onSecondaryCTA: (() -> Void)? = nil
 
+    /// **Block 2 (2026-05-02)** — User-Spec: im Chain-Modus soll der
+    /// Primary-CTA „Weiter zu …" / „Training abschließen" pulsieren,
+    /// um den User zum Weiter-Tap zu führen. Default `false` für
+    /// Non-Chain-Sessions (Home-Tile-Pfad). Caller setzt typisch
+    /// `primaryCTAPulses: launchContext?.chainContext != nil`.
+    /// Pulse-Defaults aus `PulsingModifier` (1.7 Hz, peak-glow 32 pt,
+    /// scale 1.05) — konsistent zu allen anderen App-Pulsen
+    /// (Setup-Modal-Cards, Slot-„Maschine starten", Pre-Screen-CTA).
+    var primaryCTAPulses: Bool = false
+
     /// Steuert die gestaffelten Einblend-Animationen der Reward-Chips beim
     /// ersten Erscheinen. So wirkt die Summary nicht statisch, sondern
     /// feiert dezent — ohne Arcade-Optik.
@@ -569,6 +579,18 @@ struct SessionSummaryView: View {
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+                    // **Block 2 (2026-05-02)** — Chain-Mode-Pulse
+                    // auf den Primary-CTA. `ctaVisible`-Gate
+                    // verhindert, dass der Pulse während der
+                    // Reveal-Verzögerung (CTA noch unsichtbar)
+                    // unnötig läuft — siehe `ctaRevealDelay`-
+                    // Animation im `.onAppear` oben. Secondary-CTA
+                    // bleibt absichtlich ohne Pulse (User-Spec
+                    // „nur Primary").
+                    .pulsing(
+                        active: primaryCTAPulses && ctaVisible,
+                        glowColor: AppTheme.Colors.cta
+                    )
 
                     if let secondary = onSecondaryCTA, let label = secondaryCTALabel {
                         Button(action: secondary) {

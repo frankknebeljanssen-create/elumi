@@ -140,9 +140,20 @@ extension FlashcardsView {
 
     var flashcardSessionScreen: some View {
         VStack(spacing: 0) {
+            // **Block 2 (2026-05-02)** — User-Spec: im Chain-Mode-on-
+            // Completion kein Modul-Chevron + Title mehr. Der Chain-
+            // Header (3 Step-Cards + Timer) via
+            // `ChainTimerOverlayModifier` trägt die Schritt-Identität.
+            // Während aktiver Session (vor Completion) bleibt der
+            // Header sichtbar — auch im Chain-Mode, weil er da als
+            // Setup-Skip-Header dient (Zurück → Setup-Card o.ä.).
+            // Erst auf der Completion-Card im Chain wird er
+            // versteckt.
             // Kompakter Header: kleiner „< Zurück" links + zentrierter Titel.
             // Ersetzt die alte ScreenHeaderCard + den großen Zurück-Button.
-            flashcardSessionHeader
+            if !(isFlashcardSessionCompleted && launchContext?.chainContext != nil) {
+                flashcardSessionHeader
+            }
 
             if isFlashcardSessionCompleted {
                 Spacer().frame(height: AppTheme.Spacing.sm)

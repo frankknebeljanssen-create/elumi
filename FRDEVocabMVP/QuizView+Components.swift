@@ -232,12 +232,22 @@ var quizResultScreen: some View {
     // ab, damit die unteren CTA-Buttons nicht verdeckt werden.
     ScrollView(showsIndicators: false) {
     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-        ScreenHeaderCard(
-            style: sectionStyle,
-            title: "Ergebnis",
-            subtitle: "",
-            systemImage: "rosette"
-        )
+        // **Block 2 (2026-05-02)** — User-Spec: im Chain-Mode auf dem
+        // Result-Screen keinen eigenen Modul-Header („Ergebnis"-
+        // ScreenHeaderCard) mehr. Der Chain-Header (3 Step-Cards +
+        // Timer) via `ChainTimerOverlayModifier` trägt die Schritt-
+        // Identität; ein zusätzlicher „Ergebnis"-Title-Banner
+        // dupliziert die visuelle Hierarchie. User navigiert via
+        // Chain-Header oder System-Back-Geste. Out-of-Chain bleibt
+        // der Header sichtbar.
+        if launchContext?.chainContext == nil {
+            ScreenHeaderCard(
+                style: sectionStyle,
+                title: "Ergebnis",
+                subtitle: "",
+                systemImage: "rosette"
+            )
+        }
 
         AppSurfaceCard(tint: sectionStyle.accent) {
             VStack(spacing: AppTheme.Spacing.lg) {
@@ -334,7 +344,8 @@ var quizResultScreen: some View {
             secondaryCTALabel: isChain ? nil : "Zur Startseite",
             onSecondaryCTA: isChain ? nil : {
                 dismissToHome()
-            }
+            },
+            primaryCTAPulses: isChain
         )
     }
     .padding(.horizontal, AppLayout.screenPadding)

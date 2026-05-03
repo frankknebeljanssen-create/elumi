@@ -281,7 +281,8 @@ struct AccentsEntryView: View {
                         onSecondaryCTA: isChain ? nil : {
                             showingResult = nil
                             goHome()
-                        }
+                        },
+                        primaryCTAPulses: isChain
                     )
                     .padding(.horizontal, AppLayout.screenPadding)
                     .padding(.top, AppLayout.screenHeaderTopPadding)

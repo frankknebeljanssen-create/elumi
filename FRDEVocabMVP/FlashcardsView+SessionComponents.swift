@@ -29,12 +29,13 @@ extension FlashcardsView {
                 } else {
                     returnToFlashcardSetup()
                 }
-            }
+            },
             // „Zur Startseite"-Secondary-CTA entfernt — das Karteikarten-
             // Summary wurde damit für kleinere Screens zu lang. Der User
             // kommt jederzeit über das Home-Icon in der AppBottomBar auf
             // die Startseite zurück, daher ist der explizite Secondary-
             // Button hier entbehrlich.
+            primaryCTAPulses: isChain
         )
         .onAppear {
             consumeFlashcardSessionReward()

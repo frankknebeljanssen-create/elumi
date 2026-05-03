@@ -111,7 +111,18 @@ extension TrainingView {
     /// und wechselt zurück zur Setup-Card.
     func trainingSummaryScreen(outcome: SessionRewardOutcome) -> some View {
         VStack(spacing: 16) {
-            trainingCompactHeader
+            // **Block 2 (2026-05-02)** — User-Spec: im Chain-Mode auf
+            // dem Summary-Screen kein Modul-Chevron + Title mehr. Der
+            // Chain-Header (3 Step-Cards + Timer) via
+            // `ChainTimerOverlayModifier` trägt die Schritt-Identität;
+            // ein zusätzlicher Modul-Header dupliziert die Information
+            // und nimmt der Chain-Progression visuelles Gewicht. User
+            // navigiert via Chain-Header oder System-Back-Geste — kein
+            // eigener Chevron nötig. Out-of-Chain-Pfad (Home → Modul
+            // direkt) zeigt den Header wie bisher.
+            if launchContext?.chainContext == nil {
+                trainingCompactHeader
+            }
 
             // **Stufe 3 (2026-05-01)** — Chain-Mode-Branching
             // (siehe FlashcardsView+SessionComponents.swift für Doc).
@@ -135,7 +146,8 @@ extension TrainingView {
                 secondaryCTALabel: isChain ? nil : "Zur Startseite",
                 onSecondaryCTA: isChain ? nil : {
                     dismissToHome()
-                }
+                },
+                primaryCTAPulses: isChain
             )
 
             Spacer(minLength: 0)
@@ -1998,7 +2010,12 @@ extension TrainingView {
     /// Credits, Level-Progress analog Karteikarten.
     var verbformsResultScreen: some View {
         VStack(spacing: 16) {
-            trainingSessionCompactHeader
+            // **Block 2 (2026-05-02)** — siehe `trainingSummaryScreen`:
+            // im Chain-Mode kein Modul-Chevron + Title auf dem Done-
+            // Screen. Chain-Header trägt die Schritt-Identität.
+            if launchContext?.chainContext == nil {
+                trainingSessionCompactHeader
+            }
 
             // **Stufe 3 (2026-05-01)** — Chain-Mode-Branching für
             // Verbformen-Pfad. Verbformen läuft NICHT als
@@ -2029,7 +2046,8 @@ extension TrainingView {
                 secondaryCTALabel: isChain ? nil : "Zur Startseite",
                 onSecondaryCTA: isChain ? nil : {
                     dismissToHome()
-                }
+                },
+                primaryCTAPulses: isChain
             )
 
             Spacer(minLength: 0)
