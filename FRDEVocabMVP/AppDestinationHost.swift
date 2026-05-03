@@ -175,15 +175,25 @@ struct AppDestinationHost: View {
                 feedbackPlayer: feedbackPlayer
             )
         case .trainingChainComplete:
-            // **Stufe 3 (2026-05-01)** — Platzhalter für die End-
-            // Summary-View, die in Stufe 5 über
-            // `TrainingChainStore.shared.stepOutcomes` rendert.
-            // Aktuell minimal: Headline + ein „Zur Startseite"-CTA,
-            // der die Chain räumt und Home öffnet. Stufe 5 ersetzt
-            // das durch eine richtige aggregierte Summary.
-            TrainingChainCompletePlaceholderView(
+            // **Stufe 5 (2026-05-02)** — End-Summary-View für die
+            // abgeschlossene Trainings-Chain. Aggregiert
+            // `TrainingChainStore.shared.stepOutcomes` (XP, Korrekt-
+            // Quote, Streak, Level-Up) plus Slot-Tickets aus
+            // `chain.sourceCenterSymbolKinds`. Konfetti + Sound +
+            // Haptik on appear. Primary „Noch eine Runde" pulsiert
+            // und führt zurück zur Slot-Machine (`.elumi`-Tab),
+            // Secondary „Zur Startseite" → Home.
+            //
+            // Chain-Cleanup: `goHome()` räumt seit dem Hot-Fix vom
+            // 2026-05-02 (Commit `e859491`) den `TrainingChainStore`
+            // automatisch ab — kein expliziter `clear()` nötig.
+            TrainingChainCompleteSummaryView(
                 feedbackPlayer: feedbackPlayer,
-                goHome: goHome,
+                onPlayAgain: {
+                    goHome()
+                    navigate(.elumi)
+                },
+                onGoHome: goHome,
                 openSettings: openSettings
             )
         case .elumi:
