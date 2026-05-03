@@ -284,12 +284,21 @@ struct TrainingChainCompleteSummaryView: View {
 
             // Tickets aus Slot-Spin
             if ticketsFromSlot > 0 {
+                // **Block 3.6 (2026-05-03)** — Wording: „X neue
+                // Tickets" statt „+N Ticket aus dem Slot". Klarere
+                // Direkt-Aussage was der User bekommen hat. Subtitle
+                // entfernt — die Information „aus dem Slot" ist auf
+                // dem Chain-End-Screen kontextuell klar (User kommt
+                // direkt vom Spin). Plus `isHero: true` für die
+                // gleiche Font-Größe wie Total-Korrekt-Quote und
+                // Level-Up — Tickets sind ein Reward-Highlight,
+                // sollen nicht im Subtle-Slot verschwinden.
                 aggregateStatRow(
                     icon: "ticket.fill",
                     iconColor: AppTheme.Colors.warning,
-                    title: "+\(ticketsFromSlot) \(ticketsFromSlot == 1 ? "Ticket" : "Tickets")",
-                    subtitle: "aus dem Slot",
-                    isHero: false
+                    title: "\(ticketsFromSlot) \(ticketsFromSlot == 1 ? "neues Ticket" : "neue Tickets")",
+                    subtitle: nil,
+                    isHero: true
                 )
             }
 
@@ -325,8 +334,13 @@ struct TrainingChainCompleteSummaryView: View {
                     .font(.system(size: 15, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                 if attempts > 0 {
+                    // **Block 3.6 (2026-05-03)** — Korrekt-Quote pro
+                    // Modul auf 14 pt + bold (vorher 12 pt medium).
+                    // Lesbarkeit-Bump damit der wichtigste Stat-Punkt
+                    // (Anzahl-Richtig) nicht im Subtitle-Slot
+                    // verschwindet.
                     Text("\(outcome.session.correctCount) von \(attempts) richtig")
-                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
             }
@@ -352,6 +366,11 @@ struct TrainingChainCompleteSummaryView: View {
 
     /// Generische Aggregate-Stat-Card (Total-Quote / Streak / Tickets /
     /// Level-Up). `isHero` sorgt für stärkere Akzent-Tönung.
+    /// **Block 3.6 (2026-05-03)** — Title-Font 16/14 → 20/16 pt für
+    /// alle Aggregate-Cards. Hero-Cards (Total-Quote, Level-Up) sind
+    /// damit ~20 pt black, normale Cards (Streak/Tickets) ~16 pt.
+    /// User-Spec „bisschen dicker und größer" — Korrekt-Quote +
+    /// Tickets sollen aus dem Card-Whitespace klar heraustreten.
     private func aggregateStatRow(
         icon: String,
         iconColor: Color,
@@ -361,13 +380,13 @@ struct TrainingChainCompleteSummaryView: View {
     ) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: isHero ? 24 : 20, weight: .bold))
+                .font(.system(size: isHero ? 26 : 22, weight: .bold))
                 .foregroundStyle(iconColor)
                 .frame(width: 32)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: isHero ? 16 : 14, weight: .bold, design: .rounded))
+                    .font(.system(size: isHero ? 20 : 16, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                 if let subtitle {
                     Text(subtitle)
@@ -508,6 +527,13 @@ private struct ConfettiBurst: View {
         let color: Color
         let size: CGFloat
         let rotationSpeed: Double
+        /// **Block 3.6 (2026-05-03)** — Stagger-Delay pro Partikel, um
+        /// die „Burst von oben"-Optik zu unterstreichen. Vorher
+        /// spawnten alle Partikel gleichzeitig bei `y = -20`; jetzt
+        /// kommen sie über die ersten ~0.4 s nacheinander rein, was
+        /// User-Wunsch „Konfetti von oben (nicht aus der Mitte)"
+        /// klar erfüllt.
+        let spawnDelay: Double
     }
 
     private let particles: [Particle] = (0..<ConfettiBurst.particleCount).map { i in
@@ -519,7 +545,8 @@ private struct ConfettiBurst: View {
             velocity: Double.random(in: 0.7...1.4),
             color: ConfettiBurst.palette.randomElement() ?? .white,
             size: CGFloat.random(in: 6...12),
-            rotationSpeed: Double.random(in: 1...4)
+            rotationSpeed: Double.random(in: 1...4),
+            spawnDelay: Double.random(in: 0...0.4)
         )
     }
 
@@ -536,21 +563,32 @@ private struct ConfettiBurst: View {
                     : max(0, 1.0 - (elapsed - fadeStart))
 
                 for particle in particles {
+                    // **Block 3.6** — Stagger-Spawn: Partikel mit
+                    // spawnDelay > elapsed sind noch nicht
+                    // erschienen, werden übersprungen. Effekt:
+                    // Konfetti rieselt über die ersten ~0.4 s
+                    // kontinuierlich von oben rein, statt schlagartig
+                    // aus einem Punkt zu kommen.
+                    let elapsedForParticle = elapsed - particle.spawnDelay
+                    guard elapsedForParticle > 0 else { continue }
+
                     // Y-Position: linear über Bildschirmhöhe, mit
-                    // Velocity-Multiplikator. Start bei -20, Ende bei
-                    // +size.height + 40.
-                    let progress = elapsed / Self.lifetime * particle.velocity
-                    let y = -20 + (size.height + 60) * progress
+                    // Velocity-Multiplikator. Start bei -80 (klar
+                    // off-screen oben, damit „von oben rein"-Optik
+                    // unmissverständlich ist), Ende bei
+                    // +size.height + 60.
+                    let progress = elapsedForParticle / Self.lifetime * particle.velocity
+                    let y = -80 + (size.height + 140) * progress
 
                     // X-Drift: sinusförmig um die Start-Position.
                     let baseX = particle.xRel * size.width
-                    let drift = sin(elapsed * 1.5 + particle.driftPhase) * particle.driftAmplitude
+                    let drift = sin(elapsedForParticle * 1.5 + particle.driftPhase) * particle.driftAmplitude
                     let x = baseX + drift
 
                     // Rotation: gleichmäßige Drehung über die Lifetime.
-                    let rotation = elapsed * particle.rotationSpeed * .pi
+                    let rotation = elapsedForParticle * particle.rotationSpeed * .pi
 
-                    var rect = CGRect(
+                    let rect = CGRect(
                         x: x - particle.size / 2,
                         y: y - particle.size / 2,
                         width: particle.size,
@@ -563,12 +601,6 @@ private struct ConfettiBurst: View {
                         .rotated(by: CGFloat(rotation))
                         .translatedBy(x: -x, y: -y)
 
-                    rect = CGRect(
-                        x: x - particle.size / 2,
-                        y: y - particle.size / 2,
-                        width: particle.size,
-                        height: particle.size * 1.4
-                    )
                     ctx.fill(
                         Path(roundedRect: rect, cornerRadius: 1.5),
                         with: .color(particle.color.opacity(opacity))
