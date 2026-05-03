@@ -75,11 +75,20 @@ struct AppCardPressStyle: ButtonStyle {
 
 struct AppSecondaryButtonStyle: ButtonStyle {
     var tint: Color = AppTheme.Colors.primary
+    /// **2026-05-02** — optionaler Foreground-Override unabhängig vom
+    /// `tint`. Default `nil` → `tint` greift wie bisher (Border + Text
+    /// einheitlich Modul-Akzent). Bei sehr dunklen Modul-Akzenten
+    /// (z.B. Vokabeln-Indigo `#1E3A8A`) entsteht aber dunkler Text auf
+    /// dunklem `secondarySurface` — unlesbar. Caller kann hier
+    /// `AppTheme.Colors.textPrimary` (cream) durchreichen, um den
+    /// Text hell zu zwingen, während der Border in Modul-Akzent
+    /// bleibt. Konsistent zum Pre-Screen-Pill-Fix vom selben Tag.
+    var foreground: Color? = nil
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(AppTheme.Typography.button)
-            .foregroundStyle(tint)
+            .foregroundStyle(foreground ?? tint)
             .frame(maxWidth: .infinity)
             .frame(minHeight: AppTheme.Layout.buttonHeight)
             .background(

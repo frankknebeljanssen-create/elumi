@@ -346,6 +346,18 @@ extension TrainingView {
             .disabled(!session.hasStartedTraining || currentCard == nil || !isAudioModeEnabled)
             .opacity(!session.hasStartedTraining || currentCard == nil || !isAudioModeEnabled ? 0.45 : 1)
 
+            // **Lesbarkeit-Fix 2026-05-02 (User-Befund „Lösung und
+            // Nächstes Wort: font muss heller, nicht lesbar")**: bei
+            // Vokabeln-Sektion ist `trainingActionTint` der Modul-
+            // Akzent (`moduleVocabulary = #1E3A8A` Indigo-900). Bei
+            // diesem dunklen Tint rendert die Default-Foreground des
+            // `AppSecondaryButtonStyle` (= `tint`) dunkelblauen Text
+            // auf dem dunklen `secondarySurface`-Background — auf
+            // Vokabeln-Cards praktisch unlesbar. Mit dem neuen
+            // `foreground:`-Override-Parameter zwingen wir hier
+            // `textPrimary` (cream) für den Glyph; Border + Press-
+            // Tint bleiben in der Modul-Akzent-Farbe (Modul-Identität
+            // erhalten). Pattern-Mirror zum Pre-Screen-Pill-Fix.
             HStack(spacing: 10) {
                 Button {
                     revealSolution()
@@ -357,7 +369,7 @@ extension TrainingView {
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
                 }
-                .buttonStyle(AppSecondaryButtonStyle(tint: trainingActionTint))
+                .buttonStyle(AppSecondaryButtonStyle(tint: trainingActionTint, foreground: AppTheme.Colors.textPrimary))
                 .disabled(!canRevealSolution)
                 .opacity(canRevealSolution ? 1 : 0.6)
 
@@ -381,7 +393,7 @@ extension TrainingView {
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
                 }
-                .buttonStyle(AppSecondaryButtonStyle(tint: trainingActionTint))
+                .buttonStyle(AppSecondaryButtonStyle(tint: trainingActionTint, foreground: AppTheme.Colors.textPrimary))
                 .disabled(!session.hasStartedTraining || session.preparedTrainingItems.isEmpty)
                 .opacity(!session.hasStartedTraining || session.preparedTrainingItems.isEmpty ? 0.5 : 1)
             }
