@@ -170,14 +170,23 @@ var quizSessionScreen: some View {
 
         AppSurfaceCard(tint: sectionStyle.accent) {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                HStack {
-                    Text("\(min(session.currentQuestionIndex + 1, displayedQuestionCount)) von \(displayedQuestionCount)")
-                        .font(AppTheme.Typography.cardTitle)
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                    Spacer(minLength: 0)
-                    Text("\(correctCount) richtig · \(wrongCount) falsch")
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                // **Block 3.7.3 (2026-05-03)** — Im Chain-Modus
+                // sind die modul-eigenen Counter „X von Y" und
+                // „N richtig · M falsch" redundant zum
+                // Chain-Header („ÜBUNG X VON Y"-Step-Indikator).
+                // Progress-Bar bleibt sichtbar — die ist visuell
+                // kompakter und liefert direktes Per-Antwort-
+                // Feedback unabhängig vom Chain-Step-Counter.
+                if launchContext?.chainContext == nil {
+                    HStack {
+                        Text("\(min(session.currentQuestionIndex + 1, displayedQuestionCount)) von \(displayedQuestionCount)")
+                            .font(AppTheme.Typography.cardTitle)
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                        Spacer(minLength: 0)
+                        Text("\(correctCount) richtig · \(wrongCount) falsch")
+                            .font(AppTheme.Typography.caption)
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                    }
                 }
 
                 quizProgressBar

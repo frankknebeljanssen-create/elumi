@@ -19,7 +19,8 @@ extension FlashcardsView {
         cardIndex: Int,
         totalCount: Int,
         streak: Int,
-        streakTarget: Int
+        streakTarget: Int,
+        hidesCardCounter: Bool = false
     ) -> some View {
         // **User-Revision 2026-04-22**: Streak-Dots richten sich nach der
         // Mastery-Threshold („Karte fällt raus nach N richtigen Antworten").
@@ -57,9 +58,17 @@ extension FlashcardsView {
             if code.hasPrefix("en") { return "English" }
             return code.uppercased()
         }()
+        // **Block 3.7.3 (2026-05-03)** — Im Chain-Modus
+        // (`hidesCardCounter = true`) entfällt der „Karte X / Y"-Suffix
+        // auf der Front-Seite. Chain-Header zeigt eh „ÜBUNG X VON Y"
+        // — der Per-Card-Counter ist redundant und nimmt visuelles
+        // Gewicht im Tag-Slot ein.
+        let frontTagText: String = hidesCardCounter
+            ? languageLabel
+            : "\(languageLabel) · Karte \(cardIndex) / \(totalCount)"
         let tagText: String = isAnswerSide
             ? "\(languageLabel) · Antwort"
-            : "\(languageLabel) · Karte \(cardIndex) / \(totalCount)"
+            : frontTagText
 
         return ZStack(alignment: .topLeading) {
             // Hintergrund + Border

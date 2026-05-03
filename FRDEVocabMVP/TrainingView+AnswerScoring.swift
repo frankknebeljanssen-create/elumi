@@ -22,6 +22,19 @@ extension TrainingView {
                 label: "Nicht erkannt",
                 detail: "Bitte nochmal versuchen."
             )
+            // **Block 3.7.2 (2026-05-03)** — User-Spec: nach „Nicht
+            // erkannt" muss der User das Mikro nicht manuell wieder
+            // antippen, sondern Recording startet automatisch erneut.
+            // Pattern-Mirror zum Mikro-Auto-Resume nach
+            // „Lösung anzeigen" (Commit `b313559`): kurzer Delay
+            // (0.4 s) gibt der gestoppten Audio-Session Zeit, sauber
+            // abzubauen, bevor `beginAutomaticListeningIfNeeded()`
+            // einen neuen Recording-Start triggert. Self-gated über
+            // die Mode-Guards in `beginAutomaticListeningIfNeeded`
+            // (No-Op in Article/Verb/Noun-Choice).
+            scheduleFeedbackTask(after: 0.4) {
+                beginAutomaticListeningIfNeeded()
+            }
             return
         }
 

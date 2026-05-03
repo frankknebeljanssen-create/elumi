@@ -85,7 +85,8 @@ extension FlashcardsView {
                             cardIndex: cardIndex,
                             totalCount: totalCards,
                             streak: streakValue,
-                            streakTarget: streakTargetValue
+                            streakTarget: streakTargetValue,
+                            hidesCardCounter: launchContext?.chainContext != nil
                         )
                         .opacity(interaction.isFlashcardFlipped ? 0 : 1)
 
@@ -97,7 +98,8 @@ extension FlashcardsView {
                             cardIndex: cardIndex,
                             totalCount: totalCards,
                             streak: streakValue,
-                            streakTarget: streakTargetValue
+                            streakTarget: streakTargetValue,
+                            hidesCardCounter: launchContext?.chainContext != nil
                         )
                         .opacity(interaction.isFlashcardFlipped ? 1 : 0)
                         .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0), perspective: 0.72)

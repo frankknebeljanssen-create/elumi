@@ -68,8 +68,15 @@ extension TrainingView {
     var responseCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             if showsNotRecognizedMessage {
+                // **Block 3.7.1 (2026-05-03)** — User-Befund: „Nicht
+                // erkannt"-Hinweis war auf `Typography.screenTitle`
+                // (26 pt bold) viel zu groß für eine Inline-Antwort-
+                // Card-Message. Auf `Typography.body` (16 pt medium)
+                // reduziert — ~1/3 kleiner, gleicher Look-and-Feel
+                // wie andere Antwort-Card-Texte (z.B.
+                // „Antwort"-Label-Zeile).
                 Text("Nicht erkannt, bitte nochmal versuchen.")
-                    .font(AppTheme.Typography.screenTitle)
+                    .font(AppTheme.Typography.body)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .center)
             } else if showsSolutionMessage, let currentCard {

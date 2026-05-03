@@ -226,7 +226,13 @@ extension TrainingView {
             trainingSessionCompactHeader
 
             // Progress counter for Nomen, Artikel, Verben
-            if !session.isSpeedRound, (isNounMode || isArticleMode || isVerbMode), session.hasStartedTraining, !session.isShowingRoundComplete {
+            // **Block 3.7.3 (2026-05-03)** — User-Spec: im Chain-
+            // Modus sind Modul-eigene „X / Y"-Counter und „Runde N"
+            // redundant zum Chain-Header („ÜBUNG X VON Y"-Step-
+            // Indikator). Conditional auf
+            // `launchContext?.chainContext == nil` — Counter bleibt
+            // out-of-Chain unverändert sichtbar.
+            if !session.isSpeedRound, (isNounMode || isArticleMode || isVerbMode), session.hasStartedTraining, !session.isShowingRoundComplete, launchContext?.chainContext == nil {
                 let solved = session.preparedTrainingItems.count - session.remainingTrainingItems.count
                 let total = session.preparedTrainingItems.count
                 HStack {
