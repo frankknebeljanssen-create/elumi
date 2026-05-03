@@ -143,7 +143,11 @@ struct ChainStepTimerBar: View {
                 glyphTint: .white
             )
             Text(module.title)
-                .font(.system(size: 9, weight: .bold, design: .rounded))
+                // **UX-Polish 2026-05-02 (User-Befund „Modul-Namen
+                // im Chain-Header zu klein")**: 9 → 11 pt. Card-Höhe
+                // bleibt im Soll (~39 pt) — kein Layout-Sprung, weil
+                // Vertical-Padding (4) und Icon (22) unverändert.
+                .font(.system(size: 11, weight: .bold, design: .rounded))
                 .foregroundStyle(stepCardForeground(state: state))
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -179,7 +183,10 @@ struct ChainStepTimerBar: View {
                 .scaledToFit()
                 .frame(width: 22, height: 22)
             Text("Game")
-                .font(.system(size: 9, weight: .bold, design: .rounded))
+                // **UX-Polish 2026-05-02** — siehe `moduleStepCard`:
+                // 9 → 11 pt für Lesbarkeits-Konsistenz mit den
+                // Modul-Cards.
+                .font(.system(size: 11, weight: .bold, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textSecondary)
         }
         .frame(maxWidth: .infinity)
@@ -225,7 +232,13 @@ struct ChainStepTimerBar: View {
         VStack(spacing: 4) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(moduleStepLabel)
-                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    // **UX-Polish 2026-05-02 (User-Befund „Übung X
+                    // von Y zu klein")**: 10 → 12 pt. Sitzt
+                    // auf der gleichen baseline wie der MM:SS-Timer
+                    // (22 pt) — relative Hierarchie bleibt stabil
+                    // (Timer dominant, Step-Indikator klar lesbar
+                    // aber sekundär).
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .textCase(.uppercase)
 

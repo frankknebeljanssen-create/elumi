@@ -336,7 +336,14 @@ extension TrainingView {
                 // Cartoon-Lautsprecher statt SF `speaker.wave.2.fill`.
                 // State-Signal bleibt am Background (listeningButtonColor),
                 // das Icon selbst ist konstant farbig.
-                ElumiIconView(icon: .lautsprecher, size: 32)
+                // **UX-Polish 2026-05-02 Iter 2 (User-Spec „Lautsprecher
+                // darunter auch 50 % größer")**: 32 → 48 pt. Skaliert
+                // mit dem Tastatur-Polish (32 → 64) als Cluster — beide
+                // Cartoon-Action-Icons in der Aktiv-Card-Reihe sind
+                // jetzt klar sichtbar, nicht mehr Mini-Affordances neben
+                // dem Mikrofon. `actionButtonHeight` unverändert, Icon
+                // skaliert intrinsisch.
+                ElumiIconView(icon: .lautsprecher, size: 48)
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: actionButtonHeight)
                     .background(listeningButtonColor)
@@ -405,7 +412,14 @@ extension TrainingView {
             if showingTypedAnswerInput {
                 HStack(spacing: 10) {
                     Image(systemName: "keyboard")
-                        .font(.system(size: 20, weight: .bold))
+                        // **UX-Polish 2026-05-02 (User-Spec „Keyboard-
+                        // Icon in Aufgaben-Cards verdoppeln")**: 20
+                        // → 40 pt. Inline-Hinweis „Tipp statt
+                        // Sprechen" neben dem TextField — Verdopplung
+                        // analog zum Länderflaggen-Polish vom
+                        // 2026-05-02. Trainings-Action-Tint bleibt
+                        // unverändert.
+                        .font(.system(size: 40, weight: .bold))
                         .foregroundStyle(trainingActionTint)
 
                     TextField("Antwort tippen", text: $typedAnswer)
@@ -435,11 +449,18 @@ extension TrainingView {
                         typedAnswerFieldFocused = true
                     }
                 } label: {
-                    // Cartoon-Tastatur als Modus-Öffner. Das Inline-SF
-                    // `keyboard` innerhalb der aktiven Input-Card (oben)
-                    // bleibt bewusst SF — dort ist es eine schmale
-                    // Affordance, kein primärer Action-Slot.
-                    ElumiIconView(icon: .tastatur, size: 32)
+                    // Cartoon-Tastatur als Modus-Öffner.
+                    // **UX-Polish 2026-05-02 (User-Spec „Keyboard-
+                    // Icon in Aufgaben-Cards verdoppeln")**: 32 →
+                    // 64 pt. Action-Card-Höhe (`actionButtonHeight`)
+                    // unverändert — das Cartoon-Glyph trägt die
+                    // Skalen-Verdopplung intrinsisch, der Card-Frame
+                    // bleibt gleich groß. Das Inline-SF-`keyboard` in
+                    // der aktiven typed-Input-Zeile (oben in
+                    // `typedAnswerControl`) ist mit dieser Iteration
+                    // ebenfalls verdoppelt (20 → 40 pt) für
+                    // Lesbarkeits-Konsistenz im selben Card-Cluster.
+                    ElumiIconView(icon: .tastatur, size: 64)
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: actionButtonHeight)
                         .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium)

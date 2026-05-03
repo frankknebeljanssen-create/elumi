@@ -326,18 +326,15 @@ struct AccentsSessionView: View {
                 audioPlayButton(for: exercise)
             }
 
-            // Akzent-Typ als Chip — deutlich sichtbar in Accent-Farbe.
-            Text(exercise.accentType.germanLabel)
-                .font(.system(size: 17, weight: .bold, design: .rounded))
-                .foregroundStyle(accentColor)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(
-                    Capsule().fill(accentColor.opacity(0.18))
-                )
-                .overlay(
-                    Capsule().stroke(accentColor.opacity(0.35), lineWidth: 1)
-                )
+            // **UX-Polish 2026-05-02 (User-Spec „Akzent-Typ-Pill
+            // systemweit entfernen")**: vorher zeigte unter dem
+            // Frage-Wort eine Chip-Card mit dem germanLabel des
+            // Akzent-Typs (z.B. „Akut", „Grave", „Cedille"). User
+            // soll aus dem Wort selber erkennen, welcher Akzent
+            // fehlt — die Pill war ein didaktischer Spoiler. Gilt
+            // für alle Akzente-Versionen (Üben, Speed Round, Chain),
+            // weil dieser Renderer der einzige ist seit dem Lernen-
+            // Modus-Removal in Stufe 6.
         }
         .padding(AppTheme.Layout.cardPadding)
         .frame(maxWidth: .infinity)

@@ -60,13 +60,16 @@ final class SlotAudioPlayer {
 
     /// Click-Volume (0.0–1.0). Bewusst gedämpft, damit der dichte
     /// Click-Stream nicht die anderen App-Sounds übertönt.
-    /// **2026-05-02 (User-Befund „click noise bei slot drehen etwas
-    /// leiser machen, ist lauter als alles andere")**: 0.6 → 0.3 —
-    /// halbiert. Bei 16 Clicks/Sek. (max via Throttle) summieren
-    /// sich auch leise Einzelticks akustisch auf, deshalb ist die
-    /// effektive Lautstärke deutlich höher als ein single-shot
-    /// Sound mit gleichem `volume`-Wert.
-    private static let clickVolume: Float = 0.3
+    /// **2026-05-02 Iter 2 (User-Befund weiterhin „click noise zu
+    /// laut")**: 0.3 → 0.15 — nochmal halbiert. Bei 16 Clicks/Sek.
+    /// (max via Throttle) summieren sich auch leise Einzelticks
+    /// akustisch auf, der effektive Pegel ist deshalb deutlich höher
+    /// als der `volume`-Wert vermuten lässt. 0.15 schließt zu den
+    /// `AudioServicesPlaySystemSound`-Effekten (Settle/Win/Jackpot)
+    /// auf, die keine Volume-Control haben und auf System-Lautstärke
+    /// laufen — der Click-Stream ist jetzt Teil des Mix-Hintergrunds,
+    /// nicht mehr Vordergrund-Vorder-Knaller.
+    private static let clickVolume: Float = 0.15
 
     // MARK: - State
 
