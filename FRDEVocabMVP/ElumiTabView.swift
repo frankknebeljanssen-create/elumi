@@ -440,23 +440,25 @@ struct ElumiTabView: View {
                 }
 
             VStack(spacing: 18) {
-                // Header — Sparkles-Icon + Frage
+                // Header — Sparkles-Icon + Top-Headline
+                //
+                // **Section-Headlines 2026-05-03 (User-Spec)**: vorher
+                // war die Top-Headline „Wie lange willst du üben?"
+                // plus eine Process-Mini-Zeile („Zeit wählen → Slot
+                // starten → Üben"). Mit der Listen-Card aus Block 4
+                // oberhalb der Zeit-Cards passte der zeit-bezogene
+                // Top-Text nicht mehr; die zwei Section-Headlines
+                // unten machen die Process-Zeile redundant. Top-
+                // Headline jetzt neutral („Training einrichten"),
+                // Process-Zeile entfernt — Section-Headlines im
+                // VStack-Body machen die Wahl-Schritte selbsterklärend.
                 VStack(spacing: 8) {
                     Image(systemName: "sparkles")
                         .font(.system(size: 28, weight: .bold))
                         .foregroundStyle(sectionStyle.accent)
-                    Text("Wie lange willst du üben?")
+                    Text("Training einrichten")
                         .font(.system(size: 22, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .multilineTextAlignment(.center)
-                    // **Setup-Modal-Tweaks 2/3 (2026-04-30)** — Process-
-                    // Zeile als Mini-Orientierung. Bewusst dezent
-                    // gehalten (`.caption`, secondary-Farbe), damit es
-                    // nicht wie ein Tutorial-Schritt wirkt — nur ein
-                    // ruhiger „so läuft's"-Hinweis unter der Frage.
-                    Text("Zeit w\u{00E4}hlen \u{2192} Slot starten \u{2192} \u{00DC}ben")
-                        .font(.caption)
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
                         .multilineTextAlignment(.center)
                 }
 
@@ -480,19 +482,31 @@ struct ElumiTabView: View {
                 // **Block 4 (2026-05-03)** — Listen-Auswahl-Card oberhalb
                 // der Zeit-Cards. User-Spec: User muss bewusst Liste UND
                 // Zeit wählen, „Los geht's" disabled bis beide Wahlen
-                // durch. Reihenfolge im Modal vom 2026-04-30-Layout
-                // umgekehrt: vorher Zeit-Cards → Listen-Card; jetzt
-                // Listen-Card → Zeit-Cards. So sieht der User die
-                // wichtigste Inhaltswahl (Listen) als ersten Schritt
-                // im Setup-Funnel.
-                listSelectionCard
-
-                HStack(spacing: 12) {
-                    ForEach(Self.durationOptions, id: \.self) { minutes in
-                        durationChip(minutes: minutes)
-                    }
+                // durch. Section-Headline „Welche Listen?" macht den
+                // ersten Wahl-Schritt explizit.
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Welche Listen?")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    listSelectionCard
                 }
-                .frame(maxWidth: .infinity)
+
+                // Section „Wie lange?" — Zeit-Auswahl als zweiter
+                // Wahl-Schritt. Headline-Stil identisch zur Listen-
+                // Section für Hierarchie-Konsistenz.
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Wie lange?")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    HStack(spacing: 12) {
+                        ForEach(Self.durationOptions, id: \.self) { minutes in
+                            durationChip(minutes: minutes)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                }
 
                 // CTA „Los geht's" — schließt das Modal mit aktuellem
                 // Preselect. Pfad ist semantisch identisch zum
