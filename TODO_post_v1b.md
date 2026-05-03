@@ -732,3 +732,16 @@ Aktuell: `TrainingChainCompletePlaceholderView` ist gedimmt,
 unfeierlich, „Zurück zum Setup" nicht führend, nicht kindgerecht.
 
 Implementation als Stufe 6 nach Sweep (Commit 2/3/4).
+
+## SQLite-Daten-Fehler-Sammelpunkt
+
+Beim Testen entdeckte Daten-Fehler in `FRDEMasterLexicon.sqlite`.
+Werden gemeinsam in einer Massen-Migration gefixt sobald Liste
+größer ist (Pattern wie Milchtritt-Cleanup).
+
+Bekannte Fehler:
+- „le mars" wird als „les mars" angezeigt (März fälschlich
+  pluralisiert) — 2026-05-03
+
+Beim Auftauchen weiterer Fehler: hier sammeln, nicht einzeln
+fixen. Massen-Migration nach Sammlung in eigenem Commit.
