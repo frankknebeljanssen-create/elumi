@@ -446,71 +446,62 @@ struct AccentsEntryView: View {
     // MARK: - Mode Cards
 
     private var modeCards: some View {
-        // **Stufe 6 (2026-05-02)** — Lernen-Modus-Card entfernt;
-        // Setup-Trio reduziert auf Üben + Speed Round.
-        VStack(spacing: AppTheme.Spacing.sm) {
+        // **2026-05-04 Layout-Konsistenz** — Akzente an
+        // `TrainingView+Layout.drillModeCard` (Verbformen-Pattern)
+        // angeglichen: 2 Cards nebeneinander statt vertikal gestapelt,
+        // ohne Subline, kompaktere Icon/Headline-Größen.
+        // Direkt-Start-Verhalten bleibt erhalten — Akzente hat keinen
+        // separaten CTA wie Verbformen, der Tap startet sofort.
+        HStack(alignment: .top, spacing: AppLayout.setupDetailBlockSpacing) {
             modeCard(
                 mode: .uben,
                 icon: "scope",
-                headline: "Üben",
-                subline: "Mit direktem Feedback trainieren"
+                headline: "Üben"
             )
-            // Speed Round — appweit gleicher Kurzmodus, gleicher Timer,
-            // gleicher Summary-Pfad. Headline liest aus der zentralen
-            // Terminologie (einfacher späterer Rename); das Subline-
-            // Format „N Sekunden Tempo" spiegelt die globale Dauer.
             modeCard(
                 mode: .speedRound,
                 icon: "bolt.fill",
-                headline: SpeedRoundTerminology.name,
-                subline: speedRoundSubline
+                headline: SpeedRoundTerminology.name
             )
         }
     }
 
-    /// Modus-Card — visuell an den systemweiten `drillModeCard`-Stil
-    /// (Training/Nomen/Artikel/Verben) angeglichen: Icon oben
-    /// zentriert, Headline + Subline darunter, keine Chevron-Navigation.
-    /// Vorher war Akzente das einzige Mode-Modul mit horizontalem
-    /// Chevron-Row-Layout; jetzt stehen die drei Modi (Lernen / Üben /
-    /// Speed Round) als gleichwertige Card-Trio-Gruppe — identische
-    /// optische Sprache wie bei den Drill-Modulen.
-    private func modeCard(mode: AccentMode, icon: String, headline: String, subline: String) -> some View {
+    /// Modus-Card — visuell exakt am `drillModeCard`-Stil aus
+    /// `TrainingView+Layout` (Verbformen / Verben / Nomen / Artikel)
+    /// orientiert. Icon-Circle 38 pt, 16 pt black-rounded Headline,
+    /// keine Subline, minHeight 92.
+    ///
+    /// Akzente-spezifischer Unterschied: Tap startet direkt die
+    /// Session (kein Selection-State + separater CTA wie Verbformen).
+    /// Card hat daher auch kein Selected-Styling.
+    private func modeCard(mode: AccentMode, icon: String, headline: String) -> some View {
         Button {
             startSession(mode: mode)
         } label: {
-            // Cards ~20 % flacher (User-Wunsch):
-            //   • minHeight 120 → 96
-            //   • vertical padding 14 → 10
-            //   • Icon-Circle 54 → 48 pt (+ Spacing/Top angepasst)
             VStack(alignment: .center, spacing: 8) {
                 ZStack {
                     Circle()
-                        .fill(moduleAccentColor.opacity(0.18))
+                        .fill(moduleAccentColor.opacity(0.16))
                     Image(systemName: icon)
                         .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(moduleAccentColor)
                 }
-                .frame(width: 48, height: 48)
+                .frame(width: 38, height: 38)
                 .padding(.top, 2)
+                .frame(maxWidth: .infinity, alignment: .center)
 
-                VStack(alignment: .center, spacing: 3) {
-                    Text(headline)
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
-                    Text(subline)
-                        .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
-                }
-                .frame(maxWidth: .infinity)
+                Text(headline)
+                    .font(.system(size: 16, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .lineLimit(1)
+                    .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.85)
+                    .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: .infinity, minHeight: 96, alignment: .top)
+            .frame(maxWidth: .infinity)
             .padding(.horizontal, 12)
-            .padding(.vertical, 10)
+            .padding(.vertical, 11)
+            .frame(maxWidth: .infinity, minHeight: 92, alignment: .top)
             .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
         }
         .buttonStyle(.plain)
