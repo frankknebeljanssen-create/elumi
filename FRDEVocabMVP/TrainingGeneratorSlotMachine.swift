@@ -580,6 +580,18 @@ struct SlotReelView: View {
         .onAppear {
             print("🎰 [SlotReelView.onAppear] symbols.count=\(symbols.count), extendedCount=\(extendedSymbols.count), slotHeight=\(slotHeight)")
         }
+        .onDisappear {
+            // **Bug-Fix 2026-05-04** — Cleanup beim View-Teardown
+            // (z.B. User navigiert per Home-Button raus während die
+            // Reels noch drehen). Vorher lief `spinTimer` weiter und
+            // der Click-Stream loopte unsichtbar im Hintergrund. Jetzt:
+            // Timer invalidieren, State zurücksetzen — keine
+            // Geister-Animation, kein Sound-Loop.
+            spinTimer?.invalidate()
+            spinTimer = nil
+            isStopping = false
+            slowdownStartAt = nil
+        }
         .onChange(of: isSpinning) { _, newValue in
             if newValue {
                 startSpin()
