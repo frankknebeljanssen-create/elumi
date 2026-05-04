@@ -567,7 +567,18 @@ struct AccentsEntryView: View {
     /// direkt die Session im vorgegebenen Modus. Pattern-Konsistenz zu
     /// Quiz / Training. `activeSession == nil`-Guard sichert Idempotenz
     /// gegen Re-Appear (z.B. nach Cover-Dismiss).
+    ///
+    /// **2026-05-04 Fix** — Vorher las Akzente *nie* die globale
+    /// Listen-Auswahl. `selectedListID` wurde nur in `init` aus dem
+    /// `launchContext` oder als Custom-Listen-Default initialisiert.
+    /// Folge: User wählt Liste in Listen-Tab oder einem anderen
+    /// Modul-Setup, geht zu Akzente — Akzente nutzt weiterhin die
+    /// alte init-Liste. Pattern-Mirror zu Quiz/Training/Flashcards:
+    /// auf jedem `onAppear` aus dem globalen Slot lesen und in den
+    /// `selectedListID` mappen, falls verfügbar.
     private func handleAccentsAppear() {
+        restoreSelectedListIDFromGlobal()
+
         guard launchContext?.shouldAutoStart == true,
               activeSession == nil,
               !hasAutoStarted else {
@@ -576,6 +587,23 @@ struct AccentsEntryView: View {
         hasAutoStarted = true
         let mode = launchContext?.preferredMode ?? .uben
         startSession(mode: mode)
+    }
+
+    /// Liest die globale Listen-Auswahl und übernimmt das erste
+    /// passende Element in `selectedListID`. Akzente ist single-select,
+    /// also greift bei Multi-Auswahl der erste Eintrag aus dem Set.
+    /// `effectiveSelectedListIDs` mit leerem Per-Modul-Fallback —
+    /// Akzente persistiert keine eigene Per-Modul-Auswahl, deshalb gibt
+    /// es nur den globalen Pfad.
+    private func restoreSelectedListIDFromGlobal() {
+        let globalIDs = VocabularyListSelectionResolver.effectiveSelectedListIDs {
+            return []
+        }
+        guard let firstID = globalIDs.first,
+              availableLists.contains(where: { $0.id == firstID }) else {
+            return
+        }
+        selectedListID = firstID
     }
 
     private func startSession(mode: AccentMode) {
