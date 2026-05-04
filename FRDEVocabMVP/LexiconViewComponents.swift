@@ -385,8 +385,16 @@ struct LexiconDetailSheetView: View {
                     // nicht optisch von den großen Header-Buttons dominiert
                     // werden.
                     VStack(alignment: .leading, spacing: 4) {
+                        // **Bug-A-Fix (2026-05-02) — Fragezeichen-Render einheitlich.**
+                        // Vorher: `Text(ex.french)` / `Text(ex.german)` raw —
+                        // ohne Helper im Pfad. Trailing `?` aus DB blieb zwar
+                        // erhalten (kein Cleaning), aber Inferenz für Einträge
+                        // ohne explizites `?` (DB-Asymmetrie: 36% DE / 83% FR
+                        // mit `?`) fehlte. Jetzt durchgereicht über die
+                        // preserve+infer-Helfer wie überall sonst — gleiche
+                        // Render-Pipeline wie Karteikarten / Quiz.
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            Text(ex.french)
+                            Text(sourceDisplayText(ex.french, sourceLanguage: .french))
                                 .font(.system(size: 16, weight: .semibold, design: .rounded))
                                 .foregroundStyle(AppTheme.Colors.textPrimary)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -395,7 +403,7 @@ struct LexiconDetailSheetView: View {
                         }
                         if !ex.german.isEmpty {
                             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                                Text(ex.german)
+                                Text(germanDisplayText(ex.german, cardType: .phrases, sourceHint: ex.french))
                                     .font(.system(size: 14, weight: .medium, design: .rounded))
                                     .foregroundStyle(AppTheme.Colors.textSecondary)
                                     .fixedSize(horizontal: false, vertical: true)

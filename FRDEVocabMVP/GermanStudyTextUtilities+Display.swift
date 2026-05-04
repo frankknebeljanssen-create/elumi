@@ -83,15 +83,39 @@ func quizGermanWordCasing(_ text: String, sourceHint: String?) -> String {
     return TextNormalizationEngine.normalize(text, language: .german)
 }
 
+// **Bug-A-Fix (2026-05-02) — Fragezeichen-Render systemweit einheitlich.**
+// Vorher: nur `cleanedQuizDisplayText`, der trailing `?!.` per Regex strippt.
+// Folge: französische Phrasen wie „Comment ça va ?" verloren das `?`,
+// deutsche Phrasen wie „Wie geht es dir?" ebenso. Karteikarten waren
+// bereits korrekt via `synchronizedPairTerminalSentencePunctuation`,
+// Quiz und Lexicon-Beispiele blieben kaputt → asymmetrisches Bild.
+//
+// Neu: Dispatch nach erkannter Sprache. Beide Ziel-Helper machen
+// preserve+infer intern (wie Karteikarten):
+//   * `germanDisplayText` → `preservingTerminalSentencePunctuation` plus
+//     `inferredGermanTerminalSentencePunctuation`
+//   * `sourceDisplayText(.french)` → analog für FR
+// Spracherkennung via `looksLikeGermanDisplayText` (existierender Heuristik
+// auf Basis von `germanLexiconWordSet` + `startsWithGermanArticle`).
+// `category` → `CardType`-Mapping ist trivial (`"Phrase"` → `.phrases`).
+private func quizCardType(for category: String) -> CardType {
+    return category == CardType.phrases.categoryName ? .phrases : .words
+}
+
 func visibleQuizPromptText(_ text: String, category: String) -> String {
-    // Casing is already applied during candidate creation in quizVisibleText()
-    // Just clean display artifacts, don't re-capitalize
-    return cleanedQuizDisplayText(text)
+    let cardType = quizCardType(for: category)
+    if looksLikeGermanDisplayText(text) {
+        return germanDisplayText(text, cardType: cardType)
+    }
+    return sourceDisplayText(text, sourceLanguage: .french)
 }
 
 func visibleQuizAnswerText(_ text: String, category: String) -> String {
-    // Casing is already applied during candidate creation in quizVisibleText()
-    return cleanedQuizDisplayText(text)
+    let cardType = quizCardType(for: category)
+    if looksLikeGermanDisplayText(text) {
+        return germanDisplayText(text, cardType: cardType)
+    }
+    return sourceDisplayText(text, sourceLanguage: .french)
 }
 
 func canonicalGermanQuizText(
