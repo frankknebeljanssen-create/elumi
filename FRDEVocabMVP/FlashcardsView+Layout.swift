@@ -445,6 +445,18 @@ extension FlashcardsView {
         // dort. Hier nicht mehr deklarieren, sonst doppelt.)
     }
 
+    /// **Phase 5 (2026-05-04)** — Summary-Builder mit optionalem
+    /// LJ-Range-Hint. Siehe Doc in
+    /// `VocabularyListSelectionResolver.lernjahrRangeLabel(...)`.
+    private func flashcardsListSummary(selectedLists: [VocabularyList], totalCards: Int) -> String {
+        let countText = "\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n")"
+        let totalText = "\(totalCards) Karten gesamt"
+        if let range = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: selectedLists) {
+            return "\(countText) · \(range) · \(totalText)"
+        }
+        return "\(countText) · \(totalText)"
+    }
+
     /// Custom Listen-Auswahl-Card im Speed-Round-Stil — analog zu den
     /// Trainings-Modulen. Listen werden untereinander angezeigt (max 5),
     /// Card wächst nach unten. Tap öffnet das Listen-Auswahl-Sheet.
@@ -479,7 +491,11 @@ extension FlashcardsView {
                                         .lineLimit(1)
                                         .minimumScaleFactor(0.7)
                                 }
-                                Text("\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n") · \(totalCards) Karten gesamt")
+                                // **Phase 5 (2026-05-04)** — Summary-Zeile mit
+                                // optionalem LJ-Range, wenn mindestens eine
+                                // selektierte Liste hierarchisch ist (A1) und
+                                // ein non-trivialer LJ-Filter aktiv.
+                                Text(flashcardsListSummary(selectedLists: selectedLists, totalCards: totalCards))
                                     .font(.system(size: 13, weight: .medium, design: .rounded))
                                     .foregroundStyle(AppTheme.Colors.elumiBlue)
                                     .padding(.top, 2)

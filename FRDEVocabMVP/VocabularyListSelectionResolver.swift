@@ -123,6 +123,26 @@ enum VocabularyListSelectionResolver {
     static let defaultGlobalSelectionListID: UUID =
         UUID(uuidString: "F1E1EEE1-A100-4000-A000-000000000001")!
 
+    // MARK: - Lernjahr-Range-Label (Phase 5, 2026-05-04)
+
+    /// Liefert ein menschenlesbares Lernjahr-Range-Label für die
+    /// systemweiten „Ausgewählte Listen"-Cards (z. B. „LJ 1-3").
+    ///
+    /// Nil-Returns:
+    ///   • `currentLernjahrMax()` ist nil oder 0 (= „alle Lernjahre",
+    ///     User hat nie gewählt oder explizit auf „alle" gesetzt).
+    ///   • `currentLernjahrMax() >= 5` (= alle Lernjahre für A1).
+    ///   • Keine der ausgewählten Listen ist hierarchisch
+    ///     (cumulativeChildren). Bei flachen Listen ist der LJ-Filter
+    ///     nicht wirksam — Hint wäre irreführend.
+    ///
+    /// Format: „LJ 1-N" (N = aktueller `lernjahrMax`-Wert).
+    static func lernjahrRangeLabel(forSelectedLists lists: [VocabularyList]) -> String? {
+        guard let max = currentLernjahrMax(), (1...4).contains(max) else { return nil }
+        guard lists.contains(where: { $0.cumulativeChildren && $0.children != nil }) else { return nil }
+        return "LJ 1-\(max)"
+    }
+
     // MARK: - Effective-Selection-Helper (Stufe 5 Schritt 2, 2026-04-30)
 
     /// **Master-Read-Helper** für Quiz/Flashcards/Training/Word Runner.

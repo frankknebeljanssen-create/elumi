@@ -1104,11 +1104,21 @@ extension TrainingView {
                                     .minimumScaleFactor(0.7)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
+                            // **Phase 5 (2026-05-04)** — Summary mit optionalem
+                            // LJ-Range. Ohne Range: „X Verben gesamt", mit Range:
+                            // „LJ 1-N · X Verben gesamt".
+                            let verbformsTotal = "\(verbformsCount) Verb\(verbformsCount == 1 ? "" : "en") gesamt"
+                            let verbformsSummary: String = {
+                                if let range = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: selectedLists) {
+                                    return "\(range) · \(verbformsTotal)"
+                                }
+                                return verbformsTotal
+                            }()
                             Button {
                                 feedbackPlayer.playTabSwitch()
                                 verbformsVerbDetailActive = true
                             } label: {
-                                Text("\(verbformsCount) Verb\(verbformsCount == 1 ? "" : "en") gesamt")
+                                Text(verbformsSummary)
                                     .font(.system(size: 13, weight: .medium, design: .rounded))
                                     .foregroundStyle(AppTheme.Colors.elumiBlue)
                                     .underline(true, color: AppTheme.Colors.elumiBlue.opacity(0.4))
@@ -1271,8 +1281,16 @@ extension TrainingView {
                             // Gesamt-Summary in elumiBlue (Info-Token, konsistent
                             // mit Karteikarten-Setup). Klickbar wenn Counter-
                             // Handler übergeben.
+                            // **Phase 5 (2026-05-04)** — optionales LJ-Range-Insert,
+                            // wenn cumulative-Liste mit aktivem Filter selektiert.
                             let listsText = "\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n")"
-                            let summary = "\(listsText) · \(countValue) \(countLabel) gesamt"
+                            let totalText = "\(countValue) \(countLabel) gesamt"
+                            let summary: String = {
+                                if let range = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: selectedLists) {
+                                    return "\(listsText) · \(range) · \(totalText)"
+                                }
+                                return "\(listsText) · \(totalText)"
+                            }()
                             if let onTapCounter {
                                 Button {
                                     feedbackPlayer.playTabSwitch()

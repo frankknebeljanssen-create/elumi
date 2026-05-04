@@ -718,6 +718,15 @@ struct ElumiTabView: View {
             return resolvedLists.map(\.name).joined(separator: ", ")
         }()
 
+        // **Phase 5 (2026-05-04)** — optionales LJ-Range vor dem Total.
+        let summaryText: String = {
+            let totalText = "\(totalEntries) Einträge gesamt"
+            if let range = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: resolvedLists) {
+                return "\(range) · \(totalText)"
+            }
+            return totalText
+        }()
+
         VStack(alignment: .leading, spacing: 3) {
             Text(listLine)
                 .font(.system(size: 16, weight: .bold, design: .rounded))
@@ -726,7 +735,7 @@ struct ElumiTabView: View {
                 .minimumScaleFactor(0.85)
                 .truncationMode(.tail)
 
-            Text("\(totalEntries) Einträge gesamt")
+            Text(summaryText)
                 .font(.system(size: 12, weight: .semibold, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textSecondary)
         }
