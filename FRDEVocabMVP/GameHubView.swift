@@ -87,6 +87,11 @@ struct GameHubView: View {
                 // ganz unten ist damit entfallen.
                 gameStartButtons
                 rewardExplainerBlock
+                    // **2026-05-04 Polish-Follow-up** — Reward-Explainer
+                    // mit zusätzlichem Top-Padding etwas weiter runter
+                    // gerückt. Trennt visuell Game-Aktion oben von
+                    // „so verdienst du Spiele"-Erklärung darunter.
+                    .padding(.top, AppTheme.Spacing.lg)
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, AppLayout.screenPadding)
@@ -156,9 +161,12 @@ struct GameHubView: View {
         //     erklärt.
         //   • Eine zentrale Meta-Row reicht jetzt; Layout wirkt ruhiger.
         VStack(spacing: 10) {
+            // **2026-05-04 Polish-Follow-up** — Beide Zeilen horizontal
+            // zentriert (User-Spec). Spacer am Ende entfernt, Card-Frame
+            // auf `.center`-Alignment.
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text("Deine Credits:")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .font(.system(size: 19, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
 
                 Text("\(arcadeCredits)")
@@ -169,10 +177,8 @@ struct GameHubView: View {
                     .minimumScaleFactor(0.6)
 
                 Text(arcadeCredits == 1 ? "Spiel" : "Spiele")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .font(.system(size: 19, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
-
-                Spacer(minLength: 0)
             }
 
             heroMetaRowAsset(
@@ -182,7 +188,7 @@ struct GameHubView: View {
         }
         .padding(.horizontal, AppTheme.Spacing.md)
         .padding(.vertical, AppTheme.Spacing.md)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .center)
         .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.strong, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
@@ -203,6 +209,9 @@ struct GameHubView: View {
     /// Asset-Variante von `heroMetaRow` — rendert ein Image aus dem
     /// Asset-Catalog statt eines SF-Symbols. Genutzt für das Elumi-Icon
     /// im „1 Spiel = X Leben"-Hinweis (markennäher als Herz-SF-Symbol).
+    ///
+    /// **2026-05-04 Polish-Follow-up** — kein trailing Spacer mehr;
+    /// die Row wird vom Caller horizontal zentriert.
     @ViewBuilder
     private func heroMetaRowAsset(assetName: String, text: String) -> some View {
         HStack(spacing: 8) {
@@ -213,7 +222,6 @@ struct GameHubView: View {
             Text(text)
                 .font(.system(size: 14, weight: .bold, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
-            Spacer(minLength: 0)
         }
     }
 
@@ -229,6 +237,10 @@ struct GameHubView: View {
     // (Dev-/Prototyp-Stand) und ist daher immer verfügbar.
 
     private var gameStartButtons: some View {
+        // **2026-05-04 Polish-Follow-up** — Cards minimal schmaler durch
+        // 12 pt Horizontal-Inset. Hero und Reward-Block oben/unten
+        // bleiben full-width, die Game-Start-Buttons rücken visuell
+        // dezent zurück.
         VStack(spacing: 10) {
             // Asset-Zuordnung (korrigiert nach Asset-Prüfung):
             //   • `ElumiWasserfloh` = die eigentliche Elumi-Spielfigur
@@ -252,7 +264,7 @@ struct GameHubView: View {
             // auf 2 Snack-Icons), Title in CAPS ohne „starten"-Suffix,
             // Pfeil-Icon rechts statt Text-CTA.
             gameStartButton(
-                title: "ELUMI",
+                title: "ELUMI GAME",
                 assetNames: ["ElumiWuermchen", "ElumiWasserfloh"],
                 enabled: hasCredits,
                 action: startGameTapped,
@@ -281,6 +293,7 @@ struct GameHubView: View {
                     .frame(maxWidth: .infinity)
             }
         }
+        .padding(.horizontal, 12)
     }
 
     /// Gemeinsamer Start-Button-Stil — beide Spiele nutzen identisches
