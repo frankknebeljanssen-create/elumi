@@ -605,7 +605,9 @@ struct ElumiTabView: View {
                 initialSelection: globalSelectedListIDs,
                 onCommit: { newSelection in
                     globalSelectedListIDs = newSelection
-                }
+                },
+                feedbackPlayer: feedbackPlayer,
+                onHome: { goHome() }
             )
         }
     }

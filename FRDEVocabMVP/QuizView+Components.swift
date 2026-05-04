@@ -55,7 +55,8 @@ var quizSetupScreen: some View {
                 feedbackPlayer: feedbackPlayer,
                 summaryText: quizListSummary,
                 itemLabel: "Einträge",
-                onSelectionChanged: { session.selectedListIDs = $0 }
+                onSelectionChanged: { session.selectedListIDs = $0 },
+                onHome: goHome
             )
         },
         optionsContent: {

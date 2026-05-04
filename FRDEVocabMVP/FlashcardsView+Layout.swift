@@ -521,7 +521,9 @@ extension FlashcardsView {
                 onSelectionChanged: { updated in
                     setup.selectedStackListIDs = updated
                     stackListPickerActive = false
-                }
+                },
+                feedbackPlayer: feedbackPlayer,
+                onHome: goHome
             )
         }
     }

@@ -400,7 +400,9 @@ extension TrainingView {
                 onSelectionChanged: { updatedSelection in
                     session.selectedTrainingListIDs = updatedSelection
                     listPickerCategory = nil
-                }
+                },
+                feedbackPlayer: feedbackPlayer,
+                onHome: goHome
             )
         }
     }
@@ -423,7 +425,8 @@ extension TrainingView {
                 feedbackPlayer: feedbackPlayer,
                 summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " \u{00B7} " + trainingListCount),
                 itemLabel: "Einträge",
-                onSelectionChanged: { session.selectedTrainingListIDs = $0 }
+                onSelectionChanged: { session.selectedTrainingListIDs = $0 },
+                onHome: goHome
             )
         } else if session.trainingMode == .verbforms {
             verbformsListSelectionCard
@@ -442,7 +445,8 @@ extension TrainingView {
                 feedbackPlayer: feedbackPlayer,
                 summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " \u{00B7} " + trainingListCount),
                 itemLabel: trainingItemLabel,
-                onSelectionChanged: { session.selectedTrainingListIDs = $0 }
+                onSelectionChanged: { session.selectedTrainingListIDs = $0 },
+                onHome: goHome
             )
         }
     }
@@ -1149,7 +1153,9 @@ extension TrainingView {
                 onSelectionChanged: { updated in
                     session.selectedTrainingListIDs = updated
                     verbformsListPickerActive = false
-                }
+                },
+                feedbackPlayer: feedbackPlayer,
+                onHome: goHome
             )
         }
         .sheet(isPresented: $verbformsVerbDetailActive) {
@@ -1336,7 +1342,9 @@ extension TrainingView {
                 onSelectionChanged: { updated in
                     session.selectedTrainingListIDs = updated
                     verbsListPickerActive = false
-                }
+                },
+                feedbackPlayer: feedbackPlayer,
+                onHome: goHome
             )
         }
         .sheet(isPresented: $verbsVerbDetailActive) {
@@ -1363,7 +1371,9 @@ extension TrainingView {
                 onSelectionChanged: { updated in
                     session.selectedTrainingListIDs = updated
                     nounsListPickerActive = false
-                }
+                },
+                feedbackPlayer: feedbackPlayer,
+                onHome: goHome
             )
         }
     }
@@ -1386,7 +1396,9 @@ extension TrainingView {
                 onSelectionChanged: { updated in
                     session.selectedTrainingListIDs = updated
                     articlesListPickerActive = false
-                }
+                },
+                feedbackPlayer: feedbackPlayer,
+                onHome: goHome
             )
         }
     }

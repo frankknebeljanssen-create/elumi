@@ -35,6 +35,11 @@ struct ListCategoryPickerView: View {
     let summaryText: String
     var itemLabel: String = "Karten"
     let onSelectionChanged: (Set<UUID>) -> Void
+    /// **Bug-Fix Footer-Layout (2026-05-04, Punkt 1)** — wird in das
+    /// `ListSelectionSheet` durchgereicht, damit der AppBottomBar-Footer
+    /// auch in der Listen-Kategorie-Sheet sichtbar bleibt. Default `nil`,
+    /// damit existing Call-Sites ohne Anpassung weiterhin funktionieren.
+    var onHome: (() -> Void)? = nil
 
     enum Category: Identifiable {
         case own, level, topic
@@ -158,7 +163,9 @@ struct ListCategoryPickerView: View {
                 onSelectionChanged: { updatedSelection in
                     onSelectionChanged(updatedSelection)
                     activeCategory = nil
-                }
+                },
+                feedbackPlayer: feedbackPlayer,
+                onHome: onHome
             )
         }
     }
@@ -173,6 +180,15 @@ struct ListSelectionSheet: View {
     let topicLists: [VocabularyList]
     let selectedListIDs: Set<UUID>
     let onSelectionChanged: (Set<UUID>) -> Void
+
+    /// **Bug-Fix Footer-Layout (2026-05-04, Punkt 1)** — optionale
+    /// Footer-Chrome-Inputs. Wenn beide gesetzt sind, rendert das Sheet
+    /// einen `AppBottomBar` über `appLocalChrome` und der User behält
+    /// den Tab-Bar-Footer auch in der Listen-Auswahl-Sheet — Pattern
+    /// aus `ListPickerSheet`. Default `nil`, damit existing Call-Sites
+    /// ohne Anpassung weiterhin funktionieren.
+    var feedbackPlayer: FeedbackPlayer? = nil
+    var onHome: (() -> Void)? = nil
 
     @State private var localSelection: Set<UUID> = []
     /// Reihenfolge der Selection — nötig, damit wir bei Erreichen des
@@ -220,6 +236,24 @@ struct ListSelectionSheet: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .tint(style.accent)
         .appScreenBackground(style)
+        // **Bug-Fix Footer-Layout (2026-05-04, Punkt 1)** — Footer-Chrome
+        // mirror Pattern aus `ListPickerSheet`: wenn der Caller
+        // `feedbackPlayer + onHome` mitliefert, rendern wir den
+        // `AppBottomBar` direkt im Sheet, damit der Tab-Bar nicht durch
+        // die `.sheet`-Präsentation verdeckt wirkt.
+        .appLocalChrome(enabled: feedbackPlayer != nil && onHome != nil) {
+            EmptyView()
+        } bottomBar: {
+            if let player = feedbackPlayer, let homeAction = onHome {
+                AppBottomBar(
+                    feedbackPlayer: player,
+                    onHome: { dismiss(); homeAction() },
+                    onFavorite: nil,
+                    onScan: nil,
+                    onSettings: nil
+                )
+            }
+        }
         .onAppear {
             localSelection = selectedListIDs
             selectionOrder = Array(selectedListIDs)
@@ -308,6 +342,11 @@ struct TrainingCategoryListSheet: View {
     let selectedListIDs: Set<UUID>
     let onSelectionChanged: (Set<UUID>) -> Void
 
+    /// **Bug-Fix Footer-Layout (2026-05-04, Punkt 1)** — siehe
+    /// `ListSelectionSheet`. Optional, default `nil`.
+    var feedbackPlayer: FeedbackPlayer? = nil
+    var onHome: (() -> Void)? = nil
+
     @State private var localSelection: Set<UUID> = []
 
     private var sheetTitle: String {
@@ -348,6 +387,21 @@ struct TrainingCategoryListSheet: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .tint(style.accent)
         .appScreenBackground(style)
+        // **Bug-Fix Footer-Layout (2026-05-04, Punkt 1)** — siehe
+        // `ListSelectionSheet`.
+        .appLocalChrome(enabled: feedbackPlayer != nil && onHome != nil) {
+            EmptyView()
+        } bottomBar: {
+            if let player = feedbackPlayer, let homeAction = onHome {
+                AppBottomBar(
+                    feedbackPlayer: player,
+                    onHome: { dismiss(); homeAction() },
+                    onFavorite: nil,
+                    onScan: nil,
+                    onSettings: nil
+                )
+            }
+        }
         .onAppear { localSelection = selectedListIDs }
     }
 

@@ -55,6 +55,12 @@ struct ChainListSelectionSheet: View {
     /// Resolver-Read.
     let onCommit: (Set<UUID>) -> Void
 
+    /// **Bug-Fix Footer-Layout (2026-05-04, Punkt 1)** — optionale
+    /// Footer-Chrome-Inputs. Pattern aus `ListPickerSheet`. Default
+    /// `nil`, damit existing Call-Sites ohne Anpassung funktionieren.
+    var feedbackPlayer: FeedbackPlayer? = nil
+    var onHome: (() -> Void)? = nil
+
     /// Lokaler Selection-State während die Sheet sichtbar ist. Wird
     /// in `onAppear` aus `initialSelection` gefüllt.
     @State private var selectedIDs: Set<UUID> = []
@@ -96,6 +102,23 @@ struct ChainListSelectionSheet: View {
             scrollContent
         }
         .background(AppTheme.Colors.background.ignoresSafeArea())
+        // **Bug-Fix Footer-Layout (2026-05-04, Punkt 1)** — siehe
+        // `ListSelectionSheet`. Wenn der Caller `feedbackPlayer + onHome`
+        // mitliefert, behält der User den `AppBottomBar`-Footer auch
+        // während der Listen-Auswahl-Sheet aktiv ist.
+        .appLocalChrome(enabled: feedbackPlayer != nil && onHome != nil) {
+            EmptyView()
+        } bottomBar: {
+            if let player = feedbackPlayer, let homeAction = onHome {
+                AppBottomBar(
+                    feedbackPlayer: player,
+                    onHome: { dismiss(); homeAction() },
+                    onFavorite: nil,
+                    onScan: nil,
+                    onSettings: nil
+                )
+            }
+        }
         .onAppear {
             selectedIDs = initialSelection
             localLernjahrMax = VocabularyListSelectionResolver.currentLernjahrMax() ?? 0
