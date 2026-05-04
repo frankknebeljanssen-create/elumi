@@ -720,7 +720,7 @@ struct ElumiTabView: View {
 
         // **Phase 5 (2026-05-04)** — optionales LJ-Range vor dem Total.
         let summaryText: String = {
-            let totalText = "\(totalEntries) Einträge gesamt"
+            let totalText = "\(totalEntries) Einträge"
             if let range = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: resolvedLists) {
                 return "\(range) · \(totalText)"
             }

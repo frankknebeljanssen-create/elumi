@@ -1107,7 +1107,7 @@ extension TrainingView {
                             // **Phase 5 (2026-05-04)** — Summary mit optionalem
                             // LJ-Range. Ohne Range: „X Verben gesamt", mit Range:
                             // „LJ 1-N · X Verben gesamt".
-                            let verbformsTotal = "\(verbformsCount) Verb\(verbformsCount == 1 ? "" : "en") gesamt"
+                            let verbformsTotal = "\(verbformsCount) Verb\(verbformsCount == 1 ? "" : "en")"
                             let verbformsSummary: String = {
                                 if let range = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: selectedLists) {
                                     return "\(range) · \(verbformsTotal)"
@@ -1284,7 +1284,7 @@ extension TrainingView {
                             // **Phase 5 (2026-05-04)** — optionales LJ-Range-Insert,
                             // wenn cumulative-Liste mit aktivem Filter selektiert.
                             let listsText = "\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n")"
-                            let totalText = "\(countValue) \(countLabel) gesamt"
+                            let totalText = "\(countValue) \(countLabel)"
                             let summary: String = {
                                 if let range = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: selectedLists) {
                                     return "\(listsText) · \(range) · \(totalText)"

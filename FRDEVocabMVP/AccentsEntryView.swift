@@ -405,7 +405,7 @@ struct AccentsEntryView: View {
                                     for: list,
                                     lernjahrMax: VocabularyListSelectionResolver.currentLernjahrMax()
                                 ).count
-                                return "1 Liste · \(cnt) \(cnt == 1 ? "Eintrag" : "Einträge") gesamt"
+                                return "1 Liste · \(cnt) \(cnt == 1 ? "Eintrag" : "Einträge")"
                             }())
                                 .font(.system(size: 13, weight: .medium, design: .rounded))
                                 .foregroundStyle(AppTheme.Colors.elumiBlue)

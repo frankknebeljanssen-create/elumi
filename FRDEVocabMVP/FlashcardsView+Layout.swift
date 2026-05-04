@@ -450,7 +450,7 @@ extension FlashcardsView {
     /// `VocabularyListSelectionResolver.lernjahrRangeLabel(...)`.
     private func flashcardsListSummary(selectedLists: [VocabularyList], totalCards: Int) -> String {
         let countText = "\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n")"
-        let totalText = "\(totalCards) Karten gesamt"
+        let totalText = "\(totalCards) Karten"
         if let range = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: selectedLists) {
             return "\(countText) · \(range) · \(totalText)"
         }

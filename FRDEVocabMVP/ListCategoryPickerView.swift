@@ -77,7 +77,7 @@ struct ListCategoryPickerView: View {
     /// hierarchisch ist UND ein nicht-trivialer LJ-Filter aktiv ist.
     private func buildSummary(selectedLists: [VocabularyList], totalItems: Int) -> String {
         let countText = "\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n")"
-        let totalText = "\(totalItems) \(itemLabel) gesamt"
+        let totalText = "\(totalItems) \(itemLabel)"
         if let range = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: selectedLists) {
             return "\(countText) · \(range) · \(totalText)"
         }
