@@ -147,11 +147,14 @@ struct GameHubView: View {
     /// „Credits" (DB-Key), für den User aber durchgängig „Spiele".
     /// `gamesCost == 1` → Credits = Spiele, daher direkt übertragbar.
     private var heroBlock: some View {
-        // Hero kompakter (User-Spec „weniger Platz verbrauchen"):
-        // Hauptzahl 56→36, kein Gamepad-Icon mehr — stattdessen direkt
-        // die prominente Textzeile „Deine Credits: X Spiele". Die
-        // Meta-Row nutzt jetzt das Elumi-Icon (Wasserfloh) statt des
-        // Herz-Symbols — enger an der Markenidentität des Spiels.
+        // **2026-05-04 Polish** — Card aufgeräumt:
+        //   • Wasserfloh-Asset → `SplashCharacter` (Elumi-Maskottchen
+        //     wie es im Arcade-Spiel für die 4-Leben-Row verwendet wird,
+        //     siehe `ElumiArcadeGameView+Overlays.swift:336`).
+        //   • Sparkles-Row „Verdient durch Lernen" entfernt — redundant
+        //     zum `rewardExplainerBlock` weiter unten, der das im Detail
+        //     erklärt.
+        //   • Eine zentrale Meta-Row reicht jetzt; Layout wirkt ruhiger.
         VStack(spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text("Deine Credits:")
@@ -172,31 +175,12 @@ struct GameHubView: View {
                 Spacer(minLength: 0)
             }
 
-            // Meta-Zeilen nebeneinander — spart eine komplette Zeile.
-            // „Herz → Elumi-Icon": das Icon im Leben-Hinweis zieht den
-            // Bezug zur Spielfigur, statt generisches Herz-Symbol.
-            HStack(spacing: 14) {
-                heroMetaRowAsset(
-                    // Elumi-Maskottchen (Wasserfloh) — vorher hatte
-                    // diese Zeile fälschlich `IconElumiSpiel` (das
-                    // U-Boot-Icon). Im „1 Spiel = N Leben"-Hinweis
-                    // gehört visuell das Spiel-Subjekt hin, nicht das
-                    // Fahrzeug aus dem anderen Modus.
-                    assetName: "ElumiWasserfloh",
-                    text: "1 Spiel = \(livesPerCredit) Leben"
-                )
-                heroMetaRow(
-                    systemImage: "sparkles",
-                    tint: AppTheme.Colors.cta,
-                    text: "Verdient durch Lernen"
-                )
-            }
+            heroMetaRowAsset(
+                assetName: "SplashCharacter",
+                text: "1 Spiel = \(livesPerCredit) Leben"
+            )
         }
         .padding(.horizontal, AppTheme.Spacing.md)
-        // Vertical-Padding wieder auf `Spacing.md` gesetzt (User-
-        // Rollback: „Credit-Card wieder etwas taller"). Davor war's
-        // auf `xs` geschrumpft — zu wenig Luft, die Card wirkte
-        // gedrückt.
         .padding(.vertical, AppTheme.Spacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.strong, cornerRadius: AppLayout.largeCardCornerRadius)
@@ -264,19 +248,19 @@ struct GameHubView: View {
             // wurde nach dem Tap überrascht. Jetzt: Tile zeigt den
             // 0-Tickets-State explizit, Tap auf disabled-Tile öffnet
             // Acknowledge-Alert.
+            // **2026-05-04 Polish** — Algenkugel raus (Reduktion von 3
+            // auf 2 Snack-Icons), Title in CAPS ohne „starten"-Suffix,
+            // Pfeil-Icon rechts statt Text-CTA.
             gameStartButton(
-                title: "Elumi starten",
-                // Drei Snack-Icons nebeneinander (User-Spec) — zeigt
-                // auf einen Blick, worum's im Arcade-Spiel geht:
-                // Wurm, Wasserfloh, Algenkugel.
-                assetNames: ["ElumiWuermchen", "ElumiWasserfloh", "ElumiAlgenkugel"],
+                title: "ELUMI",
+                assetNames: ["ElumiWuermchen", "ElumiWasserfloh"],
                 enabled: hasCredits,
                 action: startGameTapped,
                 onDisabledTap: { showNoTicketsAlert = true }
             )
 
             gameStartButton(
-                title: "Word Runner starten",
+                title: "WORDRUNNER",
                 assetNames: ["IconElumiSpiel"],
                 enabled: hasCredits,
                 action: { navigate?(.wordRunner) },
@@ -300,16 +284,20 @@ struct GameHubView: View {
     }
 
     /// Gemeinsamer Start-Button-Stil — beide Spiele nutzen identisches
-    /// Layout, damit die beiden Buttons visuell gleichwertig
+    /// Layout, damit die beiden Cards visuell homogen
     /// nebeneinander stehen.
     ///
-    /// `assetNames` kann **ein oder mehrere** Asset-Namen enthalten:
-    ///   • 1 Asset  → klassischer Button mit einem einzelnen Icon
-    ///     (Word-Runner-U-Boot).
-    ///   • 2–3 Assets → alle nebeneinander vor dem Label. Genutzt vom
-    ///     Elumi-Start-Button, damit die drei Snacks (Wurm, Wasserfloh,
-    ///     Algenkugel) sofort sichtbar sind und der Button erzählt,
-    ///     worum es im Arcade-Spiel geht.
+    /// **2026-05-04 Polish** — Layout-Refresh:
+    ///   • Icon-Spalte LINKS, fix breit (`Self.iconColumnWidth` pt) —
+    ///     egal ob 1 oder 2 Symbole, der Spalten-Footprint ist
+    ///     identisch. Asset-Größen sind so kalibriert, dass der
+    ///     visuelle „Fülle"-Eindruck pro Card ähnlich wirkt.
+    ///   • Title CENTER (CAPS, ohne „starten"-Suffix).
+    ///   • Pfeil-Icon rechts (`arrow.right.circle.fill`) statt Text-CTA.
+    ///   • Pulsation aktiv, solange enabled — User-Tap-Hint.
+    ///   • Disabled-State: Lock-Icon + „0 🎫"-Pill rechts statt Pfeil.
+    private static let iconColumnWidth: CGFloat = 92
+
     @ViewBuilder
     private func gameStartButton(
         title: String,
@@ -318,12 +306,6 @@ struct GameHubView: View {
         action: @escaping () -> Void,
         onDisabledTap: (() -> Void)? = nil
     ) -> some View {
-        // **Quick-Fix 2026-04-30 (`v2-unify-game-tile-disabled`)**: Bei
-        // disabled Tile (= keine Tickets) zeigen wir einen Lock-Icon-
-        // Slot statt der Asset-Icons + ein „0 🎫"-Pill am rechten
-        // Rand des Buttons. So sieht der User auf einen Blick warum
-        // Tap nicht funktioniert — und der Tap-Pfad triggert
-        // `onDisabledTap` (Acknowledge-Alert) statt no-op.
         Button {
             if enabled {
                 action()
@@ -331,60 +313,71 @@ struct GameHubView: View {
                 onDisabledTap?()
             }
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: 0) {
+                // Icon-Spalte links — fix breit, leading alignment.
                 HStack(spacing: 4) {
                     if enabled {
                         ForEach(assetNames, id: \.self) { name in
                             Image(name)
                                 .resizable()
                                 .scaledToFit()
-                                // Bei einem Single-Asset bleibt es bei der
-                                // großen 52-pt-Darstellung (User-Spec
-                                // „doppelt so groß"). Bei mehreren Icons
-                                // nebeneinander etwas kleiner (36 pt) —
-                                // sonst sprengt die Icon-Reihe die Button-
-                                // Breite und drückt das Label raus.
                                 .frame(
-                                    width: assetNames.count > 1 ? 36 : 52,
-                                    height: assetNames.count > 1 ? 36 : 52
+                                    width: assetNames.count > 1 ? 40 : 56,
+                                    height: assetNames.count > 1 ? 40 : 56
                                 )
                         }
                     } else {
                         Image(systemName: "lock.fill")
-                            .font(.system(size: 22, weight: .bold))
+                            .font(.system(size: 24, weight: .bold))
                             .foregroundStyle(AppTheme.Colors.textSecondary)
-                            .frame(width: 52, height: 52)
+                            .frame(width: 56, height: 56)
                     }
                 }
-                Text(title)
-                    .font(.system(size: 16, weight: .black, design: .rounded))
+                .frame(width: Self.iconColumnWidth, alignment: .leading)
 
-                if !enabled {
-                    Spacer(minLength: 4)
-                    Text("0 🎫")
-                        .font(.system(size: 12, weight: .black, design: .rounded))
-                        .monospacedDigit()
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(
-                            Capsule()
-                                .fill(AppTheme.Colors.textSecondary.opacity(0.20))
-                        )
+                // Title CENTER — beide Cards nutzen `.frame(maxWidth: .infinity)`
+                // für die Title-Spalte, damit der Text geometrisch
+                // mittig sitzt zwischen Icon-Spalte und Trailing-Indikator.
+                Text(title)
+                    .font(.system(size: 18, weight: .black, design: .rounded))
+                    .tracking(1.2)
+                    .frame(maxWidth: .infinity, alignment: .center)
+
+                // Trailing-Indikator: Pfeil im Enabled-State, „0 🎫"-Pill
+                // im Disabled-State. Trailing-Spalte ebenfalls fix breit
+                // (44 pt), damit Title-Center auf beiden Cards an
+                // derselben x-Position liegt.
+                Group {
+                    if enabled {
+                        Image(systemName: "arrow.right.circle.fill")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundStyle(.black.opacity(0.65))
+                    } else {
+                        Text("0 🎫")
+                            .font(.system(size: 12, weight: .black, design: .rounded))
+                            .monospacedDigit()
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(
+                                Capsule()
+                                    .fill(AppTheme.Colors.textSecondary.opacity(0.20))
+                            )
+                    }
                 }
+                .frame(width: 44, alignment: .center)
             }
+            .padding(.horizontal, 8)
             .frame(maxWidth: .infinity)
-            // minHeight wächst mit dem Icon-Set: Single-Icon 60 pt
-            // (Icon 52 + Padding), Multi-Icon 52 pt (Icon 36 +
-            // Padding).
-            .frame(minHeight: assetNames.count > 1 ? 52 : 60)
+            .frame(minHeight: 64)
         }
         .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
         .opacity(enabled ? 1.0 : 0.50)
-        // **Wichtig**: KEIN `.disabled(!enabled)` mehr — Button bleibt
-        // tappable, weil wir bei disabled-Tap den Acknowledge-Alert
-        // zeigen wollen. Die `enabled`-Verzweigung im Action-Closure
-        // routet zum richtigen Pfad.
+        // **2026-05-04 Polish** — Pulsation, solange das Spiel
+        // anwählbar ist. Pattern aus `PulsingModifier`. Bei disabled
+        // (keine Tickets) statisch — sonst suggeriert die Pulsation
+        // einen tappable Pfad zum Spiel, der nicht funktioniert.
+        .pulsing(active: enabled, glowColor: AppTheme.Colors.cta)
     }
 
     private func startGameTapped() {
