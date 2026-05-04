@@ -35,7 +35,26 @@ import AudioToolbox
 /// sonst alle Pool-Player permanent recyclen und ein Buzz statt
 /// einzelner Ticks entstehen. 60 ms = max 16 Clicks/Sek., entspricht
 /// realer Slot-Machine-Klangcharakteristik.
-@MainActor
+///
+/// **2026-05-04 Off-Main-Refactor (Real-Device-Stutter-Fix):**
+/// Vorher war die Klasse `@MainActor`-bound. Bei ~16 Hz Click-Rate
+/// während eines Spins blockierten `player.isPlaying` /
+/// `player.stop()` / `player.play()` (synchroner AudioToolbox-
+/// Roundtrip, ~1–2 ms pro Call) das Main-Thread-Frame-Budget der
+/// 60-fps-Reel-Animation. Auf Real-iPhone-Hardware war das als
+/// Audio-Stutter hörbar (Sim mit Mac-Audio-Path nicht).
+///
+/// Jetzt: eigene Serial-Dispatch-Queue mit `qos: .userInteractive`.
+/// `playClick()` dispatcht async, alle State-Mutationen
+/// (`nextPlayerIndex`, `lastClickAt`, `player.play()`) laufen auf
+/// dieser Queue, der Main-Thread bleibt frei.
+///
+/// Das frühere `if player.isPlaying { stop()/currentTime = 0 }`-
+/// Cleanup ist entfallen — Pool-Rotation (5 Player) deckt Overlap
+/// ab. Wenn alle 5 gleichzeitig laufen würden (extreme Reel-Speed,
+/// in der Praxis durch 60-ms-Throttle nicht erreichbar), gibt's
+/// gelegentliches Sound-Overlap statt einem synchronen Stop-
+/// Roundtrip — akzeptabel, wirkt wie natürliches Casino-Echo.
 final class SlotAudioPlayer {
 
     // MARK: - Singleton
@@ -71,10 +90,22 @@ final class SlotAudioPlayer {
     /// nicht mehr Vordergrund-Vorder-Knaller.
     private static let clickVolume: Float = 0.15
 
-    // MARK: - State
+    // MARK: - State (Queue-exklusiv)
 
+    /// Audio-Queue für alle State-Mutationen + Player-Calls.
+    /// `qos: .userInteractive` — Audio braucht ms-präzise Latenz, sonst
+    /// klingt der Click-Stream wackelig. Serial, damit
+    /// `nextPlayerIndex`/`lastClickAt` ohne explizites Lock konsistent
+    /// bleiben.
+    private let audioQueue = DispatchQueue(label: "com.frank.SlotAudio", qos: .userInteractive)
+
+    /// Player-Pool. Wird in `init` einmalig befüllt (Main-Thread); im
+    /// Hot-Path nur lesend per Index zugegriffen — Read-Only nach Init,
+    /// thread-safe per memory-write-fence am Init-Ende.
     private var players: [AVAudioPlayer] = []
+    /// Pool-Rotation-Cursor. Mutationen NUR auf `audioQueue`.
     private var nextPlayerIndex: Int = 0
+    /// Throttle-State. Mutationen NUR auf `audioQueue`.
     private var lastClickAt: TimeInterval = 0
 
     // MARK: - Init
@@ -110,6 +141,8 @@ final class SlotAudioPlayer {
     /// hier inline gespiegelt — Pattern aus
     /// `LanguageDirectionSwitch.swift:92`). Default `true` (sounds an),
     /// wenn Key noch nie gesetzt wurde.
+    /// `UserDefaults.standard` ist thread-safe per Apple-Doc — direkter
+    /// Read auf der Audio-Queue ohne Lock zulässig.
     private var soundsEnabled: Bool {
         let key = "FRDEVocabMVP.soundsEnabled.v1"
         let defaults = UserDefaults.standard
@@ -121,39 +154,50 @@ final class SlotAudioPlayer {
 
     /// Spielt einen einzelnen Reel-Click ab. Throttled — bei rapid
     /// successive Aufrufen werden Aufrufe < 60 ms nach dem letzten
-    /// Click ignoriert. Player-Pool rotiert; älteste Instanz wird
-    /// wiederverwendet wenn nötig.
+    /// Click ignoriert. Player-Pool rotiert; bei extremer Rate kommt
+    /// es zu Sound-Overlap (akzeptabel — wirkt wie Casino-Echo).
+    ///
+    /// **Off-Main:** Caller (z.B. Spin-Timer-Body in `SlotMachineView`)
+    /// dispatcht hier nur eine Queue-Async-Submission — kein
+    /// synchroner Audio-Roundtrip auf Main.
     func playClick() {
         guard soundsEnabled else { return }
         let now = Date().timeIntervalSinceReferenceDate
-        guard now - lastClickAt >= Self.clickThrottleSeconds else { return }
-        lastClickAt = now
+        audioQueue.async { [weak self] in
+            guard let self else { return }
+            guard now - self.lastClickAt >= Self.clickThrottleSeconds else { return }
+            self.lastClickAt = now
 
-        guard !players.isEmpty else { return }
-        let player = players[nextPlayerIndex]
-        nextPlayerIndex = (nextPlayerIndex + 1) % players.count
-        // Wenn der Player gerade noch läuft, abbrechen + von vorn —
-        // ist OK für so kurze Samples, sounds gleichermaßen wie ein
-        // frischer Tick.
-        if player.isPlaying {
-            player.stop()
-            player.currentTime = 0
+            guard !self.players.isEmpty else { return }
+            let player = self.players[self.nextPlayerIndex]
+            self.nextPlayerIndex = (self.nextPlayerIndex + 1) % self.players.count
+            // Kein synchroner Stop mehr — Pool-Rotation deckt Overlap
+            // ab. Bei extremer Reel-Speed gibt's gelegentlich
+            // Sound-Overlap statt synchronem Stop-Roundtrip
+            // (Real-Device-Stutter-Fix 2026-05-04).
+            player.play()
         }
-        player.play()
     }
 
     /// Spielt den Settle-Sound bei `phase == .landed`. Aktuell
     /// System-Sound 1057 (Tink) als Platzhalter.
+    /// `AudioServicesPlaySystemSound` ist thread-safe per Apple-Doc;
+    /// dispatch zur Konsistenz auf die Audio-Queue (= alle
+    /// Slot-Audio-Calls auf einem Thread, klare Ordering-Semantik).
     func playSettle() {
         guard soundsEnabled else { return }
-        AudioServicesPlaySystemSound(1057)
+        audioQueue.async {
+            AudioServicesPlaySystemSound(1057)
+        }
     }
 
     /// Spielt den Win-Sound bei Reveal mit ≥ 2 Game-Symbolen (außer
     /// Jackpot). System-Sound 1025 als Platzhalter.
     func playWin() {
         guard soundsEnabled else { return }
-        AudioServicesPlaySystemSound(1025)
+        audioQueue.async {
+            AudioServicesPlaySystemSound(1025)
+        }
     }
 
     /// Spielt den Jackpot-Sound bei Reveal mit 3× Game. System-Sound
@@ -162,6 +206,8 @@ final class SlotAudioPlayer {
     /// ersetzt.
     func playJackpot() {
         guard soundsEnabled else { return }
-        AudioServicesPlaySystemSound(1306)
+        audioQueue.async {
+            AudioServicesPlaySystemSound(1306)
+        }
     }
 }
