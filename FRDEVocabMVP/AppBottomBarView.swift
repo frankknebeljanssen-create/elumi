@@ -3,6 +3,8 @@ import SwiftUI
 struct AppBottomBar: View {
     @Environment(\.appOpenScanAction) private var globalOpenScanAction
     @Environment(\.appOpenLexiconAction) private var globalOpenLexiconAction
+    @Environment(\.appOpenGameHubAction) private var globalOpenGameHubAction
+    @Environment(\.appOpenTrophyAction) private var globalOpenTrophyAction
     @AppStorage(appQuizHeartsKey) private var collectedHearts = 0
     /// Verfügbare Arcade-Credits = verfügbare Spiele (da
     /// `ArcadeCreditSystem.gamesCost == 1`). Die Footer-Badge zeigt
@@ -48,6 +50,26 @@ struct AppBottomBar: View {
         onScan ?? globalOpenLexiconAction
     }
 
+    /// **2026-05-04** — Spiele/GameHub-Action mit env-Fallback. Analog
+    /// zu `resolvedScanAction`: explizit gesetzter Callback gewinnt;
+    /// sonst greift die globale `appOpenGameHubAction`. Damit bleibt
+    /// der Spiele-Button auch in Sheet-Kontexten (wo der explizite
+    /// Callback meist `nil` ist) tappbar — `DismissingFooterActionsModifier`
+    /// wraps den env-Wert mit `dismiss()`-first.
+    private var resolvedFavoriteAction: (() -> Void)? {
+        onFavorite ?? globalOpenGameHubAction
+    }
+
+    /// **2026-05-04** — Pokal/Trophy-Action mit env-Fallback. Bevor der
+    /// `appOpenTrophyAction`-Env-Key existierte, war der Pokal-Button
+    /// in Sheets ohne Callback gedimmt + nicht tappbar (siehe
+    /// `AppBottomBarComponents.AppBottomBarIconButton`-Disable-Regel).
+    /// Mit env-Fallback erbt jeder Screen die globale Trophy-Navigation
+    /// von RootContentView.
+    private var resolvedTrophyAction: (() -> Void)? {
+        onTrophy ?? globalOpenTrophyAction
+    }
+
     var body: some View {
         VStack(spacing: 6) {
             if let toast = feedbackPlayer.soundToggleToast {
@@ -79,7 +101,7 @@ struct AppBottomBar: View {
                 // zur Session-End-Integration („+1 Spiel").
                 AppBottomBarSnackButton(
                     accessibilityLabel: "Spiele",
-                    action: onFavorite,
+                    action: resolvedFavoriteAction,
                     isActive: isHeartsActive,
                     kind: elumiSnackKind(for: collectedHearts),
                     badgeText: arcadeCredits > 0 ? "\(arcadeCredits)" : nil
@@ -95,7 +117,7 @@ struct AppBottomBar: View {
                 AppBottomBarIconButton(
                     systemImage: isTrophyActive ? "trophy.fill" : "trophy",
                     accessibilityLabel: "Pokal",
-                    action: onTrophy,
+                    action: resolvedTrophyAction,
                     isActive: isTrophyActive,
                     foregroundColor: trophyTint
                 )

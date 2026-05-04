@@ -146,6 +146,11 @@ struct ListPickerSheet: View {
                         { dismiss(); settingsAction() }
                     }
                 )
+                // **2026-05-04 Footer-Bridge im Sheet-Kontext** — wraps
+                // die Environment-basierten Footer-Actions (Elumi,
+                // Wörterbuch, …) so dass das Sheet beim Tap erst
+                // dismisst und die parent-Navigation sichtbar feuert.
+                .dismissingFooterActions(dismiss)
             }
         }
         .onAppear {

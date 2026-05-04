@@ -117,6 +117,9 @@ struct ChainListSelectionSheet: View {
                     onScan: nil,
                     onSettings: nil
                 )
+                // **2026-05-04 Footer-Bridge** — siehe Doc in
+                // `DismissingFooterActionsModifier`.
+                .dismissingFooterActions(dismiss)
             }
         }
         .onAppear {

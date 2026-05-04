@@ -144,6 +144,14 @@ struct ContentView: View {
                         .environment(\.appOpenScanAction, { openScanScreen() })
                         .environment(\.appOpenLexiconAction, { openLexiconScreen() })
                         .environment(\.appOpenGameHubAction, { openGameHubScreen() })
+                        // **2026-05-04** — Trophy-Action analog zu den
+                        // anderen Footer-Targets verfügbar machen, damit
+                        // Sheet-Picker den Pokal-Button nicht mehr
+                        // gedimmt rendern müssen.
+                        .environment(\.appOpenTrophyAction, {
+                            runtime.feedbackPlayer?.playTabSwitch()
+                            navigation.openTrophyScreen()
+                        })
                         .environment(\.appOpenAccountAction, { navigation.navigationPath.append(.account) })
                     }
                     .onAppear {
@@ -204,6 +212,10 @@ struct ContentView: View {
                 })
                 .environment(\.appOpenGameHubAction, {
                     openGameHubScreen()
+                })
+                .environment(\.appOpenTrophyAction, {
+                    runtime.feedbackPlayer?.playTabSwitch()
+                    navigation.openTrophyScreen()
                 })
                 .environment(\.appOpenArcadeAction, { autoStart in
                     navigation.openArcadeScreen(autoStart: autoStart)

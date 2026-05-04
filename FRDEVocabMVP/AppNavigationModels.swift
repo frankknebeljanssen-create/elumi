@@ -77,6 +77,19 @@ private struct AppOpenGameHubActionKey: EnvironmentKey {
     static let defaultValue: (() -> Void)? = nil
 }
 
+/// **Trophy-Action** (2026-05-04). Zentrale Aktion für den Pokal-Footer-
+/// Button, parallel zu `AppOpenGameHubActionKey`. Vorher war der Trophy-
+/// Pfad nur als direkter `onTrophy:`-Callback in `HomeView` /
+/// `RootContentView` verdrahtet — andere Screens (insbesondere Sheets)
+/// hatten keinen Zugriff auf die Trophy-Navigation und mussten den
+/// Pokal-Button mit `nil`-Callback dimmen lassen. Mit diesem
+/// Environment-Key kann jeder Screen den Pokal-Button auf eine globale
+/// Trophy-Aktion zurückfallen lassen, analog zum Wörterbuch/Game-Hub-
+/// Pattern.
+private struct AppOpenTrophyActionKey: EnvironmentKey {
+    static let defaultValue: (() -> Void)? = nil
+}
+
 /// Zentrale Aktion, um die Arcade-Route (`.arcade`) zu öffnen. `autoStart`:
 ///   • `false` → Start-Overlay wird angezeigt, Footer bleibt sichtbar
 ///   • `true`  → direkt ins Spiel, Footer verschwindet sofort
@@ -140,6 +153,11 @@ extension EnvironmentValues {
     var appOpenGameHubAction: (() -> Void)? {
         get { self[AppOpenGameHubActionKey.self] }
         set { self[AppOpenGameHubActionKey.self] = newValue }
+    }
+
+    var appOpenTrophyAction: (() -> Void)? {
+        get { self[AppOpenTrophyActionKey.self] }
+        set { self[AppOpenTrophyActionKey.self] = newValue }
     }
 
     var appOpenArcadeAction: ((Bool) -> Void)? {
