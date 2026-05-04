@@ -600,7 +600,7 @@ struct ElumiTabView: View {
             // `setGlobalSelectedListIDs(...)` (R11: Toggle-State wird
             // ignoriert) und gibt die neue Selection per `onCommit`
             // zurück, damit die Card im Setup-Modal sofort aktualisiert.
-            ChainListSelectionSheet(
+            GlobalListPickerSheet(
                 allLists: listStore.allLists,
                 initialSelection: globalSelectedListIDs,
                 onCommit: { newSelection in

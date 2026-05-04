@@ -22,3 +22,6 @@ FRDEVocabMVP/OpenAIConfig.plist
 # DB-Backups vor Migrationen — bleiben außerhalb Repo
 # (jeweils ~62 MB, im ~/Dropbox/VocabMVP-DB-Backups/ Folder)
 FRDEVocabMVP/FRDEMasterLexicon_pre_*.sqlite
+
+# Stale SQLite at repo root (the real DB lives in FRDEVocabMVP/)
+/FRDEMasterLexicon.sqlite

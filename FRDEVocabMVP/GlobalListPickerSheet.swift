@@ -1,44 +1,36 @@
 import SwiftUI
 
-/// **Trainings-Chain — Listen-Auswahl-Sheet** (Stufe 1c, 2026-04-30,
-/// Branch `feature/training-session-flow`).
+/// **Globaler Listen-Picker** (Phase 1, 2026-05-04 — vorher
+/// `ChainListSelectionSheet`).
 ///
-/// Multi-Select-Sheet, in dem der User die Listen für den Trainings-
-/// Chain im Elumi-Tab Setup-Modal wählt. Schreibt direkt in die
-/// **globale Listen-Auswahl** (`appGlobalSelectedListIDsKey`) via
+/// Wiederverwendbarer Listen-Auswahl-Sheet für alle Module
+/// (Setup-Modal, Quiz, Karteikarten, Training, Akzente, Word Runner …).
+/// Schreibt direkt in die **globale Listen-Auswahl**
+/// (`appGlobalSelectedListIDsKey`) via
 /// `VocabularyListSelectionResolver.setGlobalSelectedListIDs(...)`
 /// und in den globalen `appLernjahrMaxKey` für hierarchische Listen.
 ///
 /// **Toggle-State (R11)**: das Sheet ignoriert
-/// `appUseGlobalListSelectionKey` bewusst. Begründung: die Chain
-/// braucht einen Cross-Module-Pool, das ist im Code-Modell genau die
-/// globale Auswahl. Wenn der User in Settings den Toggle ausgeschaltet
-/// hat, schreibt das Sheet trotzdem in die globale Auswahl — der
-/// Side-Effect ist transparent (über Settings sichtbar) und nicht
-/// destruktiv für die Per-Modul-Auswahl.
+/// `appUseGlobalListSelectionKey` bewusst. Begründung: das ganze
+/// System läuft auf Cross-Module-Pool, das ist im Code-Modell genau
+/// die globale Auswahl. Wenn der User in Settings den Toggle
+/// ausgeschaltet hat, schreibt das Sheet trotzdem in die globale
+/// Auswahl — der Side-Effect ist transparent (über Settings sichtbar)
+/// und nicht destruktiv für die Per-Modul-Auswahl.
 ///
-/// **Listenquelle**: `listStore.allLists` — sowohl `customLists`
-/// als auch Built-In-Listen (Niveau-Listen, Themen-Listen).
+/// **Mode-Param `singleSelect`**: bei `true` ersetzt jeder Tap die
+/// aktuelle Selection (max ein Eintrag), bei `false` Multi-Select-
+/// Toggle. Single-Select-Modus für Akzente und Word Runner.
 ///
-/// **UI-Pattern**: angelehnt an `ListPickerSheet` für Look-Konsistenz —
-/// `ScrollView + VStack` statt `List`, weil iOS 26 List-Rows bei
-/// Button-Wrapper aggressiv mit Accent-Tint überzieht. Multi-Select
-/// über manuelle Toggle-Logik im Row-onTap.
+/// **Mode-Param `filter`**: optionaler Pre-Filter auf `allLists`,
+/// damit modus-spezifische Subsets möglich sind (z.B. „nur Listen
+/// mit Nomen-Items"). Default `nil` = alle Listen.
 ///
-/// **Lernjahr-Hierarchie** (Stufe 1c-Erweiterung): Listen mit
-/// `cumulativeChildren=true` (V1: nur „Grundwortschatz A1") werden als
-/// **expandable Rows** gerendert. Children Y1-Y5 erscheinen unter dem
-/// Parent, Tap auf Y_n setzt den **globalen `lernjahrMax`** (wirkt
-/// für ALLE hierarchischen Listen, nicht per-Liste). Multi-Select-
-/// Toggle und Lernjahr-Auswahl sind voneinander getrennt: Tap auf
-/// Parent-Row toggled die Selection (in/out), Tap auf Y_n in den
-/// Children setzt den Lernjahr-Wert global.
-///
-/// **Auto-Add bei Children-Tap**: wenn der User auf Y_n einer NICHT
-/// selektierten hierarchischen Liste tippt, wird die Liste auch in die
-/// Selection aufgenommen — User-Mental-Model: „ich tappe Y3 bei
-/// Grundwortschatz, also will ich den auch trainieren".
-struct ChainListSelectionSheet: View {
+/// **Mode-Param `categoryHeaders`**: `true` zeigt den Section-Header
+/// und den Cross-Module-Erklärungstext am Ende. `false` rendert nur
+/// die Liste — passend für Modul-Setup-Screens, wo der Kontext
+/// schon klar ist.
+struct GlobalListPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     /// Alle verfügbaren Listen (built-in + custom). Quelle:
@@ -55,7 +47,20 @@ struct ChainListSelectionSheet: View {
     /// Resolver-Read.
     let onCommit: (Set<UUID>) -> Void
 
-    /// **Bug-Fix Footer-Layout (2026-05-04, Punkt 1)** — optionale
+    /// **Phase 1 (2026-05-04)** — Single-Select-Mode für Akzente /
+    /// Word Runner. Default `false` = Multi-Select wie bisher.
+    var singleSelect: Bool = false
+
+    /// **Phase 1 (2026-05-04)** — optionaler Pre-Filter auf `allLists`.
+    /// Wenn gesetzt, wird `allLists` durch den Filter laufen, bevor die
+    /// Sortierung passiert. Default `nil` = keine Filterung.
+    var filter: ((VocabularyList) -> Bool)? = nil
+
+    /// **Phase 1 (2026-05-04)** — Zeigt Section-Header und Cross-Module-
+    /// Erklärungstext. `false` für Modul-Setup-Screens, wo der Kontext
+    /// schon klar ist. Default `true` (Setup-Modal-Verhalten).
+    var categoryHeaders: Bool = true
+
     /// Footer-Chrome-Inputs. Pattern aus `ListPickerSheet`. Default
     /// `nil`, damit existing Call-Sites ohne Anpassung funktionieren.
     var feedbackPlayer: FeedbackPlayer? = nil
@@ -78,11 +83,13 @@ struct ChainListSelectionSheet: View {
     @State private var expandedListIDs: Set<UUID> = []
 
     private var sortedLists: [VocabularyList] {
+        // Filter zuerst, dann sortieren.
+        let filtered = filter.map { allLists.filter($0) } ?? allLists
         // Sort: zuerst Built-In nach Name, dann Custom nach Name.
         // Hierarchische Listen (cumulativeChildren) bekommen ein leichtes
         // Hochsortieren INNERHALB der Built-In-Group, damit die
         // Lernjahr-Auswahl prominent oben steht.
-        let builtIn = allLists
+        let builtIn = filtered
             .filter { $0.isBuiltIn }
             .sorted { lhs, rhs in
                 if lhs.cumulativeChildren != rhs.cumulativeChildren {
@@ -90,7 +97,7 @@ struct ChainListSelectionSheet: View {
                 }
                 return lhs.name.localizedCompare(rhs.name) == .orderedAscending
             }
-        let custom = allLists
+        let custom = filtered
             .filter { !$0.isBuiltIn }
             .sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
         return builtIn + custom
@@ -102,10 +109,6 @@ struct ChainListSelectionSheet: View {
             scrollContent
         }
         .background(AppTheme.Colors.background.ignoresSafeArea())
-        // **Bug-Fix Footer-Layout (2026-05-04, Punkt 1)** — siehe
-        // `ListSelectionSheet`. Wenn der Caller `feedbackPlayer + onHome`
-        // mitliefert, behält der User den `AppBottomBar`-Footer auch
-        // während der Listen-Auswahl-Sheet aktiv ist.
         .appLocalChrome(enabled: feedbackPlayer != nil && onHome != nil) {
             EmptyView()
         } bottomBar: {
@@ -117,8 +120,6 @@ struct ChainListSelectionSheet: View {
                     onScan: nil,
                     onSettings: nil
                 )
-                // **2026-05-04 Footer-Bridge** — siehe Doc in
-                // `DismissingFooterActionsModifier`.
                 .dismissingFooterActions(dismiss)
             }
         }
@@ -145,7 +146,7 @@ struct ChainListSelectionSheet: View {
 
             Spacer(minLength: 0)
 
-            Text("Aktive Listen")
+            Text(singleSelect ? "Liste wählen" : "Aktive Listen")
                 .font(.system(size: 17, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
 
@@ -153,10 +154,6 @@ struct ChainListSelectionSheet: View {
 
             Button {
                 VocabularyListSelectionResolver.setGlobalSelectedListIDs(selectedIDs)
-                // Lernjahr global persistieren — Pattern aus
-                // ListsView+Presentations.swift, das beim
-                // `onLernjahrMaxChange` `@AppStorage(appLernjahrMaxKey)`
-                // schreibt. Hier äquivalent direkt auf UserDefaults.
                 UserDefaults.standard.set(localLernjahrMax, forKey: appLernjahrMaxKey)
                 #if DEBUG
                 print("📋 [Lernjahr] persist max=\(localLernjahrMax)")
@@ -185,12 +182,14 @@ struct ChainListSelectionSheet: View {
     private var scrollContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 6) {
-                Text("Listen für Training")
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .padding(.horizontal, 18)
-                    .padding(.top, 14)
-                    .padding(.bottom, 4)
+                if categoryHeaders {
+                    Text("Listen für Training")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .padding(.horizontal, 18)
+                        .padding(.top, 14)
+                        .padding(.bottom, 4)
+                }
 
                 if sortedLists.isEmpty {
                     Text("Keine Listen verfügbar.")
@@ -205,15 +204,22 @@ struct ChainListSelectionSheet: View {
                         }
                     }
                     .padding(.horizontal, 14)
+                    .padding(.top, categoryHeaders ? 0 : 14)
                 }
 
-                Text("Die gewählten Listen werden in allen Trainingsmodulen (Karteikarten, Quiz, Word Runner, Training) als gemeinsamer Pool verwendet — analog zur globalen Listen-Auswahl in den Einstellungen. Bei Listen mit Lernjahr-Aufteilung (z. B. Grundwortschatz A1) gilt das gewählte Lernjahr global für alle hierarchischen Listen.")
-                    .font(.system(size: 11, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, 18)
-                    .padding(.top, 12)
-                    .padding(.bottom, 24)
+                if categoryHeaders {
+                    Text("Die gewählten Listen werden in allen Trainingsmodulen (Karteikarten, Quiz, Word Runner, Training) als gemeinsamer Pool verwendet — analog zur globalen Listen-Auswahl in den Einstellungen. Bei Listen mit Lernjahr-Aufteilung (z. B. Grundwortschatz A1) gilt das gewählte Lernjahr global für alle hierarchischen Listen.")
+                        .font(.system(size: 11, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 18)
+                        .padding(.top, 12)
+                        .padding(.bottom, 24)
+                } else {
+                    // Bottom-Padding ohne Erklärungstext, damit die letzte
+                    // Row nicht direkt am Sheet-Rand klebt.
+                    Spacer().frame(height: 24)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -223,8 +229,7 @@ struct ChainListSelectionSheet: View {
 
     /// Routet zwischen flacher und expandable Hierarchie-Row. Listen
     /// mit `cumulativeChildren=true` und nicht-leerer `children`-Liste
-    /// bekommen das expandable Pattern aus `ListPickerSheet`
-    /// (adaptiert für Multi-Select).
+    /// bekommen das expandable Pattern aus `ListPickerSheet`.
     @ViewBuilder
     private func row(for list: VocabularyList) -> some View {
         if list.cumulativeChildren, let children = list.children, !children.isEmpty {
@@ -234,7 +239,7 @@ struct ChainListSelectionSheet: View {
         }
     }
 
-    // MARK: - Flat Row (Multi-Select)
+    // MARK: - Flat Row
 
     private func flatRow(for list: VocabularyList) -> some View {
         let isSelected = selectedIDs.contains(list.id)
@@ -274,9 +279,6 @@ struct ChainListSelectionSheet: View {
     // MARK: - Expandable Lernjahr-Row
 
     /// Parent-Row für eine hierarchische Liste mit Lernjahr-Children.
-    /// Tap-Bereiche getrennt:
-    ///   • Hauptzeile (links/Mitte) → Multi-Select-Toggle
-    ///   • Chevron rechts → Expand/Collapse der Children
     private func expandableLernjahrRow(
         _ list: VocabularyList,
         children: [VocabularyList]
@@ -286,7 +288,6 @@ struct ChainListSelectionSheet: View {
 
         return VStack(spacing: 4) {
             HStack(spacing: 0) {
-                // Multi-Select-Toggle (Tap auf den linken Bereich).
                 HStack(spacing: 12) {
                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                         .font(.system(size: 22, weight: .semibold))
@@ -312,11 +313,9 @@ struct ChainListSelectionSheet: View {
                     toggleSelection(for: list.id)
                 }
 
-                // Cumulative-Count rechts vom Sublabel.
                 countCapsule(cumulativeItemCount(localLernjahrMax, children: children))
                     .padding(.trailing, 6)
 
-                // Chevron — separater Tap-Bereich für Expand/Collapse.
                 Button {
                     toggleExpanded(list.id)
                 } label: {
@@ -350,9 +349,7 @@ struct ChainListSelectionSheet: View {
         }
     }
 
-    /// Eine Y_n-Children-Row. Tap setzt globalen `localLernjahrMax`
-    /// und auto-add die Parent-Liste zur Selection (User-Mental-Model:
-    /// „Y3 bei Grundwortschatz tappen heißt: Liste wählen + Y3 setzen").
+    /// Eine Y_n-Children-Row.
     private func lernjahrChildRow(
         child: VocabularyList,
         year: Int,
@@ -361,11 +358,6 @@ struct ChainListSelectionSheet: View {
     ) -> some View {
         let active = isActive(year: year, max: max)
         let auto = isAuto(year: year, max: max)
-        // **Punkt 3 Fix (2026-05-04)** — Konsistenz zu `ListPickerSheet`:
-        // leere Lernjahre disablen + „—" statt „0" anzeigen. Vorher
-        // konnte der User Y4/Y5 von A1 antippen, was max=4 setzte
-        // ohne neue Items in den Pool zu bringen → Confusion. Jetzt:
-        // Tap blockiert, visueller Hint klar.
         let count = child.items.count
         let isEmpty = count == 0
 
@@ -412,11 +404,21 @@ struct ChainListSelectionSheet: View {
 
     // MARK: - Helpers
 
+    /// Multi-Select: toggle zwischen in/out der Selection.
+    /// Single-Select: Replace-Selection (bei selektierter Liste = clear).
     private func toggleSelection(for id: UUID) {
-        if selectedIDs.contains(id) {
-            selectedIDs.remove(id)
+        if singleSelect {
+            if selectedIDs.contains(id) {
+                selectedIDs.removeAll()
+            } else {
+                selectedIDs = [id]
+            }
         } else {
-            selectedIDs.insert(id)
+            if selectedIDs.contains(id) {
+                selectedIDs.remove(id)
+            } else {
+                selectedIDs.insert(id)
+            }
         }
     }
 
@@ -428,27 +430,13 @@ struct ChainListSelectionSheet: View {
         }
     }
 
-    /// Children-Tap-Handler.
-    ///
-    /// **2026-05-04 (Punkt 2 Fix)** — Semantik vereinfacht auf
-    /// **cumulative-up only**: jeder Tap auf Y_n setzt
-    /// `localLernjahrMax = n`. Vorher gab es einen „Deselect-from-top"-
-    /// Branch, der bei Tap auf Y_n innerhalb des aktiven Bereichs
-    /// `max = n - 1` schrieb — dadurch ratscht der User-Tap-Pattern
-    /// „Y1 → Y2 → Y3" das Maximum nach unten statt nach oben (User-
-    /// Befund: erwartete LJ 1+2+3, persistiert wurde 1).
-    /// Mit dieser Logik passt Tap-Verhalten zum mentalen Modell des
-    /// Users: „Ich tippe Y3 → Y1+Y2+Y3 sind aktiv". Wer nur Y1 will,
-    /// tippt Y1 (max=1).
-    ///
-    /// Auto-Add bleibt: tippt der User auf Y_n einer nicht-selektierten
-    /// Liste, wird die Liste zur Selection hinzugefügt.
-    ///
-    /// Der ehemalige „alle Lernjahre"-State (`max=0`) wird durch dieses
-    /// Tap-Pattern nicht mehr gesetzt — er bleibt nur als Initial-State,
-    /// wenn der User noch nie eine Lernjahr-Wahl getroffen hat.
+    /// Children-Tap-Handler. Cumulative-up-Semantik: jeder Tap auf Y_n
+    /// setzt `localLernjahrMax = n`. Auto-Add der Parent-Liste in
+    /// Multi-Select; Replace-Selection in Single-Select.
     private func handleChildTap(year: Int, parent: VocabularyList) {
-        if !selectedIDs.contains(parent.id) {
+        if singleSelect {
+            selectedIDs = [parent.id]
+        } else if !selectedIDs.contains(parent.id) {
             selectedIDs.insert(parent.id)
         }
         localLernjahrMax = year
@@ -464,8 +452,7 @@ struct ChainListSelectionSheet: View {
         max == 0 ? false : (year < max)
     }
 
-    /// Sublabel des Parents — entweder „alle Lernjahre · X Karten"
-    /// oder „N von 5 · X Karten". Source: ListPickerSheet-Pattern.
+    /// Sublabel des Parents.
     private func parentSublabel(for list: VocabularyList, children: [VocabularyList], max: Int) -> String {
         if max == 0 {
             return "alle Lernjahre"

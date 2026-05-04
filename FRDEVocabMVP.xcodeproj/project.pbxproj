@@ -466,7 +466,7 @@
 		FE12345678901234567890A1 /* UUIDExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890A2 /* UUIDExtensions.swift */; };
 		CC11A1AA00000000ABCDEF01 /* TrainingChainContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC11A1AA00000000ABCDEF02 /* TrainingChainContext.swift */; };
 		CC55AA0000000000ABCDEF01 /* TrainingChainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC55AA0000000000ABCDEF02 /* TrainingChainStore.swift */; };
-		CC15FF0000000000ABCDEF01 /* ChainListSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0000000000ABCDEF02 /* ChainListSelectionSheet.swift */; };
+		CC15FF0000000000ABCDEF01 /* GlobalListPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0000000000ABCDEF02 /* GlobalListPickerSheet.swift */; };
 		CC22BB0000000000ABCDEF01 /* TrainingChainOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC22BB0000000000ABCDEF02 /* TrainingChainOverviewView.swift */; };
 		CC44DD0000000000ABCDEF01 /* ChainStepTimerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC44DD0000000000ABCDEF02 /* ChainStepTimerBar.swift */; };
 		CC55EE0000000000ABCDEF01 /* ChainTimerOverlayModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC55EE0000000000ABCDEF02 /* ChainTimerOverlayModifier.swift */; };
@@ -1037,7 +1037,7 @@
 		FE12345678901234567890A2 /* UUIDExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UUIDExtensions.swift; path = FRDEVocabMVP/UUIDExtensions.swift; sourceTree = "<group>"; };
 		CC11A1AA00000000ABCDEF02 /* TrainingChainContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingChainContext.swift; path = FRDEVocabMVP/TrainingChainContext.swift; sourceTree = "<group>"; };
 		CC55AA0000000000ABCDEF02 /* TrainingChainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingChainStore.swift; path = FRDEVocabMVP/TrainingChainStore.swift; sourceTree = "<group>"; };
-		CC15FF0000000000ABCDEF02 /* ChainListSelectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChainListSelectionSheet.swift; path = FRDEVocabMVP/ChainListSelectionSheet.swift; sourceTree = "<group>"; };
+		CC15FF0000000000ABCDEF02 /* GlobalListPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GlobalListPickerSheet.swift; path = FRDEVocabMVP/GlobalListPickerSheet.swift; sourceTree = "<group>"; };
 		CC22BB0000000000ABCDEF02 /* TrainingChainOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingChainOverviewView.swift; path = FRDEVocabMVP/TrainingChainOverviewView.swift; sourceTree = "<group>"; };
 		CC44DD0000000000ABCDEF02 /* ChainStepTimerBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChainStepTimerBar.swift; path = FRDEVocabMVP/ChainStepTimerBar.swift; sourceTree = "<group>"; };
 		CC55EE0000000000ABCDEF02 /* ChainTimerOverlayModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChainTimerOverlayModifier.swift; path = FRDEVocabMVP/ChainTimerOverlayModifier.swift; sourceTree = "<group>"; };
@@ -1177,7 +1177,7 @@
 				FE12345678901234567890A2 /* UUIDExtensions.swift */,
 				CC11A1AA00000000ABCDEF02 /* TrainingChainContext.swift */,
 				CC55AA0000000000ABCDEF02 /* TrainingChainStore.swift */,
-				CC15FF0000000000ABCDEF02 /* ChainListSelectionSheet.swift */,
+				CC15FF0000000000ABCDEF02 /* GlobalListPickerSheet.swift */,
 				CC22BB0000000000ABCDEF02 /* TrainingChainOverviewView.swift */,
 				CC44DD0000000000ABCDEF02 /* ChainStepTimerBar.swift */,
 				CC55EE0000000000ABCDEF02 /* ChainTimerOverlayModifier.swift */,
@@ -2121,7 +2121,7 @@
 				FE12345678901234567890A1 /* UUIDExtensions.swift in Sources */,
 				CC11A1AA00000000ABCDEF01 /* TrainingChainContext.swift in Sources */,
 				CC55AA0000000000ABCDEF01 /* TrainingChainStore.swift in Sources */,
-				CC15FF0000000000ABCDEF01 /* ChainListSelectionSheet.swift in Sources */,
+				CC15FF0000000000ABCDEF01 /* GlobalListPickerSheet.swift in Sources */,
 				CC22BB0000000000ABCDEF01 /* TrainingChainOverviewView.swift in Sources */,
 				CC44DD0000000000ABCDEF01 /* ChainStepTimerBar.swift in Sources */,
 				CC55EE0000000000ABCDEF01 /* ChainTimerOverlayModifier.swift in Sources */,
