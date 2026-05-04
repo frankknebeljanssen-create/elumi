@@ -485,18 +485,22 @@ struct WordRunnerGameView: View {
         // Standardpaket sichtbar").
         .sheet(isPresented: $isShowingListPicker) {
             if let store = listStoreRef.backing {
-                ListPickerSheet(
-                    style: .home,
-                    lists: store.allLists,
-                    selectedListID: store.selectedListID,
-                    onSelect: { newID in
-                        store.selectedListID = newID
+                // **Phase 4 (2026-05-04)** — Migration auf
+                // `GlobalListPickerSheet` mit `singleSelect: true`.
+                // Word Runner bleibt single-select-UX, gewinnt
+                // Lernjahr-Auswahl. `feedbackPlayer + onHome` sind
+                // hier nicht verfügbar — Footer-Bar bleibt ausgeblendet
+                // im Sheet (gleiches Verhalten wie vorher).
+                GlobalListPickerSheet(
+                    allLists: store.allLists,
+                    initialSelection: [store.selectedListID],
+                    onCommit: { newSelection in
+                        if let firstID = newSelection.first {
+                            store.selectedListID = firstID
+                        }
                     },
-                    onDelete: { _ in
-                        // Löschen vom Start-Screen aus ist nicht
-                        // gewollt — die Löschen-Logik lebt in der
-                        // Listen-Verwaltung.
-                    }
+                    singleSelect: true,
+                    categoryHeaders: false
                 )
             }
         }

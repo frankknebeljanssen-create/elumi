@@ -294,15 +294,25 @@ struct AccentsEntryView: View {
             }
         }
         .sheet(isPresented: $showingListPicker) {
-            ListPickerSheet(
-                style: sectionStyle,
-                lists: availableLists,
-                selectedListID: selectedListID,
-                onSelect: { id in
-                    selectedListID = id
+            // **Phase 4 (2026-05-04)** — Migration auf
+            // `GlobalListPickerSheet` mit `singleSelect: true`. Akzente
+            // bleibt single-select-UX wie bisher, gewinnt aber Lernjahr-
+            // Auswahl im Picker. `selectedListID` ist non-optional `UUID`,
+            // wird als 1-elementiges Set initialisiert. Sheet "Fertig"
+            // ist disabled bei leerem Set — defensiver `if let`-Unwrap.
+            GlobalListPickerSheet(
+                allLists: availableLists,
+                initialSelection: [selectedListID],
+                onCommit: { newSelection in
+                    if let firstID = newSelection.first {
+                        selectedListID = firstID
+                    }
                     showingListPicker = false
                 },
-                onDelete: { _ in /* nicht erlaubt aus dem Akzent-Modul */ }
+                singleSelect: true,
+                categoryHeaders: false,
+                feedbackPlayer: feedbackPlayer,
+                onHome: { goHome() }
             )
         }
     }
