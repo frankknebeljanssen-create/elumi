@@ -28,6 +28,15 @@ extension ListsView {
                     selectedListID: listStore.selectedListID,
                     onSelect: { pickedID in
                         listStore.selectedListID = pickedID
+                        // **Punkt 2 Fix (2026-05-04)** — Listen-Tab ist
+                        // jetzt die kanonische „global selection"-UI.
+                        // Eine hier gewählte Liste wirkt systemweit auf
+                        // alle Module (Quiz, Training, Karteikarten,
+                        // Akzente, Word Runner). Vorher schrieb der
+                        // Listen-Tab nur den lokalen Editor-State —
+                        // Quiz las davon nicht. Jetzt: zusätzlich in
+                        // den globalen Slot.
+                        VocabularyListSelectionResolver.setGlobalSelectedListIDs([pickedID])
                         showingListPicker = false
                     },
                     onDelete: { deletedList in
@@ -39,6 +48,7 @@ extension ListsView {
                     },
                     onView: { list in
                         listStore.selectedListID = list.id
+                        VocabularyListSelectionResolver.setGlobalSelectedListIDs([list.id])
                         showingListPicker = false
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                             showingListDetail = true
@@ -70,6 +80,9 @@ extension ListsView {
                     selectedListID: listStore.selectedListID,
                     onSelect: { pickedID in
                         listStore.selectedListID = pickedID
+                        // Siehe Doc oben (zwei `.sheet`-Trigger, gleiche
+                        // Semantik — Listen-Tab schreibt globalen Slot).
+                        VocabularyListSelectionResolver.setGlobalSelectedListIDs([pickedID])
                         listPickerFilter = nil
                     },
                     onDelete: { deletedList in
@@ -81,6 +94,7 @@ extension ListsView {
                     },
                     onView: { list in
                         listStore.selectedListID = list.id
+                        VocabularyListSelectionResolver.setGlobalSelectedListIDs([list.id])
                         listPickerFilter = nil
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                             showingListDetail = true

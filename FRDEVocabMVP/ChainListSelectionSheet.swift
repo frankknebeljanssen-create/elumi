@@ -155,6 +155,9 @@ struct ChainListSelectionSheet: View {
                 // `onLernjahrMaxChange` `@AppStorage(appLernjahrMaxKey)`
                 // schreibt. Hier äquivalent direkt auf UserDefaults.
                 UserDefaults.standard.set(localLernjahrMax, forKey: appLernjahrMaxKey)
+                #if DEBUG
+                print("📋 [Lernjahr] persist max=\(localLernjahrMax)")
+                #endif
                 onCommit(selectedIDs)
                 dismiss()
             } label: {
@@ -413,35 +416,30 @@ struct ChainListSelectionSheet: View {
         }
     }
 
-    /// Children-Tap-Handler. Adaptiert aus ListPickerSheet, aber für
-    /// Multi-Select erweitert: tippt der User auf Y_n einer nicht-
-    /// selektierten Liste, wird die Liste zur Selection hinzugefügt
-    /// (Auto-Add). Tippt er Y_n auf einer selektierten Liste, wirkt
-    /// nur die Lernjahr-Logic (kumulative Toggle mit α-Rule).
+    /// Children-Tap-Handler.
+    ///
+    /// **2026-05-04 (Punkt 2 Fix)** — Semantik vereinfacht auf
+    /// **cumulative-up only**: jeder Tap auf Y_n setzt
+    /// `localLernjahrMax = n`. Vorher gab es einen „Deselect-from-top"-
+    /// Branch, der bei Tap auf Y_n innerhalb des aktiven Bereichs
+    /// `max = n - 1` schrieb — dadurch ratscht der User-Tap-Pattern
+    /// „Y1 → Y2 → Y3" das Maximum nach unten statt nach oben (User-
+    /// Befund: erwartete LJ 1+2+3, persistiert wurde 1).
+    /// Mit dieser Logik passt Tap-Verhalten zum mentalen Modell des
+    /// Users: „Ich tippe Y3 → Y1+Y2+Y3 sind aktiv". Wer nur Y1 will,
+    /// tippt Y1 (max=1).
+    ///
+    /// Auto-Add bleibt: tippt der User auf Y_n einer nicht-selektierten
+    /// Liste, wird die Liste zur Selection hinzugefügt.
+    ///
+    /// Der ehemalige „alle Lernjahre"-State (`max=0`) wird durch dieses
+    /// Tap-Pattern nicht mehr gesetzt — er bleibt nur als Initial-State,
+    /// wenn der User noch nie eine Lernjahr-Wahl getroffen hat.
     private func handleChildTap(year: Int, parent: VocabularyList) {
-        // Auto-Add: wenn die Liste noch nicht in der Selection ist,
-        // dazu hinzufügen. So matcht das Tap-Verhalten den User-Erwartung
-        // „ich tappe Y3 bei Grundwortschatz, also will ich den auch
-        // trainieren".
         if !selectedIDs.contains(parent.id) {
             selectedIDs.insert(parent.id)
-            localLernjahrMax = year
-            return
         }
-
-        let effective = localLernjahrMax == 0 ? 5 : localLernjahrMax
-        if year > effective {
-            // Y_n nicht aktiv → aktiviere Y_n + alle darunter.
-            localLernjahrMax = year
-        } else {
-            // Y_n aktiv → deselektiere Y_n + alle darüber.
-            // **α-Rule**: Y1 + max==1 → no-op (Y1 nicht abwählbar — sonst
-            // hätte die Liste 0 Items und der User wäre verwirrt).
-            if year == 1 && localLernjahrMax == 1 {
-                return
-            }
-            localLernjahrMax = year - 1
-        }
+        localLernjahrMax = year
     }
 
     /// Ist Y_n überhaupt aktiv (auto oder explicit)?

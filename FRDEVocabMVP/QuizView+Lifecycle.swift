@@ -5,7 +5,14 @@ extension QuizView {
         // Apply launch context from Import Completion
         if let ctx = launchContext, let preferredListID = ctx.preferredListID {
             session.selectedListIDs = [preferredListID]
-        } else if session.selectedListIDs.isEmpty {
+        } else {
+            // **Bug-Fix 2026-05-04 (Punkt 2 follow-up)** — Restore
+            // unconditional. Vorher nur wenn `selectedListIDs.isEmpty` —
+            // dadurch wurde eine Listen-Tab-Auswahl, die zwischen
+            // zwei Quiz-Opens passiert ist, nicht übernommen, weil das
+            // alte selectedListIDs-Set noch vom vorherigen Open lebte.
+            // Restore liest jetzt jedes Mal aus der globalen Single-
+            // Source-of-Truth (`VocabularyListSelectionResolver`).
             session.restoreSelectedListIDs()
         }
         print("🧩 [Quiz] handleQuizAppear, availableLists=\(availableQuizLists.count), selectedIDs=\(session.selectedListIDs)")

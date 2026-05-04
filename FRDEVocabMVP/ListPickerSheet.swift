@@ -80,6 +80,9 @@ struct ListPickerSheet: View {
                 onTrailing: {
                     onSelect(currentSelectedID)
                     onLernjahrMaxChange(localLernjahrMax)
+                    #if DEBUG
+                    print("📋 [Lernjahr] persist max=\(localLernjahrMax) (ListPickerSheet)")
+                    #endif
                     dismiss()
                 }
             )
@@ -425,27 +428,20 @@ struct ListPickerSheet: View {
         }
     }
 
-    /// Child-Tap-Handler mit α-Rule (Y1-no-op) und kumulativer Logic.
+    /// Child-Tap-Handler.
+    ///
+    /// **2026-05-04 (Punkt 2 Fix)** — siehe Doc in
+    /// `ChainListSelectionSheet.handleChildTap`. Semantik vereinfacht
+    /// auf cumulative-up only: jeder Tap auf Y_n setzt
+    /// `localLernjahrMax = n`. Tap-Pattern „Y1 → Y2 → Y3" hatte vorher
+    /// den max-Wert nach unten ratschen lassen. Mit cumulative-up
+    /// matcht das Verhalten dem User-Mental-Model: Tap Y3 = Y1+Y2+Y3
+    /// aktiv. Wer Y1 zurück will, tippt Y1 → max=1.
     private func handleChildTap(year: Int, list: VocabularyList) {
-        // Liste muss aktiv sein, damit Child-Tap überhaupt Sinn macht.
-        // Falls nicht aktiv: Liste aktivieren UND als Y_n setzen.
         if currentSelectedID != list.id {
             localSelectedID = list.id
-            localLernjahrMax = year
-            return
         }
-        let effective = localLernjahrMax == 0 ? 5 : localLernjahrMax
-        if year > effective {
-            // Y_n nicht aktiv → aktiviere Y_n + alle darunter.
-            localLernjahrMax = year
-        } else {
-            // Y_n aktiv → deselektiere Y_n + alle darüber.
-            // α-Rule: Y1 + max==1 → no-op (Y1 nicht abwählbar).
-            if year == 1 && localLernjahrMax == 1 {
-                return
-            }
-            localLernjahrMax = year - 1
-        }
+        localLernjahrMax = year
     }
 
     /// Ist Y_n explicit gewählt (= der zuletzt vom User getippte)?

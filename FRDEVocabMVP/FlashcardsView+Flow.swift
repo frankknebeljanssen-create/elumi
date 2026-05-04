@@ -176,9 +176,10 @@ extension FlashcardsView {
         let isFirstAppear = !hasHandledInitialFlashcardsAppear
         hasHandledInitialFlashcardsAppear = true
 
-        if setup.selectedStackListIDs.isEmpty {
-            setup.restoreSelectedStackListIDs()
-        }
+        // **Bug-Fix 2026-05-04 (Punkt 2 follow-up)** — siehe Doc in
+        // `QuizView+Lifecycle.handleQuizAppear`. Restore unconditional,
+        // damit Listen-Tab-Änderungen über Modul-Re-Opens propagieren.
+        setup.restoreSelectedStackListIDs()
         if isFirstAppear {
             applyLaunchContextIfNeeded()
         }
