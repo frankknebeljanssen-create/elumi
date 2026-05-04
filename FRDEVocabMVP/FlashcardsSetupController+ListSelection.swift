@@ -24,6 +24,12 @@ extension FlashcardsSetupController {
         // Damit kaskadiert der Filter automatisch durch
         // selectedStackLists / selectedStackLanguages /
         // selectedStackCardCount.
+        //
+        // **Phase 2 Fix (2026-05-04)** — `children` + `cumulativeChildren`
+        // beim Re-Build mitschleifen. Ohne diese Felder rendert der
+        // `GlobalListPickerSheet` hierarchische Listen (A1) als flache
+        // Row ohne Lernjahr-UI, weil `expandableLernjahrRow` nur greift
+        // wenn `cumulativeChildren=true && children != nil`.
         let lernjahrMax = VocabularyListSelectionResolver.currentLernjahrMax()
         return lists.map { list in
             VocabularyList(
@@ -35,7 +41,9 @@ extension FlashcardsSetupController {
                 ),
                 isBuiltIn: list.isBuiltIn,
                 collectionPreset: list.collectionPreset,
-                isAggregateVocabulary: list.isAggregateVocabulary
+                isAggregateVocabulary: list.isAggregateVocabulary,
+                children: list.children,
+                cumulativeChildren: list.cumulativeChildren
             )
         }
     }

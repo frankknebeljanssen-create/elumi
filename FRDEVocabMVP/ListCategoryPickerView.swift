@@ -153,17 +153,21 @@ struct ListCategoryPickerView: View {
             .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
         }
         .buttonStyle(.plain)
-        .sheet(item: $activeCategory) { category in
-            ListSelectionSheet(
-                style: style,
-                ownLists: ownLists,
-                levelLists: levelLists,
-                topicLists: topicLists,
-                selectedListIDs: selectedListIDs,
-                onSelectionChanged: { updatedSelection in
+        .sheet(item: $activeCategory) { _ in
+            // **Phase 2 (2026-05-04)** — Migration auf
+            // `GlobalListPickerSheet`. Vorher: `ListSelectionSheet`
+            // mit 3-Kategorie-Headern (Eigene/Niveau/Themen).
+            // Jetzt: einheitlicher Picker mit Lernjahr-Auswahl.
+            // Sort sortiert Built-In hierarchisch zuerst — User sieht
+            // Grundwortschatz A1 prominent oben, kann LJ wählen.
+            GlobalListPickerSheet(
+                allLists: availableLists,
+                initialSelection: selectedListIDs,
+                onCommit: { updatedSelection in
                     onSelectionChanged(updatedSelection)
                     activeCategory = nil
                 },
+                categoryHeaders: false,
                 feedbackPlayer: feedbackPlayer,
                 onHome: onHome
             )

@@ -392,15 +392,19 @@ extension TrainingView {
             optionsContent: { trainingSetupOptionsContent }
         )
         .sheet(item: $listPickerCategory) { category in
-            TrainingCategoryListSheet(
-                category: category,
-                style: sectionStyle,
-                lists: filteredLists(for: category),
-                selectedListIDs: session.selectedTrainingListIDs,
-                onSelectionChanged: { updatedSelection in
+            // **Phase 2 (2026-05-04)** — Migration auf
+            // `GlobalListPickerSheet`. `filteredLists(for: category)`
+            // pre-filtert nach der vom User getippten Kategorie
+            // (.topic / .level / .own / .all), wir reichen das
+            // gefilterte Set als `allLists` durch.
+            GlobalListPickerSheet(
+                allLists: filteredLists(for: category),
+                initialSelection: session.selectedTrainingListIDs,
+                onCommit: { updatedSelection in
                     session.selectedTrainingListIDs = updatedSelection
                     listPickerCategory = nil
                 },
+                categoryHeaders: false,
                 feedbackPlayer: feedbackPlayer,
                 onHome: goHome
             )

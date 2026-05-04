@@ -512,16 +512,19 @@ extension FlashcardsView {
         }
         .buttonStyle(.plain)
         .sheet(isPresented: $stackListPickerActive) {
-            ListSelectionSheet(
-                style: sectionStyle,
-                ownLists: availableStackLists.filter { !$0.isBuiltIn || $0.isAggregateVocabulary },
-                levelLists: availableStackLists.filter { $0.collectionPreset == .standardLevel },
-                topicLists: availableStackLists.filter { $0.collectionPreset == .standardTopic },
-                selectedListIDs: setup.selectedStackListIDs,
-                onSelectionChanged: { updated in
+            // **Phase 2 (2026-05-04)** — Migration auf
+            // `GlobalListPickerSheet` für den Karteikarten-Listen-Picker.
+            // Stack-Composer (`FlashcardStackComposerSheet`) bleibt
+            // unverändert — der ist eigene Verantwortlichkeit
+            // (Backlog-Eintrag zur Lernjahr-UI dort).
+            GlobalListPickerSheet(
+                allLists: availableStackLists,
+                initialSelection: setup.selectedStackListIDs,
+                onCommit: { updated in
                     setup.selectedStackListIDs = updated
                     stackListPickerActive = false
                 },
+                categoryHeaders: false,
                 feedbackPlayer: feedbackPlayer,
                 onHome: goHome
             )
