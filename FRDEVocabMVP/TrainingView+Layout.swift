@@ -1148,16 +1148,16 @@ extension TrainingView {
         }
         .buttonStyle(.plain)
         .sheet(isPresented: $verbformsListPickerActive) {
-            ListSelectionSheet(
-                style: sectionStyle,
-                ownLists: availableTrainingLists.filter { !$0.isBuiltIn || $0.isAggregateVocabulary },
-                levelLists: availableTrainingLists.filter { $0.collectionPreset == .standardLevel },
-                topicLists: availableTrainingLists.filter { $0.collectionPreset == .standardTopic },
-                selectedListIDs: session.selectedTrainingListIDs,
-                onSelectionChanged: { updated in
+            // **Phase 3 (2026-05-04)** — Migration auf
+            // `GlobalListPickerSheet` für Verbformen.
+            GlobalListPickerSheet(
+                allLists: availableTrainingLists,
+                initialSelection: session.selectedTrainingListIDs,
+                onCommit: { updated in
                     session.selectedTrainingListIDs = updated
                     verbformsListPickerActive = false
                 },
+                categoryHeaders: false,
                 feedbackPlayer: feedbackPlayer,
                 onHome: goHome
             )
@@ -1337,16 +1337,15 @@ extension TrainingView {
             onTapCounter: { verbsVerbDetailActive = true }
         )
         .sheet(isPresented: $verbsListPickerActive) {
-            ListSelectionSheet(
-                style: sectionStyle,
-                ownLists: availableTrainingLists.filter { !$0.isBuiltIn || $0.isAggregateVocabulary },
-                levelLists: availableTrainingLists.filter { $0.collectionPreset == .standardLevel },
-                topicLists: availableTrainingLists.filter { $0.collectionPreset == .standardTopic },
-                selectedListIDs: session.selectedTrainingListIDs,
-                onSelectionChanged: { updated in
+            // **Phase 3 (2026-05-04)** — Migration auf `GlobalListPickerSheet`.
+            GlobalListPickerSheet(
+                allLists: availableTrainingLists,
+                initialSelection: session.selectedTrainingListIDs,
+                onCommit: { updated in
                     session.selectedTrainingListIDs = updated
                     verbsListPickerActive = false
                 },
+                categoryHeaders: false,
                 feedbackPlayer: feedbackPlayer,
                 onHome: goHome
             )
@@ -1366,16 +1365,15 @@ extension TrainingView {
             onTapCounter: nil
         )
         .sheet(isPresented: $nounsListPickerActive) {
-            ListSelectionSheet(
-                style: sectionStyle,
-                ownLists: availableTrainingLists.filter { !$0.isBuiltIn || $0.isAggregateVocabulary },
-                levelLists: availableTrainingLists.filter { $0.collectionPreset == .standardLevel },
-                topicLists: availableTrainingLists.filter { $0.collectionPreset == .standardTopic },
-                selectedListIDs: session.selectedTrainingListIDs,
-                onSelectionChanged: { updated in
+            // **Phase 3 (2026-05-04)** — Migration auf `GlobalListPickerSheet`.
+            GlobalListPickerSheet(
+                allLists: availableTrainingLists,
+                initialSelection: session.selectedTrainingListIDs,
+                onCommit: { updated in
                     session.selectedTrainingListIDs = updated
                     nounsListPickerActive = false
                 },
+                categoryHeaders: false,
                 feedbackPlayer: feedbackPlayer,
                 onHome: goHome
             )
@@ -1391,16 +1389,15 @@ extension TrainingView {
             onTapCounter: nil
         )
         .sheet(isPresented: $articlesListPickerActive) {
-            ListSelectionSheet(
-                style: sectionStyle,
-                ownLists: availableTrainingLists.filter { !$0.isBuiltIn || $0.isAggregateVocabulary },
-                levelLists: availableTrainingLists.filter { $0.collectionPreset == .standardLevel },
-                topicLists: availableTrainingLists.filter { $0.collectionPreset == .standardTopic },
-                selectedListIDs: session.selectedTrainingListIDs,
-                onSelectionChanged: { updated in
+            // **Phase 3 (2026-05-04)** — Migration auf `GlobalListPickerSheet`.
+            GlobalListPickerSheet(
+                allLists: availableTrainingLists,
+                initialSelection: session.selectedTrainingListIDs,
+                onCommit: { updated in
                     session.selectedTrainingListIDs = updated
                     articlesListPickerActive = false
                 },
+                categoryHeaders: false,
                 feedbackPlayer: feedbackPlayer,
                 onHome: goHome
             )
