@@ -745,6 +745,26 @@ Bekannte Fehler:
 - „desservir [...] Bärendienst erweisen" — zu komplex / zu
   umgangssprachlich für A1/A2-Niveau, brauche bessere/einfachere
   Übersetzung — 2026-05-03
+- „Weiche Cookie" — schiefe Übersetzung / Wortwahl, prüfen ob
+  besser „weicher Keks" oder „weiche Plätzchen". Eintrag hat
+  zudem fragwürdiges Genus/Numerus-Mapping. — 2026-05-04
+- „la story du jour" — Speech-Eval-Bug: Spracherkennung akzeptiert
+  die Phrase nicht zuverlässig (vermutlich Fremdwort-Mix
+  „story" + französische Determinanten). Prüfen ob Eintrag
+  rauskommt oder ob Speech-Eval einen Fremdwort-Whitelist-Pfad
+  braucht. — 2026-05-04
 
 Beim Auftauchen weiterer Fehler: hier sammeln, nicht einzeln
 fixen. Massen-Migration nach Sammlung in eigenem Commit.
+
+## FlashcardStackComposerSheet — Lernjahr-UI-Integration
+
+Stack-Composer ist mehr als Listen-Picker (Stack-Composing-Logik
+inkl.). Sub-Component-Extraktion oder Verantwortungs-Aufteilung
+nötig wenn Lernjahr-UI dort gewünscht. Heute ohne Lernjahr-Auswahl
+akzeptabel weil Stack-Composer mit ganzen Listen arbeitet.
+
+Bei künftigem Stack-Logic-Refactor: prüfen ob Lernjahr-UI eingebaut
+werden soll.
+
+Prio: niedrig.
