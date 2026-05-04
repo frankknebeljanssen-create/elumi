@@ -358,6 +358,13 @@ struct ChainListSelectionSheet: View {
     ) -> some View {
         let active = isActive(year: year, max: max)
         let auto = isAuto(year: year, max: max)
+        // **Punkt 3 Fix (2026-05-04)** — Konsistenz zu `ListPickerSheet`:
+        // leere Lernjahre disablen + „—" statt „0" anzeigen. Vorher
+        // konnte der User Y4/Y5 von A1 antippen, was max=4 setzte
+        // ohne neue Items in den Pool zu bringen → Confusion. Jetzt:
+        // Tap blockiert, visueller Hint klar.
+        let count = child.items.count
+        let isEmpty = count == 0
 
         return HStack(spacing: 10) {
             Image(systemName: active ? "checkmark.circle.fill" : "circle")
@@ -381,7 +388,7 @@ struct ChainListSelectionSheet: View {
 
             Spacer(minLength: 0)
 
-            Text("\(child.items.count)")
+            Text(isEmpty ? "—" : "\(count)")
                 .font(.system(size: 12, weight: .semibold, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textSecondary)
                 .monospacedDigit()
@@ -392,8 +399,10 @@ struct ChainListSelectionSheet: View {
             RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(active ? AppTheme.Colors.primary.opacity(0.06) : AppTheme.Colors.surface.opacity(0.6))
         )
+        .opacity(isEmpty ? 0.5 : 1.0)
         .contentShape(Rectangle())
         .onTapGesture {
+            guard !isEmpty else { return }
             handleChildTap(year: year, parent: parentList)
         }
     }

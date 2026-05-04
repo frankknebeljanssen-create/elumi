@@ -583,7 +583,12 @@ struct ListPickerSheet: View {
 
                 Spacer(minLength: 0)
 
-                Text("\(count)")
+                // **Punkt 3 Fix (2026-05-04)** — leere Lernjahre als
+                // „—" statt „0" rendern. Klar kommunizierter „keine
+                // Vokabeln vorhanden"-Status, statt einer 0 die wie
+                // ein potentiell anwählbarer Counter wirkt. Disabled-
+                // State + Opacity-Fade bleibt unverändert.
+                Text(count == 0 ? "—" : "\(count)")
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .monospacedDigit()
