@@ -768,3 +768,32 @@ Bei künftigem Stack-Logic-Refactor: prüfen ob Lernjahr-UI eingebaut
 werden soll.
 
 Prio: niedrig.
+
+## Slot-Click-Audio-Stutter auf Real-Device — offen
+
+User-Befund: Slot-Click-Sound stuttert auf Real-Device während
+Reels rollen. Animation visuell flüssig, nur Audio betroffen.
+Heißt: nicht SwiftUI-Layout-Recompute, sondern Audio-Scheduling-
+Jitter.
+
+Versuchte Fixes (ohne Erfolg):
+- f545db2: SlotAudioPlayer off-MainActor — kein Effekt auf Stutter
+- play(atTime:) mit deviceCurrentTime + 0.005 + prepareToPlay() —
+  Sim ok, Real-Device gar kein Sound (Regression, reverted)
+
+Hypothese: AVAudioPlayer ist nicht für rapid-fire (~16 Clicks/Sek)
+auf Real-Device geeignet. Hardware-Buffer-Latenz auf iPhone unter-
+scheidet sich strukturell vom Sim.
+
+Stufe 3.5 — AVAudioEngine + AVAudioPlayerNode:
+- Hardware-time-precise scheduling
+- Best-in-class für rapid-fire-Audio
+- ~150-200 LoC, eigener Refactor
+- Risk: 🔴 hoch (komplette Audio-Pipeline-Umstellung)
+
+Stufe 4 — alternativ: Audio-Sample-Rate erhöhen, Buffer-Size
+optimieren, oder Click-Sound durch kürzeren Sample ersetzen
+- Diagnose-First nötig
+
+Prio: niedrig (Stutter ist störend aber nicht blockierend für
+Funktionalität). Backlog-Eintrag für künftige Audio-Refactor-Session.
