@@ -428,7 +428,14 @@ struct SlotReelView: View {
     /// Verifizierung wieder auf `false` setzen.
     /// Der Overlay hat `.allowsHitTesting(false)` und ändert keine
     /// Geometrie.
-    static let showDebugGuides: Bool = true
+    ///
+    /// **2026-05-05 Production-Off** — auf `false` für Production-Builds.
+    /// Im aktiven Spin-State rendert der Overlay ~6 zusätzliche
+    /// `Rectangle`-Layer pro Frame über den 3 Reels — Layout-Pressure
+    /// ohne UX-Wert. Dev-Verifikation kann lokal manuell auf `true`
+    /// gesetzt werden, wenn das Snap-Verhalten nochmal überprüft
+    /// werden muss.
+    static let showDebugGuides: Bool = false
 
     @State private var offsetSlots: Double = 0
     @State private var spinTimer: Timer?
