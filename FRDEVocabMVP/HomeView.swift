@@ -75,12 +75,19 @@ struct HomeView: View {
             columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)],
             spacing: 12
         ) {
-            // Karteikarten — Asset-Icon, Modul-Blau.
+            // Karteikarten — Asset-Icon, Modul-Blau, **emphasized**
+            // (User-Spec 2026-05-06 Polish: „Karteikarten ist App-
+            // Grundidee, soll erkennbar Haupt-Methoden-Card sein").
+            // Icon 52 → 60 pt + emphasized-Flag (weißer Stroke +
+            // stärkerer Shadow). Layout-Konsistenz mit den anderen
+            // drei Cards bleibt erhalten (gleiche Höhe, gleiche
+            // Struktur).
             MethodCard(
                 title: "Karteikarten",
                 subtitle: "Selbst gemacht",
                 accent: AppTheme.Colors.moduleFlashcards,
-                icon: { HomeModuleIconView(icon: .karteikarten, size: 52, glyphTint: .white) },
+                emphasized: true,
+                icon: { HomeModuleIconView(icon: .karteikarten, size: 60, glyphTint: .white) },
                 onTap: { openHomeScreen(.flashcards(nil)) }
             )
 

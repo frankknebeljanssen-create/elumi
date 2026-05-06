@@ -150,20 +150,29 @@ struct TrainingHubView: View {
 
     // MARK: - Header
 
-    /// Title-Row — „Training" zentriert, Back-Chevron links. Style
-    /// matched dem Section-Title der anderen Sub-Screens (16pt
-    /// .medium, weiß).
+    /// Title-Row — „Training" zentriert, Back-Chevron links, plus
+    /// Sub-Hint „Wähle deinen Schwerpunkt" darunter (Polish 2026-05-06).
+    /// Style: 16pt .medium weiß für den Title (matched die Konvention
+    /// der anderen Sub-Screens), 13pt .regular textSecondary für die
+    /// Subline (kindgerecht-einleitender Ton).
     private var titleHeader: some View {
-        ZStack {
-            Text("Training")
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity, alignment: .center)
+        VStack(spacing: 4) {
+            ZStack {
+                Text("Training")
+                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity, alignment: .center)
 
-            HStack {
-                AppBackButton(action: { dismiss() }, tint: .white)
-                Spacer(minLength: 0)
+                HStack {
+                    AppBackButton(action: { dismiss() }, tint: .white)
+                    Spacer(minLength: 0)
+                }
             }
+
+            Text("Wähle deinen Schwerpunkt")
+                .font(.system(size: 13, weight: .regular, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .multilineTextAlignment(.center)
         }
         .padding(.top, 4)
     }

@@ -529,7 +529,13 @@ struct ElumiTabView: View {
                     .accessibilityLabel(Text("Schließen"))
                 }
 
-                Text("Wie lange möchtest du üben?")
+                // **Polish 2026-05-06** — Headline um Modul-Kontext
+                // ergänzt. Vorher Plain „Wie lange möchtest du üben?",
+                // jetzt „Mix-Training — wie lange?" — verbindet die
+                // Modul-Identität (Mix-Training = Slot-Modus) mit
+                // der konkreten Frage. User-Spec für Home-Refactor
+                // Hybrid γ v3 Polish-Pass.
+                Text("Mix-Training — wie lange?")
                     .font(.system(size: 22, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .multilineTextAlignment(.center)
