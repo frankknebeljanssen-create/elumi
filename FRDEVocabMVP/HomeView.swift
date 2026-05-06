@@ -64,24 +64,17 @@ struct HomeView: View {
         }
     }
 
-    // MARK: - Methoden-Cards (Typ A 110pt, 2×2)
+    // MARK: - Hero-Methoden-Cards (Typ A 135pt, 2×1)
 
-    /// Vier Methoden-Cards (Karteikarten / Quiz / Mix-Training /
-    /// Training). Layout: LazyVGrid mit zwei flexiblen Spalten,
-    /// Spacing 12 pt horizontal und vertikal.
+    /// **2026-05-06 Hybrid-γ-v3 Iteration 3** — Karteikarten + Quiz
+    /// als Hero-Reihe oben (zwei Cards in einer Zeile). Vorher waren
+    /// vier Cards in einem 2×2-Grid; jetzt sind nur die zwei
+    /// „Identitäts-Methoden" hier oben — Mix-Training und Training
+    /// wandern als Vollbreite-Cards drunter (`wideMethodCards`).
+    /// Karteikarten bleibt emphasized (App-Grundidee).
     @ViewBuilder
-    private var methodCardsGrid: some View {
-        LazyVGrid(
-            columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)],
-            spacing: 12
-        ) {
-            // Karteikarten — Asset-Icon, Modul-Blau, **emphasized**
-            // (User-Spec 2026-05-06 Polish: „Karteikarten ist App-
-            // Grundidee, soll erkennbar Haupt-Methoden-Card sein").
-            // Icon 52 → 60 pt + emphasized-Flag (weißer Stroke +
-            // stärkerer Shadow). Layout-Konsistenz mit den anderen
-            // drei Cards bleibt erhalten (gleiche Höhe, gleiche
-            // Struktur).
+    private var heroCardsRow: some View {
+        HStack(spacing: 12) {
             MethodCard(
                 title: "Karteikarten",
                 subtitle: "Selbst gemacht",
@@ -91,7 +84,6 @@ struct HomeView: View {
                 onTap: { openHomeScreen(.flashcards(nil)) }
             )
 
-            // Quiz — Asset-Icon, Modul-Amber.
             MethodCard(
                 title: "Quiz",
                 subtitle: "Teste dich!",
@@ -99,32 +91,39 @@ struct HomeView: View {
                 icon: { HomeModuleIconView(icon: .quiz, size: 52, glyphTint: .white) },
                 onTap: { openHomeScreen(.quiz(nil)) }
             )
+        }
+    }
 
-            // Mix-Training — SF-Symbol „sparkles" (matches ELUMI-Tab-
-            // Vibe). Tap → AppScreen.elumi → ElumiTabView mit dem
-            // existierenden Slot-Pop-up + Slot-Maschine.
-            MethodCard(
+    // MARK: - Wide-Methoden-Cards (Typ Wide ~86pt, untereinander)
+
+    /// **2026-05-06 Hybrid-γ-v3 Iteration 3** — Mix-Training + Training
+    /// als Vollbreite-Cards untereinander. Vorher Teil des 2×2-Grids
+    /// oben; jetzt eigener Block mit Icon-links + Title + Subtitle +
+    /// Chevron-rechts. Visuell kleiner als die Hero-Cards (App-
+    /// Identität bleibt oben), aber prominenter als die Tools-Reihe
+    /// (Scannen/Listen).
+    @ViewBuilder
+    private var wideMethodCards: some View {
+        VStack(spacing: 12) {
+            WideMethodCard(
                 title: "Mix-Training",
                 subtitle: "Surprise!",
                 accent: AppTheme.Colors.elumiPinkDeep,
                 icon: {
                     Image(systemName: "sparkles")
-                        .font(.system(size: 44, weight: .bold))
+                        .font(.system(size: 32, weight: .bold))
                         .foregroundStyle(.white)
                 },
                 onTap: { openHomeScreen(.elumi) }
             )
 
-            // Training — SF-Symbol „graduationcap.fill" als Umbrella-
-            // Icon für die fünf Lern-Modi (Vokabeln + Spezifika).
-            // Tap → TrainingHubView (Sub-Screen).
-            MethodCard(
+            WideMethodCard(
                 title: "Training",
-                subtitle: "Vokabeln & mehr",
+                subtitle: "Vokabeln & Spezial",
                 accent: AppTheme.Colors.moduleVocabulary,
                 icon: {
                     Image(systemName: "graduationcap.fill")
-                        .font(.system(size: 42, weight: .bold))
+                        .font(.system(size: 30, weight: .bold))
                         .foregroundStyle(.white)
                 },
                 onTap: { openHomeScreen(.trainingHub) }
@@ -183,27 +182,32 @@ struct HomeView: View {
                     .padding(.bottom, 4)
                     .appEntryTransition(delay: 0.05)
 
-                // **4 Methoden-Cards** im 2×2-Grid (Typ A, je 110 pt).
-                // Karteikarten/Quiz nutzen Asset-Icons; Mix-Training
-                // und Training nutzen SF-Symbole, weil keine eigenen
-                // Asset-Icons existieren (vgl. HomeModuleIcon-Enum —
-                // dort gibt es nur die Per-Modul-Assets).
-                methodCardsGrid
+                // **2026-05-06 Hybrid-γ-v3 Iteration 3** — Layout-
+                // Refactor: Karteikarten + Quiz oben als Hero-Reihe
+                // (2×1, MethodCards 135 pt), Mix-Training und Training
+                // drunter als Vollbreite-WideMethodCards (~86 pt).
+                // Vorher: alle vier in einem uniformen 2×2-Grid.
+                heroCardsRow
                     .padding(.top, 4)
                     .appEntryTransition(delay: 0.1)
 
+                wideMethodCards
+                    .padding(.top, 12)
+                    .appEntryTransition(delay: 0.15)
+
                 // Sub-Section-Label „DEINE TOOLS" (CAPS, klein, grau)
                 // gemäß Hybrid-γ-v3-Spec. Trennt visuell die Methoden-
-                // Sektion von den Tools (Scannen, Listen).
+                // Sektion von den Tools (Scannen, Listen). Spacer
+                // 32 pt darüber damit die Tools klar abgesetzt wirken.
                 SectionLabel(text: "Deine Tools")
-                    .padding(.top, 22)
-                    .appEntryTransition(delay: 0.15)
+                    .padding(.top, 32)
+                    .appEntryTransition(delay: 0.2)
 
                 // **2 Tools-Cards quer** (Typ C, je 76 pt).
                 toolsRow
                     .padding(.top, 0)
                     .padding(.bottom, 32)
-                    .appEntryTransition(delay: 0.2)
+                    .appEntryTransition(delay: 0.25)
 
                 Color.clear.frame(height: homeFooterClearance)
             }
