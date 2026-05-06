@@ -55,7 +55,10 @@ struct LexiconSearchCardView: View {
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(accentColor)
 
-            TextField("Französisch oder Deutsch suchen", text: $searchText)
+            // **Naming-Sweep 2026-05-06** — Placeholder „Französisch
+            // oder Deutsch suchen" → „Was suchst du?" (kürzer,
+            // direkter, Du-Ansatz).
+            TextField("Was suchst du?", text: $searchText)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .font(.system(size: 16, weight: .semibold, design: .rounded))

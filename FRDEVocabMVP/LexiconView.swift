@@ -46,7 +46,9 @@ struct LexiconView: View {
             case .all: return "Alle"
             case .nouns: return "Nomen"
             case .verbs: return "Verben"
-            case .others: return "Sonstige"
+            // **Naming-Sweep 2026-05-06** — „Sonstige" → „Andere"
+            // (geläufiger, weniger Beamten-Sprache).
+            case .others: return "Andere"
             }
         }
     }

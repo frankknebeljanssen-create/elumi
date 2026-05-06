@@ -118,7 +118,11 @@ struct SettingsView: View {
             } label: {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Mein Konto")
+                        // **Naming-Sweep 2026-05-06** — „Mein Konto"
+                        // → „Mein Profil" (passt zum Subtitle
+                        // „Vorname und Profil" und zum visuellen
+                        // Avatar-Pattern).
+                        Text("Mein Profil")
                             .font(.system(size: 20, weight: .bold, design: .rounded))
                         Text("Vorname und Profil")
                             .font(.subheadline)
@@ -147,7 +151,10 @@ struct SettingsView: View {
             } label: {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Meine Accounts")
+                        // **Naming-Sweep 2026-05-06** — „Meine
+                        // Accounts" → „Account wechseln" (klare
+                        // Aktion: Multi-User-Switcher öffnen).
+                        Text("Account wechseln")
                             .font(.system(size: 20, weight: .bold, design: .rounded))
                         Text(accountSwitcherSubline)
                             .font(.subheadline)
@@ -187,9 +194,13 @@ struct SettingsView: View {
                 )
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(feedbackPlayer.areSoundsEnabled ? "Ton an" : "Ton aus")
+                    // **Naming-Sweep 2026-05-06** — „Ton an/aus" →
+                    // „Sound" (statisch, der Toggle-Switch zeigt
+                    // den Zustand). Subtitle gekürzt: „Startsound
+                    // und Feedback-Töne" → „Effekte und Töne".
+                    Text("Sound")
                         .font(.system(size: 18, weight: .bold, design: .rounded))
-                    Text("Startsound und Feedback-Töne")
+                    Text("Effekte und Töne")
                         .font(.system(size: 13, weight: .medium, design: .rounded))
                         .foregroundStyle(.secondary)
                 }
@@ -239,7 +250,12 @@ struct SettingsView: View {
             } label: {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Info")
+                        // **Naming-Sweep 2026-05-06** — „Info" →
+                        // „Tipps zur App" (zeigt sofort, was es
+                        // ist: praktische Hinweise, nicht
+                        // bürokratisches Info-Sammelbecken).
+                        // Subtitle bleibt unverändert.
+                        Text("Tipps zur App")
                             .font(.system(size: 20, weight: .bold, design: .rounded))
                         Text("Hilfe und Hinweise zur App")
                             .font(.subheadline)
@@ -336,9 +352,16 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("\(SpeedRoundTerminology.name) Dauer")
+                    // **Naming-Sweep 2026-05-06** — Title
+                    // „SpeedRoundTerminology.name Dauer" →
+                    // „Speed-Dauer" (kürzer, der Subtitle gibt den
+                    // Kontext). Subtitle „Gilt für alle Speed-
+                    // Moduss in der App" → „Wie lange läuft Speed-
+                    // Modus?" (Tippfehler „Moduss" raus, klare
+                    // Frage statt Beamten-Ankündigung).
+                    Text("Speed-Dauer")
                         .font(.system(size: 20, weight: .bold, design: .rounded))
-                    Text("Gilt für alle \(SpeedRoundTerminology.name)s in der App")
+                    Text("Wie lange läuft Speed-Modus?")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }

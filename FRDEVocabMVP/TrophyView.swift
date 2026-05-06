@@ -239,25 +239,32 @@ struct TrophyView: View {
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
 
+                // **Naming-Sweep 2026-05-06** — Lernstatus-Pillars:
+                //   • „Gelernt" → „Geschafft" (positiver, achievement-
+                //     orientiert)
+                //   • „Im Training" → „In Arbeit" (neutraler, weniger
+                //     fachsprachlich)
+                //   • „Gesamt" → „Insgesamt" (vollständigeres
+                //     deutsches Wort, freundlicher)
                 HStack(spacing: 0) {
                     lernstatusColumn(
                         icon: "checkmark.seal.fill",
                         tint: Color(hex: "#4ADE80"),
-                        label: "Gelernt",
+                        label: "Geschafft",
                         value: strong
                     )
                     lernstatusDivider
                     lernstatusColumn(
                         icon: "bolt.fill",
                         tint: Color(hex: "#F59E0B"),
-                        label: "Im Training",
+                        label: "In Arbeit",
                         value: trained
                     )
                     lernstatusDivider
                     lernstatusColumn(
                         icon: "sparkles",
                         tint: AppTheme.Colors.elumiPink,
-                        label: "Gesamt",
+                        label: "Insgesamt",
                         value: total
                     )
                 }

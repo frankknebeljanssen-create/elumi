@@ -673,7 +673,10 @@ extension ScanImportView {
                             // Padding 28 → 10 → 14: Schritt 1 rückt
                             // minimal wieder runter (User-Nachjustierung),
                             // Block darunter folgt.
-                            ScanSectionLabel(stepNumber: 1, title: "Wähle den Modus")
+                            // **Naming-Sweep 2026-05-06** — „Wähle den
+                            // Modus" → „Was scannst du?" (Du-Ansatz,
+                            // direkter, weniger Beamten-Sprache).
+                            ScanSectionLabel(stepNumber: 1, title: "Was scannst du?")
                                 .padding(.top, 14)
 
                             HStack(spacing: 12) {
@@ -688,7 +691,12 @@ extension ScanImportView {
 
                                 ScanModeSelectionCard(
                                     illustrationName: "ScanIconFreierText",
-                                    title: "Freier Text",
+                                    // **Naming-Sweep 2026-05-06** —
+                                    // „Freier Text" → „Eigener Text"
+                                    // (besitzergreifend, kindgerechter
+                                    // als der bürokratische
+                                    // „freier Text"-Term).
+                                    title: "Eigener Text",
                                     isSelected: activeScanMode == .text,
                                     accent: sectionStyle.accent
                                 ) {
@@ -700,7 +708,10 @@ extension ScanImportView {
                             // Action-Buttons. Tap startet Kamera/Galerie
                             // mit dem aktuell gewählten Modus. +24pt Luft
                             // zwischen den Blöcken — klarer Hierarchie-Bruch.
-                            ScanSectionLabel(stepNumber: 2, title: "Wähle die Quelle")
+                            // **Naming-Sweep 2026-05-06** — „Wähle die
+                            // Quelle" → „Woher?" (kompakte
+                            // Frage statt Ankündigung).
+                            ScanSectionLabel(stepNumber: 2, title: "Woher?")
                                 .padding(.top, 24)
 
                             ScanChoiceCard(

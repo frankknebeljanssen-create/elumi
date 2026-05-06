@@ -31,8 +31,11 @@ struct AccountSwitcherSheet: View {
 
     var body: some View {
         VStack(spacing: AppTheme.Spacing.md) {
+            // **Naming-Sweep 2026-05-06** — Sheet-Title „Meine
+            // Accounts" → „Account wechseln" (matched die Card-
+            // Beschriftung in SettingsView, klare Aktion).
             AppSheetHeader(
-                title: "Meine Accounts",
+                title: "Account wechseln",
                 leadingTitle: "Fertig",
                 leadingTint: sectionStyle.accent,
                 onLeading: { dismiss() }
