@@ -477,6 +477,7 @@
 		CC15FF0800000000ABCDEF01 /* TrainingHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */; };
 		CC15FF0900000000ABCDEF01 /* WideMethodCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0900000000ABCDEF02 /* WideMethodCard.swift */; };
 		CC15FF0A00000000ABCDEF01 /* TrainingHubTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */; };
+		CC15FF0B00000000ABCDEF01 /* DailyDropCardHighlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0B00000000ABCDEF02 /* DailyDropCardHighlight.swift */; };
 		CC22BB0000000000ABCDEF01 /* TrainingChainOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC22BB0000000000ABCDEF02 /* TrainingChainOverviewView.swift */; };
 		CC44DD0000000000ABCDEF01 /* ChainStepTimerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC44DD0000000000ABCDEF02 /* ChainStepTimerBar.swift */; };
 		CC55EE0000000000ABCDEF01 /* ChainTimerOverlayModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC55EE0000000000ABCDEF02 /* ChainTimerOverlayModifier.swift */; };
@@ -1058,6 +1059,7 @@
 		CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingHubView.swift; path = FRDEVocabMVP/TrainingHubView.swift; sourceTree = "<group>"; };
 		CC15FF0900000000ABCDEF02 /* WideMethodCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WideMethodCard.swift; path = FRDEVocabMVP/WideMethodCard.swift; sourceTree = "<group>"; };
 		CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingHubTips.swift; path = FRDEVocabMVP/TrainingHubTips.swift; sourceTree = "<group>"; };
+		CC15FF0B00000000ABCDEF02 /* DailyDropCardHighlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyDropCardHighlight.swift; path = FRDEVocabMVP/DailyDropCardHighlight.swift; sourceTree = "<group>"; };
 		CC22BB0000000000ABCDEF02 /* TrainingChainOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingChainOverviewView.swift; path = FRDEVocabMVP/TrainingChainOverviewView.swift; sourceTree = "<group>"; };
 		CC44DD0000000000ABCDEF02 /* ChainStepTimerBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChainStepTimerBar.swift; path = FRDEVocabMVP/ChainStepTimerBar.swift; sourceTree = "<group>"; };
 		CC55EE0000000000ABCDEF02 /* ChainTimerOverlayModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChainTimerOverlayModifier.swift; path = FRDEVocabMVP/ChainTimerOverlayModifier.swift; sourceTree = "<group>"; };
@@ -1208,6 +1210,7 @@
 				CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */,
 				CC15FF0900000000ABCDEF02 /* WideMethodCard.swift */,
 				CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */,
+				CC15FF0B00000000ABCDEF02 /* DailyDropCardHighlight.swift */,
 				CC22BB0000000000ABCDEF02 /* TrainingChainOverviewView.swift */,
 				CC44DD0000000000ABCDEF02 /* ChainStepTimerBar.swift */,
 				CC55EE0000000000ABCDEF02 /* ChainTimerOverlayModifier.swift */,
@@ -2162,6 +2165,7 @@
 				CC15FF0800000000ABCDEF01 /* TrainingHubView.swift in Sources */,
 				CC15FF0900000000ABCDEF01 /* WideMethodCard.swift in Sources */,
 				CC15FF0A00000000ABCDEF01 /* TrainingHubTips.swift in Sources */,
+				CC15FF0B00000000ABCDEF01 /* DailyDropCardHighlight.swift in Sources */,
 				CC22BB0000000000ABCDEF01 /* TrainingChainOverviewView.swift in Sources */,
 				CC44DD0000000000ABCDEF01 /* ChainStepTimerBar.swift in Sources */,
 				CC55EE0000000000ABCDEF01 /* ChainTimerOverlayModifier.swift in Sources */,

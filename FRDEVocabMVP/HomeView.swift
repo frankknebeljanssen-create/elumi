@@ -121,6 +121,15 @@ struct HomeView: View {
                 },
                 onTap: { openHomeScreen(.elumi) }
             )
+            // **Daily-Drop-Highlight 2026-05-06** — visuelle Hervor-
+            // hebung mit rotierendem Gradient-Border-Glow + Shimmer-
+            // Sweep + Badge oben rechts. Badge-Text bleibt in
+            // Commit 1 hardcoded auf „NEU HEUTE"; Commit 2 macht
+            // ihn dynamisch via Habit-Tracking-State.
+            .dailyDropCardHighlight(
+                badgeText: "Neu heute",
+                badgeColor: AppTheme.Colors.moduleQuiz
+            )
 
             WideMethodCard(
                 title: "Training",
