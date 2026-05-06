@@ -34,6 +34,13 @@ struct AccentsEntryView: View {
     @State private var showingListPicker = false
     @State private var activeSession: ActiveSession?
     @State private var showingResult: SessionResult?
+    /// **A3 Master-Migration (2026-05-06)** — bewusst gewählter Modus
+    /// für die nächste Session. Vorher startete der Tap auf eine Mode-
+    /// Card direkt; jetzt setzt der Tap nur die Auswahl, der CTA am
+    /// unteren Rand triggert den Start (analog zu Quiz / Karteikarten /
+    /// Training, nicht mehr direkt-tap wie früher). `nil` = noch keine
+    /// Wahl getroffen → CTA bleibt disabled.
+    @State private var selectedMode: AccentMode? = nil
     /// **Chain-Mode State-Leak-Guard (2026-05-02)** — once-only-Flag
     /// für `handleAccentsAppear`. Beim ersten `.onAppear` mit
     /// `shouldAutoStart=true` startet die Session und das Flag wird
@@ -122,16 +129,17 @@ struct AccentsEntryView: View {
             // ohnehin nie sichtbar sein (Setup-Skip + Cover startet
             // sofort), aber falls doch (z.B. State-Leak-Edge-Case),
             // dismissen wir die Modul-Route → Pre-Screen, statt
-            // direkt zu Home zu springen. Out-of-chain Verhalten
-            // unverändert (User kam von Home → geht zurück nach Home).
+            // direkt zu Home zu springen.
+            //
+            // **A3 Smoke-Fix (2026-05-06)** — Out-of-chain Back nutzt
+            // jetzt `dismiss()` statt `goHome()`. `goHome()` läuft
+            // über `AppNavigationCoordinator.navigateInstant` und
+            // schaltet Animationen explizit ab — kein Slide. Mit
+            // `dismiss()` kommt die native NavigationStack-Pop-
+            // Animation, identisch zu Quiz / Training / Verben (alle
+            // dort dismissen). Konsistent mit dem System-Pattern.
             AppTopBar(
-                onBack: {
-                    if launchContext?.chainContext != nil {
-                        dismiss()
-                    } else {
-                        goHome()
-                    }
-                },
+                onBack: { dismiss() },
                 onInfo: nil
             )
                 .padding(.horizontal, AppLayout.screenPadding)
@@ -319,44 +327,53 @@ struct AccentsEntryView: View {
 
     // MARK: - Primary Content
 
-    /// Systemkonformer Aufbau analog zu ListsView / LexiconView:
-    /// ScreenHeaderCard (centered title + Back-Chevron) oben, darunter
-    /// die eigentlichen Module-Cards im selben Spacing-Raster wie alle
-    /// anderen Module. Kein eigener Header mehr — die Top-Bar kommt
-    /// vom App-Chrome.
+    /// **A3 Master-Migration (2026-05-06)** — Akzente-Setup nutzt jetzt
+    /// `SessionSetupScreen` als gemeinsame Hülle (Header, Spacing,
+    /// CTA-Block). Vorher baute Akzente eigenes Layout aus
+    /// `ModuleHeaderCard` + `listSelectorCard` + `modeCards`. Folge
+    /// damals: UI-Drift bei jedem Setup-System-Upgrade musste pro
+    /// Modul gepflegt werden. Mit der Migration:
+    ///   • `contextContent` = `listSelectorCard` (Listen-Auswahl mit
+    ///     LJ-Pill, weiterhin Akzente-spezifisch single-select).
+    ///   • `optionsContent` = `modeCards` mit Selection-State; Tap
+    ///     setzt jetzt `selectedMode`, kein direkt-Start.
+    ///   • CTA „Akzente starten" am unteren Rand, gated by
+    ///     `selectedMode != nil`. Konsistent mit Quiz „Quiz starten",
+    ///     Karteikarten „Karteikarten starten" etc.
+    ///   • `showsDirection: false` + `showsDirectionToggle: false` —
+    ///     Akzente sind FR-spezifisch, kein Direction-Switch nötig.
+    ///   • `showsGamificationBar: false` — Akzente hatte historisch
+    ///     keine XP/Dauer-Bar; bewusst weglassen statt mit `.zero`-
+    ///     Estimate eine leere Bar zu rendern.
     private var primaryContent: some View {
-        ZStack(alignment: .top) {
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(spacing: 14) {
-                    ModuleHeaderCard(
-                        icon: .akzente,
-                        title: "Akzente",
-                        accent: sectionStyle.accent,
-                        // **Chain-Mode Back-Chevron (2026-05-02)** —
-                        // analog AppTopBar oben: Chain → dismiss
-                        // (Pre-Screen), out-of-chain → goHome.
-                        onBack: {
-                            if launchContext?.chainContext != nil {
-                                dismiss()
-                            } else {
-                                goHome()
-                            }
-                        }
-                    )
-
-                    listSelectorCard
-                    modeCards
-
-                    Spacer(minLength: 0)
-                }
-                .padding(.horizontal, AppLayout.screenPadding)
-                .padding(.top, AppLayout.screenHeaderTopPadding)
-                .padding(.bottom, AppLayout.screenPadding)
-                .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .top)
-                .frame(maxWidth: .infinity, alignment: .center)
-            }
-            .padding(.bottom, usesGlobalChrome ? 0 : AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.lg)
-        }
+        SessionSetupScreen(
+            title: "Akzente",
+            accent: sectionStyle.accent,
+            estimate: .zero,
+            primaryButtonTitle: "Akzente starten",
+            isPrimaryEnabled: selectedMode != nil,
+            showsDirection: false,
+            showsGamificationBar: false,
+            moduleIcon: .akzente,
+            onBack: {
+                // **A3 Smoke-Fix (2026-05-06)** — durchgängig
+                // `dismiss()` für Slide-Animation. Im Chain-Mode war
+                // das ohnehin schon so; out-of-chain war früher
+                // `goHome()` (instant, kein Slide). Mit dismiss() in
+                // beiden Pfaden poppt der NavigationStack mit der
+                // System-Slide-Animation — analog Quiz/Training/
+                // Verben.
+                dismiss()
+            },
+            onStart: {
+                // CTA gated über `isPrimaryEnabled` → wenn wir hier
+                // landen, ist `selectedMode` garantiert non-nil.
+                guard let mode = selectedMode else { return }
+                startSession(mode: mode)
+            },
+            contextContent: { listSelectorCard },
+            optionsContent: { modeCards }
+        )
     }
 
     // MARK: - List Selector
@@ -400,16 +417,35 @@ struct AccentsEntryView: View {
                             // den globalen Lernjahr-Filter — User sieht
                             // ehrlich, wieviele Karten ins Akzent-Pool
                             // einfließen.
-                            Text({
-                                let cnt = VocabularyListSelectionResolver.effectiveItems(
-                                    for: list,
-                                    lernjahrMax: VocabularyListSelectionResolver.currentLernjahrMax()
-                                ).count
-                                return "1 Liste · \(cnt) \(cnt == 1 ? "Eintrag" : "Einträge")"
-                            }())
-                                .font(.system(size: 13, weight: .medium, design: .rounded))
-                                .foregroundStyle(AppTheme.Colors.elumiBlue)
-                                .padding(.top, 2)
+                            //
+                            // **A3 Master-Migration (2026-05-06)** —
+                            // LJ-Range ist jetzt eine tappbare
+                            // `AppLernjahrPill` (B2-Pattern), kein
+                            // Plain-Text mehr. Eligibility identisch
+                            // zu allen anderen Modulen: Pill nur, wenn
+                            // mindestens eine cumulative-Liste mit
+                            // aktivem Filter ausgewählt ist.
+                            let cnt = VocabularyListSelectionResolver.effectiveItems(
+                                for: list,
+                                lernjahrMax: VocabularyListSelectionResolver.currentLernjahrMax()
+                            ).count
+                            let totalText = "\(cnt) \(cnt == 1 ? "Eintrag" : "Einträge")"
+                            let lernjahrRange = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: [list])
+                            HStack(spacing: 4) {
+                                Text("1 Liste ·")
+                                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                                    .foregroundStyle(AppTheme.Colors.elumiBlue)
+                                if let range = lernjahrRange {
+                                    AppLernjahrPill(label: range, tint: AppTheme.Colors.elumiBlue)
+                                    Text("·")
+                                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                                        .foregroundStyle(AppTheme.Colors.elumiBlue)
+                                }
+                                Text(totalText)
+                                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                                    .foregroundStyle(AppTheme.Colors.elumiBlue)
+                            }
+                            .padding(.top, 2)
                         } else {
                             Text("Standard-Wörter")
                                 .font(.system(size: 18, weight: .bold, design: .rounded))
@@ -450,8 +486,12 @@ struct AccentsEntryView: View {
         // `TrainingView+Layout.drillModeCard` (Verbformen-Pattern)
         // angeglichen: 2 Cards nebeneinander statt vertikal gestapelt,
         // ohne Subline, kompaktere Icon/Headline-Größen.
-        // Direkt-Start-Verhalten bleibt erhalten — Akzente hat keinen
-        // separaten CTA wie Verbformen, der Tap startet sofort.
+        //
+        // **A3 Master-Migration (2026-05-06)** — Direkt-Start raus.
+        // Mode-Cards setzen jetzt `selectedMode`; Start läuft über den
+        // Master-CTA „Akzente starten". Cards bekommen Selected-State-
+        // Styling (Akzent-Stroke + Highlight-Background), damit der
+        // User die getroffene Wahl visuell bestätigt sieht.
         HStack(alignment: .top, spacing: AppLayout.setupDetailBlockSpacing) {
             modeCard(
                 mode: .uben,
@@ -466,22 +506,27 @@ struct AccentsEntryView: View {
         }
     }
 
-    /// Modus-Card — visuell exakt am `drillModeCard`-Stil aus
+    /// Modus-Card — visuell am `drillModeCard`-Stil aus
     /// `TrainingView+Layout` (Verbformen / Verben / Nomen / Artikel)
     /// orientiert. Icon-Circle 38 pt, 16 pt black-rounded Headline,
     /// keine Subline, minHeight 92.
     ///
-    /// Akzente-spezifischer Unterschied: Tap startet direkt die
-    /// Session (kein Selection-State + separater CTA wie Verbformen).
-    /// Card hat daher auch kein Selected-Styling.
+    /// **A3 Master-Migration (2026-05-06)** — Tap setzt jetzt
+    /// `selectedMode` statt direkt zu starten. Selected-Styling über
+    /// Akzent-Stroke + dichteren Background, identisch zur Quiz-/
+    /// Training-Mode-Wahl-Konvention. Tap-Feedback bleibt (Haptik).
     private func modeCard(mode: AccentMode, icon: String, headline: String) -> some View {
-        Button {
-            startSession(mode: mode)
+        let isSelected = selectedMode == mode
+        return Button {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            withAnimation(.easeInOut(duration: 0.15)) {
+                selectedMode = mode
+            }
         } label: {
             VStack(alignment: .center, spacing: 8) {
                 ZStack {
                     Circle()
-                        .fill(moduleAccentColor.opacity(0.16))
+                        .fill(moduleAccentColor.opacity(isSelected ? 0.30 : 0.16))
                     Image(systemName: icon)
                         .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(moduleAccentColor)
@@ -502,9 +547,18 @@ struct AccentsEntryView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 11)
             .frame(maxWidth: .infinity, minHeight: 92, alignment: .top)
-            .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
+            .appCardBackground(
+                sectionStyle,
+                intensity: isSelected ? AppTheme.CardIntensity.medium : AppTheme.CardIntensity.soft
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
+                    .stroke(isSelected ? moduleAccentColor : Color.clear, lineWidth: isSelected ? 2 : 0)
+            )
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(Text(headline))
+        .accessibilityHint(Text(isSelected ? "Ausgewählt" : "Tippen, um diesen Modus auszuwählen"))
     }
 
     // MARK: - Helpers
