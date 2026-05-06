@@ -212,6 +212,14 @@ struct ElumiTabView: View {
     // wie `appOnboardingCompletedKey` in `ProfileStore`.
     @State private var showSetupModal: Bool = false
 
+    /// **2026-05-06** — Aktuell sichtbarer Header-Hint. Wird beim
+    /// Tab-Mount und bei jedem Tab-Re-Visit (`.onAppear` im
+    /// `mainContent`) zufällig aus `ElumiHints.pool` gezogen.
+    /// Initial-Value ist ein Random-Pick, damit beim allerersten
+    /// View-Build schon ein Hint da ist (statt eines leeren Strings,
+    /// der erst durch onAppear gefüllt würde).
+    @State private var currentHint: String = ElumiHints.random()
+
     // MARK: - Listen-Auswahl-Card (Stufe 1c, 2026-04-30)
 
     /// Sheet-Trigger für den `ChainListSelectionSheet` (Multi-Select
@@ -398,6 +406,11 @@ struct ElumiTabView: View {
             // CTA wird disabled. Read passiert auf jedem Tab-Open, damit
             // externe Änderungen (z.B. via Settings) reflektiert werden.
             globalSelectedListIDs = VocabularyListSelectionResolver.currentGlobalSelectedListIDs() ?? []
+            // **2026-05-06** — Header-Hint pro Tab-Visit neu würfeln.
+            // `.onAppear` feuert beim ersten Mount und bei jedem
+            // Tab-Re-Visit, sodass der Pool sich lebendig anfühlt
+            // ohne dass der User eine fixe Reihenfolge merkt.
+            currentHint = ElumiHints.random()
             checkSetupModalState()
         }
     }
@@ -720,7 +733,7 @@ struct ElumiTabView: View {
             VStack(alignment: .leading, spacing: 8) {
                 ModuleHeaderCard(
                     systemImage: "sparkles",
-                    title: headerTitle,
+                    title: currentHint,
                     accent: sectionStyle.accent,
                     onBack: { dismiss() }
                 )
@@ -798,18 +811,14 @@ struct ElumiTabView: View {
         }
     }
 
-    // MARK: - Header-Title
+    // MARK: - Header-Hint
 
-    /// **User-Spec 2026-04-24 Update**: kurzer Header „Salut XXX!".
-    /// Vorher „Salü Frank, schön, dass du da bist" — die zweite Hälfte
-    /// raus für ruhigeres Layout. Name aus Profil; ohne Name nur „Salut!".
-    private var headerTitle: String {
-        let raw = profileStore.profile?.displayName.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let name = raw, !name.isEmpty {
-            return "Salut \(name)!"
-        }
-        return "Salut!"
-    }
+    // **2026-05-06 Refactor** — `headerTitle` (statisch „Salut Frank!")
+    // entfernt. Stattdessen rotiert ein Hint-Pool aus `ElumiHints`
+    // pro Tab-Visit (`@State` + `.onAppear`-Reroll im mainContent).
+    // User-Spec: „Salut Frank!" macht im Maschine-Tab keinen Sinn —
+    // es ist keine Begrüßung, der User ist schon mehrere Tabs tief.
+    // Hint-Pool wirkt lebendig und stimmt auf den Spin-Moment ein.
 
     // MARK: - Slot-Machine-Bereich
 

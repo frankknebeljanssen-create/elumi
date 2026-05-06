@@ -469,6 +469,7 @@
 		CC15FF0000000000ABCDEF01 /* GlobalListPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0000000000ABCDEF02 /* GlobalListPickerSheet.swift */; };
 		CC15FF0100000000ABCDEF01 /* AppLernjahrPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0100000000ABCDEF02 /* AppLernjahrPill.swift */; };
 		CC15FF0200000000ABCDEF01 /* SpeedRoundCountdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0200000000ABCDEF02 /* SpeedRoundCountdown.swift */; };
+		CC15FF0300000000ABCDEF01 /* ElumiHints.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0300000000ABCDEF02 /* ElumiHints.swift */; };
 		CC22BB0000000000ABCDEF01 /* TrainingChainOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC22BB0000000000ABCDEF02 /* TrainingChainOverviewView.swift */; };
 		CC44DD0000000000ABCDEF01 /* ChainStepTimerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC44DD0000000000ABCDEF02 /* ChainStepTimerBar.swift */; };
 		CC55EE0000000000ABCDEF01 /* ChainTimerOverlayModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC55EE0000000000ABCDEF02 /* ChainTimerOverlayModifier.swift */; };
@@ -1042,6 +1043,7 @@
 		CC15FF0000000000ABCDEF02 /* GlobalListPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GlobalListPickerSheet.swift; path = FRDEVocabMVP/GlobalListPickerSheet.swift; sourceTree = "<group>"; };
 		CC15FF0100000000ABCDEF02 /* AppLernjahrPill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppLernjahrPill.swift; path = FRDEVocabMVP/AppLernjahrPill.swift; sourceTree = "<group>"; };
 		CC15FF0200000000ABCDEF02 /* SpeedRoundCountdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SpeedRoundCountdown.swift; path = FRDEVocabMVP/SpeedRoundCountdown.swift; sourceTree = "<group>"; };
+		CC15FF0300000000ABCDEF02 /* ElumiHints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElumiHints.swift; path = FRDEVocabMVP/ElumiHints.swift; sourceTree = "<group>"; };
 		CC22BB0000000000ABCDEF02 /* TrainingChainOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingChainOverviewView.swift; path = FRDEVocabMVP/TrainingChainOverviewView.swift; sourceTree = "<group>"; };
 		CC44DD0000000000ABCDEF02 /* ChainStepTimerBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChainStepTimerBar.swift; path = FRDEVocabMVP/ChainStepTimerBar.swift; sourceTree = "<group>"; };
 		CC55EE0000000000ABCDEF02 /* ChainTimerOverlayModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChainTimerOverlayModifier.swift; path = FRDEVocabMVP/ChainTimerOverlayModifier.swift; sourceTree = "<group>"; };
@@ -1184,6 +1186,7 @@
 				CC15FF0000000000ABCDEF02 /* GlobalListPickerSheet.swift */,
 				CC15FF0100000000ABCDEF02 /* AppLernjahrPill.swift */,
 				CC15FF0200000000ABCDEF02 /* SpeedRoundCountdown.swift */,
+				CC15FF0300000000ABCDEF02 /* ElumiHints.swift */,
 				CC22BB0000000000ABCDEF02 /* TrainingChainOverviewView.swift */,
 				CC44DD0000000000ABCDEF02 /* ChainStepTimerBar.swift */,
 				CC55EE0000000000ABCDEF02 /* ChainTimerOverlayModifier.swift */,
@@ -2130,6 +2133,7 @@
 				CC15FF0000000000ABCDEF01 /* GlobalListPickerSheet.swift in Sources */,
 				CC15FF0100000000ABCDEF01 /* AppLernjahrPill.swift in Sources */,
 				CC15FF0200000000ABCDEF01 /* SpeedRoundCountdown.swift in Sources */,
+				CC15FF0300000000ABCDEF01 /* ElumiHints.swift in Sources */,
 				CC22BB0000000000ABCDEF01 /* TrainingChainOverviewView.swift in Sources */,
 				CC44DD0000000000ABCDEF01 /* ChainStepTimerBar.swift in Sources */,
 				CC55EE0000000000ABCDEF01 /* ChainTimerOverlayModifier.swift in Sources */,
