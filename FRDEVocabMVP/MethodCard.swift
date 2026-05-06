@@ -50,19 +50,36 @@ struct MethodCard<Icon: View>: View {
 
     var body: some View {
         Button(action: onTap) {
-            VStack(spacing: 4) {
+            // **Polish 2026-05-06 Iteration 4** — Baseline-Alignment-
+            // Fix + größere Fonts (User-Feedback: „Karteikarten und
+            // Quiz nicht auf gleicher Höhe + Fonts zu klein, wirkt
+            // futzelig"). Vorher VStack mit `spacing: 4` und keiner
+            // fixen Vertical-Position — bei unterschiedlichen Title-
+            // Längen / Icon-Höhen rutschten Title und Subtitle
+            // zwischen den zwei Hero-Cards weg. Jetzt:
+            //   • Icon im oberen Drittel via Spacer
+            //   • Text-Block am unteren Drittel via Spacer
+            //   • Beide Spacer-Frames identisch → Cards gleicher
+            //     Größe haben Title und Subtitle auf identischer
+            //     vertikaler Baseline.
+            //   • Title 17 → 19 pt (knapper, nicht filigran)
+            //   • Subtitle 12 → 13 pt
+            VStack(spacing: 6) {
+                Spacer(minLength: 0)
                 icon()
+                Spacer(minLength: 0)
                 Text(title)
-                    .font(.system(size: 17, weight: .black, design: .rounded))
+                    .font(.system(size: 19, weight: .black, design: .rounded))
                     .foregroundStyle(.white)
                     .shadow(color: .black.opacity(0.35), radius: 1, x: 0, y: 1)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
                 Text(subtitle)
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.85))
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.88))
                     .lineLimit(1)
-                    .minimumScaleFactor(0.75)
+                    .minimumScaleFactor(0.8)
+                Spacer().frame(height: 4)
             }
             .frame(maxWidth: .infinity)
             .frame(height: 135)

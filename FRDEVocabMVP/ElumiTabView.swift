@@ -535,9 +535,15 @@ struct ElumiTabView: View {
                 // Frage „Wie lange möchtest du üben?" (User-Feedback
                 // „2-zeilig, Text wie vorher und darüber Trainingsmix").
                 VStack(spacing: 4) {
+                    // **Polish 2026-05-06 Iteration 6** — „Trainingsmix"
+                    // Eyebrow von 13pt bold → 16pt black + dickerer
+                    // Tracking-Wert (User-Feedback „Trainingsmix-Font
+                    // 3pt größer, viel fetter"). Liest jetzt als
+                    // klare Modul-Identität, nicht mehr als unscheinbare
+                    // CAPS-Caption.
                     Text("Trainingsmix")
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
-                        .tracking(0.5)
+                        .font(.system(size: 16, weight: .black, design: .rounded))
+                        .tracking(0.8)
                         .textCase(.uppercase)
                         .foregroundStyle(sectionStyle.accent)
                     Text("Wie lange möchtest du üben?")

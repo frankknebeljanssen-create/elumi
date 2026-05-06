@@ -43,15 +43,19 @@ struct WideMethodCard<Icon: View>: View {
                     .frame(width: 52, height: 52)
 
                 VStack(alignment: .leading, spacing: 2) {
+                    // **Polish 2026-05-06 Iteration 4** — Title 17 →
+                    // 19 pt + Subtitle 12 → 13 pt analog MethodCard,
+                    // damit alle Hero-Methoden-Cards (2×1 oben + 2
+                    // Wide drunter) dieselbe Visual-Weight sprechen.
                     Text(title)
-                        .font(.system(size: 17, weight: .black, design: .rounded))
+                        .font(.system(size: 19, weight: .black, design: .rounded))
                         .foregroundStyle(.white)
                         .shadow(color: .black.opacity(0.35), radius: 1, x: 0, y: 1)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                     Text(subtitle)
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.85))
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.88))
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
                 }
