@@ -46,15 +46,21 @@ struct TrainingHubView: View {
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                // Screen-Title — analog Sub-Screens wie Akzente, mit
-                // Back-Chevron oben links. Style: 16pt .medium weiß
-                // gemäß User-Spec; Back-Chevron via AppBackButton-
-                // Pattern aus dem App-Designsystem.
+                // **Polish 2026-05-06 Iteration 4 — Hub-Look an Home
+                // angeglichen.** Vorher: 16pt .medium zentriert mit
+                // Back-Chevron-ZStack. Jetzt: 32pt black linksbündig
+                // (analog Home-Greeting), 14pt Spacing zur 14pt-
+                // Subline. Back-Chevron läuft weiterhin über die
+                // AppLocalChrome-TopBar oben (siehe `appLocalChrome`-
+                // Modifier am Ende des body) — kein eigener Inline-
+                // Back-Chevron mehr, wäre dann doppelt.
                 titleHeader
-                    .padding(.bottom, 18)
+                    .padding(.top, 24)
+                    .padding(.bottom, 16)
 
-                // ALLGEMEIN — Vokabeln allein, full-width.
-                SectionLabel(text: "Allgemein")
+                // ALLGEMEIN-Section — Sub-Label 13pt CAPS (analog
+                // Home „DEINE TOOLS").
+                SectionLabel(text: "Allgemein", size: 13)
 
                 ModuleCard(
                     title: "Vokabeln",
@@ -65,10 +71,20 @@ struct TrainingHubView: View {
                         openScreen(.train(TrainingLaunchContext(preferredMode: .vocabulary)))
                     }
                 )
-                .padding(.bottom, 22)
+                .padding(.bottom, 24)
 
-                // SPEZIAL — 2×2 (Nomen, Verben, Artikel, Verbformen).
-                SectionLabel(text: "Spezial")
+                // **Polish-Divider** — Hairline zwischen Allgemein
+                // und Spezial, 0.5pt edge-to-edge wie auf Home vor
+                // der Tools-Section.
+                Rectangle()
+                    .fill(AppTheme.Colors.border)
+                    .frame(height: 0.5)
+                    .padding(.horizontal, -AppLayout.screenPadding)
+                    .padding(.bottom, 16)
+
+                // SPEZIAL — 2×2 (Nomen, Verben, Artikel, Verbformen)
+                // mit 13pt Sub-Label.
+                SectionLabel(text: "Spezial", size: 13)
 
                 LazyVGrid(
                     columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)],
@@ -113,9 +129,7 @@ struct TrainingHubView: View {
                 }
                 .padding(.bottom, 16)
 
-                // Akzente quer am Ende — eigenständige Spezial-Modus-
-                // Card (kein Training-Modus-Engine, eigenes
-                // AccentSessionEngine), darum visuell separat.
+                // Akzente quer am Ende der Spezial-Sektion.
                 WideCard(
                     title: "Akzente",
                     accent: AppTheme.Colors.moduleAccents,
@@ -126,16 +140,18 @@ struct TrainingHubView: View {
                         openScreen(.accents(nil))
                     }
                 )
+                .padding(.bottom, 24)
 
-                // **Polish 2026-05-06** — Maskottchen + Lern-Tipp
-                // unter den Sektionen, füllt den vorher freien Raum
-                // zwischen dem letzten Card-Block und dem Footer.
-                // Maskottchen-Asset (`SplashCharacter`) ist
-                // wiederverwendet aus Footer/Home — kein neues
-                // Asset nötig. Tipp rotiert pro Tab-Visit aus dem
-                // `TrainingHubTips`-Pool.
+                // **Polish-Divider 2** — Hairline vor dem
+                // Maskottchen-Tipp-Block, trennt visuell die
+                // Card-Sektionen vom dekorativen Footer-Element.
+                Rectangle()
+                    .fill(AppTheme.Colors.border)
+                    .frame(height: 0.5)
+                    .padding(.horizontal, -AppLayout.screenPadding)
+
                 mascotTipBlock
-                    .padding(.top, 28)
+                    .padding(.top, 24)
 
                 Color.clear.frame(height: footerClearance)
             }
@@ -215,30 +231,26 @@ struct TrainingHubView: View {
 
     // MARK: - Title-Header
 
-    /// Title-Row — „Training" zentriert, Back-Chevron links, plus
-    /// Sub-Hint „Wähle deinen Schwerpunkt" darunter (Polish 2026-05-06).
-    /// Style: 16pt .medium weiß für den Title (matched die Konvention
-    /// der anderen Sub-Screens), 13pt .regular textSecondary für die
-    /// Subline (kindgerecht-einleitender Ton).
+    /// **Polish 2026-05-06 Iteration 4** — Title-Block analog zum
+    /// Home-Greeting: 32pt black linksbündig, 14pt VStack-Spacing
+    /// zur Subline. Back-Chevron sitzt nicht mehr inline — er wird
+    /// schon vom `appLocalChrome`-AppTopBar oben gerendert
+    /// (`AppTopBar(onBack: { dismiss() })`); ein zweiter Inline-
+    /// Back-Chevron wäre redundant. Subline 14pt textSecondary
+    /// sentence-case (analog Streak-Pill-Position auf Home, aber
+    /// als reiner Text — der Hub hat keinen Streak-Indikator).
     private var titleHeader: some View {
-        VStack(spacing: 4) {
-            ZStack {
-                Text("Training")
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity, alignment: .center)
-
-                HStack {
-                    AppBackButton(action: { dismiss() }, tint: .white)
-                    Spacer(minLength: 0)
-                }
-            }
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Training")
+                .font(.system(size: 32, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.elumiPink)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
 
             Text("Wähle deinen Schwerpunkt")
-                .font(.system(size: 13, weight: .regular, design: .rounded))
+                .font(.system(size: 14, weight: .regular, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textSecondary)
-                .multilineTextAlignment(.center)
         }
-        .padding(.top, 4)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
