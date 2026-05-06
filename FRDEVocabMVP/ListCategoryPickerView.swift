@@ -70,19 +70,10 @@ struct ListCategoryPickerView: View {
         availableLists.filter { selectedListIDs.contains($0.id) }
     }
 
-    /// **Phase 5 (2026-05-04)** — Bauplan der Summary-Zeile mit
-    /// optionalem LJ-Range. Format ohne Range: „X Liste(n) · N Einträge
-    /// gesamt". Format mit Range: „X Liste(n) · LJ 1-N · M Einträge
-    /// gesamt". Range-Hint nur wenn mindestens eine selektierte Liste
-    /// hierarchisch ist UND ein nicht-trivialer LJ-Filter aktiv ist.
-    private func buildSummary(selectedLists: [VocabularyList], totalItems: Int) -> String {
-        let countText = "\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n")"
-        let totalText = "\(totalItems) \(itemLabel)"
-        if let range = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: selectedLists) {
-            return "\(countText) · \(range) · \(totalText)"
-        }
-        return "\(countText) · \(totalText)"
-    }
+    // **Phase 5 (2026-05-04) → B2 (2026-05-06)** — `buildSummary(...)`
+    // entfernt. Mit dem Lernjahr-Pill-Refactor wird der Range nicht mehr
+    // als String-Konkatenation gebaut, sondern als eigenständige
+    // `AppLernjahrPill` in einer HStack gerendert.
 
     var body: some View {
         let hasSelection = !selectedLists.isEmpty
@@ -126,13 +117,30 @@ struct ListCategoryPickerView: View {
                             }
 
                             // Summary-Zeile — einheitliches Format
-                            // „X Listen · [LJ 1-N · ] N Einträge gesamt" über alle Module.
-                            // **Phase 5 (2026-05-04)** — optionales LJ-Range
-                            // wenn cumulative-Liste mit aktivem Filter selektiert.
-                            Text(buildSummary(selectedLists: selectedLists, totalItems: totalItems))
-                                .font(.system(size: 13, weight: .medium, design: .rounded))
-                                .foregroundStyle(AppTheme.Colors.elumiBlue)
-                                .padding(.top, 2)
+                            // „X Listen · [LJ-Pill ·] N Einträge gesamt" über
+                            // alle Module.
+                            // **Phase 5 (2026-05-04) → B2 (2026-05-06)** —
+                            // LJ-Range ist jetzt ein tappbarer
+                            // `AppLernjahrPill`. Eligibility identisch zur
+                            // alten Plain-Text-Render-Bedingung.
+                            let listsText = "\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n")"
+                            let totalText = "\(totalItems) \(itemLabel)"
+                            let lernjahrRange = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: selectedLists)
+                            HStack(spacing: 4) {
+                                Text("\(listsText) ·")
+                                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                                    .foregroundStyle(AppTheme.Colors.elumiBlue)
+                                if let range = lernjahrRange {
+                                    AppLernjahrPill(label: range, tint: AppTheme.Colors.elumiBlue)
+                                    Text("·")
+                                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                                        .foregroundStyle(AppTheme.Colors.elumiBlue)
+                                }
+                                Text(totalText)
+                                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                                    .foregroundStyle(AppTheme.Colors.elumiBlue)
+                            }
+                            .padding(.top, 2)
                         } else {
                             Text("Keine Liste gewählt")
                                 .font(.system(size: 18, weight: .bold, design: .rounded))

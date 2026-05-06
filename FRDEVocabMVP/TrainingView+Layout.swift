@@ -1105,26 +1105,34 @@ extension TrainingView {
                                     .minimumScaleFactor(0.7)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
-                            // **Phase 5 (2026-05-04)** — Summary mit optionalem
-                            // LJ-Range. Ohne Range: „X Verben gesamt", mit Range:
-                            // „LJ 1-N · X Verben gesamt".
+                            // **Phase 5 (2026-05-04) → B2 (2026-05-06)** —
+                            // Summary mit optionalem Lernjahr-Pill. Vorher
+                            // war der Range Plain-Text-Inline („LJ 1-3 ·
+                            // X Verben"); jetzt ist der „LJ 1-3"-Teil ein
+                            // tappbarer `AppLernjahrPill`, der einen Mini-
+                            // Picker öffnet. Eligibility ist identisch zur
+                            // alten Render-Bedingung (Resolver-Helper
+                            // liefert non-nil).
                             let verbformsTotal = "\(verbformsCount) Verb\(verbformsCount == 1 ? "" : "en")"
-                            let verbformsSummary: String = {
-                                if let range = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: selectedLists) {
-                                    return "\(range) · \(verbformsTotal)"
+                            let verbformsRange = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: selectedLists)
+                            HStack(spacing: 4) {
+                                if let range = verbformsRange {
+                                    AppLernjahrPill(label: range, tint: AppTheme.Colors.elumiBlue)
+                                    Text("·")
+                                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                                        .foregroundStyle(AppTheme.Colors.elumiBlue)
                                 }
-                                return verbformsTotal
-                            }()
-                            Button {
-                                feedbackPlayer.playTabSwitch()
-                                verbformsVerbDetailActive = true
-                            } label: {
-                                Text(verbformsSummary)
-                                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                                    .foregroundStyle(AppTheme.Colors.elumiBlue)
-                                    .underline(true, color: AppTheme.Colors.elumiBlue.opacity(0.4))
+                                Button {
+                                    feedbackPlayer.playTabSwitch()
+                                    verbformsVerbDetailActive = true
+                                } label: {
+                                    Text(verbformsTotal)
+                                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                                        .foregroundStyle(AppTheme.Colors.elumiBlue)
+                                        .underline(true, color: AppTheme.Colors.elumiBlue.opacity(0.4))
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                             .padding(.top, 2)
                         } else {
                             Text("Keine Liste gewählt")
@@ -1282,34 +1290,44 @@ extension TrainingView {
                             // Gesamt-Summary in elumiBlue (Info-Token, konsistent
                             // mit Karteikarten-Setup). Klickbar wenn Counter-
                             // Handler übergeben.
-                            // **Phase 5 (2026-05-04)** — optionales LJ-Range-Insert,
-                            // wenn cumulative-Liste mit aktivem Filter selektiert.
+                            // **Phase 5 (2026-05-04) → B2 (2026-05-06)** —
+                            // LJ-Range ist jetzt ein eigenständiger
+                            // `AppLernjahrPill` zwischen Listen-Count und
+                            // Total-Count. Tap auf Pill öffnet Mini-Picker.
+                            // Tap auf Total-Text-Button (wenn handler
+                            // übergeben) öffnet weiterhin den Counter-
+                            // Sheet/Drilldown.
                             let listsText = "\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n")"
                             let totalText = "\(countValue) \(countLabel)"
-                            let summary: String = {
-                                if let range = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: selectedLists) {
-                                    return "\(listsText) · \(range) · \(totalText)"
-                                }
-                                return "\(listsText) · \(totalText)"
-                            }()
-                            if let onTapCounter {
-                                Button {
-                                    feedbackPlayer.playTabSwitch()
-                                    onTapCounter()
-                                } label: {
-                                    Text(summary)
-                                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                                        .foregroundStyle(AppTheme.Colors.elumiBlue)
-                                        .underline(true, color: AppTheme.Colors.elumiBlue.opacity(0.4))
-                                }
-                                .buttonStyle(.plain)
-                                .padding(.top, 2)
-                            } else {
-                                Text(summary)
+                            let lernjahrRange = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: selectedLists)
+                            HStack(spacing: 4) {
+                                Text("\(listsText) ·")
                                     .font(.system(size: 13, weight: .medium, design: .rounded))
                                     .foregroundStyle(AppTheme.Colors.elumiBlue)
-                                    .padding(.top, 2)
+                                if let range = lernjahrRange {
+                                    AppLernjahrPill(label: range, tint: AppTheme.Colors.elumiBlue)
+                                    Text("·")
+                                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                                        .foregroundStyle(AppTheme.Colors.elumiBlue)
+                                }
+                                if let onTapCounter {
+                                    Button {
+                                        feedbackPlayer.playTabSwitch()
+                                        onTapCounter()
+                                    } label: {
+                                        Text(totalText)
+                                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                                            .foregroundStyle(AppTheme.Colors.elumiBlue)
+                                            .underline(true, color: AppTheme.Colors.elumiBlue.opacity(0.4))
+                                    }
+                                    .buttonStyle(.plain)
+                                } else {
+                                    Text(totalText)
+                                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                                        .foregroundStyle(AppTheme.Colors.elumiBlue)
+                                }
                             }
+                            .padding(.top, 2)
                         } else {
                             Text("Keine Liste gewählt")
                                 .font(.system(size: 18, weight: .bold, design: .rounded))
