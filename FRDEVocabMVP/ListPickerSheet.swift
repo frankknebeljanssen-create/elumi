@@ -66,7 +66,10 @@ struct ListPickerSheet: View {
         if let selected = selectedList {
             return "\(selected.name) · \(selected.items.count) Einträge"
         }
-        return "Keine Liste ausgewählt"
+        // **Naming-Sweep 2026-05-06** — „Keine Liste ausgewählt" →
+        // „Tipp eine Liste an" (kindgerecht-aktiv: zeigt eine
+        // Aktion statt eines passiven Status).
+        return "Tipp eine Liste an"
     }
 
     var body: some View {
@@ -110,7 +113,10 @@ struct ListPickerSheet: View {
                     }
 
                     if !topicLists.isEmpty {
-                        sectionHeader("🏷️ Wortschatz nach Thema")
+                        // **Naming-Sweep 2026-05-06** — „Wortschatz
+                        // nach Thema" → „THEMEN" (kürzer, kompakter
+                        // Section-Header).
+                        sectionHeader("🏷️ Themen")
                         ForEach(topicLists) { list in listRow(list) }
                     }
 

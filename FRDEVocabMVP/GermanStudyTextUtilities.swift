@@ -103,7 +103,11 @@ func listCollectionSummary(for list: VocabularyList) -> String {
     if list.isBuiltIn {
         switch list.collectionPreset {
         case .standardLevel: return "Wortschatz nach Niveau"
-        case .standardTopic: return "Wortschatz nach Thema"
+        // **Naming-Sweep 2026-05-06** — Display-String „Wortschatz
+        // nach Thema" → „Themen". Der enum-rawValue in
+        // `ListCollectionGroup.standardTopic` bleibt unverändert
+        // (Codable-Persistenz).
+        case .standardTopic: return "Themen"
         default: return "Standardpaket"
         }
     }

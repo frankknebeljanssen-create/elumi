@@ -162,9 +162,11 @@ struct FlashcardStackComposerSheet: View {
                         }
                     }
 
-                    // Section: Wortschatz nach Thema
+                    // Section: Themen
                     if !topicLists.isEmpty {
-                        sectionHeader("🏷️ Wortschatz nach Thema")
+                        // **Naming-Sweep 2026-05-06** — „Wortschatz
+                        // nach Thema" → „Themen".
+                        sectionHeader("🏷️ Themen")
                         ForEach(topicLists) { list in
                             listRow(list)
                         }

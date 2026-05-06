@@ -135,7 +135,9 @@ struct ExistingListPickerSheet: View {
                 dismiss()
                 DispatchQueue.main.async { onFallbackToNewList() }
             } label: {
-                Text("Neue Liste anlegen")
+                // **Naming-Sweep 2026-05-06** — „Neue Liste
+                // anlegen" → „+ Neue Liste".
+                Text("+ Neue Liste")
                     .font(AppTheme.Typography.button)
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: 50)

@@ -18,18 +18,19 @@ import Foundation
 /// Lern-Tipp-Pool für die TrainingHubView. Pool-Erweiterung passiert
 /// hier in einem Schritt — Caller liest immer `random()`.
 enum TrainingHubTips {
-    /// Aktueller Pool. Sieben kindgerechte Tipps zu den Lern-Modi
-    /// im Hub: Vokabeln (Allgemein), Nomen / Verben / Artikel /
-    /// Verbformen (Spezial), Akzente (quer). Mischung aus
-    /// Wissen-Häppchen, Praxis-Tipps und kleinen Motivationen.
+    /// Aktueller Pool. Sieben kindgerechte Tipps in Teen-Sprache —
+    /// **Naming-Sweep 2026-05-06**: Pool komplett neu geschrieben
+    /// (vorher generischere Lehrer-Sprache; jetzt direkter, ehrlicher,
+    /// kürzer). Mix aus Akzent/Verben/Artikel-Tipps und Konsistenz-
+    /// Motivation („lieber 10 Min täglich als 1 Stunde am Sonntag").
     static let pool: [String] = [
-        "Tipp: Nomen üben hilft beim Schreiben.",
-        "Wusstest du? Akzente ändern die Bedeutung!",
-        "Spezial-Übungen sind perfekt für Hausaufgaben.",
-        "Verben sind das Herz jedes Satzes.",
-        "Artikel — le, la, l' — am besten gleich mitlernen.",
-        "Verbformen üben macht das Sprechen leichter.",
-        "Schon 5 Minuten am Tag bringen dich voran."
+        "Akzente sind tricky. Üben hilft.",
+        "Verben? Brauchst du in jedem Satz.",
+        "5 Min Speed-Modus reicht.",
+        "Le, la oder l'? Mit Übung kein Problem.",
+        "Lieber 10 Min täglich als 1 Stunde am Sonntag.",
+        "Imparfait nervt? Ja, allen.",
+        "Heute 5 Min. Morgen wieder 5. Reicht."
     ]
 
     /// Liefert einen zufällig gewählten Tipp. Fallback auf den

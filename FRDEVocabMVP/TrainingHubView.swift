@@ -65,7 +65,9 @@ struct TrainingHubView: View {
                 //   • Allgemein-Block kompakter zur SPEZIAL-Section
                 //     (Vokabeln-padding-bottom 24 → 10, Divider-
                 //     padding-bottom 16 → 10).
-                SectionLabel(text: "Allgemein", size: 15, weight: .bold)
+                // **Naming-Sweep 2026-05-06** — „Allgemein" → „Basics"
+                // (Game-Sprache, kürzer, kindgerechter).
+                SectionLabel(text: "Basics", size: 15, weight: .bold)
 
                 ModuleCard(
                     title: "Vokabeln",
@@ -88,7 +90,10 @@ struct TrainingHubView: View {
 
                 // SPEZIAL — 2×2 (Nomen, Verben, Artikel, Verbformen)
                 // mit 13pt Sub-Label.
-                SectionLabel(text: "Spezial", size: 15, weight: .bold)
+                // **Naming-Sweep 2026-05-06** — „Spezial" → „Specials"
+                // (parallel zu „Basics", konsistent in der
+                // Game-Sprache).
+                SectionLabel(text: "Specials", size: 15, weight: .bold)
 
                 LazyVGrid(
                     columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)],

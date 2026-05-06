@@ -3,9 +3,12 @@ import SwiftUI
 extension ListsView {
     var listsPrimaryContent: some View {
         VStack(spacing: 14) {
+            // **Naming-Sweep 2026-05-06** — „Listen verwalten" →
+            // „Meine Listen". Kürzer, persönlicher, weniger
+            // Verwaltungs-Sprache.
             ModuleHeaderCard(
                 icon: .listen,
-                title: "Listen verwalten",
+                title: "Meine Listen",
                 accent: sectionStyle.accent,
                 onBack: { dismiss() }
             )
@@ -195,7 +198,10 @@ extension ListsView {
                             .scaledToFit()
                             .frame(width: 54, height: 54)
                     }
-                    Text("Neue Liste anlegen")
+                    // **Naming-Sweep 2026-05-06** — „Neue Liste
+                    // anlegen" → „+ Neue Liste". Plus-Icon im Text
+                    // betont das Hinzufügen-Pattern.
+                    Text("+ Neue Liste")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
