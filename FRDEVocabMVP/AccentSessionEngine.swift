@@ -102,10 +102,19 @@ final class AccentSessionEngine: ObservableObject {
 
     // MARK: - Speed Round State (nur Speed Round-Modus)
 
-    /// 3-2-1-Overlay-Wert. Nil = kein Overlay sichtbar. Wird beim
-    /// Session-Start auf 3 gesetzt, runter bis 1, dann nil (Session
-    /// beginnt). Mirror zum `speedCountdown` in anderen Modulen.
-    @Published private(set) var speedCountdown: Int? = nil
+    /// **2026-05-06** — Phase-Enum statt `Int?`. Mit dem geteilten
+    /// `SpeedRoundCountdownSequencer` läuft die Intro-Sequenz appweit
+    /// in fünf Phasen (`.warning, .three, .two, .one, .go`), nicht
+    /// mehr nur 3-2-1. Nil = kein Overlay sichtbar; Phase != nil =
+    /// Overlay aktiv. Engine-Start passiert im `onComplete`-Closure
+    /// des Sequencers, nicht mehr inline am Ende des letzten Ticks.
+    @Published private(set) var speedCountdownPhase: SpeedCountdownPhase? = nil
+
+    /// **2026-05-06 Cancel-Fix** — Aktive Countdown-Task. Hält die
+    /// pending DispatchWorkItems der Intro-Sequenz, damit beim Cleanup
+    /// (View dismiss / Home-Tap / Session-Reset) sowohl Audio-Ticks
+    /// als auch der finale Engine-Start storniert werden.
+    private var countdownTask: SpeedRoundCountdownTask? = nil
 
     /// Verbleibende Sekunden im Speed-Round-Timer. Wird jede Sekunde
     /// dekrementiert, ab ≤5 s toggelt das Feedback-Beep, bei 0 wird
@@ -347,31 +356,29 @@ final class AccentSessionEngine: ObservableObject {
 
     // MARK: - Speed Round Control
 
-    /// Startet die 3-2-1-Intro-Sequenz und anschließend den Speed-Round-
-    /// Timer (Dauer aus `SpeedRoundSettings`). Wird von der View beim
+    /// Startet die fünf-Phasen-Intro-Sequenz (Achtung… → 3 → 2 → 1
+    /// → Los geht's!) und anschließend den Speed-Round-Timer
+    /// (Dauer aus `SpeedRoundSettings`). Wird von der View beim
     /// Speed-Round-Start aufgerufen.
-    /// Pattern 1:1 identisch zu `VerbformsSessionController.startSpeedRoundTimer`
-    /// und dem Speed-Round-Path in `TrainingView+SessionFlow`.
+    ///
+    /// **2026-05-06 Refactor** — Vorher inline 3-2-1-Scheduler mit
+    /// `DispatchQueue.main.asyncAfter`. Jetzt zentralisiert über
+    /// `SpeedRoundCountdownSequencer.start(...)`. Identische Audio-/
+    /// Haptik-Sequenz appweit (Akzente, Training, Verbformen).
     func startSpeedRound(feedbackPlayer: FeedbackPlayer) {
-        speedCountdown = 3
-        feedbackPlayer.playToggle()
-        scheduleCountdownTick(after: 1.0) { [weak self] in
-            self?.speedCountdown = 2
-            feedbackPlayer.playToggle()
-        }
-        scheduleCountdownTick(after: 2.0) { [weak self] in
-            self?.speedCountdown = 1
-            feedbackPlayer.playToggle()
-        }
-        scheduleCountdownTick(after: 3.0) { [weak self] in
-            self?.speedCountdown = nil
-            feedbackPlayer.playLaunch()
-            self?.startSpeedRoundTimer(feedbackPlayer: feedbackPlayer)
-        }
-    }
-
-    private func scheduleCountdownTick(after delay: TimeInterval, _ action: @escaping () -> Void) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: action)
+        // Vorherige Task (z. B. von Re-Start nach Abbruch) erst
+        // canceln, damit zwei parallele Sequenzen nicht
+        // ineinanderlaufen.
+        countdownTask?.cancel()
+        countdownTask = SpeedRoundCountdownSequencer.start(
+            feedbackPlayer: feedbackPlayer,
+            apply: { [weak self] phase in
+                self?.speedCountdownPhase = phase
+            },
+            onComplete: { [weak self] in
+                self?.startSpeedRoundTimer(feedbackPlayer: feedbackPlayer)
+            }
+        )
     }
 
     private func startSpeedRoundTimer(feedbackPlayer: FeedbackPlayer) {
@@ -413,10 +420,18 @@ final class AccentSessionEngine: ObservableObject {
     /// Abbruch). Ohne das würde der Timer weiterlaufen und am Ende
     /// versuchen, eine nicht mehr präsentierte View zu beenden.
     func cancelSpeedRound() {
+        // **2026-05-06 Cancel-Fix** — Auch die Intro-Sequenz canceln.
+        // Vorher liefen die DispatchWorkItems weiter, auch wenn die
+        // View schon weg war (User-Bug-Report: „läuft im Hintergrund
+        // weiter"). Mit `countdownTask.cancel()` werden alle pending
+        // Phasen-Items inkl. Audio-Ticks und finalem Engine-Start-
+        // Trigger storniert.
+        countdownTask?.cancel()
+        countdownTask = nil
         speedRoundTimer?.invalidate()
         speedRoundTimer = nil
         isSpeedRoundActive = false
-        speedCountdown = nil
+        speedCountdownPhase = nil
     }
 
     /// Audio-vs-visuelle Performance-Split: `(audioCorrect, audioTotal,

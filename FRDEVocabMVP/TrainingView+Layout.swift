@@ -23,7 +23,7 @@ extension TrainingView {
         ZStack(alignment: .top) {
             Group {
                 if isVerbformsMode {
-                    if verbformsSession.isActive || verbformsCountdown != nil {
+                    if verbformsSession.isActive || verbformsCountdownPhase != nil {
                         verbformsSessionScreen
                     } else if verbformsSession.isFinished {
                         verbformsResultScreen
@@ -249,14 +249,14 @@ extension TrainingView {
 
             if session.isShowingRoundComplete {
                 roundCompleteView
-            } else if let countdown = speedCountdown {
-                // 3-2-1 Countdown overlay
-                Text("\(countdown)")
-                    .font(.system(size: 72, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.warning)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .transition(.scale.combined(with: .opacity))
             } else {
+                // **2026-05-06 Smoke-Fix** — Speed-Round-Countdown läuft
+                // jetzt als Root-Level-Overlay (siehe `body`), nicht
+                // mehr inline. Der inline-Swap führte dazu, dass der
+                // Overlay-Backdrop nur die VStack-Frame füllte und
+                // wie ein „Rechteck im Screen" aussah. Body rendert
+                // den Aufgaben-Stack normal weiter; das fullscreen-
+                // Overlay deckt ihn beim Countdown sichtbar ab.
                 if session.isSpeedRound, session.hasStartedTraining {
                     speedRoundTimerBar
                         .padding(.horizontal, trainingSessionCardInset)
@@ -1530,25 +1530,30 @@ extension TrainingView {
                 if launchContext?.chainContext != nil {
                     awardVerbformsXPIfNeeded()
                     verbformsSession.stopSpeedRoundTimer()
-                    verbformsCountdown = nil
+                    // **2026-05-06 Cancel-Fix** — Auch die Intro-
+                    // Sequenz canceln, falls der User in der
+                    // Countdown-Phase Header-Back tippt.
+                    verbformsCountdownTask?.cancel()
+                    verbformsCountdownTask = nil
+                    verbformsCountdownPhase = nil
                     runtimeSpeaker?.stop()
                     speechController?.stopRecording()
                     dismiss()
                 } else {
                     verbformsSession.reset()
-                    verbformsCountdown = nil
+                    verbformsCountdownTask?.cancel()
+                    verbformsCountdownTask = nil
+                    verbformsCountdownPhase = nil
                 }
             }
 
-            if let countdown = verbformsCountdown {
-                // 3-2-1 Countdown
-                Spacer()
-                Text("\(countdown)")
-                    .font(.system(size: 72, weight: .black, design: .rounded))
-                    .foregroundStyle(trainingActionTint)
-                    .transition(.scale.combined(with: .opacity))
-                Spacer()
-            } else if verbformsSession.isSpeedRound {
+            // **2026-05-06 Smoke-Fix** — Verbformen-Countdown läuft
+            // jetzt als Root-Level-Overlay (siehe `body`), nicht mehr
+            // inline im VStack. Body rendert die Speed-Round-Bar /
+            // Active-Content / RoundComplete-View normal weiter; das
+            // fullscreen-Overlay deckt sie sichtbar ab solange Phase
+            // != nil.
+            if verbformsSession.isSpeedRound {
                 // Speed Round Timer
                 verbformsSpeedRoundBar
                 verbformsActiveContent
@@ -1731,7 +1736,7 @@ extension TrainingView {
         if verbformsSession.currentMatching != nil,
            !verbformsSession.isSpeedRound,
            !verbformsSession.isShowingRoundComplete,
-           verbformsCountdown == nil {
+           verbformsCountdownPhase == nil {
             let canContinue = verbformsSession.matchedPersons.count > 0
             let remaining = verbformsSession.remainingItemsInRound
             Button {
@@ -2241,24 +2246,28 @@ extension TrainingView {
 
         if isSpeed {
             startSession()
-            verbformsCountdown = 3
-            feedbackPlayer.playToggle()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [self] in
-                guard verbformsSession.isActive else { return }
-                verbformsCountdown = 2
-                feedbackPlayer.playToggle()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [self] in
+            // **2026-05-06 Refactor** — Inline-3-2-1-Scheduler durch
+            // den geteilten `SpeedRoundCountdownSequencer` ersetzt.
+            // Audio/Haptik/Phasen kommen jetzt zentral; das Modul
+            // liefert nur den Apply-Closure für den State und den
+            // OnComplete-Closure für den Engine-Start.
+            //
+            // **2026-05-06 Cancel-Fix** — Vorherige Task canceln,
+            // neuen Task in `verbformsCountdownTask` halten.
+            // Cleanup-Pfade (Header-Back, body.onDisappear)
+            // cancellen ihn dann.
+            verbformsCountdownTask?.cancel()
+            verbformsCountdownTask = SpeedRoundCountdownSequencer.start(
+                feedbackPlayer: feedbackPlayer,
+                apply: { phase in
                     guard verbformsSession.isActive else { return }
-                    verbformsCountdown = 1
-                    feedbackPlayer.playToggle()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [self] in
-                        guard verbformsSession.isActive else { return }
-                        verbformsCountdown = nil
-                        feedbackPlayer.playLaunch()
-                        verbformsSession.startSpeedRoundTimer(feedbackPlayer: feedbackPlayer)
-                    }
+                    verbformsCountdownPhase = phase
+                },
+                onComplete: {
+                    guard verbformsSession.isActive else { return }
+                    verbformsSession.startSpeedRoundTimer(feedbackPlayer: feedbackPlayer)
                 }
-            }
+            )
         } else {
             startSession()
         }
@@ -2282,6 +2291,22 @@ extension TrainingView {
                     onSettings: { openSettings() }
                 )
             }
+            // **2026-05-06** — Speed-Round-Countdown als Root-Level-
+            // Fullscreen-Overlay. Deckt Header (AppTopBar), Body und
+            // BottomBar sichtbar ab, weil der Backdrop des Overlay-
+            // Components mit `.ignoresSafeArea()` arbeitet. Phase
+            // kommt aus dem aktiven Mode-State: General-Training
+            // nutzt `speedCountdownPhase`, Verbformen
+            // `verbformsCountdownPhase`. Bei beidem nil → kein
+            // Overlay sichtbar.
+            .overlay {
+                if let phase = isVerbformsMode ? verbformsCountdownPhase : speedCountdownPhase {
+                    SpeedRoundCountdownOverlay(phase: phase, tint: trainingActionTint)
+                        .transition(.opacity)
+                }
+            }
+            .animation(.easeInOut(duration: 0.25), value: speedCountdownPhase)
+            .animation(.easeInOut(duration: 0.25), value: verbformsCountdownPhase)
             .onAppear {
                 handleTrainingAppear()
                 if isVerbformsMode { loadVerbformsAvailableTenses() }
@@ -2304,7 +2329,21 @@ extension TrainingView {
                 }
             }
             .onDisappear {
+                // **2026-05-06 Cancel-Fix** — Beim View-Disappear
+                // (Home-Tap, Pop, Cover-Dismiss) müssen sowohl
+                // General-Training als auch Verbformen abgewickelt
+                // werden — vorher fing der bisherige
+                // `stopSpeedRoundTimer()` nur den General-Timer.
+                // Folge: Verbformen-Speed-Round lief im Hintergrund
+                // weiter, wenn der User Home tippte (User-Bug-Report
+                // 2026-05-06).
                 stopSpeedRoundTimer()
+                verbformsSession.stopSpeedRoundTimer()
+                trainingCountdownTask?.cancel()
+                trainingCountdownTask = nil
+                verbformsCountdownTask?.cancel()
+                verbformsCountdownTask = nil
+                verbformsCountdownPhase = nil
                 TrainingChainStore.shared.unregisterForceAdvanceHandler(token: forceAdvanceHandlerToken)
                 forceAdvanceHandlerToken = nil
             }

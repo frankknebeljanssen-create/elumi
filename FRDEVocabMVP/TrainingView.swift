@@ -68,7 +68,20 @@ struct TrainingView: View {
     // Verbformen
     @StateObject var verbformsSession = VerbformsSessionController()
     @State var verbformsInflections: [VerbformsEngine.VerbInflections] = []
-    @State var verbformsCountdown: Int? = nil
+    /// **2026-05-06** — Phase-Enum statt `Int?`. Verbformen nutzt
+    /// jetzt den geteilten `SpeedRoundCountdownSequencer`; das State-
+    /// Property hält die aktuelle Phase (Achtung… / 3 / 2 / 1 / Los
+    /// geht's!) und steuert das Overlay-Render in TrainingView+Layout.
+    @State var verbformsCountdownPhase: SpeedCountdownPhase? = nil
+
+    /// **2026-05-06 Cancel-Fix** — Aktive Countdown-Tasks. Werden
+    /// beim Cleanup (View-Disappear, dismissToHome, Reset-Pfade)
+    /// gecancelt, damit pending DispatchWorkItems der Intro-Sequenz
+    /// nicht im Hintergrund weiterlaufen (Audio-Ticks + finaler
+    /// Engine-Start-Trigger). User-Bug-Report 2026-05-06: Speed
+    /// Round lief nach Home-Tap weiter.
+    @State var trainingCountdownTask: SpeedRoundCountdownTask? = nil
+    @State var verbformsCountdownTask: SpeedRoundCountdownTask? = nil
 
     // Session-Summary-Outcomes — werden beim Reward-Vergeben gesetzt und
     // steuern die Anzeige der zentralen `SessionSummaryView`. Für Training
@@ -145,7 +158,11 @@ struct TrainingView: View {
             }
         }
     }
-    @State var speedCountdown: Int? = nil
+    /// **2026-05-06** — Phase-Enum statt `Int?`. Training (Vokabeln/
+    /// Nomen/Artikel/Verben) nutzt den geteilten Countdown-Sequencer;
+    /// State-Property hält die aktuelle Phase und steuert das Overlay-
+    /// Render in TrainingView+Layout.
+    @State var speedCountdownPhase: SpeedCountdownPhase? = nil
     @FocusState var typedAnswerFieldFocused: Bool
 
     var speechController: SpeechController? {

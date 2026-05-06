@@ -90,41 +90,39 @@ struct AccentsSessionView: View {
 
             VStack(spacing: 0) {
                 header
-                // Countdown läuft? Dann **alles** unter dem Header
-                // durch die große 3-2-1-Zahl ersetzen — keine Timer-
-                // Bar, kein Content, kein Footer/BottomBar sichtbar.
-                // Analog zum Training-Verhalten (siehe
-                // `TrainingView+Layout.swift:177`): der User sieht
-                // während des Countdowns ausschließlich Header +
-                // zentrierte Zahl, **nicht** den Aufgaben-Screen im
-                // Hintergrund. Overlay-Variante davor zeigte den
-                // Content durch — das war der Bug.
-                if let countdown = engine.speedCountdown {
-                    countdownInlineView(value: countdown)
+                // **2026-05-06 Smoke-Fix** — Body-Content rendert
+                // weiterhin (Timer-Bar, Aufgabe, Footer), wird aber
+                // beim aktiven Countdown durch das fullscreen
+                // `.overlay { … }` (siehe unten) sichtbar überdeckt.
+                // Vorher: inline-Swap im VStack führte dazu, dass das
+                // Overlay-Backdrop nur innerhalb der VStack-Frame
+                // gerendert wurde (Header + BottomBar blieben
+                // sichtbar, Overlay sah aus wie ein „Rechteck im
+                // Screen"). Mit dem Root-Overlay-Pattern deckt der
+                // Backdrop wirklich den ganzen Screen ab.
+                if mode == .speedRound {
+                    speedRoundTimerBar
                 } else {
-                    // Speed-Round-Modus: Timer-Bar statt der linearen
-                    // Queue-Progress-Bar — der Timer bestimmt wann die
-                    // Session endet, nicht die Queue-Länge. Die Timer-
-                    // Länge kommt aus `SpeedRoundSettings` (globale
-                    // Settings-Einstellung, Default
-                    // `SpeedRoundDuration.defaultDuration`).
-                    if mode == .speedRound {
-                        speedRoundTimerBar
-                    } else {
-                        progressBar
-                    }
-                    Spacer()
-                    content
-                    Spacer()
-                    footer
-                    bottomBar
+                    progressBar
                 }
+                Spacer()
+                content
+                Spacer()
+                footer
+                bottomBar
             }
         }
+        .overlay {
+            if let phase = engine.speedCountdownPhase {
+                SpeedRoundCountdownOverlay(phase: phase, tint: accentColor)
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.25), value: engine.speedCountdownPhase)
         .onAppear {
             // Speed Round startet mit 3-2-1-Countdown + Timer in der
             // globalen Dauer (SpeedRoundSettings.currentSeconds).
-            if mode == .speedRound, !engine.isSpeedRoundActive, engine.speedCountdown == nil {
+            if mode == .speedRound, !engine.isSpeedRoundActive, engine.speedCountdownPhase == nil {
                 engine.startSpeedRound(feedbackPlayer: feedbackPlayer)
             }
         }
@@ -243,31 +241,11 @@ struct AccentsSessionView: View {
         .padding(.horizontal, AppLayout.screenPadding)
     }
 
-    // MARK: - 3-2-1 Countdown Inline-View
-
-    /// Inline-Replacement für den gesamten Session-Body während des
-    /// 3-2-1-Countdowns. Füllt die Fläche **unter dem Header** voll aus,
-    /// damit kein Content (Progress-Bar, Aufgaben-Card, Footer,
-    /// BottomBar) mehr sichtbar ist. Die große Zahl sitzt zentriert —
-    /// derselbe Look wie Training/Verbformen, wo der Countdown den
-    /// SessionCard-Bereich inline ersetzt.
-    ///
-    /// Der Warning-Ton (wie bei Training) statt Akzent-Farbe sorgt
-    /// appweit für den gleichen „gleich geht's los"-Impuls. Kein
-    /// abgedunkelter Hintergrund nötig, weil der VStack den gesamten
-    /// Raum bereits mit dem normalen App-Background belegt.
-    private func countdownInlineView(value: Int) -> some View {
-        // Größe + Farbe an Training/Verbformen-Countdown angeglichen:
-        // 72 pt `.warning` statt 120 pt Accent-Color. Damit spielen alle
-        // Speed-Round-Intros appweit dieselbe visuelle Sprache.
-        Text("\(value)")
-            .font(.system(size: 72, weight: .black, design: .rounded))
-            .foregroundStyle(AppTheme.Colors.warning)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .transition(.scale.combined(with: .opacity))
-            .id(value)
-            .animation(.spring(response: 0.3, dampingFraction: 0.65), value: value)
-    }
+    // **2026-05-06** — `countdownInlineView(value:)` entfernt. Der
+    // 3-2-1-Inline-Countdown ist durch `SpeedRoundCountdownOverlay`
+    // ersetzt (geteilter Component für alle Module). Render-Aufruf
+    // sitzt direkt im body-Switch (siehe oben, `if let phase = engine.
+    // speedCountdownPhase`).
 
     // MARK: - Content
 

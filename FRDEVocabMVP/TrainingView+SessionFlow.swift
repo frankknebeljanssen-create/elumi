@@ -171,7 +171,12 @@ extension TrainingView {
         verbMCSelected = nil
         verbMCLocked = false
         showingVerbTranslation = false
-        speedCountdown = nil
+        speedCountdownPhase = nil
+        // **2026-05-06 Cancel-Fix** — Pending Intro-Items
+        // ausschalten, damit kein Audio-Tick oder verzögerter
+        // Engine-Start nach dem Reset feuert.
+        trainingCountdownTask?.cancel()
+        trainingCountdownTask = nil
         stopSpeedRoundTimer()
     }
 
@@ -239,23 +244,25 @@ extension TrainingView {
         showingTypedAnswerInput = false
         typedAnswerFieldFocused = false
         if session.isSpeedRound {
-            // 3-2-1 countdown before starting
-            speedCountdown = 3
-            feedbackPlayer.playToggle()
-            scheduleFeedbackTask(after: 1.0) {
-                speedCountdown = 2
-                feedbackPlayer.playToggle()
-                scheduleFeedbackTask(after: 1.0) {
-                    speedCountdown = 1
-                    feedbackPlayer.playToggle()
-                    scheduleFeedbackTask(after: 1.0) {
-                        speedCountdown = nil
-                        feedbackPlayer.playLaunch()
-                        startSpeedRoundTimer()
-                        if isVerbMode { prepareVerbMCOptions() }
-                    }
+            // **2026-05-06 Refactor** — Geteilter Sequencer ersetzt
+            // den inline 3-2-1-Countdown. Fünf Phasen (Achtung… → 3
+            // → 2 → 1 → Los geht's!) mit zentralisierter Audio-/
+            // Haptik-Kette, identisch zu Akzente und Verbformen.
+            //
+            // **2026-05-06 Cancel-Fix** — Vorherige Task canceln
+            // (Defensive für Re-Start nach Abbruch), neuen Task in
+            // `trainingCountdownTask` halten. Cleanup-Pfade
+            // (resetTrainingSession, body.onDisappear) cancellen
+            // ihn dann.
+            trainingCountdownTask?.cancel()
+            trainingCountdownTask = SpeedRoundCountdownSequencer.start(
+                feedbackPlayer: feedbackPlayer,
+                apply: { phase in speedCountdownPhase = phase },
+                onComplete: {
+                    startSpeedRoundTimer()
+                    if isVerbMode { prepareVerbMCOptions() }
                 }
-            }
+            )
             return
         }
         if isArticleMode {
