@@ -160,62 +160,85 @@ struct HomeView: View {
     // MARK: - Body
 
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                // **Entry-Stagger** (Phase 7.6 — App-weites Micro-
-                // Interaction-System): Header → Methoden → Tools
-                // blenden nacheinander ein (Fade + 8 pt Slide-Up,
-                // je +50 ms Delay).
-                HomeHeader(
-                    greeting: Personalization.homeGreeting(for: profileStore.profile?.displayName),
-                    streakDays: currentStreak
-                )
-                .appEntryTransition()
+        // **Spacing-Polish 2026-05-06** — GeometryReader-gewickelter
+        // ScrollView, damit der innere VStack `frame(minHeight: geo.
+        // size.height)` bekommt. Effekt: bei großen Phones füllt der
+        // Content den ganzen Screen, der flexible `Spacer(minLength:
+        // 32)` zwischen Wide-Cards und Tools-Sektion expandiert
+        // entsprechend → Tools docken zum Bildschirmende ohne den
+        // Footer zu überlappen. Auf kleinen Phones (SE) bleibt der
+        // Spacer am Mindestwert (32 pt) und Content ist scrollbar.
+        GeometryReader { geo in
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
+                    // **Entry-Stagger** (Phase 7.6).
+                    HomeHeader(
+                        greeting: Personalization.homeGreeting(for: profileStore.profile?.displayName),
+                        streakDays: currentStreak
+                    )
+                    .appEntryTransition()
 
-                // Section-Header über den Methoden-Cards. Style
-                // identisch zum bisherigen Hero-Header (16 pt
-                // .medium, textSecondary, sentence-case).
-                Text("Was möchtest du heute lernen?")
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .padding(.top, 12)
-                    .padding(.bottom, 4)
-                    .appEntryTransition(delay: 0.05)
+                    // Section-Header über den Methoden-Cards. Größe
+                    // 16 → 22 pt + textPrimary + .bold (User-Spec
+                    // Spacing-Polish: prominenter, klarer Anker
+                    // zwischen Header und Card-Block). Text-Update
+                    // „lernen" → „üben" (User-Spec).
+                    Text("Was möchtest du heute üben?")
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .padding(.top, 28)
+                        .padding(.bottom, 16)
+                        .appEntryTransition(delay: 0.05)
 
-                // **2026-05-06 Hybrid-γ-v3 Iteration 3** — Layout-
-                // Refactor: Karteikarten + Quiz oben als Hero-Reihe
-                // (2×1, MethodCards 135 pt), Mix-Training und Training
-                // drunter als Vollbreite-WideMethodCards (~86 pt).
-                // Vorher: alle vier in einem uniformen 2×2-Grid.
-                heroCardsRow
-                    .padding(.top, 4)
-                    .appEntryTransition(delay: 0.1)
+                    // Methoden-Cards: Karteikarten + Quiz Hero-Reihe
+                    // (2×1, 135 pt) und Mix-Training + Training als
+                    // Vollbreite-WideMethodCards (~86 pt) drunter.
+                    heroCardsRow
+                        .appEntryTransition(delay: 0.1)
 
-                wideMethodCards
-                    .padding(.top, 12)
-                    .appEntryTransition(delay: 0.15)
+                    wideMethodCards
+                        .padding(.top, 12)
+                        .padding(.bottom, 24)
+                        .appEntryTransition(delay: 0.15)
 
-                // Sub-Section-Label „DEINE TOOLS" (CAPS, klein, grau)
-                // gemäß Hybrid-γ-v3-Spec. Trennt visuell die Methoden-
-                // Sektion von den Tools (Scannen, Listen). Spacer
-                // 32 pt darüber damit die Tools klar abgesetzt wirken.
-                SectionLabel(text: "Deine Tools")
-                    .padding(.top, 32)
-                    .appEntryTransition(delay: 0.2)
+                    // **Flexibler Spacer** zwischen Cards und Tools.
+                    // Mindestens 32 pt; auf großen Phones expandiert
+                    // er, sodass die Tools-Sektion an den Footer
+                    // gedockt wirkt.
+                    Spacer(minLength: 32)
 
-                // **2 Tools-Cards quer** (Typ C, je 76 pt).
-                toolsRow
-                    .padding(.top, 0)
-                    .padding(.bottom, 32)
-                    .appEntryTransition(delay: 0.25)
+                    // **Top-Trennlinie** vor der Tools-Sektion —
+                    // dezenter Hairline (0.5 pt, border-token).
+                    // Edge-to-edge via negativem Horizontal-Padding,
+                    // identisch zur Footer-Top-Border-Geometrie.
+                    Rectangle()
+                        .fill(AppTheme.Colors.border)
+                        .frame(height: 0.5)
+                        .padding(.horizontal, -AppLayout.screenPadding)
+                        .appEntryTransition(delay: 0.2)
 
-                Color.clear.frame(height: homeFooterClearance)
+                    // Sub-Section-Label „DEINE TOOLS" — Größe 11 →
+                    // 13 pt (User-Spec: prominenter ohne den CAPS-
+                    // Charakter zu verlieren). Padding-top 16 nach
+                    // Trennlinie.
+                    SectionLabel(text: "Deine Tools", size: 13)
+                        .padding(.top, 16)
+                        .appEntryTransition(delay: 0.22)
+
+                    // 2 Tools-Cards quer (Typ C, je 76 pt).
+                    toolsRow
+                        .padding(.bottom, 16)
+                        .appEntryTransition(delay: 0.25)
+
+                    Color.clear.frame(height: homeFooterClearance)
+                }
+                .padding(.horizontal, AppLayout.screenPadding)
+                .padding(.top, AppLayout.contentTopPadding)
+                .padding(.bottom, AppTheme.Spacing.sm)
+                .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .frame(minHeight: geo.size.height, alignment: .top)
             }
-            .padding(.horizontal, AppLayout.screenPadding)
-            .padding(.top, AppLayout.contentTopPadding)
-            .padding(.bottom, AppTheme.Spacing.sm)
-            .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
-            .frame(maxWidth: .infinity, alignment: .center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .tint(sectionStyle.accent)

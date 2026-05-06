@@ -23,10 +23,16 @@ import SwiftUI
 /// - Trailing-Padding bottom 4 pt zum nächsten Content-Block
 struct SectionLabel: View {
     let text: String
+    /// Schriftgröße. Default 11 pt für die ursprünglich spec'te
+    /// kompakte Sub-Section-Trenner-Variante (TrainingHubView's
+    /// „ALLGEMEIN"/„SPEZIAL"). Caller kann auf 13 pt hochstellen
+    /// für prominenteren Look (Home-Section „DEINE TOOLS" nach
+    /// dem Spacing-Polish 2026-05-06).
+    var size: CGFloat = 11
 
     var body: some View {
         Text(text)
-            .font(.system(size: 11, weight: .medium, design: .rounded))
+            .font(.system(size: size, weight: .medium, design: .rounded))
             .tracking(0.6)
             .textCase(.uppercase)
             .foregroundStyle(AppTheme.Colors.textSecondary)

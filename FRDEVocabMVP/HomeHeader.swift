@@ -63,15 +63,20 @@ struct HomeHeader: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
-            VStack(alignment: .leading, spacing: 6) {
-                // Salut-Zeile: 22 → 21 pt (Header-Kompakt-Pass 2).
-                // Gewicht .black bleibt — Pink-Akzent soll auch auf
-                // kleinerem Text noch dominant lesbar sein.
+            VStack(alignment: .leading, spacing: 14) {
+                // **Spacing-Polish 2026-05-06** — Salut-Zeile von
+                // 21 → 32 pt (User-Spec „Title-Größe erhöhen, mehr
+                // Atemraum oben"). Vorherige Compact-Variante war für
+                // ein ehemaliges enges Layout optimiert; mit dem
+                // Hero+Wide-Refactor hat das obere Drittel jetzt
+                // genug Platz für eine prominentere Greeting-Zeile.
+                // VStack-Spacing von 6 → 14 pt zieht Streak-Pill
+                // klar ab vom Greeting (vorher fast geklebt).
                 Text(greeting)
-                    .font(.system(size: 21, weight: .black, design: .rounded))
+                    .font(.system(size: 32, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.elumiPink)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.9)
+                    .minimumScaleFactor(0.85)
 
                 // **Polish 2026-05-06** — Streak von Plain-Text-Zeile zu
                 // einer prominenten Pill mit Amber-Tint-Background +
