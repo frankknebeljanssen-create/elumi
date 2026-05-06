@@ -240,19 +240,28 @@ struct TrainingHubView: View {
 
     // MARK: - Title-Header
 
-    /// **Polish 2026-05-06 Iteration 5** — Title-Block analog zum
-    /// Home-Greeting: 32pt black linksbündig, in Pink. Subline
-    /// „Wähle deinen Schwerpunkt" wurde nach User-Wunsch entfernt
-    /// (zu redundant — die Sub-Labels „ALLGEMEIN" / „SPEZIAL"
-    /// kommunizieren den Schwerpunkt-Charakter ohnehin). Back-
-    /// Chevron sitzt nicht inline, sondern in der `appLocalChrome`-
-    /// TopBar oben.
+    /// **Naming-Sweep 2026-05-06** — Title personalisiert: „Training"
+    /// → „Dein Training" (Du-Ansatz, kindgerecht). Plus neue Subline
+    /// „Worauf hast du Bock?" — Teen-Sprache, frisch, ersetzt den
+    /// frühen „Wähle deinen Schwerpunkt"-Hinweis. Style: Title 32pt
+    /// black Pink (analog Home-Greeting), Subline 14pt regular
+    /// secondary, 14pt VStack-Spacing.
     private var titleHeader: some View {
-        Text("Training")
-            .font(.system(size: 32, weight: .black, design: .rounded))
-            .foregroundStyle(AppTheme.Colors.elumiPink)
-            .lineLimit(1)
-            .minimumScaleFactor(0.85)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Dein Training")
+                .font(.system(size: 32, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.elumiPink)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+
+            Text("Worauf hast du Bock?")
+                // **Naming-Sweep 2026-05-06 Iteration 2**: 14 → 16 pt
+                // + .regular → .bold (User-Feedback „Worauf hast Du
+                // Bock 2pt größer und bold"). Subline liest jetzt
+                // klarer als bewusste Frage.
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

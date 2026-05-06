@@ -38,8 +38,12 @@ struct HomeHeader: View {
             .font(.system(size: 15, weight: .black, design: .rounded))
             .foregroundStyle(.white)
             .shadow(color: .black.opacity(0.35), radius: 1, x: 0, y: 1)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
+            // **Naming-Sweep 2026-05-06 Iteration 3** — Padding
+            // 10/4 → 14/8 pt (User-Feedback „Streak-Pill etwas
+            // breiter und höher, zu eng für den Font"). Mehr Luft
+            // um die Schrift, Pill wirkt nicht mehr gequetscht.
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
             .background(
                 Capsule(style: .continuous)
                     .fill(

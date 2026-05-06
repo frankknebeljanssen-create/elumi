@@ -496,7 +496,14 @@ struct AccentsEntryView: View {
             modeCard(
                 mode: .uben,
                 icon: "scope",
-                headline: "Üben"
+                // **Naming-Sweep 2026-05-06** — „Üben" → „Training"
+                // damit Akzente konsistent zu Nomen / Verben /
+                // Artikel / Verbformen ist (alle nutzen
+                // „Training" / „Speed-Modus" als Mode-Card-Paar).
+                // Der zugrundeliegende Enum-Case `.uben` bleibt
+                // (rawValue-Kompatibilität persistierter Resume-
+                // Snapshots).
+                headline: "Training"
             )
             modeCard(
                 mode: .speedRound,

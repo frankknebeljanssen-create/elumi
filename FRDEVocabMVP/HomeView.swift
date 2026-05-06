@@ -170,16 +170,16 @@ struct HomeView: View {
     // MARK: - Body
 
     var body: some View {
-        // **Spacing-Polish 2026-05-06** — GeometryReader-gewickelter
-        // ScrollView, damit der innere VStack `frame(minHeight: geo.
-        // size.height)` bekommt. Effekt: bei großen Phones füllt der
-        // Content den ganzen Screen, der flexible `Spacer(minLength:
-        // 32)` zwischen Wide-Cards und Tools-Sektion expandiert
-        // entsprechend → Tools docken zum Bildschirmende ohne den
-        // Footer zu überlappen. Auf kleinen Phones (SE) bleibt der
-        // Spacer am Mindestwert (32 pt) und Content ist scrollbar.
-        GeometryReader { geo in
-            ScrollView(.vertical, showsIndicators: false) {
+        // **Naming-Sweep 2026-05-06 Iteration 3** — vorher
+        // GeometryReader + `frame(minHeight: geo.size.height)` der
+        // den VStack auf volle Screen-Höhe streckte und Tools
+        // dadurch ans Footer-Ende drückte. User-Feedback „Tools
+        // nach oben, sitzen direkt am Footer". Jetzt rein
+        // intrinsisch sized: Content fließt natürlich, Tools sitzen
+        // mit fixem 8 pt Abstand nach den Wide-Cards (User-
+        // Iterationen 2-6 haben den Wert schrittweise von 56 → 8
+        // gedrückt, bis es sich „richtig" anfühlte).
+        ScrollView(.vertical, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
                     // **Entry-Stagger** (Phase 7.6).
                     HomeHeader(
@@ -194,10 +194,16 @@ struct HomeView: View {
                     // zwischen Header und Card-Block). Text-Update
                     // „lernen" → „üben" (User-Spec).
                     //
+                    // **Naming-Sweep 2026-05-06 Iteration 2** —
+                    // Top-Padding 28 → 48 pt. User-Feedback „Was
+                    // möchtest du heute üben + die 4 Cards ein
+                    // bisschen nach unten". Drückt den Section-
+                    // Header und die nachfolgenden Cards um 20 pt
+                    // tiefer; HomeHeader oben bekommt mehr Atemraum.
                     Text("Was möchtest du heute üben?")
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .padding(.top, 28)
+                        .padding(.top, 48)
                         .padding(.bottom, 16)
                         .appEntryTransition(delay: 0.05)
 
@@ -212,11 +218,15 @@ struct HomeView: View {
                         .padding(.bottom, 24)
                         .appEntryTransition(delay: 0.15)
 
-                    // **Flexibler Spacer** zwischen Cards und Tools.
-                    // Mindestens 32 pt; auf großen Phones expandiert
-                    // er, sodass die Tools-Sektion an den Footer
-                    // gedockt wirkt.
-                    Spacer(minLength: 32)
+                    // **Naming-Sweep 2026-05-06 Iteration 6** — vom
+                    // ehemaligen flexiblen `Spacer(minLength: 32)`
+                    // (der Tools ans Footer drückte) zu einem fixen
+                    // 8 pt Abstand. Iterativ über 56 → 24 → 16 → 8 pt
+                    // gedrückt nach mehreren User-Feedback-Runden.
+                    // Tools sitzen jetzt eng an den Wide-Cards; der
+                    // Hairline-Divider darunter bleibt der primäre
+                    // Zonen-Trenner.
+                    Color.clear.frame(height: 8)
 
                     // **Top-Trennlinie** vor der Tools-Sektion —
                     // dezenter Hairline (0.5 pt, border-token).
@@ -248,9 +258,7 @@ struct HomeView: View {
                 .padding(.bottom, AppTheme.Spacing.sm)
                 .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
                 .frame(maxWidth: .infinity, alignment: .center)
-                .frame(minHeight: geo.size.height, alignment: .top)
             }
-        }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .tint(sectionStyle.accent)
         .appScreenBackground(sectionStyle)
