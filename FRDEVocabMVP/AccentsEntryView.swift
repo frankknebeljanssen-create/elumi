@@ -350,7 +350,9 @@ struct AccentsEntryView: View {
             title: "Akzente",
             accent: sectionStyle.accent,
             estimate: .zero,
-            primaryButtonTitle: "Akzente starten",
+            // **Naming-Sweep 2026-05-06** — „Akzente starten" →
+            // „Los geht's!" (CTA-Vereinheitlichung).
+            primaryButtonTitle: "Los geht's!",
             isPrimaryEnabled: selectedMode != nil,
             showsDirection: false,
             showsGamificationBar: false,
@@ -390,7 +392,9 @@ struct AccentsEntryView: View {
             showingListPicker = true
         } label: {
             VStack(alignment: .leading, spacing: 8) {
-                Text("AUSGEWÄHLTE LISTEN")
+                // **Naming-Sweep 2026-05-06** — „AUSGEWÄHLTE
+                // LISTEN" → „DEINE LISTEN" (konsistent appweit).
+                Text("DEINE LISTEN")
                     .font(.system(size: 12, weight: .bold, design: .rounded))
                     .tracking(1.4)
                     .foregroundStyle(AppTheme.Colors.cardLabel)

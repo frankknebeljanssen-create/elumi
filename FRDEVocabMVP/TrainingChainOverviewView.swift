@@ -178,7 +178,8 @@ struct TrainingChainOverviewView: View {
         // CTA hoch, weg von der Footer-Linie.
         let total = chain.plannedSteps.count * chain.perStepDurationMin
         return VStack(spacing: 4) {
-            Text("TRAININGSZEIT")
+            // **Naming-Sweep 2026-05-06** — „TRAININGSZEIT" → „DAUER".
+            Text("DAUER")
                 .font(.system(size: 10, weight: .semibold, design: .rounded))
                 .tracking(1.5)
                 .foregroundStyle(AppTheme.Colors.cardLabel)

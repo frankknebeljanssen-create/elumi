@@ -32,7 +32,11 @@ var quizSetupScreen: some View {
         title: "Quiz",
         accent: sectionStyle.accent,
         estimate: quizSessionEstimate,
-        primaryButtonTitle: session.isPreparingQuiz ? "Quiz wird gestartet …" : "Quiz starten",
+        // **Naming-Sweep 2026-05-06** — CTA-Vereinheitlichung: alle
+        // Modul-Setups (Quiz, Karteikarten, Training, Akzente)
+        // tragen jetzt „Los geht's!" als Primary-Button. Daily-Drop
+        // bleibt mit „Drop starten" als Brand-Begriff.
+        primaryButtonTitle: session.isPreparingQuiz ? "Quiz wird gestartet …" : "Los geht's!",
         isPrimaryEnabled: canStartQuiz && !session.isPreparingQuiz,
         // **Chain-Mode XP-Card-Hide (2026-05-02)** — wenn Quiz als
         // Chain-Step geöffnet wird (`launchContext?.chainContext != nil`),
@@ -60,7 +64,10 @@ var quizSetupScreen: some View {
             )
         },
         optionsContent: {
-            SessionOptionGroupCard(title: "ANZAHL FRAGEN") {
+            // **Naming-Sweep 2026-05-06** — „ANZAHL FRAGEN" →
+            // „FRAGEN". Die Chip-Auswahl mit den Zahlen erklärt
+            // sich selbst, „Anzahl" war Beamten-Sprache.
+            SessionOptionGroupCard(title: "FRAGEN") {
                 OptionChipGrid(
                     options: QuizQuestionCountOption.allCases,
                     title: { $0.title },

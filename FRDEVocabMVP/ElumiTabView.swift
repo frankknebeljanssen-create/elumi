@@ -953,7 +953,10 @@ struct ElumiTabView: View {
             // mit `.center`-Frame-Alignment + `multilineTextAlignment`.
             // Ergebnis: Section-Header und Wert-Zeile sind beide
             // ehrlich zentriert.
-            Text("TRAININGSZEIT")
+            // **Naming-Sweep 2026-05-06** — „TRAININGSZEIT" → „DAUER"
+            // (kürzer, neutraler — die Zahl + min + Pencil-Edit
+            // erklären den Kontext bereits).
+            Text("DAUER")
                 .font(.system(size: 10, weight: .semibold, design: .rounded))
                 .tracking(1.5)
                 .foregroundStyle(AppTheme.Colors.cardLabel)

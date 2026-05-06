@@ -342,11 +342,11 @@ extension TrainingView {
         //     sitzt jetzt inline in der Speed-Round-Mode-Card.
         // Alle anderen Module behalten das klassische „Los geht's!" + Bar.
         let isVocabMode = (session.trainingMode == .vocabulary)
-        // **2026-05-05 CTA-Konsistenz (P1 A2)** — alle Trainings-Modi
-        // (Vokabeln/Nomen/Artikel/Verben/Verbformen) nutzen einheitlich
-        // „Training starten". Vorher: Vokabeln „Vokabeltraining starten",
-        // Rest „Los geht's!" — User-Befund war Inkonsistenz im Setup-CTA.
-        let ctaTitle: String = "Training starten"
+        // **Naming-Sweep 2026-05-06** — „Training starten" →
+        // „Los geht's!" (CTA-Vereinheitlichung über alle Modul-
+        // Setups: Quiz, Karteikarten, Training-Modi, Akzente).
+        // Daily-Drop behält „Drop starten" als Brand-Begriff.
+        let ctaTitle: String = "Los geht's!"
         let ctaSubtitle: String? = nil
 
         // Modul-Icon dynamisch per `trainingMode` — jeder Modus hat

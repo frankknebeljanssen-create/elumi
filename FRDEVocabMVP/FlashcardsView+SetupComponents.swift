@@ -130,7 +130,11 @@ extension FlashcardsView {
         let progress = maxCards > minSlider ? CGFloat(displayCount - minSlider) / CGFloat(maxCards - minSlider) : 1.0
 
         return VStack(alignment: .leading, spacing: 8) {
-            flashcardSetupCardLabelLarge("Anzahl der Karten")
+            // **Naming-Sweep 2026-05-06** — „Anzahl der Karten" →
+            // „Karten" (selbsterklärend mit der großen roten Zahl
+            // + Karten-Stack-Icon daneben; „Anzahl der" war
+            // beamten-haft).
+            flashcardSetupCardLabelLarge("Karten")
 
             // Kompakte Inline-Zeile: links die große rote Zahl, daneben der
             // kleine Mini-Stapel (in derselben roten Farbe), dann der Slider.
@@ -203,14 +207,19 @@ extension FlashcardsView {
     /// automatisch auf 1/4 der Card verteilt, `spacing: 6` bleibt.
     /// Platzierung: direkt unter `flashcardCountLimitCard` im Setup.
     var flashcardMasteryThresholdCard: some View {
+        // **Naming-Sweep 2026-05-06** — Header + Optionen umbenannt:
+        //   • „Karte fällt raus nach" → „Wiederholungen" (kürzer, klarer)
+        //   • Schnell / Normal / Gründlich / Intensiv → Easy / Normal /
+        //     Hart / Brutal (kindgerechter Tone, Game-Sprache statt
+        //     Lehrer-Vokabular)
         let labels: [(count: Int, label: String)] = [
-            (1, "Schnell"),
+            (1, "Easy"),
             (2, "Normal"),
-            (3, "Gründlich"),
-            (4, "Intensiv")
+            (3, "Hart"),
+            (4, "Brutal")
         ]
         return VStack(alignment: .leading, spacing: 10) {
-            flashcardSetupCardLabelLarge("Karte fällt raus nach")
+            flashcardSetupCardLabelLarge("Wiederholungen")
 
             HStack(spacing: 6) {
                 ForEach(labels, id: \.count) { entry in

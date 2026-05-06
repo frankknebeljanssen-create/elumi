@@ -145,7 +145,9 @@ struct SessionContextCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("AUSGEWÄHLTE LISTEN")
+            // **Naming-Sweep 2026-05-06** — „AUSGEWÄHLTE LISTEN"
+            // → „DEINE LISTEN" (persönlicher, kürzer).
+            Text("DEINE LISTEN")
                 .font(.system(size: 12, weight: .bold, design: .rounded))
                 .tracking(1.4)
                 .foregroundStyle(AppTheme.Colors.cardLabel)

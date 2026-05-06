@@ -88,7 +88,9 @@ struct ListCategoryPickerView: View {
             // (rechts). Identisch mit `flashcardsListSelectionCard` und
             // `verbformsListSelectionCard` — keine visuellen Ausreißer mehr.
             VStack(alignment: .leading, spacing: 8) {
-                Text("AUSGEWÄHLTE LISTEN")
+                // **Naming-Sweep 2026-05-06** — „AUSGEWÄHLTE
+                // LISTEN" → „DEINE LISTEN".
+                Text("DEINE LISTEN")
                     .font(.system(size: 12, weight: .bold, design: .rounded))
                     .tracking(1.4)
                     .foregroundStyle(AppTheme.Colors.cardLabel)
