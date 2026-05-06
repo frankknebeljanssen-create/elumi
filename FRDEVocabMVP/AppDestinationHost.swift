@@ -196,6 +196,18 @@ struct AppDestinationHost: View {
                 onGoHome: goHome,
                 openSettings: openSettings
             )
+        case .trainingHub:
+            // **2026-05-06 Home-Refactor (Hybrid γ v3)** — Sub-Screen
+            // mit Vokabeln (Allgemein) + Nomen/Verben/Artikel/Verbformen
+            // (Spezial 2×2) + Akzente quer. Erreichbar via „Training"-
+            // Card auf Home. Routing zu den Modul-Cards läuft über das
+            // injizierte `navigate`-Closure (analog GameHubView).
+            TrainingHubView(
+                feedbackPlayer: feedbackPlayer,
+                openScreen: navigate,
+                goHome: goHome,
+                openSettings: openSettings
+            )
         case .elumi:
             // **Elumi-Tab** (Phase 8) — persönlicher Begleiter-Screen:
             // Begrüßung + Axolotl, eine Empfehlungs-Card (V1 Karteikarten),

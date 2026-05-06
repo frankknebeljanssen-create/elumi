@@ -1,19 +1,30 @@
 import Foundation
 import SwiftUI
 
-/// Home-Screen (2×2-Hero-Rebuild).
+/// Home-Screen (Hybrid γ v3 Refactor, 2026-05-06).
 ///
 /// Blöcke von oben nach unten:
-///   1. Greeting + Streak-Inline + Maskottchen (`HomeHeader`)
-///   2. Hero-Lernsektion als 2×2 Grid (`HomeHeroLearningSection`) —
-///      Karteikarten · Nomen · Verben · Quiz, feste Reihenfolge, kein Scroll
-///   3. Weitere Übungen (`HomeMoreExercisesSection`) — 4 gleich-breite
-///      Tiles, gefiltert gegen die Hero-Module (keine Dopplungen)
-///   4. Deine Tools (`HomeToolsSection`) — Scannen + Listen
-///   5. Footer-Clearance
+///   1. Greeting + Streak-Inline + Maskottchen (`HomeHeader`) — unverändert
+///   2. Headline „Was möchtest du heute lernen?"
+///   3. **4 Methoden-Cards 2×2** (Typ A, je 110 pt):
+///      • Karteikarten („Selbst gemacht")
+///      • Quiz („Teste dich!")
+///      • Mix-Training („Surprise!") — öffnet Slot-Pop-up via
+///        `AppScreen.elumi`
+///      • Training („Vokabeln & mehr") — führt zu `TrainingHubView`
+///        mit Vokabeln + 4 Spezial-Modi + Akzente
+///   4. Sub-Section-Label „DEINE TOOLS" (CAPS, klein, grau)
+///   5. **2 Tools-Cards quer** (Typ C, je 76 pt): Scannen, Listen
+///   6. Footer-Clearance
+///
+/// Vorher (vor Refactor): 2×2-Hero (Karteikarten/Nomen/Verben/Quiz) +
+/// Weitere-Übungen-Reihe (Artikel/Verbformen/Akzente/Vokabeln) + Tools.
+/// Mit dem Refactor sind Vokabeln + die vier Spezial-Modi hinter der
+/// Training-Card gebündelt; der Slot/ELUMI-Tab entfällt als eigener
+/// Tab und wandert hinter die Mix-Training-Card.
 ///
 /// Navigation ist über `openScreen` injiziert — Home selbst kennt keine
-/// konkrete Route-Logik, nur das Mapping Modul → `AppScreen`.
+/// konkrete Route-Logik, nur das Mapping Card → `AppScreen`.
 struct HomeView: View {
     @Environment(\.appUsesGlobalChrome) private var usesGlobalChrome
     @ObservedObject var feedbackPlayer: FeedbackPlayer
@@ -53,90 +64,139 @@ struct HomeView: View {
         }
     }
 
+    // MARK: - Methoden-Cards (Typ A 110pt, 2×2)
+
+    /// Vier Methoden-Cards (Karteikarten / Quiz / Mix-Training /
+    /// Training). Layout: LazyVGrid mit zwei flexiblen Spalten,
+    /// Spacing 12 pt horizontal und vertikal.
+    @ViewBuilder
+    private var methodCardsGrid: some View {
+        LazyVGrid(
+            columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)],
+            spacing: 12
+        ) {
+            // Karteikarten — Asset-Icon, Modul-Blau.
+            MethodCard(
+                title: "Karteikarten",
+                subtitle: "Selbst gemacht",
+                accent: AppTheme.Colors.moduleFlashcards,
+                icon: { HomeModuleIconView(icon: .karteikarten, size: 52, glyphTint: .white) },
+                onTap: { openHomeScreen(.flashcards(nil)) }
+            )
+
+            // Quiz — Asset-Icon, Modul-Amber.
+            MethodCard(
+                title: "Quiz",
+                subtitle: "Teste dich!",
+                accent: AppTheme.Colors.moduleQuiz,
+                icon: { HomeModuleIconView(icon: .quiz, size: 52, glyphTint: .white) },
+                onTap: { openHomeScreen(.quiz(nil)) }
+            )
+
+            // Mix-Training — SF-Symbol „sparkles" (matches ELUMI-Tab-
+            // Vibe). Tap → AppScreen.elumi → ElumiTabView mit dem
+            // existierenden Slot-Pop-up + Slot-Maschine.
+            MethodCard(
+                title: "Mix-Training",
+                subtitle: "Surprise!",
+                accent: AppTheme.Colors.elumiPinkDeep,
+                icon: {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 44, weight: .bold))
+                        .foregroundStyle(.white)
+                },
+                onTap: { openHomeScreen(.elumi) }
+            )
+
+            // Training — SF-Symbol „graduationcap.fill" als Umbrella-
+            // Icon für die fünf Lern-Modi (Vokabeln + Spezifika).
+            // Tap → TrainingHubView (Sub-Screen).
+            MethodCard(
+                title: "Training",
+                subtitle: "Vokabeln & mehr",
+                accent: AppTheme.Colors.moduleVocabulary,
+                icon: {
+                    Image(systemName: "graduationcap.fill")
+                        .font(.system(size: 42, weight: .bold))
+                        .foregroundStyle(.white)
+                },
+                onTap: { openHomeScreen(.trainingHub) }
+            )
+        }
+    }
+
+    // MARK: - Tools-Cards (Typ C 76pt, quer)
+
+    /// Zwei Tools-Cards nebeneinander (Scannen + Listen). Layout:
+    /// HStack mit Spacing 10 pt (matched die alte HomeToolsSection-
+    /// Geometrie, damit der visuelle Rhythmus konsistent bleibt).
+    @ViewBuilder
+    private var toolsRow: some View {
+        HStack(spacing: 10) {
+            WideCard(
+                title: "Scannen",
+                accent: AppTheme.Colors.moduleScan,
+                height: 76,
+                icon: { HomeModuleIconView(icon: .scan, size: 48, glyphTint: AppTheme.Colors.moduleScan) },
+                onTap: { openHomeScreen(.scan) }
+            )
+
+            WideCard(
+                title: "Listen",
+                accent: AppTheme.Colors.moduleLists,
+                height: 76,
+                icon: { HomeModuleIconView(icon: .listen, size: 48, glyphTint: AppTheme.Colors.moduleLists) },
+                onTap: { openHomeScreen(.lists(nil)) }
+            )
+        }
+    }
+
     // MARK: - Body
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            // Basis-VStack-Spacing 0 — jeder Block bekommt sein eigenes
-            // `padding(.top, …)`. Klare Gap-Hierarchie:
-            //   Header → Hero:              12 pt (eng, Hero an Header)
-            //   Hero → Weitere Übungen:     22 pt (klar abgesetzt)
-            //   Weitere Übungen → Tools:    20 pt (klar abgesetzt)
-            //   Tools → Footer:             +24 pt unten (Tools „klebt"
-            //                               nicht mehr am Footer)
             VStack(alignment: .leading, spacing: 0) {
                 // **Entry-Stagger** (Phase 7.6 — App-weites Micro-
-                // Interaction-System): Header → Hero → Weitere →
-                // Tools blenden nacheinander ein (Fade + 8 pt Slide-
-                // Up, je +50 ms Delay). Insgesamt < 400 ms — „leicht
-                // lebendig, nicht lang".
+                // Interaction-System): Header → Methoden → Tools
+                // blenden nacheinander ein (Fade + 8 pt Slide-Up,
+                // je +50 ms Delay).
                 HomeHeader(
                     greeting: Personalization.homeGreeting(for: profileStore.profile?.displayName),
                     streakDays: currentStreak
                 )
                 .appEntryTransition()
 
-                // Hero-Grid (2×2) — Hauptentscheidung des Screens.
-                // Näher an den Header gerückt, weil die frühere
-                // Status-Card entfallen ist.
-                HomeHeroLearningSection(
-                    onSelect: { module in openHomeScreen(module.screen) }
-                )
-                .padding(.top, 12)
-                .appEntryTransition(delay: 0.05)
+                // Section-Header über den Methoden-Cards. Style
+                // identisch zum bisherigen Hero-Header (16 pt
+                // .medium, textSecondary, sentence-case).
+                Text("Was möchtest du heute lernen?")
+                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .padding(.top, 12)
+                    .padding(.bottom, 4)
+                    .appEntryTransition(delay: 0.05)
 
-                HomeMoreExercisesSection(
-                    onSelect: { module in openHomeScreen(module.screen) }
-                )
-                .padding(.top, 22)
-                .appEntryTransition(delay: 0.1)
+                // **4 Methoden-Cards** im 2×2-Grid (Typ A, je 110 pt).
+                // Karteikarten/Quiz nutzen Asset-Icons; Mix-Training
+                // und Training nutzen SF-Symbole, weil keine eigenen
+                // Asset-Icons existieren (vgl. HomeModuleIcon-Enum —
+                // dort gibt es nur die Per-Modul-Assets).
+                methodCardsGrid
+                    .padding(.top, 4)
+                    .appEntryTransition(delay: 0.1)
 
-                // **Home-Polish 2026-04-30 (User-Spec)**: leichter
-                // Querstrich als visueller Trenner zwischen den
-                // Übungs-Sektionen und den Tools („Scannen"/„Listen"
-                // sind Werkzeuge, keine Lernmodule).
-                //
-                // **Iteration 3 (User-Spec „trenne etwas weniger
-                // sichtbar und links und recht bis zum rand, so wie
-                // die linie über dem footer")**: visuelle Angleichung
-                // an die Footer-Top-Border in `AppBottomBarSurface-
-                // Modifier`. Dort: `Rectangle().fill(AppTheme.Colors.
-                // border).frame(height: 1)` — `border` ist
-                // `elumiCream.opacity(0.12)`, also dezenter als die
-                // vorherigen 22 % Weiß. Edge-to-edge erreichen wir
-                // mit negativem Horizontal-Padding, das das
-                // VStack-Wrapper-Padding (`AppLayout.screenPadding`)
-                // negiert — der Strich läuft jetzt durch die ganze
-                // Bildschirmbreite, identisch zur Footer-Linie.
-                //
-                // **Iteration 2 (Position)**: Top-Padding 22 → 34 pt —
-                // der Strich rutscht weiter nach unten, der Cut sitzt
-                // tiefer im Layout. „Deine Tools" rutscht durch den
-                // erhöhten Padding-Below ebenfalls mit (siehe unten).
-                Rectangle()
-                    .fill(AppTheme.Colors.border)
-                    .frame(height: 1)
-                    .padding(.horizontal, -AppLayout.screenPadding)
-                    .padding(.top, 34)
+                // Sub-Section-Label „DEINE TOOLS" (CAPS, klein, grau)
+                // gemäß Hybrid-γ-v3-Spec. Trennt visuell die Methoden-
+                // Sektion von den Tools (Scannen, Listen).
+                SectionLabel(text: "Deine Tools")
+                    .padding(.top, 22)
                     .appEntryTransition(delay: 0.15)
 
-                HomeToolsSection(
-                    onSelectScan: { openHomeScreen(.scan) },
-                    onSelectLists: { openHomeScreen(.lists(nil)) }
-                )
-                // **Home-Polish 2026-04-30 — Iteration 4 (User-Spec
-                // „listen und tools mittig zwischen dem oberen trenner
-                // und der linie am footer (also ein bisschen nach
-                // oben)")**: top 20 → 12 pt, bottom 24 → 32 pt. Der
-                // Tools-Block (Headline + Card-Reihe, ~84 pt) rutscht
-                // dadurch um 8 pt nach oben, und die Card-Reihe sitzt
-                // jetzt visuell mittig zwischen dem oberen Querstrich
-                // und der Footer-Top-Linie. Der Divider selbst (mit
-                // `padding(.top, 34)`) bleibt unverändert — User
-                // explizit „oberer trenner bliebt auch wo er ist".
-                .padding(.top, 12)
-                .padding(.bottom, 32)
-                .appEntryTransition(delay: 0.2)
+                // **2 Tools-Cards quer** (Typ C, je 76 pt).
+                toolsRow
+                    .padding(.top, 0)
+                    .padding(.bottom, 32)
+                    .appEntryTransition(delay: 0.2)
 
                 Color.clear.frame(height: homeFooterClearance)
             }

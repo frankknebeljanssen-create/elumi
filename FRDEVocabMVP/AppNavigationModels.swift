@@ -33,6 +33,16 @@ enum AppScreen: Hashable {
     /// Wörterbuch: Elumi = „dein nächster Schritt".
     case elumi
 
+    /// **Training-Hub** (2026-05-06, Home-Refactor Hybrid γ v3) — Sub-
+    /// Screen, der über die „Training"-Card auf Home erreicht wird.
+    /// Bündelt die fünf Lern-Modi: Vokabeln (Allgemein-Slot, einzeln)
+    /// und Nomen / Verben / Artikel / Verbformen (Spezial-Slot, 2×2)
+    /// plus Akzente quer am Ende. Vorher waren Vokabeln + die vier
+    /// Spezial-Modi direkt auf Home verteilt; mit dem Refactor sind
+    /// sie hinter einer Card zusammengefasst, damit Home schlanker
+    /// und auf vier zentrale Methoden fokussiert ist.
+    case trainingHub
+
     /// **Trainings-Chain Pre-Screen** (Stufe 2, 2026-04-30, Branch
     /// `feature/training-session-flow`). Wird zwischen Slot-Reveal und
     /// erstem Modul-Open gepusht. Zeigt Mini-Cards für jeden Slot des
