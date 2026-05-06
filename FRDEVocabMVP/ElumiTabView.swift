@@ -496,7 +496,7 @@ struct ElumiTabView: View {
         //     Single-Question „Wie lange?".
         //   • Skip-X oben rechts — User kann Pop-up schließen ohne Wahl;
         //     Slot-CTA bleibt dann disabled (`canTriggerSpin`).
-        ZStack(alignment: .top) {
+        ZStack {
             Color.black.opacity(0.92)
                 .ignoresSafeArea()
                 .contentShape(Rectangle())
@@ -504,14 +504,14 @@ struct ElumiTabView: View {
                     dismissSetupModal()
                 }
 
-            // **2026-05-06 Layout-Tweak** — Modal-Karte sitzt jetzt im
-            // oberen Drittel (Top-Alignment + Top-Padding), nicht mehr
-            // dead-center. User-Spec: „Pop-up etwas höher im Screen".
-            // Hintergrund: zentrierter Modal-Block überlappte mit der
-            // Slot-Machine, die unmittelbar nach Auto-Close erscheint —
-            // visuell wie ein Sprung von Mitte → Mitte. Mit dem Top-
-            // Anchor ist der vertikale Fokus klar oben, während das
-            // Slot-Layout darunter „atmen" kann.
+            // **2026-05-06 Iteration 3** — Modal-Karte wieder vertikal
+            // mittig (User-Feedback nach dem Hero+Wide-Layout-Refactor:
+            // „Mix-Training Pop mittig vertikal"). Vorher mit
+            // Top-Padding 120 in der oberen Bildschirmhälfte
+            // verankert. Mit dem neuen Home-Layout (Hero-Cards →
+            // Mix-Training-Card als Wide-Card → Pop-up) wirkt die
+            // dead-center-Position jetzt wieder natürlich, weil die
+            // Slot-Maschine erst nach Auto-Close gerendert wird.
             VStack(spacing: 18) {
                 // Skip-X oben rechts — schließt Pop-up ohne Zeit zu
                 // setzen. `modalDurationSelection` bleibt `nil`, Slot-
@@ -529,17 +529,23 @@ struct ElumiTabView: View {
                     .accessibilityLabel(Text("Schließen"))
                 }
 
-                // **Polish 2026-05-06** — Headline um Modul-Kontext
-                // ergänzt. Vorher Plain „Wie lange möchtest du üben?",
-                // jetzt „Mix-Training — wie lange?" — verbindet die
-                // Modul-Identität (Mix-Training = Slot-Modus) mit
-                // der konkreten Frage. User-Spec für Home-Refactor
-                // Hybrid γ v3 Polish-Pass.
-                Text("Mix-Training — wie lange?")
-                    .font(.system(size: 22, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
+                // **Polish-Iteration 3 2026-05-06** — Headline jetzt
+                // zwei-zeilig: oben kleiner Eyebrow „Trainingsmix"
+                // (Modul-Kontext, Akzent-Pink), darunter die original
+                // Frage „Wie lange möchtest du üben?" (User-Feedback
+                // „2-zeilig, Text wie vorher und darüber Trainingsmix").
+                VStack(spacing: 4) {
+                    Text("Trainingsmix")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .tracking(0.5)
+                        .textCase(.uppercase)
+                        .foregroundStyle(sectionStyle.accent)
+                    Text("Wie lange möchtest du üben?")
+                        .font(.system(size: 22, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
 
                 // Time-Cards — Tap löst auto-close aus (siehe
                 // `durationChip` Tap-Handler).
@@ -573,11 +579,6 @@ struct ElumiTabView: View {
             )
             .shadow(color: Color.black.opacity(0.55), radius: 24, x: 0, y: 8)
             .padding(.horizontal, 24)
-            // Top-Offset: ~120pt unter der Status-Bar — Modal-Card sitzt
-            // im oberen Drittel statt dead-center. Wert empirisch (sieht
-            // auf iPhone 17 / Air / SE gut aus, lässt genug Luft zum
-            // Backdrop-Tap unten).
-            .padding(.top, 120)
         }
         .sheet(isPresented: $showListPicker) {
             // **Stufe 1c (2026-04-30)** — Multi-Select-Sheet für die

@@ -30,6 +30,12 @@ struct TrainingHubView: View {
 
     private let sectionStyle: AppSectionStyle = .home
 
+    /// **Polish 2026-05-06** — Aktuell sichtbarer Lern-Tipp aus
+    /// `TrainingHubTips.pool`. Wird beim Mount/Re-Visit (`.onAppear`)
+    /// neu gewürfelt. Initial-Wert ist ein Random-Pick, damit beim
+    /// ersten Build schon ein Tipp da ist.
+    @State private var currentTip: String = TrainingHubTips.random()
+
     /// Footer-Clearance — derselbe Pattern wie HomeView/AccentsEntryView.
     private var footerClearance: CGFloat {
         usesGlobalChrome
@@ -121,6 +127,16 @@ struct TrainingHubView: View {
                     }
                 )
 
+                // **Polish 2026-05-06** — Maskottchen + Lern-Tipp
+                // unter den Sektionen, füllt den vorher freien Raum
+                // zwischen dem letzten Card-Block und dem Footer.
+                // Maskottchen-Asset (`SplashCharacter`) ist
+                // wiederverwendet aus Footer/Home — kein neues
+                // Asset nötig. Tipp rotiert pro Tab-Visit aus dem
+                // `TrainingHubTips`-Pool.
+                mascotTipBlock
+                    .padding(.top, 28)
+
                 Color.clear.frame(height: footerClearance)
             }
             .padding(.horizontal, AppLayout.screenPadding)
@@ -146,9 +162,58 @@ struct TrainingHubView: View {
                 onSettings: openSettings
             )
         }
+        .onAppear {
+            // **Polish 2026-05-06** — Lern-Tipp pro Hub-Visit neu
+            // würfeln. `.onAppear` feuert beim ersten Mount und bei
+            // jedem Re-Visit nach dem Zurückkehren von einem Modul
+            // (Sub-Screen-Lifecycle re-mountet den Hub-Body).
+            currentTip = TrainingHubTips.random()
+        }
     }
 
     // MARK: - Header
+
+    // MARK: - Mascot + Lern-Tipp Block
+
+    /// **Polish 2026-05-06** — Dekorativer Maskottchen-Block am Ende
+    /// des Hubs: SplashCharacter-Asset zentriert mit Blink-Overlay,
+    /// darunter ein wechselnder Lern-Tipp aus `TrainingHubTips.pool`.
+    /// Kein Tap-Behavior (rein dekorativ). Der freie Raum zwischen
+    /// der letzten Card und dem Footer wirkt jetzt absichtlich
+    /// gestaltet statt leer.
+    private var mascotTipBlock: some View {
+        VStack(spacing: 10) {
+            ZStack {
+                Image("SplashCharacter")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 86, height: 86)
+                SplashCharacterBlinkOverlay(
+                    size: 86,
+                    startDate: .now
+                )
+                .frame(width: 86, height: 86)
+            }
+            // Subtiler Drop-Shadow, identisch zur Footer-Maskottchen-
+            // Behandlung — Maskottchen liegt visuell „auf" dem
+            // Background, nicht dahinter.
+            .shadow(color: .black.opacity(0.18), radius: 4, x: 0, y: 2)
+
+            Text(currentTip)
+                // **Polish-Iteration 2026-05-06**: 13 → 16 pt + medium-
+                // Weight (User-Feedback „Lerntipp Font viel zu klein").
+                // Liest jetzt als bewusster Hint, nicht als Caption.
+                .font(.system(size: 16, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.9)
+                .padding(.horizontal, 24)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Title-Header
 
     /// Title-Row — „Training" zentriert, Back-Chevron links, plus
     /// Sub-Hint „Wähle deinen Schwerpunkt" darunter (Polish 2026-05-06).
