@@ -106,8 +106,13 @@ struct HomeView: View {
     private var wideMethodCards: some View {
         VStack(spacing: 12) {
             WideMethodCard(
-                title: "Mix-Training",
-                subtitle: "Surprise!",
+                // **Naming-Sweep 2026-05-06** — „Mix-Training" →
+                // „Daily Drop" + neuer Subtitle. Brand-Begriff für
+                // die Slot-basierte Surprise-Übung; konsistent zum
+                // Pop-up-Pre-Title („DAILY DROP") und CTA („Drop
+                // starten").
+                title: "Daily Drop",
+                subtitle: "Heute schon gecheckt?",
                 accent: AppTheme.Colors.elumiPinkDeep,
                 icon: {
                     Image(systemName: "sparkles")
@@ -148,6 +153,11 @@ struct HomeView: View {
             )
 
             WideCard(
+                // **Naming-Sweep 2026-05-06 — Revert** — „Meine
+                // Listen" → zurück zu „Listen" (User-Feedback). Mit
+                // dem längeren Text griff `minimumScaleFactor` und
+                // die Schrift wirkte kleiner; mit „Listen" steht
+                // sie wieder auf den vollen 17 pt.
                 title: "Listen",
                 accent: AppTheme.Colors.moduleLists,
                 height: 76,
@@ -183,6 +193,7 @@ struct HomeView: View {
                     // Spacing-Polish: prominenter, klarer Anker
                     // zwischen Header und Card-Block). Text-Update
                     // „lernen" → „üben" (User-Spec).
+                    //
                     Text("Was möchtest du heute üben?")
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)

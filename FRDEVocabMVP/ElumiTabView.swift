@@ -262,14 +262,13 @@ struct ElumiTabView: View {
     /// Das Label „Jetzt üben" bleibt identisch zwischen 2-Button-State
     /// und post-Spin-3-State — Konsistenz für den User.
     private var spinPrimaryLabel: String {
-        // Erster Spin: „Maschine jetzt starten!" — direkter, energischer
-        // Imperativ + Ausrufungszeichen markieren den Spin-Moment als
-        // bewusste Aktion (User-Spec 2026-05-06 „Sprach-Polish"). Vorher
-        // „Maschine starten" — neutral, unter den anderen CTAs nicht
-        // prominent genug. Nach erstem Spin: „Nochmal drehen" für die
-        // Re-Spin-Variante (unverändert; ist bereits klar, weil neben
-        // dem „Jetzt üben"-Button positioniert).
-        currentSpinNumber == 0 ? "Maschine jetzt starten!" : "Nochmal drehen"
+        // **Naming-Sweep 2026-05-06** — „Maschine jetzt starten!" →
+        // „Drop starten". Konsistent zum Brand-Begriff „Daily Drop"
+        // (Home-Card + Pop-up-Pre-Title). Kürzer, kernig, passt zum
+        // einmal-pro-Tag-Charakter des Modus. Nach erstem Spin
+        // bleibt „Nochmal drehen" — Re-Spin-Variante kommuniziert
+        // weiterhin die Slot-Mechanik.
+        currentSpinNumber == 0 ? "Drop starten" : "Nochmal drehen"
     }
 
     private let sectionStyle: AppSectionStyle = .elumi
@@ -324,12 +323,16 @@ struct ElumiTabView: View {
     /// **Migration für existierende User**: defensive-on-Launch in
     /// `mainContent.onAppear` — wenn `selectedDuration` nicht in
     /// `durationOptions` ist (z.B. User hatte 10/15/20 gespeichert), wird
-    /// einmalig auf `durationDefault` (= 12) gesetzt. Idempotent: der
+    /// einmalig auf `durationDefault` (= 10) gesetzt. Idempotent: der
     /// Korrekturpfad wird beim ersten Open ausgeführt und bei allen
     /// Folge-Opens als no-op übersprungen.
-    // TODO: 3 ist temporär für Smoke-Test (Stufe 4b-Chain-Tests),
-    // später wieder zurück zu 6 — Backlog: TODO_post_v1b.md.
-    private static let durationOptions: [Int] = [3, 12, 18]
+    //
+    // **Naming-Sweep 2026-05-06** — Optionen 3/12/18 → 5/10/15.
+    // Standard-Zeiten, intuitiv, alle in 5er-Schritten. Default
+    // (`durationDefault`) ist die mittlere Option (10 min) — beim
+    // Daily-Drop-Modus passt eine kurze Standard-Session besser
+    // als die alten 12 min.
+    private static let durationOptions: [Int] = [5, 10, 15]
 
     /// **Slot-Spin Credit-Mapping** (Pool-Vereinheitlichung 2026-04-30,
     /// Stufe 1b). Aus dem ehemaligen `ElumiCreditsStore.GrantTable`
@@ -343,7 +346,7 @@ struct ElumiTabView: View {
     /// `selectedDuration` verwendet als auch — ab Stufe 2 — als Modal-
     /// Preselect beim allerersten Open. Keine Duplikation an anderen
     /// Stellen: alle „falls nichts gewählt"-Pfade lesen diesen Wert.
-    static let durationDefault: Int = 12
+    static let durationDefault: Int = 10
 
     // MARK: - Body
 
@@ -496,8 +499,12 @@ struct ElumiTabView: View {
         //     Single-Question „Wie lange?".
         //   • Skip-X oben rechts — User kann Pop-up schließen ohne Wahl;
         //     Slot-CTA bleibt dann disabled (`canTriggerSpin`).
-        ZStack {
-            Color.black.opacity(0.92)
+        ZStack(alignment: .top) {
+            // **Naming-Sweep 2026-05-06** — Backdrop von 0.92 → 0.97
+            // (User-Feedback „Hintergrund schimmert zu transparent
+            // durch, Hero-Card und CTA sichtbar"). Quasi opak, nur
+            // ein Hauch Transparenz für leichte Layering-Tiefe.
+            Color.black.opacity(0.97)
                 .ignoresSafeArea()
                 .contentShape(Rectangle())
                 .onTapGesture {
@@ -535,19 +542,25 @@ struct ElumiTabView: View {
                 // Frage „Wie lange möchtest du üben?" (User-Feedback
                 // „2-zeilig, Text wie vorher und darüber Trainingsmix").
                 VStack(spacing: 4) {
-                    // **Polish 2026-05-06 Iteration 6** — „Trainingsmix"
-                    // Eyebrow von 13pt bold → 16pt black + dickerer
-                    // Tracking-Wert (User-Feedback „Trainingsmix-Font
-                    // 3pt größer, viel fetter"). Liest jetzt als
-                    // klare Modul-Identität, nicht mehr als unscheinbare
-                    // CAPS-Caption.
-                    Text("Trainingsmix")
-                        .font(.system(size: 16, weight: .black, design: .rounded))
+                    // **Naming-Sweep 2026-05-06** — „Trainingsmix" →
+                    // „DAILY DROP" (Brand-Begriff systemweit).
+                    // Headline „Wie lange möchtest du üben?" → „Wie
+                    // lange?" (1-zeilig; der Pre-Title gibt schon
+                    // den Modul-Kontext, die Headline kann dadurch
+                    // kürzer werden und bricht nicht mehr um).
+                    // **Naming-Sweep 2026-05-06** — beide Pop-up-
+                    // Headlines +3pt (User-Feedback). „Daily Drop"
+                    // 16 → 19 pt black, „Wie lange?" 22 → 25 pt
+                    // black. Modal-Karte hat genug intrinsic Höhe
+                    // (`.fixedSize(vertical: true)`) — wächst
+                    // automatisch mit dem Text.
+                    Text("Daily Drop")
+                        .font(.system(size: 19, weight: .black, design: .rounded))
                         .tracking(0.8)
                         .textCase(.uppercase)
                         .foregroundStyle(sectionStyle.accent)
-                    Text("Wie lange möchtest du üben?")
-                        .font(.system(size: 22, weight: .black, design: .rounded))
+                    Text("Wie lange?")
+                        .font(.system(size: 25, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .multilineTextAlignment(.center)
                 }
@@ -585,6 +598,13 @@ struct ElumiTabView: View {
             )
             .shadow(color: Color.black.opacity(0.55), radius: 24, x: 0, y: 8)
             .padding(.horizontal, 24)
+            // **Naming-Sweep 2026-05-06** — Pop-up wieder höher
+            // im Screen verankert (User-Feedback „Daily-Drop-
+            // Zeitwahl alles etwas höher"). 120pt Top-Padding zieht
+            // die Modal-Karte ins obere Drittel zurück, sodass die
+            // Frage-Stellung in der Daumen-Zone der Zeit-Cards
+            // ergonomisch greifbar bleibt.
+            .padding(.top, 120)
         }
         .sheet(isPresented: $showListPicker) {
             // **Stufe 1c (2026-04-30)** — Multi-Select-Sheet für die
