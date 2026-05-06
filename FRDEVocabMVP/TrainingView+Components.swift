@@ -40,53 +40,13 @@ extension TrainingView {
         .buttonStyle(.plain)
     }
 
-    var trainingDirectionCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Abfragerichtung")
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-
-            HStack(spacing: 10) {
-                Button {
-                    selectedAppDirectionRaw = Direction.frenchToGerman.rawValue
-                } label: {
-                    HStack(spacing: 10) {
-                        StraightFlagBadge(countryCode: "FR", width: 34, height: 23, labelFontSize: 11)
-                        Text("→")
-                            .font(.system(size: 18, weight: .black))
-                        StraightFlagBadge(countryCode: "DE", width: 34, height: 23, labelFontSize: 11)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: 50)
-                    .foregroundStyle(selectedAppDirection == .frenchToGerman ? .white : AppTheme.Colors.textPrimary)
-                    .background(selectedAppDirection == .frenchToGerman ? trainingActionTint : AppTheme.Colors.secondarySurface)
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                }
-                .buttonStyle(.plain)
-
-                Button {
-                    selectedAppDirectionRaw = Direction.germanToFrench.rawValue
-                } label: {
-                    HStack(spacing: 10) {
-                        StraightFlagBadge(countryCode: "DE", width: 34, height: 23, labelFontSize: 11)
-                        Text("→")
-                            .font(.system(size: 18, weight: .black))
-                        StraightFlagBadge(countryCode: "FR", width: 34, height: 23, labelFontSize: 11)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: 50)
-                    .foregroundStyle(selectedAppDirection == .germanToFrench ? .white : AppTheme.Colors.textPrimary)
-                    .background(selectedAppDirection == .germanToFrench ? trainingActionTint : AppTheme.Colors.secondarySurface)
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, 18)
-        .padding(.vertical, 12)
-        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
-    }
+    // **C3-Cleanup (2026-05-06)** — `trainingDirectionCard` (Body-Card
+    // mit FR↔DE-Toggle-Buttons) ist entfernt. Alle Training-Modi
+    // (Vokabeln/Nomen/Artikel/Verben/Verbformen) nutzen den Direction-
+    // Toggle einheitlich über `SessionSetupScreen` mit `showsDirection-
+    // Toggle: true` — gerendert über `LanguageDirectionSwitch
+    // (size: .compact)` im Header rechts oben. Die Body-Card war
+    // seit der Header-Migration toter Code.
 
     // Ehemaliger `speedRoundToggle` (standalone Card mit bolt-Icon und
     // Checkmark) wurde durch den systemweiten `drillModeSection`

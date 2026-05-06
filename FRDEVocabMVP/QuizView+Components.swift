@@ -88,53 +88,13 @@ var quizSetupScreen: some View {
     .background(AppTheme.Colors.surface.ignoresSafeArea())
 }
 
-var quizDirectionCard: some View {
-    VStack(alignment: .leading, spacing: 10) {
-        Text("Abfragerichtung")
-            .font(AppTheme.Typography.caption)
-            .foregroundStyle(AppTheme.Colors.textSecondary)
-
-        HStack(spacing: 10) {
-            Button {
-                selectedAppDirectionRaw = Direction.frenchToGerman.rawValue
-            } label: {
-                HStack(spacing: 10) {
-                    StraightFlagBadge(countryCode: "FR", width: 34, height: 23, labelFontSize: 11)
-                    Text("→")
-                        .font(.system(size: 18, weight: .black))
-                    StraightFlagBadge(countryCode: "DE", width: 34, height: 23, labelFontSize: 11)
-                }
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: 50)
-                .foregroundStyle(selectedAppDirection == .frenchToGerman ? .white : AppTheme.Colors.textPrimary)
-                .background(selectedAppDirection == .frenchToGerman ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            }
-            .buttonStyle(.plain)
-
-            Button {
-                selectedAppDirectionRaw = Direction.germanToFrench.rawValue
-            } label: {
-                HStack(spacing: 10) {
-                    StraightFlagBadge(countryCode: "DE", width: 34, height: 23, labelFontSize: 11)
-                    Text("→")
-                        .font(.system(size: 18, weight: .black))
-                    StraightFlagBadge(countryCode: "FR", width: 34, height: 23, labelFontSize: 11)
-                }
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: 50)
-                .foregroundStyle(selectedAppDirection == .germanToFrench ? .white : AppTheme.Colors.textPrimary)
-                .background(selectedAppDirection == .germanToFrench ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            }
-            .buttonStyle(.plain)
-        }
-    }
-    .frame(maxWidth: .infinity)
-    .padding(.horizontal, 18)
-    .padding(.vertical, 12)
-    .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
-}
+// **C3-Cleanup (2026-05-06)** — `quizDirectionCard` (Body-Card mit
+// FR↔DE-Toggle-Buttons) ist entfernt. Vorher rendere die Card eine
+// 2-Button-Reihe „FR→DE" / „DE→FR" mit Flag-Badges; mittlerweile sitzt
+// der Direction-Toggle einheitlich oben rechts in der `ModuleHeaderCard`
+// (`showsDirectionToggle: true`) und nutzt `LanguageDirectionSwitch`
+// (`size: .compact`). Die Body-Card war seit der Header-Migration toter
+// Code — definiert, aber an keiner Call-Site eingebunden.
 
 /// Kompakter Header für den Quiz-Setup-Screen — nackter Back-Pfeil links,
 /// zentrierter „Quiz"-Titel, rechts leer. Systemweiter AppBackButton +

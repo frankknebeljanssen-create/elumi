@@ -104,53 +104,11 @@ extension FlashcardsView {
         .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
-    var flashcardDirectionCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Abfragerichtung")
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-
-            HStack(spacing: 10) {
-                Button {
-                    selectedAppDirectionRaw = Direction.frenchToGerman.rawValue
-                } label: {
-                    HStack(spacing: 10) {
-                        StraightFlagBadge(countryCode: "FR", width: 34, height: 23, labelFontSize: 11)
-                        Text("→")
-                            .font(.system(size: 18, weight: .black))
-                        StraightFlagBadge(countryCode: "DE", width: 34, height: 23, labelFontSize: 11)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: 50)
-                    .foregroundStyle(selectedAppDirection == .frenchToGerman ? .white : AppTheme.Colors.textPrimary)
-                    .background(selectedAppDirection == .frenchToGerman ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                }
-                .buttonStyle(.plain)
-
-                Button {
-                    selectedAppDirectionRaw = Direction.germanToFrench.rawValue
-                } label: {
-                    HStack(spacing: 10) {
-                        StraightFlagBadge(countryCode: "DE", width: 34, height: 23, labelFontSize: 11)
-                        Text("→")
-                            .font(.system(size: 18, weight: .black))
-                        StraightFlagBadge(countryCode: "FR", width: 34, height: 23, labelFontSize: 11)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: 50)
-                    .foregroundStyle(selectedAppDirection == .germanToFrench ? .white : AppTheme.Colors.textPrimary)
-                    .background(selectedAppDirection == .germanToFrench ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, 18)
-        .padding(.vertical, 12)
-        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
-    }
+    // **C3-Cleanup (2026-05-06)** — `flashcardDirectionCard` (Body-Card
+    // mit FR↔DE-Toggle-Buttons) ist entfernt. Der Karteikarten-Setup-
+    // Header rendert den Direction-Toggle über `ModuleHeaderCard` mit
+    // `showsDirectionToggle: true` (siehe `flashcardCompactHeader(_,
+    // showsModuleCard: true)`); die Body-Card war seither toter Code.
 
     var flashcardCountLimitCard: some View {
         // **User-Revision 2026-04-22**: Hard-Cap bei 200 Karten in der
