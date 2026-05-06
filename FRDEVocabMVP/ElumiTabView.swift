@@ -254,11 +254,14 @@ struct ElumiTabView: View {
     /// Das Label „Jetzt üben" bleibt identisch zwischen 2-Button-State
     /// und post-Spin-3-State — Konsistenz für den User.
     private var spinPrimaryLabel: String {
-        // Erster Spin: „Maschine starten" — macht klar dass es um die
-        // Slot-Machine geht, nicht um das eigentliche Training (das
-        // startet erst über die Pre-Screen-CTA „Training starten").
-        // Nach erstem Spin: „Nochmal drehen" für die Re-Spin-Variante.
-        currentSpinNumber == 0 ? "Maschine starten" : "Nochmal drehen"
+        // Erster Spin: „Maschine jetzt starten!" — direkter, energischer
+        // Imperativ + Ausrufungszeichen markieren den Spin-Moment als
+        // bewusste Aktion (User-Spec 2026-05-06 „Sprach-Polish"). Vorher
+        // „Maschine starten" — neutral, unter den anderen CTAs nicht
+        // prominent genug. Nach erstem Spin: „Nochmal drehen" für die
+        // Re-Spin-Variante (unverändert; ist bereits klar, weil neben
+        // dem „Jetzt üben"-Button positioniert).
+        currentSpinNumber == 0 ? "Maschine jetzt starten!" : "Nochmal drehen"
     }
 
     private let sectionStyle: AppSectionStyle = .elumi
@@ -416,9 +419,15 @@ struct ElumiTabView: View {
     /// `.animation(value:)` reicht hier nicht zuverlässig, weil der
     /// State-Change in einer Funktion außerhalb des View-Bodys passiert).
     private func checkSetupModalState() {
-        // **UX-Polish 2026-05-02** — siehe `openSetupModalForReEdit`
-        // Doc: keine Vorselektion bei Modal-Open.
-        modalDurationSelection = nil
+        // **2026-05-06 Refactor (Pop-up-Only)** — Pop-up zeigt sich nur
+        // wenn der User in dieser Session noch keine Zeit aktiv gewählt
+        // hat (`modalDurationSelection == nil`). Vorher öffnete das
+        // Modal bei jedem Tab-Open neu mit Zeit-Reset — das war zu
+        // aggressiv, sobald die Listen-Card weg ist und die Zeit-
+        // Auswahl die einzige Wahl bleibt. Beim Skip-X bleibt
+        // `modalDurationSelection` nil → CTA bleibt disabled, Pop-up
+        // zeigt sich beim nächsten Tab-Open wieder.
+        guard modalDurationSelection == nil else { return }
         withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
             showSetupModal = true
         }
@@ -463,7 +472,18 @@ struct ElumiTabView: View {
     /// über Erstöffnung und Re-Edit (Stufe 3) — Forcing-Function bei
     /// einer Low-Stakes-10/15/20-Wahl wäre unnötige Reibung.
     private var setupModalOverlay: some View {
-        ZStack {
+        // **2026-05-06 Refactor (Pop-up-Only)** — vorher zeigte das
+        // Modal Listen-Card + Zeit-Cards + „Los geht's"-CTA. Mit dem
+        // Refactor:
+        //   • Listen-Card raus — globale Auswahl wird transparent aus
+        //     `globalSelectedListIDs` gezogen (Default: A1 Grundwortschatz
+        //     via Resolver-Fallback `effectiveSelectedListIDs`).
+        //   • CTA raus — Tap auf Time-Card schließt direkt (Auto-Close).
+        //   • Sparkles + Subline raus — Pop-up wirkt minimaler, klar als
+        //     Single-Question „Wie lange?".
+        //   • Skip-X oben rechts — User kann Pop-up schließen ohne Wahl;
+        //     Slot-CTA bleibt dann disabled (`canTriggerSpin`).
+        ZStack(alignment: .top) {
             Color.black.opacity(0.92)
                 .ignoresSafeArea()
                 .contentShape(Rectangle())
@@ -471,104 +491,45 @@ struct ElumiTabView: View {
                     dismissSetupModal()
                 }
 
+            // **2026-05-06 Layout-Tweak** — Modal-Karte sitzt jetzt im
+            // oberen Drittel (Top-Alignment + Top-Padding), nicht mehr
+            // dead-center. User-Spec: „Pop-up etwas höher im Screen".
+            // Hintergrund: zentrierter Modal-Block überlappte mit der
+            // Slot-Machine, die unmittelbar nach Auto-Close erscheint —
+            // visuell wie ein Sprung von Mitte → Mitte. Mit dem Top-
+            // Anchor ist der vertikale Fokus klar oben, während das
+            // Slot-Layout darunter „atmen" kann.
             VStack(spacing: 18) {
-                // Header — Sparkles-Icon + Top-Headline
-                //
-                // **Section-Headlines 2026-05-03 (User-Spec)**: vorher
-                // war die Top-Headline „Wie lange willst du üben?"
-                // plus eine Process-Mini-Zeile („Zeit wählen → Slot
-                // starten → Üben"). Mit der Listen-Card aus Block 4
-                // oberhalb der Zeit-Cards passte der zeit-bezogene
-                // Top-Text nicht mehr; die zwei Section-Headlines
-                // unten machen die Process-Zeile redundant. Top-
-                // Headline jetzt neutral („Training einrichten"),
-                // Process-Zeile entfernt — Section-Headlines im
-                // VStack-Body machen die Wahl-Schritte selbsterklärend.
-                VStack(spacing: 8) {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundStyle(sectionStyle.accent)
-                    Text("Training einrichten")
-                        .font(.system(size: 22, weight: .black, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .multilineTextAlignment(.center)
-                }
-
-                // Zeit-Chips — wiederverwendetes `durationChip(minutes:)`
-                // aus dem Setup-Screen, damit die visuelle Sprache
-                // konsistent bleibt.
-                //
-                // **Spec-1 (2026-04-30, Branch `feature/training-session-flow`)**:
-                // 3 Optionen (6/12/18) in einer einzigen HStack, weil mit
-                // dem Wechsel von 4 → 3 Chips ein 2×2-Grid keinen Mehrwert
-                // mehr bietet — die drei Chips passen breit nebeneinander
-                // bei 340pt Modal-Width. Vorher: LazyVGrid 2×2 (4 Chips
-                // 5/10/15/20). Spacing 12pt zwischen Chips identisch zum
-                // Grid-Spacing.
-                //
-                // **Layout-Hinweis** (übernommen aus Sache B Stufe 2): Das
-                // explizite `.frame(maxWidth: .infinity)` an der HStack ist
-                // nötig, damit die Chips mit `maxWidth: .infinity` die
-                // Modal-Breite (340pt minus Padding) gleichmäßig
-                // aufteilen.
-                // **Block 4 (2026-05-03)** — Listen-Auswahl-Card oberhalb
-                // der Zeit-Cards. User-Spec: User muss bewusst Liste UND
-                // Zeit wählen, „Los geht's" disabled bis beide Wahlen
-                // durch. Section-Headline „Welche Listen?" macht den
-                // ersten Wahl-Schritt explizit.
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Welche Listen?")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    listSelectionCard
-                }
-
-                // Section „Wie lange?" — Zeit-Auswahl als zweiter
-                // Wahl-Schritt. Headline-Stil identisch zur Listen-
-                // Section für Hierarchie-Konsistenz.
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Wie lange?")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    HStack(spacing: 12) {
-                        ForEach(Self.durationOptions, id: \.self) { minutes in
-                            durationChip(minutes: minutes)
-                        }
+                // Skip-X oben rechts — schließt Pop-up ohne Zeit zu
+                // setzen. `modalDurationSelection` bleibt `nil`, Slot-
+                // CTA disabled (siehe `canTriggerSpin`).
+                HStack {
+                    Spacer(minLength: 0)
+                    Button {
+                        dismissSetupModal()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
                     }
-                    .frame(maxWidth: .infinity)
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text("Schließen"))
                 }
 
-                // CTA „Los geht's" — schließt das Modal mit aktuellem
-                // Preselect. Pfad ist semantisch identisch zum
-                // Backdrop-Tap (idempotent), nur explizit als Button.
-                //
-                // **Stufe 1c (2026-04-30)**: disabled wenn keine Liste
-                // gewählt (`globalSelectedListIDs.isEmpty`). User muss
-                // aktiv mindestens eine Liste wählen, bevor er ins
-                // Training geht — sonst hat das Training keinen Pool.
-                //
-                // **UX-Polish 2026-05-02 (Stufe 7)**: zusätzlich
-                // disabled bis User eine Zeit-Card gewählt hat
-                // (`modalDurationSelection != nil`). Pulse springt
-                // beim Card-Tap vom Card-Trio auf diesen CTA.
-                let isCTAReady = modalDurationSelection != nil && !globalSelectedListIDs.isEmpty
-                Button {
-                    dismissSetupModal()
-                } label: {
-                    Text("Los geht's")
-                        .font(.system(size: 17, weight: .black, design: .rounded))
-                        .foregroundStyle(.black)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 48)
+                Text("Wie lange möchtest du üben?")
+                    .font(.system(size: 22, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+
+                // Time-Cards — Tap löst auto-close aus (siehe
+                // `durationChip` Tap-Handler).
+                HStack(spacing: 12) {
+                    ForEach(Self.durationOptions, id: \.self) { minutes in
+                        durationChip(minutes: minutes)
+                    }
                 }
-                .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
-                .disabled(!isCTAReady)
-                .opacity(isCTAReady ? 1.0 : 0.40)
-                .pulsing(active: isCTAReady, glowColor: ctaYellow)
-                .accessibilityLabel(Text("Los geht's"))
-                .accessibilityHint(Text("Übernimmt die gewählte Trainingsdauer und schließt den Setup-Dialog"))
+                .frame(maxWidth: .infinity)
             }
             .padding(20)
             .frame(maxWidth: 340)
@@ -593,6 +554,11 @@ struct ElumiTabView: View {
             )
             .shadow(color: Color.black.opacity(0.55), radius: 24, x: 0, y: 8)
             .padding(.horizontal, 24)
+            // Top-Offset: ~120pt unter der Status-Bar — Modal-Card sitzt
+            // im oberen Drittel statt dead-center. Wert empirisch (sieht
+            // auf iPhone 17 / Air / SE gut aus, lässt genug Luft zum
+            // Backdrop-Tap unten).
+            .padding(.top, 120)
         }
         .sheet(isPresented: $showListPicker) {
             // **Stufe 1c (2026-04-30)** — Multi-Select-Sheet für die
@@ -1036,10 +1002,17 @@ struct ElumiTabView: View {
     /// keine duplizierte Animation, keine getrennten States.
     private func openSetupModalForReEdit() {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        // **UX-Polish 2026-05-02** — bei jedem Modal-Open keine
-        // Vorselektion. User muss aktiv eine Zeit-Card antippen,
-        // bevor „Los geht's" aktiv wird (Pulsations-Hint führt ihn).
-        modalDurationSelection = nil
+        // **2026-05-06 Refactor (Pop-up-Only)** — Re-Edit zeigt die
+        // aktuelle Wahl als preselected an. Vorher wurde
+        // `modalDurationSelection` nilliert, um dem User eine bewusste
+        // Re-Wahl abzunötigen — mit dem neuen `canTriggerSpin`-Gate
+        // (`modalDurationSelection != nil`) würde das aber den Slot-CTA
+        // disablen, sobald der User das Pop-up via Skip-X / Backdrop
+        // schließt ohne neue Card zu tappen. Stattdessen: Re-Edit
+        // preselected die persistierte `selectedDuration`. Dismiss
+        // ohne Änderung → CTA bleibt aktiv (kein Regression). Tap auf
+        // andere Card → Auto-Close mit neuem Wert.
+        modalDurationSelection = selectedDuration
         withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
             showSetupModal = true
         }
@@ -1125,6 +1098,12 @@ struct ElumiTabView: View {
             #if DEBUG
             print("🕒 [DurationChip] modalDurationSelection → \(minutes) ✓")
             #endif
+            // **2026-05-06 Refactor (Pop-up-Only)** — Auto-Close direkt
+            // nach Time-Tap. User-Spec: „User tippt Zeit-Card → Pop-up
+            // schließt automatisch → Slot-Screen erscheint mit
+            // blinkendem CTA". Kein zusätzlicher „Los geht's"-CTA mehr
+            // im Pop-up, der Tap auf die Zeit-Card IST die Bestätigung.
+            dismissSetupModal()
         }
         .animation(.easeInOut(duration: 0.15), value: isSelected)
         // **UX-Polish 2026-05-02** — Pulsations-Hint solange noch
@@ -1314,8 +1293,17 @@ struct ElumiTabView: View {
     /// `selectedDuration != nil`-Bedingung ist entfallen, weil
     /// `selectedDuration` jetzt non-optional persistiert ist und stets
     /// einen sinnvollen Default (`Self.durationDefault` = 10) hält.
+    ///
+    /// **2026-05-06 Refactor (Pop-up-Only)** — zusätzliche Bedingung
+    /// `modalDurationSelection != nil`. Im neuen Flow ist die Zeit-Wahl
+    /// pro Session ein bewusster Akt: der User muss im Pop-up eine
+    /// Time-Card tappen, bevor der Slot-CTA aktiv wird. Vorher konnte
+    /// der User dank `selectedDuration`-Default sofort spinnen, jetzt
+    /// gate-t der Slot-CTA bis die Pop-up-Wahl getroffen wurde
+    /// (User-Spec: „Falls keine Zeit gewählt: Slot-Screen-CTA bleibt
+    /// gegraut/disabled bis Zeit gesetzt ist").
     private var canTriggerSpin: Bool {
-        isSpinAllowed && hasRemainingSpins
+        isSpinAllowed && hasRemainingSpins && modalDurationSelection != nil
     }
 
     /// Spin ist nur in `.idle` und `.revealed` erlaubt — während

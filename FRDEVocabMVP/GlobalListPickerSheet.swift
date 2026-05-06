@@ -108,6 +108,7 @@ struct GlobalListPickerSheet: View {
             header
             scrollContent
         }
+        .animation(.easeInOut(duration: 0.18), value: selectedIDs.isEmpty)
         .background(AppTheme.Colors.background.ignoresSafeArea())
         .appLocalChrome(enabled: feedbackPlayer != nil && onHome != nil) {
             EmptyView()
@@ -198,13 +199,50 @@ struct GlobalListPickerSheet: View {
                         .padding(.horizontal, 18)
                         .padding(.vertical, 12)
                 } else {
+                    // **2026-05-06 Empty-Selection-Hint** — User-Spec
+                    // (Punkt 3): Wenn der User den Picker mit leerer
+                    // Auswahl öffnet, soll ein zentrierter, prominenter
+                    // Hinweis „Wähle mindestens eine Liste" sichtbar sein.
+                    // Verschwindet automatisch sobald die erste Liste
+                    // selektiert wird (`selectedIDs.isEmpty == false`).
+                    // Im Single-Select-Modus (z. B. Akzente) blenden wir
+                    // den Hint aus — dort ist die Auswahl per Natur des
+                    // Modus immer eindeutig und kein „leerer Zustand"
+                    // vorgesehen.
+                    if !singleSelect && selectedIDs.isEmpty {
+                        HStack(spacing: 8) {
+                            Image(systemName: "hand.point.up.left.fill")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(AppTheme.Colors.primary)
+                            Text("Wähle mindestens eine Liste")
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.textPrimary)
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(AppTheme.Colors.primary.opacity(0.10))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .stroke(AppTheme.Colors.primary.opacity(0.35), lineWidth: 1)
+                        )
+                        .padding(.horizontal, 14)
+                        .padding(.top, categoryHeaders ? 8 : 14)
+                        .padding(.bottom, 6)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
+
                     VStack(spacing: 6) {
                         ForEach(sortedLists) { list in
                             row(for: list)
                         }
                     }
                     .padding(.horizontal, 14)
-                    .padding(.top, categoryHeaders ? 0 : 14)
+                    .padding(.top, (selectedIDs.isEmpty && !singleSelect) ? 0 : (categoryHeaders ? 0 : 14))
                 }
 
                 if categoryHeaders {
