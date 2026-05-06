@@ -56,7 +56,7 @@ extension FlashcardsView {
                 } label: {
                     Group {
                         if showsSuccessOnlyMessage {
-                            Text("Korrekt! 🙂")
+                            Text("Richtig 🙂")
                                 .font(.system(size: 24, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
                         } else if showsWrongOnlyMessage {

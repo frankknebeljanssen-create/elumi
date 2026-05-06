@@ -199,7 +199,7 @@ struct FlashcardsView: View {
     }
 
     var showsSuccessOnlyMessage: Bool {
-        interaction.lastResult?.label == "Korrekt! 🙂"
+        interaction.lastResult?.label == "Richtig 🙂"
     }
 
     var showsWrongOnlyMessage: Bool {

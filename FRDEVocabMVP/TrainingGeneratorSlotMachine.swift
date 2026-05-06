@@ -273,12 +273,16 @@ struct SlotMachineView: View {
         .overlay(machineFrameStroke)
         .overlay(centerRowBorder)
         .onAppear {
+            #if DEBUG
             print("🎰 [SlotMachineView] onAppear — phase=\(phase)")
+            #endif
         }
         .onChange(of: spinStartToken) { _, newValue in
             guard newValue else { return }
             guard phase == .idle || phase == .revealed else {
+                #if DEBUG
                 print("🎰 [SlotMachineView] spinStartToken=true ignoriert (phase=\(phase))")
+                #endif
                 return
             }
             runSpinSequence()
@@ -337,10 +341,14 @@ struct SlotMachineView: View {
 
     private func runSpinSequence() {
         guard phase == .idle || phase == .revealed else {
+            #if DEBUG
             print("🎰 [runSpinSequence] ignoriert (phase=\(phase))")
+            #endif
             return
         }
+        #if DEBUG
         print("🎰 [runSpinSequence] START — targets=\(spinTargets.map { $0?.label ?? "nil" })")
+        #endif
         phase = .spinning
         reelSettled = [false, false, false]
         centerSymbols = [nil, nil, nil]
@@ -350,11 +358,15 @@ struct SlotMachineView: View {
         // Phase 2: gestaffelte Stops.
         DispatchQueue.main.asyncAfter(deadline: .now() + spinDuration) {
             guard phase == .spinning else {
+                #if DEBUG
                 print("🎰 [stop-scheduler] abort, phase=\(phase)")
+                #endif
                 return
             }
             phase = .stopping
+            #if DEBUG
             print("🎰 [runSpinSequence] Phase → .stopping")
+            #endif
             for (i, delay) in stopStagger.enumerated() {
                 DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                     reelSpinning[i] = false
@@ -368,12 +380,16 @@ struct SlotMachineView: View {
         reelSettled[reelIndex] = true
         centerSymbols[reelIndex] = resolvedSymbol
         onReelSettled?(reelIndex)
+        #if DEBUG
         print("🎰 [reelSettled] reel=\(reelIndex) symbol=\(resolvedSymbol?.label ?? "nil")")
+        #endif
 
         guard reelSettled.allSatisfy({ $0 }) else { return }
         // Alle drei stehen
         phase = .landed
+        #if DEBUG
         print("🎰 [runSpinSequence] Phase → .landed")
+        #endif
         // **Slot-Audio (2026-04-30)** — Settle-Sound bei Stillstand
         // aller Reels. System-Sound 1057 (Tink) als Platzhalter, wird
         // später durch echtes Settle-Sample ersetzt.
@@ -381,12 +397,16 @@ struct SlotMachineView: View {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + landedHoldDuration) {
             guard phase == .landed else {
+                #if DEBUG
                 print("🎰 [reveal-scheduler] abort, phase=\(phase)")
+                #endif
                 return
             }
             phase = .revealed
             spinStartToken = false
+            #if DEBUG
             print("🎰 [runSpinSequence] Phase → .revealed — ENDE (User entscheidet)")
+            #endif
             let result = SlotSpinResult(
                 centerSymbols: centerSymbols.compactMap { $0 }
             )
@@ -585,7 +605,9 @@ struct SlotReelView: View {
         // ragen. `allowsHitTesting(false)` hält die Walze klickbar.
         .overlay(debugGuides, alignment: .top)
         .onAppear {
+            #if DEBUG
             print("🎰 [SlotReelView.onAppear] symbols.count=\(symbols.count), extendedCount=\(extendedSymbols.count), slotHeight=\(slotHeight)")
+            #endif
         }
         .onDisappear {
             // **Bug-Fix 2026-05-04** — Cleanup beim View-Teardown

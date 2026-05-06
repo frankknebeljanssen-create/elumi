@@ -390,7 +390,7 @@ extension FlashcardsView {
                         }
 
                         SessionPrimaryCTA(
-                            title: "Los geht's!",
+                            title: "Karteikarten starten",
                             isEnabled: canStartSetup
                         ) {
                             startFlashcardsFromSetup(autoplayPrompt: true)

@@ -20,7 +20,7 @@ extension TrainingView {
         guard !got.isEmpty else {
             lastResult = ScoreResult(
                 label: "Nicht erkannt",
-                detail: "Bitte nochmal versuchen."
+                detail: "Nochmal versuchen!"
             )
             // **Block 3.7.2 (2026-05-03)** — User-Spec: nach „Nicht
             // erkannt" muss der User das Mikro nicht manuell wieder
@@ -48,7 +48,7 @@ extension TrainingView {
             session.recordAnswer(correct: false)
             lastResult = ScoreResult(
                 label: "Falsch 😕",
-                detail: "Bitte nochmal."
+                detail: "Nochmal versuchen!"
             )
             typedAnswer = ""
             showingTypedAnswerInput = false

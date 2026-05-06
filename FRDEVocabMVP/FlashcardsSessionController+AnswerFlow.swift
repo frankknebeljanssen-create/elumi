@@ -40,7 +40,7 @@ extension FlashcardsSessionController {
         let got = normalized(rawInput)
 
         guard !got.isEmpty else {
-            lastResult = ScoreResult(label: "Nicht erkannt", detail: "Bitte nochmal versuchen.")
+            lastResult = ScoreResult(label: "Nicht erkannt", detail: "Nochmal versuchen!")
             showingSolution = false
             isFlashcardFlipped = false
             return
@@ -76,7 +76,7 @@ extension FlashcardsSessionController {
             if sessionStore.remainingCount > 1 {
                 feedbackPlayer.playFlashcardSuccess()
             }
-            lastResult = ScoreResult(label: "Korrekt! 🙂", detail: "")
+            lastResult = ScoreResult(label: "Richtig 🙂", detail: "")
             showingSolution = false
             isFlashcardFlipped = false
             animateCorrectCardRemoval(

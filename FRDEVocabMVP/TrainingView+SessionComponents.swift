@@ -75,7 +75,7 @@ extension TrainingView {
                 // reduziert — ~1/3 kleiner, gleicher Look-and-Feel
                 // wie andere Antwort-Card-Texte (z.B.
                 // „Antwort"-Label-Zeile).
-                Text("Nicht erkannt, bitte nochmal versuchen.")
+                Text("Nicht erkannt — Nochmal versuchen!")
                     .font(AppTheme.Typography.body)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .center)

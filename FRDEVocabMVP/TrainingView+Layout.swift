@@ -342,10 +342,11 @@ extension TrainingView {
         //     sitzt jetzt inline in der Speed-Round-Mode-Card.
         // Alle anderen Module behalten das klassische „Los geht's!" + Bar.
         let isVocabMode = (session.trainingMode == .vocabulary)
-        // Vokabeln hat nach dem Struktur-Refactor kein Speed Round mehr
-        // → CTA ist immer „Vokabeltraining starten". Alle anderen Module
-        // behalten „Los geht's!".
-        let ctaTitle: String = isVocabMode ? "Vokabeltraining starten" : "Los geht's!"
+        // **2026-05-05 CTA-Konsistenz (P1 A2)** — alle Trainings-Modi
+        // (Vokabeln/Nomen/Artikel/Verben/Verbformen) nutzen einheitlich
+        // „Training starten". Vorher: Vokabeln „Vokabeltraining starten",
+        // Rest „Los geht's!" — User-Befund war Inkonsistenz im Setup-CTA.
+        let ctaTitle: String = "Training starten"
         let ctaSubtitle: String? = nil
 
         // Modul-Icon dynamisch per `trainingMode` — jeder Modus hat

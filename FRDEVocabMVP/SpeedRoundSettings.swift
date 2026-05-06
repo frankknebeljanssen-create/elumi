@@ -65,12 +65,19 @@ enum SpeedRoundSettings {
 }
 
 /// Zentraler Terminologie-Namespace für die „Kurz-Session". Aktuell
-/// appweit „Speed Round". Falls später auf „Challenge" (oder einen
-/// anderen Begriff) umgestellt wird, ist nur diese Datei zu ändern —
-/// alle Views und Texte lesen darüber.
+/// appweit „Speed-Modus".
+///
+/// **2026-05-05 (P1 A4)** — Anglizismus „Speed Round" ersetzt durch
+/// deutsches „Speed-Modus". Zielgruppe 11-17 J. im Französisch-
+/// Unterricht braucht keinen englischen Fachbegriff für einen Sub-
+/// Modus. Subtitle bleibt „N Sekunden Tempo".
+///
+/// Single-Source-of-Truth: alle Setup-Cards / Headlines / Result-Pfade
+/// lesen via `name` und `subtitle(forSeconds:)` — eine Änderung hier
+/// propagiert appweit.
 enum SpeedRoundTerminology {
     /// Titel-Label in Setup-Cards und Headern.
-    static var name: String { "Speed Round" }
+    static var name: String { "Speed-Modus" }
 
     /// Untertitel-Vorschlag für die Modus-Card — Module dürfen einen
     /// eigenen Subtitle setzen, sollten aber denselben **Stil** nutzen
