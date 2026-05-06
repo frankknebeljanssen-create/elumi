@@ -31,6 +31,23 @@ let appElumiXPKey = "elumi.gamification.xp.v1"
 let appElumiCurrentStreakKey = "elumi.gamification.currentStreak.v1"
 let appElumiBestStreakKey = "elumi.gamification.bestStreak.v1"
 let appElumiLastRewardDayIndexKey = "elumi.gamification.lastRewardDayIndex.v1"
+
+/// **Daily Drop completion tracking** (2026-05-06). Datum (`TimeInterval-
+/// SinceReferenceDate`) des letzten kompletten Daily-Drop-Durchlaufs.
+/// Ein „kompletter Drop" gilt als erreicht, wenn die Slot-Maschine
+/// in der `.revealed`-Phase landet — der User hat dann den Spin
+/// angestoßen, gewartet, und das Ergebnis gesehen. Vorzeitiges
+/// Verlassen (Back-Chevron auf Pre-Screen, App-Schließen vor Reveal)
+/// markiert NICHT als komplett.
+///
+/// Die HomeView prüft `Calendar.current.isDateInToday(...)` gegen
+/// den persistierten Wert, um zwischen „NEU HEUTE" und
+/// „✓ HEUTE GEMACHT" auf der Daily-Drop-Card-Badge zu wechseln.
+/// Tag-Wechsel passiert automatisch über `isDateInToday` —
+/// kein dedizierter Reset-Pfad nötig.
+///
+/// `Double(0.0)` = noch nie gemacht (Default-Wert leer).
+let appLastCompletedDailyDropDateKey = "elumi.dailydrop.lastCompletedDate.v1"
 let appElumiArcadeHighScoreKey = "elumi.arcade.highscore.v1"
 let appArcadeCreditsKey = "elumi.arcade.credits.v1"
 // **Pool-Vereinheitlichung 2026-04-30** (Branch

@@ -812,6 +812,14 @@ struct ElumiTabView: View {
                     // den Pre-Screen mit „Jackpot — kein Training!"
                     // gerendert hätte).
                     triggerJackpotIfApplicable()
+                    // **Daily-Drop-Habit-Tracking 2026-05-06** —
+                    // Slot ist vollständig revealed → Daily Drop
+                    // gilt als „heute gemacht". Persistiert das
+                    // Datum, sodass die HomeView-Card-Badge auf
+                    // „✓ Heute gemacht" wechselt. Mehrfache Reveals
+                    // am selben Tag sind idempotent (überschreiben
+                    // nur den Timestamp innerhalb desselben Tages).
+                    DailyDropTracker.markCompletedNow()
                 case .spinning, .stopping:
                     resultHighlightScale = 1.0
                     resultHighlightGlow = 0.0

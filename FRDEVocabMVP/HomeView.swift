@@ -38,6 +38,13 @@ struct HomeView: View {
     // `LanguageDirectionSwitch` gelesen/geschrieben — HomeView beobachtet
     // sie nicht mehr direkt.
     @AppStorage(appElumiCurrentStreakKey) private var currentStreak = 0
+    /// **Daily-Drop-Habit-State 2026-05-06** — Live-Mirror der
+    /// `DailyDropTracker`-Persistenz. Wird bei jedem Slot-Reveal
+    /// (siehe `ElumiTabView` `onChange(of: slotPhase) → .revealed`)
+    /// neu geschrieben; die HomeView reagiert damit sofort beim
+    /// Pop-Back vom Slot-Screen, ohne explizites Re-Mount oder
+    /// `.onAppear`-Reload.
+    @AppStorage(appLastCompletedDailyDropDateKey) private var lastCompletedDailyDropTimestamp: Double = 0
 
     private let sectionStyle: AppSectionStyle = .home
     @State private var isHomeNavigationLocked = false
@@ -53,6 +60,18 @@ struct HomeView: View {
     }
 
     // MARK: - Navigation
+
+    /// **Daily-Drop-Badge-State 2026-05-06** — computed aus dem
+    /// `@AppStorage`-Mirror, sodass SwiftUI bei jedem Slot-Reveal
+    /// automatisch re-rendert. Greift auf `Calendar.current.
+    /// isDateInToday(...)` für die Tag-Wechsel-Logik zurück:
+    /// Mitternacht (lokale Zeit) reset automatisch auf „NEU HEUTE",
+    /// keine dedizierte Reset-Routine nötig.
+    private var dailyDropBadgeState: DailyDropTracker.BadgeState {
+        guard lastCompletedDailyDropTimestamp > 0 else { return .neuHeute }
+        let date = Date(timeIntervalSinceReferenceDate: lastCompletedDailyDropTimestamp)
+        return Calendar.current.isDateInToday(date) ? .erledigt : .neuHeute
+    }
 
     private func openHomeScreen(_ screen: AppScreen) {
         guard !isHomeNavigationLocked else { return }
@@ -121,14 +140,16 @@ struct HomeView: View {
                 },
                 onTap: { openHomeScreen(.elumi) }
             )
-            // **Daily-Drop-Highlight 2026-05-06** — visuelle Hervor-
-            // hebung mit rotierendem Gradient-Border-Glow + Shimmer-
-            // Sweep + Badge oben rechts. Badge-Text bleibt in
-            // Commit 1 hardcoded auf „NEU HEUTE"; Commit 2 macht
-            // ihn dynamisch via Habit-Tracking-State.
+            // **Daily-Drop-Highlight + Habit-Tracking 2026-05-06** —
+            // Badge-Text + Color jetzt dynamisch je nach
+            // `DailyDropTracker`-State (geschrieben beim Slot-Reveal,
+            // gelesen via @AppStorage-Mirror). „Neu heute" / Amber
+            // wenn noch nicht erledigt; „✓ Heute gemacht" / Mint
+            // sobald die Slot-Maschine heute mindestens einmal in
+            // `.revealed` gelandet ist.
             .dailyDropCardHighlight(
-                badgeText: "Neu heute",
-                badgeColor: AppTheme.Colors.moduleQuiz
+                badgeText: dailyDropBadgeState.text,
+                badgeColor: dailyDropBadgeState.color
             )
 
             WideMethodCard(

@@ -26,6 +26,63 @@
 
 import SwiftUI
 
+/// **Habit-Tracking-Namespace für die Daily-Drop-Card** (2026-05-06).
+/// Hält die Read- und Write-Helper für den persistierten
+/// „heute-gemacht"-Zustand, plus die Computed-State-Repräsentation
+/// für die Badge-UI.
+enum DailyDropTracker {
+    /// Markiert „Daily Drop heute komplett gemacht" — wird aus
+    /// `ElumiTabView.onChange(of: slotPhase) → .revealed` gerufen.
+    /// Idempotent: mehrfaches Aufrufen am gleichen Tag ist no-op
+    /// (überschreibt nur den Timestamp innerhalb desselben
+    /// Kalendertages).
+    static func markCompletedNow() {
+        let now = Date()
+        UserDefaults.standard.set(
+            now.timeIntervalSinceReferenceDate,
+            forKey: appLastCompletedDailyDropDateKey
+        )
+    }
+
+    /// `true` wenn der persistierte Timestamp **heute** liegt
+    /// (Calendar-basierter Tag-Vergleich, lokale Zeitzone).
+    static func hasCompletedToday() -> Bool {
+        let raw = UserDefaults.standard.double(forKey: appLastCompletedDailyDropDateKey)
+        guard raw > 0 else { return false }
+        let date = Date(timeIntervalSinceReferenceDate: raw)
+        return Calendar.current.isDateInToday(date)
+    }
+
+    /// Aktueller Badge-State für die HomeView Daily-Drop-Card.
+    /// Mappt direkt auf Text + Background-Color.
+    enum BadgeState {
+        case neuHeute
+        case erledigt
+
+        var text: String {
+            switch self {
+            case .neuHeute:  return "Neu heute"
+            case .erledigt:  return "✓ Heute gemacht"
+            }
+        }
+
+        /// Background-Color für die Badge-Pill. Amber für „neu" (Aufmerksam-
+        /// keit), Mint für „erledigt" (Achievement-Grün, dezent).
+        var color: Color {
+            switch self {
+            case .neuHeute:  return AppTheme.Colors.moduleQuiz       // Amber
+            case .erledigt:  return AppTheme.Colors.elumiMint        // Mint
+            }
+        }
+    }
+
+    /// Liefert den aktuellen Badge-State basierend auf dem
+    /// persistierten Date-Stempel.
+    static func currentBadgeState() -> BadgeState {
+        hasCompletedToday() ? .erledigt : .neuHeute
+    }
+}
+
 extension View {
     /// Wraps das Card-View in einen Highlight-Layer (Border-Glow +
     /// Shimmer-Sweep + Badge). Einsatz auf der Daily-Drop-Card; alle
