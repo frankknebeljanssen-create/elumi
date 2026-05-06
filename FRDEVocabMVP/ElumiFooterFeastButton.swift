@@ -1,13 +1,17 @@
 import SwiftUI
 
 struct ElumiFooterFeastButton: View {
-    /// **Elumi-Tab Wiring (Phase 8)**: primärer Tap öffnet jetzt den
-    /// persönlichen Elumi-Tab (`AppScreen.elumi`). Arcade/Feast-Game ist
-    /// weiterhin über den „Spiele"-Footer-Button (Snack-Icon) erreichbar.
-    /// Fallback auf die alte Arcade-Route bleibt für den unwahrscheinlichen
-    /// Fall erhalten, dass `appOpenElumiAction` nicht gesetzt ist (z. B.
-    /// in Preview-Hosts ohne Navigation).
-    @Environment(\.appOpenElumiAction) private var openElumi
+    /// **2026-05-06 Tab-Bar-Refactor (Hybrid γ v3)**: primärer Tap öffnet
+    /// jetzt den **Game-Hub** (`AppScreen.gameHub`) statt des ehemaligen
+    /// Elumi-Tabs. Hintergrund: der dedizierte Elumi-Tab (Maskottchen-
+    /// Slot-Maschine) wurde aus der Footer-Bar entfernt — die Slot-
+    /// Maschine bleibt aber über die Mix-Training-Card auf Home
+    /// erreichbar (Route `.elumi`). Damit übernimmt der Maskottchen-
+    /// Button hier die Position des früheren Spiele-Console-Tabs;
+    /// Funktionalität (XP/Credits-Animation, Snack-Feast, Credits-
+    /// Badge oben rechts) bleibt unverändert. Fallback auf die alte
+    /// Arcade-Route bleibt für Preview-Hosts erhalten.
+    @Environment(\.appOpenGameHubAction) private var openGameHub
     @Environment(\.appOpenArcadeAction) private var openArcade
     @ObservedObject var feedbackPlayer: FeedbackPlayer
     @AppStorage(appArcadeCreditsKey) private var arcadeCredits = 0
@@ -23,12 +27,13 @@ struct ElumiFooterFeastButton: View {
 
     var body: some View {
         Button {
-            // **Phase 8 Footer-Wiring**: der Axolotl-Button im Footer führt
-            // jetzt in den Elumi-Tab (persönlicher Begleiter-Screen). Die
-            // alte Arcade-Route bleibt als Fallback, falls kein Elumi-
-            // Handler registriert ist.
-            if let openElumi {
-                openElumi()
+            // **2026-05-06 Tab-Bar-Refactor**: Tap führt jetzt in den
+            // Game-Hub (war früher Elumi-Tab). Der ehemalige
+            // Snack-Console-Button auf Position 3 ist entfernt —
+            // dieser Button hier hat seine Routing-Aufgabe übernommen.
+            // Arcade-Fallback bleibt für Preview-Hosts.
+            if let openGameHub {
+                openGameHub()
             } else {
                 openArcade?(false)
             }
@@ -83,7 +88,7 @@ struct ElumiFooterFeastButton: View {
                     .offset(x: 8, y: -6)
             }
             .contentShape(Rectangle())
-            .accessibilityLabel(Text("Elumi"))
+            .accessibilityLabel(Text("Spiele"))
         }
         .buttonStyle(.plain)
     }

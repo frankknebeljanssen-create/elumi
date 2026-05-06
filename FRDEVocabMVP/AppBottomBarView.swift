@@ -90,22 +90,18 @@ struct AppBottomBar: View {
 
                 Spacer(minLength: 0)
 
+                // **2026-05-06 Tab-Bar-Refactor (Hybrid γ v3)** —
+                // Maskottchen-Button übernimmt die ehemalige
+                // Position 3 (Spiele/Game-Hub-Routing). Vorher waren
+                // hier zwei separate Buttons: der Maskottchen-Button
+                // (führte zum Elumi-Tab) und der Snack-Console-Button
+                // (führte zum Game-Hub). Mit dem Refactor entfällt der
+                // separate Elumi-Tab vollständig — die Slot-Maschine
+                // ist nur noch über die Mix-Training-Card auf Home
+                // erreichbar. Maskottchen-Button hier routet jetzt
+                // direkt in den Game-Hub (siehe
+                // `ElumiFooterFeastButton`).
                 ElumiFooterFeastButton(feedbackPlayer: feedbackPlayer)
-
-                Spacer(minLength: 0)
-
-                // Footer-Button „Spiele" — führt in den Game Hub.
-                // Badge zeigt Anzahl verfügbarer Spiele (=
-                // `arcadeCredits`, da 1 Spiel = 1 Credit kostet).
-                // Label „Spiele" einheitlich zum Game-Hub-Hero-Text und
-                // zur Session-End-Integration („+1 Spiel").
-                AppBottomBarSnackButton(
-                    accessibilityLabel: "Spiele",
-                    action: resolvedFavoriteAction,
-                    isActive: isHeartsActive,
-                    kind: elumiSnackKind(for: collectedHearts),
-                    badgeText: arcadeCredits > 0 ? "\(arcadeCredits)" : nil
-                )
 
                 Spacer(minLength: 0)
 
