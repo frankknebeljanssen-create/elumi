@@ -24,15 +24,19 @@ import SwiftUI
 struct SectionLabel: View {
     let text: String
     /// Schriftgröße. Default 11 pt für die ursprünglich spec'te
-    /// kompakte Sub-Section-Trenner-Variante (TrainingHubView's
-    /// „ALLGEMEIN"/„SPEZIAL"). Caller kann auf 13 pt hochstellen
-    /// für prominenteren Look (Home-Section „DEINE TOOLS" nach
-    /// dem Spacing-Polish 2026-05-06).
+    /// kompakte Sub-Section-Trenner-Variante. Caller kann auf
+    /// 13 pt hochstellen (Home „DEINE TOOLS") oder 15 pt (Hub
+    /// „ALLGEMEIN"/„SPEZIAL" nach Iteration 4 Polish — User-Spec
+    /// 2026-05-06 „beides bold und 2pt größer").
     var size: CGFloat = 11
+    /// Schriftgewicht. Default `.medium` (500) für die dezenteren
+    /// Sub-Trenner; Caller kann auf `.bold` schalten, wenn der
+    /// Label prominenter wirken soll.
+    var weight: Font.Weight = .medium
 
     var body: some View {
         Text(text)
-            .font(.system(size: size, weight: .medium, design: .rounded))
+            .font(.system(size: size, weight: weight, design: .rounded))
             .tracking(0.6)
             .textCase(.uppercase)
             .foregroundStyle(AppTheme.Colors.textSecondary)

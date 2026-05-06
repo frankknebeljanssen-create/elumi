@@ -56,35 +56,39 @@ struct TrainingHubView: View {
                 // Back-Chevron mehr, wäre dann doppelt.
                 titleHeader
                     .padding(.top, 24)
-                    .padding(.bottom, 16)
+                    .padding(.bottom, 32)
 
-                // ALLGEMEIN-Section — Sub-Label 13pt CAPS (analog
-                // Home „DEINE TOOLS").
-                SectionLabel(text: "Allgemein", size: 13)
+                // **Polish 2026-05-06 Iteration 6** — Spacing-Tweaks
+                // nach User-Feedback:
+                //   • ALLGEMEIN + Vokabeln-Card weiter runter vom
+                //     Header (Title-Padding-Bottom 16 → 32 pt).
+                //   • Allgemein-Block kompakter zur SPEZIAL-Section
+                //     (Vokabeln-padding-bottom 24 → 10, Divider-
+                //     padding-bottom 16 → 10).
+                SectionLabel(text: "Allgemein", size: 15, weight: .bold)
 
                 ModuleCard(
                     title: "Vokabeln",
                     accent: AppTheme.Colors.moduleVocabulary,
-                    icon: { HomeModuleIconView(icon: .vokabeln, size: 36, glyphTint: .white) },
+                    icon: { HomeModuleIconView(icon: .vokabeln, size: 40, glyphTint: .white) },
                     onTap: {
                         feedbackPlayer.playTabSwitch()
                         openScreen(.train(TrainingLaunchContext(preferredMode: .vocabulary)))
                     }
                 )
-                .padding(.bottom, 24)
+                .padding(.bottom, 10)
 
-                // **Polish-Divider** — Hairline zwischen Allgemein
-                // und Spezial, 0.5pt edge-to-edge wie auf Home vor
-                // der Tools-Section.
+                // Hairline-Divider zwischen Allgemein und Spezial,
+                // 0.5pt edge-to-edge.
                 Rectangle()
                     .fill(AppTheme.Colors.border)
                     .frame(height: 0.5)
                     .padding(.horizontal, -AppLayout.screenPadding)
-                    .padding(.bottom, 16)
+                    .padding(.bottom, 10)
 
                 // SPEZIAL — 2×2 (Nomen, Verben, Artikel, Verbformen)
                 // mit 13pt Sub-Label.
-                SectionLabel(text: "Spezial", size: 13)
+                SectionLabel(text: "Spezial", size: 15, weight: .bold)
 
                 LazyVGrid(
                     columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)],
@@ -93,7 +97,7 @@ struct TrainingHubView: View {
                     ModuleCard(
                         title: "Nomen",
                         accent: AppTheme.Colors.moduleNomen,
-                        icon: { HomeModuleIconView(icon: .nomen, size: 36, glyphTint: .white) },
+                        icon: { HomeModuleIconView(icon: .nomen, size: 40, glyphTint: .white) },
                         onTap: {
                             feedbackPlayer.playTabSwitch()
                             openScreen(.train(TrainingLaunchContext(preferredMode: .nouns)))
@@ -102,7 +106,7 @@ struct TrainingHubView: View {
                     ModuleCard(
                         title: "Verben",
                         accent: AppTheme.Colors.moduleVerbs,
-                        icon: { HomeModuleIconView(icon: .verben, size: 36, glyphTint: .white) },
+                        icon: { HomeModuleIconView(icon: .verben, size: 40, glyphTint: .white) },
                         onTap: {
                             feedbackPlayer.playTabSwitch()
                             openScreen(.train(TrainingLaunchContext(preferredMode: .verbs)))
@@ -111,7 +115,7 @@ struct TrainingHubView: View {
                     ModuleCard(
                         title: "Artikel",
                         accent: AppTheme.Colors.moduleArticles,
-                        icon: { HomeModuleIconView(icon: .artikel, size: 36, glyphTint: .white) },
+                        icon: { HomeModuleIconView(icon: .artikel, size: 40, glyphTint: .white) },
                         onTap: {
                             feedbackPlayer.playTabSwitch()
                             openScreen(.train(TrainingLaunchContext(preferredMode: .articles)))
@@ -120,7 +124,7 @@ struct TrainingHubView: View {
                     ModuleCard(
                         title: "Verbformen",
                         accent: AppTheme.Colors.moduleVerbforms,
-                        icon: { HomeModuleIconView(icon: .verbformen, size: 36, glyphTint: .white) },
+                        icon: { HomeModuleIconView(icon: .verbformen, size: 40, glyphTint: .white) },
                         onTap: {
                             feedbackPlayer.playTabSwitch()
                             openScreen(.train(TrainingLaunchContext(preferredMode: .verbforms)))
@@ -130,11 +134,16 @@ struct TrainingHubView: View {
                 .padding(.bottom, 16)
 
                 // Akzente quer am Ende der Spezial-Sektion.
+                // **Polish 2026-05-06 Iteration 6** — Akzente-Font
+                // 20 → 18 pt damit visuell balanced mit den ModuleCards
+                // (Nomen/Verben/Artikel/Verbformen, alle 18 pt).
+                // Vorher wirkte die Akzente-Card durch +2pt unbalanced.
                 WideCard(
                     title: "Akzente",
                     accent: AppTheme.Colors.moduleAccents,
                     height: 56,
-                    icon: { HomeModuleIconView(icon: .akzente, size: 36, glyphTint: .white) },
+                    titleSize: 18,
+                    icon: { HomeModuleIconView(icon: .akzente, size: 40, glyphTint: .white) },
                     onTap: {
                         feedbackPlayer.playTabSwitch()
                         openScreen(.accents(nil))
@@ -231,26 +240,19 @@ struct TrainingHubView: View {
 
     // MARK: - Title-Header
 
-    /// **Polish 2026-05-06 Iteration 4** — Title-Block analog zum
-    /// Home-Greeting: 32pt black linksbündig, 14pt VStack-Spacing
-    /// zur Subline. Back-Chevron sitzt nicht mehr inline — er wird
-    /// schon vom `appLocalChrome`-AppTopBar oben gerendert
-    /// (`AppTopBar(onBack: { dismiss() })`); ein zweiter Inline-
-    /// Back-Chevron wäre redundant. Subline 14pt textSecondary
-    /// sentence-case (analog Streak-Pill-Position auf Home, aber
-    /// als reiner Text — der Hub hat keinen Streak-Indikator).
+    /// **Polish 2026-05-06 Iteration 5** — Title-Block analog zum
+    /// Home-Greeting: 32pt black linksbündig, in Pink. Subline
+    /// „Wähle deinen Schwerpunkt" wurde nach User-Wunsch entfernt
+    /// (zu redundant — die Sub-Labels „ALLGEMEIN" / „SPEZIAL"
+    /// kommunizieren den Schwerpunkt-Charakter ohnehin). Back-
+    /// Chevron sitzt nicht inline, sondern in der `appLocalChrome`-
+    /// TopBar oben.
     private var titleHeader: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("Training")
-                .font(.system(size: 32, weight: .black, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.elumiPink)
-                .lineLimit(1)
-                .minimumScaleFactor(0.85)
-
-            Text("Wähle deinen Schwerpunkt")
-                .font(.system(size: 14, weight: .regular, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        Text("Training")
+            .font(.system(size: 32, weight: .black, design: .rounded))
+            .foregroundStyle(AppTheme.Colors.elumiPink)
+            .lineLimit(1)
+            .minimumScaleFactor(0.85)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

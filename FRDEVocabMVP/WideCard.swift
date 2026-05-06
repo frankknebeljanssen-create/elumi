@@ -22,6 +22,11 @@ struct WideCard<Icon: View>: View {
     let title: String
     let accent: Color
     let height: CGFloat
+    /// Title-Schriftgröße. Default 17 pt (Home-Tools-Konvention);
+    /// Caller kann bumpen — z. B. Hub-Akzente nutzt 18 pt nach dem
+    /// Polish 2026-05-06 (User-Spec „alle Fonts in den Hub-Cards
+    /// +1p").
+    var titleSize: CGFloat = 17
     @ViewBuilder let icon: () -> Icon
     let onTap: () -> Void
 
@@ -30,7 +35,7 @@ struct WideCard<Icon: View>: View {
             HStack(spacing: 12) {
                 icon()
                 Text(title)
-                    .font(.system(size: 17, weight: .black, design: .rounded))
+                    .font(.system(size: titleSize, weight: .black, design: .rounded))
                     .foregroundStyle(.white)
                     .shadow(color: .black.opacity(0.4), radius: 1, x: 0, y: 1)
                     .lineLimit(1)

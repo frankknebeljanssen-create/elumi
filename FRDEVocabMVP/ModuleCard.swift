@@ -29,7 +29,15 @@ struct ModuleCard<Icon: View>: View {
             VStack(spacing: 4) {
                 icon()
                 Text(title)
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    // **Polish 2026-05-06 Iteration 7**: weight
+                    // .bold → .black (User-Spec „alle Fonts im Hub
+                    // so fetter wie Akzente"). Akzente nutzt
+                    // WideCard mit .black; ModuleCard war bisher
+                    // .bold, wirkte daneben dünner. Mit .black
+                    // sprechen alle Hub-Cards (ModuleCard 2×2
+                    // Spezial + WideCard Akzente) dieselbe
+                    // Visual-Weight.
+                    .font(.system(size: 18, weight: .black, design: .rounded))
                     .foregroundStyle(.white)
                     .shadow(color: .black.opacity(0.35), radius: 1, x: 0, y: 1)
                     .lineLimit(1)
