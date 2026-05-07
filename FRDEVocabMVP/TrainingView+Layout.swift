@@ -582,6 +582,17 @@ extension TrainingView {
                 dictionaryTrainingLevelCard
             }
 
+            // **Sweep C — AnswerMode (2026-05-07)** — Sprechen/Tippen-
+            // Selector unter dem Vokabeln-Detail-Block. Persistierung
+            // via @AppStorage in `TrainingView` (`vokabelnAnswerModeBinding`),
+            // Render-Branch in `TrainingView+SessionComponents` greift
+            // auf `session.vokabelnAnswerMode` zu.
+            AnswerModeSelector(
+                mode: vokabelnAnswerModeBinding,
+                accent: trainingActionTint,
+                onChange: { _ in feedbackPlayer.playTabSwitch() }
+            )
+
             if !canStartTraining {
                 Text(startHintText)
                     .font(AppTheme.Typography.caption)

@@ -304,6 +304,15 @@ extension TrainingView {
         // teilen die obere Zeile, der Tastatur-Switch (= zweite
         // Reihe) öffnet darunter den typed-input-Bereich.
         VStack(spacing: 10) {
+            // **Sweep C — AnswerMode (2026-05-07)** — Bei Vokabeln-
+            // Tap-Mode entfällt die Mikro/Speaker-Row komplett. Die
+            // Typed-Answer-Card (`typedAnswerControl` weiter unten)
+            // ist im Tap-Mode immer sichtbar und übernimmt die
+            // primäre Antwort-Eingabe; Vorlesen ist im Tap-Mode
+            // weiterhin durch das spätere TTS-Trigger-Pattern (Card-
+            // Auto-Speak beim Mount) abgedeckt — keine separate
+            // Speaker-Card nötig.
+            if !isVokabelnTapMode {
             HStack(spacing: 10) {
                 Button {
                     toggleRecording()
@@ -362,6 +371,7 @@ extension TrainingView {
                 .disabled(!session.hasStartedTraining || currentCard == nil || !isAudioModeEnabled)
                 .opacity(!session.hasStartedTraining || currentCard == nil || !isAudioModeEnabled ? 0.45 : 1)
             }
+            } // ← Ende `if !isVokabelnTapMode` (Mikro/Speaker-Row übersprungen im Tap-Mode)
 
             typedAnswerControl
 
@@ -421,7 +431,12 @@ extension TrainingView {
 
     var typedAnswerControl: some View {
         Group {
-            if showingTypedAnswerInput {
+            // **Sweep C — AnswerMode (2026-05-07)** — Bei Vokabeln-
+            // Tap-Mode ist die Typed-Answer-Card primäre Eingabe und
+            // immer sichtbar. Bei `.speech` gilt der bisherige Reveal-
+            // on-Tap-Pfad (User aktiviert via Tastatur-Button die
+            // Texteingabe als Fallback).
+            if showingTypedAnswerInput || isVokabelnTapMode {
                 HStack(spacing: 10) {
                     Image(systemName: "keyboard")
                         // **UX-Polish 2026-05-02 (User-Spec „Keyboard-

@@ -52,6 +52,20 @@ final class TrainingSessionController: ObservableObject {
         let raw = UserDefaults.standard.string(forKey: appAnswerModeNomenKey)
         return raw.flatMap { AnswerMode(rawValue: $0) } ?? .speech
     }()
+
+    /// **Sweep C — AnswerMode (2026-05-07)** — Persistierter Sprechen/
+    /// Tippen-Modus für **Vokabeln**. Initial-Wert aus `@AppStorage`
+    /// via `appAnswerModeVokabelnKey`. Setup-Screen schreibt durch via
+    /// `vokabelnAnswerModeBinding` in `TrainingView`. Slot-launched
+    /// Sessions starten mit dem persistierten Wert.
+    ///
+    /// Render-Branch in `TrainingView+SessionComponents` greift nur bei
+    /// `trainingMode == .vocabulary` — andere Trainings-Modes (Nomen
+    /// nutzt `nounAnswerMode`, Verben/Verbformen/Artikel sind Tap-only).
+    @Published var vokabelnAnswerMode: AnswerMode = {
+        let raw = UserDefaults.standard.string(forKey: appAnswerModeVokabelnKey)
+        return raw.flatMap { AnswerMode(rawValue: $0) } ?? .speech
+    }()
     var speedRoundTimer: Timer?
     @Published var currentTrainingItem: VocabularyItem?
     @Published var hasStartedTraining = false

@@ -34,6 +34,19 @@ struct TrainingView: View {
             }
         )
     }
+
+    /// **Sweep C — AnswerMode (2026-05-07)** — Persistierter Sprechen/
+    /// Tippen-Modus für **Vokabeln**. Analog zu `nomenAnswerModeRaw`.
+    @AppStorage(appAnswerModeVokabelnKey) var vokabelnAnswerModeRaw: String = AnswerMode.speech.rawValue
+    var vokabelnAnswerModeBinding: Binding<AnswerMode> {
+        Binding(
+            get: { AnswerMode(rawValue: self.vokabelnAnswerModeRaw) ?? .speech },
+            set: { newValue in
+                self.vokabelnAnswerModeRaw = newValue.rawValue
+                self.session.vokabelnAnswerMode = newValue
+            }
+        )
+    }
     @ObservedObject var listStore: VocabularyListStore
     let runtimeSpeechController: SpeechController?
     let runtimeSpeaker: Speaker?
@@ -374,6 +387,18 @@ struct TrainingView: View {
         // `.tap` (Sweep C). Semantisch identisch: Tap ↔ 8er-Grid statt
         // Mikrofon.
         isNounMode && session.nounAnswerMode == .tap && !session.isSpeedRound
+    }
+
+    /// **Sweep C — AnswerMode (2026-05-07)** — `true`, wenn Vokabeln
+    /// im Tippen-Modus läuft: Mikro/Speaker-Row entfällt, die
+    /// Typed-Answer-Card wird primäre Eingabe (`actionButtons` und
+    /// `typedAnswerControl` branchen darauf). Speed-Round greift
+    /// orthogonal — wenn `isSpeedRound == true`, ignorieren wir den
+    /// Answer-Mode (Speed-Mechanik hat eigene Antwort-Logik).
+    var isVokabelnTapMode: Bool {
+        session.trainingMode == .vocabulary
+            && session.vokabelnAnswerMode == .tap
+            && !session.isSpeedRound
     }
 
     /// Lösungswort im Wortauswahl-Modus — identisch zur Logik in
