@@ -66,11 +66,14 @@ enum DailyDropTracker {
             }
         }
 
-        /// Background-Color für die Badge-Pill. Amber für „neu" (Aufmerksam-
-        /// keit), Mint für „erledigt" (Achievement-Grün, dezent).
+        /// Background-Color für die Badge-Pill. **2026-05-07** —
+        /// Amber → Lavender (Verbformen-Modul-Farbe, `#A78BFA`),
+        /// nachdem die Quiz-Card direkt darüber den gleichen Amber-
+        /// Ton hatte und das Pill visuell mit der Card kollidierte
+        /// (User-Befund). Mint für „erledigt" bleibt unverändert.
         var color: Color {
             switch self {
-            case .neuHeute:  return AppTheme.Colors.moduleQuiz       // Amber
+            case .neuHeute:  return AppTheme.Colors.moduleVerbforms  // Lavender
             case .erledigt:  return AppTheme.Colors.elumiMint        // Mint
             }
         }
@@ -79,7 +82,7 @@ enum DailyDropTracker {
         /// vorher überall weiß, was bei Mint-Background den Kontrast
         /// killt (User-Feedback „weiße Schrift auf grünem Pill kaum
         /// lesbar"). Jetzt:
-        ///   • `neuHeute` → weiß auf Amber (Kontrast OK)
+        ///   • `neuHeute` → weiß auf Lavender (Kontrast hoch)
         ///   • `erledigt` → dunkles Mint-Grün auf hellem Mint-BG
         ///     (`#04342C` — gleiche Farb-Familie, dunkel genug für
         ///     Kontrast-Ratio > 4.5:1).
