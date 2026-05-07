@@ -771,15 +771,16 @@ struct ElumiTabView: View {
 
     private var mainContent: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            // **2026-04-24 Layout-Finaler-Pass** (User-Spec):
-            //   • VStack-Spacing 8pt (weiter kompakt).
-            //   • Credits-Card entfernt — Credits werden im Arcade-
-            //     Spiel HUD angezeigt, keine doppelte Fläche hier.
-            //   • Reihenfolge: Header → Zeit → Slot → Ergebnis → CTA.
-            //     Der CTA steht jetzt IMMER als letztes inhaltliches
-            //     Element direkt über dem Footer (User-Spec „CTA
-            //     gehört unters Ergebnis").
-            VStack(alignment: .leading, spacing: 8) {
+            // **Slot-Layout-Tighten 2026-05-07** — VStack-Spacing
+            // 8 → 4 pt, damit der Slot-Screen-Content enger an den
+            // Chevron rückt und die "Drop starten"-CTA klar über der
+            // Bottom-Footer-Linie sitzt (vorher vom globalen Footer
+            // verdeckt). Chevron-Position selbst bleibt unverändert
+            // (sitzt im äußeren ModuleHeaderCard-Wrapper).
+            //
+            // Reihenfolge unverändert: Header → Zeit → Slot →
+            // Ergebnis → CTA.
+            VStack(alignment: .leading, spacing: 4) {
                 ModuleHeaderCard(
                     systemImage: "sparkles",
                     title: currentHint,
@@ -961,102 +962,83 @@ struct ElumiTabView: View {
     ///   • Pencil ist `disabled(!isSpinAllowed)` — kein Re-Edit
     ///     während die Slot-Machine rollt (Edge-Case E2)
     private var timeDisplayCard: some View {
-        // **Setup-Modal-Tweaks 3/3 (2026-04-30) + v2 — C3**: Card
-        // kompakter gemacht (Vertical-Padding 10 → 6, VStack-Spacing
-        // 8 → 4, XXL-Zahl 56 → 46pt) und Inhalt **horizontal
-        // zentriert**. Das Section-Label „TRAININGSZEIT" bleibt
-        // linksbündig oben (Section-Header-Konvention), aber die
-        // Wert-Zeile (Zahl + „min") ist via Spacer-Spacer-Pattern
-        // ehrlich mittig — links 40pt-Reserve-Slot (gleicher Width
-        // wie der Pencil-Pill rechts), Wert in der Mitte mit
-        // Spacern auf beiden Seiten, Pencil rechts unverändert.
-        VStack(spacing: 4) {
-            // **Setup-Tweaks v2 — C3 (User-Spec 2026-04-30)**: Label
-            // ist hier zentriert (nicht der Standard-`setupCardLabel(...)`-
-            // Helper, der `.alignment: .leading` hartkodiert). Inline-
-            // Definition mit identischen Styles aus dem Helper, nur
-            // mit `.center`-Frame-Alignment + `multilineTextAlignment`.
-            // Ergebnis: Section-Header und Wert-Zeile sind beide
-            // ehrlich zentriert.
-            // **Naming-Sweep 2026-05-06** — „TRAININGSZEIT" → „DAUER"
-            // (kürzer, neutraler — die Zahl + min + Pencil-Edit
-            // erklären den Kontext bereits).
-            Text("DAUER")
-                .font(.system(size: 10, weight: .semibold, design: .rounded))
-                .tracking(1.5)
-                .foregroundStyle(AppTheme.Colors.cardLabel)
-                .textCase(.uppercase)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity, alignment: .center)
+        // **Slot-Layout-Tighten 2026-05-07 Iteration 2** —
+        // Wert-Block (Dauer + Zahl + min) **mittig** als
+        // zusammenhängender String („Dauer 12 min"), Pencil rechts.
+        // Reserve-Slot links spiegelt den Pencil-Width, damit der
+        // Wert-Block ehrlich in der Card-Mitte sitzt (nicht durch
+        // den Pencil-Asymmetrie-Effekt nach links versetzt).
+        // Vertikales Padding 4 → 12 pt (User-Spec „padding über und
+        // unter Dauer-Card erhöhen, ist zu eng, CTA hat noch Platz").
+        HStack(alignment: .firstTextBaseline, spacing: 0) {
+            // Reserve-Slot links — gleich breit wie der Pencil
+            // rechts, damit der Wert-Block exakt mittig sitzt.
+            // **Iter 3 (2026-05-07)** — Reserve auf 28×28 verkleinert,
+            // synchron mit Pencil-Frame.
+            Color.clear.frame(width: 28, height: 28)
 
-            HStack(alignment: .firstTextBaseline, spacing: 0) {
-                // Reserve-Slot links — gleich breit wie der Pencil
-                // rechts, damit die Wert-VStack in der echten
-                // Mitte sitzt (nicht links-versetzt durch den
-                // Pencil-Asymmetrie-Effekt).
-                // **UX-Polish 2026-05-02 Iter 2**: Pencil 40 → 32pt
-                // (siehe unten), Reserve mitgezogen.
-                Color.clear.frame(width: 32, height: 32)
+            Spacer(minLength: 0)
 
-                Spacer(minLength: 0)
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                // Dauer-Label inline mit der Zahl — gleiche Font-
+                // Klasse wie der Wert. Mixed-Case statt Caps, weil
+                // als Wort + Zahl zusammen ruhiger wirkt.
+                // **Iter 3 (2026-05-07)** — Font 28 → 22 pt nach
+                // User-Spec „Card düner machen, so dass Padding oben/
+                // unten größer wirkt". Content schrumpft −6 pt,
+                // Padding-Anteil wächst → mehr Atemraum bei
+                // gleichbleibender Card-Total-Höhe.
+                Text("Dauer")
+                    .font(.system(size: 22, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
 
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text("\(selectedDuration)")
-                        // **UX-Polish 2026-05-02 Iter 2 (User „zeitcard
-                        // oben etwas flacher machen, Slot-CTAs sind
-                        // teilweise vom Footer verdeckt")**: Number
-                        // 46 → 28 pt. Spart ~18 pt Card-Höhe und schiebt
-                        // den gesamten Slot-Screen-Content nach oben,
-                        // damit die Twin-CTAs („Nochmal drehen" /
-                        // „Jetzt üben") wieder klar über der Footer-
-                        // Linie sitzen.
-                        .font(.system(size: 28, weight: .black, design: .rounded))
+                        .font(.system(size: 22, weight: .black, design: .rounded))
                         .foregroundStyle(sectionStyle.accent)
                         // **Spec-1 (2026-04-30)** — `.identity` statt
-                        // `.numericText()`. Begründung: mit den neuen
-                        // Optionen 6/12/18 wechselt die Anzeige zwischen
-                        // 1- und 2-stelligen Werten (6 ↔ 12). Die
-                        // numericText-Animation ist dafür nicht ausgelegt
-                        // (sie morpht digit-für-digit gleicher Stelle) und
-                        // erzeugt einen unsauberen Sprung. `.identity` ist
-                        // ein harter Crossfade ohne Glyph-Morphing.
+                        // `.numericText()`. Mit Optionen 6/12/18
+                        // wechselt die Anzeige zwischen 1- und
+                        // 2-stelligen Werten. `.identity` ist harter
+                        // Crossfade ohne Glyph-Morphing.
                         .contentTransition(.identity)
 
                     Text("min")
-                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
-
-                Spacer(minLength: 0)
-
-                Button {
-                    openSetupModalForReEdit()
-                } label: {
-                    Image(systemName: "pencil")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(sectionStyle.accent)
-                        // **UX-Polish 2026-05-02 Iter 2** — Pencil-
-                        // Frame 40×40 → 32×32, damit die HStack-Höhe
-                        // mit dem kleineren Number-Glyph mitschrumpft.
-                        // Tap-Target bleibt mit 32 pt Apple-HIG-konform.
-                        .frame(width: 32, height: 32)
-                        .background(
-                            Circle().fill(sectionStyle.accent.opacity(0.14))
-                        )
-                }
-                .buttonStyle(.plain)
-                .disabled(!isSpinAllowed)
-                .opacity(isSpinAllowed ? 1.0 : 0.45)
-                .accessibilityLabel(Text("Trainingsdauer ändern"))
-                .accessibilityHint(Text("Öffnet den Setup-Dialog mit der aktuellen Wahl preselected"))
             }
+
+            Spacer(minLength: 0)
+
+            Button {
+                openSetupModalForReEdit()
+            } label: {
+                Image(systemName: "pencil")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(sectionStyle.accent)
+                    // **Iter 3 (2026-05-07)** — Pencil-Frame 32 → 28
+                    // synchron mit der reduzierten Font-Größe. Tap-
+                    // Target bleibt mit 28 pt knapp über Apple-HIG-
+                    // Mindestmaß; akzeptabler Trade-off für die
+                    // schmalere Card.
+                    .frame(width: 28, height: 28)
+                    .background(
+                        Circle().fill(sectionStyle.accent.opacity(0.14))
+                    )
+            }
+            .buttonStyle(.plain)
+            .disabled(!isSpinAllowed)
+            .opacity(isSpinAllowed ? 1.0 : 0.45)
+            .accessibilityLabel(Text("Trainingsdauer ändern"))
+            .accessibilityHint(Text("Öffnet den Setup-Dialog mit der aktuellen Wahl preselected"))
         }
         .padding(.horizontal, 14)
-        // **2026-04-30 Fine-Tuning**: vertikales Padding 6 → 2pt
-        // (User-Spec „10 % weniger Höhe"). Spart 8pt Card-Höhe (~9,6 %),
-        // alle anderen Werte (Zahl-Größe, Pencil-Frame, VStack-Spacing,
-        // Section-Label) unverändert.
-        .padding(.vertical, 2)
+        // **Iter 3 (2026-05-07)** — Padding 12 → 16 pt. Zusammen mit
+        // dem schmaleren Content (Font 28 → 22 pt) wirkt der
+        // Padding-Anteil oben/unten jetzt klar größer als der
+        // Content-Block — Card liest sich „atemiger".
+        .padding(.vertical, 16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .appSetupCardBackground()
         .animation(.easeInOut(duration: 0.20), value: selectedDuration)
@@ -1250,8 +1232,15 @@ struct ElumiTabView: View {
         .buttonStyle(AppPrimaryButtonStyle(color: ctaYellow))
         .disabled(!canTriggerSpin)
         .opacity(canTriggerSpin ? 1.0 : 0.45)
-        .pulsing(active: shouldPulse, glowColor: ctaYellow)
+        // **Bug-Fix 2026-05-07** — `dailyDropGlow` MUSS vor
+        // `pulsing` stehen, damit der Pulse-Scale (`peakScale 1.05`)
+        // die Border-Glow-Overlay MIT-skaliert. Vorher saß die Border
+        // außerhalb des Scale-Effekts → der gelbe Inhalt wuchs beim
+        // Glow-Peak (1.05×), die Gradient-Border blieb auf 1.0× und
+        // wirkte „kleiner als der Inhalt". Jetzt skalieren Border +
+        // Inhalt synchron — Border umfasst den Inhalt durchgehend.
         .dailyDropGlow(cornerRadius: 16, paused: glowPaused)
+        .pulsing(active: shouldPulse, glowColor: ctaYellow)
         .transition(.opacity.combined(with: .scale(scale: 0.98)))
         .accessibilityLabel(Text("Los geht's"))
         .accessibilityHint(Text("Startet den ersten Slot-Spin"))

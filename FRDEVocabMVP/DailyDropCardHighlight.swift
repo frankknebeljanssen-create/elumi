@@ -159,9 +159,14 @@ struct DailyDropCardHighlightModifier: ViewModifier {
     /// Border-Glow-Cycle in Sekunden.
     private static let glowCycle: Double = 4.0
 
-    /// Shimmer-Cycle in Sekunden (60% sweep, 40% pause).
-    private static let shimmerCycle: Double = 5.0
-    private static let shimmerSweepFraction: Double = 0.6
+    /// Shimmer-Cycle in Sekunden. **2026-05-07** — User-Spec
+    /// „Shimmer muss schneller hintereinander kommen, sobald der
+    /// erste durch ist gleich der nächste". Vorher 5 s Cycle mit
+    /// 60 % Sweep + 40 % Pause; jetzt 1.6 s Cycle ohne Pause
+    /// (`sweepFraction = 1.0`) — kontinuierlicher Sweep, neuer Run
+    /// startet sofort wenn der vorherige durch ist.
+    private static let shimmerCycle: Double = 1.6
+    private static let shimmerSweepFraction: Double = 1.0
 
     func body(content: Content) -> some View {
         content
@@ -212,9 +217,15 @@ struct DailyDropCardHighlightModifier: ViewModifier {
 
             GeometryReader { geo in
                 let width = geo.size.width
-                // X-Offset: -100% Card-Breite → +100% Card-Breite.
-                // Diagonale wird über Rotation des Streifens erzielt.
-                let xOffset = -width + sweepProgress * 2.5 * width
+                // **2026-05-07** — Travel-Range gestrafft, damit der
+                // Sweep nicht lange off-screen pausiert: Streak
+                // (0.45 × Card-Breite) ist während des kompletten
+                // Cycles weitgehend sichtbar. Vorher `-width →
+                // +1.5×width` (2.5×width Travel) → ~42 % off-screen
+                // Pause pro Cycle. Jetzt `-0.45×width → +1.0×width`
+                // (1.45×width Travel) → Streak tritt direkt nach
+                // Card-Reset ein, kein wahrnehmbarer Lag mehr.
+                let xOffset = -0.45 * width + sweepProgress * 1.45 * width
 
                 Rectangle()
                     .fill(
