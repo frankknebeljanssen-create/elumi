@@ -852,6 +852,7 @@ struct ElumiTabView: View {
         .tint(sectionStyle.accent)
         .appScreenBackground(sectionStyle)
         .dismissKeyboardOnTap()
+        .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .appLocalChrome(enabled: !usesGlobalChrome) {
             AppTopBar(onBack: { dismiss() }, onInfo: openInfo)

@@ -130,6 +130,7 @@ struct PersonalDecksView: View {
         // der `ModuleHeaderCard` oben übernimmt Title + Back. Identisch
         // zu allen anderen Modul-Screens (Karteikarten-Setup, Quiz,
         // Training, Akzente).
+        .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         // Create-Sheet (Standard-Listen-Picker mit leerer Vorauswahl).
         .sheet(isPresented: $showingCreateSheet) {

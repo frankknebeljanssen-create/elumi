@@ -140,6 +140,7 @@ struct ImportCompletionView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .tint(sectionStyle.accent)
         .appScreenBackground(sectionStyle)
+        .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .onAppear {
             isNavigationLocked = false

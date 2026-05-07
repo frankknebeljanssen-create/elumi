@@ -93,6 +93,7 @@ extension FlashcardsView {
                         dismissTypedAnswerFocus()
                     }
                 )
+                .navigationBarBackButtonHidden(true)
                 .toolbar(.hidden, for: .navigationBar)
                 .toolbar {
                     ToolbarItemGroup(placement: .keyboard) {

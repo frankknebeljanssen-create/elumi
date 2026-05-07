@@ -59,6 +59,7 @@ extension ListsView {
         .tint(sectionStyle.accent)
         .appAmbientWormBackground(sectionStyle)
         .dismissKeyboardOnTap()
+        .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         // **Bug-Fix 2026-04-23**: Bei Direct-Launch (aus Import-Fertig)
         // den lokalen Chrome (TopBar + BottomBar) komplett unterdrücken

@@ -101,6 +101,7 @@ struct AccentsEntryView: View {
         .tint(sectionStyle.accent)
         .appAmbientWormBackground(sectionStyle)
         .dismissKeyboardOnTap()
+        .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         // **Stufe 4b-Modal-Refactor / Chain-Auto-Start (2026-05-02)** —
         // Pattern-Mirror von `QuizView+Lifecycle.swift:19` und

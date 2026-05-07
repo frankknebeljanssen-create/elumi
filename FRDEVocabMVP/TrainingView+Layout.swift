@@ -2277,6 +2277,7 @@ extension TrainingView {
         trainingRootContent
             .appScreenBackground(sectionStyle)
             .dismissKeyboardOnTap()
+            .navigationBarBackButtonHidden(true)
             .toolbar(.hidden, for: .navigationBar)
             .appLocalChrome(enabled: !usesGlobalChrome) {
                 AppTopBar(onBack: { handleTopBarBack() }, onInfo: openInfo)

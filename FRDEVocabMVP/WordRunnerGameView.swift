@@ -469,6 +469,7 @@ struct WordRunnerGameView: View {
         // haben eigene Close-Wege. Ohne diesen Toolbar-Hide würde der
         // System-Chevron während des Spielens sichtbar bleiben (User-
         // Report „doppelter chevron" + „beim spielen muss chevron weg").
+        .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .onDisappear {
             game.stop()

@@ -108,6 +108,7 @@ struct GameHubView: View {
         .tint(sectionStyle.accent)
         .appAmbientWormBackground(sectionStyle)
         .dismissKeyboardOnTap()
+        .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         // **Quick-Fix 2026-04-30 (`v2-unify-game-tile-disabled`)** —
         // Acknowledge-Alert für disabled Game-Tile-Tap. Single-OK-CTA,

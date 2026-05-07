@@ -143,6 +143,7 @@ struct TrainingChainOverviewView: View {
         }
         .tint(sectionStyle.accent)
         .appAmbientWormBackground(sectionStyle)
+        .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .appLocalChrome(enabled: !usesGlobalChrome) {
             AppTopBar(onBack: handleBackTap, onInfo: openInfo)

@@ -317,6 +317,7 @@ struct SettingsView: View {
         }
         .tint(sectionStyle.accent)
         .appAmbientWormBackground(sectionStyle)
+        .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $isShowingAccountSwitcher) {
             AccountSwitcherSheet(accountStore: accountStore)

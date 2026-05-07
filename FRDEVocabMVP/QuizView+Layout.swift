@@ -24,6 +24,7 @@ extension QuizView {
             .tint(sectionStyle.accent)
             .appScreenBackground(sectionStyle)
             .dismissKeyboardOnTap()
+            .navigationBarBackButtonHidden(true)
             .toolbar(.hidden, for: .navigationBar)
             .appLocalChrome(enabled: !usesGlobalChrome) {
                 AppTopBar(onBack: { handleBackNavigation() }, onInfo: openInfo)

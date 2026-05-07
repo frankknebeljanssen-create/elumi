@@ -75,6 +75,7 @@ struct HeartsView: View {
         .tint(sectionStyle.accent)
         .appAmbientWormBackground(sectionStyle)
         .dismissKeyboardOnTap()
+        .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .appLocalChrome(enabled: !usesGlobalChrome) {
             AppTopBar(onBack: { dismiss() }, onInfo: nil)

@@ -195,6 +195,7 @@ struct TrainingHubView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .tint(sectionStyle.accent)
         .appScreenBackground(sectionStyle)
+        .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .appLocalChrome(enabled: !usesGlobalChrome) {
             AppTopBar(onBack: { dismiss() }, onInfo: nil)
