@@ -124,21 +124,30 @@ struct HomeView: View {
     @ViewBuilder
     private var wideMethodCards: some View {
         VStack(spacing: 12) {
-            WideMethodCard(
+            WideCard(
                 // **Naming-Sweep 2026-05-06** — „Mix-Training" →
                 // „Daily Drop" + neuer Subtitle. Brand-Begriff für
                 // die Slot-basierte Surprise-Übung; konsistent zum
                 // Pop-up-Pre-Title („DAILY DROP") und CTA („Drop
                 // starten").
+                // **Card-Cleanup 2026-05-07** — `WideMethodCard` mit
+                // `WideCard` zusammengelegt. Method-Style hier via
+                // `subtitle: …` + `showsChevron: true` + Method-
+                // Padding/Corner aktiviert.
                 title: "Daily Drop",
                 subtitle: "Heute schon gecheckt?",
                 accent: AppTheme.Colors.elumiPinkDeep,
+                height: 86,
+                titleSize: 19,
+                showsChevron: true,
+                cornerRadius: 22,
+                horizontalPadding: 16,
+                verticalPadding: 12,
+                iconFrameSize: 52,
                 icon: {
                     // **Polish 2026-05-07** — Sparkles-SF-Symbol durch
                     // programmatische 3-Karten-Stack-Illustration
                     // ersetzt (siehe `DailyDropStackedCardsIcon`).
-                    // Signalisiert thematisch korrekt den Slot-/
-                    // Karten-Charakter des Daily-Drop-Modus.
                     DailyDropStackedCardsIcon(size: 40)
                 },
                 onTap: { openHomeScreen(.elumi) }
@@ -156,10 +165,20 @@ struct HomeView: View {
                 badgeForeground: dailyDropBadgeState.foreground
             )
 
-            WideMethodCard(
+            WideCard(
+                // **Card-Cleanup 2026-05-07** — Method-Style via
+                // `subtitle:` + `showsChevron: true` + Method-Padding/
+                // Corner; siehe Daily-Drop-Card oben für Pattern.
                 title: "Training",
                 subtitle: "Vokabeln & Spezial",
                 accent: AppTheme.Colors.moduleVocabulary,
+                height: 86,
+                titleSize: 19,
+                showsChevron: true,
+                cornerRadius: 22,
+                horizontalPadding: 16,
+                verticalPadding: 12,
+                iconFrameSize: 52,
                 icon: {
                     Image(systemName: "graduationcap.fill")
                         .font(.system(size: 30, weight: .bold))
