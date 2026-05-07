@@ -86,10 +86,10 @@ final class VocabularyListStore: ObservableObject {
         let start = CFAbsoluteTimeGetCurrent()
         if let snapshot {
             apply(snapshot: snapshot)
-            print("⏱ [ListStore.init] apply(snapshot): \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
+            appDebugLog("⏱ [ListStore.init] apply(snapshot): \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
         } else {
             loadState()
-            print("⏱ [ListStore.init] loadState: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
+            appDebugLog("⏱ [ListStore.init] loadState: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
         }
 
         // One-shot Dual-Form-Migration (User-Wunsch): bestehende
@@ -104,7 +104,7 @@ final class VocabularyListStore: ObservableObject {
         let didMigrate = VocabularyListDualFormMigration.applyIfNeeded(to: &customLists)
         #if DEBUG
         if didMigrate {
-            print("⏱ [ListStore.init] dual-form migration applied; lists updated.")
+            appDebugLog("⏱ [ListStore.init] dual-form migration applied; lists updated.")
         }
         #endif
 
@@ -115,7 +115,7 @@ final class VocabularyListStore: ObservableObject {
         let didCapitalize = PhraseNounCapitalizationMigration.applyIfNeeded(to: &customLists)
         #if DEBUG
         if didCapitalize {
-            print("⏱ [ListStore.init] phrase-noun capitalization migration applied.")
+            appDebugLog("⏱ [ListStore.init] phrase-noun capitalization migration applied.")
         }
         #endif
 
@@ -127,11 +127,11 @@ final class VocabularyListStore: ObservableObject {
         let didFixKnownBad = VocabularyKnownBadEntriesMigration.applyIfNeeded(to: &customLists)
         #if DEBUG
         if didFixKnownBad {
-            print("⏱ [ListStore.init] known-bad-entries migration applied.")
+            appDebugLog("⏱ [ListStore.init] known-bad-entries migration applied.")
         }
         #endif
 
-        print("⏱ [ListStore.init] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
+        appDebugLog("⏱ [ListStore.init] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
 
         // **Phase E.2** — auf Account-Switches reagieren: die
         // `AccountStore.didSwitchAccount`-Notification triggert einen

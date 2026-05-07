@@ -209,7 +209,7 @@ struct FreierTextProcessingView: View {
 
     private func runAnalysis() async {
         guard let client = FreierTextClaudeClient.fromEnvironment() else {
-            print("📄 [FreierText] ❌ kein API-Key konfiguriert")
+            appDebugLog("📄 [FreierText] ❌ kein API-Key konfiguriert")
             await MainActor.run {
                 onFailure(.missingAPIKey)
             }
@@ -237,7 +237,7 @@ struct FreierTextProcessingView: View {
         } catch is CancellationError {
             // User hat den Flow abgebrochen — kein Fehler-Alert zeigen.
             // Parent dismissed ohnehin via `onCancel`-Callback.
-            print("📄 [FreierText] task cancelled")
+            appDebugLog("📄 [FreierText] task cancelled")
         } catch let error as FreierTextError {
             // URLSession-Cancellation landet als `.networkFailure` mit
             // `URLError.cancelled` im underlying-Error. Das ist KEIN
@@ -246,14 +246,14 @@ struct FreierTextProcessingView: View {
             // aufpoppt.
             if case .networkFailure(let underlying) = error,
                (underlying as? URLError)?.code == .cancelled {
-                print("📄 [FreierText] URLSession cancelled (user abort)")
+                appDebugLog("📄 [FreierText] URLSession cancelled (user abort)")
                 return
             }
             if Task.isCancelled {
-                print("📄 [FreierText] task cancelled (after throw)")
+                appDebugLog("📄 [FreierText] task cancelled (after throw)")
                 return
             }
-            print("📄 [FreierText] ❌ analyze failed: \(error.localizedDescription)")
+            appDebugLog("📄 [FreierText] ❌ analyze failed: \(error.localizedDescription)")
             await MainActor.run {
                 onFailure(error)
             }
@@ -262,7 +262,7 @@ struct FreierTextProcessingView: View {
             // `FreierTextError`. Fallback, damit wir auf keinen Fall
             // silent failen.
             if Task.isCancelled { return }
-            print("📄 [FreierText] ❌ unexpected error: \(error.localizedDescription)")
+            appDebugLog("📄 [FreierText] ❌ unexpected error: \(error.localizedDescription)")
             await MainActor.run {
                 onFailure(.invalidResponse)
             }

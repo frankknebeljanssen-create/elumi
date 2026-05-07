@@ -128,7 +128,7 @@ final class ArcadeMusicPlayer: ObservableObject {
         state = .running
         interruptedTrackName = nil
         #if DEBUG
-        print("🎵 [ArcadeMusic] run start → \(track)")
+        appDebugLog("🎵 [ArcadeMusic] run start → \(track)")
         #endif
     }
 
@@ -196,7 +196,7 @@ final class ArcadeMusicPlayer: ObservableObject {
         )
         currentTrack = fishTrack
         #if DEBUG
-        print("🎵 [ArcadeMusic] fish event active (exclusive)")
+        appDebugLog("🎵 [ArcadeMusic] fish event active (exclusive)")
         #endif
     }
 
@@ -227,7 +227,7 @@ final class ArcadeMusicPlayer: ObservableObject {
         currentTrack = resumeTrack
         interruptedTrackName = nil
         #if DEBUG
-        print("🎵 [ArcadeMusic] fish event ended → \(resumeTrack) (exclusive)")
+        appDebugLog("🎵 [ArcadeMusic] fish event ended → \(resumeTrack) (exclusive)")
         #endif
     }
 

@@ -453,10 +453,10 @@ enum FrenchGenderResolverSelfTest {
             }
         }
         if failures.isEmpty {
-            print("✅ [FrenchGenderResolverSelfTest] alle \(cases.count) Fälle grün")
+            appDebugLog("✅ [FrenchGenderResolverSelfTest] alle \(cases.count) Fälle grün")
         } else {
-            print("❌ [FrenchGenderResolverSelfTest] \(failures.count)/\(cases.count) gefailt:")
-            for f in failures { print(f) }
+            appDebugLog("❌ [FrenchGenderResolverSelfTest] \(failures.count)/\(cases.count) gefailt:")
+            for f in failures { appDebugLog(f) }
             assertionFailure("FrenchGenderResolver self-test failed — siehe console")
         }
     }

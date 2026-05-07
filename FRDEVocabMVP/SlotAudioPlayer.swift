@@ -119,7 +119,7 @@ final class SlotAudioPlayer {
     /// Decoder-Anlauf in der Hot-Path.
     private func loadPlayers() {
         guard let url = Bundle.main.url(forResource: Self.clickResourceName, withExtension: "wav") else {
-            print("⚠️ [SlotAudio] Click-Resource '\(Self.clickResourceName).wav' fehlt im Bundle")
+            appDebugLog("⚠️ [SlotAudio] Click-Resource '\(Self.clickResourceName).wav' fehlt im Bundle")
             return
         }
         for _ in 0..<Self.poolSize {
@@ -129,7 +129,7 @@ final class SlotAudioPlayer {
                 player.prepareToPlay()
                 players.append(player)
             } catch {
-                print("⚠️ [SlotAudio] Failed to preload click player: \(error)")
+                appDebugLog("⚠️ [SlotAudio] Failed to preload click player: \(error)")
             }
         }
     }

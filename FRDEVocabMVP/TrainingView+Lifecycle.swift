@@ -145,9 +145,9 @@ extension TrainingView {
     }
 
     func handleTrainingSpeakerTransition(from wasSpeaking: Bool, to isSpeaking: Bool) {
-        print("🔊 [SpeakerTransition] \(wasSpeaking) → \(isSpeaking)")
+        appDebugLog("🔊 [SpeakerTransition] \(wasSpeaking) → \(isSpeaking)")
         guard wasSpeaking, !isSpeaking else { return }
-        print("🔊 [SpeakerTransition] speaker finished → calling beginAutomaticListeningIfNeeded")
+        appDebugLog("🔊 [SpeakerTransition] speaker finished → calling beginAutomaticListeningIfNeeded")
         beginAutomaticListeningIfNeeded()
     }
 

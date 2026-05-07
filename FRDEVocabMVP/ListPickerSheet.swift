@@ -84,7 +84,7 @@ struct ListPickerSheet: View {
                     onSelect(currentSelectedID)
                     onLernjahrMaxChange(localLernjahrMax)
                     #if DEBUG
-                    print("📋 [Lernjahr] persist max=\(localLernjahrMax) (ListPickerSheet)")
+                    appDebugLog("📋 [Lernjahr] persist max=\(localLernjahrMax) (ListPickerSheet)")
                     #endif
                     dismiss()
                 }

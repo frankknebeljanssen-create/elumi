@@ -37,11 +37,11 @@ struct AIScanProvider: ScanProvider {
                         let result = mapResponse(response, context: context)
                         let importableCount = result.entries.filter({ $0.reviewMetadata.isImportable }).count
                         if importableCount >= 3 {
-                            print("📡 [Scan] ✅ text-only accepted (\(importableCount) importable)")
+                            appDebugLog("📡 [Scan] ✅ text-only accepted (\(importableCount) importable)")
                             return result
                         }
                     } catch {
-                        print("📡 [Scan] ⚠️ text-only failed: \(error.localizedDescription)")
+                        appDebugLog("📡 [Scan] ⚠️ text-only failed: \(error.localizedDescription)")
                     }
                 }
             }
@@ -69,7 +69,7 @@ struct AIScanProvider: ScanProvider {
             logTiming("ai_primary", start: start)
             let haikuResult = mapResponse(response, context: context)
             let haikuCount = haikuResult.entries.filter({ $0.reviewMetadata.isImportable }).count
-            print("📡 [Scan] Haiku: \(haikuCount) entries")
+            appDebugLog("📡 [Scan] Haiku: \(haikuCount) entries")
 
             // ── Doppel-Analyse: Sonnet immer nachschieben, Ergebnisse mergen ──
             guard let fallbackClient else { return haikuResult }
@@ -80,12 +80,12 @@ struct AIScanProvider: ScanProvider {
                 logTiming("ai_sonnet_verify", start: sonnetStart)
                 let sonnetResult = mapResponse(sonnetResponse, context: context)
                 let sonnetCount = sonnetResult.entries.filter({ $0.reviewMetadata.isImportable }).count
-                print("📡 [Scan] Sonnet: \(sonnetCount) entries")
+                appDebugLog("📡 [Scan] Sonnet: \(sonnetCount) entries")
 
                 // Merge: Sonnet als Basis, Haiku-Einträge ergänzen die Sonnet nicht hat
                 let merged = mergedEntries(primary: sonnetResult, secondary: haikuResult)
                 let mergedCount = merged.filter({ $0.reviewMetadata.isImportable }).count
-                print("📡 [Scan] ✅ Merged: \(mergedCount) entries (Haiku \(haikuCount) + Sonnet \(sonnetCount))")
+                appDebugLog("📡 [Scan] ✅ Merged: \(mergedCount) entries (Haiku \(haikuCount) + Sonnet \(sonnetCount))")
 
                 return ScanProviderResult(
                     documentType: sonnetResult.documentType,
@@ -103,7 +103,7 @@ struct AIScanProvider: ScanProvider {
                     recognizedBoxes: context?.primaryResult?.recognizedBoxes ?? []
                 )
             } catch {
-                print("📡 [Scan] ⚠️ Sonnet verify failed: \(error.localizedDescription), using Haiku only")
+                appDebugLog("📡 [Scan] ⚠️ Sonnet verify failed: \(error.localizedDescription), using Haiku only")
                 return haikuResult
             }
         } catch {

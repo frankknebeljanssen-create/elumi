@@ -78,7 +78,7 @@ extension OCRScanProvider {
                     bestResult = lightResult
                     bestScore = Double(primaryBoxes.count)
                     acceptedPrimary = true
-                    print("⏱ [Scan] ocr_primary_analyze: skipped (fast path, \(primaryBoxes.count) boxes)")
+                    appDebugLog("⏱ [Scan] ocr_primary_analyze: skipped (fast path, \(primaryBoxes.count) boxes)")
                 } else {
                     primaryStart = CFAbsoluteTimeGetCurrent()
                     acceptedPrimary = consider(primaryPass, lineBoxes: primaryBoxes)
@@ -93,7 +93,7 @@ extension OCRScanProvider {
                     score: primaryScore,
                     acceptedPrimary: acceptedPrimary
                 )
-                print("⏱ [Scan] ocr_primary_boxes=\(primaryBoxes.count) score=\(String(format: "%.1f", primaryScore)) accepted=\(acceptedPrimary) fallback=\(shouldRunFallback)")
+                appDebugLog("⏱ [Scan] ocr_primary_boxes=\(primaryBoxes.count) score=\(String(format: "%.1f", primaryScore)) accepted=\(acceptedPrimary) fallback=\(shouldRunFallback)")
 
                 if shouldRunFallback {
                     let prepStart = CFAbsoluteTimeGetCurrent()

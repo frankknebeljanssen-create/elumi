@@ -208,7 +208,7 @@ extension VocabularyListStore {
         //   6. `selectedListID` erst nach erfolgreichem Apply setzen
         guard let index = customLists.firstIndex(where: { $0.id == listID }) else {
             #if DEBUG
-            print("📋 [applyMergePlan] FEHLER: Ziel-Liste nicht gefunden (id=\(listID))")
+            appDebugLog("📋 [applyMergePlan] FEHLER: Ziel-Liste nicht gefunden (id=\(listID))")
             #endif
             return MergeResult.failure(.targetListMissing)
         }
@@ -221,7 +221,7 @@ extension VocabularyListStore {
         let expectedAfterCount = beforeCount + expectedNetGrowth
 
         #if DEBUG
-        print("""
+        appDebugLog("""
         📋 [applyMergePlan] START
            targetListID=\(listID)
            targetListName=\(customLists[index].name)
@@ -251,17 +251,17 @@ extension VocabularyListStore {
         // vergleichen.
         guard let postIndex = customLists.firstIndex(where: { $0.id == listID }) else {
             #if DEBUG
-            print("📋 [applyMergePlan] POST-CHECK FEHLER: Liste nach Apply weg")
+            appDebugLog("📋 [applyMergePlan] POST-CHECK FEHLER: Liste nach Apply weg")
             #endif
             return MergeResult.failure(.targetListMissing)
         }
         let actualAfterCount = customLists[postIndex].items.count
         #if DEBUG
-        print("📋 [applyMergePlan] AFTER actualAfterCount=\(actualAfterCount), expected=\(expectedAfterCount)")
+        appDebugLog("📋 [applyMergePlan] AFTER actualAfterCount=\(actualAfterCount), expected=\(expectedAfterCount)")
         #endif
         if actualAfterCount != expectedAfterCount {
             #if DEBUG
-            print("📋 [applyMergePlan] MISMATCH! actual=\(actualAfterCount) ≠ expected=\(expectedAfterCount)")
+            appDebugLog("📋 [applyMergePlan] MISMATCH! actual=\(actualAfterCount) ≠ expected=\(expectedAfterCount)")
             #endif
             return MergeResult.failure(.persistenceMismatch(expected: expectedAfterCount, actual: actualAfterCount))
         }
@@ -269,7 +269,7 @@ extension VocabularyListStore {
         // Erst nach validem Apply die aktive Liste switchen.
         selectedListID = listID
         #if DEBUG
-        print("📋 [applyMergePlan] OK — added=\(applyResult.added), skipped=\(applyResult.skipped), replaced=\(applyResult.replaced)")
+        appDebugLog("📋 [applyMergePlan] OK — added=\(applyResult.added), skipped=\(applyResult.skipped), replaced=\(applyResult.replaced)")
         #endif
         return applyResult
     }

@@ -121,6 +121,33 @@ enum AppLayout {
     static let gamificationBarToCTASpacing: CGFloat = 10
 }
 
+// MARK: - Debug Logging
+//
+// **Sweep 2 — B3 (2026-05-07)**: Production-Print-Statements in
+// DEBUG-only-Pfaden konsolidiert. Statt jeden `print(...)`-Call mit
+// `#if DEBUG / #endif` zu umrahmen (75+ Stellen in 25+ Dateien),
+// gibt es **eine** zentrale Helper-Funktion mit interner Compile-Time-
+// Guard. Effekt ist identisch:
+//   • Debug-Build: Helper ruft `Swift.print(...)` durch, Logs sichtbar
+//   • Release-Build: Funktionsbody ist leer, der Compiler eliminiert
+//     den Call komplett (`@inlinable` + leere Implementation)
+//
+// Aufrufe wurden via `print(` → `appDebugLog(` ersetzt. Die Signatur
+// matched `Swift.print` 1:1, damit die Replace mechanisch ohne Argument-
+// Anpassung funktionierte.
+//
+// **Wichtig**: Diese Helper-Definition selbst nutzt `Swift.print(...)`
+// (qualifiziert), damit sie nicht versehentlich in Endlosrekursion
+// mit sich selbst landet, wenn der Modul-Namespace anders aufgelöst
+// wird.
+@inlinable
+func appDebugLog(_ items: Any..., separator: String = " ", terminator: String = "\n") {
+    #if DEBUG
+    let output = items.map { String(describing: $0) }.joined(separator: separator)
+    Swift.print(output, terminator: terminator)
+    #endif
+}
+
 extension View {
     func dismissKeyboardOnTap() -> some View {
         background(KeyboardDismissBackgroundView())

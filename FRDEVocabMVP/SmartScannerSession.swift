@@ -184,7 +184,7 @@ final class SmartScannerSession: NSObject {
                 self?.lastConfidentAttentionBox = nil
                 self?.frozenAttentionForCapture = nil
                 #if DEBUG
-                print("🧹 [Reset] profile switch → cleared attention state")
+                appDebugLog("🧹 [Reset] profile switch → cleared attention state")
                 #endif
             }
         }
@@ -414,7 +414,7 @@ final class SmartScannerSession: NSObject {
                 device.unlockForConfiguration()
             } catch {
                 #if DEBUG
-                print("☀️ [Exposure] lockForConfiguration failed: \(error.localizedDescription)")
+                appDebugLog("☀️ [Exposure] lockForConfiguration failed: \(error.localizedDescription)")
                 #endif
             }
         }
@@ -464,7 +464,7 @@ final class SmartScannerSession: NSObject {
             device.unlockForConfiguration()
         } catch {
             #if DEBUG
-            print("❌ [Zoom] lockForConfiguration failed: \(error.localizedDescription)")
+            appDebugLog("❌ [Zoom] lockForConfiguration failed: \(error.localizedDescription)")
             #endif
         }
         return clamped
@@ -486,7 +486,7 @@ final class SmartScannerSession: NSObject {
                 device.unlockForConfiguration()
             } catch {
                 #if DEBUG
-                print("❌ [Zoom] ramp lockForConfiguration failed: \(error.localizedDescription)")
+                appDebugLog("❌ [Zoom] ramp lockForConfiguration failed: \(error.localizedDescription)")
                 #endif
             }
         }
@@ -522,7 +522,7 @@ final class SmartScannerSession: NSObject {
 
     func capturePhoto() {
         #if DEBUG
-        print("🟡 [Session] capturePhoto called")
+        appDebugLog("🟡 [Session] capturePhoto called")
         #endif
         // **Preview-Layer-Size snapshotten** (vor Dispatch zur
         // sessionQueue). CALayer-Property-Reads sind thread-safe;
@@ -543,7 +543,7 @@ final class SmartScannerSession: NSObject {
         let szStr = previewLayerSizeSnapshot.map {
             String(format: "(%.0f×%.0f)", $0.width, $0.height)
         } ?? "nil"
-        print("📸 [Capture-Snapshot] previewBounds=\(previewBoundsSize) " +
+        appDebugLog("📸 [Capture-Snapshot] previewBounds=\(previewBoundsSize) " +
               "previewLayerSize=\(szStr) " +
               "gravity=\(previewGravityRaw) zoom=\(zoomFactorAtCapture)")
         #endif
@@ -598,7 +598,7 @@ final class SmartScannerSession: NSObject {
 
             #if DEBUG
             if let q = self.frozenQuadForCapture {
-                print(String(
+                appDebugLog(String(
                     format: "📷 [Overlay] frozenQuad: tl=(%.3f,%.3f) tr=(%.3f,%.3f) bl=(%.3f,%.3f) br=(%.3f,%.3f)",
                     q.topLeft.x, q.topLeft.y,
                     q.topRight.x, q.topRight.y,
@@ -606,7 +606,7 @@ final class SmartScannerSession: NSObject {
                     q.bottomRight.x, q.bottomRight.y
                 ))
             } else {
-                print("📷 [Overlay] frozenQuad: nil (no prior lock)")
+                appDebugLog("📷 [Overlay] frozenQuad: nil (no prior lock)")
             }
             #endif
 
@@ -749,7 +749,7 @@ final class SmartScannerSession: NSObject {
                     maxDimText = "\(last.width)×\(last.height)"
                 }
             }
-            print("📷 [Scan] Setup: device=\(device.localizedName) type=\(device.deviceType.rawValue) " +
+            appDebugLog("📷 [Scan] Setup: device=\(device.localizedName) type=\(device.deviceType.rawValue) " +
                   "preset=\(session.sessionPreset.rawValue) maxPhotoDim=\(maxDimText)")
         }
         #endif
@@ -804,21 +804,21 @@ final class SmartScannerSession: NSObject {
             let c = ScanCoordinateMapper.visionCornersToLayer(rect, in: previewLayer)
             if shouldLogMapping {
                 let rotation = previewLayer.connection?.videoRotationAngle ?? -1
-                print("📐 [Mapper Diagnostic]")
-                print("   previewLayer.bounds = \(previewLayer.bounds)")
-                print("   previewLayer.frame  = \(previewLayer.frame)")
-                print("   previewLayer.videoGravity = \(previewLayer.videoGravity.rawValue)")
-                print("   previewLayer.connection.rotation = \(rotation)°")
-                print("   Vision rect (Y-up normalized):")
-                print("     tl=(\(String(format: "%.3f", rect.topLeft.x)), \(String(format: "%.3f", rect.topLeft.y)))")
-                print("     tr=(\(String(format: "%.3f", rect.topRight.x)), \(String(format: "%.3f", rect.topRight.y)))")
-                print("     bl=(\(String(format: "%.3f", rect.bottomLeft.x)), \(String(format: "%.3f", rect.bottomLeft.y)))")
-                print("     br=(\(String(format: "%.3f", rect.bottomRight.x)), \(String(format: "%.3f", rect.bottomRight.y)))")
-                print("   Mapped to Layer-Points:")
-                print("     tl=(\(String(format: "%.1f", c.tl.x)), \(String(format: "%.1f", c.tl.y)))")
-                print("     tr=(\(String(format: "%.1f", c.tr.x)), \(String(format: "%.1f", c.tr.y)))")
-                print("     bl=(\(String(format: "%.1f", c.bl.x)), \(String(format: "%.1f", c.bl.y)))")
-                print("     br=(\(String(format: "%.1f", c.br.x)), \(String(format: "%.1f", c.br.y)))")
+                appDebugLog("📐 [Mapper Diagnostic]")
+                appDebugLog("   previewLayer.bounds = \(previewLayer.bounds)")
+                appDebugLog("   previewLayer.frame  = \(previewLayer.frame)")
+                appDebugLog("   previewLayer.videoGravity = \(previewLayer.videoGravity.rawValue)")
+                appDebugLog("   previewLayer.connection.rotation = \(rotation)°")
+                appDebugLog("   Vision rect (Y-up normalized):")
+                appDebugLog("     tl=(\(String(format: "%.3f", rect.topLeft.x)), \(String(format: "%.3f", rect.topLeft.y)))")
+                appDebugLog("     tr=(\(String(format: "%.3f", rect.topRight.x)), \(String(format: "%.3f", rect.topRight.y)))")
+                appDebugLog("     bl=(\(String(format: "%.3f", rect.bottomLeft.x)), \(String(format: "%.3f", rect.bottomLeft.y)))")
+                appDebugLog("     br=(\(String(format: "%.3f", rect.bottomRight.x)), \(String(format: "%.3f", rect.bottomRight.y)))")
+                appDebugLog("   Mapped to Layer-Points:")
+                appDebugLog("     tl=(\(String(format: "%.1f", c.tl.x)), \(String(format: "%.1f", c.tl.y)))")
+                appDebugLog("     tr=(\(String(format: "%.1f", c.tr.x)), \(String(format: "%.1f", c.tr.y)))")
+                appDebugLog("     bl=(\(String(format: "%.1f", c.bl.x)), \(String(format: "%.1f", c.bl.y)))")
+                appDebugLog("     br=(\(String(format: "%.1f", c.br.x)), \(String(format: "%.1f", c.br.y)))")
             }
             return RectangleCorners(topLeft: c.tl, topRight: c.tr, bottomLeft: c.bl, bottomRight: c.br)
         }()
@@ -1046,9 +1046,9 @@ extension SmartScannerSession: AVCapturePhotoCaptureDelegate {
         // Im Fehler-Fall (Delegate feuert nie) greift auf Controller-
         // Seite der Timeout-Guard.
         #if DEBUG
-        print("🔵 [AVFoundation] didFinishProcessingPhoto fired")
+        appDebugLog("🔵 [AVFoundation] didFinishProcessingPhoto fired")
         if let error = error {
-            print("❌ [AVFoundation] Error: \(error.localizedDescription)")
+            appDebugLog("❌ [AVFoundation] Error: \(error.localizedDescription)")
         }
         #endif
 
@@ -1093,7 +1093,7 @@ extension SmartScannerSession: AVCapturePhotoCaptureDelegate {
         #if DEBUG
         let pxW = Int(image.size.width * image.scale)
         let pxH = Int(image.size.height * image.scale)
-        print("📷 [Scan] Photo received: \(pxW)×\(pxH) px " +
+        appDebugLog("📷 [Scan] Photo received: \(pxW)×\(pxH) px " +
               "(orientation=\(image.imageOrientation.rawValue), scale=\(image.scale))")
         #endif
 

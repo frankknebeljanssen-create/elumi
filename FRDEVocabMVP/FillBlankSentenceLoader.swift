@@ -44,7 +44,7 @@ enum FillBlankSentenceLoader {
 
     private static func loadSentences() -> [Sentence] {
         guard let url = Bundle.main.url(forResource: "FillBlankSentences", withExtension: "tsv") else {
-            print("⚠️ FillBlankSentences.tsv not found in bundle")
+            appDebugLog("⚠️ FillBlankSentences.tsv not found in bundle")
             return []
         }
         guard let data = try? String(contentsOf: url, encoding: .utf8) else { return [] }
@@ -66,7 +66,7 @@ enum FillBlankSentenceLoader {
                 nounFr: cols[5]
             ))
         }
-        print("📚 FillBlankSentences loaded: \(sentences.count) sentences")
+        appDebugLog("📚 FillBlankSentences loaded: \(sentences.count) sentences")
         return sentences
     }
 }

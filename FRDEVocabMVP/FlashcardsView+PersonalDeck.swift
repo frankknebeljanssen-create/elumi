@@ -131,18 +131,18 @@ extension FlashcardsView {
     /// bestehenden Session-Flow via `configureCustomDeck(from:…)`.
     /// Kein neuer Session-Pfad, keine Sonderlogik in der Session-View.
     func startPersonalDeckSession(_ deck: PersonalDeck) {
-        print("🎯 startPersonalDeckSession: deckID=\(deck.id) sourceLists=\(deck.sourceListIDs.count) cardOrder=\(deck.cardOrder.count) mastered=\(deck.masteredCardIDs.count) currentIndex=\(deck.currentIndex)")
+        appDebugLog("🎯 startPersonalDeckSession: deckID=\(deck.id) sourceLists=\(deck.sourceListIDs.count) cardOrder=\(deck.cardOrder.count) mastered=\(deck.masteredCardIDs.count) currentIndex=\(deck.currentIndex)")
 
         // 1) Alle Items aus allen sourceListIDs als Lookup-Map aufbauen.
         let matchedLists = listStore.allLists.filter { deck.sourceListIDs.contains($0.id) }
-        print("🎯 matchedLists=\(matchedLists.count) (von \(listStore.allLists.count) globalen Listen)")
+        appDebugLog("🎯 matchedLists=\(matchedLists.count) (von \(listStore.allLists.count) globalen Listen)")
         var itemsByID: [UUID: VocabularyItem] = [:]
         for list in matchedLists {
             for item in list.items {
                 itemsByID[item.id] = item
             }
         }
-        print("🎯 itemsByID hat \(itemsByID.count) Items aus den Source-Listen")
+        appDebugLog("🎯 itemsByID hat \(itemsByID.count) Items aus den Source-Listen")
 
         // 2) Aus cardOrder die aktive Rotation ableiten — ab currentIndex
         //    bis Ende, dann wrap-around auf 0 bis currentIndex (nur einen
@@ -154,7 +154,7 @@ extension FlashcardsView {
             !deck.masteredCardIDs.contains($0) && itemsByID[$0] != nil
         }
         var orderedItems: [VocabularyItem] = activeIDs.compactMap { itemsByID[$0] }
-        print("🎯 activeIDs=\(activeIDs.count) orderedItems=\(orderedItems.count)")
+        appDebugLog("🎯 activeIDs=\(activeIDs.count) orderedItems=\(orderedItems.count)")
 
         // **Bug-Fix Phase 8.2 (UUID-Stale-Recovery)**: Standard-Listen
         // (StandardVocabularyLoader) erzeugen pro App-Launch neue
@@ -170,7 +170,7 @@ extension FlashcardsView {
         // UUID-Schema gebunden); cardOrder + currentIndex werden
         // resettet. Der User kann den Stapel ab jetzt wieder spielen.
         if orderedItems.isEmpty && !itemsByID.isEmpty && !deck.cardOrder.isEmpty {
-            print("♻️ UUID-Stale-Recovery: rebuilding cardOrder from current items")
+            appDebugLog("♻️ UUID-Stale-Recovery: rebuilding cardOrder from current items")
             // **V1b Recovery (2026-04-28)** — Recovery-Pfad zerstört
             // Snapshot ohnehin (Mastery weg, neuer Shuffle), daher
             // gilt der **aktuelle** lernjahrMax. Konsistent zum
@@ -187,7 +187,7 @@ extension FlashcardsView {
         }
 
         guard !orderedItems.isEmpty else {
-            print("⚠️ startPersonalDeckSession: orderedItems LEER — abort, isShowingSetup bleibt true. itemsByID=\(itemsByID.count) cardOrderCount=\(deck.cardOrder.count) masteredCount=\(deck.masteredCardIDs.count)")
+            appDebugLog("⚠️ startPersonalDeckSession: orderedItems LEER — abort, isShowingSetup bleibt true. itemsByID=\(itemsByID.count) cardOrderCount=\(deck.cardOrder.count) masteredCount=\(deck.masteredCardIDs.count)")
             return
         }
 
@@ -247,7 +247,7 @@ extension FlashcardsView {
                     session.cardMastery[key] = mastery
                 }
                 sessionStore.session = session
-                print("🔁 Stand-Sync: \(deck.masteredCardIDs.count) gemasterte Karten in session.cardMastery vor-gepopuliert (threshold=\(threshold))")
+                appDebugLog("🔁 Stand-Sync: \(deck.masteredCardIDs.count) gemasterte Karten in session.cardMastery vor-gepopuliert (threshold=\(threshold))")
             }
 
             setup.isShowingSetup = false

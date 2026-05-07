@@ -172,7 +172,7 @@ final class TrainingChainStore: ObservableObject {
 
         #if DEBUG
         let path = chain.plannedSteps.map(\.rawValue).joined(separator: " → ")
-        print("🔗 [TrainingChainStore] start — id=\(chain.id.shortID), steps=[\(path)], perStep=\(chain.perStepDurationMin)min")
+        appDebugLog("🔗 [TrainingChainStore] start — id=\(chain.id.shortID), steps=[\(path)], perStep=\(chain.perStepDurationMin)min")
         #endif
 
         // **Stufe 4a (2026-05-01)** — Step-Timer für ersten Step
@@ -194,7 +194,7 @@ final class TrainingChainStore: ObservableObject {
         #if DEBUG
         let idx = currentChain?.currentIndex ?? -1
         let total = currentChain?.totalStepCount ?? 0
-        print("🔗 [TrainingChainStore] advance — index=\(idx)/\(total)")
+        appDebugLog("🔗 [TrainingChainStore] advance — index=\(idx)/\(total)")
         #endif
 
         // **Stufe 4a (2026-05-01)** — Timer für den nächsten Step
@@ -273,7 +273,7 @@ final class TrainingChainStore: ObservableObject {
         QuizSessionResumeStore.clear()
 
         #if DEBUG
-        print("🔗 [TrainingChainStore] clear")
+        appDebugLog("🔗 [TrainingChainStore] clear")
         #endif
     }
 
@@ -311,7 +311,7 @@ final class TrainingChainStore: ObservableObject {
         scheduleStepTick()
 
         #if DEBUG
-        print("⏱️ [TrainingChainStore] step timer started — \(totalSeconds)s for step \(chain.currentStep?.rawValue ?? "?")")
+        appDebugLog("⏱️ [TrainingChainStore] step timer started — \(totalSeconds)s for step \(chain.currentStep?.rawValue ?? "?")")
         #endif
     }
 
@@ -336,7 +336,7 @@ final class TrainingChainStore: ObservableObject {
                     self.stepTimer = nil
                     self.timerExpired = true
                     #if DEBUG
-                    print("⏱️ [TrainingChainStore] step timer EXPIRED — soft-cutoff banner shown")
+                    appDebugLog("⏱️ [TrainingChainStore] step timer EXPIRED — soft-cutoff banner shown")
                     #endif
                 }
             }
@@ -352,7 +352,7 @@ final class TrainingChainStore: ObservableObject {
         stepTimer?.invalidate()
         stepTimer = nil
         #if DEBUG
-        print("⏱️ [TrainingChainStore] step timer paused @ \(stepRemainingSeconds)s")
+        appDebugLog("⏱️ [TrainingChainStore] step timer paused @ \(stepRemainingSeconds)s")
         #endif
     }
 
@@ -368,12 +368,12 @@ final class TrainingChainStore: ObservableObject {
         if paused > 0 {
             scheduleStepTick()
             #if DEBUG
-            print("⏱️ [TrainingChainStore] step timer resumed @ \(paused)s")
+            appDebugLog("⏱️ [TrainingChainStore] step timer resumed @ \(paused)s")
             #endif
         } else {
             timerExpired = true
             #if DEBUG
-            print("⏱️ [TrainingChainStore] step timer resume: was 0, banner stays")
+            appDebugLog("⏱️ [TrainingChainStore] step timer resume: was 0, banner stays")
             #endif
         }
     }
@@ -406,7 +406,7 @@ final class TrainingChainStore: ObservableObject {
         hasShownExpirationToast = true
         cutoffModalVisible = true
         #if DEBUG
-        print("⏱️ [TrainingChainStore] cutoff modal presented")
+        appDebugLog("⏱️ [TrainingChainStore] cutoff modal presented")
         #endif
     }
 
@@ -436,7 +436,7 @@ final class TrainingChainStore: ObservableObject {
         cutoffModalVisible = false
         let handler = forceAdvanceHandler
         #if DEBUG
-        print("⏱️ [TrainingChainStore] force-advance from cutoff modal (handler=\(handler != nil ? "registered" : "nil"))")
+        appDebugLog("⏱️ [TrainingChainStore] force-advance from cutoff modal (handler=\(handler != nil ? "registered" : "nil"))")
         #endif
         handler?()
     }

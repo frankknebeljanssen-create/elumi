@@ -161,7 +161,7 @@ final class WordRunnerSFXPlayer {
             withExtension: "wav"
         ) else {
             #if DEBUG
-            print("⚠️ [SFX] Missing: \(type.resourceName).wav")
+            appDebugLog("⚠️ [SFX] Missing: \(type.resourceName).wav")
             #endif
             return
         }
@@ -172,7 +172,7 @@ final class WordRunnerSFXPlayer {
             preloadedPlayers[type] = player
         } catch {
             #if DEBUG
-            print("⚠️ [SFX] Load failed for \(type.resourceName): \(error)")
+            appDebugLog("⚠️ [SFX] Load failed for \(type.resourceName): \(error)")
             #endif
         }
     }

@@ -204,7 +204,7 @@ final class ArcadePowerUpRuntime: ObservableObject {
         lastAnyPowerUpSpawnAt = date
         lastSpawnByType[type] = date
         #if DEBUG
-        print("🎁 [Runtime] spawn \(type.rawValue) (id=\(instance.id.uuidString.prefix(8))) state=spawning")
+        appDebugLog("🎁 [Runtime] spawn \(type.rawValue) (id=\(instance.id.uuidString.prefix(8))) state=spawning")
         #endif
         return instance.id
     }
@@ -238,7 +238,7 @@ final class ArcadePowerUpRuntime: ObservableObject {
         instances[index].state = .active
         instances[index].activeEndsAt = date.addingTimeInterval(duration)
         #if DEBUG
-        print("🎁 [Runtime] \(type.rawValue) → active (ends \(duration)s)")
+        appDebugLog("🎁 [Runtime] \(type.rawValue) → active (ends \(duration)s)")
         #endif
     }
 
@@ -343,7 +343,7 @@ final class ArcadePowerUpRuntime: ObservableObject {
                     instances[index] = instance
                     mutated = true
                     #if DEBUG
-                    print("🎁 [Runtime] \(instance.type.rawValue) → ending")
+                    appDebugLog("🎁 [Runtime] \(instance.type.rawValue) → ending")
                     #endif
                 }
             case .ending:
@@ -352,7 +352,7 @@ final class ArcadePowerUpRuntime: ObservableObject {
                     instances[index] = instance
                     mutated = true
                     #if DEBUG
-                    print("🎁 [Runtime] \(instance.type.rawValue) → consumed (removed)")
+                    appDebugLog("🎁 [Runtime] \(instance.type.rawValue) → consumed (removed)")
                     #endif
                 }
             case .spawning, .idle, .pickedUp, .consumed:
@@ -368,7 +368,7 @@ final class ArcadePowerUpRuntime: ObservableObject {
             activeAmbientEvent = nil
             mutated = true
             #if DEBUG
-            print("🐟 [Runtime] ambient event \(event.type.rawValue) ended")
+            appDebugLog("🐟 [Runtime] ambient event \(event.type.rawValue) ended")
             #endif
         }
 
@@ -413,7 +413,7 @@ final class ArcadePowerUpRuntime: ObservableObject {
         ambientEventFiredThisRound = true
         activeAmbientEvent = (type, date.addingTimeInterval(durationSeconds))
         #if DEBUG
-        print("🐟 [Runtime] ambient event \(type.rawValue) started (\(durationSeconds)s)")
+        appDebugLog("🐟 [Runtime] ambient event \(type.rawValue) started (\(durationSeconds)s)")
         #endif
     }
 
@@ -435,7 +435,7 @@ final class ArcadePowerUpRuntime: ObservableObject {
         lastAnyPowerUpSpawnAt = date
         lastSpawnByType[type] = date
         #if DEBUG
-        print("🛠 [Runtime Debug] force-spawn \(type.rawValue)")
+        appDebugLog("🛠 [Runtime Debug] force-spawn \(type.rawValue)")
         #endif
         return id
     }
@@ -445,7 +445,7 @@ final class ArcadePowerUpRuntime: ObservableObject {
         let beforeCount = instances.count
         instances.removeAll()
         #if DEBUG
-        print("🛠 [Runtime Debug] ended \(beforeCount) active instance(s)")
+        appDebugLog("🛠 [Runtime Debug] ended \(beforeCount) active instance(s)")
         #endif
     }
 
@@ -455,7 +455,7 @@ final class ArcadePowerUpRuntime: ObservableObject {
         activeAmbientEvent = (type, date.addingTimeInterval(durationSeconds))
         ambientEventFiredThisRound = true
         #if DEBUG
-        print("🛠 [Runtime Debug] force ambient event \(type.rawValue)")
+        appDebugLog("🛠 [Runtime Debug] force ambient event \(type.rawValue)")
         #endif
     }
 
@@ -489,13 +489,13 @@ final class ArcadePowerUpRuntime: ObservableObject {
         let old = instances[index].state
         if let allowed = allowedFrom, !allowed.contains(old) {
             #if DEBUG
-            print("❌ [Runtime] illegal transition \(instances[index].type.rawValue): \(old.rawValue) → \(newState.rawValue)")
+            appDebugLog("❌ [Runtime] illegal transition \(instances[index].type.rawValue): \(old.rawValue) → \(newState.rawValue)")
             #endif
             return
         }
         instances[index].state = newState
         #if DEBUG
-        print("🎁 [Runtime] \(instances[index].type.rawValue): \(old.rawValue) → \(newState.rawValue)")
+        appDebugLog("🎁 [Runtime] \(instances[index].type.rawValue): \(old.rawValue) → \(newState.rawValue)")
         #endif
     }
 }

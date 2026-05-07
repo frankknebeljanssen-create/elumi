@@ -97,7 +97,7 @@ extension ScanImportView {
                             let scoreStr = qualityReport.map { String(format: "%.2f", $0.overallScore) } ?? "n/a"
                             let issuesStr = qualityReport?.issues.map(\.debugLabel).joined(separator: ",") ?? ""
                             let idStr = captureID?.shortID ?? "?"
-                            print("📤 [onUse \(idStr)] passed image to analysis pipeline — score=\(scoreStr) issues=[\(issuesStr)]")
+                            appDebugLog("📤 [onUse \(idStr)] passed image to analysis pipeline — score=\(scoreStr) issues=[\(issuesStr)]")
                             #endif
                             _ = qualityReport
                             _ = captureID
@@ -109,7 +109,7 @@ extension ScanImportView {
                         // bleibt unverändert über `onUse`.
                         onUseBatch: { capturedImages in
                             #if DEBUG
-                            print("📤 [onUseBatch] received \(capturedImages.count) images from camera multi-shot")
+                            appDebugLog("📤 [onUseBatch] received \(capturedImages.count) images from camera multi-shot")
                             #endif
                             handleSelectedImages(capturedImages)
                         },

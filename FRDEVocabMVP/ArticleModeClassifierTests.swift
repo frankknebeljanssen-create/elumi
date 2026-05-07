@@ -77,7 +77,7 @@ enum ArticleModeClassifierTests {
                 let tag = note.isEmpty ? "" : " (\(note))"
                 let msg = "❌ [L\(line)] '\(input)'\(tag): " + errs.joined(separator: ", ")
                 failures.append(msg)
-                print(msg)
+                appDebugLog(msg)
             }
         }
 
@@ -294,7 +294,7 @@ enum ArticleModeClassifierTests {
             failed += 1
             let msg = "❌ phrase-cardType not excluded"
             failures.append(msg)
-            print(msg)
+            appDebugLog(msg)
         }
 
         // Leere/Whitespace-Eingabe → ungültig
@@ -304,7 +304,7 @@ enum ArticleModeClassifierTests {
         // MARK: - Report
 
         let total = passed + failed
-        print("🧪 [ArticleModeClassifier] \(passed)/\(total) Tests passed — \(failed) failed")
+        appDebugLog("🧪 [ArticleModeClassifier] \(passed)/\(total) Tests passed — \(failed) failed")
 
         if failed > 0 {
             // In DEBUG crashen wir laut: jeder Fehlschlag ist eine

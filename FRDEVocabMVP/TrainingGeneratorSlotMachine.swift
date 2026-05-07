@@ -274,14 +274,14 @@ struct SlotMachineView: View {
         .overlay(centerRowBorder)
         .onAppear {
             #if DEBUG
-            print("🎰 [SlotMachineView] onAppear — phase=\(phase)")
+            appDebugLog("🎰 [SlotMachineView] onAppear — phase=\(phase)")
             #endif
         }
         .onChange(of: spinStartToken) { _, newValue in
             guard newValue else { return }
             guard phase == .idle || phase == .revealed else {
                 #if DEBUG
-                print("🎰 [SlotMachineView] spinStartToken=true ignoriert (phase=\(phase))")
+                appDebugLog("🎰 [SlotMachineView] spinStartToken=true ignoriert (phase=\(phase))")
                 #endif
                 return
             }
@@ -342,12 +342,12 @@ struct SlotMachineView: View {
     private func runSpinSequence() {
         guard phase == .idle || phase == .revealed else {
             #if DEBUG
-            print("🎰 [runSpinSequence] ignoriert (phase=\(phase))")
+            appDebugLog("🎰 [runSpinSequence] ignoriert (phase=\(phase))")
             #endif
             return
         }
         #if DEBUG
-        print("🎰 [runSpinSequence] START — targets=\(spinTargets.map { $0?.label ?? "nil" })")
+        appDebugLog("🎰 [runSpinSequence] START — targets=\(spinTargets.map { $0?.label ?? "nil" })")
         #endif
         phase = .spinning
         reelSettled = [false, false, false]
@@ -359,13 +359,13 @@ struct SlotMachineView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + spinDuration) {
             guard phase == .spinning else {
                 #if DEBUG
-                print("🎰 [stop-scheduler] abort, phase=\(phase)")
+                appDebugLog("🎰 [stop-scheduler] abort, phase=\(phase)")
                 #endif
                 return
             }
             phase = .stopping
             #if DEBUG
-            print("🎰 [runSpinSequence] Phase → .stopping")
+            appDebugLog("🎰 [runSpinSequence] Phase → .stopping")
             #endif
             for (i, delay) in stopStagger.enumerated() {
                 DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
@@ -381,14 +381,14 @@ struct SlotMachineView: View {
         centerSymbols[reelIndex] = resolvedSymbol
         onReelSettled?(reelIndex)
         #if DEBUG
-        print("🎰 [reelSettled] reel=\(reelIndex) symbol=\(resolvedSymbol?.label ?? "nil")")
+        appDebugLog("🎰 [reelSettled] reel=\(reelIndex) symbol=\(resolvedSymbol?.label ?? "nil")")
         #endif
 
         guard reelSettled.allSatisfy({ $0 }) else { return }
         // Alle drei stehen
         phase = .landed
         #if DEBUG
-        print("🎰 [runSpinSequence] Phase → .landed")
+        appDebugLog("🎰 [runSpinSequence] Phase → .landed")
         #endif
         // **Slot-Audio (2026-04-30)** — Settle-Sound bei Stillstand
         // aller Reels. System-Sound 1057 (Tink) als Platzhalter, wird
@@ -398,14 +398,14 @@ struct SlotMachineView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + landedHoldDuration) {
             guard phase == .landed else {
                 #if DEBUG
-                print("🎰 [reveal-scheduler] abort, phase=\(phase)")
+                appDebugLog("🎰 [reveal-scheduler] abort, phase=\(phase)")
                 #endif
                 return
             }
             phase = .revealed
             spinStartToken = false
             #if DEBUG
-            print("🎰 [runSpinSequence] Phase → .revealed — ENDE (User entscheidet)")
+            appDebugLog("🎰 [runSpinSequence] Phase → .revealed — ENDE (User entscheidet)")
             #endif
             let result = SlotSpinResult(
                 centerSymbols: centerSymbols.compactMap { $0 }
@@ -606,7 +606,7 @@ struct SlotReelView: View {
         .overlay(debugGuides, alignment: .top)
         .onAppear {
             #if DEBUG
-            print("🎰 [SlotReelView.onAppear] symbols.count=\(symbols.count), extendedCount=\(extendedSymbols.count), slotHeight=\(slotHeight)")
+            appDebugLog("🎰 [SlotReelView.onAppear] symbols.count=\(symbols.count), extendedCount=\(extendedSymbols.count), slotHeight=\(slotHeight)")
             #endif
         }
         .onDisappear {
@@ -765,7 +765,7 @@ struct SlotReelView: View {
                         let symbol = slowdownTargetSymbol
                         slowdownStartAt = nil
                         #if DEBUG
-                        print("🎰 [slowdown-done] offsetSlots=\(offsetSlots) target=\(symbol?.label ?? "nil")")
+                        appDebugLog("🎰 [slowdown-done] offsetSlots=\(offsetSlots) target=\(symbol?.label ?? "nil")")
                         #endif
                         onSettle(symbol)
                     }
@@ -847,7 +847,7 @@ struct SlotReelView: View {
 
         #if DEBUG
         let finalOffsetPixels = -CGFloat(desiredResidue) * slotHeight
-        print("🎰 [performStop] target=\(pool[targetIndex].label) targetIndex=\(targetIndex) desiredResidue=\(desiredResidue) target_s=\(target_s) finalOffset=\(finalOffsetPixels)pt (from offsetSlots=\(current)) — handing to slowdown branch")
+        appDebugLog("🎰 [performStop] target=\(pool[targetIndex].label) targetIndex=\(targetIndex) desiredResidue=\(desiredResidue) target_s=\(target_s) finalOffset=\(finalOffsetPixels)pt (from offsetSlots=\(current)) — handing to slowdown branch")
         #endif
 
         // **Slowdown-Refactor (2026-04-30)**: statt `withAnimation(

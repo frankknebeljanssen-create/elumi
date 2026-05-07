@@ -42,7 +42,7 @@ final class PersonalDeckStore: ObservableObject {
             // Korruption → leeren State zurückgeben, nicht crashen.
             // Der User verliert im schlimmsten Fall seine Stapel, die
             // App startet aber sauber.
-            print("⚠️ PersonalDeckStore decode failed: \(error)")
+            appDebugLog("⚠️ PersonalDeckStore decode failed: \(error)")
             return []
         }
     }
@@ -54,7 +54,7 @@ final class PersonalDeckStore: ObservableObject {
             let data = try encoder.encode(decks)
             UserDefaults.standard.set(data, forKey: Self.storageKey)
         } catch {
-            print("⚠️ PersonalDeckStore encode failed: \(error)")
+            appDebugLog("⚠️ PersonalDeckStore encode failed: \(error)")
         }
     }
 
@@ -110,14 +110,14 @@ final class PersonalDeckStore: ObservableObject {
     /// aufgebaut + zurückgewiesen.
     func replace(_ updated: PersonalDeck) {
         guard let index = decks.firstIndex(where: { $0.id == updated.id }) else {
-            print("⚠️ PersonalDeckStore.replace: deck-id \(updated.id) nicht in store gefunden — no-op")
+            appDebugLog("⚠️ PersonalDeckStore.replace: deck-id \(updated.id) nicht in store gefunden — no-op")
             return
         }
         var rebuilt = decks
         rebuilt[index] = updated
         decks = rebuilt   // Komplett-Reassign → garantiert objectWillChange
         save()
-        print("✅ PersonalDeckStore.replace: id=\(updated.id) sourceLists=\(updated.sourceListIDs.count) cardOrder=\(updated.cardOrder.count)")
+        appDebugLog("✅ PersonalDeckStore.replace: id=\(updated.id) sourceLists=\(updated.sourceListIDs.count) cardOrder=\(updated.cardOrder.count)")
     }
 
     /// Freie Slots (0…maxDeckCount). Wird vom Setup-Screen für die

@@ -60,13 +60,13 @@ final class SoundPlayer {
                 try session.setActive(true)
             }
         } catch {
-            print("⚠️ [Sound] Audio-Session konnte nicht aktiviert werden: \(error)")
+            appDebugLog("⚠️ [Sound] Audio-Session konnte nicht aktiviert werden: \(error)")
         }
     }
 
     func play(_ name: String, volume: Float = 1.0) {
         guard let url = Bundle.main.url(forResource: "elumi_\(name)", withExtension: "wav") else {
-            print("⚠️ [Sound] Missing: elumi_\(name).wav")
+            appDebugLog("⚠️ [Sound] Missing: elumi_\(name).wav")
             return
         }
         ensureAudioSession()
@@ -76,13 +76,13 @@ final class SoundPlayer {
             player.play()
             players[name] = player
         } catch {
-            print("⚠️ [Sound] Error playing \(name): \(error)")
+            appDebugLog("⚠️ [Sound] Error playing \(name): \(error)")
         }
     }
 
     func loop(_ name: String, volume: Float = 1.0, rate: Float = 1.0) {
         guard let url = Bundle.main.url(forResource: "elumi_\(name)", withExtension: "wav") else {
-            print("⚠️ [Sound] Missing: elumi_\(name).wav")
+            appDebugLog("⚠️ [Sound] Missing: elumi_\(name).wav")
             return
         }
         ensureAudioSession()
@@ -97,7 +97,7 @@ final class SoundPlayer {
             player.play()
             players[name] = player
         } catch {
-            print("⚠️ [Sound] Error looping \(name): \(error)")
+            appDebugLog("⚠️ [Sound] Error looping \(name): \(error)")
         }
     }
 
@@ -159,14 +159,14 @@ final class SoundPlayer {
             preloaded.volume = volume
             players[resource] = preloaded
             #if DEBUG
-            print("🎵 [Music] playing (preloaded-silent→audible) \(resource) vol=\(volume)")
+            appDebugLog("🎵 [Music] playing (preloaded-silent→audible) \(resource) vol=\(volume)")
             #endif
             return
         }
 
         // Normal-Pfad: Player frisch erzeugen.
         guard let url = Bundle.main.url(forResource: resource, withExtension: ext) else {
-            print("⚠️ [Music] Missing: \(resource).\(ext)")
+            appDebugLog("⚠️ [Music] Missing: \(resource).\(ext)")
             return
         }
         do {
@@ -180,10 +180,10 @@ final class SoundPlayer {
             player.volume = volume
             players[resource] = player
             #if DEBUG
-            print("🎵 [Music] playing \(resource).\(ext) (loop, vol=\(volume))")
+            appDebugLog("🎵 [Music] playing \(resource).\(ext) (loop, vol=\(volume))")
             #endif
         } catch {
-            print("⚠️ [Music] Playback failed for \(resource): \(error)")
+            appDebugLog("⚠️ [Music] Playback failed for \(resource): \(error)")
         }
     }
 
@@ -205,7 +205,7 @@ final class SoundPlayer {
     /// Mehrfach-Aufrufe für dieselbe Resource sind idempotent.
     func preloadMusic(resource: String, ext: String = "mp3") {
         guard let url = Bundle.main.url(forResource: resource, withExtension: ext) else {
-            print("⚠️ [Music] Preload missing: \(resource).\(ext)")
+            appDebugLog("⚠️ [Music] Preload missing: \(resource).\(ext)")
             return
         }
         ensureAudioSession()
@@ -222,10 +222,10 @@ final class SoundPlayer {
             player.play()
             preloadedMusicPlayers[resource] = player
             #if DEBUG
-            print("🎵 [Music] preloaded+playing-silent \(resource).\(ext)")
+            appDebugLog("🎵 [Music] preloaded+playing-silent \(resource).\(ext)")
             #endif
         } catch {
-            print("⚠️ [Music] Preload failed for \(resource): \(error)")
+            appDebugLog("⚠️ [Music] Preload failed for \(resource): \(error)")
         }
     }
 
@@ -298,7 +298,7 @@ final class SoundPlayer {
         }
 
         #if DEBUG
-        print("🛑 [Music] stopAllMusic (keep preload: \(preserved ?? "none"))")
+        appDebugLog("🛑 [Music] stopAllMusic (keep preload: \(preserved ?? "none"))")
         #endif
     }
 

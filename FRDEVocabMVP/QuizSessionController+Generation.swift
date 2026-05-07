@@ -72,14 +72,14 @@ extension QuizSessionController {
                expectedListIDs: selectedListIDs,
                expectedCount: questionCountOption
            ) {
-            print("🧩 [Quiz] resumed from snapshot, questions=\(questions.count), index=\(currentQuestionIndex)")
+            appDebugLog("🧩 [Quiz] resumed from snapshot, questions=\(questions.count), index=\(currentQuestionIndex)")
             return
         }
 
         let candidates = cachedCandidates
-        print("🧩 [Quiz] session.startQuiz candidates=\(candidates.count)")
+        appDebugLog("🧩 [Quiz] session.startQuiz candidates=\(candidates.count)")
         guard candidates.count >= 2 else {
-            print("🧩 [Quiz] ❌ not enough candidates (<2)")
+            appDebugLog("🧩 [Quiz] ❌ not enough candidates (<2)")
             return
         }
 
@@ -162,10 +162,10 @@ extension QuizSessionController {
                 let insertIdx = min(1, combined.count)
                 combined.insert(combo, at: insertIdx)
                 appendPreparedQuizQuestions(combined)
-                print("🧩 [WordCombo] ✅ inserted into quiz")
+                appDebugLog("🧩 [WordCombo] ✅ inserted into quiz")
             } else {
                 appendPreparedQuizQuestions(generatedQuestions)
-                print("🧩 [WordCombo] ❌ no matching pairs for user's vocabulary")
+                appDebugLog("🧩 [WordCombo] ❌ no matching pairs for user's vocabulary")
             }
         }
     }

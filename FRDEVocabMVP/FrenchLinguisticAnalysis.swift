@@ -1933,10 +1933,10 @@ enum FrenchLinguisticAnalysisSelfTest {
         }
 
         if failures.isEmpty {
-            print("\u{2705} [FrenchAnalysis] \(cases.count) Eintragstests + Aggregation bestanden")
+            appDebugLog("\u{2705} [FrenchAnalysis] \(cases.count) Eintragstests + Aggregation bestanden")
         } else {
-            print("\u{274C} [FrenchAnalysis] \(failures.count) Fehler:")
-            for f in failures { print("    \(f)") }
+            appDebugLog("\u{274C} [FrenchAnalysis] \(failures.count) Fehler:")
+            for f in failures { appDebugLog("    \(f)") }
         }
     }
 }

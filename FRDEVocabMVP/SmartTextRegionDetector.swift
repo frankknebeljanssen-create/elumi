@@ -76,7 +76,7 @@ enum TextDensityDetector {
         let isDense = (boxCount >= 10) || (averageHeight < 0.04 && boxCount >= 6)
 
         #if DEBUG
-        print("🧠 [TextDensity] boxes=\(boxCount), avgHeight=\(String(format: "%.3f", averageHeight)) → dense=\(isDense)")
+        appDebugLog("🧠 [TextDensity] boxes=\(boxCount), avgHeight=\(String(format: "%.3f", averageHeight)) → dense=\(isDense)")
         #endif
         return isDense
     }

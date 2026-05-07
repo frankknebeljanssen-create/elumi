@@ -137,7 +137,7 @@ extension FlashcardSessionStore {
         session.isCompleted = true
         self.session = session
         #if DEBUG
-        print("🛑 [Flashcards] Force-Done via chain-timer-soft-cutoff")
+        appDebugLog("🛑 [Flashcards] Force-Done via chain-timer-soft-cutoff")
         #endif
     }
 

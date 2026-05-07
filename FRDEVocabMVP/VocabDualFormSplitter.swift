@@ -109,7 +109,7 @@ enum VocabDualFormSplitter {
         // werden geloggt.
         #if DEBUG
         if debugMode {
-            print("""
+            appDebugLog("""
             📡 [Split]
               text: source=\"\(src)\" | target=\"\(tgt)\"
               parts: source=\(srcParts.count) / target=\(tgtParts.count)

@@ -101,7 +101,7 @@ enum VocabularyKnownBadEntriesMigration {
                     listDidChange = true
                     totalDeleted += 1
                     #if DEBUG
-                    print("📋 [KnownBad] gelöscht: \"\(item.french)\" → \"\(item.german)\" aus Liste \"\(original.name)\"")
+                    appDebugLog("📋 [KnownBad] gelöscht: \"\(item.french)\" → \"\(item.german)\" aus Liste \"\(original.name)\"")
                     #endif
 
                 case .replace(let french, let german, let wordClass, let cardType):
@@ -117,7 +117,7 @@ enum VocabularyKnownBadEntriesMigration {
                     listDidChange = true
                     totalReplaced += 1
                     #if DEBUG
-                    print("📋 [KnownBad] ersetzt: \"\(item.french)\" → \"\(item.german)\"  =>  \"\(french)\" → \"\(german)\"")
+                    appDebugLog("📋 [KnownBad] ersetzt: \"\(item.french)\" → \"\(item.german)\"  =>  \"\(french)\" → \"\(german)\"")
                     #endif
                 }
             }
@@ -137,7 +137,7 @@ enum VocabularyKnownBadEntriesMigration {
 
         userDefaults.set(true, forKey: migrationKey)
         #if DEBUG
-        print("📋 [KnownBad-Migration] abgeschlossen. ersetzt=\(totalReplaced), gelöscht=\(totalDeleted).")
+        appDebugLog("📋 [KnownBad-Migration] abgeschlossen. ersetzt=\(totalReplaced), gelöscht=\(totalDeleted).")
         #endif
         return anyChange
     }

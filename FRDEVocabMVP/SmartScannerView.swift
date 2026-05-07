@@ -243,7 +243,7 @@ struct SmartScannerView: View {
                     if case .refining = controller.captureMachine.state,
                        lastCaptureID == captureGenSnapshot {
                         #if DEBUG
-                        print("❌ [Processing] Timeout after 30s — forcing failure (refining never finished, id=\(captureGenSnapshot.shortID))")
+                        appDebugLog("❌ [Processing] Timeout after 30s — forcing failure (refining never finished, id=\(captureGenSnapshot.shortID))")
                         #endif
                         processingTask?.cancel()
                         controller.captureMachine.transition(to: .captureFailed(.captureFailed))
@@ -305,12 +305,12 @@ struct SmartScannerView: View {
         let state = controller.captureMachine.state
         guard state.isLiveStage || state == .idle else {
             #if DEBUG
-            print("🔁 [ModeSwitch] blocked — machine in \(state.debugLabel)")
+            appDebugLog("🔁 [ModeSwitch] blocked — machine in \(state.debugLabel)")
             #endif
             return
         }
         #if DEBUG
-        print("🔁 [ModeSwitch] \(profile == .vocabularyList ? "list" : "text") → \(requested == .vocabularyList ? "list" : "text")")
+        appDebugLog("🔁 [ModeSwitch] \(profile == .vocabularyList ? "list" : "text") → \(requested == .vocabularyList ? "list" : "text")")
         #endif
         profile = requested
         // AutoCapture-Default neu setzen, sonst behält der User den
@@ -428,7 +428,7 @@ struct SmartScannerView: View {
     /// `onCancel()` triggern).
     private func cancelProcessing() {
         #if DEBUG
-        print("🚫 [Processing] user cancelled during AI analysis")
+        appDebugLog("🚫 [Processing] user cancelled during AI analysis")
         #endif
         processingTask?.cancel()
         processingTask = nil
@@ -449,7 +449,7 @@ struct SmartScannerView: View {
         #if DEBUG
         let attBoxStr = frozenAttentionBox.map { String(format: "(%.2f,%.2f,%.2f,%.2f)", $0.minX, $0.minY, $0.width, $0.height) } ?? "nil"
         let plsStr = previewLayerSize.map { String(format: "(%.0f×%.0f)", $0.width, $0.height) } ?? "nil"
-        print("🟤 [Processing \(captureID.shortID)] runProcessing started " +
+        appDebugLog("🟤 [Processing \(captureID.shortID)] runProcessing started " +
               "policy=\(geometryPolicy.debugLabel) " +
               "raw=\(Int(raw.size.width))×\(Int(raw.size.height)) " +
               "frozenQuad=\(frozenQuad != nil ? "yes" : "nil") " +
@@ -494,7 +494,7 @@ struct SmartScannerView: View {
                 else { return raw }
                 usedPreviewVisibleCrop = true
                 #if DEBUG
-                print("✂️ [WYSIWYG] freeText manual " +
+                appDebugLog("✂️ [WYSIWYG] freeText manual " +
                       "raw=\(Int(raw.size.width))×\(Int(raw.size.height)) → " +
                       "cropped=\(Int(cropped.size.width))×\(Int(cropped.size.height))")
                 #endif
@@ -517,7 +517,7 @@ struct SmartScannerView: View {
                 optimizedVariant = nil
                 optimizationApplied = false
                 #if DEBUG
-                print("📋 [Capture-Identity \(captureID.shortID)] mode=freeText/manual " +
+                appDebugLog("📋 [Capture-Identity \(captureID.shortID)] mode=freeText/manual " +
                       "policy=\(geometryPolicy.debugLabel) " +
                       "trigger=manual " +
                       "fullDim=\(Int(raw.size.width))×\(Int(raw.size.height)) " +
@@ -581,7 +581,7 @@ struct SmartScannerView: View {
             if result.didCorrectPerspective {
                 usedQuadAssist = true
                 #if DEBUG
-                print("📐 [freeText auto] Quad gefunden → perspective-corrected " +
+                appDebugLog("📐 [freeText auto] Quad gefunden → perspective-corrected " +
                       "(\(Int(pipelineImage.size.width))×\(Int(pipelineImage.size.height)))")
                 #endif
             } else if let pls = previewLayerSize,
@@ -589,12 +589,12 @@ struct SmartScannerView: View {
                 pipelineImage = cropped
                 usedPreviewVisibleCrop = true
                 #if DEBUG
-                print("✂️ [freeText auto] kein stabiler Quad → Fallback WYSIWYG " +
+                appDebugLog("✂️ [freeText auto] kein stabiler Quad → Fallback WYSIWYG " +
                       "(\(Int(cropped.size.width))×\(Int(cropped.size.height)))")
                 #endif
             } else {
                 #if DEBUG
-                print("📷 [freeText auto] kein Quad + kein PreviewLayerSize → raw full-frame durchgereicht")
+                appDebugLog("📷 [freeText auto] kein Quad + kein PreviewLayerSize → raw full-frame durchgereicht")
                 #endif
             }
         }
@@ -602,14 +602,14 @@ struct SmartScannerView: View {
         if profile == .freeText, ScanSettings.smartRegionCropEnabled {
             if let cropped = await SmartTextRegionDetector.detectCropAsync(pipelineImage) {
                 #if DEBUG
-                print("✂️ [Scan-SmartRegion] opt-in crop applied " +
+                appDebugLog("✂️ [Scan-SmartRegion] opt-in crop applied " +
                       "(\(Int(pipelineImage.size.width))×\(Int(pipelineImage.size.height)) → " +
                       "\(Int(cropped.size.width))×\(Int(cropped.size.height)))")
                 #endif
                 pipelineImage = cropped
             } else {
                 #if DEBUG
-                print("✂️ [Scan-SmartRegion] opt-in active but no crop produced — keeping full frame")
+                appDebugLog("✂️ [Scan-SmartRegion] opt-in active but no crop produced — keeping full frame")
                 #endif
             }
             if Task.isCancelled { return }
@@ -632,7 +632,7 @@ struct SmartScannerView: View {
         if Task.isCancelled { return }
 
         #if DEBUG
-        print("📷 [Scan-Quality] \(report.debugSummary)")
+        appDebugLog("📷 [Scan-Quality] \(report.debugSummary)")
         #endif
 
         await MainActor.run {
@@ -648,7 +648,7 @@ struct SmartScannerView: View {
                 batchCapturedImages.append(pipelineImage)
                 lastCaptureID = captureID
                 #if DEBUG
-                print("📸 [Multi-Shot] vocabularyList capture #\(batchCapturedImages.count) appended (id=\(captureID.shortID))")
+                appDebugLog("📸 [Multi-Shot] vocabularyList capture #\(batchCapturedImages.count) appended (id=\(captureID.shortID))")
                 #endif
                 controller.resetToLive()
                 return
@@ -703,7 +703,7 @@ struct SmartScannerView: View {
                 }
                 return autoCaptureEnabled ? "vocabularyList/auto" : "vocabularyList/manual"
             }()
-            print("📋 [Capture-Identity \(captureID.shortID)] mode=\(modeLabel) " +
+            appDebugLog("📋 [Capture-Identity \(captureID.shortID)] mode=\(modeLabel) " +
                   "policy=\(geometryPolicy.debugLabel) " +
                   "trigger=\(triggerLabel) " +
                   "fullDim=\(rawDim) finalDim=\(finalDim) " +
@@ -763,7 +763,7 @@ struct SmartScannerView: View {
         let improvement = optimizedReport.overallScore - originalReport.overallScore
 
         #if DEBUG
-        print(String(
+        appDebugLog(String(
             format: "🪄 [Auto-Opt] profile=%@ improvement=%+.3f (orig=%.2f → opt=%.2f)",
             recommendedProfile.debugLabel, improvement,
             originalReport.overallScore, optimizedReport.overallScore
@@ -780,7 +780,7 @@ struct SmartScannerView: View {
             // erscheinen.
             guard !Task.isCancelled else {
                 #if DEBUG
-                print("🪄 [Auto-Opt] cancelled — skipping state update")
+                appDebugLog("🪄 [Auto-Opt] cancelled — skipping state update")
                 #endif
                 return
             }
@@ -801,7 +801,7 @@ struct SmartScannerView: View {
             if profile == .freeText && improvement > 0.15 {
                 optimizationApplied = true
                 #if DEBUG
-                print("🪄 [Auto-Opt] auto-applied (FreeText + improvement > 0.15)")
+                appDebugLog("🪄 [Auto-Opt] auto-applied (FreeText + improvement > 0.15)")
                 #endif
             }
         }
@@ -943,7 +943,7 @@ struct SmartScannerView: View {
                     userCroppedImage = croppedImage
                     showingCropSheet = false
                     #if DEBUG
-                    print("✂️ [Preview-Crop] user applied crop: " +
+                    appDebugLog("✂️ [Preview-Crop] user applied crop: " +
                           "\(Int(baseImage.size.width))×\(Int(baseImage.size.height)) → " +
                           "\(Int(croppedImage.size.width))×\(Int(croppedImage.size.height)))")
                     #endif
@@ -1889,7 +1889,7 @@ private struct SmartScannerCaptureView: View {
             //      kommt später, aber die Scene-Preview friert sofort
             //      ein (via `isCapturing`-Guard in `emitGuidance`).
             #if DEBUG
-            print("🟢 [UI] Capture button tapped")
+            appDebugLog("🟢 [UI] Capture button tapped")
             #endif
             shutterHaptic.impactOccurred()
             shutterHaptic.prepare()  // für den nächsten Tap
@@ -2590,13 +2590,13 @@ private final class SmartScannerController: ObservableObject {
         let currentState = captureMachine.state
         if currentState == .capturing {
             #if DEBUG
-            print("📷 [Capture] Duplicate tap ignored — already capturing")
+            appDebugLog("📷 [Capture] Duplicate tap ignored — already capturing")
             #endif
             return
         }
         if case .refining = currentState {
             #if DEBUG
-            print("📷 [Capture] Tap ignored — refining in progress")
+            appDebugLog("📷 [Capture] Tap ignored — refining in progress")
             #endif
             return
         }
@@ -2626,7 +2626,7 @@ private final class SmartScannerController: ObservableObject {
             guard let self, self.captureGeneration == gen else { return }
             if self.captureMachine.state == .capturing {
                 #if DEBUG
-                print("❌ [Capture] Timeout after 2.0s — forcing failure (delegate never fired)")
+                appDebugLog("❌ [Capture] Timeout after 2.0s — forcing failure (delegate never fired)")
                 #endif
                 self.captureMachine.transition(to: .captureFailed(.captureFailed))
                 // Freeze-Frame-Overlay weg: der Fehler-Screen übernimmt,
@@ -2696,7 +2696,7 @@ private final class SmartScannerController: ObservableObject {
         focusLockHaptic.prepare()
         focusLockHaptic.impactOccurred()
         #if DEBUG
-        print(String(
+        appDebugLog(String(
             format: "🎯 [TapToFocus] layer=(%.1f,%.1f)",
             layerPoint.x, layerPoint.y
         ))
@@ -2709,7 +2709,7 @@ private final class SmartScannerController: ObservableObject {
         focusMode = .auto
         session.focusMode = .auto
         #if DEBUG
-        print("🎯 [FocusLock] reset → .auto")
+        appDebugLog("🎯 [FocusLock] reset → .auto")
         #endif
     }
 
@@ -2777,7 +2777,7 @@ extension SmartScannerController: SmartScannerSessionDelegate {
         let pxH = Int(image.size.height * image.scale)
         let attBoxText = frozenAttentionBox.map { String(format: "(%.2f,%.2f,%.2f,%.2f)", $0.minX, $0.minY, $0.width, $0.height) } ?? "nil"
         let plsText = previewLayerSize.map { String(format: "(%.0f×%.0f)", $0.width, $0.height) } ?? "nil"
-        print("🟣 [Controller \(captureID.shortID)] received image \(pxW)×\(pxH), frozenQuad=\(frozenQuad != nil ? "yes" : "nil"), frozenAttention=\(attBoxText), previewLayerSize=\(plsText)")
+        appDebugLog("🟣 [Controller \(captureID.shortID)] received image \(pxW)×\(pxH), frozenQuad=\(frozenQuad != nil ? "yes" : "nil"), frozenAttention=\(attBoxText), previewLayerSize=\(plsText)")
         #endif
         haptic.impactOccurred()
         // **AP1-Fix**: Auto-Capture-Pfad geht direkt von der Session
@@ -2803,7 +2803,7 @@ extension SmartScannerController: SmartScannerSessionDelegate {
         // die Retry-Karte. Kein stilles `print` mehr — der User
         // bekommt jetzt klares Feedback.
         #if DEBUG
-        print("📷 [SmartScanner] Fehler: \(error.localizedDescription)")
+        appDebugLog("📷 [SmartScanner] Fehler: \(error.localizedDescription)")
         #endif
         captureMachine.transition(to: .captureFailed(error))
     }

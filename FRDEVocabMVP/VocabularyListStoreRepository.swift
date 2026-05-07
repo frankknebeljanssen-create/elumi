@@ -147,19 +147,19 @@ final class VocabularyListStoreRepository {
         let newCount = customLists.count
         if cachedCount > 0 && newCount == 0 {
             #if DEBUG
-            print("⚠️ [ListStore.save] DANGER: customLists wechselt von \(cachedCount) → 0. " +
+            appDebugLog("⚠️ [ListStore.save] DANGER: customLists wechselt von \(cachedCount) → 0. " +
                   "Sicher dass das ein User-Action-Reset war? Last-Known-Good bleibt erhalten.")
             #endif
         } else if cachedCount > 10 && newCount < cachedCount / 2 {
             #if DEBUG
-            print("⚠️ [ListStore.save] DANGER: Listenzahl halbiert sich (\(cachedCount) → \(newCount)). " +
+            appDebugLog("⚠️ [ListStore.save] DANGER: Listenzahl halbiert sich (\(cachedCount) → \(newCount)). " +
                   "Last-Known-Good bleibt vorerst erhalten.")
             #endif
         }
 
         guard let data = try? JSONEncoder().encode(customLists) else {
             #if DEBUG
-            print("❌ [ListStore.save] JSON encoding failed — data NOT saved! " +
+            appDebugLog("❌ [ListStore.save] JSON encoding failed — data NOT saved! " +
                   "Last-Known-Good unverändert, aktueller Cache bleibt.")
             #endif
             return
@@ -180,7 +180,7 @@ final class VocabularyListStoreRepository {
         }
 
         #if DEBUG
-        print("💾 [ListStore.save] \(newCount) custom lists persisted " +
+        appDebugLog("💾 [ListStore.save] \(newCount) custom lists persisted " +
               "(file + UserDefaults + \(newCount > 0 ? "LKG-backup" : "LKG-skipped"), \(data.count) bytes)")
         #endif
 
@@ -235,7 +235,7 @@ final class VocabularyListStoreRepository {
                 mainFileWasCorrupt = true
                 loadSource = "file-corrupt"
                 #if DEBUG
-                print("🚨 [ListStore.load] CORRUPTION detected: main file present (\(data.count) bytes) but decode failed!")
+                appDebugLog("🚨 [ListStore.load] CORRUPTION detected: main file present (\(data.count) bytes) but decode failed!")
                 #endif
             }
         }
@@ -252,7 +252,7 @@ final class VocabularyListStoreRepository {
                 loadSource = "last-known-good"
                 shouldPersistMigratedLists = true
                 #if DEBUG
-                print("✅ [ListStore.load] recovered \(decoded.count) lists from Last-Known-Good backup")
+                appDebugLog("✅ [ListStore.load] recovered \(decoded.count) lists from Last-Known-Good backup")
                 #endif
             }
         }
@@ -267,7 +267,7 @@ final class VocabularyListStoreRepository {
                 loadSource = "userDefaults-recovery"
                 shouldPersistMigratedLists = true
                 #if DEBUG
-                print("⚠️ [ListStore.load] file was empty/missing/corrupt — recovered \(decoded.count) lists from UserDefaults backup")
+                appDebugLog("⚠️ [ListStore.load] file was empty/missing/corrupt — recovered \(decoded.count) lists from UserDefaults backup")
                 #endif
             }
         }
@@ -275,14 +275,14 @@ final class VocabularyListStoreRepository {
         #if DEBUG
         if loadedCustomLists.isEmpty {
             if mainFileWasCorrupt {
-                print("🚨 [ListStore.load] CRITICAL: Main file corrupt AND no recovery backup available. " +
+                appDebugLog("🚨 [ListStore.load] CRITICAL: Main file corrupt AND no recovery backup available. " +
                       "Sample-Seeding wird übersprungen, um die Korruption nicht zu verschleiern.")
             } else {
-                print("ℹ️ [ListStore.load] no custom lists found (source=\(loadSource)). " +
+                appDebugLog("ℹ️ [ListStore.load] no custom lists found (source=\(loadSource)). " +
                       "mainFileExisted=\(mainFileExisted) — \(mainFileExisted ? "empty file" : "fresh install").")
             }
         } else {
-            print("📦 [ListStore.load] \(loadedCustomLists.count) custom lists loaded from \(loadSource)")
+            appDebugLog("📦 [ListStore.load] \(loadedCustomLists.count) custom lists loaded from \(loadSource)")
         }
         #endif
 
@@ -309,11 +309,11 @@ final class VocabularyListStoreRepository {
             userDefaults.set(true, forKey: sampleListsSeededKey)
             shouldPersistMigratedLists = true
             #if DEBUG
-            print("🌱 [ListStore.load] Sample-Seeding ausgeführt (\(sampleSeeds.count) Seeds geprüft)")
+            appDebugLog("🌱 [ListStore.load] Sample-Seeding ausgeführt (\(sampleSeeds.count) Seeds geprüft)")
             #endif
         } else if mainFileWasCorrupt {
             #if DEBUG
-            print("🚨 [ListStore.load] Sample-Seeding ÜBERSPRUNGEN wegen Datei-Korruption — manueller Recovery nötig.")
+            appDebugLog("🚨 [ListStore.load] Sample-Seeding ÜBERSPRUNGEN wegen Datei-Korruption — manueller Recovery nötig.")
             #endif
         }
 

@@ -61,14 +61,14 @@ enum VocabularyListDualFormMigration {
                 anyChange = true
                 #if DEBUG
                 let delta = mergedItems.count - original.items.count
-                print("📋 [DualForm-Migration] Liste \"\(original.name)\": \(delta >= 0 ? "+" : "")\(delta) Eintrag(e) nach Split+Merge.")
+                appDebugLog("📋 [DualForm-Migration] Liste \"\(original.name)\": \(delta >= 0 ? "+" : "")\(delta) Eintrag(e) nach Split+Merge.")
                 #endif
             }
         }
 
         userDefaults.set(true, forKey: migrationKey)
         #if DEBUG
-        print("📋 [DualForm-Migration] abgeschlossen. Änderungen: \(anyChange)")
+        appDebugLog("📋 [DualForm-Migration] abgeschlossen. Änderungen: \(anyChange)")
         #endif
         return anyChange
     }
@@ -88,7 +88,7 @@ enum VocabularyListDualFormMigration {
             if decision.confidence < VocabDualFormSplitter.autoApplyThreshold,
                decision.confidence > 0.0,
                (item.french.contains("/") || item.french.contains(",")) {
-                print("📋 [DualForm] Eintrag NICHT gesplittet (\"\(item.french)\"): \(decision.rationale)")
+                appDebugLog("📋 [DualForm] Eintrag NICHT gesplittet (\"\(item.french)\"): \(decision.rationale)")
             }
             #endif
             return [item]

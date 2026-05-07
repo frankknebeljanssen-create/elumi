@@ -142,7 +142,7 @@ final class FlashcardSessionStore: ObservableObject {
               let session = session else {
             // Diagnose: warum sind wir kein-op?
             if activePersonalDeckID != nil {
-                print("⚠️ savePersonalDeckProgress no-op: deck=\(PersonalDeckStore.shared.deck(withID: activePersonalDeckID!) != nil) session=\(session != nil)")
+                appDebugLog("⚠️ savePersonalDeckProgress no-op: deck=\(PersonalDeckStore.shared.deck(withID: activePersonalDeckID!) != nil) session=\(session != nil)")
             }
             return
         }
@@ -185,6 +185,6 @@ final class FlashcardSessionStore: ObservableObject {
             // `lastAccessedAt` bleibt absichtlich unverändert — siehe
             // Doc-Header oben.
         }
-        print("💾 perCardSave deckID=\(deckID) currentIndex=\(computedIndex) mastered=\(updatedMasteredSet.count)/\(deck.cardOrder.count)")
+        appDebugLog("💾 perCardSave deckID=\(deckID) currentIndex=\(computedIndex) mastered=\(updatedMasteredSet.count)/\(deck.cardOrder.count)")
     }
 }

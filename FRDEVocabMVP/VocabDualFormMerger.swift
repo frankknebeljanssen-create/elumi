@@ -205,7 +205,7 @@ enum VocabDualFormMerger {
             variants: variants
         )
         #if DEBUG
-        print("🔗 [Merge] Gender-Variant: \"\(masc.french)\" (m) + \"\(fem.french)\" (f) → \"\(combinedFrench)\" (conf=\(String(format: "%.2f", confidence)))")
+        appDebugLog("🔗 [Merge] Gender-Variant: \"\(masc.french)\" (m) + \"\(fem.french)\" (f) → \"\(combinedFrench)\" (conf=\(String(format: "%.2f", confidence)))")
         #endif
         return MergeDecision(
             merged: mergedItem,
@@ -288,7 +288,7 @@ enum VocabDualFormMerger {
             variants: variants
         )
         #if DEBUG
-        print("🔗 [Merge] Singular/Plural: \"\(singular.french)\" + \"\(plural.french)\" → \"\(combinedFrench)\" (conf=\(String(format: "%.2f", confidence)))")
+        appDebugLog("🔗 [Merge] Singular/Plural: \"\(singular.french)\" + \"\(plural.french)\" → \"\(combinedFrench)\" (conf=\(String(format: "%.2f", confidence)))")
         #endif
         return MergeDecision(
             merged: mergedItem,
@@ -410,7 +410,7 @@ enum VocabDualFormMerger {
         }
 
         #if DEBUG
-        print("🔗 [Merge] Artikel+Nomen: \"\(article.french)\" + \"\(noun.french)\" → \"\(mergedFrench)\" / \"\(mergedGerman)\" (conf=\(String(format: "%.2f", confidence)))")
+        appDebugLog("🔗 [Merge] Artikel+Nomen: \"\(article.french)\" + \"\(noun.french)\" → \"\(mergedFrench)\" / \"\(mergedGerman)\" (conf=\(String(format: "%.2f", confidence)))")
         #endif
 
         let mergedItem = VocabularyItem(

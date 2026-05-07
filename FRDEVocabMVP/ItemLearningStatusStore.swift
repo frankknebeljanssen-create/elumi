@@ -105,7 +105,7 @@ final class ItemLearningStatusStore: ObservableObject {
            let legacy = try? JSONDecoder().decode([String: ItemLearningStatus].self, from: legacyData) {
             statuses = legacy
             #if DEBUG
-            print("📦 [LearningStatus] first-time per-account load — seeded from legacy file (\(legacy.count) entries)")
+            appDebugLog("📦 [LearningStatus] first-time per-account load — seeded from legacy file (\(legacy.count) entries)")
             #endif
             // Sofort in den Per-Account-File schreiben, damit der
             // Legacy-Fallback nur einmal greift.

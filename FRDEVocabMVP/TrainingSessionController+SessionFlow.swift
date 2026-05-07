@@ -2,7 +2,7 @@ import Foundation
 
 extension TrainingSessionController {
     func resetTrainingSessionState() {
-        print("🏋️ [Session] resetTrainingSessionState called, was hasStarted=\(hasStartedTraining)")
+        appDebugLog("🏋️ [Session] resetTrainingSessionState called, was hasStarted=\(hasStartedTraining)")
         hasStartedTraining = false
         isSpeedRound = false
         isShowingSetup = true
@@ -101,7 +101,7 @@ extension TrainingSessionController {
         }
 
         guard !remainingTrainingItems.isEmpty else {
-            print("🏋️ [Training] ❌ no cards left! prepared=\(preparedTrainingItems.count) remaining=\(remainingTrainingItems.count)")
+            appDebugLog("🏋️ [Training] ❌ no cards left! prepared=\(preparedTrainingItems.count) remaining=\(remainingTrainingItems.count)")
             hasStartedTraining = false
             currentTrainingItem = nil
             return
@@ -140,7 +140,7 @@ extension TrainingSessionController {
             selectedAppDirection: selectedAppDirection,
             launchContext: launchContext
         )
-        print("🏋️ [Training] buildDeck: mode=\(trainingMode) cardType=\(cardType) items=\(items.count)")
+        appDebugLog("🏋️ [Training] buildDeck: mode=\(trainingMode) cardType=\(cardType) items=\(items.count)")
         return TrainingDeckBuilder.buildDeck(from: items)
     }
 }

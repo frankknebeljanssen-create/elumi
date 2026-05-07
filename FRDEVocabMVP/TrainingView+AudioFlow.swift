@@ -11,16 +11,16 @@ extension TrainingView {
         }
         stopListeningForTyping()
         guard isAudioModeEnabled else {
-            print("🔊 [Speak] ❌ audioMode disabled (sounds=\(feedbackPlayer.areSoundsEnabled))")
+            appDebugLog("🔊 [Speak] ❌ audioMode disabled (sounds=\(feedbackPlayer.areSoundsEnabled))")
             showingTypedAnswerInput = true
             return
         }
         guard let speaker else {
-            print("🔊 [Speak] ❌ no speaker (runtimeSpeaker=\(runtimeSpeaker != nil))")
+            appDebugLog("🔊 [Speak] ❌ no speaker (runtimeSpeaker=\(runtimeSpeaker != nil))")
             showingTypedAnswerInput = true
             return
         }
-        print("🔊 [Speak] ✅ speaking: \(currentCard.prompt)")
+        appDebugLog("🔊 [Speak] ✅ speaking: \(currentCard.prompt)")
         lastResult = nil
         speaker.speak(text: currentCard.prompt, languageCode: currentCard.promptLanguageCode)
     }
@@ -346,26 +346,26 @@ extension TrainingView {
         let recording = speechController?.isRecording == true
         let authStatus = speechController?.authorizationStatus.rawValue ?? -1
 
-        print("🎤 [AutoListen] started=\(started) card=\(hasCard) audio=\(audioOn) speechPerm=\(speechOK)(auth=\(authStatus)) typing=\(typing) focused=\(focused) controller=\(hasController) recording=\(recording)")
+        appDebugLog("🎤 [AutoListen] started=\(started) card=\(hasCard) audio=\(audioOn) speechPerm=\(speechOK)(auth=\(authStatus)) typing=\(typing) focused=\(focused) controller=\(hasController) recording=\(recording)")
 
         guard started, hasCard else { return }
         guard audioOn, speechOK else {
-            print("🎤 [AutoListen] ❌ blocked: audioMode=\(audioOn) speechPerm=\(speechOK)")
+            appDebugLog("🎤 [AutoListen] ❌ blocked: audioMode=\(audioOn) speechPerm=\(speechOK)")
             return
         }
         guard !typing, !focused else {
-            print("🎤 [AutoListen] ❌ blocked: typing=\(typing) focused=\(focused)")
+            appDebugLog("🎤 [AutoListen] ❌ blocked: typing=\(typing) focused=\(focused)")
             return
         }
         guard let speechController else {
-            print("🎤 [AutoListen] ❌ no speechController, preparing...")
+            appDebugLog("🎤 [AutoListen] ❌ no speechController, preparing...")
             Task {
                 await prepareTrainingAudioDependenciesIfNeeded()
             }
             return
         }
         guard !recording else { return }
-        print("🎤 [AutoListen] ✅ STARTING recording")
+        appDebugLog("🎤 [AutoListen] ✅ STARTING recording")
         shouldEvaluateAfterStop = true
         speechController.startRecording(localeIdentifier: localeIdentifierForRecognition)
     }

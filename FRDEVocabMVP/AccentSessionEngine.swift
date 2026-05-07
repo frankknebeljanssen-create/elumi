@@ -310,7 +310,7 @@ final class AccentSessionEngine: ObservableObject {
         isFinished = true
         AccentSessionResumeStore.clear()
         #if DEBUG
-        print("🛑 [Akzente] Force-Done via chain-timer-soft-cutoff")
+        appDebugLog("🛑 [Akzente] Force-Done via chain-timer-soft-cutoff")
         #endif
     }
 

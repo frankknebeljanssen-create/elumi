@@ -398,7 +398,7 @@ struct ElumiTabView: View {
             // kein Migration-Flag, multi-device-safe).
             if !Self.durationOptions.contains(selectedDuration) {
                 #if DEBUG
-                print("🕒 [DurationMigration] selectedDuration=\(selectedDuration) ∉ \(Self.durationOptions) → reset to \(Self.durationDefault)")
+                appDebugLog("🕒 [DurationMigration] selectedDuration=\(selectedDuration) ∉ \(Self.durationOptions) → reset to \(Self.durationDefault)")
                 #endif
                 selectedDuration = Self.durationDefault
             }
@@ -914,7 +914,7 @@ struct ElumiTabView: View {
                     feedbackPlayer.playSlotReelClick()
                 }
                 #if DEBUG
-                print("🔊 [Slot] Reel \(reelIndex) Click (final=\(isFinalReel))")
+                appDebugLog("🔊 [Slot] Reel \(reelIndex) Click (final=\(isFinalReel))")
                 #endif
             },
             onSpinStart: {
@@ -935,7 +935,7 @@ struct ElumiTabView: View {
                 // (der vor dem neuen click sound kommt)". Haptik und
                 // Session-Priming bleiben — beides ist nicht hörbar.
                 #if DEBUG
-                print("🔊 [Slot] Spin gestartet (session primed, kein Launch-Sound mehr)")
+                appDebugLog("🔊 [Slot] Spin gestartet (session primed, kein Launch-Sound mehr)")
                 #endif
             }
         )
@@ -1160,13 +1160,13 @@ struct ElumiTabView: View {
         .contentShape(Rectangle())
         .onTapGesture {
             #if DEBUG
-            print("🕒 [DurationChip] tap on \(minutes) (prev=\(String(describing: modalDurationSelection)))")
+            appDebugLog("🕒 [DurationChip] tap on \(minutes) (prev=\(String(describing: modalDurationSelection)))")
             #endif
             modalDurationSelection = minutes
             selectedDuration = minutes
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
             #if DEBUG
-            print("🕒 [DurationChip] modalDurationSelection → \(minutes) ✓")
+            appDebugLog("🕒 [DurationChip] modalDurationSelection → \(minutes) ✓")
             #endif
             // **2026-05-06 Refactor (Pop-up-Only)** — Auto-Close direkt
             // nach Time-Tap. User-Spec: „User tippt Zeit-Card → Pop-up
@@ -1691,7 +1691,7 @@ struct ElumiTabView: View {
         dropRate.registerSpinResult(elumiCount: result.elumiCount)
         budget.awardBonusCredits(for: result.elumiCount)
         #if DEBUG
-        print("🎰 [ElumiTab] Spin abgeschlossen — currentSpinNumber=\(currentSpinNumber)/\(maxSpins), Elumis=\(result.elumiCount) (Credit-Grant erfolgt erst beim 'Jetzt üben'-Tap)")
+        appDebugLog("🎰 [ElumiTab] Spin abgeschlossen — currentSpinNumber=\(currentSpinNumber)/\(maxSpins), Elumis=\(result.elumiCount) (Credit-Grant erfolgt erst beim 'Jetzt üben'-Tap)")
         #endif
         // **V4.4 Final-Result-Sound**:
         //   • Elumi-Treffer (1+) → Achievement-Sound (bonusbubble)

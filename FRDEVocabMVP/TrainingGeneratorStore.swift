@@ -90,7 +90,7 @@ final class TrainingGeneratorStore: ObservableObject {
             let data = try encoder.encode(session)
             UserDefaults.standard.set(data, forKey: Self.sessionKey)
         } catch {
-            print("⚠️ TrainingGeneratorStore encode failed: \(error)")
+            appDebugLog("⚠️ TrainingGeneratorStore encode failed: \(error)")
         }
     }
 }

@@ -323,14 +323,14 @@ extension ScanImportView {
             hints: .init(isTextDense: dense)
         )
         #if DEBUG
-        print("📷 [FreeText-Gallery-Pipeline] dense=\(dense) \(report.debugSummary)")
+        appDebugLog("📷 [FreeText-Gallery-Pipeline] dense=\(dense) \(report.debugSummary)")
         #endif
 
         var pipelineImage = result.image
         if ScanSettings.smartRegionCropEnabled {
             if let cropped = await SmartTextRegionDetector.detectCropAsync(pipelineImage) {
                 #if DEBUG
-                print("✂️ [FreeText-Gallery-Pipeline] smart-region crop applied")
+                appDebugLog("✂️ [FreeText-Gallery-Pipeline] smart-region crop applied")
                 #endif
                 pipelineImage = cropped
             }
@@ -384,7 +384,7 @@ extension ScanImportView {
         let improvement = optimizedReport.overallScore - baseReport.overallScore
 
         #if DEBUG
-        print(String(
+        appDebugLog(String(
             format: "🪄 [FreeText-Gallery-AutoOpt] profile=%@ improvement=%+.3f (base=%.2f → opt=%.2f)",
             recommended.debugLabel, improvement,
             baseReport.overallScore, optimizedReport.overallScore
@@ -398,13 +398,13 @@ extension ScanImportView {
         // dagegen kann die Szene-Interpretation stören.
         guard improvement > 0.15 else {
             #if DEBUG
-            print("🪄 [FreeText-Gallery-AutoOpt] kept original — improvement below FreeText threshold (0.15)")
+            appDebugLog("🪄 [FreeText-Gallery-AutoOpt] kept original — improvement below FreeText threshold (0.15)")
             #endif
             return base
         }
 
         #if DEBUG
-        print("🪄 [FreeText-Gallery-AutoOpt] applied — \(recommended.debugLabel) (+\(String(format: "%.2f", improvement)))")
+        appDebugLog("🪄 [FreeText-Gallery-AutoOpt] applied — \(recommended.debugLabel) (+\(String(format: "%.2f", improvement)))")
         #endif
         return optimized
     }
@@ -463,7 +463,7 @@ extension ScanImportView {
         // die Fehler-Alert). Das Setzen des Items reicht, keine Timer.
         if activeScanMode == .text {
             #if DEBUG
-            print("🧠 [FreeText] flow started — image=\(Int(image.size.width))×\(Int(image.size.height)) px")
+            appDebugLog("🧠 [FreeText] flow started — image=\(Int(image.size.width))×\(Int(image.size.height)) px")
             #endif
             // **Pipeline vor Claude-Call**: Symmetrisch zur Kamera-
             // Pipeline in `SmartScannerView.runProcessing`. Läuft nach
@@ -475,7 +475,7 @@ extension ScanImportView {
             Task { @MainActor in
                 let refined = await runFreeTextGalleryPipeline(raw: image)
                 #if DEBUG
-                print("🧠 [FreeText] navigating to processing")
+                appDebugLog("🧠 [FreeText] navigating to processing")
                 #endif
                 freierTextPendingImage = FreierTextPendingImage(
                     image: refined,
@@ -486,7 +486,7 @@ extension ScanImportView {
         }
 
         #if DEBUG
-        print("📷 [VocabList] Starting OCR/AI recognition — scanMode=.list, image=\(Int(image.size.width))×\(Int(image.size.height)) px")
+        appDebugLog("📷 [VocabList] Starting OCR/AI recognition — scanMode=.list, image=\(Int(image.size.width))×\(Int(image.size.height)) px")
         #endif
 
         isRecognizingImage = true

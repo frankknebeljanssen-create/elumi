@@ -158,7 +158,7 @@ enum GermanAbbreviationExpander {
                 isNoun: isNoun
             )
             #if DEBUG
-            print("🔤 [AbbrevExpand] exact: \"\(trimmed)\" → \"\(replacement)\"")
+            appDebugLog("🔤 [AbbrevExpand] exact: \"\(trimmed)\" → \"\(replacement)\"")
             #endif
             return (replacement, true)
         }
@@ -184,7 +184,7 @@ enum GermanAbbreviationExpander {
             )
             if replacedWorking != working {
                 #if DEBUG
-                print("🔤 [AbbrevExpand] inline: \"\(abbr)\" → \"\(entry.fullForm) (\(abbr))\" in \"\(text)\"")
+                appDebugLog("🔤 [AbbrevExpand] inline: \"\(abbr)\" → \"\(entry.fullForm) (\(abbr))\" in \"\(text)\"")
                 #endif
                 working = replacedWorking
                 changed = true

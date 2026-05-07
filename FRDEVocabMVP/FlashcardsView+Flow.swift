@@ -10,7 +10,7 @@ extension FlashcardsView {
 
     func returnToFlashcardSetup() {
         let cameFromPersonalDeck = sessionStore.activePersonalDeckID != nil
-        print("🔙 returnToFlashcardSetup: cameFromPersonalDeck=\(cameFromPersonalDeck) activeID=\(String(describing: sessionStore.activePersonalDeckID))")
+        appDebugLog("🔙 returnToFlashcardSetup: cameFromPersonalDeck=\(cameFromPersonalDeck) activeID=\(String(describing: sessionStore.activePersonalDeckID))")
         syncPersonalDeckProgressIfNeeded()
         resetTransientState()
 
@@ -44,7 +44,7 @@ extension FlashcardsView {
             // die Push-Animation oder feuert sie auf einen falschen
             // Frame.
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                print("🔙 push isShowingPersonalDecksScreen = true")
+                appDebugLog("🔙 push isShowingPersonalDecksScreen = true")
                 isShowingPersonalDecksScreen = true
             }
         }

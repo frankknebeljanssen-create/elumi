@@ -144,7 +144,7 @@ final class AutoCaptureController {
     func start() {
         guard motionManager.isDeviceMotionAvailable else {
             #if DEBUG
-            print("📷 [AutoCapture] DeviceMotion nicht verfügbar — Motion-Gate deaktiviert.")
+            appDebugLog("📷 [AutoCapture] DeviceMotion nicht verfügbar — Motion-Gate deaktiviert.")
             #endif
             return
         }
@@ -217,7 +217,7 @@ final class AutoCaptureController {
         guard gatesOpen else {
             if autoCaptureState != .idle {
                 #if DEBUG
-                print("📷 [AutoCapture] Ready-Phase abgebrochen — Gate-Bedingungen nicht mehr erfüllt.")
+                appDebugLog("📷 [AutoCapture] Ready-Phase abgebrochen — Gate-Bedingungen nicht mehr erfüllt.")
                 #endif
                 autoCaptureState = .idle
                 readyEnteredAt = nil
@@ -241,7 +241,7 @@ final class AutoCaptureController {
                 self?.onEnterReady?()
             }
             #if DEBUG
-            print("📷 [AutoCapture] ➡️ READY (pre-fire warn \(config.readyHoldDuration)s)")
+            appDebugLog("📷 [AutoCapture] ➡️ READY (pre-fire warn \(config.readyHoldDuration)s)")
             #endif
             return false
 
@@ -255,7 +255,7 @@ final class AutoCaptureController {
             if elapsed >= config.readyHoldDuration {
                 autoCaptureState = .firing
                 #if DEBUG
-                print("📷 [AutoCapture] 🔥 FIRING (elapsed \(String(format: "%.2f", elapsed))s)")
+                appDebugLog("📷 [AutoCapture] 🔥 FIRING (elapsed \(String(format: "%.2f", elapsed))s)")
                 #endif
                 return true
             }
@@ -279,7 +279,7 @@ final class AutoCaptureController {
         guard lockState == .locked else {
             if consecutiveLockedFrames > 0 {
                 #if DEBUG
-                print("📷 [AutoCapture] Streak abgebrochen (lockState=\(lockState))")
+                appDebugLog("📷 [AutoCapture] Streak abgebrochen (lockState=\(lockState))")
                 #endif
             }
             consecutiveLockedFrames = 0
@@ -293,7 +293,7 @@ final class AutoCaptureController {
 
         if isAdjustingFocus || isAdjustingExposure {
             #if DEBUG
-            print("📷 [AutoCapture] Gate: Focus/Exposure passt noch an — warte.")
+            appDebugLog("📷 [AutoCapture] Gate: Focus/Exposure passt noch an — warte.")
             #endif
             return false
         }
@@ -303,7 +303,7 @@ final class AutoCaptureController {
         motionLock.unlock()
         if m2 > config.maxAllowedMotionMagnitudeSquared {
             #if DEBUG
-            print(String(format: "📷 [AutoCapture] Gate: Device-Motion zu hoch (m²=%.4f > %.4f) — warte.",
+            appDebugLog(String(format: "📷 [AutoCapture] Gate: Device-Motion zu hoch (m²=%.4f > %.4f) — warte.",
                          m2, config.maxAllowedMotionMagnitudeSquared))
             #endif
             return false

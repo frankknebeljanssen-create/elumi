@@ -197,7 +197,7 @@ extension ElumiArcadeGameView {
         // `feedbackPlayer.playFishSplash()` einbauen. Aktuell
         // stumm, damit das Event rein visuell bleibt.
         #if DEBUG
-        print("🐟 [AmbientEvent] \(kind): from=\(creature.fromLeft ? "left" : "right"), y=\(creature.normalizedY), duration=\(speed)s (sharkEligible=\(sharkEligible))")
+        appDebugLog("🐟 [AmbientEvent] \(kind): from=\(creature.fromLeft ? "left" : "right"), y=\(creature.normalizedY), duration=\(speed)s (sharkEligible=\(sharkEligible))")
         #endif
 
         // Nach Crossing + kleinem Puffer remove. Dauer = speed,
@@ -322,7 +322,7 @@ extension ElumiArcadeGameView {
         let defaults = UserDefaults.standard
         let now = Date()
         if defaults.bool(forKey: appArcadeTestModusQueueShieldBubbleKey) {
-            print("🛠 [Arcade Testmodus] force-spawn shield bubble via queue")
+            appDebugLog("🛠 [Arcade Testmodus] force-spawn shield bubble via queue")
             powerUpRuntime.activateOrCreate(
                 type: .shieldBubble,
                 at: now,
@@ -331,11 +331,11 @@ extension ElumiArcadeGameView {
             shieldBubbleEndsAt = now.addingTimeInterval(shieldBubbleDuration)
         }
         if defaults.bool(forKey: appArcadeTestModusQueueVacuumKey) {
-            print("🛠 [Arcade Testmodus] force-spawn vacuum via queue")
+            appDebugLog("🛠 [Arcade Testmodus] force-spawn vacuum via queue")
             activateSuction(at: now)
         }
         if defaults.bool(forKey: appArcadeTestModusQueueAmbientFishKey) {
-            print("🛠 [Arcade Testmodus] force fish event via queue")
+            appDebugLog("🛠 [Arcade Testmodus] force fish event via queue")
             powerUpRuntime.debugForceAmbientEvent(type: .fish, durationSeconds: 5.0, at: now)
             // Auch die Legacy-Ambient-State setzen, damit die View-
             // Schicht (die noch den alten Pfad nutzt) ebenfalls ein
@@ -343,7 +343,7 @@ extension ElumiArcadeGameView {
             spawnAmbientSeaCreatureAsType(.fishSchool, at: now)
         }
         if defaults.bool(forKey: appArcadeTestModusQueueAmbientSharkKey) {
-            print("🛠 [Arcade Testmodus] force shark event via queue")
+            appDebugLog("🛠 [Arcade Testmodus] force shark event via queue")
             powerUpRuntime.debugForceAmbientEvent(type: .shark, durationSeconds: 8.0, at: now)
             spawnAmbientSeaCreatureAsType(.shark, at: now)
         }

@@ -300,7 +300,7 @@ extension ScanImportView {
         )
         scanPreparationQualityReport = report
         #if DEBUG
-        print("🪄 [PrepSheet-Quality] \(report.debugSummary)")
+        appDebugLog("🪄 [PrepSheet-Quality] \(report.debugSummary)")
         #endif
     }
 
@@ -335,7 +335,7 @@ extension ScanImportView {
         scanPreparationQualityReport = newReport
         #if DEBUG
         let delta = newReport.overallScore - baseReport.overallScore
-        print(String(
+        appDebugLog(String(
             format: "🪄 [PrepSheet-AutoOpt] profile=%@ Δ=%+.3f (base=%.2f → opt=%.2f)",
             profile.debugLabel, delta,
             baseReport.overallScore, newReport.overallScore

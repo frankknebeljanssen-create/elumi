@@ -121,7 +121,7 @@ enum ScanAIPostProcessor {
         metrics.finalCount = finalEntries.count
 
         #if DEBUG
-        print("""
+        appDebugLog("""
         📊 [Scan Summary]
           mode: \(payload.mode.rawValue)
           input: \(metrics.inputCount)
@@ -213,14 +213,14 @@ enum ScanAIPostProcessor {
 
             guard lowConfidence || hasConflict else {
                 #if DEBUG
-                print("🔖 [FreeText-Context] skip \"\(entry.source)\": high confidence (\(entry.confidence)), no conflict")
+                appDebugLog("🔖 [FreeText-Context] skip \"\(entry.source)\": high confidence (\(entry.confidence)), no conflict")
                 #endif
                 return entry
             }
 
             overrides += 1
             #if DEBUG
-            print("🔖 [FreeText-Context] override \"\(entry.source)\"/\"\(entry.target)\": \(currentLabel ?? "nil") → \(refinedLabel) (conf=\(entry.confidence), conflict=\(hasConflict))")
+            appDebugLog("🔖 [FreeText-Context] override \"\(entry.source)\"/\"\(entry.target)\": \(currentLabel ?? "nil") → \(refinedLabel) (conf=\(entry.confidence), conflict=\(hasConflict))")
             #endif
             return ScanAIResponseEntry(
                 source: entry.source,
@@ -330,7 +330,7 @@ enum ScanAIPostProcessor {
         #if DEBUG
         let removed = entries.count - result.count
         if removed > 0 {
-            print("🧹 [FreeText-Filter] \(removed)/\(entries.count) Einträge entfernt (echter Noise/Duplikate, context-aware)")
+            appDebugLog("🧹 [FreeText-Filter] \(removed)/\(entries.count) Einträge entfernt (echter Noise/Duplikate, context-aware)")
         }
         #endif
         return result
@@ -440,7 +440,7 @@ enum ScanAIPostProcessor {
             if decision.confidence < VocabDualFormSplitter.autoApplyThreshold,
                decision.confidence > 0.0,
                (entry.source.contains("/") || entry.source.contains(",")) {
-                print("📡 [Scan] DualForm nicht gesplittet (\"\(entry.source)\"): \(decision.rationale)")
+                appDebugLog("📡 [Scan] DualForm nicht gesplittet (\"\(entry.source)\"): \(decision.rationale)")
             }
             #endif
             return [entry]
@@ -545,7 +545,7 @@ enum ScanAIPostProcessor {
         #if DEBUG
         let sm = sourceResult.normalizedMarker ?? "-"
         let tm = targetResult.normalizedMarker ?? "-"
-        print("📋 [Meta-Strip] '\(entry.source)' -> '\(sourceResult.cleanedText)' (s:\(sm)/t:\(tm))")
+        appDebugLog("📋 [Meta-Strip] '\(entry.source)' -> '\(sourceResult.cleanedText)' (s:\(sm)/t:\(tm))")
         #endif
 
         return ScanAIResponseEntry(
@@ -655,7 +655,7 @@ enum ScanAIPostProcessor {
         let reducedConfidence = min(entry.confidence, 0.55)
 
         #if DEBUG
-        print("🔧 [Honorific-Injection] '\(entry.source)' -> '\(entry.target)' → '\(updatedTarget)' (injected: \(missingLabels))")
+        appDebugLog("🔧 [Honorific-Injection] '\(entry.source)' -> '\(entry.target)' → '\(updatedTarget)' (injected: \(missingLabels))")
         #endif
 
         return ScanAIResponseEntry(
@@ -752,7 +752,7 @@ enum ScanAIPostProcessor {
         guard capitalized != entry.target else { return entry }
 
         #if DEBUG
-        print("🔠 [Noun-Cap] '\(entry.target)' → '\(capitalized)' (wc=\(entry.wordClass ?? "nil"))")
+        appDebugLog("🔠 [Noun-Cap] '\(entry.target)' → '\(capitalized)' (wc=\(entry.wordClass ?? "nil"))")
         #endif
 
         return ScanAIResponseEntry(
@@ -811,7 +811,7 @@ enum ScanAIPostProcessor {
         guard text != entry.target else { return entry }
 
         #if DEBUG
-        print("✍️  [GermanStyle] '\(entry.target)' → '\(text)'")
+        appDebugLog("✍️  [GermanStyle] '\(entry.target)' → '\(text)'")
         #endif
 
         return ScanAIResponseEntry(

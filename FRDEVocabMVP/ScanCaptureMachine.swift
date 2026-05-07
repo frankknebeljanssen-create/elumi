@@ -206,7 +206,7 @@ final class ScanCaptureMachine: ObservableObject {
         guard state.canTransition(to: next) else {
             #if DEBUG
             let message = "Invalid scan FSM transition: \(oldState.debugLabel) → \(next.debugLabel)"
-            print("🔁 [FSM] ❌ \(message)")
+            appDebugLog("🔁 [FSM] ❌ \(message)")
             // Assertion-Failure nur bei wirklich unerwarteten
             // Transitionen — wir whitelisten Identitäts-Transitionen
             // (gleicher State → gleicher State), die als Idempotenz-
@@ -218,7 +218,7 @@ final class ScanCaptureMachine: ObservableObject {
             return false
         }
         #if DEBUG
-        print("🔁 [FSM] \(oldState.debugLabel) → \(next.debugLabel)")
+        appDebugLog("🔁 [FSM] \(oldState.debugLabel) → \(next.debugLabel)")
         #endif
         state = next
         return true

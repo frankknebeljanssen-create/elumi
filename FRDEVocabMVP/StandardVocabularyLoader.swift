@@ -795,7 +795,7 @@ enum StandardVocabularyLoader {
         }
 
         #if DEBUG
-        print("""
+        appDebugLog("""
         🔤 [GenderResolver] Master-Pass abgeschlossen:
            DB-vorhanden:  \(counts.alreadyFilled)
            explicit art:  \(counts.explicitArticle)
@@ -876,12 +876,12 @@ enum StandardVocabularyLoader {
                 parsed[key.lowercased()] = (g, value.confidence)
             }
             #if DEBUG
-            print("🔤 [GenderResolver] \(parsed.count) KI-Overrides geladen aus Bundle.")
+            appDebugLog("🔤 [GenderResolver] \(parsed.count) KI-Overrides geladen aus Bundle.")
             #endif
             return parsed.isEmpty ? nil : parsed
         } catch {
             #if DEBUG
-            print("🔤 [GenderResolver] Fehler beim Laden von gender_ai_overrides.json: \(error)")
+            appDebugLog("🔤 [GenderResolver] Fehler beim Laden von gender_ai_overrides.json: \(error)")
             #endif
             return nil
         }
@@ -944,11 +944,11 @@ enum StandardVocabularyLoader {
             }
             return entries
         }) else {
-            print("⚠️ FRDEMasterLexicon.sqlite not found or failed to open")
+            appDebugLog("⚠️ FRDEMasterLexicon.sqlite not found or failed to open")
             return []
         }
 
-        print("📚 StandardVocabulary loaded from SQLite: \(result.count) entries")
+        appDebugLog("📚 StandardVocabulary loaded from SQLite: \(result.count) entries")
         return result
     }
 

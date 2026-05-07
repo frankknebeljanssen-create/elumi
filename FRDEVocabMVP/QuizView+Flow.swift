@@ -12,7 +12,7 @@ extension QuizView {
     }
 
     func startQuiz() {
-        print("🧩 [Quiz] startQuiz called, candidates=\(session.cachedCandidates.count), prepared=\(session.preparedQuestions.count)")
+        appDebugLog("🧩 [Quiz] startQuiz called, candidates=\(session.cachedCandidates.count), prepared=\(session.preparedQuestions.count)")
         // Launch-Sound beim Session-Start — systemweit identisch zum
         // Speed-Round-Start in Verbformen.
         feedbackPlayer.playLaunch()
@@ -248,7 +248,7 @@ extension QuizView {
         prepareQuizRewards()
         persistHeartsIfNeeded()
         #if DEBUG
-        print("🛑 [Quiz] Force-Done via chain-timer-soft-cutoff")
+        appDebugLog("🛑 [Quiz] Force-Done via chain-timer-soft-cutoff")
         #endif
     }
 

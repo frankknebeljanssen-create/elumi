@@ -157,7 +157,7 @@ struct GlobalListPickerSheet: View {
                 VocabularyListSelectionResolver.setGlobalSelectedListIDs(selectedIDs)
                 UserDefaults.standard.set(localLernjahrMax, forKey: appLernjahrMaxKey)
                 #if DEBUG
-                print("📋 [Lernjahr] persist max=\(localLernjahrMax)")
+                appDebugLog("📋 [Lernjahr] persist max=\(localLernjahrMax)")
                 #endif
                 onCommit(selectedIDs)
                 dismiss()

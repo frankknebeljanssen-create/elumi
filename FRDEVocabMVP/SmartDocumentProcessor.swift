@@ -170,7 +170,7 @@ enum SmartDocumentProcessor {
         // Displays) **unverkürzt** an die Downstream-Pipeline geben.
         if config.useFullFrame {
             #if DEBUG
-            print("📷 [Scan] Full-frame bypass active — profile=\(config.enhancementProfile)")
+            appDebugLog("📷 [Scan] Full-frame bypass active — profile=\(config.enhancementProfile)")
             #endif
             let enhanced: UIImage
             if config.applyEnhancement, config.enhancementProfile != .off {
@@ -207,10 +207,10 @@ enum SmartDocumentProcessor {
 
         #if DEBUG
         if detected == nil, fallbackQuad != nil {
-            print("📷 [Scan] Post-capture refinement failed — using frozen live-quad as fallback.")
+            appDebugLog("📷 [Scan] Post-capture refinement failed — using frozen live-quad as fallback.")
         }
         let source = (detected != nil) ? "document-segmentation" : "frozen-live-quad"
-        print(String(
+        appDebugLog(String(
             format: "📷 [Crop] quad used (%@): tl=(%.3f,%.3f) tr=(%.3f,%.3f) bl=(%.3f,%.3f) br=(%.3f,%.3f)",
             source,
             rectangle.topLeft.x, rectangle.topLeft.y,
@@ -468,7 +468,7 @@ enum SmartDocumentProcessor {
         // und finalem Bild lässt sich anhand der Logs verifizieren.
         #if DEBUG
         let areaFraction = rectangle.boundingBox.width * rectangle.boundingBox.height
-        print(String(
+        appDebugLog(String(
             format: "📷 [Crop] areaFraction=%.3f | pixelCorners: tl=(%.0f,%.0f) tr=(%.0f,%.0f) bl=(%.0f,%.0f) br=(%.0f,%.0f)",
             areaFraction,
             tl.x, tl.y, tr.x, tr.y, bl.x, bl.y, br.x, br.y

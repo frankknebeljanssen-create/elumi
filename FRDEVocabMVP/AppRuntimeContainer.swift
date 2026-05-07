@@ -68,7 +68,7 @@ final class AppRuntimeContainer: ObservableObject {
         listStore = store
         speechController = SpeechController()
         speaker = Speaker()
-        print("⏱ [Bootstrap] listStore + speech + speaker created instantly")
+        appDebugLog("⏱ [Bootstrap] listStore + speech + speaker created instantly")
         // **Spielstand-Sichtprüfung beim Bootstrap**: Bei jedem App-
         // Start sehen wir auf einen Blick, was an persistierten Daten
         // geladen wurde. Wichtig für die User-Frage „bleibt mein
@@ -77,7 +77,7 @@ final class AppRuntimeContainer: ObservableObject {
         // Device weggewechselt — kein Code-seitiger Auto-Reset.
         let progress = ProgressStore.shared.progress
         let stats = DailyStatsStore.shared
-        print("📦 [Bootstrap] persisted state — " +
+        appDebugLog("📦 [Bootstrap] persisted state — " +
               "XP=\(progress.totalXP) " +
               "streakCurrent=\(progress.currentStreak) " +
               "streakBest=\(progress.bestStreak) " +
@@ -101,16 +101,16 @@ final class AppRuntimeContainer: ObservableObject {
                 builtInListID: VocabularyListStore.builtInListID,
                 sampleSeeds: sampleVocabularyListSeeds
             )
-            print("⏱ [Warmup:List] prewarmStored: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
+            appDebugLog("⏱ [Warmup:List] prewarmStored: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
 
             let snapshot = vocabularyListRepository.cachedSnapshot()
             if let snapshot {
                 await MainActor.run {
                     store.apply(snapshot: snapshot)
-                    print("⏱ [Warmup:List] applied snapshot → \(store.customLists.count) custom lists")
+                    appDebugLog("⏱ [Warmup:List] applied snapshot → \(store.customLists.count) custom lists")
                 }
             }
-            print("⏱ [Warmup:List] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
+            appDebugLog("⏱ [Warmup:List] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
         }
 
         flashcardWarmupTask = Task.detached(priority: .userInitiated) {
@@ -122,7 +122,7 @@ final class AppRuntimeContainer: ObservableObject {
                 selectedDirectionKey: appDirectionKey,
                 sessionKey: "FRDEVocabMVP.flashcardSession.v1"
             )
-            print("⏱ [Warmup:Flashcard] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
+            appDebugLog("⏱ [Warmup:Flashcard] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
         }
 
         // Lexicon-Prewarm entfernt: der alte Task.detached hat im

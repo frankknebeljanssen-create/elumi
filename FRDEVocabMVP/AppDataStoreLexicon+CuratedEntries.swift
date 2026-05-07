@@ -37,15 +37,15 @@ extension DataStoreLexiconSupport {
         let totalStart = CFAbsoluteTimeGetCurrent()
         var start = CFAbsoluteTimeGetCurrent()
         let internal_ = internalLexiconEntries
-        print("⏱ [CuratedLexicon] internalLexiconEntries: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms (\(internal_.count) entries)")
+        appDebugLog("⏱ [CuratedLexicon] internalLexiconEntries: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms (\(internal_.count) entries)")
 
         start = CFAbsoluteTimeGetCurrent()
         let merged = mergeLexiconEntries(internal_)
-        print("⏱ [CuratedLexicon] mergeLexiconEntries: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms (\(merged.count) entries)")
+        appDebugLog("⏱ [CuratedLexicon] mergeLexiconEntries: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms (\(merged.count) entries)")
 
         start = CFAbsoluteTimeGetCurrent()
         let enriched = SupplementalFreeDictLexicon.enrichMissingGenderInfo(in: merged)
-        print("⏱ [CuratedLexicon] enrichMissingGenderInfo: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
+        appDebugLog("⏱ [CuratedLexicon] enrichMissingGenderInfo: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
 
         start = CFAbsoluteTimeGetCurrent()
         let sorted = enriched.sorted {
@@ -54,8 +54,8 @@ extension DataStoreLexiconSupport {
             }
             return $0.sourceSortKey < $1.sourceSortKey
         }
-        print("⏱ [CuratedLexicon] sort: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
-        print("⏱ [CuratedLexicon] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
+        appDebugLog("⏱ [CuratedLexicon] sort: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
+        appDebugLog("⏱ [CuratedLexicon] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
         return sorted
     }()
 

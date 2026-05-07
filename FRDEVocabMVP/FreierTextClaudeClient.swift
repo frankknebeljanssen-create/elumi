@@ -115,8 +115,8 @@ struct FreierTextClaudeClient {
         request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
 
         let bodyKB = (request.httpBody?.count ?? 0) / 1024
-        print("🧠 [FreeText] AI analysis started")
-        print("📄 [FreierText] API request: model=\(model) payload=\(bodyKB)KB timeout=60s")
+        appDebugLog("🧠 [FreeText] AI analysis started")
+        appDebugLog("📄 [FreierText] API request: model=\(model) payload=\(bodyKB)KB timeout=60s")
         let apiStart = CFAbsoluteTimeGetCurrent()
 
         let data: Data
@@ -124,17 +124,17 @@ struct FreierTextClaudeClient {
         do {
             (data, response) = try await session.data(for: request)
         } catch {
-            print("📄 [FreierText] ❌ network error: \(error.localizedDescription)")
+            appDebugLog("📄 [FreierText] ❌ network error: \(error.localizedDescription)")
             throw FreierTextError.networkFailure(underlying: error)
         }
-        print("📄 [FreierText] API response: \(Int((CFAbsoluteTimeGetCurrent() - apiStart) * 1000))ms")
+        appDebugLog("📄 [FreierText] API response: \(Int((CFAbsoluteTimeGetCurrent() - apiStart) * 1000))ms")
 
         guard let http = response as? HTTPURLResponse else {
             throw FreierTextError.invalidResponse
         }
         guard 200..<300 ~= http.statusCode else {
             let body = String(data: data, encoding: .utf8) ?? "<binary>"
-            print("📄 [FreierText] ❌ HTTP \(http.statusCode): \(body.prefix(300))")
+            appDebugLog("📄 [FreierText] ❌ HTTP \(http.statusCode): \(body.prefix(300))")
             throw FreierTextError.httpFailure(statusCode: http.statusCode, body: body)
         }
 
@@ -164,12 +164,12 @@ struct FreierTextClaudeClient {
             // nicht aus dem JSON zu decoden versucht werden.
             decoder.keyDecodingStrategy = .convertFromSnakeCase
             let result = try decoder.decode(FreeTextResult.self, from: Data(jsonText.utf8))
-            print("📄 [FreierText] ✅ parsed language=\(result.language) entries=\(result.totalEntryCount)")
-            print("🧠 [FreeText] AI analysis finished — entries=\(result.totalEntryCount)")
+            appDebugLog("📄 [FreierText] ✅ parsed language=\(result.language) entries=\(result.totalEntryCount)")
+            appDebugLog("🧠 [FreeText] AI analysis finished — entries=\(result.totalEntryCount)")
             return result
         } catch {
-            print("📄 [FreierText] ❌ JSON decode failed: \(error)")
-            print("📄 [FreierText] Raw (first 500): \(String(jsonText.prefix(500)))")
+            appDebugLog("📄 [FreierText] ❌ JSON decode failed: \(error)")
+            appDebugLog("📄 [FreierText] Raw (first 500): \(String(jsonText.prefix(500)))")
             throw FreierTextError.decodeFailure(underlying: error)
         }
     }
@@ -187,7 +187,7 @@ struct FreierTextClaudeClient {
         for quality in qualities {
             guard let data = resized.jpegData(compressionQuality: quality) else { continue }
             if data.count <= targetBytes {
-                print("📄 [FreierText] compress ok quality=\(quality) bytes=\(data.count)")
+                appDebugLog("📄 [FreierText] compress ok quality=\(quality) bytes=\(data.count)")
                 return data
             }
         }
@@ -195,7 +195,7 @@ struct FreierTextClaudeClient {
         // besser ein größeres Bild senden als gar nichts.
         let fallback = resized.jpegData(compressionQuality: 0.35)
         if let data = fallback {
-            print("📄 [FreierText] ⚠️ compress over target, sending \(data.count) bytes")
+            appDebugLog("📄 [FreierText] ⚠️ compress over target, sending \(data.count) bytes")
         }
         return fallback
     }

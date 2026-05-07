@@ -775,7 +775,7 @@ final class WordRunnerGame: ObservableObject {
         let outcome = ProgressService.shared.record(session: learningSession)
         pendingOutcome = outcome
         #if DEBUG
-        print("🏁 [WordRunner] session recorded — correct=\(correctAnswers) wrong=\(wrongAnswers) " +
+        appDebugLog("🏁 [WordRunner] session recorded — correct=\(correctAnswers) wrong=\(wrongAnswers) " +
               "combo=\(longestCombo) totalXP=\(outcome.totalXP) credits=\(outcome.totalCredits) " +
               "leveledUp=\(outcome.leveledUp) duration=\(String(format: "%.1f", runDuration))s")
         #endif

@@ -77,16 +77,16 @@ extension FlashcardsSessionController {
         areSoundsEnabled: Bool
     ) {
         guard let currentFlashCard else {
-            print("🔊 [FC-Speak] ❌ no currentFlashCard")
+            appDebugLog("🔊 [FC-Speak] ❌ no currentFlashCard")
             return
         }
         stopListeningForTyping(speechController: speechController, speaker: speaker)
         hideTypedAnswerField()
         guard areSoundsEnabled else {
-            print("🔊 [FC-Speak] ❌ sounds disabled")
+            appDebugLog("🔊 [FC-Speak] ❌ sounds disabled")
             return
         }
-        print("🔊 [FC-Speak] ✅ speaking: \(currentFlashCard.prompt)")
+        appDebugLog("🔊 [FC-Speak] ✅ speaking: \(currentFlashCard.prompt)")
         speaker.speak(text: currentFlashCard.prompt, languageCode: currentFlashCard.promptLanguageCode)
     }
 }

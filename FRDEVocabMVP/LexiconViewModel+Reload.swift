@@ -17,7 +17,7 @@ extension LexiconViewModel {
         let curatedEntries = await Task.detached(priority: .userInitiated) {
             let start = CFAbsoluteTimeGetCurrent()
             let entries = DataStore.curatedLexiconEntries(with: customItems)
-            print("⏱ [Lexikon] curatedLexiconEntries: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms (\(entries.count) entries)")
+            appDebugLog("⏱ [Lexikon] curatedLexiconEntries: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms (\(entries.count) entries)")
             return entries
         }.value
 

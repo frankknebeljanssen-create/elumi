@@ -170,7 +170,7 @@ struct SaveNewListSheet: View {
             importedItemIDs: items.map(\.id)
         )
 
-        print("📄 [FreierText] ✅ Liste \"\(trimmedName)\" gespeichert: \(importedCount) Einträge")
+        appDebugLog("📄 [FreierText] ✅ Liste \"\(trimmedName)\" gespeichert: \(importedCount) Einträge")
         onSaved(context)
         dismiss()
     }

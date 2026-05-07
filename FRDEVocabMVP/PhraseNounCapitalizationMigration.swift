@@ -128,7 +128,7 @@ enum PhraseNounCapitalizationMigration {
 
         userDefaults.set(true, forKey: migrationKey)
         #if DEBUG
-        print("📋 [PhraseNoun-Migration] abgeschlossen. Items verändert: \(changedItemCount).")
+        appDebugLog("📋 [PhraseNoun-Migration] abgeschlossen. Items verändert: \(changedItemCount).")
         #endif
         return anyChange
     }

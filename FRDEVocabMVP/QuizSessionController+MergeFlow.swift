@@ -60,17 +60,17 @@ extension QuizSessionController {
         let effectiveTotal = selectedLists.reduce(0) { acc, list in
             acc + VocabularyListSelectionResolver.effectiveItems(for: list, lernjahrMax: lernjahrMax).count
         }
-        print("⏱ [Quiz] rebuildMergedItems: lists=\(selectedLists.count) raw=\(rawTotal) effective=\(effectiveTotal) lernjahrMax=\(lernjahrMax.map(String.init) ?? "nil")")
+        appDebugLog("⏱ [Quiz] rebuildMergedItems: lists=\(selectedLists.count) raw=\(rawTotal) effective=\(effectiveTotal) lernjahrMax=\(lernjahrMax.map(String.init) ?? "nil")")
 
         Task {
             let result = await Task.detached(priority: .userInitiated) {
                 var start = CFAbsoluteTimeGetCurrent()
                 let mergedItems = QuizBuildService.mergedItems(from: selectedLists, direction: direction)
-                print("⏱ [Quiz] mergedItems: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms (\(mergedItems.count) items)")
+                appDebugLog("⏱ [Quiz] mergedItems: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms (\(mergedItems.count) items)")
 
                 start = CFAbsoluteTimeGetCurrent()
                 let candidates = QuizBuildService.makeQuizCandidates(from: mergedItems, direction: direction)
-                print("⏱ [Quiz] makeQuizCandidates: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms (\(candidates.count) candidates)")
+                appDebugLog("⏱ [Quiz] makeQuizCandidates: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms (\(candidates.count) candidates)")
 
                 return (mergedItems: mergedItems, candidates: candidates)
             }.value

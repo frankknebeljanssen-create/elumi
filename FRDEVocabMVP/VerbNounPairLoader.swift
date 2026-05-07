@@ -49,7 +49,7 @@ enum VerbNounPairLoader {
 
     private static func loadPairs() -> [VerbNounPair] {
         guard let url = Bundle.main.url(forResource: "VerbNounPairs", withExtension: "tsv") else {
-            print("⚠️ VerbNounPairs.tsv not found in bundle")
+            appDebugLog("⚠️ VerbNounPairs.tsv not found in bundle")
             return []
         }
 
@@ -69,7 +69,7 @@ enum VerbNounPairLoader {
             ))
         }
 
-        print("📚 VerbNounPairs loaded: \(pairs.count) pairs")
+        appDebugLog("📚 VerbNounPairs loaded: \(pairs.count) pairs")
         return pairs
     }
 }

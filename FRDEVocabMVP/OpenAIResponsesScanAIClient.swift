@@ -40,15 +40,15 @@ struct OpenAIResponsesScanAIClient: ScanAIClient {
         let body = try JSONSerialization.data(withJSONObject: requestBody)
         request.httpBody = body
         let bodyKB = body.count / 1024
-        print("📡 [Scan] API request [\(mode)]: model=\(model) payload=\(bodyKB)KB timeout=\(Int(request.timeoutInterval))s")
+        appDebugLog("📡 [Scan] API request [\(mode)]: model=\(model) payload=\(bodyKB)KB timeout=\(Int(request.timeoutInterval))s")
         let apiStart = CFAbsoluteTimeGetCurrent()
 
         let (data, response): (Data, URLResponse)
         do {
             (data, response) = try await session.data(for: request)
-            print("📡 [Scan] API response [\(mode)]: \(Int((CFAbsoluteTimeGetCurrent() - apiStart) * 1000))ms")
+            appDebugLog("📡 [Scan] API response [\(mode)]: \(Int((CFAbsoluteTimeGetCurrent() - apiStart) * 1000))ms")
         } catch let urlError as URLError where urlError.code == .timedOut {
-            print("📡 [Scan] ❌ TIMEOUT [\(mode)] after \(Int((CFAbsoluteTimeGetCurrent() - apiStart) * 1000))ms")
+            appDebugLog("📡 [Scan] ❌ TIMEOUT [\(mode)] after \(Int((CFAbsoluteTimeGetCurrent() - apiStart) * 1000))ms")
             throw ScanAIProviderError.timedOut
         }
         guard let httpResponse = response as? HTTPURLResponse else {

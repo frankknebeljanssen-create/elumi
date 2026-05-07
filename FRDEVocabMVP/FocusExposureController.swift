@@ -69,7 +69,7 @@ enum FocusExposureController {
             }
         } catch {
             #if DEBUG
-            print("📷 [FocusExp] lockForConfiguration fehlgeschlagen: \(error)")
+            appDebugLog("📷 [FocusExp] lockForConfiguration fehlgeschlagen: \(error)")
             #endif
         }
     }
@@ -101,7 +101,7 @@ enum FocusExposureController {
             device.isSubjectAreaChangeMonitoringEnabled = true
         } catch {
             #if DEBUG
-            print("📷 [FocusExp] resetToContinuous fehlgeschlagen: \(error)")
+            appDebugLog("📷 [FocusExp] resetToContinuous fehlgeschlagen: \(error)")
             #endif
         }
     }

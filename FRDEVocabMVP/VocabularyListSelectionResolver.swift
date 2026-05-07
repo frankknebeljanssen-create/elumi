@@ -110,7 +110,7 @@ enum VocabularyListSelectionResolver {
         #if DEBUG
         let preview = raw.prefix(3).joined(separator: ", ")
         let suffix = raw.count > 3 ? ", …" : ""
-        print("📋 [GlobalListSelection] setGlobalSelectedListIDs count=\(ids.count) → \(preview)\(suffix)")
+        appDebugLog("📋 [GlobalListSelection] setGlobalSelectedListIDs count=\(ids.count) → \(preview)\(suffix)")
         #endif
     }
 

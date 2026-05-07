@@ -15,7 +15,7 @@ extension QuizView {
             // Source-of-Truth (`VocabularyListSelectionResolver`).
             session.restoreSelectedListIDs()
         }
-        print("🧩 [Quiz] handleQuizAppear, availableLists=\(availableQuizLists.count), selectedIDs=\(session.selectedListIDs)")
+        appDebugLog("🧩 [Quiz] handleQuizAppear, availableLists=\(availableQuizLists.count), selectedIDs=\(session.selectedListIDs)")
         session.syncSelectedLists(availableLists: availableQuizLists)
         session.refreshMergedItemsIfNeeded(
             from: selectedQuizLists,

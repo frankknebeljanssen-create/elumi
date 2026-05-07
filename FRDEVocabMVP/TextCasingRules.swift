@@ -454,13 +454,13 @@ enum TextNormalizationEngineSelfTest {
             let got = TextNormalizationEngine.normalize(c.input, language: c.language)
             if got != c.expected {
                 failures += 1
-                print("\u{274C} [Normalize] '\(c.input)' (\(c.language)) → '\(got)' (erwartet '\(c.expected)')")
+                appDebugLog("\u{274C} [Normalize] '\(c.input)' (\(c.language)) → '\(got)' (erwartet '\(c.expected)')")
             }
         }
         if failures == 0 {
-            print("\u{2705} [Normalize] \(cases.count) Selbst-Tests bestanden")
+            appDebugLog("\u{2705} [Normalize] \(cases.count) Selbst-Tests bestanden")
         } else {
-            print("\u{274C} [Normalize] \(failures) von \(cases.count) Tests fehlgeschlagen")
+            appDebugLog("\u{274C} [Normalize] \(failures) von \(cases.count) Tests fehlgeschlagen")
         }
     }
 }

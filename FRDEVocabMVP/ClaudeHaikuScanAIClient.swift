@@ -67,15 +67,15 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         request.httpBody = body
 
         let bodyKB = body.count / 1024
-        print("📡 [Scan] API request [haiku-vision]: model=\(model) payload=\(bodyKB)KB timeout=60s")
+        appDebugLog("📡 [Scan] API request [haiku-vision]: model=\(model) payload=\(bodyKB)KB timeout=60s")
         let apiStart = CFAbsoluteTimeGetCurrent()
 
         let (data, response): (Data, URLResponse)
         do {
             (data, response) = try await session.data(for: request)
-            print("📡 [Scan] API response [haiku-vision]: \(Int((CFAbsoluteTimeGetCurrent() - apiStart) * 1000))ms")
+            appDebugLog("📡 [Scan] API response [haiku-vision]: \(Int((CFAbsoluteTimeGetCurrent() - apiStart) * 1000))ms")
         } catch let urlError as URLError where urlError.code == .timedOut {
-            print("📡 [Scan] ❌ TIMEOUT [haiku-vision] after \(Int((CFAbsoluteTimeGetCurrent() - apiStart) * 1000))ms")
+            appDebugLog("📡 [Scan] ❌ TIMEOUT [haiku-vision] after \(Int((CFAbsoluteTimeGetCurrent() - apiStart) * 1000))ms")
             throw ScanAIProviderError.timedOut
         }
 
@@ -85,7 +85,7 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
 
         guard 200..<300 ~= httpResponse.statusCode else {
             let errorText = String(data: data, encoding: .utf8) ?? "unknown"
-            print("📡 [Scan] ❌ HTTP \(httpResponse.statusCode): \(errorText.prefix(200))")
+            appDebugLog("📡 [Scan] ❌ HTTP \(httpResponse.statusCode): \(errorText.prefix(200))")
             throw ScanAIProviderError.httpFailure(httpResponse.statusCode, errorText)
         }
 
@@ -96,7 +96,7 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         }
 
         if envelope.wasTruncated {
-            print("📡 [Scan] ⚠️ Response truncated (max_tokens hit)")
+            appDebugLog("📡 [Scan] ⚠️ Response truncated (max_tokens hit)")
         }
 
         // Claude might wrap JSON in ```json ... ``` — strip it
@@ -123,12 +123,12 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
             if envelope.wasTruncated {
                 if var salvaged = Self.salvageTruncatedJSON(jsonText) {
                     salvaged.entries = salvaged.entries.map { Self.postProcessEntry($0) }
-                    print("📡 [Scan] 🩹 Salvaged truncated JSON (\(salvaged.entries.count) entries)")
+                    appDebugLog("📡 [Scan] 🩹 Salvaged truncated JSON (\(salvaged.entries.count) entries)")
                     return ScanAIPostProcessor.apply(to: salvaged.toPayload())
                 }
             }
-            print("📡 [Scan] ❌ JSON decode failed: \(error)")
-            print("📡 [Scan] Raw response (first 500 chars): \(String(jsonText.prefix(500)))")
+            appDebugLog("📡 [Scan] ❌ JSON decode failed: \(error)")
+            appDebugLog("📡 [Scan] Raw response (first 500 chars): \(String(jsonText.prefix(500)))")
             throw ScanAIProviderError.invalidResponse
         }
     }
@@ -173,7 +173,7 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         do {
             return try JSONDecoder().decode(OpenAIScanSchemaResponse.self, from: Data(salvaged.utf8))
         } catch {
-            print("📡 [Scan] 🩹 Salvage attempt also failed: \(error)")
+            appDebugLog("📡 [Scan] 🩹 Salvage attempt also failed: \(error)")
             return nil
         }
     }

@@ -78,7 +78,7 @@ enum ScanImageEnhancer {
         let minEdge = min(cg.width, cg.height)
         if minEdge < 400 {
             #if DEBUG
-            print("📷 [Scan-Enhance] skipped: image too small (min-edge=\(minEdge)px)")
+            appDebugLog("📷 [Scan-Enhance] skipped: image too small (min-edge=\(minEdge)px)")
             #endif
             return ScanEnhancementResult(image: image, appliedFilters: ["skipped:small"], measuredBrightness: nil)
         }
@@ -104,7 +104,7 @@ enum ScanImageEnhancer {
         let stats = measureLuminanceStats(image: image)
         if let stats, stats.mean < 0.03 || stats.mean > 0.97 || stats.stddev < 5 {
             #if DEBUG
-            print(String(format: "📷 [Scan-Enhance] skipped: pathological image (mean=%.3f, stddev=%.1f)",
+            appDebugLog(String(format: "📷 [Scan-Enhance] skipped: pathological image (mean=%.3f, stddev=%.1f)",
                          stats.mean, stats.stddev))
             #endif
             return ScanEnhancementResult(
@@ -134,7 +134,7 @@ enum ScanImageEnhancer {
 
         #if DEBUG
         let mStr = measured.map { String(format: "%.2f", $0) } ?? "n/a"
-        print("📷 [Scan-Enhance] profile=\(profile.debugLabel) meanY=\(mStr) applied=[\(applied.joined(separator: ", "))]")
+        appDebugLog("📷 [Scan-Enhance] profile=\(profile.debugLabel) meanY=\(mStr) applied=[\(applied.joined(separator: ", "))]")
         #endif
 
         return ScanEnhancementResult(

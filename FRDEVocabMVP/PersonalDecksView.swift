@@ -332,9 +332,9 @@ struct PersonalDecksView: View {
     }
 
     private func updateDeck(_ deck: PersonalDeck, withSelectedListIDs selectedIDs: Set<UUID>) {
-        print("🔧 updateDeck called: deckID=\(deck.id) oldLists=\(deck.sourceListIDs.count) newLists=\(selectedIDs.count) allListsAvailable=\(allLists.count)")
+        appDebugLog("🔧 updateDeck called: deckID=\(deck.id) oldLists=\(deck.sourceListIDs.count) newLists=\(selectedIDs.count) allListsAvailable=\(allLists.count)")
         guard !selectedIDs.isEmpty else {
-            print("⚠️ updateDeck: selectedIDs leer — abort")
+            appDebugLog("⚠️ updateDeck: selectedIDs leer — abort")
             return
         }
         let listsChanged = Set(deck.sourceListIDs) != selectedIDs
@@ -345,7 +345,7 @@ struct PersonalDecksView: View {
             // **V1b Re-Snapshot (2026-04-28)** — Listen-Wechsel
             // erzwingt neuen Snapshot mit aktuellem lernjahrMax.
             let freshCardIDs = PersonalDeck.buildCardOrderSnapshot(from: matchedLists)
-            print("🔧 updateDeck: lists changed → matched=\(matchedLists.count) freshCards=\(freshCardIDs.count)")
+            appDebugLog("🔧 updateDeck: lists changed → matched=\(matchedLists.count) freshCards=\(freshCardIDs.count)")
 
             // Defensive: wenn KEIN Item gematched wurde (Listen wurden
             // zwischenzeitlich gelöscht?), nicht den alten cardOrder
@@ -355,7 +355,7 @@ struct PersonalDecksView: View {
                 updated.currentIndex = 0
                 updated.masteredCardIDs = []
             } else {
-                print("⚠️ updateDeck: keine Karten in den neuen Listen — cardOrder bleibt unverändert")
+                appDebugLog("⚠️ updateDeck: keine Karten in den neuen Listen — cardOrder bleibt unverändert")
             }
 
             // **User-Revision**: Name automatisch an neue Listen angleichen,

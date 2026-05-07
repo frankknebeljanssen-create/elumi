@@ -151,7 +151,7 @@ extension TrainingView {
 
     func resetTrainingSession() {
         let trace = Thread.callStackSymbols.prefix(8).joined(separator: "\n")
-        print("🏋️ [Training] ⚠️ resetTrainingSession called from:\n\(trace)")
+        appDebugLog("🏋️ [Training] ⚠️ resetTrainingSession called from:\n\(trace)")
         cancelPendingFeedback()
         shouldEvaluateAfterStop = false
         session.resetTrainingSessionState()
@@ -229,14 +229,14 @@ extension TrainingView {
     }
 
     func startTraining() {
-        print("🏋️ [Training] startTraining mode=\(session.trainingMode) activeItems=\(activeItems.count) selectedIDs=\(session.selectedTrainingListIDs.count) verbSetSize=\(StandardVocabularyLoader.verbSet.count)")
+        appDebugLog("🏋️ [Training] startTraining mode=\(session.trainingMode) activeItems=\(activeItems.count) selectedIDs=\(session.selectedTrainingListIDs.count) verbSetSize=\(StandardVocabularyLoader.verbSet.count)")
         ensureTrainingSelectionValidity()
         guard session.startTraining(
             listStore: listStore,
             launchContext: launchContext,
             selectedAppDirection: selectedAppDirection
         ) else {
-            print("🏋️ [Training] ❌ startTraining failed — empty pool")
+            appDebugLog("🏋️ [Training] ❌ startTraining failed — empty pool")
             showEmptyPoolToast()
             resetTrainingSession()
             return
@@ -353,7 +353,7 @@ extension TrainingView {
             trainingSessionOutcome = .empty
         }
         #if DEBUG
-        print("🛑 [Training] Force-Done via chain-timer-soft-cutoff")
+        appDebugLog("🛑 [Training] Force-Done via chain-timer-soft-cutoff")
         #endif
     }
 
@@ -404,7 +404,7 @@ extension TrainingView {
             verbformsSessionOutcome = .empty
         }
         #if DEBUG
-        print("🛑 [Verbformen] Force-Done via chain-timer-soft-cutoff")
+        appDebugLog("🛑 [Verbformen] Force-Done via chain-timer-soft-cutoff")
         #endif
     }
 

@@ -141,7 +141,7 @@ extension ScanImportView {
         let result = activeListStore.applyMergePlan(plan, toListWithID: listID)
 
         #if DEBUG
-        print("""
+        appDebugLog("""
         📋 [applyPendingMerge] Result-Branch
            status=\(result.status)
            isSuccess=\(result.isSuccess)
@@ -166,7 +166,7 @@ extension ScanImportView {
             // Pendings BEHALTEN, damit der User es wiederholen kann.
             // Kein resetScanInput, kein isShowingImportCompletion.
             #if DEBUG
-            print("📋 [applyPendingMerge] FAILURE — Pendings erhalten, kein Completion-Wechsel.")
+            appDebugLog("📋 [applyPendingMerge] FAILURE — Pendings erhalten, kein Completion-Wechsel.")
             #endif
             return
         }

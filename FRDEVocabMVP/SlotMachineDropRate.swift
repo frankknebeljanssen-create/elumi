@@ -102,7 +102,7 @@ final class ElumiDropRateControllerStore: ObservableObject {
             spinsSinceLastElumi += 1
         }
         #if DEBUG
-        print("🎰 [DropRate] Spin-Ergebnis: \(elumiCount) Elumi(s), streak=\(spinsSinceLastElumi), next-chance=\(String(format: "%.2f", currentElumiChance()))")
+        appDebugLog("🎰 [DropRate] Spin-Ergebnis: \(elumiCount) Elumi(s), streak=\(spinsSinceLastElumi), next-chance=\(String(format: "%.2f", currentElumiChance()))")
         #endif
         return (spinsSinceLastElumi, elumiCount)
     }

@@ -61,7 +61,7 @@ final class VoiceSettingsStore: ObservableObject {
             let data = try encoder.encode(record)
             UserDefaults.standard.set(data, forKey: key)
         } catch {
-            print("⚠️ VoiceSettingsStore encode failed: \(error)")
+            appDebugLog("⚠️ VoiceSettingsStore encode failed: \(error)")
         }
     }
 
