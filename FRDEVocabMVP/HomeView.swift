@@ -134,9 +134,12 @@ struct HomeView: View {
                 subtitle: "Heute schon gecheckt?",
                 accent: AppTheme.Colors.elumiPinkDeep,
                 icon: {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 32, weight: .bold))
-                        .foregroundStyle(.white)
+                    // **Polish 2026-05-07** — Sparkles-SF-Symbol durch
+                    // programmatische 3-Karten-Stack-Illustration
+                    // ersetzt (siehe `DailyDropStackedCardsIcon`).
+                    // Signalisiert thematisch korrekt den Slot-/
+                    // Karten-Charakter des Daily-Drop-Modus.
+                    DailyDropStackedCardsIcon(size: 40)
                 },
                 onTap: { openHomeScreen(.elumi) }
             )
