@@ -44,19 +44,27 @@ struct TrainingHubView: View {
     }
 
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                // **Polish 2026-05-06 Iteration 4 — Hub-Look an Home
-                // angeglichen.** Vorher: 16pt .medium zentriert mit
-                // Back-Chevron-ZStack. Jetzt: 32pt black linksbündig
-                // (analog Home-Greeting), 14pt Spacing zur 14pt-
-                // Subline. Back-Chevron läuft weiterhin über die
-                // AppLocalChrome-TopBar oben (siehe `appLocalChrome`-
-                // Modifier am Ende des body) — kein eigener Inline-
-                // Back-Chevron mehr, wäre dann doppelt.
-                titleHeader
-                    .padding(.top, 24)
-                    .padding(.bottom, 32)
+        // **Bug-Fix 2026-05-06 Iteration 4** — Chevron-Position-
+        // Konsistenz mit Quiz/Karteikarten-Setup. Vorher saß die
+        // Back-Chevron-Row INNERHALB des ScrollView und wurde durch
+        // dessen Top-Padding nach unten gedrückt. Jetzt: Outer-
+        // VStack(spacing: 0) am Body-Top mit Chevron direkt am
+        // Safe-Area-Rand (analog `SessionSetupScreen` →
+        // `SessionSetupHeader` → `ModuleHeaderCard`-Pattern). Der
+        // Chevron sitzt damit auf identischer Höhe wie auf allen
+        // anderen Push-Setup-Screens; das Maskottchen-Tipp-Block
+        // am Ende hat wieder Atemraum bis zum Footer.
+        VStack(spacing: 0) {
+            HStack {
+                AppBackButton(action: { dismiss() }, tint: AppTheme.Colors.textPrimary)
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, AppLayout.screenPadding)
+
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
+                    titleHeader
+                        .padding(.bottom, 32)
 
                 // **Polish 2026-05-06 Iteration 6** — Spacing-Tweaks
                 // nach User-Feedback:
@@ -170,10 +178,19 @@ struct TrainingHubView: View {
                 Color.clear.frame(height: footerClearance)
             }
             .padding(.horizontal, AppLayout.screenPadding)
-            .padding(.top, AppLayout.contentTopPadding)
+            // **Bug-Fix 2026-05-06 Iteration 3** — Chevron sitzt
+            // jetzt auf gleicher Höhe wie bei Quiz/Karteikarten-
+            // Setup. Vorher Top-Padding `contentTopPadding` (24pt)
+            // → Chevron tief im Screen. Jetzt `screenHeaderTopPadding`
+            // (4pt) wie bei `SessionSetupScreen` — der Chevron sitzt
+            // direkt an der Top-Safe-Area, der Title rutscht
+            // entsprechend hoch und das Maskottchen-Tipp-Block am
+            // Ende hat wieder Atemraum bis zum Footer.
+            .padding(.top, AppLayout.screenHeaderTopPadding)
             .padding(.bottom, AppTheme.Spacing.sm)
             .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .center)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .tint(sectionStyle.accent)
@@ -252,19 +269,10 @@ struct TrainingHubView: View {
     /// black Pink (analog Home-Greeting), Subline 14pt regular
     /// secondary, 14pt VStack-Spacing.
     private var titleHeader: some View {
-        // **Bug-Fix 2026-05-06** — explizit `AppBackButton` über dem
-        // Title. Vorher fehlte der Chevron komplett, weil
-        // `appLocalChrome(topBar:)` den TopBar-ViewBuilder nicht
-        // rendert (silent no-op auf der Funktion in
-        // `AppChromeSupport.swift`). Diese Lokal-Lösung umgeht den
-        // Chrome-Bug und bringt den Chevron direkt sichtbar an die
-        // gewohnte Position oben links.
+        // **Bug-Fix 2026-05-06 Iteration 2** — Chevron ist im Body
+        // jetzt eine separate Row über dieser VStack (siehe oben).
+        // Hier rendern wir nur noch Title + Subline.
         VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                AppBackButton(action: { dismiss() }, tint: AppTheme.Colors.textPrimary)
-                Spacer(minLength: 0)
-            }
-
             Text("Dein Training")
                 .font(.system(size: 32, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.elumiPink)
