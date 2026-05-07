@@ -797,3 +797,52 @@ optimieren, oder Click-Sound durch kürzeren Sample ersetzen
 
 Prio: niedrig (Stutter ist störend aber nicht blockierend für
 Funktionalität). Backlog-Eintrag für künftige Audio-Refactor-Session.
+
+---
+
+## Chevron-System — Tech-Debt nach Wrapper-Level-Suppression-Workaround
+
+**Symptom (gelöst, pragmatisch):** Beim Pushen einer Destination
+flashte SwiftUI für einen Frame den System-Default-Back-Button auf,
+bevor der Custom-Pink-Chevron erschien. Besonders bei Cold-View-
+Konstruktion (z. B. KK first-push) sichtbar.
+
+**Quelle der Beobachtung (2026-05-07):**
+- Quiz-First-Push war sauber (keine `AnyView`-Erasure)
+- KK-First-Push hatte Flash (lag teilweise an `AnyView`-Wrapper um
+  `flashcardsBodyContent`)
+- Nach `AnyView`-Removal blieb Flash auf KK-First-Push noch vorhanden,
+  weil `.toolbar(.hidden)` und `.navigationBarBackButtonHidden(true)`
+  auf der Destination-Body-Ebene erst nach Body-Evaluation greifen.
+
+**Aktueller Workaround (Commit `56868be`):**
+Beide Modifier sitzen auf der `navigationDestination`-Wrapper-Ebene
+in `RootContentView.swift` (zusätzlich zu den per-Destination-
+Modifiern aus Commit `fe35ca0`). Der Wrapper rendert die Modifier
+beim Mount der Destination, **bevor** das Body evaluiert wird —
+kein Flash mehr.
+
+**Tech-Debt:**
+- Custom-Chevron im Body (`AppBackButton` in `ModuleHeaderCard` /
+  `SessionSetupHeader` / `TrainingHubView`) **plus**
+  `.toolbar(.hidden)` an mehreren Ebenen ist redundant. Die
+  Wrapper-Suppression macht die per-Destination-Modifier teils
+  überflüssig — sie bleiben aber als Defense-in-depth (falls neue
+  Push-Pfade direkt navigieren ohne den Wrapper zu durchlaufen).
+- Alternative saubere Architekturen:
+  - **Variante 1 (System-Toolbar mit ToolbarItem):**
+    `.toolbar { ToolbarItem(placement: .topBarLeading) { … } }` auf
+    jedem Destination, Tint global via `.tint(.elumiPink)` an
+    NavigationStack-Wurzel. Custom-Chevron im Body komplett raus.
+  - **Variante 2 (Custom-Toolbar konsequent):** NavigationStack
+    selbst auflösen, eigene Push-Animation via `ZStack` +
+    Transitions. Volle Kontrolle, aber substantieller Refactor.
+
+**Trigger für Re-Evaluation:**
+- Neue Push-Screens zeigen wieder Chevron-Quirks
+- iOS-Major-Update mit verändertem `NavigationStack`-Verhalten
+- Designsystem-Reorg, der Custom-Chevron komplett ablöst
+
+**Heute pragmatisch akzeptiert** — Kommentar an der Wrapper-
+Suppression-Stelle warnt explizit, die Modifier nicht zurück in den
+Body zu verschieben, sonst kommt der Flash zurück.
