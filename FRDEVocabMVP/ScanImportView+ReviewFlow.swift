@@ -124,7 +124,22 @@ extension ScanImportView {
     }
 
     func returnToScanSetup() {
-        guard !isRecognizingImage else { return }
+        // **Bug-Fix 2026-05-07** — Guard `!isRecognizingImage` entfernt.
+        // Vorher: Tap auf Chevron während laufender Recognition war ein
+        // silent no-op → User berichtete „Scan-Screen lässt sich nicht
+        // abbrechen". Jetzt: wir brechen die sichtbare Recognition
+        // explizit ab (`isRecognizingImage = false` + Progress-Feedback
+        // stoppen), bevor der State-Reset läuft. Die in-flight
+        // recognition-Task läuft im Hintergrund weiter (kein
+        // Task-Handle gespeichert für Cancel), aber sobald sie fertig
+        // ist, schreibt sie in einen bereits resetteten Session-State
+        // (selectedImage=nil, previewPairs=[]) — die Resultate
+        // verpuffen. Akzeptables Trade-off für V1b; eine echte
+        // Task-Cancellation-Refactor steht im Backlog.
+        if isRecognizingImage {
+            isRecognizingImage = false
+            stopScanProgressFeedback()
+        }
 
         UIApplication.shared.sendAction(
             #selector(UIResponder.resignFirstResponder),

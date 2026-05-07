@@ -774,7 +774,16 @@ extension ScanImportView {
 
                         scanStatusMessageView
                     }
-                    .padding(.bottom, 8 + scanKeyboardBottomPadding)
+                    // **Footer-Clearance-Fix 2026-05-07** — vorher
+                    // `8 + kbInset` → die Foto-Album-Card am Ende des
+                    // Choice-Screens wurde von der globalen Footer-Bar
+                    // verdeckt (User-Befund). Jetzt: Footer-Höhe +
+                    // Inset + 16 pt Margin (gleicher Pattern wie der
+                    // Review-Screen-Footer-Spacer in Zeile 234 dieses
+                    // Files), zusätzlich Keyboard-Inset für Editor-
+                    // Modi. Cards atmen jetzt sauber zwischen Inhalt
+                    // und Bottom-Bar.
+                    .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 16 + scanKeyboardBottomPadding)
                 }
                 .scrollDismissesKeyboard(.interactively)
             } // else (nicht batchCompleted)

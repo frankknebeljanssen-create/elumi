@@ -91,7 +91,11 @@ struct ScanChoiceCard: View {
                     .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.4))
             }
             .padding(.horizontal, isPriority ? 18 : 16)
-            .padding(.vertical, isPriority ? 18 : 16)
+            // **2026-05-07** — Vertical-Padding −4 pt (User-Spec
+            // „Cards etwas flacher"). Card-Höhe sinkt um ~8 pt total
+            // (4 pt oben + 4 pt unten), Choice-Screen wird kompakter
+            // und die Foto-Album-Card sitzt klar über der Footer-Linie.
+            .padding(.vertical, isPriority ? 14 : 12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 ZStack {
