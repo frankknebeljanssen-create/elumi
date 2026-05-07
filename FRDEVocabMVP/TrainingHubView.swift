@@ -69,15 +69,13 @@ struct TrainingHubView: View {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
                     titleHeader
-                        .padding(.bottom, 32)
+                        // **Polish 2026-05-07 Iteration 2** — Title-
+                        // Bottom 32 → 18 pt nach Cards-Bumps. Cards
+                        // wurden +12 pt höher; um Mascot ohne Scroll
+                        // sichtbar zu halten, wandert das Spacing-
+                        // Budget vom Title-Block weg.
+                        .padding(.bottom, 18)
 
-                // **Polish 2026-05-06 Iteration 6** — Spacing-Tweaks
-                // nach User-Feedback:
-                //   • ALLGEMEIN + Vokabeln-Card weiter runter vom
-                //     Header (Title-Padding-Bottom 16 → 32 pt).
-                //   • Allgemein-Block kompakter zur SPEZIAL-Section
-                //     (Vokabeln-padding-bottom 24 → 10, Divider-
-                //     padding-bottom 16 → 10).
                 // **Naming-Sweep 2026-05-06** — „Allgemein" → „Basics"
                 // (Game-Sprache, kürzer, kindgerechter).
                 SectionLabel(text: "Basics", size: 15, weight: .bold)
@@ -85,21 +83,22 @@ struct TrainingHubView: View {
                 ModuleCard(
                     title: "Vokabeln",
                     accent: AppTheme.Colors.moduleVocabulary,
-                    icon: { HomeModuleIconView(icon: .vokabeln, size: 40, glyphTint: .white) },
+                    icon: { HomeModuleIconView(icon: .vokabeln, size: 44, glyphTint: .white) },
                     onTap: {
                         feedbackPlayer.playTabSwitch()
                         openScreen(.train(TrainingLaunchContext(preferredMode: .vocabulary)))
                     }
                 )
-                .padding(.bottom, 10)
+                // Bottom 10 → 6 pt (Spacing-Trim 2026-05-07).
+                .padding(.bottom, 6)
 
                 // Hairline-Divider zwischen Allgemein und Spezial,
-                // 0.5pt edge-to-edge.
+                // 0.5pt edge-to-edge. Bottom 10 → 6 pt.
                 Rectangle()
                     .fill(AppTheme.Colors.border)
                     .frame(height: 0.5)
                     .padding(.horizontal, -AppLayout.screenPadding)
-                    .padding(.bottom, 10)
+                    .padding(.bottom, 6)
 
                 // SPEZIAL — 2×2 (Nomen, Verben, Artikel, Verbformen)
                 // mit 13pt Sub-Label.
@@ -115,7 +114,7 @@ struct TrainingHubView: View {
                     ModuleCard(
                         title: "Nomen",
                         accent: AppTheme.Colors.moduleNomen,
-                        icon: { HomeModuleIconView(icon: .nomen, size: 40, glyphTint: .white) },
+                        icon: { HomeModuleIconView(icon: .nomen, size: 44, glyphTint: .white) },
                         onTap: {
                             feedbackPlayer.playTabSwitch()
                             openScreen(.train(TrainingLaunchContext(preferredMode: .nouns)))
@@ -124,7 +123,7 @@ struct TrainingHubView: View {
                     ModuleCard(
                         title: "Verben",
                         accent: AppTheme.Colors.moduleVerbs,
-                        icon: { HomeModuleIconView(icon: .verben, size: 40, glyphTint: .white) },
+                        icon: { HomeModuleIconView(icon: .verben, size: 44, glyphTint: .white) },
                         onTap: {
                             feedbackPlayer.playTabSwitch()
                             openScreen(.train(TrainingLaunchContext(preferredMode: .verbs)))
@@ -133,7 +132,7 @@ struct TrainingHubView: View {
                     ModuleCard(
                         title: "Artikel",
                         accent: AppTheme.Colors.moduleArticles,
-                        icon: { HomeModuleIconView(icon: .artikel, size: 40, glyphTint: .white) },
+                        icon: { HomeModuleIconView(icon: .artikel, size: 44, glyphTint: .white) },
                         onTap: {
                             feedbackPlayer.playTabSwitch()
                             openScreen(.train(TrainingLaunchContext(preferredMode: .articles)))
@@ -142,43 +141,49 @@ struct TrainingHubView: View {
                     ModuleCard(
                         title: "Verbformen",
                         accent: AppTheme.Colors.moduleVerbforms,
-                        icon: { HomeModuleIconView(icon: .verbformen, size: 40, glyphTint: .white) },
+                        icon: { HomeModuleIconView(icon: .verbformen, size: 44, glyphTint: .white) },
                         onTap: {
                             feedbackPlayer.playTabSwitch()
                             openScreen(.train(TrainingLaunchContext(preferredMode: .verbforms)))
                         }
                     )
                 }
-                .padding(.bottom, 16)
+                // LazyVGrid bottom 16 → 8 pt.
+                .padding(.bottom, 8)
 
                 // Akzente quer am Ende der Spezial-Sektion.
-                // **Polish 2026-05-06 Iteration 6** — Akzente-Font
-                // 20 → 18 pt damit visuell balanced mit den ModuleCards
-                // (Nomen/Verben/Artikel/Verbformen, alle 18 pt).
-                // Vorher wirkte die Akzente-Card durch +2pt unbalanced.
+                // **Polish 2026-05-07** — Hub-Cards-Polish-Sweep:
+                // height 56 → 68 (+12 pt) und titleSize 18 → 20 (+2 pt),
+                // synchron zu den ModuleCards in BASICS/SPECIALS. Akzente
+                // bleibt visuell balanced mit Nomen/Verben/Artikel/
+                // Verbformen — dieselbe Größenklasse, nur quer.
                 WideCard(
                     title: "Akzente",
                     accent: AppTheme.Colors.moduleAccents,
-                    height: 56,
-                    titleSize: 18,
-                    icon: { HomeModuleIconView(icon: .akzente, size: 40, glyphTint: .white) },
+                    height: 68,
+                    titleSize: 20,
+                    icon: { HomeModuleIconView(icon: .akzente, size: 44, glyphTint: .white) },
                     onTap: {
                         feedbackPlayer.playTabSwitch()
                         openScreen(.accents(nil))
                     }
                 )
-                .padding(.bottom, 24)
-
-                // **Polish-Divider 2** — Hairline vor dem
-                // Maskottchen-Tipp-Block, trennt visuell die
-                // Card-Sektionen vom dekorativen Footer-Element.
-                Rectangle()
-                    .fill(AppTheme.Colors.border)
-                    .frame(height: 0.5)
-                    .padding(.horizontal, -AppLayout.screenPadding)
+                // Bottom 24 → 8 pt — Mascot rückt direkt an Akzente
+                // ran, damit der Block ohne Scroll im Viewport sitzt.
+                // **Polish 2026-05-07 Iteration 2** — Trennstrich-
+                // Hairline zwischen Akzente und mascotTipBlock entfernt
+                // (User-Feedback „kann weg"). Reduziert visuelles
+                // Rauschen und spart die 0.5 pt + Padding-Bottom-Linie.
+                .padding(.bottom, 8)
 
                 mascotTipBlock
-                    .padding(.top, 24)
+                    // Top 24 → 4 pt: Mascot rückt nahe an die Cards
+                    // ran, damit der Block ohne Scroll sichtbar bleibt.
+                    .padding(.top, 4)
+                    // Bottom-Atemraum reduziert auf 8 pt — Tipp atmet
+                    // weiterhin zum Footer hin, ohne den Block aus
+                    // dem Viewport zu schieben.
+                    .padding(.bottom, 8)
 
                 Color.clear.frame(height: footerClearance)
             }
@@ -235,17 +240,21 @@ struct TrainingHubView: View {
     /// der letzten Card und dem Footer wirkt jetzt absichtlich
     /// gestaltet statt leer.
     private var mascotTipBlock: some View {
-        VStack(spacing: 10) {
+        // **Polish 2026-05-07 Iteration 2** — Mascot kompakter
+        // (86 → 72 pt) + internal VStack-spacing (10 → 6 pt), damit
+        // der Block ohne Scroll in den Hub-Viewport passt nach den
+        // Card-Bumps von 76 → 88 pt. Tipp-Text-Größe unverändert.
+        VStack(spacing: 6) {
             ZStack {
                 Image("SplashCharacter")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 86, height: 86)
+                    .frame(width: 72, height: 72)
                 SplashCharacterBlinkOverlay(
-                    size: 86,
+                    size: 72,
                     startDate: .now
                 )
-                .frame(width: 86, height: 86)
+                .frame(width: 72, height: 72)
             }
             // Subtiler Drop-Shadow, identisch zur Footer-Maskottchen-
             // Behandlung — Maskottchen liegt visuell „auf" dem

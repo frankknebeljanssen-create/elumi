@@ -37,14 +37,22 @@ struct ModuleCard<Icon: View>: View {
                     // sprechen alle Hub-Cards (ModuleCard 2×2
                     // Spezial + WideCard Akzente) dieselbe
                     // Visual-Weight.
-                    .font(.system(size: 18, weight: .black, design: .rounded))
+                    // **Polish 2026-05-07** — Title-Font 18 → 20 pt
+                    // (User-Spec „Fonts +1-2pt"). ModuleCards im
+                    // Training-Hub lesen sich jetzt prominenter,
+                    // proportional zur erhöhten Card-Höhe.
+                    .font(.system(size: 20, weight: .black, design: .rounded))
                     .foregroundStyle(.white)
                     .shadow(color: .black.opacity(0.35), radius: 1, x: 0, y: 1)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 76)
+            // **Polish 2026-05-07** — Card-Höhe 76 → 88 pt (+12 pt,
+            // User-Spec Hub-Cards-Polish „etwas größer"). Wirkt
+            // präsenter ohne das 2×2-Grid zu sprengen; Maskottchen
+            // bleibt durch ScrollView-Verhalten erreichbar.
+            .frame(height: 88)
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(
