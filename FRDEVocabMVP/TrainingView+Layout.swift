@@ -538,7 +538,13 @@ extension TrainingView {
         // Cards. Die Bedeutung erschließt sich aus Icon (Mikrofon /
         // Grid) + Titel, eine Erklär-Zeile ist redundant.
         VStack(alignment: .leading, spacing: 10) {
-            Text("Wie möchtest du antworten?")
+            // **Section-Header-Sweep 2026-05-07** — „Wie möchtest du
+            // antworten?" → „ANTWORTEN MIT". Konsistent mit den
+            // anderen CAPS-Section-Headern (DEINE LISTEN, FRAGEN,
+            // KARTEN, WIEDERHOLUNGEN). Visual-Style (17 pt black,
+            // textPrimary) unverändert — Source-String selbst CAPS,
+            // daher keine zusätzliche `.textCase`-Modifikation nötig.
+            Text("ANTWORTEN MIT")
                 .font(.system(size: 17, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
