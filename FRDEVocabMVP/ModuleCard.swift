@@ -5,11 +5,17 @@
 // Artikel / Verbformen im 2×2-Spezial-Grid. Jede Card zeigt Icon +
 // Titel zentriert, ohne Subtitle (kompakter Look als MethodCard).
 //
-// **Designsprache**: Spiegelt das Gradient-Fill-Pattern der existier-
-// enden `MoreExerciseCard` (76 pt fühlt sich nahtlos an). Corner-
-// Radius 16 pt (kompakter als MethodCard's 22), Background-Opacity
-// etwas sanfter (0.88 → 0.68 statt 0.95 → 0.75) — die Sub-Hub-Cards
-// sind hierarchisch eine Stufe unter den Methoden-Cards auf Home.
+// **Designsprache**: Spiegelt das Gradient-Fill-Pattern der
+// existierenden Card-Family (MethodCard, WideCard) — Background-
+// Opacity 0.95 → 0.75, topLeading → bottomTrailing. Corner-Radius
+// 16 pt (kompakter als MethodCard's 22) als Hub-spezifischer
+// Marker.
+//
+// **Card-Family-Align 2026-05-07** — Vorher 0.88 → 0.68 (sanfter),
+// in der Annahme die Sub-Hub-Cards sollten visuell schwächer als
+// die Home-Methoden sein. Im Audit: ModuleCard wirkte daneben
+// „matt", die übrigen Cards alle 0.95 → 0.75. Angeglichen, damit
+// die Cards systemweit dieselbe Visual-Weight haben.
 //
 // **Icon-Flexibilität**: ViewBuilder-Slot, identisch zu MethodCard.
 
@@ -57,7 +63,7 @@ struct ModuleCard<Icon: View>: View {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(
                         LinearGradient(
-                            colors: [accent.opacity(0.88), accent.opacity(0.68)],
+                            colors: [accent.opacity(0.95), accent.opacity(0.75)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
