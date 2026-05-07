@@ -236,7 +236,10 @@ struct ScreenHeaderCard: View {
         HStack(spacing: 6) {
             if let onBack {
                 // Systemweiter Back-Button — nackter Pfeil, kein Rahmen.
-                AppBackButton(action: onBack)
+                // **Bug-Fix 2026-05-07** — expliziter Brand-Pink-Tint
+                // statt Default (`textPrimary`). Konsistent zu allen
+                // anderen Push-Screens, kein farbloser Default-Look.
+                AppBackButton(action: onBack, tint: AppTheme.Colors.elumiPink)
             } else if centeredTitle {
                 // Symmetric placeholder, damit der Titel bei fehlendem
                 // Back-Button trotzdem sauber mittig sitzt. 44 pt = Breite
@@ -327,7 +330,9 @@ struct AppTopBar: View {
             if let onBack {
                 // Systemweiter Back-Button — kein Rahmen mehr, einheitlich
                 // mit allen anderen Screens und Headern.
-                AppBackButton(action: onBack)
+                // **Bug-Fix 2026-05-07** — expliziter Brand-Pink-Tint
+                // statt Default (`textPrimary`).
+                AppBackButton(action: onBack, tint: AppTheme.Colors.elumiPink)
             }
 
             // Modul-Icon, sitzt direkt neben dem Back-Button.

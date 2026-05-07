@@ -56,7 +56,12 @@ struct TrainingHubView: View {
         // am Ende hat wieder Atemraum bis zum Footer.
         VStack(spacing: 0) {
             HStack {
-                AppBackButton(action: { dismiss() }, tint: AppTheme.Colors.textPrimary)
+                // **Bug-Fix 2026-05-07** — Tint von `textPrimary`
+                // (weiß-grau auf dark-bg) auf `elumiPink` (Brand-
+                // Akzent). Vorher wirkte der Hub-Chevron wie der
+                // System-Default; jetzt klar Brand-Pink, konsistent
+                // zu Quiz/KK/Setup-Screens.
+                AppBackButton(action: { dismiss() }, tint: AppTheme.Colors.elumiPink)
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, AppLayout.screenPadding)

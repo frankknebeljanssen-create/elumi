@@ -23,47 +23,54 @@ extension FlashcardsView {
         }
     }
 
-    var flashcardsBodyContent: AnyView {
-        AnyView(
-            ZStack(alignment: .top) {
-                flashcardsRootContent
-                flashcardTypedAnswerOverlay
-                // Combo-Toast-Overlay (Streak-Moments 3/5/10, siehe
-                // `FeedbackConfig`) + Milestone-Overlay (seltene, größere
-                // Momente wie Session-Ende).
-                ComboToastOverlay()
-                MilestoneOverlayView()
-            }
-            // **Phase 8.2 Bug-Fix**: NavigationDestination wandert vom
-            // Setup-Screen-Modifier in den Body-Wrapper hoch, damit der
-            // Push-Pfad SETUP ↔ SESSION überlebt. Vorher: setup.isShowingSetup
-            // = false flippte den Body, was den Setup-Screen ENTFERNTE
-            // → auch die `.navigationDestination` verschwand → SwiftUI
-            // popte PersonalDecksView automatisch + dismiss() popte
-            // nochmal → User landete eine Ebene zu tief im Setup statt
-            // in der gerade frisch konfigurierten Session.
-            .navigationDestination(isPresented: $isShowingPersonalDecksScreen) {
-                PersonalDecksView(
-                    personalDeckStore: personalDeckStore,
-                    listStore: listStore,
-                    sectionStyle: sectionStyle,
-                    language: selectedAppDirection.sourceLanguage,
-                    cardTypeFilter: setup.selectedSetupContent.preferredCardType,
-                    onStartDeck: { deck in
-                        // **Bug-Fix Phase 8.2 (v4)**: Parent steuert
-                        // beides — Pop UND Session-Start. Vorher hat
-                        // PersonalDecksView selbst dismiss() gerufen,
-                        // das hat in Kombination mit dem Body-Flip zu
-                        // einer Race geführt, in der der Setup-Screen
-                        // wieder oben aufpoppte. Jetzt: erst pop, dann
-                        // start — beide synchronen State-Mutationen
-                        // werden von SwiftUI gebatched.
-                        isShowingPersonalDecksScreen = false
-                        startPersonalDeckSession(deck)
-                    }
-                )
-            }
-        )
+    /// **Bug-Fix 2026-05-07** — `AnyView`-Wrapper entfernt. Vorher
+    /// erasierte der Wrapper den statischen View-Type, was während
+    /// der NavigationStack-Push-Animation zu einem kurzen Flash des
+    /// System-Default-Back-Buttons führte (User-Befund: weißer
+    /// Chevron blitzt kurz auf, bevor der Custom-Pink-Chevron
+    /// erscheint). Mit `some View`-Inferenz bleibt der Type sauber
+    /// trackbar, der Push-Übergang rendert direkt mit dem Custom-
+    /// Chevron.
+    @ViewBuilder
+    var flashcardsBodyContent: some View {
+        ZStack(alignment: .top) {
+            flashcardsRootContent
+            flashcardTypedAnswerOverlay
+            // Combo-Toast-Overlay (Streak-Moments 3/5/10, siehe
+            // `FeedbackConfig`) + Milestone-Overlay (seltene, größere
+            // Momente wie Session-Ende).
+            ComboToastOverlay()
+            MilestoneOverlayView()
+        }
+        // **Phase 8.2 Bug-Fix**: NavigationDestination wandert vom
+        // Setup-Screen-Modifier in den Body-Wrapper hoch, damit der
+        // Push-Pfad SETUP ↔ SESSION überlebt. Vorher: setup.isShowingSetup
+        // = false flippte den Body, was den Setup-Screen ENTFERNTE
+        // → auch die `.navigationDestination` verschwand → SwiftUI
+        // popte PersonalDecksView automatisch + dismiss() popte
+        // nochmal → User landete eine Ebene zu tief im Setup statt
+        // in der gerade frisch konfigurierten Session.
+        .navigationDestination(isPresented: $isShowingPersonalDecksScreen) {
+            PersonalDecksView(
+                personalDeckStore: personalDeckStore,
+                listStore: listStore,
+                sectionStyle: sectionStyle,
+                language: selectedAppDirection.sourceLanguage,
+                cardTypeFilter: setup.selectedSetupContent.preferredCardType,
+                onStartDeck: { deck in
+                    // **Bug-Fix Phase 8.2 (v4)**: Parent steuert
+                    // beides — Pop UND Session-Start. Vorher hat
+                    // PersonalDecksView selbst dismiss() gerufen,
+                    // das hat in Kombination mit dem Body-Flip zu
+                    // einer Race geführt, in der der Setup-Screen
+                    // wieder oben aufpoppte. Jetzt: erst pop, dann
+                    // start — beide synchronen State-Mutationen
+                    // werden von SwiftUI gebatched.
+                    isShowingPersonalDecksScreen = false
+                    startPersonalDeckSession(deck)
+                }
+            )
+        }
     }
 
     var flashcardsTopBar: some View {

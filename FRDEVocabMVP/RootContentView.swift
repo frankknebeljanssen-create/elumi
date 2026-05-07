@@ -153,6 +153,19 @@ struct ContentView: View {
                             navigation.openTrophyScreen()
                         })
                         .environment(\.appOpenAccountAction, { navigation.navigationPath.append(.account) })
+                        // **Bug-Fix 2026-05-07** — Chevron-Suppression
+                        // an den navigationDestination-Wrapper gehoben.
+                        // Vorher saßen `.navigationBarBackButtonHidden`
+                        // + `.toolbar(.hidden, …)` auf jedem
+                        // Destination-Body — bei der allerersten Push-
+                        // Konstruktion (z. B. KK first-push) flashte
+                        // der System-Default-Back-Button kurz auf,
+                        // weil die Body-Modifier erst nach Body-
+                        // Evaluation greifen. Auf dem Wrapper greifen
+                        // die Modifier sofort beim Mount der
+                        // Destination, **bevor** das Body rendert.
+                        .navigationBarBackButtonHidden(true)
+                        .toolbar(.hidden, for: .navigationBar)
                     }
                     .onAppear {
                         let currentDirection = Direction(rawValue: selectedDirectionRaw) ?? .frenchToGerman
