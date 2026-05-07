@@ -112,7 +112,28 @@ extension View {
             badgeText: badgeText,
             badgeColor: badgeColor,
             badgeForeground: badgeForeground,
-            cornerRadius: cornerRadius
+            cornerRadius: cornerRadius,
+            showsBadge: true,
+            paused: false
+        ))
+    }
+
+    /// Slim-Variante ohne Badge — z. B. für den Slot-CTA „Drop
+    /// starten". Border-Glow + Shimmer laufen weiter, Badge entfällt.
+    /// `paused: true` schaltet die Animationen aus (z. B. während
+    /// die Slot-Reels rotieren — vermeidet Frame-Drops auf älteren
+    /// Geräten und reduziert visuellen Lärm während der Spin-Phase).
+    func dailyDropGlow(
+        cornerRadius: CGFloat = 16,
+        paused: Bool = false
+    ) -> some View {
+        modifier(DailyDropCardHighlightModifier(
+            badgeText: "",
+            badgeColor: .clear,
+            badgeForeground: .clear,
+            cornerRadius: cornerRadius,
+            showsBadge: false,
+            paused: paused
         ))
     }
 }
@@ -122,6 +143,8 @@ struct DailyDropCardHighlightModifier: ViewModifier {
     let badgeColor: Color
     let badgeForeground: Color
     let cornerRadius: CGFloat
+    let showsBadge: Bool
+    let paused: Bool
 
     /// Akzent-Farben für den rotierenden Gradient-Border. Start-Farbe
     /// wiederholt sich am Ende, damit der Cycle nahtlos schließt.
@@ -142,9 +165,11 @@ struct DailyDropCardHighlightModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .overlay { borderGlow }
-            .overlay { shimmerSweep }
-            .overlay(alignment: .topTrailing) { badge }
+            .overlay { paused ? AnyView(EmptyView()) : AnyView(borderGlow) }
+            .overlay { paused ? AnyView(EmptyView()) : AnyView(shimmerSweep) }
+            .overlay(alignment: .topTrailing) {
+                if showsBadge { badge } else { EmptyView() }
+            }
     }
 
     // MARK: - Border-Glow

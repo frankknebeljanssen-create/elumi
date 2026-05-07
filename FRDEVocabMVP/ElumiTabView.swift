@@ -1227,6 +1227,15 @@ struct ElumiTabView: View {
         // Screen-Pfad — der „Nochmal drehen"/„Jetzt üben"-Twin-State
         // bleibt ruhig.
         let shouldPulse = slotPhase == .idle && currentSpinNumber == 0 && canTriggerSpin
+        // **Slot-CTA-Highlight 2026-05-06** — der pre-Spin-CTA „Drop
+        // starten" bekommt dieselbe Border-Glow + Shimmer-Behandlung
+        // wie die Daily-Drop-Card auf Home (visuelle Verkettung
+        // Card → CTA). Auto-Pause während Reel-Drehung
+        // (`slotPhase != .idle`) verhindert Frame-Drops und visuellen
+        // Lärm während der Spin-Phase. Wenn der Slot wieder in
+        // `.idle` zurückkehrt (z. B. nach Reveal + dismiss), läuft
+        // der Glow wieder.
+        let glowPaused = slotPhase != .idle
         return Button {
             triggerSpin()
         } label: {
@@ -1241,6 +1250,7 @@ struct ElumiTabView: View {
         .disabled(!canTriggerSpin)
         .opacity(canTriggerSpin ? 1.0 : 0.45)
         .pulsing(active: shouldPulse, glowColor: ctaYellow)
+        .dailyDropGlow(cornerRadius: 16, paused: glowPaused)
         .transition(.opacity.combined(with: .scale(scale: 0.98)))
         .accessibilityLabel(Text("Los geht's"))
         .accessibilityHint(Text("Startet den ersten Slot-Spin"))
