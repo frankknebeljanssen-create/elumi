@@ -244,13 +244,18 @@ struct DailyDropCardHighlightModifier: ViewModifier {
     /// über die Card-Kante hinausragend (-12 x / -8 y) — visueller
     /// Anker, hebt sich vom Card-Layout ab.
     private var badge: some View {
+        // **Polish 2026-05-07** — Font 10 → 11 pt + Padding 10/3 →
+        // 12/4 pt (User-Feedback „Badge etwas größer"). Das Badge
+        // bleibt kompakt genug um nicht aus der Card-Kante
+        // herauszuwuchern, liest sich aber auf modernen Displays
+        // jetzt deutlich klarer.
         Text(badgeText)
-            .font(.system(size: 10, weight: .medium, design: .rounded))
+            .font(.system(size: 11, weight: .medium, design: .rounded))
             .tracking(0.4)
             .textCase(.uppercase)
             .foregroundStyle(badgeForeground)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 3)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 4)
             .background(
                 Capsule(style: .continuous)
                     .fill(badgeColor)
