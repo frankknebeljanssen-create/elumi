@@ -792,7 +792,15 @@ struct ElumiTabView: View {
                 //    + Pencil-Pill für Re-Edit. Statt der alten
                 //    `durationCard` mit drei Chips. Die Chips leben
                 //    jetzt im Setup-Modal (`setupModalOverlay`).
+                // **Iter 6 (2026-05-07)** — Externer Atemraum
+                // oben/unten zur Nachbarschaft (Header oben +
+                // Slot-Area unten). User-Befund: Card stieß an
+                // beide Nachbarn an, wirkte gequetscht. 10 pt
+                // padding pro Seite gibt der Dauer-Card einen
+                // klaren visuellen Atem-Rahmen, ohne die anderen
+                // VStack-Gaps zu beeinflussen.
                 timeDisplayCard
+                    .padding(.vertical, 10)
 
                 // 2) Slot Machine.
                 slotMachineArea
@@ -973,9 +981,10 @@ struct ElumiTabView: View {
         HStack(alignment: .firstTextBaseline, spacing: 0) {
             // Reserve-Slot links — gleich breit wie der Pencil
             // rechts, damit der Wert-Block exakt mittig sitzt.
-            // **Iter 3 (2026-05-07)** — Reserve auf 28×28 verkleinert,
-            // synchron mit Pencil-Frame.
-            Color.clear.frame(width: 28, height: 28)
+            // **Iter 4 (2026-05-07)** — Reserve zurück auf 32×32,
+            // synchron mit dem Pencil (User-Spec „Pencil wieder wie
+            // vorher").
+            Color.clear.frame(width: 32, height: 32)
 
             Spacer(minLength: 0)
 
@@ -983,18 +992,13 @@ struct ElumiTabView: View {
                 // Dauer-Label inline mit der Zahl — gleiche Font-
                 // Klasse wie der Wert. Mixed-Case statt Caps, weil
                 // als Wort + Zahl zusammen ruhiger wirkt.
-                // **Iter 3 (2026-05-07)** — Font 28 → 22 pt nach
-                // User-Spec „Card düner machen, so dass Padding oben/
-                // unten größer wirkt". Content schrumpft −6 pt,
-                // Padding-Anteil wächst → mehr Atemraum bei
-                // gleichbleibender Card-Total-Höhe.
                 Text("Dauer")
-                    .font(.system(size: 22, weight: .black, design: .rounded))
+                    .font(.system(size: 23, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
 
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text("\(selectedDuration)")
-                        .font(.system(size: 22, weight: .black, design: .rounded))
+                        .font(.system(size: 23, weight: .black, design: .rounded))
                         .foregroundStyle(sectionStyle.accent)
                         // **Spec-1 (2026-04-30)** — `.identity` statt
                         // `.numericText()`. Mit Optionen 6/12/18
@@ -1004,7 +1008,7 @@ struct ElumiTabView: View {
                         .contentTransition(.identity)
 
                     Text("min")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
             }
@@ -1015,14 +1019,9 @@ struct ElumiTabView: View {
                 openSetupModalForReEdit()
             } label: {
                 Image(systemName: "pencil")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(sectionStyle.accent)
-                    // **Iter 3 (2026-05-07)** — Pencil-Frame 32 → 28
-                    // synchron mit der reduzierten Font-Größe. Tap-
-                    // Target bleibt mit 28 pt knapp über Apple-HIG-
-                    // Mindestmaß; akzeptabler Trade-off für die
-                    // schmalere Card.
-                    .frame(width: 28, height: 28)
+                    .frame(width: 32, height: 32)
                     .background(
                         Circle().fill(sectionStyle.accent.opacity(0.14))
                     )
@@ -1034,11 +1033,14 @@ struct ElumiTabView: View {
             .accessibilityHint(Text("Öffnet den Setup-Dialog mit der aktuellen Wahl preselected"))
         }
         .padding(.horizontal, 14)
-        // **Iter 3 (2026-05-07)** — Padding 12 → 16 pt. Zusammen mit
-        // dem schmaleren Content (Font 28 → 22 pt) wirkt der
-        // Padding-Anteil oben/unten jetzt klar größer als der
-        // Content-Block — Card liest sich „atemiger".
-        .padding(.vertical, 16)
+        // **Iter 6 (2026-05-07)** — Iter-5-Änderungen reverted
+        // (Font/Pencil zurück auf Iter-4-Werte). Der externe
+        // Atemraum oben/unten zur Nachbarschaft kommt aus dem
+        // `padding(.vertical, 10)`-Modifier am Call-Site (siehe
+        // `mainContent` oben), nicht aus dem Card-internen Padding.
+        // Internal-Vertical bleibt schmal (8 pt), damit die Card
+        // selbst kompakt sitzt.
+        .padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .appSetupCardBackground()
         .animation(.easeInOut(duration: 0.20), value: selectedDuration)
