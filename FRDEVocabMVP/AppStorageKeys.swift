@@ -180,3 +180,25 @@ let appTrainingGeneratorDurationKey = "elumi.training.generator.duration.v1"
 func trainingSelectedListIDsKey(for rawMode: String) -> String {
     "training.selectedListIDs.\(rawMode).v2"
 }
+
+// MARK: - AnswerMode Persistence (Sweep C, 2026-05-07)
+//
+// Per-Modul-Persistierung des Sprechen/Tippen-Toggle in den Setup-
+// Screens der Speech-fähigen Module. Werte sind die `AnswerMode.rawValue`
+// Strings ("speech" / "tap"). Default ist immer `.speech` (Frank's Spec
+// für alle drei Module).
+//
+// Slot-launched Sessions (Mix-Training / Daily Drop) lesen denselben
+// Key am Controller-Init — kein zusätzliches Launch-Context-Routing
+// nötig.
+
+/// AnswerMode-Setting für **Karteikarten**. Default `.speech`.
+let appAnswerModeKarteikartenKey = "elumi.answerMode.karteikarten.v1"
+
+/// AnswerMode-Setting für **Vokabeln**. Default `.speech`.
+let appAnswerModeVokabelnKey = "elumi.answerMode.vokabeln.v1"
+
+/// AnswerMode-Setting für **Nomen**. Default `.speech`. Ersetzt den
+/// nicht-persistierten `nounAnswerMode` aus dem
+/// `TrainingSessionController` (vorher Session-only).
+let appAnswerModeNomenKey = "elumi.answerMode.nomen.v1"
