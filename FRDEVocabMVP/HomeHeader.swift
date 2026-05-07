@@ -15,6 +15,11 @@ import SwiftUI
 struct HomeHeader: View {
     let greeting: String
     let streakDays: Int
+    /// **Bug-Fix 2026-05-06** — Streak-Pill ist jetzt tappable und
+    /// navigiert zum Trophy/Fortschritt-Screen. Closure ist optional
+    /// — fehlt der Callback, bleibt die Pill statisch (Backward-
+    /// Compat für eventuelle Preview/Test-Hosts).
+    var onStreakTap: (() -> Void)? = nil
     var mascotImageName: String = "SplashCharacter"
 
     /// 48 → 42 pt (−12 %): User-Wunsch „Axolotl darf nicht stärker
@@ -90,7 +95,19 @@ struct HomeHeader: View {
                 // Quiz-Amber-Hintergrund (Feuer-Vibe), heller Stroke
                 // für Pop-Effekt. Konsistenz mit der Methoden-Cards-
                 // Designsprache (Gradient-Fill, leichter Drop-Shadow).
-                streakPill
+                //
+                // **Bug-Fix 2026-05-06** — Pill ist jetzt tappable
+                // (User-Feedback). Tap navigiert zum Trophy/
+                // Fortschritt-Screen via `onStreakTap`-Closure. Ohne
+                // Closure bleibt sie statisch (Backward-Compat).
+                if let onStreakTap {
+                    Button(action: onStreakTap) {
+                        streakPill
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    streakPill
+                }
             }
 
             Spacer(minLength: 0)

@@ -252,7 +252,19 @@ struct TrainingHubView: View {
     /// black Pink (analog Home-Greeting), Subline 14pt regular
     /// secondary, 14pt VStack-Spacing.
     private var titleHeader: some View {
+        // **Bug-Fix 2026-05-06** — explizit `AppBackButton` über dem
+        // Title. Vorher fehlte der Chevron komplett, weil
+        // `appLocalChrome(topBar:)` den TopBar-ViewBuilder nicht
+        // rendert (silent no-op auf der Funktion in
+        // `AppChromeSupport.swift`). Diese Lokal-Lösung umgeht den
+        // Chrome-Bug und bringt den Chevron direkt sichtbar an die
+        // gewohnte Position oben links.
         VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                AppBackButton(action: { dismiss() }, tint: AppTheme.Colors.textPrimary)
+                Spacer(minLength: 0)
+            }
+
             Text("Dein Training")
                 .font(.system(size: 32, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.elumiPink)

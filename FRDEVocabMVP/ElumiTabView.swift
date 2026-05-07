@@ -520,11 +520,27 @@ struct ElumiTabView: View {
             // dead-center-Position jetzt wieder natürlich, weil die
             // Slot-Maschine erst nach Auto-Close gerendert wird.
             VStack(spacing: 18) {
-                // Skip-X oben rechts — schließt Pop-up ohne Zeit zu
-                // setzen. `modalDurationSelection` bleibt `nil`, Slot-
-                // CTA disabled (siehe `canTriggerSpin`).
+                // **Bug-Fix 2026-05-06** — Back-Chevron oben links
+                // ergänzt (User-Feedback „kein Chevron oben links").
+                // Tap geht direkt zurück zur Home (`dismiss()` —
+                // pop NavigationStack). Der bestehende Skip-X oben
+                // rechts schließt nur das Modal selbst und lässt den
+                // User auf dem Slot-Screen.
                 HStack {
+                    Button {
+                        dismissSetupModal()
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                            .frame(width: 32, height: 32)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text("Zurück"))
+
                     Spacer(minLength: 0)
+
                     Button {
                         dismissSetupModal()
                     } label: {

@@ -149,7 +149,8 @@ struct HomeView: View {
             // `.revealed` gelandet ist.
             .dailyDropCardHighlight(
                 badgeText: dailyDropBadgeState.text,
-                badgeColor: dailyDropBadgeState.color
+                badgeColor: dailyDropBadgeState.color,
+                badgeForeground: dailyDropBadgeState.foreground
             )
 
             WideMethodCard(
@@ -214,7 +215,13 @@ struct HomeView: View {
                     // **Entry-Stagger** (Phase 7.6).
                     HomeHeader(
                         greeting: Personalization.homeGreeting(for: profileStore.profile?.displayName),
-                        streakDays: currentStreak
+                        streakDays: currentStreak,
+                        // **Bug-Fix 2026-05-06** — Streak-Pill-Tap
+                        // navigiert zum Trophy/Fortschritt-Screen
+                        // (User-Feedback „Pill tappable, führt zum
+                        // Pokal"). Routing über die existierende
+                        // `openHomeScreen`-Closure.
+                        onStreakTap: { openHomeScreen(.trophy) }
                     )
                     .appEntryTransition()
 

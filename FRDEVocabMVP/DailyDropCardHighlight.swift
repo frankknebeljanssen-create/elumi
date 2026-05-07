@@ -54,7 +54,7 @@ enum DailyDropTracker {
     }
 
     /// Aktueller Badge-State für die HomeView Daily-Drop-Card.
-    /// Mappt direkt auf Text + Background-Color.
+    /// Mappt direkt auf Text + Background-Color + Foreground-Color.
     enum BadgeState {
         case neuHeute
         case erledigt
@@ -74,6 +74,21 @@ enum DailyDropTracker {
             case .erledigt:  return AppTheme.Colors.elumiMint        // Mint
             }
         }
+
+        /// Foreground-Color für den Badge-Text. **Bug-Fix 2026-05-06**:
+        /// vorher überall weiß, was bei Mint-Background den Kontrast
+        /// killt (User-Feedback „weiße Schrift auf grünem Pill kaum
+        /// lesbar"). Jetzt:
+        ///   • `neuHeute` → weiß auf Amber (Kontrast OK)
+        ///   • `erledigt` → dunkles Mint-Grün auf hellem Mint-BG
+        ///     (`#04342C` — gleiche Farb-Familie, dunkel genug für
+        ///     Kontrast-Ratio > 4.5:1).
+        var foreground: Color {
+            switch self {
+            case .neuHeute:  return .white
+            case .erledigt:  return Color(hex: "#04342C")
+            }
+        }
     }
 
     /// Liefert den aktuellen Badge-State basierend auf dem
@@ -90,11 +105,13 @@ extension View {
     func dailyDropCardHighlight(
         badgeText: String,
         badgeColor: Color,
+        badgeForeground: Color = .white,
         cornerRadius: CGFloat = 22
     ) -> some View {
         modifier(DailyDropCardHighlightModifier(
             badgeText: badgeText,
             badgeColor: badgeColor,
+            badgeForeground: badgeForeground,
             cornerRadius: cornerRadius
         ))
     }
@@ -103,6 +120,7 @@ extension View {
 struct DailyDropCardHighlightModifier: ViewModifier {
     let badgeText: String
     let badgeColor: Color
+    let badgeForeground: Color
     let cornerRadius: CGFloat
 
     /// Akzent-Farben für den rotierenden Gradient-Border. Start-Farbe
@@ -205,7 +223,7 @@ struct DailyDropCardHighlightModifier: ViewModifier {
             .font(.system(size: 10, weight: .medium, design: .rounded))
             .tracking(0.4)
             .textCase(.uppercase)
-            .foregroundStyle(.white)
+            .foregroundStyle(badgeForeground)
             .padding(.horizontal, 10)
             .padding(.vertical, 3)
             .background(
