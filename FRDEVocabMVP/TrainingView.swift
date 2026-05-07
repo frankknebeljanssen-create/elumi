@@ -14,6 +14,26 @@ struct TrainingView: View {
     /// Key, den auch Verbformen / Akzente / Settings nutzen. Änderungen
     /// in den Settings aktualisieren die Setup-Card-Subtitle live.
     @AppStorage(appSpeedRoundDurationKey) var speedRoundDurationSeconds: Int = SpeedRoundDuration.defaultDuration.rawValue
+    /// **Sweep C — AnswerMode (2026-05-07)** — Persistierter Sprechen/
+    /// Tippen-Modus für **Nomen**. Schreibt durch zu UserDefaults
+    /// (`appAnswerModeNomenKey`); der `TrainingSessionController` liest
+    /// denselben Key in seinem `nounAnswerMode`-Initializer. Setup-
+    /// Screen + Slot-launched Sessions sehen damit denselben Stand.
+    @AppStorage(appAnswerModeNomenKey) var nomenAnswerModeRaw: String = AnswerMode.speech.rawValue
+    /// Binding-Bridge zwischen `@AppStorage`-String und der typsicheren
+    /// `AnswerMode`-Enum für den `AnswerModeSelector`. Setter schreibt
+    /// die Persistierung **und** synchronisiert den Live-Session-State
+    /// (`session.nounAnswerMode`), damit das Render-Branch in der
+    /// laufenden Setup-View ohne Round-Trip greift.
+    var nomenAnswerModeBinding: Binding<AnswerMode> {
+        Binding(
+            get: { AnswerMode(rawValue: self.nomenAnswerModeRaw) ?? .speech },
+            set: { newValue in
+                self.nomenAnswerModeRaw = newValue.rawValue
+                self.session.nounAnswerMode = newValue
+            }
+        )
+    }
     @ObservedObject var listStore: VocabularyListStore
     let runtimeSpeechController: SpeechController?
     let runtimeSpeaker: Speaker?
@@ -350,7 +370,10 @@ struct TrainingView: View {
     /// Orthogonal zu Speed Round — dort greift die eigene Antwort-Mechanik,
     /// nicht der MC-Grid. Außerhalb von Nomen immer `false`.
     var isNounChoiceMode: Bool {
-        isNounMode && session.nounAnswerMode == .choice && !session.isSpeedRound
+        // **AnswerMode-Migration 2026-05-07** — `.choice` heißt jetzt
+        // `.tap` (Sweep C). Semantisch identisch: Tap ↔ 8er-Grid statt
+        // Mikrofon.
+        isNounMode && session.nounAnswerMode == .tap && !session.isSpeedRound
     }
 
     /// Lösungswort im Wortauswahl-Modus — identisch zur Logik in

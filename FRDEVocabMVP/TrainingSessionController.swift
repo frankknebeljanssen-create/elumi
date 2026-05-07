@@ -34,17 +34,24 @@ final class TrainingSessionController: ObservableObject {
     @Published var speedRoundTotalSeconds: Int = SpeedRoundSettings.currentSeconds
 
     /// Antwort-Eingabeform für Nomen-Modus (nur dort im UI sichtbar).
-    /// `.speech` = Spracheingabe (aktueller Default, sprich das korrekte
-    /// Wort ein). `.choice` = Wortauswahl (Auswahlgrid mit 8 Optionen;
-    /// die konkrete Matching-Logik ist noch nicht verdrahtet — dieser
-    /// State bereitet die Architektur vor, damit Speech/Choice später
-    /// als zwei Input-Layer auf einen gemeinsamen Trainings-Kern
-    /// aufsetzen können, siehe `NounAnswerMode`).
+    /// **Sweep C — AnswerMode-Migration (2026-05-07)**: Type
+    /// `NounAnswerMode` → `AnswerMode`. `.speech` bleibt `.speech`,
+    /// `.choice` heißt jetzt `.tap` (semantisch identisch — beide
+    /// rendern das 8er-Auswahl-Grid statt Mikrofon).
+    ///
+    /// **Persistierung**: Initial-Wert wird aus `@AppStorage` via
+    /// `appAnswerModeNomenKey` gelesen (Setup-Screen + Slot-launched
+    /// Sessions sehen denselben Stand). Der Controller ist eine
+    /// `class`, daher manueller `UserDefaults.standard`-Read im
+    /// Property-Initializer.
     ///
     /// Speed Round bleibt orthogonal zu diesem Modus — bei
     /// `isSpeedRound == true` wird der Answer-Mode ignoriert (Speed
     /// Round fährt seine eigene Antwort-Mechanik).
-    @Published var nounAnswerMode: NounAnswerMode = .speech
+    @Published var nounAnswerMode: AnswerMode = {
+        let raw = UserDefaults.standard.string(forKey: appAnswerModeNomenKey)
+        return raw.flatMap { AnswerMode(rawValue: $0) } ?? .speech
+    }()
     var speedRoundTimer: Timer?
     @Published var currentTrainingItem: VocabularyItem?
     @Published var hasStartedTraining = false

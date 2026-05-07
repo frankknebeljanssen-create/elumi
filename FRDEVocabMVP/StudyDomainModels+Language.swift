@@ -257,13 +257,6 @@ enum TrainingMode: String, CaseIterable, Identifiable, Hashable {
 /// Orthogonal zu `TrainingSessionController.isSpeedRound`: im Speed-Round-
 /// Modus wird der Answer-Mode ignoriert — Speed Round hat seine eigene
 /// Antwort-Mechanik (schnelle Abfolge, keine 8er-Auswahl).
-enum NounAnswerMode: String, CaseIterable, Identifiable, Hashable, Codable {
-    case speech = "Spracheingabe"
-    case choice = "Wortauswahl"
-
-    var id: String { rawValue }
-}
-
 /// **Sweep C — AnswerMode (2026-05-07)** — Modul-übergreifender
 /// Antwort-Modus für die Speech-fähigen Module Karteikarten,
 /// Vokabeln und Nomen.
