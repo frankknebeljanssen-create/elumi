@@ -254,7 +254,17 @@ struct HomeView: View {
                         .appEntryTransition(delay: 0.1)
 
                     wideMethodCards
-                        .padding(.top, 12)
+                        // **Polish 2026-05-07** — Top-Padding 12 →
+                        // 20 pt. Daily-Drop-Card (erstes Element im
+                        // wideMethodCards-VStack) hat ein Badge oben
+                        // rechts, das -8pt über die Card-Kante ragt.
+                        // Mit nur 12pt Abstand zur KK/Quiz-Hero-Reihe
+                        // wirkte das Badge gequetscht; die zusätzlichen
+                        // 8pt geben ihm subtilen Atemraum, ohne den
+                        // Layout-Rhythmus zu brechen. Training-Card
+                        // darunter rückt durch das interne VStack-
+                        // Spacing (12pt) entsprechend mit.
+                        .padding(.top, 20)
                         .padding(.bottom, 24)
                         .appEntryTransition(delay: 0.15)
 
