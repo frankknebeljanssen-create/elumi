@@ -374,7 +374,28 @@ final class RectangleTracker {
 
     // MARK: - Detection
 
+    /// Sucht das beste Rechteck im Frame.
+    ///
+    /// **API-Deprecation-Note (2026-05-07)** — `VNDetectRectanglesRequest`
+    /// + `VNImageRequestHandler.perform(_:)` sind auf iOS 17+ als legacy
+    /// markiert; Apple empfiehlt die moderne Sendable-Vision-API
+    /// (`RectanglesRequest` + async `ImageRequestHandler.perform(...)`)
+    /// ab iOS 18. Heute halten wir die alte API aus zwei Gründen:
+    ///   • App-Deployment-Target ist iOS 17 (alte API liefert dort
+    ///     noch verlässlich, kein Crash, nur Soft-Deprecation).
+    ///   • Migration auf den Sendable-Pfad braucht eine async-Refactor-
+    ///     Kette durch den ganzen Tracker — eigene Story, nicht heute.
+    ///
+    /// Pragmatischer Guard mit `#available(iOS 17, *)` gewählt: dokumentiert
+    /// die Mindest-Plattform explizit am Call-Site und liefert auf älteren
+    /// Targets ein sauberes `nil` statt undefined behavior.
+    ///
+    /// **TODO** — API-Migration auf moderne Sendable-Vision: siehe
+    /// `TODO_post_v1b.md` Backlog-Eintrag „Vision-API-Migration"
+    /// (Async-Refactor + Throughput-Smoke + Capture-Behavior-Smoke).
     private func detectBestRectangle(in pixelBuffer: CVPixelBuffer) -> VNRectangleObservation? {
+        guard #available(iOS 17, *) else { return nil }
+
         let request = VNDetectRectanglesRequest()
         request.minimumConfidence = config.minimumConfidence
         request.minimumAspectRatio = config.minimumAspectRatio

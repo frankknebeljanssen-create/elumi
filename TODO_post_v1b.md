@@ -846,3 +846,43 @@ kein Flash mehr.
 **Heute pragmatisch akzeptiert** — Kommentar an der Wrapper-
 Suppression-Stelle warnt explizit, die Modifier nicht zurück in den
 Body zu verschieben, sonst kommt der Flash zurück.
+
+---
+
+## Vision-API-Migration (RectangleTracker auf Sendable-Async-Pfad)
+
+**Symptom (heute akzeptiert):** `RectangleTracker.detectBestRectangle`
+nutzt die Legacy-Vision-API:
+- `VNDetectRectanglesRequest()` (sync init)
+- `VNImageRequestHandler.perform([request])` (sync)
+
+Apple markiert diesen Pfad ab iOS 17 als legacy und empfiehlt für neue
+Entwicklung die Sendable-Async-Vision-API ab iOS 18:
+- `RectanglesRequest` (Struct, ohne `VN`-Prefix)
+- `ImageRequestHandler.perform(...)` mit `async/await`
+
+**Aktueller Workaround (Commit `<bei-push>`):**
+- Doc-Comment am Call-Site dokumentiert die Deprecation-Lage
+- `guard #available(iOS 17, *) else { return nil }` macht das
+  Mindest-Target explizit
+- App-Deployment-Target ist iOS 17 → die alte API liefert verlässlich,
+  kein Crash, nur Soft-Deprecation
+
+**Tech-Debt (eigene Story für späteren Sweep):**
+- Migration auf moderne Sendable-Vision-API:
+  - `detectBestRectangle` zu `async` umbauen
+  - Caller-Kette (vermutlich `processFrame` oder ähnlich) async-fähig
+  - Sendable-Compliance prüfen (Tracker lebt auf SessionQueue, könnte
+    Capture-Race triggern)
+- Throughput-Smoke nötig (60-fps-Frame-Pipeline darf nicht einbrechen)
+- Capture-Behavior-Smoke: Auto-Capture-Stability + Lock-State-Logik
+  müssen 1:1 unverändert bleiben
+
+**Trigger für Re-Evaluation:**
+- iOS 18 wird Mindest-Target → Sendable-API verfügbar ohne
+  Backwards-Compat-Sorge
+- Build-Warnings durch echte Deprecation-Annotations bei Apple
+- Performance-Issue im Scan-Pipeline mit konkretem Repro
+
+**Risk:** 🟡 mittel — Async-Refactor durch den Tracker, aber
+Behavior-Equivalenz-Tests gut machbar. Nicht blockierend für V1b.
