@@ -321,6 +321,84 @@ struct ImportCompletionContext: Hashable {
     }
 }
 
+// MARK: - HomeHeroModule
+
+/// Modul-Identität für die Hero-Sektion und app-weite Modul-Mappings.
+/// **Wanderte 2026-05-07** aus `HomeHeroLearningSection.swift` hierher,
+/// als die drei Home-Section-Files (`HomeHeroLearningSection`,
+/// `HomeMoreExercisesSection`, `HomeToolsSection`) als toter Code
+/// entfernt wurden. Das Enum bleibt produktiv — `ElumiTabView`-Slot-
+/// Maschine, `TrainingGeneratorSlotMachine`, `TrainingChainOverviewView`,
+/// `ScanImportSupportViews` und die `chainScreen(...)`-Extension unten
+/// arbeiten alle damit. Eigenes Enum (statt direkt `HomeModuleIcon` o.ä.),
+/// damit das Mapping auf Icon + Title + Color + Route zentral hier lebt.
+enum HomeHeroModule: String, Identifiable, CaseIterable {
+    case karteikarten
+    case nomen
+    case artikel
+    case verben
+    case verbformen
+    case vokabeln
+    case quiz
+    case akzente
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .karteikarten: return "Karteikarten"
+        case .nomen:        return "Nomen"
+        case .artikel:      return "Artikel"
+        case .verben:       return "Verben"
+        case .verbformen:   return "Verbformen"
+        case .vokabeln:     return "Vokabeln"
+        case .quiz:         return "Quiz"
+        case .akzente:      return "Akzente"
+        }
+    }
+
+    var icon: HomeModuleIcon {
+        switch self {
+        case .karteikarten: return .karteikarten
+        case .nomen:        return .nomen
+        case .artikel:      return .artikel
+        case .verben:       return .verben
+        case .verbformen:   return .verbformen
+        case .vokabeln:     return .vokabeln
+        case .quiz:         return .quiz
+        case .akzente:      return .akzente
+        }
+    }
+
+    var accent: Color {
+        switch self {
+        case .karteikarten: return AppTheme.Colors.moduleFlashcards
+        case .nomen:        return AppTheme.Colors.moduleNomen
+        case .artikel:      return AppTheme.Colors.moduleArticles
+        case .verben:       return AppTheme.Colors.moduleVerbs
+        case .verbformen:   return AppTheme.Colors.moduleVerbforms
+        case .vokabeln:     return AppTheme.Colors.moduleVocabulary
+        case .quiz:         return AppTheme.Colors.moduleQuiz
+        case .akzente:      return AppTheme.Colors.moduleAccents
+        }
+    }
+
+    /// Welcher AppScreen soll geöffnet werden? — wird vom Aufrufer
+    /// genutzt, damit das Modul-Mapping Navigation-frei bleibt.
+    var screen: AppScreen {
+        switch self {
+        case .karteikarten: return .flashcards(nil)
+        case .nomen:        return .train(TrainingLaunchContext(preferredMode: .nouns))
+        case .artikel:      return .train(TrainingLaunchContext(preferredMode: .articles))
+        case .verben:       return .train(TrainingLaunchContext(preferredMode: .verbs))
+        case .verbformen:   return .train(TrainingLaunchContext(preferredMode: .verbforms))
+        case .vokabeln:     return .train(TrainingLaunchContext(preferredMode: .vocabulary))
+        case .quiz:         return .quiz(nil)
+        case .akzente:      return .accents(nil)
+        }
+    }
+}
+
 // MARK: - HomeHeroModule → AppScreen (Chain-Aware)
 
 extension HomeHeroModule {

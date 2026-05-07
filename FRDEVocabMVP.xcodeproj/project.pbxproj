@@ -489,11 +489,8 @@
 		CCAAFF0000000000ABCDEF09 /* JackpotCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCAAFF0000000000ABCDEF0A /* JackpotCelebrationView.swift */; };
 		CCBBFF0000000000ABCDEF0B /* DismissingFooterActionsModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCBBFF0000000000ABCDEF0C /* DismissingFooterActionsModifier.swift */; };
 		FE12345678901234567890B1 /* ScanTuning.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890B2 /* ScanTuning.swift */; };
-		FE12345678901234567890BA /* HomeHeroLearningSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890BB /* HomeHeroLearningSection.swift */; };
 		FE12345678901234567890C1 /* WordRunnerGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890C2 /* WordRunnerGameView.swift */; };
-		FE12345678901234567890CA /* HomeMoreExercisesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890CB /* HomeMoreExercisesSection.swift */; };
 		FE12345678901234567890D1 /* WordRunnerModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890D2 /* WordRunnerModels.swift */; };
-		FE12345678901234567890DA /* HomeToolsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890DB /* HomeToolsSection.swift */; };
 		FE12345678901234567890E1 /* WordRunnerTaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890E2 /* WordRunnerTaskProvider.swift */; };
 		FE12345678901234567890E3 /* ElumiTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890E4 /* ElumiTabView.swift */; };
 		FE12345678901234567890E5 /* PersonalDeck.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE12345678901234567890E6 /* PersonalDeck.swift */; };
@@ -1072,11 +1069,8 @@
 		CCAAFF0000000000ABCDEF0A /* JackpotCelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = JackpotCelebrationView.swift; path = FRDEVocabMVP/JackpotCelebrationView.swift; sourceTree = "<group>"; };
 		CCBBFF0000000000ABCDEF0C /* DismissingFooterActionsModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DismissingFooterActionsModifier.swift; path = FRDEVocabMVP/DismissingFooterActionsModifier.swift; sourceTree = "<group>"; };
 		FE12345678901234567890B2 /* ScanTuning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanTuning.swift; path = FRDEVocabMVP/ScanTuning.swift; sourceTree = "<group>"; };
-		FE12345678901234567890BB /* HomeHeroLearningSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeHeroLearningSection.swift; path = FRDEVocabMVP/HomeHeroLearningSection.swift; sourceTree = "<group>"; };
 		FE12345678901234567890C2 /* WordRunnerGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerGameView.swift; path = FRDEVocabMVP/WordRunnerGameView.swift; sourceTree = "<group>"; };
-		FE12345678901234567890CB /* HomeMoreExercisesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeMoreExercisesSection.swift; path = FRDEVocabMVP/HomeMoreExercisesSection.swift; sourceTree = "<group>"; };
 		FE12345678901234567890D2 /* WordRunnerModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerModels.swift; path = FRDEVocabMVP/WordRunnerModels.swift; sourceTree = "<group>"; };
-		FE12345678901234567890DB /* HomeToolsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeToolsSection.swift; path = FRDEVocabMVP/HomeToolsSection.swift; sourceTree = "<group>"; };
 		FE12345678901234567890E2 /* WordRunnerTaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerTaskProvider.swift; path = FRDEVocabMVP/WordRunnerTaskProvider.swift; sourceTree = "<group>"; };
 		FE12345678901234567890E4 /* ElumiTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElumiTabView.swift; path = FRDEVocabMVP/ElumiTabView.swift; sourceTree = "<group>"; };
 		FE12345678901234567890E6 /* PersonalDeck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PersonalDeck.swift; path = FRDEVocabMVP/PersonalDeck.swift; sourceTree = "<group>"; };
@@ -1247,9 +1241,6 @@
 				FE1234567890123456789117 /* VoiceSettingsView.swift */,
 				FE1234567890123456789121 /* PersonalDecksView.swift */,
 				FE1234567890123456789123 /* TrainingGeneratorSlotMachine.swift */,
-				FE12345678901234567890BB /* HomeHeroLearningSection.swift */,
-				FE12345678901234567890CB /* HomeMoreExercisesSection.swift */,
-				FE12345678901234567890DB /* HomeToolsSection.swift */,
 				FE12345678901234567890FB /* LiveListRunnerTaskProvider.swift */,
 				FE12345678901234567891AB /* WordRunnerSFXPlayer.swift */,
 				FE12345678901234567893AB /* GameStartScreen.swift */,
@@ -2204,9 +2195,6 @@
 				FE1234567890123456789116 /* VoiceSettingsView.swift in Sources */,
 				FE1234567890123456789120 /* PersonalDecksView.swift in Sources */,
 				FE1234567890123456789122 /* TrainingGeneratorSlotMachine.swift in Sources */,
-				FE12345678901234567890BA /* HomeHeroLearningSection.swift in Sources */,
-				FE12345678901234567890CA /* HomeMoreExercisesSection.swift in Sources */,
-				FE12345678901234567890DA /* HomeToolsSection.swift in Sources */,
 				FE12345678901234567890FA /* LiveListRunnerTaskProvider.swift in Sources */,
 				FE12345678901234567891AA /* WordRunnerSFXPlayer.swift in Sources */,
 				FE12345678901234567893AA /* GameStartScreen.swift in Sources */,
