@@ -223,7 +223,11 @@ extension FlashcardsView {
         // `AppLayout.screenPadding` — wenn wir hier nochmal 8 pt pro Seite
         // draufsetzen, ist der Header 16 pt schmaler als der Content
         // darunter. Gleich breit wie alle Cards jetzt.
-        .padding(.top, 4)
+        // **Chevron-Y-Sweep 2026-05-07** — Top-Padding auf
+        // `headerChevronTopPadding` (= 0) umgezogen, analog zu
+        // `SessionSetupHeader`. Karteikarten-Chevron sitzt jetzt auf
+        // TrainingHub-Höhe wie alle anderen Setup-Screens.
+        .padding(.top, AppLayout.headerChevronTopPadding)
         .padding(.bottom, AppLayout.screenHeaderBottomPadding)
     }
 

@@ -299,9 +299,11 @@ struct SettingsView: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, AppLayout.screenPadding)
-        // Systemweites Top-Padding — Header sitzt auf derselben
-        // vertikalen Position wie im Quiz-Setup.
-        .padding(.top, AppLayout.screenHeaderTopPadding)
+        // **Chevron-Y-Sweep 2026-05-07** — Auf
+        // `headerChevronTopPadding` (= 0) umgezogen, damit der
+        // Settings-Chevron auf TrainingHub-Höhe sitzt — gemeinsam mit
+        // allen anderen Push-Screens.
+        .padding(.top, AppLayout.headerChevronTopPadding)
         // Bottom-Padding = Footer-Clearance, damit die unterste Card
         // (Wörterbuch / Arcade / DEBUG-Reset) komplett über der globalen
         // Bottom-Bar sitzt. Vorher: flaches `screenPadding` → letzte

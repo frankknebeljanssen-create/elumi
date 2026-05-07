@@ -228,7 +228,12 @@ struct LexiconView: View {
             // ScrollView ergaben zusammen ~6–8 pt mehr — genau der
             // Offset, den der User beim Umschalten bemerkt hat.
             .padding(.horizontal, AppLayout.screenPadding)
-            .padding(.top, AppLayout.screenHeaderTopPadding)
+            // **Chevron-Y-Sweep 2026-05-07** — `headerChevronTopPadding`
+            // (= 0) statt `screenHeaderTopPadding` (= 4): Wörterbuch-
+            // Chevron sitzt jetzt auf TrainingHub-Höhe wie alle anderen
+            // Push-Screens. `screenHeaderTopPadding` regelt nur noch
+            // Content-Spacing unterhalb der Chevron-Row.
+            .padding(.top, AppLayout.headerChevronTopPadding)
             .padding(.bottom, AppTheme.Spacing.xxl)
             .frame(maxWidth: .infinity, alignment: .top)
         }

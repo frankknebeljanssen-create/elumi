@@ -48,9 +48,11 @@ extension ListsView {
                 }
             }
             .padding(.horizontal, AppLayout.screenPadding)
-            // Systemweites Top-Padding für Screen-Header — Header sitzt
-            // damit auf derselben vertikalen Position wie im Quiz-Setup.
-            .padding(.top, AppLayout.screenHeaderTopPadding)
+            // **Chevron-Y-Sweep 2026-05-07** — Auf
+            // `headerChevronTopPadding` (= 0) umgezogen, damit der
+            // Listen-Chevron auf TrainingHub-Höhe sitzt — gemeinsam mit
+            // allen anderen Push-Screens.
+            .padding(.top, AppLayout.headerChevronTopPadding)
             .padding(.bottom, AppLayout.screenPadding)
             .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)

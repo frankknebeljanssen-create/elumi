@@ -128,7 +128,12 @@ struct SessionSetupHeader: View {
             }
         }
         .padding(.horizontal, 16)
-        .padding(.top, 4)
+        // **Chevron-Y-Sweep 2026-05-07** — Top-Padding auf
+        // `headerChevronTopPadding` (= 0) umgezogen, damit der
+        // Setup-Chevron auf identischer y-Position wie der
+        // TrainingHub-Master sitzt. Vorher fest 4 pt → Setup-Chevron
+        // saß 4 pt unter TrainingHub-Chevron.
+        .padding(.top, AppLayout.headerChevronTopPadding)
         .padding(.bottom, AppLayout.screenHeaderBottomPadding)
     }
 }

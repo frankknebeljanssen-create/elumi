@@ -72,12 +72,12 @@ struct TrophyView: View {
                 // Einstieg auf Fortschritt war redundant.
             }
             .padding(.horizontal, AppLayout.screenPadding)
-            // Top-Padding angeglichen an alle anderen Module —
-            // `screenHeaderTopPadding` (= 4 pt) statt `contentTopPadding`
-            // (= Spacing.xl), damit der Fortschritt-Header auf der
-            // gleichen vertikalen Höhe sitzt wie Wörterbuch, Nomen,
-            // Training und die übrigen Screens.
-            .padding(.top, AppLayout.screenHeaderTopPadding)
+            // **Chevron-Y-Sweep 2026-05-07** — Auf
+            // `headerChevronTopPadding` (= 0) umgezogen, damit der
+            // Pokal-Chevron auf TrainingHub-Höhe sitzt — gemeinsam mit
+            // Wörterbuch, Spielen, Setup-Screens. `screenHeaderTopPadding`
+            // (= 4 pt) ist jetzt rein für Content-Spacing reserviert.
+            .padding(.top, AppLayout.headerChevronTopPadding)
             .padding(.bottom, AppTheme.Spacing.xxl)
             .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .top)

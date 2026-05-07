@@ -95,12 +95,11 @@ struct GameHubView: View {
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, AppLayout.screenPadding)
-            // Top-Padding angeglichen an alle anderen Module
-            // (Wörterbuch, Nomen, Training …): `screenHeaderTopPadding`
-            // (= 4 pt) statt `contentTopPadding` (= Spacing.xl). Vorher
-            // saß der Spielen-Header sichtbar tiefer als die anderen
-            // Screens — jetzt auf gleicher Linie.
-            .padding(.top, AppLayout.screenHeaderTopPadding)
+            // **Chevron-Y-Sweep 2026-05-07** — Auf
+            // `headerChevronTopPadding` (= 0) umgezogen, damit der
+            // Spielen-Chevron auf TrainingHub-Höhe sitzt. Vorher
+            // 4 pt unterhalb (`screenHeaderTopPadding`).
+            .padding(.top, AppLayout.headerChevronTopPadding)
             .padding(.bottom, AppTheme.Spacing.xxl)
             .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .top)

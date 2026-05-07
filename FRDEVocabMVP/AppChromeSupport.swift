@@ -35,6 +35,20 @@ enum AppLayout {
     /// gleichen vertikalen Position.
     static let screenHeaderTopPadding: CGFloat = 4
 
+    /// **Systemweites Top-Padding für die Chevron-Row** (Push-Screen-
+    /// Header). Referenz ist `TrainingHubView`: dort sitzt die Back-
+    /// Chevron-HStack direkt am Safe-Area-Top, ohne eigenes Top-Padding.
+    /// Alle anderen Push-Screens (Setup-Screens, Lexicon, Trophy,
+    /// GameHub, Settings, Lists) richten sich daran aus — Chevron sitzt
+    /// auf systemweit identischer y-Position.
+    ///
+    /// Bewusst **getrennt** von `screenHeaderTopPadding`: letzteres
+    /// regelt den Abstand zwischen Chevron-Row und dem Content darunter
+    /// (bzw. ScrollView-Innenabstand), ist also ein Content-Spacing-
+    /// Token. `headerChevronTopPadding` ist dagegen die y-Position des
+    /// Chevron-Frames selbst.
+    static let headerChevronTopPadding: CGFloat = 0
+
     /// **Systemweite Corner-Radius für Primary-CTAs und die Gamification-
     /// Bar** darüber — beide sollen identisch aussehen und dieselbe
     /// Rundung wie die anderen Home-/Setup-Cards (Progress-Board,
