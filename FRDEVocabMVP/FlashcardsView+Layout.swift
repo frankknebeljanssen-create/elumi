@@ -12,7 +12,17 @@ extension FlashcardsView {
 
     @ViewBuilder
     var flashcardTypedAnswerOverlay: some View {
-        if !setup.isShowingSetup && !isFlashcardSessionCompleted && interaction.showingTypedAnswerInput {
+        // **Sweep-C-Wiring-Fix 2026-05-08** — Overlay-Guard fehlte
+        // der `answerMode == .tap`-Pfad. In Tap-Mode-Sessions ist
+        // `showingTypedAnswerInput` initial `false` (Default-State),
+        // aber die Typed-Answer-Card MUSS trotzdem als primäre
+        // Eingabe gerendert werden — sie ist der einzige Eingabe-Pfad
+        // im Tap-Mode (Mikro entfällt, Speaker-only Action-Row).
+        // Vorher fiel der Overlay-Guard durch → Card wurde nie
+        // gemountet → User sah nur den Lautsprecher, keine Eingabe.
+        if !setup.isShowingSetup
+            && !isFlashcardSessionCompleted
+            && (interaction.showingTypedAnswerInput || interaction.answerMode == .tap) {
             VStack {
                 Spacer()
                 flashcardTypedAnswerCard
@@ -273,18 +283,27 @@ extension FlashcardsView {
                     // weiter nach unten, damit die jetzt größere Karte
                     // ihren Platz bekommt, ohne dass Antwort-Card und
                     // Action-Block in den Footer reinrutschen.
-                    Spacer().frame(height: AppTheme.Spacing.md)
+                    //
+                    // **2026-05-08 Tap-Mode-Cleanup** — Recognition-
+                    // State (`flashcardResponseCard`) + Primary-Actions
+                    // (Mikro/Speaker/Tastatur) sind Speech-Mode-only.
+                    // Im Tap-Mode entfallen sie komplett, inkl. ihrer
+                    // Spacer — die Typed-Answer-Card im Overlay sitzt
+                    // dann am Bottom als einzige Eingabe.
+                    if interaction.answerMode == .speech {
+                        Spacer().frame(height: AppTheme.Spacing.md)
 
-                    flashcardResponseCard
-                        .padding(.horizontal, flashcardSessionCardInset)
+                        flashcardResponseCard
+                            .padding(.horizontal, flashcardSessionCardInset)
 
-                    // Größerer Abstand vor dem Action-Block, damit Antwort-
-                    // Card und Mikro/Lautsprecher/Tastatur klar voneinander
-                    // abgesetzt sind.
-                    Spacer().frame(height: 32)
+                        // Größerer Abstand vor dem Action-Block, damit Antwort-
+                        // Card und Mikro/Lautsprecher/Tastatur klar voneinander
+                        // abgesetzt sind.
+                        Spacer().frame(height: 32)
 
-                    flashcardPrimaryActions
-                        .padding(.horizontal, flashcardSessionCardInset)
+                        flashcardPrimaryActions
+                            .padding(.horizontal, flashcardSessionCardInset)
+                    }
                 }
             }
         }

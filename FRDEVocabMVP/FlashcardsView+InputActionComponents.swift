@@ -52,21 +52,15 @@ extension FlashcardsView {
     /// Primäre Aktionen (Mikro + Lautsprecher + Tastatur) — bilden den
     /// oberen Action-Block direkt unter der Karteikarte.
     ///
-    /// **Sweep C — AnswerMode (2026-05-07)** — Render-Branch nach
-    /// `interaction.answerMode`:
-    ///   • `.speech` — voller Block: Mikro + Lautsprecher (Row 1) +
-    ///     Tastatur-Toggle (Row 2). Existing Behavior.
-    ///   • `.tap` — Mikro entfällt komplett, der Tastatur-Toggle wird
-    ///     redundant (Typed-Answer-Card ist schon primär sichtbar).
-    ///     Lautsprecher bleibt erhalten — Vorlesen ist in beiden Modi
-    ///     hilfreich.
+    /// **Sweep C — AnswerMode (2026-05-07)** — Speech-Mode-only.
+    /// **2026-05-08** — Tap-Mode-Branch entfernt (User-Spec „kein
+    /// Vorsprech-Modul im Tippen-Modus"). Im Tap-Mode wird der
+    /// gesamte Action-Block am Call-Site (siehe
+    /// `flashcardSessionScreen` in `+Layout.swift`) übersprungen —
+    /// die Typed-Answer-Card im Overlay ist die einzige Eingabe.
     var flashcardPrimaryActions: some View {
         VStack(spacing: 10) {
-            if interaction.answerMode == .speech {
-                speechModeActionRows
-            } else {
-                tapModeActionRows
-            }
+            speechModeActionRows
         }
     }
 
@@ -177,38 +171,11 @@ extension FlashcardsView {
         }
     }
 
-    /// Tap-Mode-Action-Stack — kein Mikrofon, kein Tastatur-Toggle
-    /// (die Typed-Answer-Card ist als primäre Eingabe ohnehin schon
-    /// sichtbar). Lautsprecher bleibt erhalten — Vorlesen ist auch im
-    /// Tap-Mode nützlich.
-    @ViewBuilder
-    private var tapModeActionRows: some View {
-        Button {
-            // **Sweep C** — manueller Speaker-Tap im Tap-Mode;
-            // `force: true` umgeht den Auto-Suppress-Guard.
-            speakCurrentPrompt(force: true)
-        } label: {
-            let isPlayingTTS = speaker.isSpeaking
-            Group {
-                if isPlayingTTS {
-                    ElumiIconView(icon: .lautsprecher, size: 48)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: actionButtonHeight)
-                        .background(AppTheme.Colors.warning)
-                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
-                } else {
-                    ElumiIconView(icon: .lautsprecher, size: 48)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: actionButtonHeight)
-                        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium)
-                }
-            }
-        }
-        .buttonStyle(.plain)
-        .disabled(!isSessionReady || !isAudioModeEnabled)
-        .opacity(isSessionReady && isAudioModeEnabled ? 1 : 0.45)
-        .animation(.easeInOut(duration: 0.18), value: speaker.isSpeaking)
-    }
+    /// **2026-05-08** — `tapModeActionRows` komplett entfernt. Im
+    /// Tap-Mode wird der gesamte Primary-Actions-Block am Call-Site
+    /// übersprungen (siehe `flashcardSessionScreen` in
+    /// `FlashcardsView+Layout.swift`); die Typed-Answer-Card im
+    /// Overlay ist die einzige Eingabe.
 
     /// Sekundäre Aktionen (Zurück + Weiter) — werden im Layout abgesetzt vom
     /// primären Action-Block und nahe am Footer platziert, zusammen mit der
