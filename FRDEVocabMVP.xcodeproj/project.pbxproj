@@ -473,6 +473,7 @@
 		CC15FF0400000000ABCDEF01 /* SectionLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0400000000ABCDEF02 /* SectionLabel.swift */; };
 		CC15FF0500000000ABCDEF01 /* MethodCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0500000000ABCDEF02 /* MethodCard.swift */; };
 		CC15FF0600000000ABCDEF01 /* ModuleCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0600000000ABCDEF02 /* ModuleCard.swift */; };
+		CC15FF0E00000000ABCDEF01 /* AnswerModeSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0E00000000ABCDEF02 /* AnswerModeSelector.swift */; };
 		CC15FF0700000000ABCDEF01 /* WideCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0700000000ABCDEF02 /* WideCard.swift */; };
 		CC15FF0800000000ABCDEF01 /* TrainingHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */; };
 		CC15FF0A00000000ABCDEF01 /* TrainingHubTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */; };
@@ -1052,6 +1053,7 @@
 		CC15FF0400000000ABCDEF02 /* SectionLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SectionLabel.swift; path = FRDEVocabMVP/SectionLabel.swift; sourceTree = "<group>"; };
 		CC15FF0500000000ABCDEF02 /* MethodCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MethodCard.swift; path = FRDEVocabMVP/MethodCard.swift; sourceTree = "<group>"; };
 		CC15FF0600000000ABCDEF02 /* ModuleCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ModuleCard.swift; path = FRDEVocabMVP/ModuleCard.swift; sourceTree = "<group>"; };
+		CC15FF0E00000000ABCDEF02 /* AnswerModeSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AnswerModeSelector.swift; path = FRDEVocabMVP/AnswerModeSelector.swift; sourceTree = "<group>"; };
 		CC15FF0700000000ABCDEF02 /* WideCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WideCard.swift; path = FRDEVocabMVP/WideCard.swift; sourceTree = "<group>"; };
 		CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingHubView.swift; path = FRDEVocabMVP/TrainingHubView.swift; sourceTree = "<group>"; };
 		CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingHubTips.swift; path = FRDEVocabMVP/TrainingHubTips.swift; sourceTree = "<group>"; };
@@ -1200,6 +1202,7 @@
 				CC15FF0400000000ABCDEF02 /* SectionLabel.swift */,
 				CC15FF0500000000ABCDEF02 /* MethodCard.swift */,
 				CC15FF0600000000ABCDEF02 /* ModuleCard.swift */,
+				CC15FF0E00000000ABCDEF02 /* AnswerModeSelector.swift */,
 				CC15FF0700000000ABCDEF02 /* WideCard.swift */,
 				CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */,
 				CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */,
@@ -2152,6 +2155,7 @@
 				CC15FF0400000000ABCDEF01 /* SectionLabel.swift in Sources */,
 				CC15FF0500000000ABCDEF01 /* MethodCard.swift in Sources */,
 				CC15FF0600000000ABCDEF01 /* ModuleCard.swift in Sources */,
+				CC15FF0E00000000ABCDEF01 /* AnswerModeSelector.swift in Sources */,
 				CC15FF0700000000ABCDEF01 /* WideCard.swift in Sources */,
 				CC15FF0800000000ABCDEF01 /* TrainingHubView.swift in Sources */,
 				CC15FF0A00000000ABCDEF01 /* TrainingHubTips.swift in Sources */,

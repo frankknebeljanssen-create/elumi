@@ -257,11 +257,47 @@ enum TrainingMode: String, CaseIterable, Identifiable, Hashable {
 /// Orthogonal zu `TrainingSessionController.isSpeedRound`: im Speed-Round-
 /// Modus wird der Answer-Mode ignoriert — Speed Round hat seine eigene
 /// Antwort-Mechanik (schnelle Abfolge, keine 8er-Auswahl).
-enum NounAnswerMode: String, CaseIterable, Identifiable, Hashable, Codable {
-    case speech = "Spracheingabe"
-    case choice = "Wortauswahl"
+/// **Sweep C — AnswerMode (2026-05-07)** — Modul-übergreifender
+/// Antwort-Modus für die Speech-fähigen Module Karteikarten,
+/// Vokabeln und Nomen.
+///
+/// Replaces the Nomen-spezifische `NounAnswerMode` schrittweise
+/// (Migration in Commit 2 dieses Sweeps):
+///   • `.speech` ↔ alter `.speech`
+///   • `.tap` ↔ alter `.choice` (Nomen) bzw. typed-answer-card als
+///     primäre Eingabe (Karteikarten + Vokabeln)
+///
+/// Persistiert per Modul via `@AppStorage` (Keys in
+/// `AppStorageKeys.swift`); Defaults pro Modul:
+///   • Karteikarten → `.speech`
+///   • Vokabeln → `.speech`
+///   • Nomen → `.speech`
+///
+/// Verben/Verbformen/Artikel/Quiz/Akzente bleiben Tap-only ohne
+/// Selector — keine Speech-Engine vorhanden, eigene Stories später.
+enum AnswerMode: String, CaseIterable, Identifiable, Hashable, Codable {
+    case speech
+    case tap
 
     var id: String { rawValue }
+
+    /// User-facing Card-Title in der Setup-Selector-Component.
+    var displayTitle: String {
+        switch self {
+        case .speech: return "Sprechen"
+        case .tap:    return "Tippen"
+        }
+    }
+
+    /// SF-Symbol für die Card. `mic.fill` für Speech, `keyboard.fill`
+    /// für Tap (analog zu der bestehenden Nomen-Selector-Mechanik mit
+    /// `square.grid.2x2.fill` für die Wortauswahl-Card).
+    var systemImage: String {
+        switch self {
+        case .speech: return "mic.fill"
+        case .tap:    return "keyboard.fill"
+        }
+    }
 }
 
 enum CardType: String, CaseIterable, Identifiable, Codable {

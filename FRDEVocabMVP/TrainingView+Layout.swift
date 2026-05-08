@@ -522,122 +522,31 @@ extension TrainingView {
 
     // MARK: - Nomen Answer-Mode Section
     //
-    // Sekundäre Entscheidungs-Ebene im Nomen-Setup: „Wie möchtest du
-    // antworten?". Zwei Cards side-by-side, beide mit Nomen-Akzent
-    // (sectionStyle.accent ≈ grün). Deutlich ruhiger als die Speed-Round-
-    // Card darüber — Hierarchie-Signal „sekundäre Entscheidung".
+    // Sekundäre Entscheidungs-Ebene im Nomen-Setup: „ANTWORTEN MIT".
+    // Sprechen vs. Tippen, beide mit Nomen-Akzent (sectionStyle.accent
+    // ≈ grün). Deutlich ruhiger als die Speed-Round-Card darüber —
+    // Hierarchie-Signal „sekundäre Entscheidung".
     //
-    // `session.nounAnswerMode` (`.speech` / `.choice`) ist schon in der
-    // Session verdrahtet. Wortauswahl ist architektonisch vorbereitet,
-    // die konkrete 8er-Grid-Matching-Logik wird in einer Folge-PR
-    // implementiert. Aktuell startet auch bei `.choice` das bestehende
-    // Speech-Training (kein Breakage, nur UI-State).
+    // **Sweep C — AnswerMode-Migration (2026-05-07)** — Vorher
+    // Inline-Implementation mit `nounAnswerModeCard(...)`-Helper +
+    // Section-Header `Text("ANTWORTEN MIT")`. Jetzt: generischer
+    // `AnswerModeSelector`-Component (ein Component für Karteikarten/
+    // Vokabeln/Nomen). Der Header „ANTWORTEN MIT" ist Teil des
+    // Components, daher hier nur noch der Component-Aufruf mit
+    // Binding + Akzent.
+    //
+    // `session.nounAnswerMode` (`.speech` / `.tap`) ist im Controller
+    // verdrahtet (`isNounChoiceMode`-Computed checkt `.tap`). Die
+    // 8er-Grid-Logik (Distractor-Auswahl + Match-Eval) ist seit dem
+    // ursprünglichen Nomen-Sweep produktiv (siehe `submitNounMC` +
+    // `prepareNounMCOptions` in `TrainingView+AudioFlow.swift`).
 
     private var nounAnswerModeSection: some View {
-        // Sublines pro User-Request komplett raus („Wähle die Eingabeform"
-        // als Section-Subline, „Sprich das richtige Wort ein" auf der
-        // Speech-Card, „Wähle aus 8 Wörtern" auf der Choice-Card). Der
-        // Header trägt jetzt nur noch den Titel, die Cards nur noch
-        // Icon + Titel — dieselbe Reduktionsstufe wie die Vokabel-Detail-
-        // Cards. Die Bedeutung erschließt sich aus Icon (Mikrofon /
-        // Grid) + Titel, eine Erklär-Zeile ist redundant.
-        VStack(alignment: .leading, spacing: 10) {
-            // **Section-Header-Sweep 2026-05-07** — „Wie möchtest du
-            // antworten?" → „ANTWORTEN MIT". Konsistent mit den
-            // anderen CAPS-Section-Headern (DEINE LISTEN, FRAGEN,
-            // KARTEN, WIEDERHOLUNGEN). Visual-Style (17 pt black,
-            // textPrimary) unverändert — Source-String selbst CAPS,
-            // daher keine zusätzliche `.textCase`-Modifikation nötig.
-            Text("ANTWORTEN MIT")
-                .font(.system(size: 17, weight: .black, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            HStack(alignment: .top, spacing: 10) {
-                nounAnswerModeCard(
-                    mode: .speech,
-                    title: "Sprache",
-                    systemImage: "mic.fill"
-                )
-                nounAnswerModeCard(
-                    mode: .choice,
-                    title: "Wortauswahl",
-                    // SF-Symbol `square.grid.2x2.fill` — Grid-Icon passt
-                    // zur 8er-Auswahl-Mechanik (Grid-Layout im Session-
-                    // Screen). Gleiche Strichstärke wie die anderen Icons
-                    // im Setup.
-                    systemImage: "square.grid.2x2.fill"
-                )
-            }
-        }
-    }
-
-    /// Eine der zwei Nomen-Answer-Mode-Cards. Visuell analog zu den
-    /// Vokabel-Modus-Cards (Icon-Puck oben-zentriert, Titel mittig),
-    /// aber ruhiger im Gewicht: kleinere Schrift, kleinere Icon-Puck-
-    /// Größe, kein Shadow. Aktive Card bekommt einen kräftigeren Tint-Fill
-    /// + sichtbaren Border in Modul-Akzent.
-    @ViewBuilder
-    private func nounAnswerModeCard(
-        mode: NounAnswerMode,
-        title: String,
-        systemImage: String
-    ) -> some View {
-        let isSelected = (session.nounAnswerMode == mode)
-
-        Button {
-            feedbackPlayer.playTabSwitch()
-            session.nounAnswerMode = mode
-        } label: {
-            VStack(alignment: .center, spacing: 8) {
-                ZStack {
-                    Circle()
-                        .fill(trainingActionTint.opacity(isSelected ? 0.28 : 0.14))
-                    Image(systemName: systemImage)
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundStyle(trainingActionTint)
-                }
-                .frame(width: 38, height: 38)
-                .padding(.top, 2)
-
-                Text(title)
-                    .font(.system(size: 16, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.85)
-                    .frame(maxWidth: .infinity)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 11)
-            // Nach dem Subline-Wegfall fallen ~14 pt Content weg — die
-            // gemeinsame `minHeight` rutscht entsprechend von 110 auf
-            // **92 pt**. Die beiden Cards bleiben exakt gleich hoch,
-            // nur insgesamt kompakter, passend zur reduzierten
-            // Inhalts-Zeile (nur noch Icon + Titel).
-            .frame(maxWidth: .infinity, minHeight: 92, alignment: .top)
-            .background(
-                RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
-                    .fill(AppTheme.Colors.surface)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
-                            .fill(trainingActionTint.opacity(isSelected ? AppTheme.CardIntensity.medium : AppTheme.CardIntensity.subtle))
-                    )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
-                    .stroke(
-                        isSelected ? trainingActionTint : AppTheme.Colors.border.opacity(0.7),
-                        lineWidth: isSelected ? 2 : 1
-                    )
-            )
-            // Kein Shadow — Answer-Mode-Cards sind sekundäre Ebene,
-            // visuell flacher als die Speed-Round-Card darüber.
-            .animation(.easeOut(duration: 0.15), value: isSelected)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(title)
-        .accessibilityValue(isSelected ? "ausgewählt" : "nicht ausgewählt")
+        AnswerModeSelector(
+            mode: nomenAnswerModeBinding,
+            accent: trainingActionTint,
+            onChange: { _ in feedbackPlayer.playTabSwitch() }
+        )
     }
 
     // MARK: - Vokabel-Setup: zweistufige Entscheidungs-Architektur
@@ -676,6 +585,17 @@ extension TrainingView {
             if isDictionaryTrainingSelected {
                 dictionaryTrainingLevelCard
             }
+
+            // **Sweep C — AnswerMode (2026-05-07)** — Sprechen/Tippen-
+            // Selector unter dem Vokabeln-Detail-Block. Persistierung
+            // via @AppStorage in `TrainingView` (`vokabelnAnswerModeBinding`),
+            // Render-Branch in `TrainingView+SessionComponents` greift
+            // auf `session.vokabelnAnswerMode` zu.
+            AnswerModeSelector(
+                mode: vokabelnAnswerModeBinding,
+                accent: trainingActionTint,
+                onChange: { _ in feedbackPlayer.playTabSwitch() }
+            )
 
             if !canStartTraining {
                 Text(startHintText)

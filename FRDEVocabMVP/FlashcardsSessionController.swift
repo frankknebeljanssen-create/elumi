@@ -31,6 +31,22 @@ final class FlashcardsSessionController: ObservableObject {
     @Published var cardFlyOutOpacity = 1.0
     @Published var typedAnswer = ""
     @Published var showingTypedAnswerInput = false
+
+    /// **Sweep C — AnswerMode (2026-05-07)** — Aktiver Sprechen/Tippen-
+    /// Modus für die Karteikarten-Session. Initial-Wert kommt aus
+    /// `@AppStorage` (`appAnswerModeKarteikartenKey`); Setup-Screen
+    /// schreibt durch via `karteikanrenAnswerModeBinding` (siehe
+    /// `FlashcardsView.swift`). Slot-launched Sessions starten mit
+    /// dem persistierten Wert.
+    ///
+    /// Render-Branch in `FlashcardsView+InputActionComponents`:
+    ///   • `.speech` — Mikrofon + Speaker primär, Tastatur als Reveal-
+    ///     on-tap-Fallback (existing Behavior).
+    ///   • `.tap` — Typed-Answer-Card direkt sichtbar, kein Mikrofon.
+    @Published var answerMode: AnswerMode = {
+        let raw = UserDefaults.standard.string(forKey: appAnswerModeKarteikartenKey)
+        return raw.flatMap { AnswerMode(rawValue: $0) } ?? .speech
+    }()
     @Published var isMicPulseVisible = false
     @Published var displayedFlashCard: FlashCard?
 

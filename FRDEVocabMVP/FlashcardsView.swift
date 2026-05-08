@@ -14,6 +14,25 @@ struct FlashcardsView: View {
     @Environment(\.scenePhase) var scenePhase
     @AppStorage(appDirectionKey) var selectedAppDirectionRaw = Direction.frenchToGerman.rawValue
     @AppStorage(appArcadeCreditsKey) var arcadeCredits = 0
+    /// **Sweep C — AnswerMode (2026-05-07)** — Persistierter Sprechen/
+    /// Tippen-Modus für **Karteikarten**. Schreibt durch zu UserDefaults
+    /// (`appAnswerModeKarteikartenKey`); der `FlashcardsSessionController`
+    /// liest denselben Key, damit Setup-Screen + Slot-launched Sessions
+    /// synchron laufen.
+    @AppStorage(appAnswerModeKarteikartenKey) var karteikanrenAnswerModeRaw: String = AnswerMode.speech.rawValue
+    /// Binding-Bridge zwischen `@AppStorage`-String und der typsicheren
+    /// `AnswerMode`-Enum für den `AnswerModeSelector`. Setter schreibt
+    /// die Persistierung **und** synchronisiert den Live-Session-State
+    /// (`interaction.answerMode`).
+    var karteikanrenAnswerModeBinding: Binding<AnswerMode> {
+        Binding(
+            get: { AnswerMode(rawValue: self.karteikanrenAnswerModeRaw) ?? .speech },
+            set: { newValue in
+                self.karteikanrenAnswerModeRaw = newValue.rawValue
+                self.interaction.answerMode = newValue
+            }
+        )
+    }
     @ObservedObject var sessionStore: FlashcardSessionStore
     @ObservedObject var listStore: VocabularyListStore
     @ObservedObject var speechController: SpeechController

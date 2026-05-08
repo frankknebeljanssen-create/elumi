@@ -346,6 +346,19 @@ extension FlashcardsView {
                             flashcardMasteryThresholdCard
                         }
 
+                        // **Sweep C — AnswerMode (2026-05-07)** —
+                        // Sprechen/Tippen-Selector unter den Mechanik-
+                        // Cards, vor der optionalen Personal-Deck-
+                        // Section. Persistierung via @AppStorage in
+                        // `FlashcardsView` (`karteikanrenAnswerModeBinding`),
+                        // Render-Branch in `flashcardPrimaryActions`
+                        // (siehe `FlashcardsView+InputActionComponents`).
+                        AnswerModeSelector(
+                            mode: karteikanrenAnswerModeBinding,
+                            accent: sectionStyle.accent,
+                            onChange: { _ in feedbackPlayer.playTabSwitch() }
+                        )
+
                         // **User-Revision 2026-04-22**: Meine-Stapel-
                         // Entry-Button wandert UNTER die Mechanik-Cards.
                         // Der Hauptflow (Listen + Kartenanzahl + Mastery)

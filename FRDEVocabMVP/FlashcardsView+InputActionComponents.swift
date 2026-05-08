@@ -3,7 +3,12 @@ import SwiftUI
 extension FlashcardsView {
     var flashcardTypedAnswerCard: some View {
         Group {
-            if interaction.showingTypedAnswerInput {
+            // **Sweep C — AnswerMode (2026-05-07)** — Bei `.tap` ist
+            // die Typed-Answer-Card die **primäre** Eingabe (immer
+            // sichtbar). Bei `.speech` bleibt der frühere Reveal-on-
+            // Tap-Pfad via `showingTypedAnswerInput` erhalten — User
+            // kann Tastatur als Fallback nachträglich anfordern.
+            if interaction.showingTypedAnswerInput || interaction.answerMode == .tap {
                 HStack(spacing: 8) {
                     TextField("Antwort tippen", text: $interaction.typedAnswer)
                         .textFieldStyle(.roundedBorder)
@@ -46,10 +51,31 @@ extension FlashcardsView {
 
     /// Primäre Aktionen (Mikro + Lautsprecher + Tastatur) — bilden den
     /// oberen Action-Block direkt unter der Karteikarte.
+    ///
+    /// **Sweep C — AnswerMode (2026-05-07)** — Render-Branch nach
+    /// `interaction.answerMode`:
+    ///   • `.speech` — voller Block: Mikro + Lautsprecher (Row 1) +
+    ///     Tastatur-Toggle (Row 2). Existing Behavior.
+    ///   • `.tap` — Mikro entfällt komplett, der Tastatur-Toggle wird
+    ///     redundant (Typed-Answer-Card ist schon primär sichtbar).
+    ///     Lautsprecher bleibt erhalten — Vorlesen ist in beiden Modi
+    ///     hilfreich.
     var flashcardPrimaryActions: some View {
         VStack(spacing: 10) {
-            // Mikro + Lautsprecher nebeneinander — spart eine Zeile, der
-            // frei werdende vertikale Platz geht an die Karteikarte oberhalb.
+            if interaction.answerMode == .speech {
+                speechModeActionRows
+            } else {
+                tapModeActionRows
+            }
+        }
+    }
+
+    /// Speech-Mode-Action-Stack — historisches Layout (Mikro + Speaker
+    /// nebeneinander, Tastatur-Toggle drunter). Wird verwendet, wenn
+    /// `interaction.answerMode == .speech`.
+    @ViewBuilder
+    private var speechModeActionRows: some View {
+        VStack(spacing: 10) {
             HStack(spacing: 10) {
                 Button {
                     toggleRecording()
@@ -147,6 +173,37 @@ extension FlashcardsView {
             .disabled(!isSessionReady)
             .opacity(isSessionReady ? 1 : 0.45)
         }
+    }
+
+    /// Tap-Mode-Action-Stack — kein Mikrofon, kein Tastatur-Toggle
+    /// (die Typed-Answer-Card ist als primäre Eingabe ohnehin schon
+    /// sichtbar). Lautsprecher bleibt erhalten — Vorlesen ist auch im
+    /// Tap-Mode nützlich.
+    @ViewBuilder
+    private var tapModeActionRows: some View {
+        Button {
+            speakCurrentPrompt()
+        } label: {
+            let isPlayingTTS = speaker.isSpeaking
+            Group {
+                if isPlayingTTS {
+                    ElumiIconView(icon: .lautsprecher, size: 48)
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: actionButtonHeight)
+                        .background(AppTheme.Colors.warning)
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
+                } else {
+                    ElumiIconView(icon: .lautsprecher, size: 48)
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: actionButtonHeight)
+                        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .disabled(!isSessionReady || !isAudioModeEnabled)
+        .opacity(isSessionReady && isAudioModeEnabled ? 1 : 0.45)
+        .animation(.easeInOut(duration: 0.18), value: speaker.isSpeaking)
     }
 
     /// Sekundäre Aktionen (Zurück + Weiter) — werden im Layout abgesetzt vom
