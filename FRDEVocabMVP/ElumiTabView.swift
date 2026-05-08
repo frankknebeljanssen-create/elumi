@@ -781,11 +781,25 @@ struct ElumiTabView: View {
             // Reihenfolge unverändert: Header → Zeit → Slot →
             // Ergebnis → CTA.
             VStack(alignment: .leading, spacing: 4) {
+                // **Slot-Header-Icon-Sweep 2026-05-07** — Sparkles-
+                // SF-Symbol durch programmatische Stacked-Cards-
+                // Illustration ersetzt (analog Home-Daily-Drop-Card,
+                // siehe `DailyDropStackedCardsIcon`). Das Asset trägt
+                // die Daily-Drop-Identität konsistent von Home in den
+                // Slot-Screen — der gleiche Karten-Stack der die
+                // Slot-Maschine semantisch repräsentiert.
+                //
+                // Size 50 pt — passt visuell in den 64×64-Frame der
+                // `ModuleHeaderCard`-Icon-Slot, mit etwas Innen-
+                // Padding für Atemraum. (Default Size 40 pt für die
+                // 52-pt-WideMethodCard auf Home; hier etwas größer
+                // weil das Frame mehr Platz bietet.)
                 ModuleHeaderCard(
-                    systemImage: "sparkles",
+                    customIcon: DailyDropStackedCardsIcon(size: 38),
                     title: currentHint,
                     accent: sectionStyle.accent,
-                    onBack: { dismiss() }
+                    onBack: { dismiss() },
+                    compact: true
                 )
 
                 // 1) Trainingszeit-Anzeige (Sache B Stufe 3): XXL-Zahl

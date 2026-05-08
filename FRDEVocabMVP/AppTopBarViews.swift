@@ -27,6 +27,14 @@ struct ModuleHeaderCard: View {
     /// sein — der Convenience-Init erzwingt das über separate Signatures.
     let icon: HomeModuleIcon?
     let iconSystemImage: String?
+    /// **Custom-View-Icon-Slot (2026-05-07)** — für Screens die weder
+    /// ein `HomeModuleIcon` noch ein SF-Symbol nutzen wollen, sondern
+    /// einen eigenen View (z. B. `DailyDropStackedCardsIcon` für den
+    /// Slot-Screen-Header). Type-Erasure via `AnyView`, damit der
+    /// Struct nicht generisch werden muss (würde alle Call-Sites
+    /// brechen). Render-Priorität in `coloredCard`:
+    /// `customIcon` → `icon` → `iconSystemImage`.
+    let customIcon: AnyView?
     let title: String
     let accent: Color
     /// Optionaler Back-Chevron (Phase 7.6+). Wenn gesetzt, sitzt der
@@ -42,6 +50,12 @@ struct ModuleHeaderCard: View {
     /// Size des Switches, wird vertikal mit dem Back-Button
     /// zentriert.
     var showsDirectionToggle: Bool = false
+    /// **Compact-Mode (2026-05-07)** — verkleinert Icon-Frame (64 → 48),
+    /// Title-Font (24 → 20 pt) und Vertical-Padding (12 → 8 pt) für
+    /// Screens die Header-Card-Höhe sparen müssen (z. B. Slot-Screen,
+    /// wo der CTA sonst vom Footer verdeckt wird). Default `false` —
+    /// alle bestehenden Call-Sites unverändert.
+    var compact: Bool = false
 
     // MARK: - Inits
     //
@@ -55,14 +69,17 @@ struct ModuleHeaderCard: View {
         title: String,
         accent: Color,
         onBack: (() -> Void)? = nil,
-        showsDirectionToggle: Bool = false
+        showsDirectionToggle: Bool = false,
+        compact: Bool = false
     ) {
         self.icon = icon
         self.iconSystemImage = nil
+        self.customIcon = nil
         self.title = title
         self.accent = accent
         self.onBack = onBack
         self.showsDirectionToggle = showsDirectionToggle
+        self.compact = compact
     }
 
     init(
@@ -70,14 +87,40 @@ struct ModuleHeaderCard: View {
         title: String,
         accent: Color,
         onBack: (() -> Void)? = nil,
-        showsDirectionToggle: Bool = false
+        showsDirectionToggle: Bool = false,
+        compact: Bool = false
     ) {
         self.icon = nil
         self.iconSystemImage = systemImage
+        self.customIcon = nil
         self.title = title
         self.accent = accent
         self.onBack = onBack
         self.showsDirectionToggle = showsDirectionToggle
+        self.compact = compact
+    }
+
+    /// **Custom-Icon-Init (2026-05-07)** — für arbiträre Icon-Views
+    /// wie `DailyDropStackedCardsIcon` auf dem Slot-Screen-Header.
+    /// Aufrufer übergibt einen View (z. B. `DailyDropStackedCardsIcon(...)`),
+    /// der intern in `AnyView` gewrapped wird (Type-Erasure für
+    /// non-generic Struct).
+    init<Icon: View>(
+        customIcon: Icon,
+        title: String,
+        accent: Color,
+        onBack: (() -> Void)? = nil,
+        showsDirectionToggle: Bool = false,
+        compact: Bool = false
+    ) {
+        self.icon = nil
+        self.iconSystemImage = nil
+        self.customIcon = AnyView(customIcon)
+        self.title = title
+        self.accent = accent
+        self.onBack = onBack
+        self.showsDirectionToggle = showsDirectionToggle
+        self.compact = compact
     }
 
     var body: some View {
@@ -107,20 +150,28 @@ struct ModuleHeaderCard: View {
     /// Back-Logik. Privates Sub-View, damit der Body lesbar bleibt
     /// und der Back-Chevron immer oberhalb sitzt.
     private var coloredCard: some View {
-        HStack(spacing: 14) {
+        // **Compact-Mode (2026-05-07)** — Icon 64 → 48, Title 24 → 20,
+        // Vertical-Padding 12 → 8. Spart ~20 pt Card-Höhe für Screens
+        // die mehr Content-Platz brauchen (z. B. Slot-Screen).
+        let iconFrame: CGFloat = compact ? 48 : 64
+        let titleSize: CGFloat = compact ? 20 : 24
+        let verticalPad: CGFloat = compact ? 8 : 12
+        return HStack(spacing: 14) {
             Group {
-                if let icon {
-                    HomeModuleIconView(icon: icon, size: 64)
+                if let customIcon {
+                    customIcon
+                } else if let icon {
+                    HomeModuleIconView(icon: icon, size: iconFrame)
                 } else if let iconSystemImage {
                     Image(systemName: iconSystemImage)
-                        .font(.system(size: 36, weight: .bold))
+                        .font(.system(size: compact ? 28 : 36, weight: .bold))
                         .foregroundStyle(.white)
                         .shadow(color: .black.opacity(0.35), radius: 1, x: 0, y: 1)
                 }
             }
-            .frame(width: 64, height: 64)
+            .frame(width: iconFrame, height: iconFrame)
             Text(title)
-                .font(.system(size: 24, weight: .black, design: .rounded))
+                .font(.system(size: titleSize, weight: .black, design: .rounded))
                 .foregroundStyle(.white)
                 .shadow(color: .black.opacity(0.35), radius: 1, x: 0, y: 1)
                 .lineLimit(2)
@@ -129,7 +180,7 @@ struct ModuleHeaderCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.vertical, verticalPad)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(
