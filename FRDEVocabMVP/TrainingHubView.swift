@@ -37,10 +37,13 @@ struct TrainingHubView: View {
     @State private var currentTip: String = TrainingHubTips.random()
 
     /// Footer-Clearance — derselbe Pattern wie HomeView/AccentsEntryView.
+    ///
+    /// **2026-05-08 Padding-Cleanup** — Footer-Migration zu
+    /// `.safeAreaInset(.bottom)` reserviert die Footer-Höhe systemweit;
+    /// das frühere `footerHeight + insetBottom + sm` schob den
+    /// Mascot-Block sichtbar nach oben weg.
     private var footerClearance: CGFloat {
-        usesGlobalChrome
-            ? AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.sm
-            : AppTheme.Spacing.lg
+        AppTheme.Spacing.sm
     }
 
     var body: some View {

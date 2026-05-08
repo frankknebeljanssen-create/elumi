@@ -100,7 +100,10 @@ struct GameHubView: View {
             // Spielen-Chevron auf TrainingHub-Höhe sitzt. Vorher
             // 4 pt unterhalb (`screenHeaderTopPadding`).
             .padding(.top, AppLayout.headerChevronTopPadding)
-            .padding(.bottom, AppTheme.Spacing.xxl)
+            // **2026-05-08 Padding-Cleanup nach safeAreaInset-Migration** —
+            // `Spacing.xxl` (32) → `Spacing.md` (16). Footer reserviert,
+            // 32 pt waren Doppel-Padding.
+            .padding(.bottom, AppTheme.Spacing.md)
             .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .top)
         }

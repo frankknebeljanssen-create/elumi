@@ -11,13 +11,15 @@ struct InfoView: View {
     /// Reserviert Platz für die global gerenderte Bottom-Bar. Ohne diese
     /// Clearance steckt die unterste Info-Card (und der Copyright-Block)
     /// hinter dem Footer — der Screen wirkt dann wie „schon am Ende",
-    /// obwohl die letzten Cards nur abgeschnitten sind. Ergebnis: der
-    /// User konnte scrollen, kam aber nicht unten an, weil nichts mehr
-    /// visible reservierte, dass es weiter geht.
+    /// obwohl die letzten Cards nur abgeschnitten sind.
+    ///
+    /// **2026-05-08 Padding-Cleanup** — Nach der Footer-Migration zu
+    /// `.safeAreaInset(.bottom)` reserviert das System die Footer-Höhe
+    /// automatisch; das frühere `footerHeight + insetBottom + lg` war
+    /// Doppel-Padding. Property gibt jetzt nur noch den kleinen
+    /// Atemraum-Buffer zurück.
     private var footerClearance: CGFloat {
-        usesGlobalChrome
-            ? AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.lg
-            : AppTheme.Spacing.lg
+        AppTheme.Spacing.lg
     }
 
     var body: some View {

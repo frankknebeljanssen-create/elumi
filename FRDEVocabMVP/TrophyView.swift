@@ -78,7 +78,11 @@ struct TrophyView: View {
             // Wörterbuch, Spielen, Setup-Screens. `screenHeaderTopPadding`
             // (= 4 pt) ist jetzt rein für Content-Spacing reserviert.
             .padding(.top, AppLayout.headerChevronTopPadding)
-            .padding(.bottom, AppTheme.Spacing.xxl)
+            // **2026-05-08 Padding-Cleanup nach safeAreaInset-Migration** —
+            // Bottom-Padding `Spacing.xxl` (32) → `Spacing.md` (16).
+            // Footer ist über safeAreaInset reserviert; 32 pt waren
+            // nun Doppel-Padding und schoben den Content sichtbar hoch.
+            .padding(.bottom, AppTheme.Spacing.md)
             .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .top)
         }

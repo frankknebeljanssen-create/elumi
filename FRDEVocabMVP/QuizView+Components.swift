@@ -328,9 +328,12 @@ var quizResultScreen: some View {
     }
     .padding(.horizontal, AppLayout.screenPadding)
     .padding(.top, AppLayout.contentTopPadding)
-    // Bottom-Padding muss die Footer-BottomBar freihalten, sonst
-    // verdeckt der Footer die letzten CTA-Buttons (Nochmal / Zurück).
-    .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.md)
+    // **2026-05-08 Padding-Cleanup** — Bottom-Padding von
+    // `footerHeight + insetBottom + md` auf `Spacing.md` reduziert.
+    // Footer ist nach der Migration über safeAreaInset reserviert;
+    // die alte Manual-Footer-Höhe schob den Summary-Block sichtbar
+    // nach oben.
+    .padding(.bottom, AppTheme.Spacing.md)
     .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .top)
     .frame(maxWidth: .infinity, alignment: .top)
     }

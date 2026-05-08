@@ -145,7 +145,10 @@ struct TrainingChainCompleteSummaryView: View {
                 }
                 .padding(.horizontal, AppLayout.screenPadding)
                 .padding(.top, AppLayout.screenHeaderTopPadding)
-                .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.lg)
+                // **2026-05-08 Padding-Cleanup** — `footerHeight +
+                // insetBottom + lg` → `Spacing.lg`. Footer per
+                // safeAreaInset reserviert.
+                .padding(.bottom, AppTheme.Spacing.lg)
                 .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
                 .frame(maxWidth: .infinity, alignment: .center)
             }

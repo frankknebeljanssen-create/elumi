@@ -130,9 +130,9 @@ struct ImportCompletionView: View {
                 .buttonStyle(AppSecondaryButtonStyle(tint: .white))
             }
             .padding(AppLayout.screenPadding)
-            // Bottom-Clearance, damit der letzte Block (Liste ansehen /
-            // Ich übe später) garantiert über Footer + Safe-Area passt.
-            .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.lg)
+            // **2026-05-08 Padding-Cleanup** — `footerHeight + insetBottom + lg`
+            // → `Spacing.lg`. Footer per safeAreaInset reserviert.
+            .padding(.bottom, AppTheme.Spacing.lg)
             .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .top)
             .frame(maxWidth: .infinity, alignment: .center)
         }

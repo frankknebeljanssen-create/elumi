@@ -17,7 +17,12 @@ extension FlashcardsView {
                 Spacer()
                 flashcardTypedAnswerCard
                     .padding(.horizontal, AppLayout.screenPadding + flashcardSessionCardInset)
-                    .padding(.bottom, AppTheme.Layout.footerHeight + flashcardBottomBarSpacing + AppTheme.Spacing.sm)
+                    // **2026-05-08 Padding-Cleanup** — `footerHeight`
+                    // entfernt; nach der safeAreaInset-Migration
+                    // reserviert das System Footer-Höhe automatisch.
+                    // Atemraum bleibt mit `flashcardBottomBarSpacing
+                    // + Spacing.sm`.
+                    .padding(.bottom, flashcardBottomBarSpacing + AppTheme.Spacing.sm)
             }
             .zIndex(3)
         }
@@ -286,7 +291,10 @@ extension FlashcardsView {
         .padding(.horizontal, AppLayout.screenPadding)
         // Systemweites Top-Padding — Header-Position wie Quiz-Setup.
         .padding(.top, AppLayout.screenHeaderTopPadding)
-        .padding(.bottom, AppTheme.Layout.footerHeight + flashcardBottomBarSpacing + AppTheme.Spacing.sm)
+        // **2026-05-08 Padding-Cleanup** — `footerHeight` entfernt
+        // (safeAreaInset reserviert systemweit). Buffer bleibt mit
+        // `flashcardBottomBarSpacing + Spacing.sm`.
+        .padding(.bottom, flashcardBottomBarSpacing + AppTheme.Spacing.sm)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }

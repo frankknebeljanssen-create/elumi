@@ -53,10 +53,13 @@ struct HomeView: View {
 
     // MARK: - Layout helpers
 
+    /// **2026-05-08 Padding-Cleanup** — Footer-Migration zu
+    /// `.safeAreaInset(.bottom)` reserviert die Footer-Höhe systemweit;
+    /// das frühere `footerHeight + insetBottom + sm` schob den letzten
+    /// Home-Block sichtbar nach oben. Property gibt jetzt nur noch
+    /// den Atemraum-Buffer zurück.
     private var homeFooterClearance: CGFloat {
-        usesGlobalChrome
-            ? AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.sm
-            : AppTheme.Spacing.lg
+        AppTheme.Spacing.sm
     }
 
     // MARK: - Navigation

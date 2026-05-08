@@ -131,15 +131,23 @@ struct TrainingChainOverviewView: View {
             }
             .padding(.horizontal, AppLayout.screenPadding)
             .padding(.top, AppLayout.screenHeaderTopPadding)
-            // Bottom-Padding lässt Platz für Footer + sticky CTA.
-            .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 100)
+            // **2026-05-08 Padding-Cleanup** — Bottom-Padding lässt
+            // weiterhin 100 pt für die sticky-CTA-Höhe; der frühere
+            // `footerHeight + insetBottom` ist redundant, weil der
+            // globale Footer per `.safeAreaInset(.bottom)` bereits
+            // automatisch reserviert ist.
+            .padding(.bottom, 100)
             .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .top)
         }
         .overlay(alignment: .bottom) {
             startCTA
                 .padding(.horizontal, AppLayout.screenPadding)
-                .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.md)
+                // **2026-05-08 Padding-Cleanup** — Sticky-CTA sitzt
+                // direkt am Bottom des Content-Bereichs (= Top der
+                // Footer-safeAreaInset-Reservierung). Atemraum reicht
+                // mit `Spacing.md` aus; vorher zusätzlich Footer-Höhe.
+                .padding(.bottom, AppTheme.Spacing.md)
         }
         .tint(sectionStyle.accent)
         .appAmbientWormBackground(sectionStyle)

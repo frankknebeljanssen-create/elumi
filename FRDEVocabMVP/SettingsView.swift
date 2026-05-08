@@ -90,10 +90,14 @@ struct SettingsView: View {
     /// weil der äußere Container gar kein `ScrollView` war. Fix: den
     /// VStack in ein `ScrollView` wrappen und unten genug Luft für den
     /// Footer reservieren.
+    ///
+    /// **2026-05-08 Padding-Cleanup** — Global-Chrome-Branch reserviert
+    /// keine Footer-Höhe mehr (Footer-Migration zu `.safeAreaInset`
+    /// macht das System-seitig). Beide Branches geben jetzt nur den
+    /// kleinen Atemraum-Buffer `Spacing.lg` zurück. Property bleibt
+    /// für etwaige zukünftige Lokal-Chrome-Pfade erhalten.
     private var footerClearance: CGFloat {
-        usesGlobalChrome
-            ? AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.lg
-            : AppTheme.Spacing.lg
+        AppTheme.Spacing.lg
     }
 
     var body: some View {

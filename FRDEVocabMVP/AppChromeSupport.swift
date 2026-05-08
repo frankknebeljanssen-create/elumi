@@ -61,8 +61,16 @@ enum AppLayout {
     /// in Session-eigenen CTAs (Flashcards-Setup-CTA etc.) genutzt —
     /// damit der Abstand zwischen CTA und Footer auf **jedem** Screen
     /// exakt identisch ist.
-    static let sessionCTABottomClearance: CGFloat =
-        AppTheme.Layout.footerHeight + bottomBarInsetBottom + 14
+    ///
+    /// **2026-05-08** — Wert von `footerHeight + bottomBarInsetBottom + 14`
+    /// auf `14` reduziert. Nach der Footer-Migration zu
+    /// `.safeAreaInset(.bottom)` (Commit c941ef9) reserviert die
+    /// systemweite Safe-Area die Footer-Höhe automatisch; das alte
+    /// Manual-Footer-Reservierungs-Pattern verdoppelte das Padding
+    /// und schob den CTA visuell deutlich nach oben (User-Befund:
+    /// „Setup-Screens sehen nach unten gerutscht aus"). Der verbleibende
+    /// 14-pt-Wert ist reiner CTA→Footer-Atemraum.
+    static let sessionCTABottomClearance: CGFloat = 14
 
     /// **Systemweites Horizontal-Padding** für CTA + Gamification-Bar.
     /// Garantiert, dass die Bar exakt dieselbe Breite wie der CTA

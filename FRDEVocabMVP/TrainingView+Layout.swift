@@ -154,7 +154,9 @@ extension TrainingView {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, AppLayout.screenPadding)
-        .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 32)
+        // **2026-05-08 Padding-Cleanup** — `footerHeight + insetBottom + 32`
+        // → `32`. Footer per safeAreaInset reserviert.
+        .padding(.bottom, 32)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
@@ -320,7 +322,9 @@ extension TrainingView {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, AppLayout.screenPadding)
-        .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.lg)
+        // **2026-05-08 Padding-Cleanup** — `footerHeight + insetBottom + lg`
+        // → `Spacing.lg`. Footer per safeAreaInset reserviert.
+        .padding(.bottom, AppTheme.Spacing.lg)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
@@ -1587,7 +1591,9 @@ extension TrainingView {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, AppLayout.screenPadding)
-        .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 16)
+        // **2026-05-08 Padding-Cleanup** — `footerHeight + insetBottom + 16`
+        // → `16`. Footer per safeAreaInset reserviert.
+        .padding(.bottom, 16)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(AppTheme.Colors.background.ignoresSafeArea())
@@ -2122,7 +2128,9 @@ extension TrainingView {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, AppLayout.screenPadding)
-        .padding(.bottom, AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + 32)
+        // **2026-05-08 Padding-Cleanup** — `footerHeight + insetBottom + 32`
+        // → `32`. Footer per safeAreaInset reserviert.
+        .padding(.bottom, 32)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(AppTheme.Colors.background.ignoresSafeArea())

@@ -234,7 +234,13 @@ struct LexiconView: View {
             // Push-Screens. `screenHeaderTopPadding` regelt nur noch
             // Content-Spacing unterhalb der Chevron-Row.
             .padding(.top, AppLayout.headerChevronTopPadding)
-            .padding(.bottom, AppTheme.Spacing.xxl)
+            // **2026-05-08 Padding-Cleanup nach safeAreaInset-Migration** —
+            // Bottom-Padding `Spacing.xxl` (32 pt) → `Spacing.md` (16 pt).
+            // Nach der Footer-Migration reserviert die per-destination
+            // safeAreaInset in RootContentView automatisch Footer-Höhe;
+            // 32 pt zusätzlich verschob den Content sichtbar nach oben.
+            // 16 pt bleiben als reiner Content→Footer-Atemraum.
+            .padding(.bottom, AppTheme.Spacing.md)
             .frame(maxWidth: .infinity, alignment: .top)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
