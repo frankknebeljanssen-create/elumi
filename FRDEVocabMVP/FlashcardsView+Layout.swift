@@ -350,11 +350,11 @@ extension FlashcardsView {
                         // Sprechen/Tippen-Selector unter den Mechanik-
                         // Cards, vor der optionalen Personal-Deck-
                         // Section. Persistierung via @AppStorage in
-                        // `FlashcardsView` (`karteikanrenAnswerModeBinding`),
+                        // `FlashcardsView` (`karteikartenAnswerModeBinding`),
                         // Render-Branch in `flashcardPrimaryActions`
                         // (siehe `FlashcardsView+InputActionComponents`).
                         AnswerModeSelector(
-                            mode: karteikanrenAnswerModeBinding,
+                            mode: karteikartenAnswerModeBinding,
                             accent: sectionStyle.accent,
                             onChange: { _ in feedbackPlayer.playTabSwitch() }
                         )

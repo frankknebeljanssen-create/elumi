@@ -35,7 +35,7 @@ final class FlashcardsSessionController: ObservableObject {
     /// **Sweep C — AnswerMode (2026-05-07)** — Aktiver Sprechen/Tippen-
     /// Modus für die Karteikarten-Session. Initial-Wert kommt aus
     /// `@AppStorage` (`appAnswerModeKarteikartenKey`); Setup-Screen
-    /// schreibt durch via `karteikanrenAnswerModeBinding` (siehe
+    /// schreibt durch via `karteikartenAnswerModeBinding` (siehe
     /// `FlashcardsView.swift`). Slot-launched Sessions starten mit
     /// dem persistierten Wert.
     ///

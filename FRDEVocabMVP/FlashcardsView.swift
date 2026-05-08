@@ -19,16 +19,16 @@ struct FlashcardsView: View {
     /// (`appAnswerModeKarteikartenKey`); der `FlashcardsSessionController`
     /// liest denselben Key, damit Setup-Screen + Slot-launched Sessions
     /// synchron laufen.
-    @AppStorage(appAnswerModeKarteikartenKey) var karteikanrenAnswerModeRaw: String = AnswerMode.speech.rawValue
+    @AppStorage(appAnswerModeKarteikartenKey) var karteikartenAnswerModeRaw: String = AnswerMode.speech.rawValue
     /// Binding-Bridge zwischen `@AppStorage`-String und der typsicheren
     /// `AnswerMode`-Enum für den `AnswerModeSelector`. Setter schreibt
     /// die Persistierung **und** synchronisiert den Live-Session-State
     /// (`interaction.answerMode`).
-    var karteikanrenAnswerModeBinding: Binding<AnswerMode> {
+    var karteikartenAnswerModeBinding: Binding<AnswerMode> {
         Binding(
-            get: { AnswerMode(rawValue: self.karteikanrenAnswerModeRaw) ?? .speech },
+            get: { AnswerMode(rawValue: self.karteikartenAnswerModeRaw) ?? .speech },
             set: { newValue in
-                self.karteikanrenAnswerModeRaw = newValue.rawValue
+                self.karteikartenAnswerModeRaw = newValue.rawValue
                 self.interaction.answerMode = newValue
             }
         )
