@@ -168,6 +168,28 @@ struct ContentView: View {
                         // `TODO_post_v1b.md` unter „Chevron-System".
                         .navigationBarBackButtonHidden(true)
                         .toolbar(.hidden, for: .navigationBar)
+                        // **Pfad-2 Footer-Inset (2026-05-07)** — Push-
+                        // Screens (NavigationStack-Destinations) erben
+                        // den auf RootContentView gesetzten
+                        // `.safeAreaInset(.bottom, AppBottomBar)` NICHT
+                        // zuverlässig (bekannter SwiftUI-Quirk —
+                        // Tab-Root-Views wie HomeView funktionieren,
+                        // pushed Views wie Slot-Screen / Listen-Hub /
+                        // andere brauchen eigene Reservation).
+                        //
+                        // Hier: transparenter `Color.clear`-Spacer in
+                        // gleicher Höhe wie der Footer-Frame (= 50 pt
+                        // Bar-Höhe + 8 pt Bottom-Inset), reserviert
+                        // den Bereich auf Destination-Ebene. Die Bar
+                        // wird visuell weiterhin EINMALIG durch
+                        // RootContentView's safeAreaInset gerendert
+                        // (siehe oben), kein Doppel-Render.
+                        .safeAreaInset(edge: .bottom, spacing: 0) {
+                            if navigation.shouldShowGlobalChrome {
+                                Color.clear
+                                    .frame(height: AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom)
+                            }
+                        }
                     }
                     .onAppear {
                         let currentDirection = Direction(rawValue: selectedDirectionRaw) ?? .frenchToGerman
@@ -189,7 +211,23 @@ struct ContentView: View {
                     navigation.shouldAnimateSplashDismissal ? .easeOut(duration: 0.45) : nil,
                     value: navigation.shouldShowSplashOverlay
                 )
-                .overlay(alignment: .bottom) {
+                // **Footer-Migration zu safeAreaInset (2026-05-07)** —
+                // Vorher `.overlay(alignment: .bottom)`: rein visuelle
+                // Schicht ohne Layout-Awareness, ScrollViews extendeten
+                // unter den Footer und mussten per-Screen padding-bottom-
+                // Workarounds verwalten — auf realen iPhones führte das
+                // zu Footer-Overlap (User-Report Slot-Screen-CTA).
+                //
+                // Mit `.safeAreaInset(edge: .bottom, spacing: 0)` rendert
+                // SwiftUI die Bar an gleicher visueller Stelle UND
+                // rechnet ihre Höhe in den Safe-Area-Stack ein —
+                // Inner-ScrollViews respektieren das automatisch, kein
+                // per-Screen-Padding mehr nötig (Cleanup folgt nach
+                // Smoke-Identifikation der Drift-Stellen).
+                //
+                // `spacing: 0` explizit gesetzt, damit kein Default-
+                // Spacing zwischen Inset-Bar und Inner-Content.
+                .safeAreaInset(edge: .bottom, spacing: 0) {
                     if navigation.shouldShowGlobalChrome {
                         AppBottomBar(
                             feedbackPlayer: feedbackPlayer,
