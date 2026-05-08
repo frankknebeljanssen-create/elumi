@@ -1,11 +1,19 @@
 import SwiftUI
 
 extension TrainingView {
-    func speakCurrentPrompt() {
+    /// **Sweep C — AnswerMode (2026-05-07)** — `force: false` (Default)
+    /// → bei Vokabeln-Tap-Mode wird Auto-Speak unterdrückt (User
+    /// liest/tippt). `force: true` → manueller Speaker-Tap im Tap-
+    /// Mode bleibt aktiv (User kann Prompt nach Bedarf hören).
+    func speakCurrentPrompt(force: Bool = false) {
         // Nomen-Wortauswahl: kein TTS — die Vorlage wird still gezeigt,
         // der User wählt aus dem 8er-Grid. (Im Speech-Pfad bleibt die
         // bisherige Ansprache des Prompts erhalten.)
         guard !isArticleMode, !isVerbMode, !isNounChoiceMode else { return }
+        if isVokabelnTapMode && !force {
+            appDebugLog("🔊 [Speak] ⏸ vokabeln-tap-mode auto-suppress")
+            return
+        }
         guard let currentCard else {
             return
         }

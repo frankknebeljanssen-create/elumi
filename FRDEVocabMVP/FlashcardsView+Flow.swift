@@ -118,11 +118,17 @@ extension FlashcardsView {
         )
     }
 
-    func speakCurrentPrompt() {
+    /// **Sweep C — AnswerMode (2026-05-07)** — `force: true` für
+    /// manuelle Speaker-Button-Taps; default `false` für Auto-Sites
+    /// (`startFlashcardsFromSetup` autoplay, Chain-Mode-Auto, Reveal-
+    /// Solution-Auto, Waiting-To-Start-Auto). Im Tap-Mode greift der
+    /// Auto-Suppress-Guard im Controller (siehe `+Recording.swift`).
+    func speakCurrentPrompt(force: Bool = false) {
         interaction.speakCurrentPrompt(
             speechController: speechController,
             speaker: speaker,
-            areSoundsEnabled: isAudioModeEnabled
+            areSoundsEnabled: isAudioModeEnabled,
+            force: force
         )
     }
 

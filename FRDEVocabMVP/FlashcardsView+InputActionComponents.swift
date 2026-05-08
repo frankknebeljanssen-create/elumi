@@ -120,7 +120,9 @@ extension FlashcardsView {
                 .opacity(!isSessionReady || !isAudioModeEnabled || !canUseSpeechRecognition ? 0.45 : (speechController.isRecording && interaction.isMicPulseVisible ? 0.72 : 1))
 
                 Button {
-                    speakCurrentPrompt()
+                    // **Sweep C** — manueller Speaker-Tap; `force: true`
+                    // umgeht den Tap-Mode-Auto-Suppress-Guard.
+                    speakCurrentPrompt(force: true)
                 } label: {
                     // Lautsprecher-Card färbt sich orange, solange TTS spricht
                     // — direktes visuelles Feedback fürs aktuell laufende
@@ -182,7 +184,9 @@ extension FlashcardsView {
     @ViewBuilder
     private var tapModeActionRows: some View {
         Button {
-            speakCurrentPrompt()
+            // **Sweep C** — manueller Speaker-Tap im Tap-Mode;
+            // `force: true` umgeht den Auto-Suppress-Guard.
+            speakCurrentPrompt(force: true)
         } label: {
             let isPlayingTTS = speaker.isSpeaking
             Group {

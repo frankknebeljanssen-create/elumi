@@ -356,6 +356,9 @@ extension TrainingView {
                     .opacity(!session.hasStartedTraining || currentCard == nil || !isAudioModeEnabled || !canUseSpeechRecognition ? 0.45 : (isSpeechRecording && isMicPulseVisible ? 0.72 : 1))
 
                     Button {
+                        // **Sweep C** — manueller Speaker-Tap (im Speech-
+                        // Mode auch ohne `force` aktiv; bei Vokabeln-Tap-
+                        // Mode ist diese Row eh nicht sichtbar).
                         speakCurrentPrompt()
                     } label: {
                         // Cartoon-Lautsprecher statt SF `speaker.wave.2.fill`.

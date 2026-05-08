@@ -71,13 +71,23 @@ extension FlashcardsSessionController {
         speechController.startRecording(localeIdentifier: sessionStore.selectedDirection.recognitionLocaleIdentifier)
     }
 
+    /// **Sweep C — AnswerMode (2026-05-07)** — `force: false` (Default)
+    /// → im Tap-Mode wird Auto-Speak unterdrückt (User liest/tippt,
+    /// braucht keine Audio-Ausgabe ungefragt). `force: true` →
+    /// manueller Speaker-Tap im Tap-Mode bleibt funktional, der User
+    /// hört das Prompt nach Bedarf an.
     func speakCurrentPrompt(
         speechController: SpeechController,
         speaker: Speaker,
-        areSoundsEnabled: Bool
+        areSoundsEnabled: Bool,
+        force: Bool = false
     ) {
         guard let currentFlashCard else {
             appDebugLog("🔊 [FC-Speak] ❌ no currentFlashCard")
+            return
+        }
+        if answerMode == .tap && !force {
+            appDebugLog("🔊 [FC-Speak] ⏸ tap-mode auto-speak suppressed")
             return
         }
         stopListeningForTyping(speechController: speechController, speaker: speaker)
