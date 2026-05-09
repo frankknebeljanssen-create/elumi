@@ -184,10 +184,16 @@ extension FlashcardsView {
                 .animation(.spring(response: 0.3, dampingFraction: 0.7), value: displayCount)
 
                 if maxCards > minSlider {
+                    // **2026-05-09** — Slider-Step 1 → 5. Vielfache von
+                    // 5 sind die übliche User-Wahl („50 Karten" vs.
+                    // „47 Karten" — niemand sucht sich krumme Werte
+                    // bewusst aus). Migration für historische Werte
+                    // läuft in `FlashcardsSetupController.loadSelected-
+                    // CardCount()` (Snap auf nächstes 5er-Multiple).
                     elumiCardCountSlider(
                         value: sliderValue,
                         range: Double(minSlider)...Double(maxCards),
-                        step: 1
+                        step: 5
                     )
                     .frame(maxWidth: .infinity)
                 } else {

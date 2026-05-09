@@ -52,10 +52,19 @@ final class FlashcardsSetupController: ObservableObject {
     /// `0` = „alle Karten" (Default). Negative oder unrealistisch hohe
     /// Werte werden auf 0 zurückgeklappt (Hard-Cap 200 wird im Setup-
     /// Slider erzwungen).
+    ///
+    /// **2026-05-09** — 5er-Step-Migration: Slider snapt jetzt auf
+    /// 5er-Multiples (5, 10, 15, …, 200). Historische Werte (1-4 oder
+    /// nicht-5-aligned) werden beim Read auf das nächste 5er-Multiple
+    /// gerundet. `0` bleibt erhalten (= „alle Karten"-Sentinel).
     private static func loadSelectedCardCount() -> Int {
         let raw = UserDefaults.standard.integer(forKey: appFlashcardsSelectedCardCountKey)
         guard raw >= 0, raw <= 200 else { return 0 }
-        return raw
+        guard raw > 0 else { return 0 }
+        // Auf nächstes 5er-Multiple runden (round-to-nearest mit
+        // Bias-up bei Tie). Min 5, weil neue Slider-Lower-Bound 5 ist.
+        let snapped = ((raw + 2) / 5) * 5
+        return min(200, max(5, snapped))
     }
 
     struct DictionaryStackLoadContext: Equatable {
