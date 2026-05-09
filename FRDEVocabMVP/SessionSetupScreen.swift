@@ -128,32 +128,61 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 4)
-                .padding(.bottom, 140) // Platz für den safeAreaInset-CTA
+                // **Bottom-Inset-Migration 2026-05-09** — vorher
+                // `padding(.bottom, 140)` als Manual-Workaround, weil
+                // `.safeAreaInset(.bottom)` auf den OuterVStack
+                // gehängt war und nicht zuverlässig zum ScrollView-
+                // Content propagiert hat. Jetzt sitzt der Inset
+                // direkt auf der ScrollView (siehe `.safeAreaInset`-
+                // Modifier unten) — der Inset-Platz wird automatisch
+                // im `contentInset.bottom` reserviert. Hier nur noch
+                // ein kleiner Atemraum-Buffer am Content-Ende.
+                .padding(.bottom, AppTheme.Spacing.lg)
+            }
+            // **Bottom-Inset-Migration 2026-05-09** — `.safeAreaInset(
+            // edge: .bottom)` von OuterVStack auf ScrollView verschoben.
+            //
+            // **Bug vorher**: SwiftUI's `.safeAreaInset` auf einer
+            // OuterVStack rendert das Inset visuell unten, aber der
+            // resultierende safe-area-Reduce propagiert nicht zuverlässig
+            // zur darin liegenden ScrollView. Die ScrollView füllt
+            // weiterhin ihren VStack-Slot vollständig (contentInset.bottom
+            // bleibt 0), und der GamBar/CTA-Block z-stackt visuell über
+            // sichtbare Items am ScrollView-Bottom — User-Befund auf
+            // Karteikarten-Setup: ANTWORTEN-MIT-Cards-Labels werden vom
+            // GamBar-Oberkante verdeckt, EIGENE-STAPEL-Section wird vom
+            // CTA überdeckt.
+            //
+            // **Bug jetzt**: Inset direkt auf der ScrollView → SwiftUI
+            // erhöht den `contentInset.bottom` automatisch um die
+            // Inset-Höhe, Content scrollt sauber **unter** dem Inset
+            // vorbei statt von ihm verdeckt zu werden. Wirkt für ALLE
+            // 7 Module die `SessionSetupScreen` nutzen (Karteikarten,
+            // Quiz, Vokabeln, Nomen, Verben, Verbformen, Akzente).
+            .safeAreaInset(edge: .bottom) {
+                // Spacing Gamification-Bar ↔ CTA über zentrale Konstante —
+                // alle Setup-Screens rendern mit demselben Rhythmus.
+                VStack(spacing: AppLayout.gamificationBarToCTASpacing) {
+                    // GamificationBar + CTA nutzen dasselbe Horizontal-Padding
+                    // → garantiert identische Breite. Systemweite Konstante.
+                    if showsGamificationBar {
+                        SessionGamificationBar(estimate: estimate, hintText: gamificationBarHintText)
+                            .padding(.horizontal, AppLayout.sessionCTAHorizontalPadding)
+                    }
+
+                    SessionPrimaryCTA(
+                        title: primaryButtonTitle,
+                        subtitle: primarySubtitle,
+                        isEnabled: isPrimaryEnabled,
+                        action: onStart
+                    )
+                    .padding(.horizontal, AppLayout.sessionCTAHorizontalPadding)
+                    // Systemweites Bottom-Padding bis zum Footer — auf
+                    // **jedem** Setup-Screen identisch (Vorlage: Karteikarten).
+                    .padding(.bottom, AppLayout.sessionCTABottomClearance)
+                }
             }
             .scrollDismissesKeyboard(.interactively)
-        }
-        .safeAreaInset(edge: .bottom) {
-            // Spacing Gamification-Bar ↔ CTA über zentrale Konstante —
-            // alle Setup-Screens rendern mit demselben Rhythmus.
-            VStack(spacing: AppLayout.gamificationBarToCTASpacing) {
-                // GamificationBar + CTA nutzen dasselbe Horizontal-Padding
-                // → garantiert identische Breite. Systemweite Konstante.
-                if showsGamificationBar {
-                    SessionGamificationBar(estimate: estimate, hintText: gamificationBarHintText)
-                        .padding(.horizontal, AppLayout.sessionCTAHorizontalPadding)
-                }
-
-                SessionPrimaryCTA(
-                    title: primaryButtonTitle,
-                    subtitle: primarySubtitle,
-                    isEnabled: isPrimaryEnabled,
-                    action: onStart
-                )
-                .padding(.horizontal, AppLayout.sessionCTAHorizontalPadding)
-                // Systemweites Bottom-Padding bis zum Footer — auf
-                // **jedem** Setup-Screen identisch (Vorlage: Karteikarten).
-                .padding(.bottom, AppLayout.sessionCTABottomClearance)
-            }
         }
     }
 }
