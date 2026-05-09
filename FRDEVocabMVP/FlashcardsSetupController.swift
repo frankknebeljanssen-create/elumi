@@ -5,7 +5,15 @@ import SwiftUI
 final class FlashcardsSetupController: ObservableObject {
     @Published var selectedSetupDirection: Direction = .frenchToGerman
     @Published var selectedSetupContent: FlashcardContentSelection = .mixed
-    @Published var selectedCardCount: Int = 0
+    /// **2026-05-08** — Karten-Anzahl persistiert (vorher Session-only,
+    /// User-Wahl ging beim Re-Open verloren). Initial-Wert aus
+    /// UserDefaults via `loadSelectedCardCount()`; `didSet` schreibt
+    /// jede Änderung durch. `0` = „alle Karten" (Default-Slider-Pos).
+    @Published var selectedCardCount: Int = FlashcardsSetupController.loadSelectedCardCount() {
+        didSet {
+            UserDefaults.standard.set(selectedCardCount, forKey: appFlashcardsSelectedCardCountKey)
+        }
+    }
     @Published var isUsingAllCardCount = true
     @Published var customCardCountText = ""
     @Published var isShowingSetup = true
@@ -37,6 +45,16 @@ final class FlashcardsSetupController: ObservableObject {
     private static func loadMasteryThreshold() -> Int {
         let raw = UserDefaults.standard.integer(forKey: appFlashcardsMasteryThresholdKey)
         if raw < 1 || raw > 4 { return 2 }
+        return raw
+    }
+
+    /// **2026-05-08** — Letzte gewählte Karten-Anzahl aus UserDefaults.
+    /// `0` = „alle Karten" (Default). Negative oder unrealistisch hohe
+    /// Werte werden auf 0 zurückgeklappt (Hard-Cap 200 wird im Setup-
+    /// Slider erzwungen).
+    private static func loadSelectedCardCount() -> Int {
+        let raw = UserDefaults.standard.integer(forKey: appFlashcardsSelectedCardCountKey)
+        guard raw >= 0, raw <= 200 else { return 0 }
         return raw
     }
 

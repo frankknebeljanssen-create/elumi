@@ -119,6 +119,13 @@ let appQuizSelectedListIDsKey = "quiz.selectedListIDs.v1"
 let appFlashcardsSelectedListIDsKey = "flashcards.selectedListIDs.v1"
 let appFlashcardsMasteryThresholdKey = "flashcards.masteryThreshold.v1"
 
+/// **Karteikarten Karten-Anzahl-Persistierung** (2026-05-08) — die
+/// Slider-Position der „Karten"-Card im Setup. Vor dieser Persistenz
+/// war `selectedCardCount` Session-only und ging beim Re-Open verloren
+/// (User stellte „50 Karten" ein, kam zurück, sah „alle 200"). Default
+/// `0` = „alle Karten" (Standard-Slider-Position).
+let appFlashcardsSelectedCardCountKey = "flashcards.selectedCardCount.v1"
+
 // **Persönlicher Trainingsmodus** (Phase 8): bis zu zwei persistierte
 // User-Stapel. JSON-Array von `PersonalDeck` (Codable), verwaltet von
 // `PersonalDeckStore.shared`. Die Sessions-Logik lebt weiter im normalen

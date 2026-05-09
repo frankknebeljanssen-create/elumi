@@ -129,7 +129,16 @@ extension FlashcardsView {
         let displayCount = setup.selectedCardCount == 0 ? maxCards : min(setup.selectedCardCount, maxCards)
         let progress = maxCards > minSlider ? CGFloat(displayCount - minSlider) / CGFloat(maxCards - minSlider) : 1.0
 
-        return VStack(alignment: .leading, spacing: 8) {
+        // **Compaction 2026-05-09** — Karten-Card schmaler:
+        //   • VStack-Spacing 8 → 6 pt
+        //   • Number-Font 31 → 24 pt (rote Farbe trägt weiterhin die
+        //     Auffälligkeit, 24 pt bleibt prominent lesbar)
+        //   • Mini-Stapel-Frame 36×36 → 28×28 (proportional zur
+        //     kleineren Zahl, ZStack-Cards proportional skaliert)
+        //   • Card padding-vertical 17 → 10 pt
+        //   Gesamt-Ersparnis ≈ 23 pt — hilft, das Setup auf iPhone-
+        //   Standard ohne Scroll unterzubringen.
+        return VStack(alignment: .leading, spacing: 6) {
             // **Naming-Sweep 2026-05-06** — „Anzahl der Karten" →
             // „Karten" (selbsterklärend mit der großen roten Zahl
             // + Karten-Stack-Icon daneben; „Anzahl der" war
@@ -141,13 +150,13 @@ extension FlashcardsView {
             HStack(alignment: .center, spacing: 6) {
                 Text("\(displayCount)")
                     // **User-Revision**: Font nicht mehr bold (.black →
-                    // .regular). 31 pt reicht visuell auch ohne Bold-
-                    // Gewicht, die rote Farbe trägt die Auffälligkeit.
-                    .font(.system(size: 31, weight: .regular, design: .rounded))
+                    // .regular). Die rote Farbe trägt die Auffälligkeit.
+                    // **Compaction 2026-05-09**: 31 → 24 pt.
+                    .font(.system(size: 24, weight: .regular, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.error)
                     .contentTransition(.numericText())
                     .animation(.spring(response: 0.3, dampingFraction: 0.7), value: displayCount)
-                    .frame(minWidth: 60, alignment: .leading)
+                    .frame(minWidth: 50, alignment: .leading)
                     // **User-Revision 2026-04-22**: Zahl 4 pt nach
                     // rechts verschieben, damit sie nicht direkt auf
                     // der linken Card-Kante klebt.
@@ -156,24 +165,22 @@ extension FlashcardsView {
                 ZStack {
                     let visibleCards = max(1, Int(progress * 5) + 1)
                     ForEach(0..<visibleCards, id: \.self) { i in
-                        RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        RoundedRectangle(cornerRadius: 3, style: .continuous)
                             .fill(AppTheme.Colors.error.opacity(0.18 + Double(i) * 0.12))
                             .overlay(
-                                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                                RoundedRectangle(cornerRadius: 3, style: .continuous)
                                     .stroke(AppTheme.Colors.error.opacity(0.4), lineWidth: 1)
                             )
-                            .frame(width: 22, height: 28)
-                            .offset(x: CGFloat(i) * 2.5, y: -CGFloat(i) * 1.5)
+                            .frame(width: 17, height: 22)
+                            .offset(x: CGFloat(i) * 2, y: -CGFloat(i) * 1.2)
                     }
                 }
-                .frame(width: 36, height: 36)
+                // **Compaction 2026-05-09**: 36×36 → 28×28 (proportional
+                // zur kleineren Zahl 24 pt).
+                .frame(width: 28, height: 28)
                 // Mini-Stapel sitzt visuell zwischen der großen roten Zahl
-                // und dem Slider. **User-Revision**: `x: -15` → `x: -9`,
-                // damit der Stapel ein Stück weiter nach rechts rückt und
-                // die Zahl etwas Luft hat. `y: 5` bleibt unverändert, der
-                // Stapel sitzt weiterhin mittig zwischen Zahl-Baseline
-                // und Slider-Track.
-                .offset(x: -9, y: 5)
+                // und dem Slider. **User-Revision**: `x: -15` → `x: -9`.
+                .offset(x: -9, y: 4)
                 .animation(.spring(response: 0.3, dampingFraction: 0.7), value: displayCount)
 
                 if maxCards > minSlider {
@@ -190,12 +197,9 @@ extension FlashcardsView {
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 18)
-        // **User-Revision 2026-04-22**: Card noch einen Tick kompakter
-        // (12 → 9 pt vertikal). Slider + Zahl füllen den Platz bei der
-        // reduzierten Höhe weiterhin souverän.
-        // **User-Revision 2026-04-22 (Revert)**: Card wieder auf die
-        // ursprüngliche Größe zurückgesetzt (17 pt vertikal).
-        .padding(.vertical, 17)
+        // **Compaction 2026-05-09**: padding-vertical 17 → 10 pt
+        // (~14 pt gespart pro Card-Vertikal-Achse).
+        .padding(.vertical, 10)
         .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
     }
 
@@ -207,8 +211,12 @@ extension FlashcardsView {
     /// automatisch auf 1/4 der Card verteilt, `spacing: 6` bleibt.
     /// Platzierung: direkt unter `flashcardCountLimitCard` im Setup.
     var flashcardMasteryThresholdCard: some View {
-        // **Naming-Sweep 2026-05-06** — Header + Optionen umbenannt:
-        //   • „Karte fällt raus nach" → „Wiederholungen" (kürzer, klarer)
+        // **Naming-Sweep 2026-05-06 / 2026-05-08** — Header + Optionen
+        // umbenannt:
+        //   • „Karte fällt raus nach" → „Wiederholungen" → „Schwierigkeit"
+        //     (zweite Iteration: trifft Bedeutung direkter — die Auswahl
+        //     steuert die Session-Schwierigkeit, „Wiederholungen" war
+        //     deskriptiv-mechanisch).
         //   • Schnell / Normal / Gründlich / Intensiv → Easy / Normal /
         //     Hart / Brutal (kindgerechter Tone, Game-Sprache statt
         //     Lehrer-Vokabular)
@@ -219,7 +227,7 @@ extension FlashcardsView {
             (4, "Brutal")
         ]
         return VStack(alignment: .leading, spacing: 10) {
-            flashcardSetupCardLabelLarge("Wiederholungen")
+            flashcardSetupCardLabelLarge("Schwierigkeit")
 
             HStack(spacing: 6) {
                 ForEach(labels, id: \.count) { entry in
@@ -242,9 +250,10 @@ extension FlashcardsView {
                                 .minimumScaleFactor(0.75)
                         }
                         .frame(maxWidth: .infinity)
-                        // **User-Revision 2026-04-22 (Revert)**: innere
-                        // Button-Höhe zurück auf 56 pt (ursprüngliche Größe).
-                        .frame(minHeight: 56)
+                        // **Compaction 2026-05-09** — Button-Höhe 56 → 48 pt
+                        // (HIG-Tap-Target bleibt mit 48 pt komfortabel
+                        // über 44 pt).
+                        .frame(minHeight: 48)
                         .background(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
                                 .fill(isSelected ? Color(hex: "#1A3A55") : Color(hex: "#1A2A40"))
@@ -263,10 +272,10 @@ extension FlashcardsView {
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 18)
-        // **User-Revision 2026-04-22 (Feinschliff)**: Card vertical
-        // padding 12 → 8 pt, zusammen mit den reduzierten Button-Höhen
-        // wirkt die Mechanik-Card jetzt kompakter.
-        .padding(.vertical, 8)
+        // **Compaction 2026-05-09** — Card vertical-padding 8 → 6 pt
+        // im Rahmen des Setup-Compaction-Sweeps (zusätzlich zu der
+        // Button-Höhen-Reduktion 56 → 48 pt darüber).
+        .padding(.vertical, 6)
         .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
     }
 

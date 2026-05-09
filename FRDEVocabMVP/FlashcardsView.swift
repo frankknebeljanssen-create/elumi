@@ -57,7 +57,10 @@ struct FlashcardsView: View {
     let flashcardCountInputScrollID = "flashcardCountInput"
 
     // Listen-Picker-Sheet für die custom Listen-Card im Speed-Round-Stil
-    @State var stackListPickerActive: Bool = false
+    // **Cleanup 2026-05-08** — `stackListPickerActive` State entfernt:
+    // gehörte zum legacy `flashcardsListSelectionCard`-Pfad, der mit
+    // der Master-Migration durch `ListCategoryPickerView` +
+    // `GlobalListPickerSheet` ersetzt wurde.
 
     // MARK: - Persönlicher Trainingsmodus (Phase 8)
     //

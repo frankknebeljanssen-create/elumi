@@ -64,6 +64,12 @@ struct AnswerModeSelector: View {
             mode = option
             onChange?(option)
         } label: {
+            // **Compaction 2026-05-09** — Card kompakter:
+            //   • minHeight 92 → 78 pt
+            //   • Icon-Puck 38 → 32 pt
+            //   • padding-top 2 → 0 pt
+            //   Wirkt auf alle drei Module (Karteikarten/Vokabeln/Nomen).
+            //   HIG-Tap-Target bleibt mit 78 pt komfortabel über 44 pt.
             VStack(alignment: .center, spacing: 8) {
                 ZStack {
                     Circle()
@@ -72,8 +78,7 @@ struct AnswerModeSelector: View {
                         .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(accent)
                 }
-                .frame(width: 38, height: 38)
-                .padding(.top, 2)
+                .frame(width: 32, height: 32)
 
                 Text(option.displayTitle)
                     .font(.system(size: 16, weight: .black, design: .rounded))
@@ -85,7 +90,7 @@ struct AnswerModeSelector: View {
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 12)
             .padding(.vertical, 11)
-            .frame(maxWidth: .infinity, minHeight: 92, alignment: .top)
+            .frame(maxWidth: .infinity, minHeight: 78, alignment: .top)
             .background(
                 RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
                     .fill(AppTheme.Colors.surface)

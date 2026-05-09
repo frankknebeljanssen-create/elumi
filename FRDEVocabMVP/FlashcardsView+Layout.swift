@@ -319,165 +319,89 @@ extension FlashcardsView {
     }
 
     var flashcardSetupScreen: some View {
-        // Struktur identisch zu `SessionSetupScreen` (Quiz, Nomen, …):
-        //   • Header liegt OBERHALB der ScrollView, damit sein
-        //     `screenHeaderBottomPadding` der einzige Abstand zum ersten
-        //     Content-Block bleibt. Früher saß der Header innerhalb des
-        //     scroll-VStack (spacing 16), was zusätzlich 16 pt einschob —
-        //     der Gap Header ↔ Ausgewählte Listen war dadurch größer als
-        //     bei allen anderen Modulen.
-        //   • ScrollView darunter scrollt nur den Content, Header bleibt
-        //     visuell am Screen-Top.
-        VStack(spacing: 0) {
-            flashcardSetupHeader
-
-            ScrollViewReader { proxy in
-                // Opaker Screen-Fill — verhindert, dass während des Navigation-
-                // Push-Transition die Home-View durchscheint („Was möchtest
-                // du üben?" wurde sichtbar, weil die ScrollView keinen eigenen
-                // Hintergrund hatte und das appScreenBackground des äußeren
-                // Chrome-Wrappers erst nach dem Layout greift).
-                ScrollView(showsIndicators: false) {
-                    // **User-Revision 2026-04-22**: Outer-Spacing
-                    // `md` (16) → `sm` (12), damit der Abstand zwischen
-                    // „Meine Stapel" und „Anzahl der Karten" so eng
-                    // sitzt wie der Gap zwischen den beiden Mechanik-
-                    // Cards („Anzahl" ↔ „Karte fällt raus nach").
-                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        // **App-Konvention (User-Spec)**: Nach dem Header kommt
-                        // IMMER zuerst die „Ausgewählte Listen"-Card — dann
-                        // folgt der Rest modulspezifisch.
-                        flashcardsListSelectionCard
-
-                        // Direction-Row ist in den Header gewandert
-                        // (FR-DE-Toggle rechts oben im ModuleHeaderCard).
-
-                        if isDictionarySelectedInStack {
-                            flashcardDictionaryLevelCard
-                        }
-
-                        // User-Nachjustierung: Spacing zwischen „Anzahl
-                        // der Karten" und „Karte fällt raus nach" wieder
-                        // zurück auf 12 pt — die 22 pt waren zu viel
-                        // Abstand zwischen den beiden Mechanik-Cards.
-                        VStack(alignment: .leading, spacing: 12) {
-                            flashcardCountLimitCard
-                            flashcardMasteryThresholdCard
-                        }
-
-                        // **Sweep C — AnswerMode (2026-05-07)** —
-                        // Sprechen/Tippen-Selector unter den Mechanik-
-                        // Cards, vor der optionalen Personal-Deck-
-                        // Section. Persistierung via @AppStorage in
-                        // `FlashcardsView` (`karteikartenAnswerModeBinding`),
-                        // Render-Branch in `flashcardPrimaryActions`
-                        // (siehe `FlashcardsView+InputActionComponents`).
-                        AnswerModeSelector(
-                            mode: karteikartenAnswerModeBinding,
-                            accent: sectionStyle.accent,
-                            onChange: { _ in feedbackPlayer.playTabSwitch() }
-                        )
-
-                        // **User-Revision 2026-04-22**: Meine-Stapel-
-                        // Entry-Button wandert UNTER die Mechanik-Cards.
-                        // Der Hauptflow (Listen + Kartenanzahl + Mastery)
-                        // steht oben, die optionale Stapel-Auswahl darunter.
-                        personalDeckSection
-
-                        // `flashcardHungerCard` + `flashcardStatsTrioCard` sind
-                        // mit der Master-Setup-Migration ersatzlos entfallen:
-                        // isoliertes Würmchen-Messaging und die Mini-Stat-Kacheln
-                        // werden jetzt durch die globale `SessionGamificationBar`
-                        // oberhalb des CTA abgedeckt.
-
-                        Spacer(minLength: 0)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .top)
-                    // 4 pt Atemraum zwischen Header-Unterkante und erstem
-                    // Content — analog zum `SessionSetupScreen`-Master
-                    // (dort: ScrollView `padding(.top, 4)`).
-                    .padding(.top, 4)
-                    .padding(.bottom, isCardCountFieldFocused ? 140 : AppTheme.Spacing.lg)
+        // **Master-Migration 2026-05-08** — Karteikarten-Setup nutzt
+        // jetzt `SessionSetupScreen` als gemeinsame Hülle (Header,
+        // ScrollView, GamBar, CTA, Spacings) — identisch zu Quiz,
+        // Vokabeln, Nomen, Akzente. Vorher: Eigenbau-Layout mit
+        // custom ScrollView + safeAreaInset, Iter-1+2-Compaction-
+        // Versuche, Quickstart-Pop-up. Alle Eigen-Pattern wurden
+        // verworfen für Pure-Konsistenz mit den anderen Modulen.
+        //
+        // Section-Reihenfolge:
+        //   contextContent: ListCategoryPickerView (DEINE LISTEN —
+        //     gleiche Card wie Quiz/Vokabeln, öffnet GlobalListPickerSheet
+        //     mit Lernjahr-Filter)
+        //   ↓ SessionDirectionRow (showsDirection default true)
+        //   optionsContent (in Reihenfolge):
+        //     • DictionaryLevel-Card (conditional)
+        //     • flashcardCountLimitCard (KARTEN — Karteikarten-only)
+        //     • flashcardMasteryThresholdCard (SCHWIERIGKEIT — Karteikarten-only)
+        //     • AnswerModeSelector (ANTWORTEN MIT — geteilt mit Vokabeln/Nomen)
+        //     • personalDeckSection (EIGENE STAPEL — Karteikarten-only,
+        //       conditional sichtbar bei vorhandenen Decks)
+        //
+        // GamBar + CTA werden vom Master-Wrapper im safeAreaInset
+        // gerendert.
+        SessionSetupScreen(
+            title: "Karteikarten",
+            accent: sectionStyle.accent,
+            estimate: flashcardsSessionEstimate,
+            primaryButtonTitle: "Los geht's!",
+            isPrimaryEnabled: canStartSetup,
+            // **Chain-Mode XP-Card-Hide (2026-05-02)** — wenn Karteikarten
+            // als Chain-Step geöffnet wird, ist die per-Modul-XP-Schätzung
+            // irreführend (Chain-Timer ist die einzige Begrenzung).
+            showsGamificationBar: launchContext?.chainContext == nil,
+            moduleIcon: .karteikarten,
+            showsDirectionToggle: true,
+            onBack: { handleBackNavigation() },
+            onStart: { startFlashcardsFromSetup(autoplayPrompt: true) },
+            contextContent: {
+                ListCategoryPickerView(
+                    availableLists: availableStackLists,
+                    selectedListIDs: setup.selectedStackListIDs,
+                    accent: sectionStyle.accent,
+                    style: sectionStyle,
+                    feedbackPlayer: feedbackPlayer,
+                    summaryText: "",
+                    itemLabel: "Karten",
+                    onSelectionChanged: { setup.selectedStackListIDs = $0 },
+                    onHome: { dismissToHome() }
+                )
+            },
+            optionsContent: {
+                if isDictionarySelectedInStack {
+                    flashcardDictionaryLevelCard
                 }
-                .scrollDismissesKeyboard(.interactively)
-                .safeAreaInset(edge: .bottom) {
-                    // GamificationBar + CTA nutzen denselben horizontalen
-                    // Rahmen wie die `SessionSetupScreen`-Master — identisches
-                    // Padding auf beiden sorgt dafür, dass die beiden Cards
-                    // exakt gleich breit sind. Frühere Abweichung: die Bar
-                    // hatte zusätzliches `screenPadding` von 16 pt, der Button
-                    // nur die äußere `screenPadding` des Screen-VStacks — Bar
-                    // war dadurch 32 pt schmaler als der Button.
-                    //
-                    // Bottom-Padding MUSS `AppLayout.sessionCTABottomClearance`
-                    // nutzen — pro User-Request „CTA muss in jedem Screen das
-                    // gleiche Padding zum Footer haben und alle müssen exakt
-                    // gleich groß sein". Früher standen hier `footerHeight +
-                    // bottomBarInsetBottom + 4` (= 58 pt) — 10 pt weniger als
-                    // Quiz / Training-Setup (dort: `sessionCTABottomClearance`
-                    // = footerHeight + bottomBarInsetBottom + 14 = 68 pt).
-                    // Der Karteikarten-CTA wirkte dadurch näher am Footer als
-                    // die anderen Module. Die Vereinheitlichung auf die System-
-                    // Konstante hebt ihn um 10 pt an und bringt ihn auf
-                    // exakt die gleiche Distanz zum Footer wie alle anderen
-                    // Setup-Screens.
-                    // **User-Revision 2026-04-22**: Spacing zwischen
-                    // Punkte-Bar und „Los geht's"-CTA reduziert (14 → 8 pt),
-                    // damit die beiden Elemente optisch näher
-                    // zusammengehören.
-                    VStack(spacing: 8) {
-                        // **Chain-Mode XP-Card-Hide (2026-05-02)** —
-                        // Karteikarten rendert die Gamification-Bar
-                        // direkt (nicht über `SessionSetupScreen`-
-                        // Wrapper). Im Chain-Modus blenden wir sie aus,
-                        // weil per-Modul-XP-Schätzung im Chain-Kontext
-                        // irreführend wäre (Chain-Timer ist Begrenzung,
-                        // Reward läuft Chain-aggregiert).
-                        if launchContext?.chainContext == nil {
-                            SessionGamificationBar(estimate: flashcardsSessionEstimate)
-                        }
 
-                        SessionPrimaryCTA(
-                            // **Naming-Sweep 2026-05-06** — „Karteikarten
-                            // starten" → „Los geht's!" (CTA-Vereinheit-
-                            // lichung über alle Modul-Setups).
-                            title: "Los geht's!",
-                            isEnabled: canStartSetup
-                        ) {
-                            startFlashcardsFromSetup(autoplayPrompt: true)
-                        }
-                        // **User-Revision 2026-04-22**: Karteikarten-spezifisch
-                        // etwas näher an den Footer ran (−14 pt gegenüber der
-                        // systemweiten `sessionCTABottomClearance`). Ankündigungs-
-                        // Bar + CTA rutschen dadurch gemeinsam tiefer — alle
-                        // anderen Setup-Screens bleiben unverändert auf der
-                        // System-Konstanten.
-                        .padding(.bottom, max(0, AppLayout.sessionCTABottomClearance - 14))
-                    }
+                // Karten + Schwierigkeit als gekoppeltes Mechanik-Duo
+                // mit engerem 12-pt-Spacing (User-Revision 2026-04-22).
+                VStack(alignment: .leading, spacing: 12) {
+                    flashcardCountLimitCard
+                    flashcardMasteryThresholdCard
                 }
-                .onChange(of: isCardCountFieldFocused) { _, isFocused in
-                    guard isFocused else { return }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                        withAnimation(.easeInOut(duration: 0.22)) {
-                            proxy.scrollTo(flashcardCountInputScrollID, anchor: .bottom)
-                        }
-                    }
-                }
+
+                // **Sweep C — AnswerMode (2026-05-07)** — Sprechen/
+                // Tippen-Selector. Persistierung via @AppStorage in
+                // `FlashcardsView` (`karteikartenAnswerModeBinding`),
+                // Render-Branch in `flashcardPrimaryActions`.
+                AnswerModeSelector(
+                    mode: karteikartenAnswerModeBinding,
+                    accent: sectionStyle.accent,
+                    onChange: { _ in feedbackPlayer.playTabSwitch() }
+                )
+
+                // **2026-05-09 Hidden for v1** — `personalDeckSection`
+                // (Meine-Stapel-Entry) im Setup ausgeblendet, damit
+                // Karteikanten-Setup ohne Scroll auf iPhone Standard
+                // passt. PersonalDeckStore + Render-Pfade +
+                // FlashcardStackComposerSheet bleiben im Code als
+                // späteres Feature; nur dieser Setup-Aufruf entfällt.
+                // (Section-Definition in `FlashcardsView+PersonalDeck.swift`
+                // unverändert.)
+                // personalDeckSection
             }
-        }
-        .padding(.horizontal, AppLayout.screenPadding)
-        // Systemweites Top-Padding — Header-Position wie Quiz-Setup.
-        .padding(.top, AppLayout.screenHeaderTopPadding)
-        .padding(.bottom, AppLayout.screenPadding)
-        .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        // Opaker Screen-Fill auf `background` (elumiMidnight) — identisch
-        // zum Home-Screen. Cards heben sich dadurch minimal heller ab
-        // (`surface` = elumiNavy), statt in der gleichen Farbe wie der
-        // Screen zu versinken. Dieser lokale Override ist nötig, damit
-        // während der Navigation-Push-Transition die Home-View nicht
-        // durchscheint — das äußere `appScreenBackground` greift erst
-        // nach dem Layout.
+        )
         .background(AppTheme.Colors.background.ignoresSafeArea())
         .sheet(isPresented: $setup.showingStackComposer) {
             FlashcardStackComposerSheet(
@@ -503,110 +427,11 @@ extension FlashcardsView {
     // einer HStack im Render-Pfad — der Builder hat keinen Sinn
     // mehr und wäre toter Code.
 
-    /// Custom Listen-Auswahl-Card im Speed-Round-Stil — analog zu den
-    /// Trainings-Modulen. Listen werden untereinander angezeigt (max 5),
-    /// Card wächst nach unten. Tap öffnet das Listen-Auswahl-Sheet.
-    private var flashcardsListSelectionCard: some View {
-        let selectedIDs = setup.selectedStackListIDs
-        let selectedLists = availableStackLists.filter { selectedIDs.contains($0.id) }
-        let hasSelection = !selectedLists.isEmpty
-        let totalCards = selectedStackCardCount
-
-        return Button {
-            feedbackPlayer.playTabSwitch()
-            stackListPickerActive = true
-        } label: {
-            // Header GANZ links oben (linksbündig über allem) statt neben
-            // dem Icon. Konsistent mit den anderen Setup-Cards.
-            VStack(alignment: .leading, spacing: 8) {
-                flashcardSetupCardLabel("Ausgewählte Listen")
-
-                HStack(alignment: .center, spacing: 14) {
-                    // Home-Listen-Icon — identisch zur "Listen"-Kachel auf
-                    // dem Home-Screen (Asset `HomeIconListen`). Systemweit
-                    // identisches Icon für „Ausgewählte Listen" statt des
-                    // früheren SF-Symbols `list.bullet.rectangle.fill`.
-                    HomeModuleIconView(icon: .listen, size: 36)
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            if hasSelection {
-                                ForEach(selectedLists.prefix(AppLayout.maxSelectableLists)) { list in
-                                    Text(list.name)
-                                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.7)
-                                }
-                                // **Phase 5 (2026-05-04) → B2 (2026-05-06)** —
-                                // Summary-Zeile mit `AppLernjahrPill` statt
-                                // Plain-Text-Range. Pill ist tappbar und
-                                // öffnet einen Mini-Picker für die Lernjahr-
-                                // Wahl. Eligibility identisch zur alten
-                                // Render-Logik (Resolver-Helper liefert
-                                // non-nil).
-                                let listsText = "\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n")"
-                                let totalText = "\(totalCards) Karten"
-                                let lernjahrRange = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: selectedLists)
-                                HStack(spacing: 4) {
-                                    Text("\(listsText) ·")
-                                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                                        .foregroundStyle(AppTheme.Colors.elumiBlue)
-                                    if let range = lernjahrRange {
-                                        AppLernjahrPill(label: range, tint: AppTheme.Colors.elumiBlue)
-                                        Text("·")
-                                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                                            .foregroundStyle(AppTheme.Colors.elumiBlue)
-                                    }
-                                    Text(totalText)
-                                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                                        .foregroundStyle(AppTheme.Colors.elumiBlue)
-                                }
-                                .padding(.top, 2)
-                            } else {
-                                Text("Keine Liste gewählt")
-                                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                                Text("Tippe zum Auswählen")
-                                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                                    .foregroundStyle(AppTheme.Colors.elumiBlue)
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                        // Stift in rundem Pill — dezent, nicht zu dominant.
-                        Image(systemName: "pencil")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(sectionStyle.accent)
-                            .frame(width: 32, height: 32)
-                            .background(
-                                Circle()
-                                    .fill(sectionStyle.accent.opacity(0.18))
-                            )
-                    }
-                }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
-            .frame(maxWidth: .infinity)
-            .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
-        }
-        .buttonStyle(.plain)
-        .sheet(isPresented: $stackListPickerActive) {
-            // **Phase 2 (2026-05-04)** — Migration auf
-            // `GlobalListPickerSheet` für den Karteikarten-Listen-Picker.
-            // Stack-Composer (`FlashcardStackComposerSheet`) bleibt
-            // unverändert — der ist eigene Verantwortlichkeit
-            // (Backlog-Eintrag zur Lernjahr-UI dort).
-            GlobalListPickerSheet(
-                allLists: availableStackLists,
-                initialSelection: setup.selectedStackListIDs,
-                onCommit: { updated in
-                    setup.selectedStackListIDs = updated
-                    stackListPickerActive = false
-                },
-                categoryHeaders: false,
-                feedbackPlayer: feedbackPlayer,
-                onHome: goHome
-            )
-        }
-    }
+    // **Cleanup 2026-05-08** — `flashcardsListSelectionCard` (Custom-
+    // Listen-Auswahl-Card mit eigenem `stackListPickerActive`-Sheet)
+    // ist mit der Master-Migration entfallen. Der Listen-Picker läuft
+    // jetzt über `ListCategoryPickerView` (Master-Component) →
+    // `GlobalListPickerSheet` (mit Lernjahr-Filter), identisch zu Quiz/
+    // Vokabeln/Nomen. Damit ist Karteikarten visuell und funktional
+    // konsistent zu allen anderen Modulen.
 }
