@@ -118,6 +118,7 @@ final class ProgressStore: ObservableObject {
 
     private func persist(_ snapshot: UserProgress) {
         let defaults = UserDefaults.standard
+        // **Per-Account namespaced** (primary).
         defaults.set(snapshot.totalXP, forKey: xpKey)
         defaults.set(snapshot.arcadeCredits, forKey: creditsKey)
         defaults.set(snapshot.currentStreak, forKey: streakKey)
@@ -127,5 +128,25 @@ final class ProgressStore: ObservableObject {
         if let data = try? JSONEncoder().encode(Array(snapshot.awardedStreakMilestones)) {
             defaults.set(data, forKey: awardedMilestonesKey)
         }
+
+        // **Bare-Key Mirror** (2026-05-09) — wenn ein Account aktiv ist
+        // (`AccountStore.currentAccountID != nil`), divergieren die
+        // `namespacedKey`-Pfade oben vom unpräfixten Bare-Key. Etliche
+        // `@AppStorage(appArcadeCreditsKey)`-Reader (Footer-Credits,
+        // ElumiTabView, GameHub, FlashcardsView, TrainingView, QuizView,
+        // WordRunnerGameView, ElumiArcadeViews, ElumiFooterFeastButton,
+        // ElumiArcadeGameView+PlayCredits) und analog `appElumiXPKey`/
+        // `appElumiCurrentStreakKey`/`appElumiBestStreakKey` lesen aber
+        // weiterhin den Bare-Key. Ohne Mirror sehen sie das Reset/Update
+        // nicht — User-Befund: „Credits zurücksetzen in Settings wirkt
+        // nicht im Footer".
+        //
+        // Dual-Write mirrort jeden persist-Call in beide Slots —
+        // Read-Pfade (namespaced via ProgressStore + bare via @AppStorage)
+        // sehen jetzt synchron denselben Wert.
+        defaults.set(snapshot.totalXP, forKey: appElumiXPKey)
+        defaults.set(snapshot.arcadeCredits, forKey: appArcadeCreditsKey)
+        defaults.set(snapshot.currentStreak, forKey: appElumiCurrentStreakKey)
+        defaults.set(snapshot.bestStreak, forKey: appElumiBestStreakKey)
     }
 }
