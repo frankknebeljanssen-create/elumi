@@ -56,6 +56,19 @@ extension FlashcardsView {
             // Momente wie Session-Ende).
             ComboToastOverlay()
             MilestoneOverlayView()
+
+            // **Pre-Screen-Pop-up 2026-05-09** — Slot-Style-Modal
+            // vor dem eigentlichen Setup. Auto-Trigger via `.onAppear`
+            // in flashcardSetupScreen, manueller Re-Trigger über die
+            // Mengen-Anzeige-Card. Conditional-Render — bei
+            // `isShowingAmountPopup == false` rendert der Branch
+            // garnichts. Slot-launched Sessions setzen den State
+            // niemals → Pop-up unsichtbar.
+            if isShowingAmountPopup && setup.isShowingSetup {
+                flashcardsAmountPopup
+                    .transition(.opacity)
+                    .zIndex(10)
+            }
         }
         // **Phase 8.2 Bug-Fix**: NavigationDestination wandert vom
         // Setup-Screen-Modifier in den Body-Wrapper hoch, damit der
@@ -374,12 +387,13 @@ extension FlashcardsView {
                     flashcardDictionaryLevelCard
                 }
 
-                // Karten + Schwierigkeit als gekoppeltes Mechanik-Duo
-                // mit engerem 12-pt-Spacing (User-Revision 2026-04-22).
-                VStack(alignment: .leading, spacing: 12) {
-                    flashcardCountLimitCard
-                    flashcardMasteryThresholdCard
-                }
+                // **Pre-Screen-Refactor 2026-05-09** — KARTEN-Slider +
+                // SCHWIERIGKEIT-Buttons sind aus dem Setup-Body raus
+                // und ins `flashcardsAmountPopup` gewandert (Slot-
+                // Pattern Pre-Screen vor Setup). Hier nur noch eine
+                // kompakte Mengen-Anzeige-Card als Read-Only-Summary +
+                // Re-Edit-Trigger.
+                flashcardsAmountSummaryCard
 
                 // **Sweep C — AnswerMode (2026-05-07)** — Sprechen/
                 // Tippen-Selector. Persistierung via @AppStorage in
@@ -403,6 +417,28 @@ extension FlashcardsView {
             }
         )
         .background(AppTheme.Colors.background.ignoresSafeArea())
+        // **Pre-Screen-Pop-up Auto-Trigger 2026-05-09** — bei jedem
+        // Karteikarten-Tap auf Home schiebt der NavigationStack eine
+        // frische `FlashcardsView`-Instanz; deren `@State` (inklusive
+        // `hasAutoTriggeredAmountPopup`) startet bei false.
+        // `.onAppear` feuert beim ersten Render — wenn nicht-Slot-
+        // launched (`launchContext == nil`), Setup gerade aktiv ist
+        // und der Auto-Trigger noch nicht gefeuert hat, öffnet sich
+        // das Pre-Screen-Pop-up automatisch. User kann durchtappen
+        // (1-Tap-Weiter) oder Werte ändern.
+        //
+        // Slot-launched Karteikarten (`launchContext != nil`):
+        // Pop-up wird NICHT auto-getriggert — Slot-Setup hat seine
+        // eigene Pre-Screen-Logic über `setupModalOverlay` in
+        // `ElumiTabView` und übergibt fertige Werte; Karteikarten-
+        // Setup wird in der Regel direkt übersprungen.
+        .onAppear {
+            guard !hasAutoTriggeredAmountPopup else { return }
+            guard launchContext == nil else { return }
+            guard setup.isShowingSetup else { return }
+            isShowingAmountPopup = true
+            hasAutoTriggeredAmountPopup = true
+        }
         .sheet(isPresented: $setup.showingStackComposer) {
             FlashcardStackComposerSheet(
                 style: sectionStyle,
@@ -434,4 +470,194 @@ extension FlashcardsView {
     // `GlobalListPickerSheet` (mit Lernjahr-Filter), identisch zu Quiz/
     // Vokabeln/Nomen. Damit ist Karteikarten visuell und funktional
     // konsistent zu allen anderen Modulen.
+
+    // MARK: - Pre-Screen-Pop-up (2026-05-09)
+
+    /// **Karteikarten Pre-Screen-Pop-up** — Slot-Style-Modal vor dem
+    /// eigentlichen Setup-Screen. Zeigt KARTEN-Slider + SCHWIERIGKEIT-
+    /// Buttons als Last-Config-Quick-Edit. Style nachgebaut analog
+    /// `ElumiTabView.setupModalOverlay` (Slot-Maschine Daily-Drop-
+    /// Pop-up — keine wiederverwendbare Pre-Screen-Component im Repo
+    /// vorhanden, daher inline-nachbau gemäß Frank-Spec).
+    ///
+    /// Reuse-Strategie: `flashcardCountLimitCard` und
+    /// `flashcardMasteryThresholdCard` sind Extension-Methods auf
+    /// `FlashcardsView` und werden direkt wiederverwendet — kein Code-
+    /// Duplikat, keine Bindings-Plumbing nötig.
+    var flashcardsAmountPopup: some View {
+        ZStack(alignment: .top) {
+            // Backdrop — Slot-Pattern: 0.97 opaque für klare Modal-
+            // Trennung. Tap-Outside schließt das Pop-up.
+            Color.black.opacity(0.97)
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    dismissAmountPopup()
+                }
+
+            // Modal-Card
+            VStack(spacing: 18) {
+                // Top-Bar: Back-Chevron links, X-Close rechts.
+                HStack {
+                    Button {
+                        dismissAmountPopup()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                            .frame(width: 32, height: 32)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text("Zurück"))
+
+                    Spacer(minLength: 0)
+
+                    Button {
+                        dismissAmountPopup()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text("Schließen"))
+                }
+
+                // Pre-Title + Headline (Slot-Style, identische Typo).
+                VStack(spacing: 4) {
+                    Text("Karteikarten")
+                        .font(.system(size: 19, weight: .black, design: .rounded))
+                        .tracking(0.8)
+                        .textCase(.uppercase)
+                        .foregroundStyle(sectionStyle.accent)
+
+                    Text("Wie viele Karten und welche Schwierigkeit?")
+                        .font(.system(size: 22, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.85)
+                }
+                .frame(maxWidth: .infinity)
+
+                // Inhalt: existing Setup-Cards reused — gleiche Logic,
+                // gleiche Persistenz, gleiche visuelle Repräsentation
+                // wie heute im Setup-Screen-Body (post-Compaction).
+                VStack(spacing: 12) {
+                    flashcardCountLimitCard
+                    flashcardMasteryThresholdCard
+                }
+
+                // CTA „Weiter" — schließt Pop-up, User landet auf Setup
+                // mit den (möglicherweise geänderten) Werten.
+                Button {
+                    dismissAmountPopup()
+                } label: {
+                    Text("Weiter")
+                        .font(AppTheme.Typography.button)
+                        .foregroundStyle(.black)
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 50)
+                        .background(
+                            RoundedRectangle(cornerRadius: AppLayout.sessionCTARadius, style: .continuous)
+                                .fill(AppTheme.Colors.cta)
+                        )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Weiter")
+            }
+            .padding(20)
+            .frame(maxWidth: 360)
+            // Slot-Pattern: intrinsische Höhe, sonst dehnt sich der
+            // VStack auf Backdrop-Höhe.
+            .fixedSize(horizontal: false, vertical: true)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color(hex: "#101522"))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(sectionStyle.accent.opacity(0.35), lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(0.55), radius: 24, x: 0, y: 8)
+            .padding(.horizontal, 24)
+            .padding(.top, 60)
+        }
+    }
+
+    /// **Schließt das Pre-Screen-Pop-up** mit smoother Easing-Animation.
+    /// Persistenz greift bereits durch die didSet-Hooks auf
+    /// `setup.selectedCardCount` + `setup.masteryThreshold` während
+    /// Slider/Button-Interaktionen — kein expliziter Save nötig.
+    private func dismissAmountPopup() {
+        withAnimation(.easeOut(duration: 0.2)) {
+            isShowingAmountPopup = false
+        }
+    }
+
+    // MARK: - Mengen-Anzeige-Card (Setup-Body)
+
+    /// **Mengen-Anzeige-Card** — kompakte Tap-Card im Setup-Body, die
+    /// die aktuell gewählten KARTEN-Anzahl + SCHWIERIGKEIT als
+    /// Read-Only-Summary anzeigt. Tap öffnet das Pre-Screen-Pop-up
+    /// erneut zum Ändern. Pattern-konsistent zu DEINE LISTEN-Card
+    /// (Tap → Sheet/Modal mit Re-Edit).
+    var flashcardsAmountSummaryCard: some View {
+        let cardCount = setup.selectedCardCount
+        let displayCount: String = (cardCount <= 0) ? "Alle Karten" : "\(cardCount) Karten"
+        let thresholdLabel: String = {
+            switch setup.masteryThreshold {
+            case 1: return "Easy"
+            case 2: return "Normal"
+            case 3: return "Hart"
+            case 4: return "Brutal"
+            default: return "Normal"
+            }
+        }()
+
+        return Button {
+            feedbackPlayer.playTabSwitch()
+            withAnimation(.easeInOut(duration: 0.2)) {
+                isShowingAmountPopup = true
+            }
+        } label: {
+            HStack(alignment: .center, spacing: 14) {
+                // Card-Stack-Icon analog zur KARTEN-Card-Mini-Stapel-
+                // Ästhetik. SF-Symbol weil das Cartoon-Set kein
+                // dedicated „Mengen"-Icon hat.
+                Image(systemName: "rectangle.stack.fill")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(sectionStyle.accent)
+                    .frame(width: 36, height: 36)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("MENGE")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .tracking(1.5)
+                        .foregroundStyle(AppTheme.Colors.cardLabel)
+                        .textCase(.uppercase)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Text("\(displayCount) · \(thresholdLabel)")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                }
+
+                Spacer(minLength: 0)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(sectionStyle.accent.opacity(0.7))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Karten-Anzahl und Schwierigkeit ändern")
+        .accessibilityValue("\(displayCount), Schwierigkeit \(thresholdLabel)")
+    }
 }

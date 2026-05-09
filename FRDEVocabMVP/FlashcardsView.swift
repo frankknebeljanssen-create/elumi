@@ -62,6 +62,21 @@ struct FlashcardsView: View {
     // der Master-Migration durch `ListCategoryPickerView` +
     // `GlobalListPickerSheet` ersetzt wurde.
 
+    /// **Karteikarten Pre-Screen-Pop-up (2026-05-09)** — Sichtbarkeit
+    /// des Pre-Screen-Modals (Slot-Style nachgebaut), das KARTEN-Slider
+    /// + SCHWIERIGKEIT-Buttons vor dem eigentlichen Setup-Screen zeigt.
+    /// Auto-Trigger via `.onAppear` (gated über `hasAutoTriggeredAmountPopup`),
+    /// manueller Re-Trigger via Tap auf die Mengen-Anzeige-Card im
+    /// Setup-Body.
+    @State var isShowingAmountPopup: Bool = false
+    /// Verhindert dass das Pre-Screen-Pop-up bei jedem `.onAppear`-Cycle
+    /// erneut auto-feuert (z. B. nach Sheet-Cancel). Auto-Trigger feuert
+    /// genau einmal pro Navigation-Push; danach nur noch manuelle Tap-
+    /// Trigger über die Mengen-Anzeige-Card. Reset passiert automatisch
+    /// wenn FlashcardsView neu instanziiert wird (jeder Push erstellt
+    /// frisches @State).
+    @State var hasAutoTriggeredAmountPopup: Bool = false
+
     // MARK: - Persönlicher Trainingsmodus (Phase 8)
     //
     // Separater State-Block für den neuen „MEINE STAPEL"-Setup-Block +
