@@ -119,12 +119,33 @@ struct ChatView: View {
 
             messagesScroll
 
+            // **Sweep „Error-Banner" (2026-05-10)** — Banner über
+            // der Input-Bar, sichtbar wenn `chatService.lastErrorBanner`
+            // gesetzt ist. ChatService plant den Auto-Dismiss nach
+            // 5 s (Service-Side, damit der Timer auch dann tickt,
+            // wenn die View kurz unsichtbar ist). Tap-anywhere im
+            // Banner UND der X-Button rufen die `onDismiss`-Closure,
+            // die direkt `lastErrorBanner = nil` setzt.
+            if let banner = chatService.lastErrorBanner {
+                ChatErrorBannerView(
+                    banner: banner,
+                    onDismiss: { chatService.lastErrorBanner = nil }
+                )
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+
             ChatInputBar(
                 text: $inputText,
                 isSendDisabled: !canSend,
                 onSend: handleSend
             )
         }
+        // **Sweep „Error-Banner"** — Animation-Anchor an der
+        // Banner-ID (nicht am Optional selbst), damit das Folge-Banner
+        // mit anderer ID auch eine Animation triggert.
+        .animation(.easeOut(duration: 0.25), value: chatService.lastErrorBanner?.id)
         // Body-Background = WhatsApp-Style (#F2F2F7) — KEIN Elumi-
         // surface, kein Card-Background. Strikter UI-Anker.
         .background(Color(red: 0.949, green: 0.949, blue: 0.969).ignoresSafeArea(edges: .bottom))

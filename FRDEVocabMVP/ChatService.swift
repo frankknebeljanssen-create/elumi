@@ -39,20 +39,55 @@ enum ChatError: Error, Equatable {
     case networkError(String)
     case invalidResponse
 
-    /// User-facing Meldung — wird im Placeholder-Text angezeigt.
+    /// User-facing Meldung. Wird seit Sweep „Error-Handling Polish
+    /// (2026-05-10)" NICHT mehr in die Léa-Bubble geschrieben, sondern
+    /// vom `ChatErrorBannerView` über der Input-Bar gerendert. Der
+    /// rateLimit-Variant trägt den Backend-Override-Text durch
+    /// (z.B. „Du hast noch 3 Nachrichten heute"); für die anderen
+    /// Cases kommt der lokale Default-Text.
     var userMessage: String {
         switch self {
         case .authError:
-            return "Authentifizierungs-Problem — bitte App neu starten."
+            return "Authentifizierungs-Problem — App neu starten."
         case .rateLimit(let msg):
             return msg
         case .serverError:
-            return "Léa schläft gerade — versuch's gleich nochmal."
+            return "Léa schläft gerade — versuch's gleich nochmal 💤"
         case .networkError:
             return "Léa hat gerade kein Netz 📵"
         case .invalidResponse:
             return "Léa antwortet komisch — versuch's gleich nochmal."
         }
+    }
+
+    /// **Sweep „Error-Banner" (2026-05-10)** — mappt jeden Error-Case
+    /// auf eine Banner-Kind, die das `ChatErrorBannerView` für
+    /// Hintergrund-Color + Icon nutzt.
+    var bannerKind: ChatErrorBanner.Kind {
+        switch self {
+        case .authError: return .authFailed
+        case .rateLimit: return .rateLimit
+        case .serverError: return .serverError
+        case .networkError, .invalidResponse: return .networkError
+        }
+    }
+}
+
+/// **Sweep „Error-Banner" (2026-05-10)** — Modell für die Error-
+/// Banner-Anzeige über der Chat-Input-Bar. Identifizierbar via UUID,
+/// damit der Auto-Dismiss-Timer den exakten Banner abhängig von der
+/// ID identifizieren kann (sonst würde ein Folge-Banner durch den
+/// Timer des vorherigen weggewischt).
+struct ChatErrorBanner: Identifiable, Equatable {
+    let id: UUID
+    let message: String
+    let kind: Kind
+
+    enum Kind: Equatable {
+        case rateLimit       // 429 — Léa hat heute genug, oder Per-Minute-Throttle
+        case authFailed      // 401 — Token ungültig
+        case serverError     // 5xx — Backend / Anthropic down
+        case networkError    // URL-Error / Timeout / Invalid-Response
     }
 }
 
@@ -91,6 +126,15 @@ final class ChatService {
     /// eine Liste wählt. Wird auf `false` gesetzt, sobald
     /// `currentContext` einen non-nil Wert liefert.
     var needsListSelection: Bool = false
+
+    /// **Sweep „Error-Banner" (2026-05-10)** — wenn nicht-nil, rendert
+    /// ChatView den `ChatErrorBannerView` über der Input-Bar.
+    /// Wird via `showErrorBanner(...)` gesetzt und nach 5 s automatisch
+    /// auf `nil` zurückgewischt (sofern nicht ein neuer Banner schon
+    /// dazwischenkommt — der Timer prüft die ID). Tap auf den Banner
+    /// (`onDismiss`-Callback in ChatView) setzt ebenfalls direkt auf
+    /// `nil`.
+    var lastErrorBanner: ChatErrorBanner?
 
     // MARK: - Dependencies
 
@@ -227,6 +271,40 @@ final class ChatService {
         appendLeaMessage(text: greeting)
     }
 
+    // MARK: - Error-Banner-Helpers (Sweep „Error-Banner", 2026-05-10)
+
+    /// Setzt einen neuen Error-Banner und plant den Auto-Dismiss
+    /// nach 5 Sekunden. Der Auto-Dismiss prüft die Banner-ID, sodass
+    /// ein nachfolgender Banner durch den Timer des vorherigen NICHT
+    /// versehentlich gelöscht wird (häufiger Race-Bug bei naiven
+    /// Auto-Hide-Implementierungen).
+    private func showErrorBanner(message: String, kind: ChatErrorBanner.Kind) {
+        let banner = ChatErrorBanner(id: UUID(), message: message, kind: kind)
+        lastErrorBanner = banner
+
+        let bannerID = banner.id
+        Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 5_000_000_000)
+            guard let self else { return }
+            if self.lastErrorBanner?.id == bannerID {
+                self.lastErrorBanner = nil
+            }
+        }
+    }
+
+    /// Entfernt eine halb-gestreamte oder leere Léa-Placeholder-
+    /// Message aus dem Stream (modelContext + messages-Array). Wird
+    /// vom Error-Catch-Pfad in `sendMessage` aufgerufen, damit der
+    /// User keinen unfinished/empty Léa-Bubble sieht — Banner
+    /// erklärt stattdessen, was schief gelaufen ist.
+    private func discardLeaPlaceholder(_ leaMsg: ChatMessage) {
+        if let modelContext {
+            modelContext.delete(leaMsg)
+        }
+        messages.removeAll { $0.id == leaMsg.id }
+        try? modelContext?.save()
+    }
+
     // MARK: - Vocabulary-Context-Helper
 
     /// **Schritt 2B-1** — Liest den aktuellen `ChatVocabularyContext`
@@ -341,13 +419,22 @@ final class ChatService {
 
             try? modelContext?.save()
         } catch let chatError as ChatError {
-            leaMsg.text = chatError.userMessage
+            // **Sweep „Error-Banner" (2026-05-10)** — Backend-Errors
+            // landen jetzt als Banner über der Input-Bar, NICHT mehr
+            // als Léa-Bubble. Die leere/halb-gestreamte Léa-Message
+            // wird gelöscht, sodass der User keinen halben Satz sieht.
             self.error = chatError
-            try? modelContext?.save()
+            discardLeaPlaceholder(leaMsg)
+            showErrorBanner(message: chatError.userMessage, kind: chatError.bannerKind)
         } catch {
-            leaMsg.text = ChatError.networkError(error.localizedDescription).userMessage
-            self.error = .networkError(error.localizedDescription)
-            try? modelContext?.save()
+            // Generischer Catch für URLError/Timeout/sonstige Throws.
+            // Wir wrappen in ChatError.networkError, damit Banner-
+            // Kind und Message konsistent zur ChatError-Mapping
+            // bleiben.
+            let wrapped = ChatError.networkError(error.localizedDescription)
+            self.error = wrapped
+            discardLeaPlaceholder(leaMsg)
+            showErrorBanner(message: wrapped.userMessage, kind: wrapped.bannerKind)
         }
 
         streamingMessageID = nil
@@ -414,7 +501,13 @@ final class ChatService {
         case 429:
             // Versuche, die Backend-Nachricht zu lesen — meist Plain-JSON
             // statt SSE. Fallback: Standard-Rate-Limit-Text.
-            var rateMsg = "Léa muss heute schlafen — bis morgen!"
+            //
+            // **Sweep „Error-Banner" (2026-05-10)** — der Text
+            // erscheint jetzt im Banner über der Input-Bar (nicht
+            // mehr als Léa-Bubble), daher ist die persona-narrative
+            // Form wieder vertretbar — der visuelle Banner-Kontext
+            // macht klar, dass das eine System-Meldung ist.
+            var rateMsg = "Léa muss heute schlafen — bis morgen! 😴"
             for try await line in bytes.lines {
                 if let data = line.data(using: .utf8),
                    let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
