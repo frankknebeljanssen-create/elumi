@@ -53,7 +53,11 @@ extension ListsView {
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 20)
+            // **Polish 2026-05-10** — Card flacher (~10%): vertical
+            // padding 20 → 14. Nähert die Card-Höhe an die Kategorie-
+            // Cards an und kompaktiert den Listen-Screen ohne den
+            // Hero-Charakter zu verlieren.
+            .padding(.vertical, 14)
             .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
         }
         .buttonStyle(.plain)
@@ -139,12 +143,12 @@ extension ListsView {
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
             .padding(.horizontal, 18)
-            .padding(.vertical, 20)
-            // +10 pt Höhe gegenüber dem natürlichen Inhalt (~68pt) — macht
-            // die Kategorie-Cards ruhiger und großzügiger, ohne das
-            // Padding zu verändern. Padding.horizontal 18 / vertical 20
-            // bleiben explizit identisch.
-            .frame(maxWidth: .infinity, minHeight: 78)
+            // **Polish 2026-05-10** — Cards flacher (~10%): vertical
+            // padding 20 → 14, minHeight 78 → 70. Kategorie-Cards
+            // sitzen kompakter, der Listen-Screen wirkt insgesamt
+            // ruhiger und schneller scannbar.
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity, minHeight: 70)
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(AppTheme.Colors.surface)
@@ -206,7 +210,9 @@ extension ListsView {
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 6)
+                // **Polish 2026-05-10** — flacher (~10%): inner
+                // vertical padding 6 → 4.
+                .padding(.vertical, 4)
             }
             .buttonStyle(.plain)
 
@@ -239,7 +245,9 @@ extension ListsView {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .padding(16)
+        // **Polish 2026-05-10** — Card flacher (~10%): outer padding
+        // 16 → 14. Synchron zum allListsCard + Kategorie-Card-Sweep.
+        .padding(14)
         .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 }
