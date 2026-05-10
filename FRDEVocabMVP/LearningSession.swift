@@ -20,6 +20,12 @@ struct LearningSession: Equatable {
         case verbforms
         case accents         // Akzent-Modul (é, è, ê, ç)
         case wordRunner      // Word Runner (Runner-Spiel mit Artikel/Verbform-Aufgaben)
+        // **Schritt 3A (2026-05-10)** — Léa-Chat-Session zählt fürs
+        // Tagesziel/Streak. XP wird separat über `ProgressStore.mutate`
+        // vergeben (fixe +15), damit die `correctCount × 10`-Math
+        // nicht greift — die Chat-Session hat keine korrekt/falsch-
+        // Zählung im klassischen Sinne.
+        case leaChat
 
         var displayName: String {
             switch self {
@@ -30,6 +36,7 @@ struct LearningSession: Equatable {
             case .verbforms:   return "Verbformen"
             case .accents:     return "Akzente"
             case .wordRunner:  return "Word Runner"
+            case .leaChat:     return "Chat mit Léa"
             }
         }
     }
@@ -84,6 +91,17 @@ struct LearningSession: Equatable {
         // deshalb die Speed-Round-Schwelle (3), damit ein Quick-Run
         // trotzdem für die Streak zählt.
         case .wordRunner: return attempts >= GamificationConfig.SessionMinimum.speedRoundAnswers
+        // **Schritt 3A (γ-Spec)** — Léa-Chat-Session erfüllt
+        // Tagesziel, wenn die Summary-Threshold-Logik erfüllt ist:
+        //   • ≥5 User-Messages, ODER
+        //   • ≥1 User-Message UND Session-Dauer ≥300 s.
+        // Da `LearningSession` keine Duration kennt, kodiert
+        // `ChatService.recordSessionEnd(messages:duration:)` die
+        // Bedingung in `correctCount`: bei 5+ Messages = echte
+        // Anzahl, bei 1+Msg + 5min = inflated auf 5. Damit ist die
+        // hier formulierte Schwelle exakt das, was Frank spec'd —
+        // beide Pfade passen `correctCount >= 5`.
+        case .leaChat:    return correctCount >= 5
         }
     }
 
@@ -144,6 +162,15 @@ struct LearningSession: Equatable {
             return correctCount == 1
                 ? "1 richtige Antwort"
                 : "\(correctCount) richtige Antworten"
+        case .leaChat:
+            // **Schritt 3A** — Léa-Chat-Sessions zählen Messages
+            // nicht „richtig/falsch". Headline-Wert hier ist nur
+            // für DailyChallengeStore-Logging gedacht; das eigentliche
+            // Summary-Sheet rendert seine eigenen Sektionen
+            // (`ChatSessionSummarySheet`).
+            return correctCount == 1
+                ? "1 Nachricht mit Léa"
+                : "\(correctCount) Nachrichten mit Léa"
         }
     }
 

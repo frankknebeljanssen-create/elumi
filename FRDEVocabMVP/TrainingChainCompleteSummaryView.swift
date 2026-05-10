@@ -427,6 +427,12 @@ struct TrainingChainCompleteSummaryView: View {
         case .verbforms:  return .verbformen
         case .accents:    return .akzente
         case .wordRunner: return nil
+        // **Schritt 3A** — Léa-Chat ist keine Trainings-Chain-Komponente
+        // (Chain-Summary aggregiert Module-Sessions, Chat läuft separat
+        // mit eigenem Summary-Sheet). Hier nur defensiv abgehandelt,
+        // damit der exhaustive-switch nicht bricht; nil ist korrekt
+        // (kein Module-Hero-Icon für Chat in diesem Kontext).
+        case .leaChat:    return nil
         }
     }
 
