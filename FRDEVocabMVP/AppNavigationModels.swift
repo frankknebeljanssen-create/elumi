@@ -34,7 +34,7 @@ enum AppScreen: Hashable {
     case elumi
 
     /// **Léa-Chat** (2026-05-10, Branch `feature/lea-chat-mvp`) —
-    /// Konversation mit der Persona Léa (15 Jahre, Lyon, FR). Backend
+    /// Konversation mit der Persona Léa (15 Jahre, Paris, FR). Backend
     /// proxt zu Anthropic Claude Haiku. Erreicht über die „Live Chat"-
     /// Card auf Home (Section zwischen Daily-Drop und Training).
     case leaChat

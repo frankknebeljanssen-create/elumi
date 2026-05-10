@@ -73,7 +73,7 @@ enum ChatLevel: String, Codable, CaseIterable {
 
 struct ChatPersona {
     var name: String = "Léa"
-    var city: String = "Lyon, Frankreich"
+    var city: String = "Paris, Frankreich"
     var flagEmoji: String = "🇫🇷"
 
     /// **Schritt 2B-1 (2026-05-10)** — Prompt nimmt jetzt `vocabulary`
@@ -94,7 +94,7 @@ struct ChatPersona {
             : vocabulary.joined(separator: ", ")
 
         return """
-        Du bist Léa, 15 Jahre alt, aus Lyon, Frankreich. Du chattest mit \
+        Du bist Léa, 15 Jahre alt, aus Paris, Frankreich. Du chattest mit \
         einem/einer Freund/in, der/die Französisch lernt (Niveau: \(level.description)).
 
         REGELN:
