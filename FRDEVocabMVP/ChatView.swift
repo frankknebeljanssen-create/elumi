@@ -342,7 +342,16 @@ struct ChatView: View {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     Spacer().frame(height: 8)
 
-                    ForEach(chatService.messages, id: \.id) { msg in
+                    ForEach(Array(chatService.messages.enumerated()), id: \.element.id) { index, msg in
+                        // **Schritt 2B-2A (2026-05-10)** — Timestamp-
+                        // Label vor jeder Message, deren Index die
+                        // Show-Bedingung trifft (erste Message,
+                        // 2 + Min Pause, oder jede 4.). Schlicht,
+                        // grau, zentriert — KEIN Elumi-Card-Look.
+                        if Self.shouldShowTimestamp(at: index, in: chatService.messages) {
+                            ChatTimestampLabel(date: msg.timestamp)
+                        }
+
                         ChatBubbleView(
                             message: msg,
                             isStreaming: chatService.streamingMessageID == msg.id
@@ -425,6 +434,29 @@ struct ChatView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Timestamp-Show-Logic (Schritt 2B-2A)
+
+    /// Entscheidet, ob vor der Message an `index` ein Timestamp-Label
+    /// gerendert wird. Frank's Regeln:
+    ///   • Erste Message in der Liste (index 0).
+    ///   • Index ist Vielfaches von 4 (jede 4. Message bekommt einen
+    ///     Anker, auch ohne Pause).
+    ///   • Differenz zur vorigen Message > 120 s (= mehr als 2 Min
+    ///     Pause).
+    ///
+    /// Performance-Note: O(1) pro Aufruf, O(n) gesamt durch ForEach —
+    /// für die typische Chat-History-Länge (<200 Messages) absolut
+    /// akzeptabel. Wenn das mal zum Problem wird (1000+ Messages):
+    /// Memo-Cache am Service-Layer einbauen.
+    private static func shouldShowTimestamp(at index: Int, in messages: [ChatMessage]) -> Bool {
+        if index == 0 { return true }
+        if index % 4 == 0 { return true }
+        guard index > 0, index < messages.count else { return false }
+        let curr = messages[index].timestamp
+        let prev = messages[index - 1].timestamp
+        return curr.timeIntervalSince(prev) > 120
     }
 
     private func scrollToBottom(proxy: ScrollViewProxy, animated: Bool = true) {
