@@ -33,6 +33,15 @@ struct ChatBubbleView: View {
         HStack(alignment: .bottom, spacing: 0) {
             Spacer(minLength: 60) // erzwingt max ~75 % screen-width
 
+            // **Bug-Fix 2026-05-10** — vorher
+            // `.background(UnevenRoundedRectangle.fill(Color))` —
+            // gerendert als weißer Hintergrund (vermutlich SwiftUI-
+            // iOS-17-Quirk: `.foregroundStyle(.white)` auf Text
+            // propagiert via View-Tree und überschreibt das `.fill()`
+            // der Background-Shape). Jetzt via
+            // `.background(_ style: in: Shape)`-Overload (iOS-17-
+            // idiomatic) — Style ist explizit ShapeStyle und wird
+            // nicht vom Text-foregroundStyle inheritiert.
             Text(message.text)
                 .font(.system(size: 16, weight: .regular))
                 .foregroundStyle(.white)
@@ -40,7 +49,8 @@ struct ChatBubbleView: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .background(
-                    UnevenRoundedRectangle(
+                    Color(hex: "#5B6AF0"),
+                    in: UnevenRoundedRectangle(
                         cornerRadii: .init(
                             topLeading: 18,
                             bottomLeading: 18,
@@ -49,7 +59,6 @@ struct ChatBubbleView: View {
                         ),
                         style: .continuous
                     )
-                    .fill(Color(red: 0.357, green: 0.416, blue: 0.941)) // #5B6AF0
                 )
         }
         .padding(.horizontal, 14)
@@ -96,7 +105,7 @@ struct ChatBubbleView: View {
     }
 }
 
-/// **Streaming-Cursor** — 2px breiter blauer Strich, blinkt 0.8 s loop.
+/// **Streaming-Cursor** — 2px breiter lila Strich, blinkt 0.8 s loop.
 /// Wird in der Léa-Bubble während des Streams am Ende des Texts
 /// gerendert. Verschwindet wenn `isStreaming = false`.
 private struct StreamingCursorView: View {
@@ -104,7 +113,7 @@ private struct StreamingCursorView: View {
 
     var body: some View {
         Rectangle()
-            .fill(Color(red: 0.357, green: 0.416, blue: 0.941)) // #5B6AF0
+            .fill(Color(hex: "#5B6AF0"))
             .frame(width: 2, height: 18)
             .opacity(visible ? 1 : 0)
             .onAppear {

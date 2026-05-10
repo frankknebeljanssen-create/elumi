@@ -14,8 +14,15 @@ struct ChatInputBar: View {
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
+            // **Bug-Fix 2026-05-10** — explizite Text-Farbe auf
+            // dunkles #1a1a1a. Vorher kein `.foregroundStyle()`
+            // gesetzt → iOS-Default greift, der unter Dark-Mode
+            // weiß rendert → weißer Text auf hellem #F8F8FA-
+            // Background = unlesbar. Chat-Body ist by-design
+            // immer light (WhatsApp-Look), daher harte Farbwahl.
             TextField("Écris un message…", text: $text, axis: .vertical)
                 .font(.system(size: 15))
+                .foregroundStyle(Color(red: 0.102, green: 0.102, blue: 0.102)) // #1a1a1a
                 .lineLimit(1...4)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
