@@ -41,6 +41,11 @@ struct ChatView: View {
     /// Reset-Button im Settings-Sheet. Verhindert versehentliches
     /// Wegwischen des Chat-Verlaufs durch Fat-Finger-Tap.
     @State private var isResetConfirmPresented: Bool = false
+    /// **Schritt 2B-1 (2026-05-10)** — wenn nicht-nil, zeigt ChatView
+    /// einen Tooltip-Overlay über dem Chat. Wird gesetzt, wenn der
+    /// User auf ein blau unterstrichenes neues Wort in einer Léa-
+    /// Bubble tippt (Custom-URL-Scheme `leanew://wort`).
+    @State private var activeTooltipNewWord: FoundNewWord?
     /// **Bug-Fix Smoke-Iter 2 (2026-05-10)** — `keyboardWillShow`
     /// feuert nicht nur bei der initialen Tastatur-Einblendung,
     /// sondern auch bei jeder Frame-Änderung (Predictive-Bar an/aus,
@@ -71,6 +76,56 @@ struct ChatView: View {
         // Body-Background = WhatsApp-Style (#F2F2F7) — KEIN Elumi-
         // surface, kein Card-Background. Strikter UI-Anker.
         .background(Color(red: 0.949, green: 0.949, blue: 0.969).ignoresSafeArea(edges: .bottom))
+        // **Schritt 2B-1 (2026-05-10)** — Tooltip-Overlay über dem
+        // gesamten Chat. Wird nur gerendert wenn ein NEW-Wort
+        // angetippt wurde. Tap auf den Hintergrund (außer den
+        // Tooltip selbst) dismissed das Overlay.
+        .overlay {
+            if let nw = activeTooltipNewWord {
+                ZStack {
+                    // Dim-Background mit Tap-to-dismiss.
+                    Color.black.opacity(0.18)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            withAnimation(.easeOut(duration: 0.15)) {
+                                activeTooltipNewWord = nil
+                            }
+                        }
+                    ChatNewWordTooltipView(
+                        word: nw.word,
+                        translation: nw.translation,
+                        onClose: {
+                            withAnimation(.easeOut(duration: 0.15)) {
+                                activeTooltipNewWord = nil
+                            }
+                        }
+                    )
+                    .transition(.scale(scale: 0.92).combined(with: .opacity))
+                }
+                .zIndex(100)
+            }
+        }
+        // **Schritt 2B-1** — Custom-URL-Handler für `leanew://wort`.
+        // Léa-Bubbles enkodieren das NEW-Wort als URL-Link auf der
+        // jeweiligen Substring-Range. Tap → dieser Handler fängt
+        // das URL-Event ab, sucht das passende `FoundNewWord` in
+        // den persistierten Léa-Messages (rückwärts, neueste zuerst)
+        // und öffnet den Tooltip.
+        .environment(\.openURL, OpenURLAction { url in
+            guard url.scheme == "leanew" else { return .systemAction }
+            let host = url.host?.removingPercentEncoding ?? ""
+            for msg in chatService.messages.reversed() {
+                if let nw = msg.newWords.first(where: { $0.word == host }) {
+                    withAnimation(.easeOut(duration: 0.18)) {
+                        activeTooltipNewWord = nw
+                    }
+                    return .handled
+                }
+            }
+            // URL „gegessen", aber kein Match — fallback: einfach
+            // schlucken statt Safari zu öffnen.
+            return .handled
+        })
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .task {
