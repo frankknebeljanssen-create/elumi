@@ -30,6 +30,7 @@
 
 import Foundation
 import SwiftData
+import SwiftUI // Für `withAnimation`/`.spring(...)` beim Korrektur-Reveal (Schritt 2A)
 
 enum ChatError: Error, Equatable {
     case authError
@@ -115,6 +116,53 @@ final class ChatService {
         }
     }
 
+    // MARK: - Reset
+
+    /// **Schritt 2A — Smoke-Helper (2026-05-10)**
+    /// Löscht alle persisted ChatMessages aus dem ModelContext und
+    /// wischt den In-Memory-State. Wird vom Settings-Sheet getriggert,
+    /// damit Frank während des Smokes verschiedene Fehler-Szenarien
+    /// frisch durchprobieren kann ohne die App neu zu installieren.
+    ///
+    /// **Streaming-Guard**: Während eines aktiven Streams wird ein
+    /// Reset abgelehnt — der Stream-Loop schreibt in `leaMsg.text`
+    /// direkt; ein paralleler Wipe würde in eine detached SwiftData-
+    /// Instanz schreiben und potentiell crashen. Caller-Site
+    /// (Settings-Sheet) macht den Button zusätzlich `.disabled` wenn
+    /// `streamingMessageID != nil || isTyping`.
+    ///
+    /// **Reentrant**: Caller darf nach `resetHistory()` direkt
+    /// `await ensureFirstGreeting()` aufrufen — die leere Konversation
+    /// wird sofort wieder mit der tageszeit-passenden Begrüßung
+    /// initialisiert.
+    func resetHistory() {
+        guard streamingMessageID == nil, !isTyping else { return }
+        guard let modelContext else { return }
+
+        // SwiftData iOS 17 Bulk-Delete — löscht alle Instances des
+        // Models in einem Pass (effizienter als per-Instanz-Schleife).
+        do {
+            try modelContext.delete(model: ChatMessage.self)
+            try modelContext.save()
+        } catch {
+            // Fallback: per-Instanz-Delete. Sollte nie greifen, aber
+            // defensive — wir wollen den Reset nicht wegen einer
+            // SwiftData-Quirk verlieren.
+            let descriptor = FetchDescriptor<ChatMessage>()
+            if let all = try? modelContext.fetch(descriptor) {
+                for msg in all { modelContext.delete(msg) }
+                try? modelContext.save()
+            }
+        }
+
+        // In-Memory-State zurücksetzen — Views re-rendern via
+        // @Observable sofort auf leere Konversation.
+        messages = []
+        streamingMessageID = nil
+        isTyping = false
+        error = nil
+    }
+
     // MARK: - First-Greeting
 
     /// Wenn die Konversation leer ist, schickt Léa eine tageszeit-
@@ -171,6 +219,40 @@ final class ChatService {
 
         do {
             try await streamLeaResponse(into: leaMsg)
+
+            // **Schritt 2A — Stream-End-Parsing**
+            // Nach dem Stream extrahieren wir Léas Korrektur-Marker
+            // aus dem rohen Text. Wenn ein FoundError dabei ist:
+            //   • userMsg bekommt die Korrektur-Felder (Bubble-View
+            //     erkennt das + transformiert sich auf creme + Badge
+            //     + Underline + Shake)
+            //   • leaMsg.text wird auf cleanText gesetzt — der Marker
+            //     wird aus Léas Bubble entfernt, sodass nur der
+            //     französische Konversationsanteil sichtbar bleibt
+            //   • correctionCardId triggert die CorrectionCardView
+            //     im Parent zwischen User- und Léa-Bubble (ChatView
+            //     Render-Logic)
+            //
+            // `withAnimation`-Wrap → SwiftUI animiert die Insertion
+            // der CorrectionCard und das Bubble-Re-Color als
+            // gemeinsame Spring-Bewegung; ohne den Wrap würde die
+            // Card hart einspringen.
+            //
+            // **Spec-Hinweis**: Léa darf max 1 Korrektur pro Message
+            // liefern (System-Prompt). Der Parser akzeptiert N
+            // Marker als Defensive — wir nehmen aber nur den ersten
+            // FoundError, damit der Bubble-State eindeutig bleibt.
+            let parsed = ChatMarkerParser.parseLeaMessage(leaMsg.text)
+            if let firstError = parsed.foundErrors.first {
+                userMsg.foundErrorUserText = firstError.userText
+                userMsg.foundErrorGermanTip = firstError.germanTip
+                let cardID = UUID()
+                withAnimation(.spring(response: 0.45, dampingFraction: 0.78)) {
+                    userMsg.correctionCardId = cardID
+                }
+                leaMsg.text = parsed.cleanText
+            }
+
             try? modelContext?.save()
         } catch let chatError as ChatError {
             leaMsg.text = chatError.userMessage

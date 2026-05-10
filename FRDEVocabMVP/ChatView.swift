@@ -23,6 +23,10 @@ struct ChatView: View {
 
     @State private var inputText: String = ""
     @State private var isSettingsSheetPresented: Bool = false
+    /// **Schritt 2A (2026-05-10)** — Confirmation-State für den
+    /// Reset-Button im Settings-Sheet. Verhindert versehentliches
+    /// Wegwischen des Chat-Verlaufs durch Fat-Finger-Tap.
+    @State private var isResetConfirmPresented: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -50,23 +54,61 @@ struct ChatView: View {
             await chatService.ensureFirstGreeting()
         }
         .sheet(isPresented: $isSettingsSheetPresented) {
-            // Schritt 1: leerer Placeholder-Sheet. Inhalt (Persona-
-            // Wahl, Level-Toggle, History-Reset) kommt in späteren
-            // Schritten. Geöffnet halten, Zugriff blockt nichts.
-            VStack(spacing: 16) {
+            // **Schritt 2A (2026-05-10)** — Sheet erweitert um den
+            // Smoke-Helper „Chat-Verlauf zurücksetzen" (siehe
+            // `ChatService.resetHistory()`). Der Reset-Button ist
+            // `disabled` während eines aktiven Streams, damit der
+            // Loop nicht in eine detached SwiftData-Instanz schreibt.
+            // Persona-Settings folgen in späteren Schritten.
+            VStack(spacing: 20) {
                 Text("Einstellungen")
                     .font(.system(size: 22, weight: .black, design: .rounded))
+
                 Text("Persona-Settings folgen in Schritt 2.")
                     .font(.system(size: 14))
                     .foregroundStyle(.secondary)
+
+                Divider()
+                    .padding(.vertical, 4)
+
+                Button(role: .destructive) {
+                    isResetConfirmPresented = true
+                } label: {
+                    Label("Chat-Verlauf zurücksetzen", systemImage: "trash")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                .disabled(chatService.streamingMessageID != nil || chatService.isTyping)
+
                 Button("Schließen") {
                     isSettingsSheetPresented = false
                 }
                 .buttonStyle(.borderedProminent)
-                .padding(.top, 12)
+                .controlSize(.large)
+                .padding(.top, 4)
             }
             .padding(40)
             .presentationDetents([.medium])
+            .confirmationDialog(
+                "Chat-Verlauf wirklich zurücksetzen?",
+                isPresented: $isResetConfirmPresented,
+                titleVisibility: .visible
+            ) {
+                Button("Zurücksetzen", role: .destructive) {
+                    chatService.resetHistory()
+                    isSettingsSheetPresented = false
+                    // Frische First-Greeting nach dem Wipe — die
+                    // Konversation soll nicht leer dastehen, sondern
+                    // sofort wieder mit Léas Begrüßung anfangen.
+                    Task {
+                        await chatService.ensureFirstGreeting()
+                    }
+                }
+                Button("Abbrechen", role: .cancel) {}
+            } message: {
+                Text("Alle bisherigen Nachrichten werden gelöscht. Léa fängt frisch an.")
+            }
         }
     }
 
@@ -84,6 +126,35 @@ struct ChatView: View {
                             isStreaming: chatService.streamingMessageID == msg.id
                         )
                         .id(msg.id)
+
+                        // **Schritt 2A — CorrectionCard zwischen User-
+                        // Bubble und Léa-Antwort**
+                        // Wenn die User-Message vom Stream-End-Parser
+                        // einen Korrektur-Tipp bekommen hat, wird hier
+                        // direkt nach der User-Bubble eine
+                        // CorrectionCardView eingeblendet. Da messages
+                        // nach dem Stream `[…, userMsg, leaMsg]` ist,
+                        // landet die Card visuell zwischen User-Bubble
+                        // und Léa-Antwort.
+                        //
+                        // Identity = `correctionCardId` → Slide-In-
+                        // Transition feuert genau einmal beim Erscheinen.
+                        // Beim App-Restart (persisted) erscheint die
+                        // Card ohne Animation, weil das ForEach sie
+                        // im initial-render-Pass mitbringt — kein
+                        // Insertion-Event.
+                        if msg.sender == .user,
+                           let tip = msg.foundErrorGermanTip,
+                           let cardID = msg.correctionCardId {
+                            CorrectionCardView(germanTip: tip)
+                                .id(cardID)
+                                .transition(.asymmetric(
+                                    insertion: .move(edge: .top)
+                                        .combined(with: .opacity),
+                                    removal: .opacity
+                                ))
+                                .padding(.vertical, 4)
+                        }
                     }
 
                     if chatService.isTyping {
