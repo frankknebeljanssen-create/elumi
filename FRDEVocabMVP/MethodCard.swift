@@ -64,7 +64,13 @@ struct MethodCard<Icon: View>: View {
             //     vertikaler Baseline.
             //   • Title 17 → 19 pt (knapper, nicht filigran)
             //   • Subtitle 12 → 13 pt
-            VStack(spacing: 6) {
+            // **Compaction 2026-05-10** — Card-Höhe 135 → 115 pt
+            // (~15 %), VStack-Spacing 6 → 4 pt, Bottom-Spacer 4 → 2 pt.
+            // Karteikarten + Quiz wirken jetzt schlanker im
+            // heroCardsRow. Title- und Subtitle-Fonts bleiben (Lesbar-
+            // keit hat Vorrang). HIG-Tap-Target bleibt mit 115 pt
+            // hoch über dem 44-pt-Minimum.
+            VStack(spacing: 4) {
                 Spacer(minLength: 0)
                 icon()
                 Spacer(minLength: 0)
@@ -79,10 +85,10 @@ struct MethodCard<Icon: View>: View {
                     .foregroundStyle(.white.opacity(0.88))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
-                Spacer().frame(height: 4)
+                Spacer().frame(height: 2)
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 135)
+            .frame(height: 115)
             // Background-Pattern — Linear-Gradient 0.95 → 0.75 vom
             // topLeading nach bottomTrailing, 22 pt corner radius.
             .background(
