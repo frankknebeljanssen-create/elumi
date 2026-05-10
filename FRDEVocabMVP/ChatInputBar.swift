@@ -26,13 +26,19 @@ struct ChatInputBar: View {
                 .lineLimit(1...4)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
+                // **Sweep „Error-Banner + Input-Polish" (2026-05-10)** —
+                // Iter-2: `#EBEBEF` setzte sich noch zu wenig vom
+                // Chat-Body (`#F2F2F7`) ab. Jetzt `#E0E0E5` (5 %
+                // dunkler) — klar als eigenständige Input-Pill
+                // erkennbar, ohne dramatisch zu wirken. Border bleibt
+                // gleich.
                 .background(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .fill(Color(red: 0.973, green: 0.973, blue: 0.980)) // #F8F8FA
+                        .fill(Color(red: 0.878, green: 0.878, blue: 0.898)) // #E0E0E5
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(Color(red: 0.878, green: 0.878, blue: 0.890), lineWidth: 1)
+                        .stroke(Color(red: 0.812, green: 0.812, blue: 0.835), lineWidth: 1) // #CFCFD5
                 )
                 .focused($isFocused)
                 .submitLabel(.send)
