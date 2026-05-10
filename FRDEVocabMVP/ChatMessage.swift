@@ -60,6 +60,20 @@ final class ChatMessage {
     /// einmalig spielt und nicht bei jedem Re-Render.
     var correctionCardId: UUID?
 
+    /// **Schritt 2B-1 (2026-05-10)** — JSON-encoded `[String]` mit den
+    /// Lektionswörtern, die in dieser Message verwendet wurden (aus
+    /// `[VOCAB: …]`-Markern). Nur auf User-Messages gesetzt — Léa
+    /// markiert ja, was DER USER korrekt benutzt hat. Storage-Form
+    /// `Data` (JSON) → SwiftData lightweight-Migration einfach (alte
+    /// Records ohne Spalte → nil → Computed-Getter liefert []).
+    var vocabUsedData: Data?
+
+    /// **Schritt 2B-1** — JSON-encoded `[FoundNewWord]` mit den neuen
+    /// Wörtern, die Léa in dieser Message eingeführt hat (aus
+    /// `[NEW: wort|übersetzung]`-Markern). Nur auf Léa-Messages
+    /// gesetzt. Storage analog zu `vocabUsedData`.
+    var newWordsData: Data?
+
     init(
         id: UUID = UUID(),
         sessionId: UUID = ChatMessage.defaultSessionID,
@@ -68,7 +82,9 @@ final class ChatMessage {
         timestamp: Date = .now,
         foundErrorUserText: String? = nil,
         foundErrorGermanTip: String? = nil,
-        correctionCardId: UUID? = nil
+        correctionCardId: UUID? = nil,
+        vocabUsedData: Data? = nil,
+        newWordsData: Data? = nil
     ) {
         self.id = id
         self.sessionId = sessionId
@@ -78,6 +94,8 @@ final class ChatMessage {
         self.foundErrorUserText = foundErrorUserText
         self.foundErrorGermanTip = foundErrorGermanTip
         self.correctionCardId = correctionCardId
+        self.vocabUsedData = vocabUsedData
+        self.newWordsData = newWordsData
     }
 
     /// Nicht-persistierter Convenience-Getter für den Sender-Enum.
@@ -92,6 +110,38 @@ final class ChatMessage {
     /// dieser User-Bubble eine CorrectionCard gerendert wird.
     var hasCorrection: Bool {
         foundErrorUserText != nil && foundErrorGermanTip != nil
+    }
+
+    /// **Schritt 2B-1** — Computed Accessor für die VOCAB-Wörter.
+    /// Decodet `vocabUsedData` zu `[String]`. Bei nil oder Decode-
+    /// Fail → leeres Array. Setter encodiert frisch.
+    /// Computed Properties auf `@Model`-Klassen sind in SwiftData
+    /// transient (nicht persistiert) — das stored-Backing ist
+    /// `vocabUsedData`. Das ist genau das gewünschte Verhalten.
+    var vocabUsed: [String] {
+        get {
+            guard let data = vocabUsedData,
+                  let arr = try? JSONDecoder().decode([String].self, from: data)
+            else { return [] }
+            return arr
+        }
+        set {
+            vocabUsedData = newValue.isEmpty ? nil : (try? JSONEncoder().encode(newValue))
+        }
+    }
+
+    /// **Schritt 2B-1** — Computed Accessor für die NEW-Words.
+    /// Decodet `newWordsData` zu `[FoundNewWord]`.
+    var newWords: [FoundNewWord] {
+        get {
+            guard let data = newWordsData,
+                  let arr = try? JSONDecoder().decode([FoundNewWord].self, from: data)
+            else { return [] }
+            return arr
+        }
+        set {
+            newWordsData = newValue.isEmpty ? nil : (try? JSONEncoder().encode(newValue))
+        }
     }
 
     /// Single-Session-UUID für Schritt-1-MVP (eine Léa-Konversation pro

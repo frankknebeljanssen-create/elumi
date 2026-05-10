@@ -85,9 +85,24 @@ final class ChatService {
     /// Léa-Bubble angezeigt).
     var error: ChatError?
 
+    /// **Schritt 2B-1 (2026-05-10)** — Signalisiert ChatView, dass
+    /// der User keine aktive Wortschatz-Liste hat. ChatView blockt
+    /// dann via Modal, bis der User über den `GlobalListPickerSheet`
+    /// eine Liste wählt. Wird auf `false` gesetzt, sobald
+    /// `currentContext` einen non-nil Wert liefert.
+    var needsListSelection: Bool = false
+
     // MARK: - Dependencies
 
     private(set) var modelContext: ModelContext?
+
+    /// **Schritt 2B-1** — Listen-Store, aus dem der Provider die
+    /// aktive Selection auflöst. Optional, weil `LeaChatHomeCard`
+    /// (Home-Preview) den Service auch konfiguriert ohne Store-
+    /// Zugriff zu brauchen — nur ChatView hängt den Store an.
+    /// Bei `nil` während `sendMessage`: behandeln wir als
+    /// `needsListSelection`, weil ohne Store keine Liste auflösbar.
+    private(set) var listStore: VocabularyListStore?
 
     private init() {}
 
@@ -97,8 +112,18 @@ final class ChatService {
     /// per `.onAppear` mit `\.modelContext` aus dem Environment),
     /// bevor sendMessage / loadHistory funktionieren. Idempotent —
     /// mehrfache Aufrufe sind ok.
-    func configure(with context: ModelContext) {
+    ///
+    /// **Schritt 2B-1 (2026-05-10)** — `listStore` als optionaler
+    /// Param. ChatView reicht den Store aus dem `runtime.listStore`
+    /// durch (für Wortschatz-Auflösung); `LeaChatHomeCard` darf
+    /// `nil` lassen, da die Card nur die Message-History rendert
+    /// und keinen Send-Pfad triggert.
+    /// Verhalten: nil-listStore-Aufrufe überschreiben einen schon
+    /// gesetzten Store NICHT — sonst würde ein zweiter Card-Render
+    /// (Home → Chat → Home) den vorhandenen Store wegputzen.
+    func configure(with context: ModelContext, listStore: VocabularyListStore? = nil) {
         self.modelContext = context
+        if let listStore { self.listStore = listStore }
         loadHistory()
     }
 
@@ -168,8 +193,23 @@ final class ChatService {
     /// Wenn die Konversation leer ist, schickt Léa eine tageszeit-
     /// abhängige Begrüßung — KEIN Backend-Call, der Greet-Text ist
     /// canned (spart Rate-Limit-Quota für reale Antworten).
+    ///
+    /// **Schritt 2B-1**: Greeting-Bedingung an `vocabContext`
+    /// gekoppelt — wenn der User keine Liste hat, kein Greeting,
+    /// stattdessen `needsListSelection = true` setzen. ChatView
+    /// reagiert via Modal.
     func ensureFirstGreeting() async {
         guard messages.isEmpty else { return }
+
+        // Vorab-Check: Vokabel-Kontext da? Sonst Modal triggern und
+        // greeting unterlassen — sonst würde Léa „Hi" sagen ohne
+        // dass sie Lektionswörter kennt; das Modal kommt dann erst
+        // beim ersten User-Tap, was inkonsistent wirkt.
+        guard let _ = currentVocabContext() else {
+            needsListSelection = true
+            return
+        }
+        needsListSelection = false
 
         let hour = Calendar.current.component(.hour, from: Date())
         let greeting: String
@@ -187,6 +227,17 @@ final class ChatService {
         appendLeaMessage(text: greeting)
     }
 
+    // MARK: - Vocabulary-Context-Helper
+
+    /// **Schritt 2B-1** — Liest den aktuellen `ChatVocabularyContext`
+    /// vom Provider. `nil` wenn (a) kein listStore gesetzt oder
+    /// (b) keine Liste aktiv. ChatView's Modal-Trigger verlässt
+    /// sich auf die nil-Semantik.
+    func currentVocabContext() -> ChatVocabularyContext? {
+        guard let listStore else { return nil }
+        return ChatVocabularyProvider.currentContext(from: listStore)
+    }
+
     // MARK: - Send + Stream
 
     /// Schickt eine User-Message ans Backend, fügt einen Léa-
@@ -196,6 +247,19 @@ final class ChatService {
     func sendMessage(_ text: String) async {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
+
+        // **Schritt 2B-1** — Vor allem anderen: Vokabel-Kontext da?
+        // Wenn nicht, blockieren wir den Send vollständig — kein
+        // User-Insert, kein Backend-Call. ChatView öffnet via
+        // `needsListSelection`-Beobachtung das GlobalListPickerSheet,
+        // der User wählt, kommt zurück, schickt erneut. So lange
+        // der Marker steht, ist die Konversation sauber leer
+        // (oder bei vorhandener History: nicht angefasst).
+        guard let vocabCtx = currentVocabContext() else {
+            needsListSelection = true
+            return
+        }
+        needsListSelection = false
 
         // 1) User-Bubble einfügen + persistieren
         let userMsg = ChatMessage(sender: .user, text: trimmed)
@@ -218,31 +282,54 @@ final class ChatService {
         isTyping = false
 
         do {
-            try await streamLeaResponse(into: leaMsg)
+            // **Schritt 2B-1** — Vocab-Kontext durchreichen. Wir lesen
+            // ihn HIER nochmal (statt vom Top zu cachen), falls der
+            // User zwischen Top-Guard und Stream-Start die Auswahl
+            // wechselt — unwahrscheinlich, aber pragmatisch konsistent
+            // mit „live bei jedem API-Call".
+            let liveCtx = currentVocabContext() ?? vocabCtx
+            try await streamLeaResponse(into: leaMsg, vocabContext: liveCtx)
 
-            // **Schritt 2A — Stream-End-Parsing**
-            // Nach dem Stream extrahieren wir Léas Korrektur-Marker
-            // aus dem rohen Text. Wenn ein FoundError dabei ist:
-            //   • userMsg bekommt die Korrektur-Felder (Bubble-View
-            //     erkennt das + transformiert sich auf creme + Badge
-            //     + Underline + Shake)
-            //   • leaMsg.text wird auf cleanText gesetzt — der Marker
-            //     wird aus Léas Bubble entfernt, sodass nur der
-            //     französische Konversationsanteil sichtbar bleibt
-            //   • correctionCardId triggert die CorrectionCardView
-            //     im Parent zwischen User- und Léa-Bubble (ChatView
-            //     Render-Logic)
+            // **Schritt 2A — Stream-End-Parsing** (erweitert in 2B-1)
+            // Nach dem Stream extrahieren wir alle Marker aus Léas
+            // rohem Text:
+            //   • [FEHLER: …] → Korrektur-Felder retroaktiv auf
+            //     userMsg (Bubble creme + Badge + Underline + Shake,
+            //     CorrectionCard zwischen User-Bubble und Léa-Antwort).
+            //   • [VOCAB: wort] → vocabUsed auf userMsg (User-Bubble
+            //     bekommt grüne Wort-Highlights).
+            //   • [NEW: wort|übersetzung] → newWords auf leaMsg
+            //     (Léa-Bubble bekommt blaue Underlines + Tooltip).
+            // Plus: leaMsg.text bekommt IMMER den cleanText (auch
+            // wenn keine Marker gefunden wurden — defensive, weil
+            // die Marker-Detection auch ohne Treffer Whitespace
+            // trimmt).
             //
-            // `withAnimation`-Wrap → SwiftUI animiert die Insertion
-            // der CorrectionCard und das Bubble-Re-Color als
-            // gemeinsame Spring-Bewegung; ohne den Wrap würde die
-            // Card hart einspringen.
-            //
-            // **Spec-Hinweis**: Léa darf max 1 Korrektur pro Message
-            // liefern (System-Prompt). Der Parser akzeptiert N
-            // Marker als Defensive — wir nehmen aber nur den ersten
-            // FoundError, damit der Bubble-State eindeutig bleibt.
+            // **Spec-Hinweis**: Léa darf max 1 FEHLER-Marker liefern
+            // (System-Prompt). Wir nehmen den ersten, der Rest wird
+            // verworfen — sonst würde die Bubble-State mehrere
+            // Korrekturen rendern müssen.
             let parsed = ChatMarkerParser.parseLeaMessage(leaMsg.text)
+            leaMsg.text = parsed.cleanText
+
+            // 2B-1 — VOCAB-Wörter retroaktiv auf User-Message UND
+            // auf Léa-Message. Auf User-Message für den hellen
+            // grünen Highlight (User hat das Wort korrekt benutzt);
+            // auf Léa-Message für den dezenteren Highlight, wenn
+            // Léa das Wort in ihrem Recasting auch verwendet (Frank's
+            // Spec: User-Bubble bg 0.25, Léa-Bubble bg 0.15).
+            if !parsed.vocabUsed.isEmpty {
+                userMsg.vocabUsed = parsed.vocabUsed
+                leaMsg.vocabUsed = parsed.vocabUsed
+            }
+
+            // 2B-1 — NEW-Wörter auf Léa-Message.
+            if !parsed.newWords.isEmpty {
+                leaMsg.newWords = parsed.newWords
+            }
+
+            // 2A — FEHLER-Korrektur retroaktiv auf User-Message
+            // (mit Spring-Animation für die CorrectionCard-Insertion).
             if let firstError = parsed.foundErrors.first {
                 userMsg.foundErrorUserText = firstError.userText
                 userMsg.foundErrorGermanTip = firstError.germanTip
@@ -250,7 +337,6 @@ final class ChatService {
                 withAnimation(.spring(response: 0.45, dampingFraction: 0.78)) {
                     userMsg.correctionCardId = cardID
                 }
-                leaMsg.text = parsed.cleanText
             }
 
             try? modelContext?.save()
@@ -280,7 +366,14 @@ final class ChatService {
 
     /// Baut den Edge-Function-Request, parst den Anthropic-SSE-Stream
     /// und appendt jeden `text_delta` an `placeholder.text`.
-    private func streamLeaResponse(into placeholder: ChatMessage) async throws {
+    ///
+    /// **Schritt 2B-1** — System-Prompt wird mit dem Live-Vokabel-
+    /// Kontext + Niveau-Mapping gebaut (aus `vocabContext`). Caller
+    /// hat den Kontext direkt vor diesem Call frisch geholt.
+    private func streamLeaResponse(
+        into placeholder: ChatMessage,
+        vocabContext: ChatVocabularyContext
+    ) async throws {
         var request = URLRequest(url: ChatConfig.backendURL)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -298,8 +391,12 @@ final class ChatService {
                     "content": msg.text,
                 ]
             }
+        let systemPrompt = currentPersona.buildSystemPrompt(
+            vocabulary: vocabContext.words,
+            level: vocabContext.level
+        )
         let body: [String: Any] = [
-            "system": currentPersona.buildSystemPrompt(),
+            "system": systemPrompt,
             "messages": history,
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)

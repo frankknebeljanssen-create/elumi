@@ -120,7 +120,15 @@ struct AppDestinationHost: View {
             // **Léa-Chat MVP Schritt 1 (2026-05-10)** — Konversation
             // mit Léa via Backend-Proxy. ChatService wird bei `.task`
             // mit dem Environment-`modelContext` konfiguriert.
-            ChatView(onBack: goHome)
+            //
+            // **Schritt 2B-1 (2026-05-10)** — `listStore` wird
+            // durchgereicht, damit der ChatVocabularyProvider die
+            // aktive Listen-Auswahl in den System-Prompt einbauen
+            // kann. `runtime.listStore` ist `VocabularyListStore?`,
+            // ChatView akzeptiert das Optional und delegiert das
+            // Modal-Handling an `ChatService.needsListSelection`,
+            // falls der Store noch nicht hochgefahren ist.
+            ChatView(onBack: goHome, listStore: runtime.listStore)
         case .trophy:
             // Pokal-Tab — sammelt die ausführlichen Status-Cards, die
             // früher dominant auf Home lagen (Streak, Level/XP,

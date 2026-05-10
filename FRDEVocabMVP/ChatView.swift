@@ -19,6 +19,13 @@ import UIKit
 struct ChatView: View {
     let onBack: () -> Void
 
+    /// **Schritt 2B-1 (2026-05-10)** — Listen-Store für die Wortschatz-
+    /// Auflösung im Chat-System-Prompt. Wird vom `AppDestinationHost`
+    /// aus `runtime.listStore` durchgereicht. Optional, weil
+    /// `runtime.listStore` selbst optional ist (async-Bootstrapping);
+    /// bei `nil` blockt ChatService den Send via `needsListSelection`.
+    let listStore: VocabularyListStore?
+
     @Environment(\.modelContext) private var modelContext
     /// **Léa-Chat MVP — Polish (2026-05-10)** — Closure, mit der
     /// ChatView den globalen Footer ausblendet, solange das System-
@@ -67,8 +74,44 @@ struct ChatView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .task {
-            chatService.configure(with: modelContext)
+            // **Schritt 2B-1** — `listStore` wird beim Configure
+            // mit reingegeben, damit der `ChatVocabularyProvider`
+            // beim nächsten `sendMessage` die aktive Listen-Auswahl
+            // auflösen kann. Bei nil-Store läuft der Send-Pfad in
+            // `needsListSelection` → ChatView's Modal triggert.
+            chatService.configure(with: modelContext, listStore: listStore)
             await chatService.ensureFirstGreeting()
+        }
+        // **Schritt 2B-1** — Listen-Auswahl-Modal. ChatService setzt
+        // `needsListSelection = true` wenn beim ersten Greet/Send
+        // keine aktive Liste resolved werden kann. Wir presenten den
+        // existing `GlobalListPickerSheet` mit einem dünnen Header-
+        // Text obendrauf. Nach Dismiss prüfen wir, ob der User
+        // tatsächlich eine Liste gewählt hat — wenn nicht, popen wir
+        // ChatView zurück zu Home (Frank's Spec).
+        .sheet(
+            isPresented: Binding(
+                get: { chatService.needsListSelection },
+                set: { newValue in
+                    if !newValue { chatService.needsListSelection = false }
+                }
+            ),
+            onDismiss: {
+                Task {
+                    if chatService.currentVocabContext() == nil {
+                        // User hat trotz Modal keine Liste gewählt
+                        // (Abbrechen-Tap oder Drag-down). Léa kann
+                        // ohne Wortschatz nicht starten → zurück
+                        // zu Home.
+                        onBack()
+                    } else {
+                        chatService.needsListSelection = false
+                        await chatService.ensureFirstGreeting()
+                    }
+                }
+            }
+        ) {
+            listSelectionSheetContent
         }
         // **Léa-Chat MVP — Keyboard-Footer-Hide (2026-05-10)**
         // Während das System-Keyboard sichtbar ist, blenden wir den
@@ -152,6 +195,56 @@ struct ChatView: View {
             } message: {
                 Text("Alle bisherigen Nachrichten werden gelöscht. Léa fängt frisch an.")
             }
+        }
+    }
+
+    // MARK: - Listen-Auswahl-Sheet (Schritt 2B-1)
+
+    /// Inhalt des Modal-Sheets, das beim Fehlen einer aktiven Liste
+    /// erscheint. Header-Text als Léa-spezifische Erklärung, drunter
+    /// der existing `GlobalListPickerSheet` (P2-Backlog: laut Frank's
+    /// vorigem Feedback „etwas zu groß auf Screen" — pragmatisch
+    /// trotzdem nutzen, Optimierung in einem späteren Sweep).
+    @ViewBuilder
+    private var listSelectionSheetContent: some View {
+        if let listStore {
+            VStack(spacing: 0) {
+                Text("Wähle eine Liste, damit Léa weiß, was du gerade übst.")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(Color(red: 0.4, green: 0.4, blue: 0.4))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 14)
+                    .frame(maxWidth: .infinity)
+                    .background(Color(red: 0.973, green: 0.973, blue: 0.980))
+
+                GlobalListPickerSheet(
+                    allLists: listStore.allLists,
+                    initialSelection: VocabularyListSelectionResolver.currentGlobalSelectedListIDs() ?? [],
+                    onCommit: { _ in
+                        // Resolver persistiert bereits in
+                        // `setGlobalSelectedListIDs`; nichts weiter
+                        // zu tun. ChatView's `onDismiss` triggert
+                        // dann den Greet-Pfad.
+                    }
+                )
+            }
+        } else {
+            // Defensiver Fallback — listStore wird vom
+            // AppDestinationHost durchgereicht und sollte hier
+            // immer gesetzt sein. Falls nicht: kurzes Info-Sheet
+            // mit Zurück-Button, damit der User nicht stuck ist.
+            VStack(spacing: 16) {
+                Text("Listen werden geladen — bitte gleich nochmal versuchen.")
+                    .font(.system(size: 15, weight: .medium))
+                    .multilineTextAlignment(.center)
+                Button("Zurück") {
+                    chatService.needsListSelection = false
+                    onBack()
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .padding(40)
         }
     }
 

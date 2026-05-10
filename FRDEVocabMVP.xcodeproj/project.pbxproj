@@ -487,6 +487,7 @@
 		CC15FF1A00000000ABCDEF01 /* LeaChatHomeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1A00000000ABCDEF02 /* LeaChatHomeCard.swift */; };
 		CC15FF1B00000000ABCDEF01 /* ChatMarkerParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1B00000000ABCDEF02 /* ChatMarkerParser.swift */; };
 		CC15FF1C00000000ABCDEF01 /* CorrectionCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1C00000000ABCDEF02 /* CorrectionCardView.swift */; };
+		CC15FF1D00000000ABCDEF01 /* ChatVocabularyProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1D00000000ABCDEF02 /* ChatVocabularyProvider.swift */; };
 		CC15FF0700000000ABCDEF01 /* WideCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0700000000ABCDEF02 /* WideCard.swift */; };
 		CC15FF0800000000ABCDEF01 /* TrainingHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */; };
 		CC15FF0A00000000ABCDEF01 /* TrainingHubTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */; };
@@ -1080,6 +1081,7 @@
 		CC15FF1A00000000ABCDEF02 /* LeaChatHomeCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LeaChatHomeCard.swift; path = FRDEVocabMVP/LeaChatHomeCard.swift; sourceTree = "<group>"; };
 		CC15FF1B00000000ABCDEF02 /* ChatMarkerParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatMarkerParser.swift; path = FRDEVocabMVP/ChatMarkerParser.swift; sourceTree = "<group>"; };
 		CC15FF1C00000000ABCDEF02 /* CorrectionCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CorrectionCardView.swift; path = FRDEVocabMVP/CorrectionCardView.swift; sourceTree = "<group>"; };
+		CC15FF1D00000000ABCDEF02 /* ChatVocabularyProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatVocabularyProvider.swift; path = FRDEVocabMVP/ChatVocabularyProvider.swift; sourceTree = "<group>"; };
 		CC15FF0700000000ABCDEF02 /* WideCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WideCard.swift; path = FRDEVocabMVP/WideCard.swift; sourceTree = "<group>"; };
 		CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingHubView.swift; path = FRDEVocabMVP/TrainingHubView.swift; sourceTree = "<group>"; };
 		CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingHubTips.swift; path = FRDEVocabMVP/TrainingHubTips.swift; sourceTree = "<group>"; };
@@ -1242,6 +1244,7 @@
 				CC15FF1A00000000ABCDEF02 /* LeaChatHomeCard.swift */,
 				CC15FF1B00000000ABCDEF02 /* ChatMarkerParser.swift */,
 				CC15FF1C00000000ABCDEF02 /* CorrectionCardView.swift */,
+				CC15FF1D00000000ABCDEF02 /* ChatVocabularyProvider.swift */,
 				CC15FF0700000000ABCDEF02 /* WideCard.swift */,
 				CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */,
 				CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */,
@@ -2208,6 +2211,7 @@
 				CC15FF1A00000000ABCDEF01 /* LeaChatHomeCard.swift in Sources */,
 				CC15FF1B00000000ABCDEF01 /* ChatMarkerParser.swift in Sources */,
 				CC15FF1C00000000ABCDEF01 /* CorrectionCardView.swift in Sources */,
+				CC15FF1D00000000ABCDEF01 /* ChatVocabularyProvider.swift in Sources */,
 				CC15FF0700000000ABCDEF01 /* WideCard.swift in Sources */,
 				CC15FF0800000000ABCDEF01 /* TrainingHubView.swift in Sources */,
 				CC15FF0A00000000ABCDEF01 /* TrainingHubTips.swift in Sources */,
