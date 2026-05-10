@@ -286,17 +286,29 @@ struct ChatSessionSummarySheet: View {
 
     @ViewBuilder
     private var actionButtons: some View {
-        VStack(spacing: 10) {
+        // **Schritt 3A Smoke-Fix Bug B (2026-05-10)** — vorher war
+        // der Schließen-Button bei `canPractice == true` nur als
+        // dezenter Plain-Text-Button ohne Style sichtbar, leicht zu
+        // übersehen. Frank-Befund: „kein Schließen-Button". Jetzt:
+        // immer als gleichwertiger bordered-Button neben dem Üben-
+        // CTA in HStack-Layout (iOS-Sheet-Konvention). Empty-Edge-
+        // Case bleibt mit Schließen als Solo-Primary-CTA.
+        VStack(spacing: 0) {
             if canPractice {
-                Button(action: onPracticeInFlashcards) {
-                    Text("Üben in Karteikarten")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+                HStack(spacing: 10) {
+                    Button(action: onDismiss) {
+                        Text("Schließen")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
 
-                Button("Schließen", action: onDismiss)
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.secondary)
+                    Button(action: onPracticeInFlashcards) {
+                        Text("Üben in Karteikarten")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+                }
             } else {
                 Button(action: onDismiss) {
                     Text("Schließen")

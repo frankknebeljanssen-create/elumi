@@ -131,14 +131,24 @@ struct AppDestinationHost: View {
             //
             // **Schritt 2B-2B (2026-05-10)** —
             // `onPracticeInFlashcards` wird vom Post-Session-Summary
-            // gerufen. `replaceTop(.flashcards(nil))` poppt ChatView
+            // gerufen. `replaceTop(.flashcards(...))` poppt ChatView
             // UND pusht Flashcards-Setup in einem Schritt, sodass der
             // User nach „Üben in Karteikarten" direkt im Setup landet
             // ohne ChatView dazwischen.
+            //
+            // **Schritt 3A (2026-05-10)** — `FlashcardLaunchContext`
+            // mit `preferredListID = chatStapelListID` preselected den
+            // „Aus Chat mit Léa"-Stapel im Karteikarten-Setup, sodass
+            // der User direkt mit den frisch gesammelten Korrekturen
+            // + neuen Wörtern üben kann ohne manuelle Listen-Wahl.
             ChatView(
                 onBack: goHome,
                 listStore: runtime.listStore,
-                onPracticeInFlashcards: { replaceTop(.flashcards(nil)) }
+                onPracticeInFlashcards: {
+                    replaceTop(.flashcards(FlashcardLaunchContext(
+                        preferredListID: VocabularyListStore.chatStapelListID
+                    )))
+                }
             )
         case .trophy:
             // Pokal-Tab — sammelt die ausführlichen Status-Cards, die
