@@ -14,11 +14,18 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct ChatView: View {
     let onBack: () -> Void
 
     @Environment(\.modelContext) private var modelContext
+    /// **Léa-Chat MVP — Polish (2026-05-10)** — Closure, mit der
+    /// ChatView den globalen Footer ausblendet, solange das System-
+    /// Keyboard sichtbar ist. Wird im `RootContentView` installiert
+    /// und schreibt in den `AppNavigationCoordinator`. `nil` außerhalb
+    /// der App-Hauptnavigation (Previews, Tests) → no-op.
+    @Environment(\.appSetChatKeyboardActiveAction) private var setChatKeyboardActive
     @Bindable private var chatService = ChatService.shared
 
     @State private var inputText: String = ""
@@ -27,6 +34,16 @@ struct ChatView: View {
     /// Reset-Button im Settings-Sheet. Verhindert versehentliches
     /// Wegwischen des Chat-Verlaufs durch Fat-Finger-Tap.
     @State private var isResetConfirmPresented: Bool = false
+    /// **Bug-Fix Smoke-Iter 2 (2026-05-10)** — `keyboardWillShow`
+    /// feuert nicht nur bei der initialen Tastatur-Einblendung,
+    /// sondern auch bei jeder Frame-Änderung (Predictive-Bar an/aus,
+    /// Keyboard-Wechsel, Memoji-Anzeige). Wenn wir bei jedem Event
+    /// scrollToBottom triggerten, wurde der User beim Hochscrollen
+    /// zurückgerissen. Diesen Flag tracken wir manuell, sodass
+    /// scrollToBottom NUR auf die Transition `hidden → visible`
+    /// feuert — nicht auf Frame-Updates während die Tastatur schon
+    /// up ist.
+    @State private var keyboardWasVisible: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -52,6 +69,32 @@ struct ChatView: View {
         .task {
             chatService.configure(with: modelContext)
             await chatService.ensureFirstGreeting()
+        }
+        // **Léa-Chat MVP — Keyboard-Footer-Hide (2026-05-10)**
+        // Während das System-Keyboard sichtbar ist, blenden wir den
+        // globalen App-Footer (AppBottomBar in RootContentView) aus —
+        // sonst kollidiert er optisch mit der Chat-Input-Bar und
+        // bricht den WhatsApp-Look. `keyboardWillShowNotification`
+        // feuert SYNCHRON zur iOS-Keyboard-Slide-Animation, das
+        // 0.25-s-easeOut auf RootContentView läuft parallel → smooth.
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            setChatKeyboardActive?(true)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            setChatKeyboardActive?(false)
+            // Reset des Visibility-Trackers, damit beim NÄCHSTEN
+            // Tap auf das TextField wieder einmalig scrollToBottom
+            // im messagesScroll feuern kann.
+            keyboardWasVisible = false
+        }
+        .onDisappear {
+            // **Cleanup-Guard**: User verlässt ChatView (Back-Tap)
+            // während Keyboard noch up — `keyboardWillHide` feuert
+            // u.U. NACHDEM die View aus dem Hierarchy-Tree raus ist.
+            // Hier explizit auf false setzen, damit der Footer auf
+            // den nachfolgenden Screens (Home etc.) garantiert wieder
+            // erscheint.
+            setChatKeyboardActive?(false)
         }
         .sheet(isPresented: $isSettingsSheetPresented) {
             // **Schritt 2A (2026-05-10)** — Sheet erweitert um den
@@ -170,6 +213,29 @@ struct ChatView: View {
             }
             .onChange(of: chatService.isTyping) { _, _ in
                 scrollToBottom(proxy: proxy)
+            }
+            // **Bug-Fix Smoke-Iter 2 (2026-05-10) — v2**
+            // Erste Variante feuerte auf JEDES `keyboardWillShow`,
+            // das iOS aber auch bei Frame-Updates der schon-sichtbaren
+            // Tastatur sendet (Predictive-Bar, Keyboard-Switch).
+            // Dadurch wurde der User beim Versuch, ältere Léa-Bubbles
+            // hochzuscrollen, jedes Mal zurückgerissen → Inhalt
+            // rutschte immer wieder unter die Tastatur (Smoke-Bug
+            // 2026-05-10).
+            //
+            // Fix: Trigger NUR auf die Transition `hidden → visible`
+            // via lokalem `keyboardWasVisible`-Flag. Beim
+            // `keyboardWillHide` wird der Flag zurückgesetzt
+            // (oben im View-Body), sodass beim nächsten Tap auf
+            // das TextField wieder einmalig auf-Bottom gescrollt
+            // wird. Während die Tastatur up ist, kann der User
+            // jetzt frei nach oben scrollen.
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+                guard !keyboardWasVisible else { return }
+                keyboardWasVisible = true
+                withAnimation(.easeOut(duration: 0.25)) {
+                    scrollToBottom(proxy: proxy, animated: false)
+                }
             }
             .onAppear {
                 // Anfangs sofort auf Bottom — bei wiederholten Visits

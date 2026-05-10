@@ -284,6 +284,27 @@ struct ContentView: View {
                     navigation.setImmersiveArcade(active)
                 })
                 .environment(\.appUsesGlobalChrome, navigation.shouldShowGlobalChrome)
+                // **Léa-Chat MVP — Keyboard-Footer-Hide (2026-05-10)** —
+                // ChatView ruft diese Closure aus seinem
+                // NotificationCenter-Listener für `keyboardWillShow/Hide`.
+                // Wir schreiben in den Coordinator; das computed
+                // `shouldShowGlobalChrome` reagiert dadurch automatisch
+                // und der globale Footer wird aus der `safeAreaInset`-
+                // Branch ausgeblendet. Die `.animation(...)` weiter unten
+                // sorgt für smooth fade.
+                .environment(\.appSetChatKeyboardActiveAction, { active in
+                    navigation.isChatKeyboardActive = active
+                })
+                // **Animation-Anchor**: die safeAreaInset oben rendert
+                // den AppBottomBar conditional auf `shouldShowGlobalChrome`.
+                // Wenn `isChatKeyboardActive` flippt, animiert SwiftUI
+                // die strukturelle Insertion/Removal mit dem
+                // 0.25 s-easeOut, das parallel zur iOS-Standard-Keyboard-
+                // Slide-Duration läuft → optisch synchron.
+                .animation(
+                    .easeOut(duration: 0.25),
+                    value: navigation.isChatKeyboardActive
+                )
                 } // ← schließt Onboarding-Gate-else (NavigationStack-Branch)
             } else {
                 AppTheme.Colors.background

@@ -14,6 +14,17 @@ final class AppNavigationCoordinator: ObservableObject {
     /// damit User bei Fehltap direkt zum nächsten Footer-Button wechseln kann.
     @Published var isImmersiveArcadeActive = false
 
+    /// **Léa-Chat MVP — Polish (2026-05-10)** — Footer-Hide während das
+    /// System-Keyboard im ChatView sichtbar ist. Erspart visuelle Kollision
+    /// zwischen Tab-Bar und Chat-Input-Bar (WhatsApp-/iMessage-Look) und
+    /// reklamiert die Footer-Fläche, sodass der Chat-Input ohne Doppel-
+    /// Padding direkt über der Keyboard-Kante sitzt.
+    ///
+    /// Wird ausschließlich von `ChatView` gesetzt (via NotificationCenter-
+    /// Listener auf `keyboardWillShow/Hide`). Andere Screens lassen den
+    /// Wert unangetastet — defaults bleibt false.
+    @Published var isChatKeyboardActive = false
+
     init() {
         didCompleteSplashAnimation = Self.isSplashTemporarilyDisabled
     }
@@ -27,7 +38,7 @@ final class AppNavigationCoordinator: ObservableObject {
     }
 
     var shouldShowGlobalChrome: Bool {
-        !shouldShowSplashOverlay && !isImmersiveArcadeActive
+        !shouldShowSplashOverlay && !isImmersiveArcadeActive && !isChatKeyboardActive
     }
 
     var isSettingsScreenActive: Bool {

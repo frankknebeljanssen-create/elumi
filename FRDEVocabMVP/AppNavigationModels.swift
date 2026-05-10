@@ -150,6 +150,16 @@ private struct AppChainAdvanceActionKey: EnvironmentKey {
     static let defaultValue: ((SessionRewardOutcome?) -> Void)? = nil
 }
 
+/// **Léa-Chat MVP — Polish (2026-05-10)** — Closure, mit dem Sub-Screens
+/// (aktuell nur `ChatView`) den globalen Footer suppressen können, solange
+/// das System-Keyboard sichtbar ist. Spiegelt das `appSetImmersiveArcadeAction`-
+/// Pattern: `RootContentView` installiert die Closure, sie schreibt in
+/// `AppNavigationCoordinator.isChatKeyboardActive`. Default `nil` →
+/// Screens, die nicht eingehängt sind, sind no-op.
+private struct AppSetChatKeyboardActiveActionKey: EnvironmentKey {
+    static let defaultValue: ((Bool) -> Void)? = nil
+}
+
 extension EnvironmentValues {
     var appOpenAccountAction: (() -> Void)? {
         get { self[AppOpenAccountActionKey.self] }
@@ -199,6 +209,11 @@ extension EnvironmentValues {
     var appChainAdvanceAction: ((SessionRewardOutcome?) -> Void)? {
         get { self[AppChainAdvanceActionKey.self] }
         set { self[AppChainAdvanceActionKey.self] = newValue }
+    }
+
+    var appSetChatKeyboardActiveAction: ((Bool) -> Void)? {
+        get { self[AppSetChatKeyboardActiveActionKey.self] }
+        set { self[AppSetChatKeyboardActiveActionKey.self] = newValue }
     }
 }
 
