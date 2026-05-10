@@ -256,12 +256,15 @@ final class ChatService {
         needsListSelection = false
 
         let hour = Calendar.current.component(.hour, from: Date())
-        let greeting: String
-        switch hour {
-        case ..<12:  greeting = "Bonjour ! Bien dormi ? 😊"
-        case 12..<18: greeting = "Salut ! Ça va aujourd'hui ?"
-        default:     greeting = "Bonsoir ! Comment s'est passée ta journée ?"
-        }
+        // **Sweep „3A Bug-Fix Iter-2 / Bug E" (2026-05-10)** —
+        // Greeting-Text wird jetzt nach Léa-Niveau gestaffelt
+        // (Frank-Befund: das alte „Comment s'est passée ta journée ?"
+        // war Passé composé und für A1-User über dem Niveau).
+        // Niveau aus dem aktuellen `ChatVocabularyContext.level`
+        // gelesen — bei nil-Context (Lektionswörter-Toggle off oder
+        // keine Liste) Default A1.
+        let level = currentVocabContext()?.level ?? .a1
+        let greeting = Self.firstGreeting(for: level, hour: hour)
 
         // Kurzer Typing-Indicator-Spike, damit's natürlich wirkt.
         isTyping = true
@@ -269,6 +272,39 @@ final class ChatService {
         isTyping = false
 
         appendLeaMessage(text: greeting)
+    }
+
+    /// **Sweep „3A Bug-Fix Iter-2 / Bug E"** — Niveau-staffelte
+    /// Greeting-Tabelle. Frank's Spec:
+    ///   • A1: simpel, Présent only, kurze Floskeln
+    ///   • A2: Steigerung, „aujourd'hui" zugelassen
+    ///   • B1/B2: aktueller Greeting-Pool inkl. Passé composé am
+    ///     Abend („Comment s'est passée ta journée ?")
+    ///
+    /// Pure / static, damit Test/Preview-Aufrufe ohne Service-Instance
+    /// möglich sind.
+    static func firstGreeting(for level: ChatLevel, hour: Int) -> String {
+        // B2 mappt auf B1-Pool — Frank's Spec sagt „gleiche wie B1".
+        switch level {
+        case .a1:
+            switch hour {
+            case ..<12:   return "Salut ! Bien dormi ?"
+            case 12..<18: return "Salut ! Ça va ?"
+            default:      return "Salut ! Bonne journée ?"
+            }
+        case .a2:
+            switch hour {
+            case ..<12:   return "Bonjour ! Bien dormi ?"
+            case 12..<18: return "Salut ! Ça va aujourd'hui ?"
+            default:      return "Salut ! Bonne journée aujourd'hui ?"
+            }
+        case .b1, .b2:
+            switch hour {
+            case ..<12:   return "Bonjour ! Bien dormi ?"
+            case 12..<18: return "Salut ! Ça va aujourd'hui ?"
+            default:      return "Bonsoir ! Comment s'est passée ta journée ?"
+            }
+        }
     }
 
     // MARK: - Session-End-Hooks (Schritt 3A, 2026-05-10)
