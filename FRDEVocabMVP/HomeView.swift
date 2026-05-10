@@ -169,17 +169,12 @@ struct HomeView: View {
             )
 
             // **Live Chat — Léa-Chat MVP Schritt 1 (2026-05-10)** —
-            // Eigene Section zwischen Daily-Drop und Training. Section-
-            // Header „Live Chat" matched den Style der existing
-            // „Deine Tools"-Section (siehe `body` weiter unten).
-            VStack(alignment: .leading, spacing: 8) {
-                SectionLabel(text: "Live Chat", size: 13)
-                    .padding(.horizontal, 4)
-                LeaChatHomeCard {
-                    openHomeScreen(.leaChat)
-                }
+            // Card zwischen Daily-Drop und Training. Section-Header
+            // entfernt (Polish 2026-05-10) — andere Cards auf Home
+            // haben auch keinen Section-Header, Drift weg.
+            LeaChatHomeCard {
+                openHomeScreen(.leaChat)
             }
-            .padding(.top, 4)
 
             WideCard(
                 // **Card-Cleanup 2026-05-07** — Method-Style via
@@ -269,16 +264,16 @@ struct HomeView: View {
                     // zwischen Header und Card-Block). Text-Update
                     // „lernen" → „üben" (User-Spec).
                     //
-                    // **Naming-Sweep 2026-05-06 Iteration 2** —
-                    // Top-Padding 28 → 48 pt. User-Feedback „Was
-                    // möchtest du heute üben + die 4 Cards ein
-                    // bisschen nach unten". Drückt den Section-
-                    // Header und die nachfolgenden Cards um 20 pt
-                    // tiefer; HomeHeader oben bekommt mehr Atemraum.
+                    // **Polish 2026-05-10** — Top-Padding 48 → 24 pt
+                    // (halbiert). Vorher 48 pt für „Atemraum nach
+                    // HomeHeader"; mit dem neuen Live-Chat-Card-
+                    // Block dazwischen rutscht der Section-Header
+                    // nun zu tief — Halbierung bringt ihn wieder
+                    // näher an den Streak-Pill-Block heran.
                     Text("Was möchtest du heute üben?")
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .padding(.top, 48)
+                        .padding(.top, 24)
                         .padding(.bottom, 16)
                         .appEntryTransition(delay: 0.05)
 
