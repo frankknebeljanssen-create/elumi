@@ -168,6 +168,19 @@ struct HomeView: View {
                 badgeForeground: dailyDropBadgeState.foreground
             )
 
+            // **Live Chat — Léa-Chat MVP Schritt 1 (2026-05-10)** —
+            // Eigene Section zwischen Daily-Drop und Training. Section-
+            // Header „Live Chat" matched den Style der existing
+            // „Deine Tools"-Section (siehe `body` weiter unten).
+            VStack(alignment: .leading, spacing: 8) {
+                SectionLabel(text: "Live Chat", size: 13)
+                    .padding(.horizontal, 4)
+                LeaChatHomeCard {
+                    openHomeScreen(.leaChat)
+                }
+            }
+            .padding(.top, 4)
+
             WideCard(
                 // **Card-Cleanup 2026-05-07** — Method-Style via
                 // `subtitle:` + `showsChevron: true` + Method-Padding/

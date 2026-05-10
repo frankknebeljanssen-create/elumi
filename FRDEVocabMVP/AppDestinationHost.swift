@@ -116,6 +116,11 @@ struct AppDestinationHost: View {
                 goHome: goHome,
                 openSettings: openSettings
             )
+        case .leaChat:
+            // **Léa-Chat MVP Schritt 1 (2026-05-10)** — Konversation
+            // mit Léa via Backend-Proxy. ChatService wird bei `.task`
+            // mit dem Environment-`modelContext` konfiguriert.
+            ChatView(onBack: goHome)
         case .trophy:
             // Pokal-Tab — sammelt die ausführlichen Status-Cards, die
             // früher dominant auf Home lagen (Streak, Level/XP,

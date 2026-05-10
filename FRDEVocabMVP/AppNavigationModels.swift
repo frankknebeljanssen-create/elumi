@@ -33,6 +33,12 @@ enum AppScreen: Hashable {
     /// Wörterbuch: Elumi = „dein nächster Schritt".
     case elumi
 
+    /// **Léa-Chat** (2026-05-10, Branch `feature/lea-chat-mvp`) —
+    /// Konversation mit der Persona Léa (15 Jahre, Lyon, FR). Backend
+    /// proxt zu Anthropic Claude Haiku. Erreicht über die „Live Chat"-
+    /// Card auf Home (Section zwischen Daily-Drop und Training).
+    case leaChat
+
     /// **Training-Hub** (2026-05-06, Home-Refactor Hybrid γ v3) — Sub-
     /// Screen, der über die „Training"-Card auf Home erreicht wird.
     /// Bündelt die fünf Lern-Modi: Vokabeln (Allgemein-Slot, einzeln)

@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 @main
 struct FRDEVocabMVPApp: App {
@@ -53,5 +54,10 @@ struct FRDEVocabMVPApp: App {
         WindowGroup {
             ContentView()
         }
+        // **SwiftData ModelContainer** (Léa-Chat MVP Schritt 1, 2026-05-10)
+        // — erste Nutzung von SwiftData im Projekt. Aktuell nur die
+        // `ChatMessage`-Tabelle für Chat-History-Persistenz; weitere
+        // Models werden hier nachgezogen.
+        .modelContainer(for: ChatMessage.self)
     }
 }
