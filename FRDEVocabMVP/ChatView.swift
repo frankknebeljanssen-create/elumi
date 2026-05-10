@@ -66,7 +66,14 @@ struct ChatView: View {
             ChatHeaderView(
                 persona: chatService.currentPersona,
                 onBack: onBack,
-                onSettings: { isSettingsSheetPresented = true }
+                onSettings: { isSettingsSheetPresented = true },
+                // **Schritt 2B-2A** — `isBusy` deckt beide Phasen
+                // ab: 0.6 s pre-stream `isTyping` + den eigentlichen
+                // Stream (`streamingMessageID != nil`). Frank's Spec
+                // erwähnte nur `isTyping`, aber das wäre nur 0.6 s
+                // sichtbar; dies hier matched UX-Intent „während Léa
+                // antwortet".
+                isBusy: chatService.isTyping || chatService.streamingMessageID != nil
             )
 
             messagesScroll

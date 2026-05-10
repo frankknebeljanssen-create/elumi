@@ -12,6 +12,12 @@ struct ChatHeaderView: View {
     let persona: ChatPersona
     let onBack: () -> Void
     var onSettings: (() -> Void)? = nil
+    /// **Schritt 2B-2A (2026-05-10)** — wenn `true`, wird der Subtitle
+    /// auf „tippt…" umgeschaltet (mit Fade). „Busy" deckt sowohl die
+    /// kurze TypingIndicator-Phase (`isTyping`) als auch den Stream
+    /// (`streamingMessageID != nil`) ab — sonst flackert der Subtitle
+    /// nach den 0.6 s Sleep zurück, obwohl Léa noch streamt.
+    var isBusy: Bool = false
 
     var body: some View {
         HStack(alignment: .center, spacing: 10) {
@@ -33,10 +39,20 @@ struct ChatHeaderView: View {
                 Text(persona.name)
                     .font(.system(size: 17, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
-                Text("\(persona.city) \(persona.flagEmoji)")
+
+                // **Schritt 2B-2A** — Subtitle-Switch zwischen Persona-
+                // Standort und „tippt…" mit Fade-Transition. `id(isBusy)`
+                // gibt der Text-View bei jedem Toggle eine neue SwiftUI-
+                // Identity → das alte Text-Element fadet raus, das neue
+                // rein. `.animation(...,value: isBusy)` auf dem
+                // VStack-Parent oben triggert das.
+                Text(isBusy ? "tippt…" : "\(persona.city) \(persona.flagEmoji)")
                     .font(.system(size: 13, weight: .medium, design: .rounded))
                     .foregroundStyle(.white.opacity(0.85))
+                    .id(isBusy)
+                    .transition(.opacity)
             }
+            .animation(.easeOut(duration: 0.2), value: isBusy)
 
             Spacer(minLength: 0)
 
