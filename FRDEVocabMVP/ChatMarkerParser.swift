@@ -88,9 +88,22 @@ enum ChatMarkerParser {
     ///   • `\[FEHLER:` literal
     ///   • `([^\]]+)` — Group 1 = User-Text (alles bis schließendes ])
     ///   • `\]\s*→\s*Kleiner\s+Tipp:` literal mit Whitespace-Toleranz
-    ///   • `([^)]+)` — Group 2 = deutsche Erklärung
-    ///   • `\)` — schließende Klammer
-    private static let errorPattern = #"\(💡\s*\[FEHLER:\s*([^\]]+)\]\s*→\s*Kleiner\s+Tipp:\s*([^)]+)\)"#
+    ///   • `(.+)` — Group 2 = deutsche Erklärung, GREEDY mit
+    ///     dotMatchesLineSeparators
+    ///   • `\)\s*$` — schließende Klammer am Ende der Message
+    ///
+    /// **Smoke-Bug-Fix 2B-2B (2026-05-10)** — vorheriges Pattern
+    /// `([^)]+)\)` brach zu früh ab, sobald die deutsche Erklärung
+    /// selbst eine Klammer enthielt (z.B. `Es heißt "à l'école"
+    /// (nicht "au"), weil...`). Das innere `)` wurde als Marker-
+    /// Close gewertet, der Rest landete in Léas Bubble. Greedy
+    /// `(.+)` mit `\)\s*$`-End-Anchor backtracked bis zur LETZTEN
+    /// schließenden Klammer am Message-Ende — Spec sieht Marker
+    /// ohnehin nur am Ende vor. Trade-off: bei (spec-widrigen)
+    /// Multi-FEHLER-Markern in einer Message würde der Greedy
+    /// alle als einen erfassen — akzeptabel, weil Spec max 1
+    /// erlaubt.
+    private static let errorPattern = #"\(💡\s*\[FEHLER:\s*([^\]]+)\]\s*→\s*Kleiner\s+Tipp:\s*(.+)\)\s*$"#
 
     /// **Schritt 2B-1** — VOCAB-Marker. Group 1 = Wort/Phrase.
     /// Frisst alles bis zur schließenden Bracket — Whitespace-trim
@@ -105,7 +118,11 @@ enum ChatMarkerParser {
     private static let newPattern = #"\[NEW:\s*([^\|\]]+)\|([^\]]+)\]"#
 
     private static let errorRegex: NSRegularExpression? = {
-        try? NSRegularExpression(pattern: errorPattern, options: [])
+        // **2B-2B Smoke-Fix** — `dotMatchesLineSeparators` damit der
+        // Greedy `.+` auch über Newlines hinweggreift; manche
+        // Léa-Antworten haben einen Zeilenumbruch zwischen dem
+        // Konversationstext und dem Marker.
+        try? NSRegularExpression(pattern: errorPattern, options: [.dotMatchesLineSeparators])
     }()
     private static let vocabRegex: NSRegularExpression? = {
         try? NSRegularExpression(pattern: vocabPattern, options: [])
