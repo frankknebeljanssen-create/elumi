@@ -485,6 +485,7 @@
 		CC15FF1800000000ABCDEF01 /* ChatInputBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1800000000ABCDEF02 /* ChatInputBar.swift */; };
 		CC15FF1900000000ABCDEF01 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1900000000ABCDEF02 /* ChatView.swift */; };
 		CC15FF1A00000000ABCDEF01 /* LeaChatHomeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1A00000000ABCDEF02 /* LeaChatHomeCard.swift */; };
+		CC15FF1B00000000ABCDEF01 /* ChatMarkerParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1B00000000ABCDEF02 /* ChatMarkerParser.swift */; };
 		CC15FF0700000000ABCDEF01 /* WideCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0700000000ABCDEF02 /* WideCard.swift */; };
 		CC15FF0800000000ABCDEF01 /* TrainingHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */; };
 		CC15FF0A00000000ABCDEF01 /* TrainingHubTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */; };
@@ -1076,6 +1077,7 @@
 		CC15FF1800000000ABCDEF02 /* ChatInputBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatInputBar.swift; path = FRDEVocabMVP/ChatInputBar.swift; sourceTree = "<group>"; };
 		CC15FF1900000000ABCDEF02 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatView.swift; path = FRDEVocabMVP/ChatView.swift; sourceTree = "<group>"; };
 		CC15FF1A00000000ABCDEF02 /* LeaChatHomeCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LeaChatHomeCard.swift; path = FRDEVocabMVP/LeaChatHomeCard.swift; sourceTree = "<group>"; };
+		CC15FF1B00000000ABCDEF02 /* ChatMarkerParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatMarkerParser.swift; path = FRDEVocabMVP/ChatMarkerParser.swift; sourceTree = "<group>"; };
 		CC15FF0700000000ABCDEF02 /* WideCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WideCard.swift; path = FRDEVocabMVP/WideCard.swift; sourceTree = "<group>"; };
 		CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingHubView.swift; path = FRDEVocabMVP/TrainingHubView.swift; sourceTree = "<group>"; };
 		CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingHubTips.swift; path = FRDEVocabMVP/TrainingHubTips.swift; sourceTree = "<group>"; };
@@ -1236,6 +1238,7 @@
 				CC15FF1800000000ABCDEF02 /* ChatInputBar.swift */,
 				CC15FF1900000000ABCDEF02 /* ChatView.swift */,
 				CC15FF1A00000000ABCDEF02 /* LeaChatHomeCard.swift */,
+				CC15FF1B00000000ABCDEF02 /* ChatMarkerParser.swift */,
 				CC15FF0700000000ABCDEF02 /* WideCard.swift */,
 				CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */,
 				CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */,
@@ -2200,6 +2203,7 @@
 				CC15FF1800000000ABCDEF01 /* ChatInputBar.swift in Sources */,
 				CC15FF1900000000ABCDEF01 /* ChatView.swift in Sources */,
 				CC15FF1A00000000ABCDEF01 /* LeaChatHomeCard.swift in Sources */,
+				CC15FF1B00000000ABCDEF01 /* ChatMarkerParser.swift in Sources */,
 				CC15FF0700000000ABCDEF01 /* WideCard.swift in Sources */,
 				CC15FF0800000000ABCDEF01 /* TrainingHubView.swift in Sources */,
 				CC15FF0A00000000ABCDEF01 /* TrainingHubTips.swift in Sources */,
