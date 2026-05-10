@@ -55,13 +55,30 @@ struct ChatSessionSummarySheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // **Sweep „3A Bug-Fix Iter-2" (2026-05-10)** — explizite
+            // Drag-Indicator-Capsule oben, zusätzlich zum
+            // `.presentationDragIndicator(.visible)`. Frank's Smoke-
+            // Befund: das System-Indicator war zu dezent erkennbar,
+            // User wusste nicht ob Sheet draggable ist. Custom-
+            // Capsule ist 36×4 pt grau (#C7C7CC) — klare iOS-Sheet-
+            // Affordance-Optik, sitzt direkt über dem Header.
+            Capsule()
+                .fill(Color(white: 0.78))
+                .frame(width: 36, height: 4)
+                .padding(.top, 8)
+                .padding(.bottom, 6)
+                .frame(maxWidth: .infinity)
+
             header
 
             content
         }
         .background(Color(red: 0.973, green: 0.973, blue: 0.980).ignoresSafeArea())
         .presentationDetents([.large])
-        .presentationDragIndicator(.visible)
+        // System-Indicator ausgeschaltet — die Custom-Capsule oben
+        // übernimmt die Drag-Affordance allein, sonst zwei Indicators
+        // übereinander.
+        .presentationDragIndicator(.hidden)
         // **Schritt 3A** — Session-End-Hooks feuern genau einmal
         // beim Sheet-Open. Auto-Sammlung passiert silent (keine
         // UI-Indikation), XP/Streak via existing ProgressStore-
@@ -286,22 +303,25 @@ struct ChatSessionSummarySheet: View {
 
     @ViewBuilder
     private var actionButtons: some View {
-        // **Schritt 3A Smoke-Fix Bug B (2026-05-10)** — vorher war
-        // der Schließen-Button bei `canPractice == true` nur als
-        // dezenter Plain-Text-Button ohne Style sichtbar, leicht zu
-        // übersehen. Frank-Befund: „kein Schließen-Button". Jetzt:
-        // immer als gleichwertiger bordered-Button neben dem Üben-
-        // CTA in HStack-Layout (iOS-Sheet-Konvention). Empty-Edge-
-        // Case bleibt mit Schließen als Solo-Primary-CTA.
+        // **Schritt 3A Smoke-Fix Bug B (2026-05-10) Iter-2** —
+        // Schließen-Button als Tertiary-Style (clear bg, cta-color
+        // text) statt vorher `.bordered`. Frank-Spec: „secondary
+        // Button (z.B. clear background, text-Color cta)". Damit
+        // ist der Üben-CTA visuell prominent als Primary; Schließen
+        // ist sekundär aber klar tappable. Empty-Edge-Case behält
+        // Schließen als Solo-Primary.
         VStack(spacing: 0) {
             if canPractice {
-                HStack(spacing: 10) {
+                HStack(spacing: 12) {
                     Button(action: onDismiss) {
                         Text("Schließen")
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.cta)
                             .frame(maxWidth: .infinity)
+                            .frame(height: 50)
+                            .contentShape(Rectangle())
                     }
-                    .buttonStyle(.bordered)
-                    .controlSize(.large)
+                    .buttonStyle(.plain)
 
                     Button(action: onPracticeInFlashcards) {
                         Text("Üben in Karteikarten")
