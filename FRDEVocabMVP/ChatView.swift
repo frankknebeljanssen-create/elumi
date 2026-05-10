@@ -26,6 +26,14 @@ struct ChatView: View {
     /// bei `nil` blockt ChatService den Send via `needsListSelection`.
     let listStore: VocabularyListStore?
 
+    /// **Schritt 2B-2B (2026-05-10)** — wird vom `AppDestinationHost`
+    /// als `replaceTop(.flashcards(nil))` durchgereicht. Wird aus dem
+    /// Post-Session-Summary aufgerufen, wenn der User „Üben in
+    /// Karteikarten" tappt — `replaceTop` poppt ChatView UND pusht
+    /// Flashcards in einem Schritt, der NavigationStack endet bei
+    /// `[home, flashcards]`.
+    let onPracticeInFlashcards: () -> Void
+
     @Environment(\.modelContext) private var modelContext
     /// **Léa-Chat MVP — Polish (2026-05-10)** — Closure, mit der
     /// ChatView den globalen Footer ausblendet, solange das System-
@@ -45,6 +53,35 @@ struct ChatView: View {
     /// Default `true` (Fresh-Install zeigt Toggle als ON; Provider
     /// liest UserDefaults direkt mit demselben Default).
     @AppStorage(appLeaFocusOnLessonKey) private var leaFocusOnLesson: Bool = true
+
+    // MARK: - Session-Tracking (Schritt 2B-2B)
+    //
+    // Eine „Session" entspricht einem ChatView-Open bis Back-Tap.
+    // Beim erneuten Push wird `sessionStartTimestamp` durch das
+    // @State-Default neu auf `Date()` gesetzt — alte Messages aus
+    // dem persisted History zählen NICHT zur Session.
+    //
+    // Der Back-Flow checkt vor dem Pop, ob `shouldShowSummary` greift
+    // (5+ User-Messages ODER ≥1 Message + ≥5 Min Dauer). Wenn ja,
+    // wird das Summary-Sheet eingeblendet, der eigentliche Pop
+    // passiert in `.sheet(onDismiss:)` — abhängig davon, ob der
+    // User „Üben in Karteikarten" oder „Schließen" gewählt hat
+    // (siehe `pendingPracticeNavigation`).
+
+    /// Zeitstempel des aktuellen ChatView-Opens. Default `Date()`
+    /// wird beim ersten View-Init gesetzt; @State persistiert über
+    /// Re-Renders, wird beim Pop+Re-Push neu initialisiert.
+    @State private var sessionStartTimestamp: Date = Date()
+
+    /// Steuert das Summary-Sheet. Wird im `handleBack()` gesetzt,
+    /// wenn der Threshold erfüllt ist.
+    @State private var showSummary: Bool = false
+
+    /// Markiert, dass die Sheet-Dismissal in den Karteikarten-Pfad
+    /// münden soll (User hat „Üben in Karteikarten" getappt). Beim
+    /// Sheet-OnDismiss wertet ChatView den Flag aus: `true` →
+    /// `onPracticeInFlashcards()`, `false` → `onBack()`.
+    @State private var pendingPracticeNavigation: Bool = false
     /// **Schritt 2B-1 (2026-05-10)** — wenn nicht-nil, zeigt ChatView
     /// einen Tooltip-Overlay über dem Chat. Wird gesetzt, wenn der
     /// User auf ein blau unterstrichenes neues Wort in einer Léa-
@@ -65,7 +102,11 @@ struct ChatView: View {
         VStack(spacing: 0) {
             ChatHeaderView(
                 persona: chatService.currentPersona,
-                onBack: onBack,
+                // **Schritt 2B-2B** — Back-Tap geht durch den
+                // `handleBack()`-Interceptor, der den Threshold-
+                // Check macht und entweder das Summary-Sheet öffnet
+                // oder direkt zu Home popt.
+                onBack: { handleBack() },
                 onSettings: { isSettingsSheetPresented = true },
                 // **Schritt 2B-2A** — `isBusy` deckt beide Phasen
                 // ab: 0.6 s pre-stream `isTyping` + den eigentlichen
@@ -178,6 +219,35 @@ struct ChatView: View {
             }
         ) {
             listSelectionSheetContent
+        }
+        // **Schritt 2B-2B (2026-05-10)** — Post-Session-Summary-Sheet.
+        // `showSummary` wird im `handleBack()` gesetzt, wenn der
+        // Threshold erfüllt ist. Sheet's `onDismiss` läuft IMMER —
+        // egal ob Drag-down, Schließen-Button oder Üben-Button. Wir
+        // nutzen `pendingPracticeNavigation` um die zwei finalen
+        // Pfade zu unterscheiden: pop-zu-Home vs. ChatView-replaceTop-
+        // mit-Flashcards.
+        .sheet(
+            isPresented: $showSummary,
+            onDismiss: {
+                if pendingPracticeNavigation {
+                    pendingPracticeNavigation = false
+                    onPracticeInFlashcards()
+                } else {
+                    onBack()
+                }
+            }
+        ) {
+            ChatSessionSummarySheet(
+                sessionMessages: chatService.messages.filter {
+                    $0.timestamp >= sessionStartTimestamp
+                },
+                onDismiss: { showSummary = false },
+                onPracticeInFlashcards: {
+                    pendingPracticeNavigation = true
+                    showSummary = false
+                }
+            )
         }
         // **Léa-Chat MVP — Keyboard-Footer-Hide (2026-05-10)**
         // Während das System-Keyboard sichtbar ist, blenden wir den
@@ -434,6 +504,47 @@ struct ChatView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Back-Flow (Schritt 2B-2B)
+
+    /// Intercepted Back-Handler. Bei erfülltem Threshold öffnet
+    /// das Summary-Sheet (`showSummary = true`); sonst direkter
+    /// Pop zu Home.
+    ///
+    /// **Trigger-Spec (Frank)**: Summary-Sheet erscheint NUR bei
+    /// expliziter Back-Navigation. App-Background, Modal-Open,
+    /// Sheet-Open zählen NICHT — daher liegt die Logik HIER auf
+    /// dem Back-Tap und nicht in `.onDisappear`.
+    private func handleBack() {
+        if shouldShowSummary {
+            showSummary = true
+        } else {
+            onBack()
+        }
+    }
+
+    /// Threshold-Check für das Summary-Sheet. Frank's Regeln:
+    ///   • ≥5 User-Messages innerhalb der Session, ODER
+    ///   • ≥1 User-Message UND Session-Dauer ≥ 300 s (5 Min).
+    private var shouldShowSummary: Bool {
+        let userCount = sessionUserMessages.count
+        if userCount >= 5 { return true }
+        if userCount >= 1 && sessionDuration >= 300 { return true }
+        return false
+    }
+
+    /// User-Messages der aktuellen Session (nach `sessionStartTimestamp`
+    /// gefiltert). Persisted History aus früheren Sessions zählt NICHT.
+    private var sessionUserMessages: [ChatMessage] {
+        chatService.messages.filter {
+            $0.sender == .user && $0.timestamp >= sessionStartTimestamp
+        }
+    }
+
+    /// Session-Dauer in Sekunden ab `sessionStartTimestamp` bis jetzt.
+    private var sessionDuration: TimeInterval {
+        Date().timeIntervalSince(sessionStartTimestamp)
     }
 
     // MARK: - Timestamp-Show-Logic (Schritt 2B-2A)

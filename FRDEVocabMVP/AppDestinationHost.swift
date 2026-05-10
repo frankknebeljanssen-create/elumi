@@ -128,7 +128,18 @@ struct AppDestinationHost: View {
             // ChatView akzeptiert das Optional und delegiert das
             // Modal-Handling an `ChatService.needsListSelection`,
             // falls der Store noch nicht hochgefahren ist.
-            ChatView(onBack: goHome, listStore: runtime.listStore)
+            //
+            // **Schritt 2B-2B (2026-05-10)** —
+            // `onPracticeInFlashcards` wird vom Post-Session-Summary
+            // gerufen. `replaceTop(.flashcards(nil))` poppt ChatView
+            // UND pusht Flashcards-Setup in einem Schritt, sodass der
+            // User nach „Üben in Karteikarten" direkt im Setup landet
+            // ohne ChatView dazwischen.
+            ChatView(
+                onBack: goHome,
+                listStore: runtime.listStore,
+                onPracticeInFlashcards: { replaceTop(.flashcards(nil)) }
+            )
         case .trophy:
             // Pokal-Tab — sammelt die ausführlichen Status-Cards, die
             // früher dominant auf Home lagen (Streak, Level/XP,

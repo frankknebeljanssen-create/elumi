@@ -490,6 +490,7 @@
 		CC15FF1D00000000ABCDEF01 /* ChatVocabularyProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1D00000000ABCDEF02 /* ChatVocabularyProvider.swift */; };
 		CC15FF1E00000000ABCDEF01 /* ChatNewWordTooltipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1E00000000ABCDEF02 /* ChatNewWordTooltipView.swift */; };
 		CC15FF1F00000000ABCDEF01 /* ChatTimestampLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1F00000000ABCDEF02 /* ChatTimestampLabel.swift */; };
+		CC15FF2000000000ABCDEF01 /* ChatSessionSummarySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF2000000000ABCDEF02 /* ChatSessionSummarySheet.swift */; };
 		CC15FF0700000000ABCDEF01 /* WideCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0700000000ABCDEF02 /* WideCard.swift */; };
 		CC15FF0800000000ABCDEF01 /* TrainingHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */; };
 		CC15FF0A00000000ABCDEF01 /* TrainingHubTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */; };
@@ -1086,6 +1087,7 @@
 		CC15FF1D00000000ABCDEF02 /* ChatVocabularyProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatVocabularyProvider.swift; path = FRDEVocabMVP/ChatVocabularyProvider.swift; sourceTree = "<group>"; };
 		CC15FF1E00000000ABCDEF02 /* ChatNewWordTooltipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatNewWordTooltipView.swift; path = FRDEVocabMVP/ChatNewWordTooltipView.swift; sourceTree = "<group>"; };
 		CC15FF1F00000000ABCDEF02 /* ChatTimestampLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatTimestampLabel.swift; path = FRDEVocabMVP/ChatTimestampLabel.swift; sourceTree = "<group>"; };
+		CC15FF2000000000ABCDEF02 /* ChatSessionSummarySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatSessionSummarySheet.swift; path = FRDEVocabMVP/ChatSessionSummarySheet.swift; sourceTree = "<group>"; };
 		CC15FF0700000000ABCDEF02 /* WideCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WideCard.swift; path = FRDEVocabMVP/WideCard.swift; sourceTree = "<group>"; };
 		CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingHubView.swift; path = FRDEVocabMVP/TrainingHubView.swift; sourceTree = "<group>"; };
 		CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingHubTips.swift; path = FRDEVocabMVP/TrainingHubTips.swift; sourceTree = "<group>"; };
@@ -1251,6 +1253,7 @@
 				CC15FF1D00000000ABCDEF02 /* ChatVocabularyProvider.swift */,
 				CC15FF1E00000000ABCDEF02 /* ChatNewWordTooltipView.swift */,
 				CC15FF1F00000000ABCDEF02 /* ChatTimestampLabel.swift */,
+				CC15FF2000000000ABCDEF02 /* ChatSessionSummarySheet.swift */,
 				CC15FF0700000000ABCDEF02 /* WideCard.swift */,
 				CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */,
 				CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */,
@@ -2220,6 +2223,7 @@
 				CC15FF1D00000000ABCDEF01 /* ChatVocabularyProvider.swift in Sources */,
 				CC15FF1E00000000ABCDEF01 /* ChatNewWordTooltipView.swift in Sources */,
 				CC15FF1F00000000ABCDEF01 /* ChatTimestampLabel.swift in Sources */,
+				CC15FF2000000000ABCDEF01 /* ChatSessionSummarySheet.swift in Sources */,
 				CC15FF0700000000ABCDEF01 /* WideCard.swift in Sources */,
 				CC15FF0800000000ABCDEF01 /* TrainingHubView.swift in Sources */,
 				CC15FF0A00000000ABCDEF01 /* TrainingHubTips.swift in Sources */,
