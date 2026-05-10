@@ -274,7 +274,12 @@ struct HomeView: View {
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .padding(.top, 24)
-                        .padding(.bottom, 16)
+                        // **Polish 2026-05-10 Iter-3** — Bottom-Padding
+                        // 16 → 10. Section-Header rückt enger an die
+                        // Karteikarten/Quiz-Hero-Reihe; das 22 pt-bold
+                        // Heading hat schon eigene Linienhöhe und
+                        // braucht keinen extra Atemraum drunter.
+                        .padding(.bottom, 10)
                         .appEntryTransition(delay: 0.05)
 
                     // Methoden-Cards: Karteikarten + Quiz Hero-Reihe
@@ -294,8 +299,16 @@ struct HomeView: View {
                         // Layout-Rhythmus zu brechen. Training-Card
                         // darunter rückt durch das interne VStack-
                         // Spacing (12pt) entsprechend mit.
+                        //
+                        // **Polish 2026-05-10 Iter-3** — Bottom-Padding
+                        // 24 → 14 → 8. Frank-Feedback (Iter-4): Abstand
+                        // immer noch zu groß; weiter zusammenzogen.
+                        // Zusammen mit dem 2-pt-Spacer drunter sitzt
+                        // der Hairline-Divider jetzt mit insgesamt
+                        // ~10 pt unter der Training-Card. Top-Padding
+                        // 20 bleibt wegen Daily-Drop-Badge.
                         .padding(.top, 20)
-                        .padding(.bottom, 24)
+                        .padding(.bottom, 8)
                         .appEntryTransition(delay: 0.15)
 
                     // **Naming-Sweep 2026-05-06 Iteration 6** — vom
@@ -303,10 +316,11 @@ struct HomeView: View {
                     // (der Tools ans Footer drückte) zu einem fixen
                     // 8 pt Abstand. Iterativ über 56 → 24 → 16 → 8 pt
                     // gedrückt nach mehreren User-Feedback-Runden.
-                    // Tools sitzen jetzt eng an den Wide-Cards; der
-                    // Hairline-Divider darunter bleibt der primäre
-                    // Zonen-Trenner.
-                    Color.clear.frame(height: 8)
+                    //
+                    // **Polish 2026-05-10 Iter-3 → Iter-4** — 8 → 6
+                    // → 2 pt. Reine Atemluft zwischen Training-Card
+                    // und Hairline-Divider; nicht mehr.
+                    Color.clear.frame(height: 2)
 
                     // **Top-Trennlinie** vor der Tools-Sektion —
                     // dezenter Hairline (0.5 pt, border-token).
