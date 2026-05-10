@@ -474,6 +474,17 @@
 		CC15FF0500000000ABCDEF01 /* MethodCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0500000000ABCDEF02 /* MethodCard.swift */; };
 		CC15FF0600000000ABCDEF01 /* ModuleCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0600000000ABCDEF02 /* ModuleCard.swift */; };
 		CC15FF0E00000000ABCDEF01 /* AnswerModeSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0E00000000ABCDEF02 /* AnswerModeSelector.swift */; };
+		CC15FF1000000000ABCDEF01 /* ChatMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1000000000ABCDEF02 /* ChatMessage.swift */; };
+		CC15FF1100000000ABCDEF01 /* ChatPersona.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1100000000ABCDEF02 /* ChatPersona.swift */; };
+		CC15FF1200000000ABCDEF01 /* ChatConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1200000000ABCDEF02 /* ChatConfig.swift */; };
+		CC15FF1300000000ABCDEF01 /* DeviceTokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1300000000ABCDEF02 /* DeviceTokenManager.swift */; };
+		CC15FF1400000000ABCDEF01 /* ChatService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1400000000ABCDEF02 /* ChatService.swift */; };
+		CC15FF1500000000ABCDEF01 /* ChatHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1500000000ABCDEF02 /* ChatHeaderView.swift */; };
+		CC15FF1600000000ABCDEF01 /* ChatBubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1600000000ABCDEF02 /* ChatBubbleView.swift */; };
+		CC15FF1700000000ABCDEF01 /* ChatTypingIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1700000000ABCDEF02 /* ChatTypingIndicatorView.swift */; };
+		CC15FF1800000000ABCDEF01 /* ChatInputBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1800000000ABCDEF02 /* ChatInputBar.swift */; };
+		CC15FF1900000000ABCDEF01 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1900000000ABCDEF02 /* ChatView.swift */; };
+		CC15FF1A00000000ABCDEF01 /* LeaChatHomeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1A00000000ABCDEF02 /* LeaChatHomeCard.swift */; };
 		CC15FF0700000000ABCDEF01 /* WideCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0700000000ABCDEF02 /* WideCard.swift */; };
 		CC15FF0800000000ABCDEF01 /* TrainingHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */; };
 		CC15FF0A00000000ABCDEF01 /* TrainingHubTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */; };
@@ -1054,6 +1065,17 @@
 		CC15FF0500000000ABCDEF02 /* MethodCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MethodCard.swift; path = FRDEVocabMVP/MethodCard.swift; sourceTree = "<group>"; };
 		CC15FF0600000000ABCDEF02 /* ModuleCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ModuleCard.swift; path = FRDEVocabMVP/ModuleCard.swift; sourceTree = "<group>"; };
 		CC15FF0E00000000ABCDEF02 /* AnswerModeSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AnswerModeSelector.swift; path = FRDEVocabMVP/AnswerModeSelector.swift; sourceTree = "<group>"; };
+		CC15FF1000000000ABCDEF02 /* ChatMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatMessage.swift; path = FRDEVocabMVP/ChatMessage.swift; sourceTree = "<group>"; };
+		CC15FF1100000000ABCDEF02 /* ChatPersona.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatPersona.swift; path = FRDEVocabMVP/ChatPersona.swift; sourceTree = "<group>"; };
+		CC15FF1200000000ABCDEF02 /* ChatConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatConfig.swift; path = FRDEVocabMVP/ChatConfig.swift; sourceTree = "<group>"; };
+		CC15FF1300000000ABCDEF02 /* DeviceTokenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DeviceTokenManager.swift; path = FRDEVocabMVP/DeviceTokenManager.swift; sourceTree = "<group>"; };
+		CC15FF1400000000ABCDEF02 /* ChatService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatService.swift; path = FRDEVocabMVP/ChatService.swift; sourceTree = "<group>"; };
+		CC15FF1500000000ABCDEF02 /* ChatHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatHeaderView.swift; path = FRDEVocabMVP/ChatHeaderView.swift; sourceTree = "<group>"; };
+		CC15FF1600000000ABCDEF02 /* ChatBubbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatBubbleView.swift; path = FRDEVocabMVP/ChatBubbleView.swift; sourceTree = "<group>"; };
+		CC15FF1700000000ABCDEF02 /* ChatTypingIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatTypingIndicatorView.swift; path = FRDEVocabMVP/ChatTypingIndicatorView.swift; sourceTree = "<group>"; };
+		CC15FF1800000000ABCDEF02 /* ChatInputBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatInputBar.swift; path = FRDEVocabMVP/ChatInputBar.swift; sourceTree = "<group>"; };
+		CC15FF1900000000ABCDEF02 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatView.swift; path = FRDEVocabMVP/ChatView.swift; sourceTree = "<group>"; };
+		CC15FF1A00000000ABCDEF02 /* LeaChatHomeCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LeaChatHomeCard.swift; path = FRDEVocabMVP/LeaChatHomeCard.swift; sourceTree = "<group>"; };
 		CC15FF0700000000ABCDEF02 /* WideCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WideCard.swift; path = FRDEVocabMVP/WideCard.swift; sourceTree = "<group>"; };
 		CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingHubView.swift; path = FRDEVocabMVP/TrainingHubView.swift; sourceTree = "<group>"; };
 		CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingHubTips.swift; path = FRDEVocabMVP/TrainingHubTips.swift; sourceTree = "<group>"; };
@@ -1203,6 +1225,17 @@
 				CC15FF0500000000ABCDEF02 /* MethodCard.swift */,
 				CC15FF0600000000ABCDEF02 /* ModuleCard.swift */,
 				CC15FF0E00000000ABCDEF02 /* AnswerModeSelector.swift */,
+				CC15FF1000000000ABCDEF02 /* ChatMessage.swift */,
+				CC15FF1100000000ABCDEF02 /* ChatPersona.swift */,
+				CC15FF1200000000ABCDEF02 /* ChatConfig.swift */,
+				CC15FF1300000000ABCDEF02 /* DeviceTokenManager.swift */,
+				CC15FF1400000000ABCDEF02 /* ChatService.swift */,
+				CC15FF1500000000ABCDEF02 /* ChatHeaderView.swift */,
+				CC15FF1600000000ABCDEF02 /* ChatBubbleView.swift */,
+				CC15FF1700000000ABCDEF02 /* ChatTypingIndicatorView.swift */,
+				CC15FF1800000000ABCDEF02 /* ChatInputBar.swift */,
+				CC15FF1900000000ABCDEF02 /* ChatView.swift */,
+				CC15FF1A00000000ABCDEF02 /* LeaChatHomeCard.swift */,
 				CC15FF0700000000ABCDEF02 /* WideCard.swift */,
 				CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */,
 				CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */,
@@ -2156,6 +2189,17 @@
 				CC15FF0500000000ABCDEF01 /* MethodCard.swift in Sources */,
 				CC15FF0600000000ABCDEF01 /* ModuleCard.swift in Sources */,
 				CC15FF0E00000000ABCDEF01 /* AnswerModeSelector.swift in Sources */,
+				CC15FF1000000000ABCDEF01 /* ChatMessage.swift in Sources */,
+				CC15FF1100000000ABCDEF01 /* ChatPersona.swift in Sources */,
+				CC15FF1200000000ABCDEF01 /* ChatConfig.swift in Sources */,
+				CC15FF1300000000ABCDEF01 /* DeviceTokenManager.swift in Sources */,
+				CC15FF1400000000ABCDEF01 /* ChatService.swift in Sources */,
+				CC15FF1500000000ABCDEF01 /* ChatHeaderView.swift in Sources */,
+				CC15FF1600000000ABCDEF01 /* ChatBubbleView.swift in Sources */,
+				CC15FF1700000000ABCDEF01 /* ChatTypingIndicatorView.swift in Sources */,
+				CC15FF1800000000ABCDEF01 /* ChatInputBar.swift in Sources */,
+				CC15FF1900000000ABCDEF01 /* ChatView.swift in Sources */,
+				CC15FF1A00000000ABCDEF01 /* LeaChatHomeCard.swift in Sources */,
 				CC15FF0700000000ABCDEF01 /* WideCard.swift in Sources */,
 				CC15FF0800000000ABCDEF01 /* TrainingHubView.swift in Sources */,
 				CC15FF0A00000000ABCDEF01 /* TrainingHubTips.swift in Sources */,
