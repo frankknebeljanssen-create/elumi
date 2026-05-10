@@ -115,6 +115,17 @@ let appUseGlobalListSelectionKey = "elumi.lists.useGlobalSelection.v1"
 /// `VocabularyListSelectionResolver.currentGlobalSelectedListIDs()`.
 let appGlobalSelectedListIDsKey = "elumi.lists.globalSelection.v1"
 
+/// **Léa-Chat — Lektionswörter-Fokus-Toggle** (Schritt 2B-2A, 2026-05-10).
+/// Wenn `true` (Default), liest der `ChatVocabularyProvider` die aktive
+/// Listen-Auswahl + Lernjahr-Max und baut den Wortschatz-Block in den
+/// Léa-System-Prompt ein. Wenn `false`, läuft der Chat als „freie
+/// Konversation" — kein Wortschatz, kein Niveau-Mapping aus Listen,
+/// kein Listen-Auswahl-Modal-Zwang. Léa antwortet auf Default-Niveau
+/// (A1) ohne explizite VOCAB-/Korrektur-Priorisierung auf Lektionswörter.
+/// Single-Source-of-Truth-Lookup über UserDefaults direkt in
+/// `ChatVocabularyProvider.currentContext(...)`.
+let appLeaFocusOnLessonKey = "elumi.lea.focusOnLesson.v1"
+
 let appQuizSelectedListIDsKey = "quiz.selectedListIDs.v1"
 let appFlashcardsSelectedListIDsKey = "flashcards.selectedListIDs.v1"
 let appFlashcardsMasteryThresholdKey = "flashcards.masteryThreshold.v1"

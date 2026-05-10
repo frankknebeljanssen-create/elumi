@@ -58,8 +58,26 @@ enum ChatVocabularyProvider {
     /// `ChatVocabularyContext`. `nil`, wenn keine Liste aktiv ist
     /// — der Caller (ChatService) interpretiert das als
     /// „needsListSelection" und blockt den Send.
+    ///
+    /// **Schritt 2B-2A (2026-05-10) — Lektionswörter-Toggle**:
+    /// Wenn der User den `appLeaFocusOnLessonKey` ausschaltet,
+    /// liefert der Provider direkt einen leeren Default-Kontext
+    /// (`words: []`, `level: .a1`) zurück — KEIN nil. Damit
+    /// triggert ChatService den Modal-Pfad NICHT, der Chat läuft
+    /// als freie Konversation. Erst wenn der Toggle ON ist UND
+    /// keine Liste aktiv ist, returns nil → Modal greift wie bisher.
     @MainActor
     static func currentContext(from listStore: VocabularyListStore) -> ChatVocabularyContext? {
+        // **Lektionswörter-Toggle**: defaults `true`, weil der Key
+        // initial nie geschrieben wurde. `object(forKey:)` liefert
+        // `nil` für nicht-gesetzte Keys — wir mappen das auf `true`.
+        let focusOnLesson = (UserDefaults.standard.object(forKey: appLeaFocusOnLessonKey) as? Bool) ?? true
+        guard focusOnLesson else {
+            // Toggle OFF → Default-Kontext (leer). Léa erfährt nichts
+            // über Lektionswörter, antwortet free conversation auf A1.
+            return ChatVocabularyContext(words: [], level: .a1, listNames: [])
+        }
+
         guard let selectedIDs = VocabularyListSelectionResolver.currentGlobalSelectedListIDs(),
               !selectedIDs.isEmpty
         else {

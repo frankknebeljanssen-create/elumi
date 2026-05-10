@@ -41,6 +41,10 @@ struct ChatView: View {
     /// Reset-Button im Settings-Sheet. Verhindert versehentliches
     /// Wegwischen des Chat-Verlaufs durch Fat-Finger-Tap.
     @State private var isResetConfirmPresented: Bool = false
+    /// **Schritt 2B-2A (2026-05-10)** — Lektionswörter-Fokus-Toggle.
+    /// Default `true` (Fresh-Install zeigt Toggle als ON; Provider
+    /// liest UserDefaults direkt mit demselben Default).
+    @AppStorage(appLeaFocusOnLessonKey) private var leaFocusOnLesson: Bool = true
     /// **Schritt 2B-1 (2026-05-10)** — wenn nicht-nil, zeigt ChatView
     /// einen Tooltip-Overlay über dem Chat. Wird gesetzt, wenn der
     /// User auf ein blau unterstrichenes neues Wort in einer Léa-
@@ -197,20 +201,37 @@ struct ChatView: View {
         .sheet(isPresented: $isSettingsSheetPresented) {
             // **Schritt 2A (2026-05-10)** — Sheet erweitert um den
             // Smoke-Helper „Chat-Verlauf zurücksetzen" (siehe
-            // `ChatService.resetHistory()`). Der Reset-Button ist
-            // `disabled` während eines aktiven Streams, damit der
-            // Loop nicht in eine detached SwiftData-Instanz schreibt.
-            // Persona-Settings folgen in späteren Schritten.
-            VStack(spacing: 20) {
+            // `ChatService.resetHistory()`).
+            //
+            // **Schritt 2B-2A (2026-05-10)** — Toggle „Lektionswörter
+            // benutzen" oben drüber, mit erklärendem Subtitle. Toggle
+            // schreibt via @AppStorage in `appLeaFocusOnLessonKey`
+            // → der `ChatVocabularyProvider` liest beim nächsten
+            // Send/Greet diesen Wert frisch und schaltet dann zwischen
+            // „Wortschatz-Fokus" und „freier Konversation" hin und her.
+            VStack(alignment: .leading, spacing: 20) {
                 Text("Einstellungen")
                     .font(.system(size: 22, weight: .black, design: .rounded))
+                    .frame(maxWidth: .infinity, alignment: .center)
 
-                Text("Persona-Settings folgen in Schritt 2.")
-                    .font(.system(size: 14))
-                    .foregroundStyle(.secondary)
+                // **Toggle-Row** — schlichte iOS-Settings-Anmutung,
+                // keine Elumi-Card-Tokens. Title + Subtitle untereinander,
+                // Toggle rechts.
+                HStack(alignment: .center, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Lektionswörter benutzen")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("Léa nutzt deine aktive Wortliste")
+                            .font(.system(size: 13, weight: .regular))
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 8)
+                    Toggle("", isOn: $leaFocusOnLesson)
+                        .labelsHidden()
+                }
+                .padding(.vertical, 4)
 
                 Divider()
-                    .padding(.vertical, 4)
 
                 Button(role: .destructive) {
                     isResetConfirmPresented = true
@@ -227,9 +248,12 @@ struct ChatView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
+                .frame(maxWidth: .infinity)
                 .padding(.top, 4)
             }
-            .padding(40)
+            .padding(.horizontal, 28)
+            .padding(.vertical, 32)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .presentationDetents([.medium])
             .confirmationDialog(
                 "Chat-Verlauf wirklich zurücksetzen?",
