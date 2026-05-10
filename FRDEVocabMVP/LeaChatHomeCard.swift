@@ -30,14 +30,24 @@ struct LeaChatHomeCard: View {
 
     var body: some View {
         Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 10) {
+            // **Polish 2026-05-10** — Höhe an Daily Drop + Training
+            // angeglichen (beide WideCard `height: 86`). Vorher
+            // intrinsisch ~104 pt → brach den vertikalen Rhythmus
+            // der Wide-Cards-Reihe. Inhalt entsprechend kompaktiert:
+            //   • Avatar 48 → 40 (matched Daily-Drop-Icon-Frame)
+            //   • VStack-Spacing 10 → 6
+            //   • Vertical-Padding 14 → 12 (matched Daily Drop)
+            //   • hasHistory-Preview lineLimit 2 → 1
+            //   • Title-Font 16 → 15, Subtitle 13 → 12
+            VStack(alignment: .leading, spacing: 6) {
                 preTitleRow
 
                 contentRow
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 14)
+            .padding(.vertical, 12)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(height: 86)
             .background(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(Color.white)
@@ -80,27 +90,28 @@ struct LeaChatHomeCard: View {
     @ViewBuilder
     private var contentRow: some View {
         if hasHistory, let last = lastLeaMessage {
-            HStack(alignment: .top, spacing: 12) {
-                ChatAvatarView(size: 48)
+            HStack(alignment: .center, spacing: 12) {
+                ChatAvatarView(size: 40)
 
                 Text(last.text)
-                    .font(.system(size: 15, weight: .regular))
+                    .font(.system(size: 14, weight: .regular))
                     .foregroundStyle(Color(red: 0.102, green: 0.102, blue: 0.102))
-                    .lineLimit(2)
+                    .lineLimit(1)
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         } else {
-            HStack(alignment: .center, spacing: 14) {
-                ChatAvatarView(size: 48)
+            HStack(alignment: .center, spacing: 12) {
+                ChatAvatarView(size: 40)
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 1) {
                     Text("Chat mit Léa")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
                         .foregroundStyle(Color(red: 0.102, green: 0.102, blue: 0.102))
                     Text("Sag bonjour zu Léa 🇫🇷")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
 
                 Spacer(minLength: 0)

@@ -318,18 +318,21 @@ struct HomeView: View {
                         .padding(.horizontal, -AppLayout.screenPadding)
                         .appEntryTransition(delay: 0.2)
 
-                    // Sub-Section-Label „DEINE TOOLS" — Größe 11 →
-                    // 13 pt (User-Spec: prominenter ohne den CAPS-
-                    // Charakter zu verlieren). Padding-top 16 nach
-                    // Trennlinie.
-                    SectionLabel(text: "Deine Tools", size: 13)
-                        .padding(.top, 16)
-                        .appEntryTransition(delay: 0.22)
-
-                    // 2 Tools-Cards quer (Typ C, je 76 pt).
+                    // **Polish 2026-05-10** — „Deine Tools"-Section-
+                    // Label entfernt. Drift gegenüber dem Rest der
+                    // Home-Sections (Daily Drop, Live Chat, Training
+                    // haben keinen Section-Header). Trennlinie davor
+                    // bleibt als visueller Anker zwischen Hauptmodul-
+                    // Block und Tools-Block. `.padding(.top, 16)`
+                    // wandert vom (gelöschten) SectionLabel hoch
+                    // auf die toolsRow, damit der Abstand zur
+                    // Trennlinie unverändert bleibt; entry-delay 0.22
+                    // (vorher 0.25, jetzt einer Stufe schneller, weil
+                    // ein Stagger-Step ausfällt).
                     toolsRow
+                        .padding(.top, 16)
                         .padding(.bottom, 16)
-                        .appEntryTransition(delay: 0.25)
+                        .appEntryTransition(delay: 0.22)
 
                     Color.clear.frame(height: homeFooterClearance)
                 }
