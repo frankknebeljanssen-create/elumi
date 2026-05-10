@@ -267,6 +267,20 @@ struct ChatView: View {
                 onPracticeInFlashcards: {
                     pendingPracticeNavigation = true
                     showSummary = false
+                },
+                // **Schritt 3A** — wenn das Sheet erscheint, läuft
+                // hier die Session-End-Logik: Auto-Sammlung in den
+                // „Aus Chat"-Stapel, +15 XP, Streak-Tagesziel-Hook.
+                // Wir filtern auf Session-Messages, damit Auto-Sammlung
+                // nicht persisted History aus früheren Sessions
+                // nochmal mit-rüber-zieht.
+                onSessionEnded: {
+                    chatService.recordSessionEnd(
+                        messages: chatService.messages.filter {
+                            $0.timestamp >= sessionStartTimestamp
+                        },
+                        duration: sessionDuration
+                    )
                 }
             )
         }

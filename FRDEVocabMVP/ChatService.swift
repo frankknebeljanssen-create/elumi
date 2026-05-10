@@ -271,6 +271,155 @@ final class ChatService {
         appendLeaMessage(text: greeting)
     }
 
+    // MARK: - Session-End-Hooks (Schritt 3A, 2026-05-10)
+
+    /// Wird vom `ChatSessionSummarySheet` in `.onAppear` aufgerufen,
+    /// nachdem der Threshold erreicht ist. Drei Pflichten:
+    ///   1. Auto-Sammlung der Korrekturen + neuen Wörter in den
+    ///      Custom-VocabularyList „Aus Chat mit Léa".
+    ///   2. +15 XP via `ProgressStore.mutate` direkt — wir umgehen
+    ///      `ProgressService.record(session:)`, weil dessen
+    ///      `correctCount × 10`-Math nicht zur Chat-Session passt
+    ///      (eine Chat-Session hat keine klassische correct/wrong-
+    ///      Zählung).
+    ///   3. Streak-Hook via `DailyChallengeStore.recordSession(...)`
+    ///      mit synthetischer LearningSession (origin: .leaChat).
+    ///      Threshold-Regel sitzt in `LearningSession.meetsMinimumThreshold`.
+    ///
+    /// Idempotent ist NICHT gewährleistet: wenn der User das Sheet
+    /// zweimal öffnet (was im aktuellen Flow nicht möglich ist —
+    /// Sheet erscheint genau einmal pro Session-End), würde XP
+    /// doppelt addiert. Sollte das jemals nötig werden: Session-ID-
+    /// basiertes Throttling einführen.
+    ///
+    /// **Schritt 3A (γ-Spec)** — `duration` wird durchgereicht, damit
+    /// die synthetische LearningSession den 1+Msg+5min-Pfad
+    /// abbilden kann: bei kurzem Chat aber langer Dauer wird
+    /// `correctCount` auf 5 inflatet, sodass `meetsMinimumThreshold`
+    /// (`correctCount >= 5`) trotzdem greift.
+    func recordSessionEnd(messages sessionMessages: [ChatMessage], duration: TimeInterval) {
+        // 1) Auto-Sammlung
+        collectChatItemsToStapel(from: sessionMessages)
+
+        // 2) XP-Increment — direktes mutate, +15 fix.
+        ProgressStore.shared.mutate { $0.totalXP += 15 }
+
+        // 3) Streak-Hook. correctCount-Synthesis kodiert beide
+        // Summary-Trigger-Pfade in einen Wert:
+        //   • Pfad A (≥5 User-Messages): correctCount = userMsgCount
+        //   • Pfad B (≥1 + ≥300 s):       correctCount = 5 (inflatet)
+        // Beide hitten `meetsMinimumThreshold` (>=5) zuverlässig.
+        // ChatView ruft diese Methode nur dann, wenn shouldShowSummary
+        // schon true ist — ein Pfad muss daher zugetroffen sein.
+        let userMsgCount = sessionMessages.filter { $0.sender == .user }.count
+        let synthesizedCount: Int
+        if userMsgCount >= 5 {
+            synthesizedCount = userMsgCount
+        } else if userMsgCount >= 1, duration >= 300 {
+            synthesizedCount = 5
+        } else {
+            // Defensive Fallback — sollte nie greifen, weil ChatView
+            // den Pre-Check macht. Setzen auf 5, damit Streak-Hook
+            // trotzdem feuert (User hat das Sheet gesehen, also
+            // qualifiziert).
+            synthesizedCount = 5
+        }
+        let synthetic = LearningSession(
+            origin: .leaChat,
+            correctCount: synthesizedCount
+        )
+        _ = DailyChallengeStore.shared.recordSession(synthetic)
+    }
+
+    /// Iteriert die Session-Messages und packt jedes Korrektur-Pair
+    /// + jedes neue Léa-Wort als VocabularyItem in den Chat-Stapel.
+    /// Skippt silent bei nil-listStore (z.B. wenn der Service nur
+    /// vom HomeCard ohne Store konfiguriert wurde).
+    private func collectChatItemsToStapel(from sessionMessages: [ChatMessage]) {
+        guard let listStore else { return }
+
+        // Korrektur-Cards: from User-Messages mit foundError-Felder.
+        // Front (German): Tipp mit ___-Blank wo die korrekte
+        // französische Form steht. Back (French): die extrahierte
+        // Form — oder leer, wenn der Tipp keine Quoted-Form
+        // enthielt (User pflegt nach).
+        for msg in sessionMessages where msg.sender == .user {
+            guard let germanTip = msg.foundErrorGermanTip else { continue }
+            let card = Self.makeCorrectionCard(germanTip: germanTip)
+            listStore.addChatStapelItem(
+                french: card.french,
+                german: card.german,
+                cardType: .phrases
+            )
+        }
+
+        // Neue-Wörter-Cards: from Léa-Messages mit newWords.
+        // Front (German) = translation, Back (French) = word.
+        for msg in sessionMessages where msg.sender == .lea {
+            for newWord in msg.newWords {
+                listStore.addChatStapelItem(
+                    french: newWord.word,
+                    german: newWord.translation,
+                    cardType: .words
+                )
+            }
+        }
+    }
+
+    /// Extrahiert eine (front/german, back/french)-Karten-Struktur
+    /// aus einem Korrektur-Tipp. Erwartet, dass die korrekte
+    /// französische Form in einer Quote-Form im Tipp steht
+    /// (`'à l'école'`, `"au école"`, `«école»`, `„école"` etc.).
+    ///
+    /// **Schritt 3A Smoke-Fix Bug A (2026-05-10)** — vorher returnt
+    /// die Methode `nil` bei Quote-Extraction-Failure und der Caller
+    /// hat die Karte stillschweigend geskipped. Frank's Smoke
+    /// („chien"-Korrektur fehlt im Stapel) zeigt: bei Tipps ohne
+    /// Quotes (z.B. „Plural braucht ein s: chiens") fällt die Karte
+    /// hinten runter. Jetzt: bei Failure returnt die Methode immer
+    /// noch eine Card, mit `french=""` und `german=germanTip`. Der
+    /// User kann den Französisch-Teil manuell in Listen-Edit
+    /// nachpflegen; die Karte ist „besser unfertig im Stapel als
+    /// gar nicht da".
+    ///
+    /// Result-Pattern bei erfolgreicher Quote-Extraction: deutsche
+    /// Aufgabe = Tipp mit Quoted-Segment durch `___` ersetzt
+    /// (Lückentext-Charakter); französische Antwort = extrahierte
+    /// Quoted-Form.
+    private static func makeCorrectionCard(
+        germanTip: String
+    ) -> (french: String, german: String) {
+        let quotePairs: [(open: Character, close: Character)] = [
+            ("'", "'"),     // ASCII single
+            ("\"", "\""),   // ASCII double
+            ("„", "\u{201C}"), // German curly («Anführungszeichen unten/oben rechts»)
+            ("«", "»"),     // French guillemets
+            ("\u{2018}", "\u{2019}"), // typographic single
+            ("\u{201C}", "\u{201D}"), // typographic double
+        ]
+        for pair in quotePairs {
+            guard let openIdx = germanTip.firstIndex(of: pair.open) else { continue }
+            let afterOpen = germanTip.index(after: openIdx)
+            guard afterOpen < germanTip.endIndex,
+                  let closeIdx = germanTip[afterOpen...].firstIndex(of: pair.close)
+            else { continue }
+            let extracted = String(germanTip[afterOpen..<closeIdx])
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !extracted.isEmpty else { continue }
+
+            // Quote-Segment durch ___-Blank ersetzen.
+            var blanked = germanTip
+            let segmentRange = openIdx...closeIdx
+            blanked.replaceSubrange(segmentRange, with: "___")
+            let blankedTrimmed = blanked.trimmingCharacters(in: .whitespacesAndNewlines)
+            return (french: extracted, german: blankedTrimmed)
+        }
+        // **Bug A Fallback** — keine Quoted-Form gefunden. Karte
+        // landet trotzdem im Stapel: deutscher Tipp 1:1, französische
+        // Seite leer (User editiert manuell wenn er üben will).
+        return (french: "", german: germanTip.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
     // MARK: - Error-Banner-Helpers (Sweep „Error-Banner", 2026-05-10)
 
     /// Setzt einen neuen Error-Banner und plant den Auto-Dismiss

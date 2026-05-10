@@ -41,14 +41,41 @@ struct ChatSessionSummarySheet: View {
     /// aus dem Stack verschwindet).
     let onPracticeInFlashcards: () -> Void
 
-    /// XP-Placeholder. Echte Increment-Logik kommt in Schritt 3
-    /// (Streak/XP-Hooks). Hier nur Display.
+    /// XP-Display. Bis Schritt 2B-2B war das ein Placeholder; ab
+    /// **Schritt 3A (2026-05-10)** wird der eigentliche Increment
+    /// von `ChatService.recordSessionEnd` ausgelöst, der Sheet
+    /// rendert nur die Zahl.
     var xpEarned: Int = 15
+
+    /// **Schritt 3A (2026-05-10)** — wird in `.onAppear` aufgerufen.
+    /// ChatView wired das auf `chatService.recordSessionEnd(...)`,
+    /// das die drei Session-End-Pflichten erfüllt: Auto-Sammlung
+    /// in den Chat-Stapel, +15 XP, Streak-Hook.
+    let onSessionEnded: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
             header
 
+            content
+        }
+        .background(Color(red: 0.973, green: 0.973, blue: 0.980).ignoresSafeArea())
+        .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
+        // **Schritt 3A** — Session-End-Hooks feuern genau einmal
+        // beim Sheet-Open. Auto-Sammlung passiert silent (keine
+        // UI-Indikation), XP/Streak via existing ProgressStore-
+        // Mechanik. Side-Effects synchron — wenn der User
+        // unmittelbar danach „Üben in Karteikarten" tippt, ist die
+        // Liste schon gefüllt.
+        .onAppear {
+            onSessionEnded()
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        Group {
             if hasContent {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 26) {
@@ -67,9 +94,6 @@ struct ChatSessionSummarySheet: View {
 
             actionButtons
         }
-        .background(Color(red: 0.973, green: 0.973, blue: 0.980).ignoresSafeArea())
-        .presentationDetents([.large])
-        .presentationDragIndicator(.visible)
     }
 
     // MARK: - Header
