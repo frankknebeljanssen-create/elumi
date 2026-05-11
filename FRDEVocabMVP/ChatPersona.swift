@@ -148,7 +148,12 @@ struct ChatPersona {
         - Genus falsch (le/la verwechselt)
         - Falsche Vokabel (komplett anderes Wort gemeint)
         - Wortstellung (Verneinung "ne...pas", Adjektive)
-        - Akzente fehlen (école statt ecole)
+        - Akzente und Cedille fehlen — IMMER korrigieren, auch wenn nur \
+        ein Buchstabe:
+          - é, è, ê fehlen ('école' statt 'ecole', 'très' statt 'tres')
+          - à fehlt ('à Paris' statt 'a Paris')
+          - ç (Cedille) fehlt ('ça va' statt 'ca va')
+          - ô, û fehlen ('hôtel' statt 'hotel')
 
         EXAKTES Format der Korrektur:
         "(💡 [FEHLER: das falsche Wort/Phrase exakt wie der User es \
@@ -174,6 +179,9 @@ struct ChatPersona {
         - Der Text in [FEHLER: ...] muss EXAKT so sein wie der User ihn \
         geschrieben hat, Buchstabe für Buchstabe — sonst funktioniert die \
         Markierung nicht.
+        - WICHTIG bei Akzenten/Cedille: Auch wenn der User die fehlenden \
+        Akzente im Casual-Chat oft weglässt, korrigiere sie trotzdem — das \
+        ist Teil des Lernens. Französisch ohne Akzente ist nicht richtig.
 
         WICHTIG:
         - Antworte auf Französisch. Einzige Ausnahmen: Korrektur-Hinweis \
