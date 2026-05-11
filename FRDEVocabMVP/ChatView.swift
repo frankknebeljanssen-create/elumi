@@ -507,6 +507,18 @@ struct ChatView: View {
             .onChange(of: chatService.isTyping) { _, _ in
                 scrollToBottom(proxy: proxy)
             }
+            // **Bug-Fix Sweep 1B (2026-05-10)** — vorher griff
+            // Auto-Scroll nur bei `messages.count`-Änderungen, NICHT
+            // während des Streams: die existierende Léa-Message
+            // wächst per Token-Append, der count bleibt aber
+            // konstant → letzte Zeile rutschte unter den sichtbaren
+            // Bereich. Frank's Smoke-Bug I.
+            // Fix: auf `last?.text` lauschen. Feuert bei jedem
+            // Token-Append; SwiftUI-Animation-Blending sorgt für
+            // smooth Scroll mit dem Stream mit.
+            .onChange(of: chatService.messages.last?.text) { _, _ in
+                scrollToBottom(proxy: proxy)
+            }
             // **Bug-Fix Smoke-Iter 2 (2026-05-10) — v2**
             // Erste Variante feuerte auf JEDES `keyboardWillShow`,
             // das iOS aber auch bei Frame-Updates der schon-sichtbaren
