@@ -88,22 +88,25 @@ enum ChatMarkerParser {
     ///   • `\[FEHLER:` literal
     ///   • `([^\]]+)` — Group 1 = User-Text (alles bis schließendes ])
     ///   • `\]\s*→\s*Kleiner\s+Tipp:` literal mit Whitespace-Toleranz
-    ///   • `(.+)` — Group 2 = deutsche Erklärung, GREEDY mit
+    ///   • `(.+?)` — Group 2 = deutsche Erklärung, **LAZY** mit
     ///     dotMatchesLineSeparators
-    ///   • `\)\s*$` — schließende Klammer am Ende der Message
+    ///   • `\)` — schließende Klammer (kein End-Anchor mehr)
     ///
-    /// **Smoke-Bug-Fix 2B-2B (2026-05-10)** — vorheriges Pattern
-    /// `([^)]+)\)` brach zu früh ab, sobald die deutsche Erklärung
-    /// selbst eine Klammer enthielt (z.B. `Es heißt "à l'école"
-    /// (nicht "au"), weil...`). Das innere `)` wurde als Marker-
-    /// Close gewertet, der Rest landete in Léas Bubble. Greedy
-    /// `(.+)` mit `\)\s*$`-End-Anchor backtracked bis zur LETZTEN
-    /// schließenden Klammer am Message-Ende — Spec sieht Marker
-    /// ohnehin nur am Ende vor. Trade-off: bei (spec-widrigen)
-    /// Multi-FEHLER-Markern in einer Message würde der Greedy
-    /// alle als einen erfassen — akzeptabel, weil Spec max 1
-    /// erlaubt.
-    private static let errorPattern = #"\(💡\s*\[FEHLER:\s*([^\]]+)\]\s*→\s*Kleiner\s+Tipp:\s*(.+)\)\s*$"#
+    /// **Bug-K-Fix (2026-05-10)** — vorher: Greedy `(.+)` + End-Anchor
+    /// `\)\s*$` backtracked bis zur LETZTEN `)` am Message-Ende. Bei
+    /// (spec-widrigen) Multi-FEHLER-Markern wurden ALLE Marker zu einem
+    /// einzigen gemergt — User-Bubble-Card zeigte dann den ersten Marker-
+    /// Tipp + rohe Marker-Strings der späteren. Sonnet 4.6 hält die
+    /// „max 1"-Regel nicht zuverlässig ein (Frank's Smoke), daher
+    /// brauchten wir defense-in-depth: Prompt enforced (ABSOLUTE REGEL)
+    /// + Parser lazy.
+    ///
+    /// **Trade-off Inner-Klammern**: das vorherige Greedy+End-Anchor war
+    /// stabil bei `Es heißt 'allé(e)' (Partizip)...` — Inner-Klammern im
+    /// Tipp wurden mit-konsumiert. Mit Lazy + erster-`)`-Match bricht der
+    /// Match jetzt potentiell zu früh ab, wenn der Tipp eine Inner-Klammer
+    /// enthält. Frank's RISK-FLAG: Smoke zeigt, follow-up wenn nötig.
+    private static let errorPattern = #"\(💡\s*\[FEHLER:\s*([^\]]+)\]\s*→\s*Kleiner\s+Tipp:\s*(.+?)\)"#
 
     /// **Schritt 2B-1** — VOCAB-Marker. Group 1 = Wort/Phrase.
     /// Frisst alles bis zur schließenden Bracket — Whitespace-trim
@@ -119,9 +122,10 @@ enum ChatMarkerParser {
 
     private static let errorRegex: NSRegularExpression? = {
         // **2B-2B Smoke-Fix** — `dotMatchesLineSeparators` damit der
-        // Greedy `.+` auch über Newlines hinweggreift; manche
+        // Lazy `.+?` auch über Newlines hinweggreift; manche
         // Léa-Antworten haben einen Zeilenumbruch zwischen dem
-        // Konversationstext und dem Marker.
+        // Konversationstext und dem Marker. Mit Lazy bleibt das
+        // unproblematisch — der Match endet sauber am ersten `)`.
         try? NSRegularExpression(pattern: errorPattern, options: [.dotMatchesLineSeparators])
     }()
     private static let vocabRegex: NSRegularExpression? = {
@@ -164,9 +168,18 @@ enum ChatMarkerParser {
 
     // MARK: - VOCAB-Extraction
 
-    /// Sammelt alle `[VOCAB: wort]`-Marker im Text, entfernt sie
-    /// vollständig (inklusive Marker-Brackets), und gibt die Wörter
-    /// in Vorkommens-Reihenfolge zurück.
+    /// Sammelt alle `[VOCAB: wort]`-Marker im Text, **ersetzt** sie
+    /// durch das reine Wort (analog zu NEW-Markern) und gibt die
+    /// Wörter in Vorkommens-Reihenfolge zurück.
+    ///
+    /// **Bug-L-Fix (2026-05-10)** — vorher hat `removeSubrange` das
+    /// komplette Marker-Block inkl. Wort entfernt. Wenn Sonnet einen
+    /// VOCAB-Marker INLINE in der Antwort positioniert
+    /// (`Tu [VOCAB: fais] quoi à l'école?`) wurde der Satz broken
+    /// (`Tu  quoi à l'école?`). Spec-Annahme war End-of-Message-
+    /// Marker, Sonnet's Realität ist inline — replace-with-word ist
+    /// robust gegen beide Pattern. User-Bubble-Highlight läuft eh
+    /// über `vocabUsed[]`-Array, ist von der Strip-Logik unabhängig.
     private static func extractAndStripVocab(in text: inout String) -> [String] {
         guard let regex = vocabRegex else { return [] }
         let nsRange = NSRange(text.startIndex..<text.endIndex, in: text)
@@ -186,11 +199,20 @@ enum ChatMarkerParser {
             }
         }
 
-        // Marker reverse strippen, damit NSRange-Indizes stabil bleiben.
+        // Marker reverse durch das reine Wort ersetzen (statt strippen).
+        // Reverse-Iteration hält NSRange-Indizes stabil für vorherige
+        // Matches.
         for match in matches.reversed() {
-            if let range = Range(match.range, in: text) {
-                text.removeSubrange(range)
-            }
+            guard let fullRange = Range(match.range, in: text),
+                  match.numberOfRanges >= 2,
+                  let wordRange = Range(match.range(at: 1), in: text)
+            else { continue }
+            let word = String(text[wordRange])
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            // Defensive: leeres Wort → einfach den Marker entfernen
+            // (sonst bleibt ein leerer String, der nichts kaputt macht
+            // aber visuell auch nichts hilft).
+            text.replaceSubrange(fullRange, with: word)
         }
         return words
     }
@@ -238,33 +260,48 @@ enum ChatMarkerParser {
 
     // MARK: - FEHLER-Extraction
 
-    /// Sammelt alle Korrektur-Marker im Text und entfernt sie. Identisch
-    /// zur 2A-Logik, nur in eine separate Helper-Funktion ausgelagert.
+    /// Sammelt Korrektur-Marker. **Bug-K-Fix (2026-05-10)**: Mit dem
+    /// Lazy-Pattern können theoretisch mehrere Matches kommen (wenn
+    /// Sonnet die ABSOLUTE-REGEL des System-Prompts verletzt). Wir
+    /// nehmen nur den **ersten** Match — Sonnet's „wichtigster Fehler"
+    /// heuristisch — als die eine CorrectionCard.
+    ///
+    /// **Defense (2026-05-20)**: Vorher wurde NUR der erste Marker
+    /// gestrippt; weitere Marker blieben roh im cleanText sichtbar (als
+    /// Smoke-Signal). Das konnte als „doppelte Korrektur" in der Bubble
+    /// erscheinen. Jetzt strippen wir ALLE Marker aus dem Text (reverse-
+    /// iteriert für Index-Stabilität), geben aber weiterhin nur den ersten
+    /// als FoundError zurück. Bei >1 Match: WARN-Log als Spec-Violation-
+    /// Signal. Für aktuelle Outputs (immer 1 Marker) ändert sich nichts.
     private static func extractAndStripErrors(in text: inout String) -> [FoundError] {
         guard let regex = errorRegex else { return [] }
         let nsRange = NSRange(text.startIndex..<text.endIndex, in: text)
         let matches = regex.matches(in: text, options: [], range: nsRange)
-        guard !matches.isEmpty else { return [] }
+        guard let firstMatch = matches.first else { return [] }
 
-        var errors: [FoundError] = []
-        for match in matches {
-            guard match.numberOfRanges >= 3,
-                  let userRange = Range(match.range(at: 1), in: text),
-                  let tipRange = Range(match.range(at: 2), in: text)
-            else { continue }
-            let user = String(text[userRange])
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            let tip = String(text[tipRange])
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !user.isEmpty, !tip.isEmpty else { continue }
-            errors.append(FoundError(userText: user, germanTip: tip))
+        if matches.count > 1 {
+            print("⚠️ [LeaSpec] Sonnet violated ABSOLUTE RULE: \(matches.count) FEHLER markers in single response")
         }
 
+        guard firstMatch.numberOfRanges >= 3,
+              let userRange = Range(firstMatch.range(at: 1), in: text),
+              let tipRange = Range(firstMatch.range(at: 2), in: text)
+        else { return [] }
+        let user = String(text[userRange])
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let tip = String(text[tipRange])
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !user.isEmpty, !tip.isEmpty else { return [] }
+        let error = FoundError(userText: user, germanTip: tip)
+
+        // ALLE Marker reverse strippen → Index-Stabilität für die je
+        // vorherigen Matches. Nur `firstMatch` wird als FoundError
+        // zurückgegeben; die übrigen verschwinden lediglich aus dem Text.
         for match in matches.reversed() {
             if let range = Range(match.range, in: text) {
                 text.removeSubrange(range)
             }
         }
-        return errors
+        return [error]
     }
 }
