@@ -13,6 +13,9 @@ import SwiftUI
 struct ScanDraftsSectionView: View {
     @ObservedObject private var draftStore = ScanDraftStore.shared
 
+    /// **Phase D (2026-05-20)** — öffnet die Detail-View eines Drafts.
+    let onOpenDraft: (UUID) -> Void
+
     var body: some View {
         if !draftStore.drafts.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
@@ -23,7 +26,7 @@ struct ScanDraftsSectionView: View {
 
                 LazyVStack(spacing: 8) {
                     ForEach(draftStore.drafts) { draft in
-                        ScanDraftCard(draft: draft)
+                        ScanDraftCard(draft: draft, onOpenDraft: onOpenDraft)
                     }
                 }
             }
@@ -34,6 +37,7 @@ struct ScanDraftsSectionView: View {
 
 private struct ScanDraftCard: View {
     let draft: ScanDraft
+    let onOpenDraft: (UUID) -> Void
     @State private var thumbnail: UIImage?
     @State private var showDeleteConfirm = false
 
@@ -71,6 +75,11 @@ private struct ScanDraftCard: View {
 
             Spacer()
 
+            // **Phase D** — Affordance, dass die Card öffnet.
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14))
+                .foregroundStyle(.tertiary)
+
             // Trash-Button (44pt Tap-Target, subtil)
             Button {
                 showDeleteConfirm = true
@@ -93,6 +102,10 @@ private struct ScanDraftCard: View {
         }
         .padding(12)
         .appCardBackground(.scan)
+        // **Phase D** — ganze Card öffnet die Detail-View. Der Trash-Button
+        // fängt seine Taps selbst ab (Button) → kein Tap-Konflikt.
+        .contentShape(Rectangle())
+        .onTapGesture { onOpenDraft(draft.id) }
         .task {
             await loadThumbnail()
         }

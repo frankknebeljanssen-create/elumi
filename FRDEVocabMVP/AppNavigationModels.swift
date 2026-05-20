@@ -16,6 +16,7 @@ enum AppScreen: Hashable {
     case lists(ListLaunchContext?)
     case lexicon
     case scan
+    case scanDraftDetail(UUID)   // **Phase D (2026-05-20)** — Scan-Entwurf-Detail
     case accents(AccentsLaunchContext?)   // Akzent-Modul (é, è, ê, ç)
     case settings
     case account

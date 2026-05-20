@@ -768,7 +768,9 @@ extension ScanImportView {
                             // gespeicherte Scan-Entwürfe unter den Capture-
                             // Optionen. Blendet sich selbst aus, wenn keine
                             // Drafts existieren.
-                            ScanDraftsSectionView()
+                            ScanDraftsSectionView(onOpenDraft: { id in
+                                navigate(.scanDraftDetail(id))
+                            })
                         }
 
                         if !session.batchCompleted {
