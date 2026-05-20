@@ -933,23 +933,23 @@ extension ScanImportView {
     var multiDraftActionBar: some View {
         let count = filteredSelection.count
         HStack(spacing: 12) {
+            // „Löschen" — sekundär (subordinate Visual-Weight), destruktiver
+            // Rot-Token. Gleiche Höhe (54) wie der Primary daneben; zentriertes
+            // Label (der Style übernimmt maxWidth + Zentrierung).
             Button(role: .destructive) {
                 // **Phase E.2** — Bulk-Delete wird in Commit 2 gewired.
             } label: {
                 Text("Löschen (\(count))")
-                    .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.bordered)
-            .tint(.red)
-            .controlSize(.large)
+            .buttonStyle(AppSecondaryButtonStyle(tint: AppTheme.Colors.error))
             .disabled(true)
             .opacity(0.5)
 
+            // „Zusammenführen" — primärer CTA (amber), dominante Aktion.
             Button {
                 // **Phase E.3** — Bulk-Merge wird in Commit 3 gewired.
             } label: {
                 Text("Zusammenführen (\(count))")
-                    .frame(maxWidth: .infinity)
             }
             .buttonStyle(AppPrimaryButtonStyle())
             .disabled(true)
