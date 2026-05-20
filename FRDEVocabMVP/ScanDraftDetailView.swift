@@ -290,7 +290,12 @@ struct ScanDraftDetailView: View {
             suggestedListName: listName
         )
         appDebugLog("📋 [ScanDraftDetail] imported \(imported) items into \"\(listName)\"")
-        isShowingPostImportConfirm = true
+        // **Bug-Fix (2026-05-20)** — Settle-Delay: Alert erst zeigen, wenn
+        // das NewListNameSheet fertig dismisst hat (sonst grauer Screen /
+        // Präsentations-Kollision Alert-während-Sheet-Dismiss).
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            isShowingPostImportConfirm = true
+        }
     }
 
     // MARK: - Phase D v2 — Bestehende Liste (Merge-Pfad)
@@ -299,7 +304,10 @@ struct ScanDraftDetailView: View {
         guard let listStore, let draft = localDraft else { return }
         guard let targetList = listStore.customLists.first(where: { $0.id == listID }) else {
             importFailureMessage = "Liste nicht gefunden."
-            isShowingImportFailureAlert = true
+            // Settle-Delay (Konsistenz): Alert nach Picker-Dismiss.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                isShowingImportFailureAlert = true
+            }
             return
         }
 
@@ -352,13 +360,21 @@ struct ScanDraftDetailView: View {
             appDebugLog("📋 [ScanDraftDetail] merged into \"\(pendingTargetListName)\" (\(listID))")
             pendingMergePlan = nil
             pendingTargetListID = nil
-            isShowingPostImportConfirm = true
+            // **Bug-Fix (2026-05-20)** — Settle-Delay vor dem Alert (Konsistenz
+            // mit performImport; verhindert Alert-während-Sheet-Dismiss).
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                isShowingPostImportConfirm = true
+            }
         case .targetListMissing:
             importFailureMessage = "Die Liste wurde inzwischen gelöscht."
-            isShowingImportFailureAlert = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                isShowingImportFailureAlert = true
+            }
         case .persistenceMismatch:
             importFailureMessage = "Speichern fehlgeschlagen. Bitte erneut versuchen."
-            isShowingImportFailureAlert = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                isShowingImportFailureAlert = true
+            }
         }
     }
 
