@@ -20,6 +20,12 @@ import SwiftUI
 struct ScanDraftDetailView: View {
     let draftID: UUID
     let listStore: VocabularyListStore?
+    // **Phase D v3 (2026-05-20)** — vom AppDestinationHost injiziert für die
+    // ImportCompletionView-CTAs. `navigate` pusht Modul/Liste auf den Stack;
+    // `goHome` wird im Single-Draft-„Später" NICHT genutzt (Detail bleibt offen),
+    // aber konsistent mitgereicht.
+    let navigate: (AppScreen) -> Void
+    let goHome: () -> Void
 
     @ObservedObject private var draftStore = ScanDraftStore.shared
     @Environment(\.dismiss) private var dismiss
@@ -41,14 +47,21 @@ struct ScanDraftDetailView: View {
     @State private var isShowingImportFailureAlert = false
     @State private var importFailureMessage = ""
 
-    // **Import-Success-Toast (Phase B+ 2026-05-20)** — ersetzt den früheren
-    // PostImport-Alert. Kompaktes Erfolgs-Feedback, Auto-Dismiss nach 2.5s.
-    @State private var showImportToast = false
-    @State private var importToastMessage = ""
+    // **Phase D v3 (2026-05-20)** — Success-Pfad zeigt jetzt die ImportCompletion
+    // View (CTAs) statt eines Toasts (Content-Swap im Body). `pendingImportCard
+    // Type` merkt sich den Dominant-Typ aus dem Merge-Pfad (in `applyMerge` sind
+    // die Original-Items nicht mehr verfügbar).
+    @State private var isShowingImportCompletion = false
+    @State private var importCompletionContext: ImportCompletionContext?
+    @State private var pendingImportCardType: CardType = .words
 
     var body: some View {
         Group {
-            if let draft = localDraft {
+            if isShowingImportCompletion, let ctx = importCompletionContext {
+                // **Phase D v3** — Success-Pfad: Content-Swap zur CompletionView
+                // (wie ScanImportView). Die Sheets unten sind dann inaktiv.
+                importCompletionScreen(ctx)
+            } else if let draft = localDraft {
                 detailContent(draft: draft)
             } else {
                 ProgressView()
@@ -128,53 +141,86 @@ struct ScanDraftDetailView: View {
         } message: {
             Text(importFailureMessage)
         }
-        // **Import-Success-Toast** — Overlay auf der äußersten Ebene, damit er
-        // über Content + Custom-Header schwebt. Struktur gespiegelt vom Phase-B-
-        // Draft-Save-Toast in ScanImportView (Commit 8675ebf/da2fe6b).
-        .overlay(alignment: .top) {
-            if showImportToast {
-                importToast
+    }
+
+    // MARK: - Phase D v3 — Import-Completion (CTAs statt Toast)
+
+    /// Gespiegelt von `ScanImportView.importCompletionScreen` — identische 10
+    /// CTAs, nur Routing über `handleSingleDraftCompletion` (eigenes „Später"-
+    /// Verhalten: Completion aus, Detail bleibt offen).
+    private func importCompletionScreen(_ context: ImportCompletionContext) -> some View {
+        ImportCompletionView(
+            context: context,
+            onTrain: {
+                handleSingleDraftCompletion(.train(TrainingLaunchContext(
+                    preferredListID: context.targetListID,
+                    preferredMode: .vocabulary,
+                    shouldAutoStart: true
+                )))
+            },
+            onNomen: {
+                handleSingleDraftCompletion(.train(TrainingLaunchContext(
+                    preferredListID: context.targetListID,
+                    preferredMode: .nouns,
+                    shouldAutoStart: true
+                )))
+            },
+            onArticles: {
+                handleSingleDraftCompletion(.train(TrainingLaunchContext(
+                    preferredListID: context.targetListID,
+                    preferredMode: .articles,
+                    shouldAutoStart: true
+                )))
+            },
+            onVerbs: {
+                handleSingleDraftCompletion(.train(TrainingLaunchContext(
+                    preferredListID: context.targetListID,
+                    preferredMode: .verbs,
+                    shouldAutoStart: true
+                )))
+            },
+            onVerbforms: {
+                handleSingleDraftCompletion(.train(TrainingLaunchContext(
+                    preferredListID: context.targetListID,
+                    preferredMode: .verbforms,
+                    shouldAutoStart: false
+                )))
+            },
+            onFlashcards: {
+                handleSingleDraftCompletion(.flashcards(context.flashcardLaunchContext))
+            },
+            onQuiz: {
+                handleSingleDraftCompletion(.quiz(context.quizLaunchContext))
+            },
+            onAccents: {
+                handleSingleDraftCompletion(.accents(nil))
+            },
+            onViewList: {
+                handleSingleDraftCompletion(.lists(context.listLaunchContext))
+            },
+            onLater: {
+                handleSingleDraftCompletion(nil)
             }
-        }
-        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: showImportToast)
-        .task(id: showImportToast) {
-            guard showImportToast else { return }
-            try? await Task.sleep(for: .seconds(2.5))
-            if !Task.isCancelled {
-                showImportToast = false
-            }
+        )
+    }
+
+    /// „Später" (destination == nil) → Completion aus, Detail bleibt offen
+    /// (KEIN goHome, anders als ScanImportView). Sonst: navigate pusht das
+    /// Modul/die Liste auf den Stack.
+    private func handleSingleDraftCompletion(_ destination: AppScreen?) {
+        isShowingImportCompletion = false
+        importCompletionContext = nil
+        if let destination {
+            navigate(destination)
         }
     }
 
-    // MARK: - Import-Success-Toast
-
-    /// Gespiegelt vom Draft-Save-Toast in `ScanImportView` (Phase B,
-    /// Commit 8675ebf/da2fe6b): gefülltes Success-Badge (weiß auf elumiMint),
-    /// mid-top, Pop-In-Transition, Auto-Dismiss via `.task(id:)`. Text dynamisch
-    /// (Liste + Anzahl). Äußeres `.padding(.horizontal, 24)` hält das Badge bei
-    /// längerer Message von den Screen-Rändern weg (Phase B hatte fixen Kurztext).
-    private var importToast: some View {
-        HStack(spacing: 14) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 32, weight: .semibold))
-                .foregroundStyle(.white)
-            Text(importToastMessage)
-                .font(.headline)
-                .foregroundStyle(.white)
-                .lineLimit(2)
-        }
-        .padding(.horizontal, 24)
-        .padding(.vertical, 18)
-        .background(
-            AppTheme.Colors.success,
-            in: RoundedRectangle(cornerRadius: AppTheme.Radius.lg)
-        )
-        .shadow(color: .black.opacity(0.2), radius: 16, x: 0, y: 8)
-        .padding(.top, 140)
-        .padding(.horizontal, 24)
-        .frame(maxWidth: .infinity, alignment: .top)
-        .allowsHitTesting(false)
-        .transition(.scale.combined(with: .opacity))
+    /// Dominant-Typ (phrases vs. words) — gespiegelt von
+    /// `ScanImportView.dominantImportedCardType`.
+    private func dominantImportedCardType(in items: [VocabularyItem]) -> CardType {
+        let phraseCount = items.filter { $0.cardType == .phrases }.count
+        let wordCount = items.count - phraseCount
+        return phraseCount > wordCount ? .phrases : .words
     }
 
     // MARK: - Content
@@ -335,12 +381,21 @@ struct ScanDraftDetailView: View {
             suggestedListName: listName
         )
         appDebugLog("📋 [ScanDraftDetail] imported \(imported) items into \"\(listName)\"")
-        // **Phase B+ (2026-05-20)** — Settle-Delay: Toast erst zeigen, wenn das
-        // NewListNameSheet fertig dismisst hat (sonst erscheint er hinter dem
-        // Sheet). Ersetzt den früheren PostImport-Alert.
+        // **Phase D v3** — Neue-Liste-Pfad: echte Item-IDs verfügbar →
+        // `importedItemIDs: items.map(\.id)` (Karteikarten scopen auf den Import).
+        // Settle-Delay vor dem Content-Swap (NewListNameSheet dismissen lassen).
+        let context = ImportCompletionContext(
+            importedCount: imported,
+            targetListID: listID,
+            targetListName: listName,
+            language: .french,
+            preferredDirection: StudyLanguage.french.defaultDirectionToGerman,
+            cardType: dominantImportedCardType(in: items),
+            importedItemIDs: items.map(\.id)
+        )
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-            importToastMessage = "Liste \"\(listName)\" aktualisiert (+\(imported) Vokabeln)"
-            showImportToast = true
+            importCompletionContext = context
+            isShowingImportCompletion = true
         }
     }
 
@@ -386,6 +441,9 @@ struct ScanDraftDetailView: View {
         pendingMergePlan = plan
         pendingTargetListID = listID
         pendingTargetListName = targetList.name
+        // **Phase D v3** — Dominant-CardType jetzt merken; in `applyMerge` sind
+        // die Original-Items nicht mehr verfügbar (nur der Plan).
+        pendingImportCardType = dominantImportedCardType(in: items)
 
         // Settle-Delay: das vorige Sheet (Picker) erst sauber dismissen
         // lassen, bevor Conflict-Review/Apply kommt (sonst Black-Screen).
@@ -439,13 +497,22 @@ struct ScanDraftDetailView: View {
         switch result.status {
         case .success:
             appDebugLog("📋 [ScanDraftDetail] merged into \"\(listName)\" (\(listID))")
-            appDebugLog("📋 [ScanDraftDetail] success branch, scheduling toast in 0.4s")
-            // Settle-Delay: Toast erst zeigen, wenn das Sheet (Picker/Conflict-
-            // Review) fertig dismisst hat (sonst erscheint er hinter dem Sheet).
+            // **Phase D v3** — Merge-Pfad: keine Item-IDs verfügbar → `[]`
+            // (Karteikarten fallen auf die Gesamtliste zurück). cardType aus dem
+            // in handleExistingListChosen gemerkten Dominant-Typ. Settle-Delay
+            // vor dem Content-Swap.
+            let context = ImportCompletionContext(
+                importedCount: addedCount,
+                targetListID: listID,
+                targetListName: listName,
+                language: .french,
+                preferredDirection: StudyLanguage.french.defaultDirectionToGerman,
+                cardType: pendingImportCardType,
+                importedItemIDs: []
+            )
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                appDebugLog("📋 [ScanDraftDetail] asyncAfter fired, showing import toast")
-                importToastMessage = "Liste \"\(listName)\" aktualisiert (+\(addedCount) Vokabeln)"
-                showImportToast = true
+                importCompletionContext = context
+                isShowingImportCompletion = true
             }
         case .targetListMissing:
             importFailureMessage = "Die Liste wurde inzwischen gelöscht."

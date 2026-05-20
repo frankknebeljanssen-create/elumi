@@ -92,7 +92,12 @@ struct AppDestinationHost: View {
         case .scanDraftDetail(let id):
             // **Phase D (2026-05-20)** — Scan-Entwurf-Detail (top-level
             // Destination → erbt den Footer-Inset aus RootContentView:187).
-            ScanDraftDetailView(draftID: id, listStore: runtime.listStore)
+            ScanDraftDetailView(
+                draftID: id,
+                listStore: runtime.listStore,
+                navigate: navigate,
+                goHome: goHome
+            )
         case .accents(let launchContext):
             // Akzent-Modul — nutzt den runtime.listStore für die Listen-
             // Auswahl, analog zu Quiz/Train. Bei Erst-Start kann der
