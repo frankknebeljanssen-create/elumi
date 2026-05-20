@@ -17,8 +17,9 @@ struct ImportTargetChoiceSheet: View {
     let onChooseNewList: () -> Void
     let onChooseExistingList: () -> Void
     // **Phase B (2026-05-20)** — dritter Pfad: Scan als Entwurf sichern.
-    // `let` für Konsistenz mit den zwei bestehenden Closures.
-    let onSaveAsDraft: () -> Void
+    // **Phase D v2 (2026-05-20)** — optional: im Draft-Detail entfällt der
+    // Pfad (man ist schon im Entwurf) → dritte Card wird ausgeblendet.
+    var onSaveAsDraft: (() -> Void)? = nil
 
     var body: some View {
         NavigationStack {
@@ -48,16 +49,19 @@ struct ImportTargetChoiceSheet: View {
                     }
                 )
 
-                // **Phase B (2026-05-20)** — dritter Pfad: als Entwurf sichern.
-                choiceCard(
-                    icon: "tray.full",
-                    title: "Als Entwurf speichern",
-                    subtitle: "Scan sichern und später fertig bearbeiten",
-                    action: {
-                        dismiss()
-                        DispatchQueue.main.async { onSaveAsDraft() }
-                    }
-                )
+                // **Phase B (2026-05-20)** — dritter Pfad: als Entwurf sichern
+                // (nur wenn `onSaveAsDraft` gesetzt — Phase D v2).
+                if let onSaveAsDraft {
+                    choiceCard(
+                        icon: "tray.full",
+                        title: "Als Entwurf speichern",
+                        subtitle: "Scan sichern und später fertig bearbeiten",
+                        action: {
+                            dismiss()
+                            DispatchQueue.main.async { onSaveAsDraft() }
+                        }
+                    )
+                }
 
                 Spacer()
             }
