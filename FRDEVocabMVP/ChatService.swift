@@ -572,6 +572,12 @@ final class ChatService {
             // (System-Prompt). Wir nehmen den ersten, der Rest wird
             // verworfen — sonst würde die Bubble-State mehrere
             // Korrekturen rendern müssen.
+            // **Bug-K/L Smoke-Diagnose (2026-05-10)** — DEBUG-only Log
+            // des roh-Léa-Outputs vor Parsing. Hilft beim Smoke zu sehen,
+            // ob Sonnet die „ABSOLUTE REGEL — nur ein FEHLER-Marker"
+            // einhält und wie VOCAB/NEW-Marker positioniert sind.
+            // `appDebugLog` ist `#if DEBUG`-gated in Release ein no-op.
+            appDebugLog("📩 [LeaRaw] \(leaMsg.text)")
             let parsed = ChatMarkerParser.parseLeaMessage(leaMsg.text)
             leaMsg.text = parsed.cleanText
 
@@ -658,10 +664,23 @@ final class ChatService {
         let history = messages
             .dropLast() // letzter Eintrag = `placeholder` mit text="" — ausschließen
             .map { msg -> [String: String] in
-                [
-                    "role": msg.sender == .user ? "user" : "assistant",
-                    "content": msg.text,
-                ]
+                // **Bug Q (2026-05-20)** — Correction-State in die History
+                // injizieren: an User-Turns mit bereits erfolgter Korrektur
+                // hängen wir einen kompakten `[Bereits korrigiert: …]`-Tag an.
+                // So „sieht" Sonnet, dass der rohe Fehler in der History
+                // schon behandelt wurde, und korrigiert ihn nicht erneut
+                // (siehe ZWEITE ABSOLUTE REGEL im System-Prompt). Der Tag
+                // geht NUR ins outbound Array — die UI rendert weiter den
+                // rohen `msg.text`.
+                if msg.sender == .user {
+                    var content = msg.text
+                    if let original = msg.foundErrorUserText, !original.isEmpty {
+                        content += "\n\n[Bereits korrigiert: \(original)]"
+                    }
+                    return ["role": "user", "content": content]
+                } else {
+                    return ["role": "assistant", "content": msg.text]
+                }
             }
         let systemPrompt = currentPersona.buildSystemPrompt(
             vocabulary: vocabContext.words,

@@ -153,7 +153,27 @@ struct ChatPersona {
           - é, è, ê fehlen ('école' statt 'ecole', 'très' statt 'tres')
           - à fehlt ('à Paris' statt 'a Paris')
           - ç (Cedille) fehlt ('ça va' statt 'ca va')
-          - ô, û fehlen ('hôtel' statt 'hotel')
+          - ê, î, ô, û fehlen ('peut-être' statt 'peut-etre', 'hôtel' \
+        statt 'hotel', 'île' statt 'ile')
+
+        KOMBINIERTE FEHLER IM SELBEN WORT:
+        Wenn ein Wort MEHRERE Fehler gleichzeitig hat (z.B. fehlender \
+        Bindestrich UND fehlender Akzent), markiere das Wort EINMAL und \
+        erkläre ALLE Probleme im Tipp.
+
+        Beispiele:
+        - 'peutetre' (Bindestrich + ê fehlen) → '(💡 [FEHLER: peutetre] → \
+        Kleiner Tipp: Das schreibt man peut-être — mit Bindestrich UND \
+        Akzent auf dem ê!)'
+        - 'aujourdhui' (Apostroph + Bindestrich fehlen) → '(💡 [FEHLER: \
+        aujourdhui] → Kleiner Tipp: Das ist ein zusammengesetztes Wort: \
+        aujourd'hui — mit Apostroph und Bindestrich!)'
+        - 'cest a dire' (Apostroph + 2 Bindestriche + Akzent fehlen) → \
+        '(💡 [FEHLER: cest a dire] → Kleiner Tipp: Das schreibt man \
+        c'est-à-dire — Apostroph, zwei Bindestriche und der Akzent grave \
+        auf à!)'
+
+        Eine [FEHLER:] Markierung pro Wort, aber der Tipp adressiert ALLES.
 
         EXAKTES Format der Korrektur:
         "(💡 [FEHLER: das falsche Wort/Phrase exakt wie der User es \
@@ -174,6 +194,22 @@ struct ChatPersona {
         (max 1 pro Nachricht).
         - Bei Lektionswort-Fehlern: priorisiere die.
         - Bei alles-richtig: KEIN Hinweis, normal weiter chatten.
+
+        ABSOLUTE REGEL — NUR EIN FEHLER-MARKER PRO ANTWORT:
+        - Du darfst NIEMALS zwei oder mehr (💡 [FEHLER: ...] → Kleiner Tipp: ...) \
+        Klammer-Blöcke in einer Antwort haben.
+        - Wenn du mehrere Fehler siehst: wähle den WICHTIGSTEN, ignoriere die \
+        anderen für diese Antwort.
+        - Diese Regel ist HART. Auch wenn pädagogisch verlockend, NIE zwei Marker.
+
+        ZWEITE ABSOLUTE REGEL — KEINE WIEDERHOLTEN KORREKTUREN:
+        - Wenn am Ende einer User-Eingabe ein Tag wie [Bereits korrigiert: ca va] \
+        steht, hast du diesen Fehler bereits korrigiert. Korrigiere ihn NICHT \
+        erneut — auch nicht, wenn der Fehler in der User-Eingabe weiterhin roh \
+        sichtbar ist.
+        - Wenn die NEUE (allerletzte) User-Eingabe korrekt ist, gibst du KEINE \
+        Korrektur — egal welche Fehler frühere Eingaben hatten.
+        - Bewerte IMMER nur die ALLERLETZTE User-Eingabe.
 
         WICHTIG:
         - Der Text in [FEHLER: ...] muss EXAKT so sein wie der User ihn \
