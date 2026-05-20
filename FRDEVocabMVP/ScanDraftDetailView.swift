@@ -301,6 +301,7 @@ struct ScanDraftDetailView: View {
     // MARK: - Phase D v2 — Bestehende Liste (Merge-Pfad)
 
     private func handleExistingListChosen(_ listID: UUID) {
+        appDebugLog("🐛 [Freeze] handleExistingListChosen entry: listID=\(listID)")
         guard let listStore, let draft = localDraft else { return }
         guard let targetList = listStore.customLists.first(where: { $0.id == listID }) else {
             importFailureMessage = "Liste nicht gefunden."
@@ -322,10 +323,12 @@ struct ScanDraftDetailView: View {
             )
         }
 
+        appDebugLog("🐛 [Freeze] before computePlan, items=\(items.count), existing=\(targetList.items.count)")
         let plan = VocabularyListMergePlanner.computePlan(
             incoming: items,
             existingItems: targetList.items
         )
+        appDebugLog("🐛 [Freeze] after computePlan: requiresUserDecision=\(plan.requiresUserDecision), safeAdds=\(plan.safeAdds.count), conflicts=\(plan.conflicts.count)")
         pendingMergePlan = plan
         pendingTargetListID = listID
         pendingTargetListName = targetList.name
@@ -333,11 +336,15 @@ struct ScanDraftDetailView: View {
         // Settle-Delay: das vorige Sheet (Picker) erst sauber dismissen
         // lassen, bevor Conflict-Review/Apply kommt (sonst Black-Screen).
         if plan.requiresUserDecision {
+            appDebugLog("🐛 [Freeze] branching to ConflictReview after 0.4s")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                appDebugLog("🐛 [Freeze] asyncAfter fired, setting isShowingConflictReview=true")
                 isShowingConflictReview = true
             }
         } else {
+            appDebugLog("🐛 [Freeze] branching to applyMerge after 0.4s")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                appDebugLog("🐛 [Freeze] asyncAfter fired, calling applyMerge")
                 applyMerge(plan)
             }
         }
@@ -353,16 +360,21 @@ struct ScanDraftDetailView: View {
     }
 
     private func applyMerge(_ plan: MergePlan) {
+        appDebugLog("🐛 [Freeze] applyMerge entry, plan.safeAdds=\(plan.safeAdds.count)")
         guard let listStore, let listID = pendingTargetListID else { return }
+        appDebugLog("🐛 [Freeze] before applyMergePlan call")
         let result = listStore.applyMergePlan(plan, toListWithID: listID)
+        appDebugLog("🐛 [Freeze] after applyMergePlan, status=\(result.status)")
         switch result.status {
         case .success:
             appDebugLog("📋 [ScanDraftDetail] merged into \"\(pendingTargetListName)\" (\(listID))")
             pendingMergePlan = nil
             pendingTargetListID = nil
+            appDebugLog("🐛 [Freeze] success branch, scheduling alert in 0.4s")
             // **Bug-Fix (2026-05-20)** — Settle-Delay vor dem Alert (Konsistenz
             // mit performImport; verhindert Alert-während-Sheet-Dismiss).
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                appDebugLog("🐛 [Freeze] asyncAfter fired, setting isShowingPostImportConfirm=true")
                 isShowingPostImportConfirm = true
             }
         case .targetListMissing:
