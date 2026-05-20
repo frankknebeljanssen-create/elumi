@@ -234,19 +234,30 @@ extension ScanImportView {
                 .disabled(completePreviewPairCount == 0)
                 .padding(.horizontal, AppLayout.screenPadding)
                 .padding(.top, 10)
-                // **Phase B v2 (2026-05-20)** — `scanFullscreenReview` ist eine
-                // pushed navigationDestination OHNE eigene appLocalChrome-/
-                // safeAreaInset-Footer-Reservierung (anders als der Haupt-
-                // Content). Der globale RootContentView-Footer liegt darüber →
-                // der CTA muss den Footer selbst freihalten. Pattern 1:1 aus
-                // `TrainingView+Layout`. (Vorheriges `16` ging fälschlich von
-                // einer safeAreaInset-Reservierung aus, die hier fehlt.)
-                .padding(.bottom, usesGlobalChrome ? 0 : AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.lg)
+                // **Phase B v3 (2026-05-20)** — kleiner CTA-Eigenabstand; die
+                // TabBar-Höhe reserviert jetzt der `.safeAreaInset` am
+                // scanFullscreenReview-Container (siehe unten, gespiegelt von
+                // RootContentView:187-192). Der v1-Versuch mit
+                // `usesGlobalChrome ? 0 : …` war falsch — bei aktivem Global-
+                // Chrome wurde 0 gewählt → CTA komplett unter die TabBar.
+                .padding(.bottom, 16)
             }
             .background(AppTheme.Colors.surface)
         }
         .toolbar(.hidden, for: .navigationBar)
         .appScreenBackground(sectionStyle)
+        // **Phase B v3 (2026-05-20)** — TabBar-Höhe reservieren. Spiegelt
+        // RootContentView:187-192: nested `navigationDestination(isPresented:)`-
+        // Pushes erben WEDER den globalen Footer-safeAreaInset (Z.230) NOCH
+        // den per-AppScreen-Destination-Spacer (Z.187) → ohne diese
+        // Reservierung zeichnen Liste UND CTA unter die globale TabBar.
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if usesGlobalChrome {
+                Color.clear.frame(
+                    height: AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom
+                )
+            }
+        }
         .sheet(item: $reviewEditingPairID) { wrapper in
             if let index = previewPairs.firstIndex(where: { $0.id == wrapper.id }) {
                 ReviewPairEditSheet(
