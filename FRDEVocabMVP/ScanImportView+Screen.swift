@@ -234,9 +234,14 @@ extension ScanImportView {
                 .disabled(completePreviewPairCount == 0)
                 .padding(.horizontal, AppLayout.screenPadding)
                 .padding(.top, 10)
-                // **2026-05-08 Padding-Cleanup** — `footerHeight + insetBottom + 16`
-                // → `16`. Footer per safeAreaInset reserviert.
-                .padding(.bottom, 16)
+                // **Phase B v2 (2026-05-20)** — `scanFullscreenReview` ist eine
+                // pushed navigationDestination OHNE eigene appLocalChrome-/
+                // safeAreaInset-Footer-Reservierung (anders als der Haupt-
+                // Content). Der globale RootContentView-Footer liegt darüber →
+                // der CTA muss den Footer selbst freihalten. Pattern 1:1 aus
+                // `TrainingView+Layout`. (Vorheriges `16` ging fälschlich von
+                // einer safeAreaInset-Reservierung aus, die hier fehlt.)
+                .padding(.bottom, usesGlobalChrome ? 0 : AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom + AppTheme.Spacing.lg)
             }
             .background(AppTheme.Colors.surface)
         }
@@ -825,17 +830,57 @@ extension ScanImportView {
     }
 
     var body: some View {
-        Group {
-            if isShowingImportCompletion, let ctx = importCompletionContext {
-                importCompletionScreen(context: ctx)
-            } else {
-                applyingScanPresentationModifiers(
-                    to: applyingScanRootModifiers(
-                        to: ScrollViewReader { proxy in
-                            scanRootContent(proxy: proxy)
-                        }
+        ZStack(alignment: .top) {
+            Group {
+                if isShowingImportCompletion, let ctx = importCompletionContext {
+                    importCompletionScreen(context: ctx)
+                } else {
+                    applyingScanPresentationModifiers(
+                        to: applyingScanRootModifiers(
+                            to: ScrollViewReader { proxy in
+                                scanRootContent(proxy: proxy)
+                            }
+                        )
                     )
+                }
+            }
+
+            // **Phase B v2 (2026-05-20)** — Draft-Save-Success-Toast als
+            // Root-ZStack-Layer (über allen Content-Swaps / Chrome / Sheets /
+            // Pop-Timing). `ZStack(alignment: .top)` richtet an der Top-
+            // SafeArea aus, daher reicht `.padding(.top, 8)`. Auto-Dismiss
+            // via `.task(id:)` — robuster gegen Re-Renders als asyncAfter.
+            if showDraftSavedToast {
+                HStack(spacing: 10) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(AppTheme.Colors.success)
+                    Text("Als Entwurf gespeichert")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(
+                    AppTheme.Colors.surface,
+                    in: RoundedRectangle(cornerRadius: AppTheme.Radius.md)
                 )
+                .shadow(
+                    color: AppTheme.Shadow.card.color,
+                    radius: AppTheme.Shadow.card.radius,
+                    x: AppTheme.Shadow.card.x,
+                    y: AppTheme.Shadow.card.y
+                )
+                .padding(.top, 8)
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .zIndex(999)
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: showDraftSavedToast)
+        .task(id: showDraftSavedToast) {
+            guard showDraftSavedToast else { return }
+            try? await Task.sleep(for: .seconds(2.5))
+            if !Task.isCancelled {
+                showDraftSavedToast = false
             }
         }
     }

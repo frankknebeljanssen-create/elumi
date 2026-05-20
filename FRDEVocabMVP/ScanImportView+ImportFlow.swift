@@ -46,7 +46,6 @@ extension ScanImportView {
     /// datei-scoped und unsichtbar.
     func saveAsDraft() {
         let pairs = session.previewPairs
-        let captures = session.capturedItems
 
         guard !pairs.isEmpty else {
             appDebugLog("⚠️ [ScanDraft] saveAsDraft called with empty pairs, abort")
@@ -55,19 +54,27 @@ extension ScanImportView {
 
         let draftID = UUID()
 
-        // KRITISCHE REIHENFOLGE: Bilder zuerst persistieren, BEVOR der
-        // State-Reset `capturedItems` wegräumt.
+        // **Phase B v2 (2026-05-20)** — Bild-Quelle: Multi-Capture nutzt
+        // `capturedItems`; ein Single-Scan füllt die NIE (das Bild liegt in
+        // `originalScanImage`, das `releaseWorkingImages` bewusst behält) →
+        // Fallback. KRITISCHE REIHENFOLGE: Bilder zuerst persistieren, BEVOR
+        // der State-Reset `originalScanImage`/`capturedItems` wegräumt.
+        let captureImages: [UIImage] =
+            session.capturedItems.isEmpty
+            ? [session.originalScanImage].compactMap { $0 }
+            : session.capturedItems.map(\.originalImage)
+
         var imageFilenames: [String] = []
-        for (idx, capture) in captures.enumerated() {
+        for (idx, image) in captureImages.enumerated() {
             do {
                 let filename = try ScanDraftImageStore.save(
-                    capture.originalImage,
+                    image,
                     draftID: draftID,
                     index: idx
                 )
                 imageFilenames.append(filename)
             } catch {
-                appDebugLog("⚠️ [ScanDraft] image save failed for capture \(idx): \(error)")
+                appDebugLog("⚠️ [ScanDraft] image save failed for index \(idx): \(error)")
                 // Soft-Fail: Draft wird auch ohne Bild gespeichert.
             }
         }
