@@ -964,6 +964,71 @@ extension ScanImportView {
         } message: {
             Text("\(filteredSelection.count) \(filteredSelection.count == 1 ? "Entwurf wird" : "Entwürfe werden") unwiderruflich gelöscht.")
         }
+        // **Phase E Commit 3** — Bulk-Merge Sheet-Kette (Reuse der Phase-D-v2-
+        // Sheets; Settle-Delays 0.4s; Reentrance über den Coordinator).
+        .sheet(isPresented: $isShowingBulkTargetChoice) {
+            ImportTargetChoiceSheet(
+                importableCount: multiDraftCoordinator.aggregatedItems.count,
+                onChooseNewList: {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        isShowingBulkNewListName = true
+                    }
+                },
+                onChooseExistingList: {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        isShowingBulkExistingListPicker = true
+                    }
+                }
+            )
+            .presentationDetents([.medium])
+        }
+        .sheet(isPresented: $isShowingBulkNewListName) {
+            NewListNameSheet(onCreate: { listName in
+                let result = multiDraftCoordinator.executeImportToNewList(name: listName, listStore: listStore)
+                if result.success {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        showBulkMergeToast(
+                            draftCount: multiDraftCoordinator.sourceDraftCount,
+                            listName: listName,
+                            addedCount: result.addedCount
+                        )
+                        selectedDraftIDs.removeAll()
+                        multiDraftCoordinator.reset()
+                    }
+                }
+            })
+            .presentationDetents([.medium])
+        }
+        .sheet(isPresented: $isShowingBulkExistingListPicker) {
+            if let listStore {
+                ExistingListPickerSheet(
+                    store: listStore,
+                    importableCount: multiDraftCoordinator.aggregatedItems.count,
+                    onConfirm: { listID in handleBulkExistingListChosen(listID) },
+                    onFallbackToNewList: {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                            isShowingBulkNewListName = true
+                        }
+                    }
+                )
+            }
+        }
+        .sheet(isPresented: $isShowingBulkConflictReview) {
+            if let plan = multiDraftCoordinator.pendingMergePlan {
+                ScanImportConflictReviewSheet(
+                    workingConflicts: plan.conflicts,
+                    safeAddCount: plan.safeAdds.count,
+                    duplicateCount: plan.exactDuplicatesToSkip.count,
+                    targetListName: multiDraftCoordinator.pendingTargetListName,
+                    onConfirm: { resolved in handleBulkConflictReviewConfirmed(resolved) }
+                )
+            }
+        }
+        .alert("Hinzufügen fehlgeschlagen", isPresented: $isShowingBulkImportFailureAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(bulkImportFailureMessage)
+        }
     }
 
     // MARK: - Phase E — Multi-Select Action-Bar
@@ -1001,7 +1066,14 @@ extension ScanImportView {
 
             // „Zusammenführen" — primärer CTA (amber), dominante Aktion.
             Button {
-                // **Phase E.3** — Bulk-Merge wird in Commit 3 gewired.
+                let selectedDrafts = draftStore.drafts.filter { filteredSelection.contains($0.id) }
+                multiDraftCoordinator.reset()
+                multiDraftCoordinator.sourceDraftCount = selectedDrafts.count
+                let items = multiDraftCoordinator.aggregateAndDedupe(drafts: selectedDrafts)
+                multiDraftCoordinator.aggregatedItems = items
+                // Edge-Case: nur Drafts mit 0 aktiven Pairs gewählt → nichts tun.
+                guard !items.isEmpty else { return }
+                isShowingBulkTargetChoice = true
             } label: {
                 Text("Zusammenführen (\(count))")
                     .font(.system(size: 16, weight: .bold, design: .rounded))
@@ -1015,6 +1087,67 @@ extension ScanImportView {
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity)
         .background(AppTheme.Colors.surface)
+    }
+
+    // MARK: - Phase E — Bulk-Merge Handler
+
+    /// Bestehende Liste gewählt → Plan berechnen, ggf. ConflictReview, sonst
+    /// direkt mergen. Settle-Delays 0.4s (Sheet erst sauber dismissen lassen).
+    private func handleBulkExistingListChosen(_ listID: UUID) {
+        guard let listStore else { return }
+        guard let targetList = listStore.customLists.first(where: { $0.id == listID }) else {
+            bulkImportFailureMessage = "Liste nicht gefunden."
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                isShowingBulkImportFailureAlert = true
+            }
+            return
+        }
+        guard let plan = multiDraftCoordinator.prepareMergeIntoExisting(
+            listID: listID,
+            listName: targetList.name,
+            listStore: listStore
+        ) else { return }
+
+        if plan.requiresUserDecision {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                isShowingBulkConflictReview = true
+            }
+        } else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                executeBulkMergeAndToast()
+            }
+        }
+    }
+
+    private func handleBulkConflictReviewConfirmed(_ resolved: [ImportConflict]) {
+        multiDraftCoordinator.applyResolvedConflicts(resolved)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            executeBulkMergeAndToast()
+        }
+    }
+
+    private func executeBulkMergeAndToast() {
+        let result = multiDraftCoordinator.executeMerge(listStore: listStore)
+        if result.success {
+            showBulkMergeToast(
+                draftCount: multiDraftCoordinator.sourceDraftCount,
+                listName: multiDraftCoordinator.pendingTargetListName,
+                addedCount: result.addedCount
+            )
+            selectedDraftIDs.removeAll()
+            multiDraftCoordinator.reset()
+        } else {
+            bulkImportFailureMessage = result.errorMessage ?? "Unbekannter Fehler."
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                isShowingBulkImportFailureAlert = true
+            }
+        }
+    }
+
+    private func showBulkMergeToast(draftCount: Int, listName: String, addedCount: Int) {
+        let draftWord = draftCount == 1 ? "Entwurf" : "Entwürfe"
+        bulkActionMessage = "\(draftCount) \(draftWord) zu \"\(listName)\" zusammengeführt (+\(addedCount) Vokabeln)"
+        showBulkActionToast = true
     }
 
     private func importCompletionScreen(context: ImportCompletionContext) -> some View {

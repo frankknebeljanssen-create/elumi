@@ -45,6 +45,18 @@ struct ScanImportView: View {
     // Text. Gespiegelt vom Phase-D-v2-Toast aus ScanDraftDetailView.
     @State var showBulkActionToast = false
     @State var bulkActionMessage = ""
+
+    // **Phase E Commit 3** — Bulk-Merge: Coordinator hält den Merge-State über
+    // die Sheet-Kette (parameterloser init → kein Custom-View-init nötig).
+    // Bulk-prefixed Sheet-Flags kollidieren NICHT mit dem regulären Single-
+    // Scan-Import-Flow (isShowingNewListNameSheet etc.).
+    @StateObject var multiDraftCoordinator = MultiDraftMergeCoordinator()
+    @State var isShowingBulkTargetChoice = false
+    @State var isShowingBulkNewListName = false
+    @State var isShowingBulkExistingListPicker = false
+    @State var isShowingBulkConflictReview = false
+    @State var isShowingBulkImportFailureAlert = false
+    @State var bulkImportFailureMessage = ""
     /// Identifiable-Wrapper um das zur Analyse anstehende Bild. Wird in
     /// `recognizeText(from:)` gesetzt, wenn `activeScanMode == .text` —
     /// der Nutzer hat dann bereits denselben Pick-Weg wie bei Vokabel-
