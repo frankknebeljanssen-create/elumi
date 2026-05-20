@@ -40,6 +40,11 @@ struct ScanImportView: View {
     // Updates der gefilterten Selektion (Stale-ID-Defense nach Löschungen).
     @ObservedObject var draftStore = ScanDraftStore.shared
     @State var selectedDraftIDs: Set<UUID> = []
+    @State var isShowingBulkDeleteConfirm = false
+    // **Phase E** — generischer Bulk-Action-Toast (Delete + Merge), dynamischer
+    // Text. Gespiegelt vom Phase-D-v2-Toast aus ScanDraftDetailView.
+    @State var showBulkActionToast = false
+    @State var bulkActionMessage = ""
     /// Identifiable-Wrapper um das zur Analyse anstehende Bild. Wird in
     /// `recognizeText(from:)` gesetzt, wenn `activeScanMode == .text` —
     /// der Nutzer hat dann bereits denselben Pick-Weg wie bei Vokabel-

@@ -67,6 +67,17 @@ final class ScanDraftStore: ObservableObject {
         drafts.remove(at: index)
     }
 
+    /// **Phase E (2026-05-20)** — Bulk-Remove: entfernt mehrere Drafts inkl.
+    /// ihrer Bild-Dateien. Bilder pro ID löschen (`deleteAll` ist `throws` →
+    /// `try?`), dann EINE `drafts`-Mutation → ein debounced Save via didSet.
+    func remove(ids: Set<UUID>) {
+        guard !ids.isEmpty else { return }
+        for id in ids {
+            try? ScanDraftImageStore.deleteAll(forDraftID: id)
+        }
+        drafts.removeAll { ids.contains($0.id) }
+    }
+
     /// Ersetzt einen vorhandenen Draft und setzt `updatedAt = .now`.
     func update(_ draft: ScanDraft) {
         guard let index = drafts.firstIndex(where: { $0.id == draft.id }) else { return }

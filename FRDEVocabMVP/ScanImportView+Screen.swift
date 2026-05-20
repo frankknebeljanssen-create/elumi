@@ -905,6 +905,35 @@ extension ScanImportView {
                 .transition(.scale.combined(with: .opacity))
                 .zIndex(999)
             }
+
+            // **Phase E (2026-05-20)** — Bulk-Action-Toast (Delete/Merge),
+            // dynamischer Text. Gleiche Optik wie der Draft-Save-Toast oben;
+            // äußeres `.padding(.horizontal, 24)` hält längere Messages von den
+            // Rändern weg.
+            if showBulkActionToast {
+                HStack(spacing: 14) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 32, weight: .semibold))
+                        .foregroundStyle(.white)
+                    Text(bulkActionMessage)
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .lineLimit(2)
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 18)
+                .background(
+                    AppTheme.Colors.success,
+                    in: RoundedRectangle(cornerRadius: AppTheme.Radius.lg)
+                )
+                .shadow(color: .black.opacity(0.2), radius: 16, x: 0, y: 8)
+                .padding(.top, 140)
+                .padding(.horizontal, 24)
+                .frame(maxWidth: .infinity, alignment: .top)
+                .allowsHitTesting(false)
+                .transition(.scale.combined(with: .opacity))
+                .zIndex(999)
+            }
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.7), value: showDraftSavedToast)
         .task(id: showDraftSavedToast) {
@@ -913,6 +942,27 @@ extension ScanImportView {
             if !Task.isCancelled {
                 showDraftSavedToast = false
             }
+        }
+        // **Phase E** — Bulk-Action-Toast (auto-dismiss) + Bulk-Delete-Confirm.
+        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: showBulkActionToast)
+        .task(id: showBulkActionToast) {
+            guard showBulkActionToast else { return }
+            try? await Task.sleep(for: .seconds(2.5))
+            if !Task.isCancelled {
+                showBulkActionToast = false
+            }
+        }
+        .alert("Entwürfe löschen?", isPresented: $isShowingBulkDeleteConfirm) {
+            Button("Abbrechen", role: .cancel) {}
+            Button("Löschen", role: .destructive) {
+                let count = filteredSelection.count
+                draftStore.remove(ids: filteredSelection)
+                selectedDraftIDs.removeAll()
+                bulkActionMessage = "\(count) \(count == 1 ? "Entwurf" : "Entwürfe") gelöscht"
+                showBulkActionToast = true
+            }
+        } message: {
+            Text("\(filteredSelection.count) \(filteredSelection.count == 1 ? "Entwurf wird" : "Entwürfe werden") unwiderruflich gelöscht.")
         }
     }
 
@@ -937,7 +987,7 @@ extension ScanImportView {
             // „Löschen" — destruktiver gefüllter CTA (rot-solid, weißer Text);
             // gleiche Höhe (54) + zentriertes Label wie der Primary daneben.
             Button(role: .destructive) {
-                // **Phase E.2** — Bulk-Delete wird in Commit 2 gewired.
+                isShowingBulkDeleteConfirm = true
             } label: {
                 Text("Löschen (\(count))")
                     // -1pt ggü. Typography.button (17→16); zentriert, damit der
