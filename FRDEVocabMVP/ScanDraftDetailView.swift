@@ -32,6 +32,16 @@ struct ScanDraftDetailView: View {
     @State private var isShowingPostImportConfirm = false
     @State private var fullscreenImage: IdentifiableImage?
 
+    // **Phase D v2 (2026-05-20)** — „Zu bestehender Liste"-Merge-Pfad.
+    @State private var isShowingTargetChoice = false
+    @State private var isShowingExistingListPicker = false
+    @State private var isShowingConflictReview = false
+    @State private var pendingMergePlan: MergePlan?
+    @State private var pendingTargetListID: UUID?
+    @State private var pendingTargetListName = ""
+    @State private var isShowingImportFailureAlert = false
+    @State private var importFailureMessage = ""
+
     var body: some View {
         Group {
             if let draft = localDraft {
@@ -71,6 +81,54 @@ struct ScanDraftDetailView: View {
             Button("Entwurf löschen", role: .destructive) { deleteDraft() }
         } message: {
             Text("Entwurf jetzt löschen?")
+        }
+        // **Phase D v2 (2026-05-20)** — Ziel-Wahl (Neue/Bestehende; kein
+        // „Als Entwurf" → onSaveAsDraft ungesetzt → dritte Card unsichtbar).
+        .sheet(isPresented: $isShowingTargetChoice) {
+            ImportTargetChoiceSheet(
+                importableCount: localDraft.map { activeCount($0) } ?? 0,
+                onChooseNewList: {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        isShowingNewListNameSheet = true
+                    }
+                },
+                onChooseExistingList: {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        isShowingExistingListPicker = true
+                    }
+                }
+            )
+            .presentationDetents([.medium])
+        }
+        .sheet(isPresented: $isShowingExistingListPicker) {
+            if let listStore {
+                ExistingListPickerSheet(
+                    store: listStore,
+                    importableCount: localDraft.map { activeCount($0) } ?? 0,
+                    onConfirm: { listID in handleExistingListChosen(listID) },
+                    onFallbackToNewList: {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                            isShowingNewListNameSheet = true
+                        }
+                    }
+                )
+            }
+        }
+        .sheet(isPresented: $isShowingConflictReview) {
+            if let plan = pendingMergePlan {
+                ScanImportConflictReviewSheet(
+                    workingConflicts: plan.conflicts,
+                    safeAddCount: plan.safeAdds.count,
+                    duplicateCount: plan.exactDuplicatesToSkip.count,
+                    targetListName: pendingTargetListName,
+                    onConfirm: { resolved in handleConflictReviewConfirmed(resolved) }
+                )
+            }
+        }
+        .alert("Hinzufügen fehlgeschlagen", isPresented: $isShowingImportFailureAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(importFailureMessage)
         }
     }
 
@@ -133,7 +191,7 @@ struct ScanDraftDetailView: View {
                     }
 
                     Button {
-                        isShowingNewListNameSheet = true
+                        isShowingTargetChoice = true
                     } label: {
                         Label("Zu Liste machen", systemImage: "checkmark.circle.fill")
                             .frame(maxWidth: .infinity)
@@ -233,6 +291,75 @@ struct ScanDraftDetailView: View {
         )
         appDebugLog("📋 [ScanDraftDetail] imported \(imported) items into \"\(listName)\"")
         isShowingPostImportConfirm = true
+    }
+
+    // MARK: - Phase D v2 — Bestehende Liste (Merge-Pfad)
+
+    private func handleExistingListChosen(_ listID: UUID) {
+        guard let listStore, let draft = localDraft else { return }
+        guard let targetList = listStore.customLists.first(where: { $0.id == listID }) else {
+            importFailureMessage = "Liste nicht gefunden."
+            isShowingImportFailureAlert = true
+            return
+        }
+
+        let importable = draft.previewPairs.filter(\.isImportable)
+        let items: [VocabularyItem] = importable.map { pair in
+            VocabularyItem(
+                french: pair.french,
+                german: pair.german,
+                cardType: pair.cardType,
+                sourceLanguage: .french,
+                wordClass: pair.wordClass
+            )
+        }
+
+        let plan = VocabularyListMergePlanner.computePlan(
+            incoming: items,
+            existingItems: targetList.items
+        )
+        pendingMergePlan = plan
+        pendingTargetListID = listID
+        pendingTargetListName = targetList.name
+
+        // Settle-Delay: das vorige Sheet (Picker) erst sauber dismissen
+        // lassen, bevor Conflict-Review/Apply kommt (sonst Black-Screen).
+        if plan.requiresUserDecision {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                isShowingConflictReview = true
+            }
+        } else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                applyMerge(plan)
+            }
+        }
+    }
+
+    private func handleConflictReviewConfirmed(_ resolved: [ImportConflict]) {
+        guard var plan = pendingMergePlan else { return }
+        plan.conflicts = resolved
+        pendingMergePlan = plan
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            applyMerge(plan)
+        }
+    }
+
+    private func applyMerge(_ plan: MergePlan) {
+        guard let listStore, let listID = pendingTargetListID else { return }
+        let result = listStore.applyMergePlan(plan, toListWithID: listID)
+        switch result.status {
+        case .success:
+            appDebugLog("📋 [ScanDraftDetail] merged into \"\(pendingTargetListName)\" (\(listID))")
+            pendingMergePlan = nil
+            pendingTargetListID = nil
+            isShowingPostImportConfirm = true
+        case .targetListMissing:
+            importFailureMessage = "Die Liste wurde inzwischen gelöscht."
+            isShowingImportFailureAlert = true
+        case .persistenceMismatch:
+            importFailureMessage = "Speichern fehlgeschlagen. Bitte erneut versuchen."
+            isShowingImportFailureAlert = true
+        }
     }
 
     private func deleteDraft() {
