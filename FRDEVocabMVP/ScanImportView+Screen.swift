@@ -856,48 +856,42 @@ extension ScanImportView {
                 }
             }
 
-            // **Phase B v2 (2026-05-20)** — Draft-Save-Success-Toast als
+            // **Phase B v3 (2026-05-20)** — Draft-Save-Success-Toast als
             // Root-ZStack-Layer (über allen Content-Swaps / Chrome / Sheets /
-            // Pop-Timing). `ZStack(alignment: .top)` richtet an der Top-
-            // SafeArea aus, daher reicht `.padding(.top, 8)`. Auto-Dismiss
-            // via `.task(id:)` — robuster gegen Re-Renders als asyncAfter.
+            // Pop-Timing). Größer + auffällig: gefülltes Success-Badge (weiß
+            // auf elumiMint), mid-top via `.padding(.top, 140)`, Pop-In-
+            // Transition. `allowsHitTesting(false)` → Taps gehen durch.
+            // Auto-Dismiss via `.task(id:)`.
             if showDraftSavedToast {
-                let _ = print("🍞 [Toast] RENDER block executing, show=\(showDraftSavedToast)")
-                HStack(spacing: 10) {
+                HStack(spacing: 14) {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(AppTheme.Colors.success)
+                        .font(.system(size: 32, weight: .semibold))
+                        .foregroundStyle(.white)
                     Text("Als Entwurf gespeichert")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .font(.headline)
+                        .foregroundStyle(.white)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 18)
                 .background(
-                    AppTheme.Colors.surface,
-                    in: RoundedRectangle(cornerRadius: AppTheme.Radius.md)
+                    AppTheme.Colors.success,
+                    in: RoundedRectangle(cornerRadius: AppTheme.Radius.lg)
                 )
-                .shadow(
-                    color: AppTheme.Shadow.card.color,
-                    radius: AppTheme.Shadow.card.radius,
-                    x: AppTheme.Shadow.card.x,
-                    y: AppTheme.Shadow.card.y
-                )
-                .padding(.top, 8)
-                .transition(.move(edge: .top).combined(with: .opacity))
+                .shadow(color: .black.opacity(0.2), radius: 16, x: 0, y: 8)
+                .padding(.top, 140)
+                .frame(maxWidth: .infinity, alignment: .top)
+                .allowsHitTesting(false)
+                .transition(.scale.combined(with: .opacity))
                 .zIndex(999)
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: showDraftSavedToast)
+        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: showDraftSavedToast)
         .task(id: showDraftSavedToast) {
-            appDebugLog("🍞 [Toast] task started, show=\(showDraftSavedToast)")
             guard showDraftSavedToast else { return }
             try? await Task.sleep(for: .seconds(2.5))
             if !Task.isCancelled {
                 showDraftSavedToast = false
             }
-        }
-        .onChange(of: showDraftSavedToast) { _, newValue in
-            appDebugLog("🍞 [Toast] onChange: showDraftSavedToast → \(newValue)")
         }
     }
 
