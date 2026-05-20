@@ -42,6 +42,45 @@ struct AppPrimaryButtonStyle: ButtonStyle {
     }
 }
 
+/// **AppDestructiveButtonStyle** — gefüllter destruktiver CTA: rot-solid
+/// (`AppTheme.Colors.error`) + weißer Text. Spiegelt `AppPrimaryButtonStyle`
+/// (Höhe/Radius/Press-Feedback identisch), nur Error-Rot statt Amber und
+/// weiße statt schwarze Schrift (Kontrast auf gesättigtem Rot). Gedacht für
+/// destruktive Primär-Aktionen (z. B. Bulk-Löschen in der Multi-Select-Bar).
+struct AppDestructiveButtonStyle: ButtonStyle {
+    var color: Color = AppTheme.Colors.error
+    var haptic: Bool = true
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(AppTheme.Typography.button)
+            .foregroundStyle(Color.white)
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: AppTheme.Layout.buttonHeight)
+            .background(
+                RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                    .fill(color.opacity(configuration.isPressed ? 0.80 : 1.0))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                    .stroke(Color.black.opacity(0.10), lineWidth: 1)
+            )
+            .shadow(
+                color: color.opacity(0.18),
+                radius: configuration.isPressed ? 2 : 10,
+                x: 0,
+                y: configuration.isPressed ? 1 : 4
+            )
+            .scaleEffect(configuration.isPressed ? AppMotion.Scale.buttonPress : 1)
+            .animation(AppMotion.tap, value: configuration.isPressed)
+            .onChange(of: configuration.isPressed) { _, isPressed in
+                if haptic && isPressed {
+                    AppMotion.triggerSelectionHaptic()
+                }
+            }
+    }
+}
+
 /// **AppCardPressStyle** — systemweiter Tap-Feedback-Stil für alle
 /// tappbaren Cards (Home-Hero-Grid, Weitere Übungen, Tools, Status-
 /// Card, Pokal, Scan-Setup-Cards …).

@@ -927,23 +927,23 @@ extension ScanImportView {
 
     /// Action-Bar: erscheint via `safeAreaInset`, sobald ≥1 Draft gewählt ist.
     /// Zwei Buttons nebeneinander — kein „Abbrechen" (User toggelt Checkboxen
-    /// weg). **Commit 1: noch ungewired** (beide disabled, manuelles `.opacity`
-    /// fürs Disabled-Feedback, da `AppPrimaryButtonStyle` nicht auto-ausgraut).
+    /// weg). **Aktionen noch ungewired** (Commit 2/3); enabled-Look bei Auswahl,
+    /// manuelles `.opacity` fürs Disabled-Feedback (Custom-Styles auto-grauen nicht).
     @ViewBuilder
     var multiDraftActionBar: some View {
         let count = filteredSelection.count
+        let isEmpty = filteredSelection.isEmpty
         HStack(spacing: 12) {
-            // „Löschen" — sekundär (subordinate Visual-Weight), destruktiver
-            // Rot-Token. Gleiche Höhe (54) wie der Primary daneben; zentriertes
-            // Label (der Style übernimmt maxWidth + Zentrierung).
+            // „Löschen" — destruktiver gefüllter CTA (rot-solid, weißer Text);
+            // gleiche Höhe (54) + zentriertes Label wie der Primary daneben.
             Button(role: .destructive) {
                 // **Phase E.2** — Bulk-Delete wird in Commit 2 gewired.
             } label: {
                 Text("Löschen (\(count))")
             }
-            .buttonStyle(AppSecondaryButtonStyle(tint: AppTheme.Colors.error))
-            .disabled(true)
-            .opacity(0.5)
+            .buttonStyle(AppDestructiveButtonStyle())
+            .opacity(isEmpty ? 0.5 : 1.0)
+            .disabled(isEmpty)
 
             // „Zusammenführen" — primärer CTA (amber), dominante Aktion.
             Button {
@@ -952,8 +952,8 @@ extension ScanImportView {
                 Text("Zusammenführen (\(count))")
             }
             .buttonStyle(AppPrimaryButtonStyle())
-            .disabled(true)
-            .opacity(0.5)
+            .opacity(isEmpty ? 0.5 : 1.0)
+            .disabled(isEmpty)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
