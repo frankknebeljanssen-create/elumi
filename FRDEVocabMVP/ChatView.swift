@@ -501,6 +501,7 @@ struct ChatView: View {
                     Spacer().frame(height: 8)
                 }
             }
+            .scrollDismissesKeyboard(.interactively)
             .onChange(of: chatService.messages.count) { _, _ in
                 scrollToBottom(proxy: proxy)
             }
