@@ -475,6 +475,7 @@
 		CC15FF0600000000ABCDEF01 /* ModuleCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0600000000ABCDEF02 /* ModuleCard.swift */; };
 		CC15FF0E00000000ABCDEF01 /* AnswerModeSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0E00000000ABCDEF02 /* AnswerModeSelector.swift */; };
 		CC15FF1000000000ABCDEF01 /* ChatMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1000000000ABCDEF02 /* ChatMessage.swift */; };
+		D5A1120000000000000000A1 /* ScanDraftsSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1120000000000000000A2 /* ScanDraftsSectionView.swift */; };
 		D5A1100000000000000000A1 /* ScanDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000A2 /* ScanDraft.swift */; };
 		D5A1100000000000000000B1 /* DownscaleImageHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000B2 /* DownscaleImageHelper.swift */; };
 		D5A1100000000000000000C1 /* ScanDraftImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000C2 /* ScanDraftImageStore.swift */; };
@@ -1080,6 +1081,7 @@
 		CC15FF0600000000ABCDEF02 /* ModuleCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ModuleCard.swift; path = FRDEVocabMVP/ModuleCard.swift; sourceTree = "<group>"; };
 		CC15FF0E00000000ABCDEF02 /* AnswerModeSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AnswerModeSelector.swift; path = FRDEVocabMVP/AnswerModeSelector.swift; sourceTree = "<group>"; };
 		CC15FF1000000000ABCDEF02 /* ChatMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatMessage.swift; path = FRDEVocabMVP/ChatMessage.swift; sourceTree = "<group>"; };
+		D5A1120000000000000000A2 /* ScanDraftsSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftsSectionView.swift; path = FRDEVocabMVP/ScanDraftsSectionView.swift; sourceTree = "<group>"; };
 		D5A1100000000000000000A2 /* ScanDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraft.swift; path = FRDEVocabMVP/ScanDraft.swift; sourceTree = "<group>"; };
 		D5A1100000000000000000B2 /* DownscaleImageHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DownscaleImageHelper.swift; path = FRDEVocabMVP/DownscaleImageHelper.swift; sourceTree = "<group>"; };
 		D5A1100000000000000000C2 /* ScanDraftImageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftImageStore.swift; path = FRDEVocabMVP/ScanDraftImageStore.swift; sourceTree = "<group>"; };
@@ -1254,6 +1256,7 @@
 				CC15FF0600000000ABCDEF02 /* ModuleCard.swift */,
 				CC15FF0E00000000ABCDEF02 /* AnswerModeSelector.swift */,
 				CC15FF1000000000ABCDEF02 /* ChatMessage.swift */,
+				D5A1120000000000000000A2 /* ScanDraftsSectionView.swift */,
 				D5A1100000000000000000A2 /* ScanDraft.swift */,
 				D5A1100000000000000000B2 /* DownscaleImageHelper.swift */,
 				D5A1100000000000000000C2 /* ScanDraftImageStore.swift */,
@@ -2232,6 +2235,7 @@
 				CC15FF0600000000ABCDEF01 /* ModuleCard.swift in Sources */,
 				CC15FF0E00000000ABCDEF01 /* AnswerModeSelector.swift in Sources */,
 				CC15FF1000000000ABCDEF01 /* ChatMessage.swift in Sources */,
+				D5A1120000000000000000A1 /* ScanDraftsSectionView.swift in Sources */,
 				D5A1100000000000000000A1 /* ScanDraft.swift in Sources */,
 				D5A1100000000000000000B1 /* DownscaleImageHelper.swift in Sources */,
 				D5A1100000000000000000C1 /* ScanDraftImageStore.swift in Sources */,

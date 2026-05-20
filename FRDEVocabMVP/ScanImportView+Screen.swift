@@ -763,6 +763,12 @@ extension ScanImportView {
                                 selectedScanInputMethod = .library
                                 showingPhotoLibrary = true
                             }
+
+                            // **Phase C (2026-05-20)** — „Meine Scans"-Sektion:
+                            // gespeicherte Scan-Entwürfe unter den Capture-
+                            // Optionen. Blendet sich selbst aus, wenn keine
+                            // Drafts existieren.
+                            ScanDraftsSectionView()
                         }
 
                         if !session.batchCompleted {
