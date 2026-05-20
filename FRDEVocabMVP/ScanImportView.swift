@@ -33,6 +33,13 @@ struct ScanImportView: View {
     @FocusState var isListNameFocused: Bool
     @FocusState var focusedReviewField: ScanReviewFieldFocus?
     @State var isListNamePulseActive = false
+
+    // **Phase E (2026-05-20)** — Multi-Select „Meine Scans". Der Selection-
+    // State (Set<UUID>) liegt hier, weil die Action-Bar Screen-Ebene braucht;
+    // er wird als Binding in die Section gereicht. `draftStore` für Live-
+    // Updates der gefilterten Selektion (Stale-ID-Defense nach Löschungen).
+    @ObservedObject var draftStore = ScanDraftStore.shared
+    @State var selectedDraftIDs: Set<UUID> = []
     /// Identifiable-Wrapper um das zur Analyse anstehende Bild. Wird in
     /// `recognizeText(from:)` gesetzt, wenn `activeScanMode == .text` —
     /// der Nutzer hat dann bereits denselben Pick-Weg wie bei Vokabel-

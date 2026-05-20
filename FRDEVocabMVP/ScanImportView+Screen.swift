@@ -768,9 +768,12 @@ extension ScanImportView {
                             // gespeicherte Scan-Entwürfe unter den Capture-
                             // Optionen. Blendet sich selbst aus, wenn keine
                             // Drafts existieren.
-                            ScanDraftsSectionView(onOpenDraft: { id in
-                                navigate(.scanDraftDetail(id))
-                            })
+                            ScanDraftsSectionView(
+                                onOpenDraft: { id in
+                                    navigate(.scanDraftDetail(id))
+                                },
+                                selectedDraftIDs: $selectedDraftIDs
+                            )
                         }
 
                         if !session.batchCompleted {
@@ -859,6 +862,16 @@ extension ScanImportView {
                             to: ScrollViewReader { proxy in
                                 scanRootContent(proxy: proxy)
                             }
+                            // **Phase E (2026-05-20)** — Multi-Select-Action-Bar
+                            // am Boden der Choice-Screen-Scrollfläche, ÜBER der
+                            // (lokalen/globalen) Footer-Chrome. Nur bei Auswahl.
+                            .safeAreaInset(edge: .bottom, spacing: 0) {
+                                if !filteredSelection.isEmpty {
+                                    multiDraftActionBar
+                                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                                }
+                            }
+                            .animation(.spring(response: 0.4, dampingFraction: 0.7), value: filteredSelection.count)
                         )
                     )
                 }
@@ -901,6 +914,51 @@ extension ScanImportView {
                 showDraftSavedToast = false
             }
         }
+    }
+
+    // MARK: - Phase E — Multi-Select Action-Bar
+
+    /// Stale-ID-Defense: nur IDs, die noch als Draft existieren (ein Draft
+    /// kann zwischenzeitlich einzeln gelöscht worden sein).
+    var filteredSelection: Set<UUID> {
+        let validIDs = Set(draftStore.drafts.map(\.id))
+        return selectedDraftIDs.intersection(validIDs)
+    }
+
+    /// Action-Bar: erscheint via `safeAreaInset`, sobald ≥1 Draft gewählt ist.
+    /// Zwei Buttons nebeneinander — kein „Abbrechen" (User toggelt Checkboxen
+    /// weg). **Commit 1: noch ungewired** (beide disabled, manuelles `.opacity`
+    /// fürs Disabled-Feedback, da `AppPrimaryButtonStyle` nicht auto-ausgraut).
+    @ViewBuilder
+    var multiDraftActionBar: some View {
+        let count = filteredSelection.count
+        HStack(spacing: 12) {
+            Button(role: .destructive) {
+                // **Phase E.2** — Bulk-Delete wird in Commit 2 gewired.
+            } label: {
+                Text("Löschen (\(count))")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .tint(.red)
+            .controlSize(.large)
+            .disabled(true)
+            .opacity(0.5)
+
+            Button {
+                // **Phase E.3** — Bulk-Merge wird in Commit 3 gewired.
+            } label: {
+                Text("Zusammenführen (\(count))")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(AppPrimaryButtonStyle())
+            .disabled(true)
+            .opacity(0.5)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity)
+        .background(AppTheme.Colors.surface)
     }
 
     private func importCompletionScreen(context: ImportCompletionContext) -> some View {

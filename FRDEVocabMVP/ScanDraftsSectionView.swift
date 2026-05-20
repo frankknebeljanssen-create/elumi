@@ -16,6 +16,11 @@ struct ScanDraftsSectionView: View {
     /// **Phase D (2026-05-20)** — öffnet die Detail-View eines Drafts.
     let onOpenDraft: (UUID) -> Void
 
+    /// **Phase E (2026-05-20)** — Multi-Select. Der State lebt in
+    /// `ScanImportView` (die Action-Bar braucht Screen-Ebene); hier nur als
+    /// Binding, damit die Checkbox toggeln kann.
+    @Binding var selectedDraftIDs: Set<UUID>
+
     var body: some View {
         if !draftStore.drafts.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
@@ -26,23 +31,52 @@ struct ScanDraftsSectionView: View {
 
                 LazyVStack(spacing: 8) {
                     ForEach(draftStore.drafts) { draft in
-                        ScanDraftCard(draft: draft, onOpenDraft: onOpenDraft)
+                        ScanDraftCard(
+                            draft: draft,
+                            isSelected: selectedDraftIDs.contains(draft.id),
+                            onOpenDraft: onOpenDraft,
+                            onToggleSelect: { toggleSelection(draft.id) }
+                        )
                     }
                 }
             }
             .padding(.top, 8)
         }
     }
+
+    private func toggleSelection(_ id: UUID) {
+        if selectedDraftIDs.contains(id) {
+            selectedDraftIDs.remove(id)
+        } else {
+            selectedDraftIDs.insert(id)
+        }
+    }
 }
 
 private struct ScanDraftCard: View {
     let draft: ScanDraft
+    // **Phase E (2026-05-20)** — Multi-Select-Zustand + Toggle-Callback.
+    let isSelected: Bool
     let onOpenDraft: (UUID) -> Void
+    let onToggleSelect: () -> Void
     @State private var thumbnail: UIImage?
     @State private var showDeleteConfirm = false
 
     var body: some View {
         HStack(spacing: 12) {
+            // **Phase E** — Checkbox als eigenes 44pt-Tap-Target, ganz links
+            // vor dem Thumbnail. Card-Tap (öffnen) + Trash bleiben getrennt.
+            Button(action: onToggleSelect) {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 26, weight: .semibold))
+                    .foregroundStyle(isSelected
+                        ? AppSectionStyle.scan.accent
+                        : AppTheme.Colors.textSecondary.opacity(0.5))
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
             // Thumbnail (erstes Bild, async geladen)
             ZStack {
                 RoundedRectangle(cornerRadius: AppTheme.Radius.sm)
@@ -101,7 +135,13 @@ private struct ScanDraftCard: View {
             }
         }
         .padding(12)
-        .appCardBackground(.scan)
+        // **Phase E** — Selected-State über höhere Card-Intensität +
+        // Accent-Border (gespiegelt von FlashcardStackComposerSheet).
+        .appCardBackground(.scan, intensity: isSelected ? AppTheme.CardIntensity.selected : AppTheme.CardIntensity.soft)
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
+                .stroke(isSelected ? AppSectionStyle.scan.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
+        )
         // **Phase D** — ganze Card öffnet die Detail-View. Der Trash-Button
         // fängt seine Taps selbst ab (Button) → kein Tap-Konflikt.
         .contentShape(Rectangle())
