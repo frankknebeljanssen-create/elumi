@@ -12,6 +12,10 @@ struct FRDEVocabMVPApp: App {
         // Lernkern-Drift) ohne externes XCTest-Target. Release-Builds
         // sehen die Datei gar nicht.
         ArticleModeClassifierTests.runIfNeeded()
+        // **Meine Scans — Phase A (2026-05-20)** — Foundation-Self-Test
+        // (ScanDraft Save/Load-Roundtrip, Bild-Storage, LKG-Recovery).
+        // Gleiche Boot-Self-Test-Konvention; Release sieht nichts (#if DEBUG).
+        ScanDraftStoreTests.runIfNeeded()
 
         // **Dev-Mode 2026-05-09** — bei jedem App-Start auf 10 Credits
         // setzen, damit Frank ohne ständige Reset-Klicks/Streak-Loops

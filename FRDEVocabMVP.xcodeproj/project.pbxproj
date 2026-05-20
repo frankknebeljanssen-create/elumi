@@ -475,6 +475,12 @@
 		CC15FF0600000000ABCDEF01 /* ModuleCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0600000000ABCDEF02 /* ModuleCard.swift */; };
 		CC15FF0E00000000ABCDEF01 /* AnswerModeSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0E00000000ABCDEF02 /* AnswerModeSelector.swift */; };
 		CC15FF1000000000ABCDEF01 /* ChatMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1000000000ABCDEF02 /* ChatMessage.swift */; };
+		D5A1100000000000000000A1 /* ScanDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000A2 /* ScanDraft.swift */; };
+		D5A1100000000000000000B1 /* DownscaleImageHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000B2 /* DownscaleImageHelper.swift */; };
+		D5A1100000000000000000C1 /* ScanDraftImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000C2 /* ScanDraftImageStore.swift */; };
+		D5A1100000000000000000D1 /* ScanDraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000D2 /* ScanDraftStore.swift */; };
+		D5A1100000000000000000E1 /* ScanDraftStoreRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000E2 /* ScanDraftStoreRepository.swift */; };
+		D5A1100000000000000000F1 /* ScanDraftStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000F2 /* ScanDraftStoreTests.swift */; };
 		CC15FF1100000000ABCDEF01 /* ChatPersona.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1100000000ABCDEF02 /* ChatPersona.swift */; };
 		CC15FF1200000000ABCDEF01 /* ChatConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1200000000ABCDEF02 /* ChatConfig.swift */; };
 		CC15FF1300000000ABCDEF01 /* DeviceTokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1300000000ABCDEF02 /* DeviceTokenManager.swift */; };
@@ -1074,6 +1080,12 @@
 		CC15FF0600000000ABCDEF02 /* ModuleCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ModuleCard.swift; path = FRDEVocabMVP/ModuleCard.swift; sourceTree = "<group>"; };
 		CC15FF0E00000000ABCDEF02 /* AnswerModeSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AnswerModeSelector.swift; path = FRDEVocabMVP/AnswerModeSelector.swift; sourceTree = "<group>"; };
 		CC15FF1000000000ABCDEF02 /* ChatMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatMessage.swift; path = FRDEVocabMVP/ChatMessage.swift; sourceTree = "<group>"; };
+		D5A1100000000000000000A2 /* ScanDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraft.swift; path = FRDEVocabMVP/ScanDraft.swift; sourceTree = "<group>"; };
+		D5A1100000000000000000B2 /* DownscaleImageHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DownscaleImageHelper.swift; path = FRDEVocabMVP/DownscaleImageHelper.swift; sourceTree = "<group>"; };
+		D5A1100000000000000000C2 /* ScanDraftImageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftImageStore.swift; path = FRDEVocabMVP/ScanDraftImageStore.swift; sourceTree = "<group>"; };
+		D5A1100000000000000000D2 /* ScanDraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftStore.swift; path = FRDEVocabMVP/ScanDraftStore.swift; sourceTree = "<group>"; };
+		D5A1100000000000000000E2 /* ScanDraftStoreRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftStoreRepository.swift; path = FRDEVocabMVP/ScanDraftStoreRepository.swift; sourceTree = "<group>"; };
+		D5A1100000000000000000F2 /* ScanDraftStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftStoreTests.swift; path = FRDEVocabMVP/ScanDraftStoreTests.swift; sourceTree = "<group>"; };
 		CC15FF1100000000ABCDEF02 /* ChatPersona.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatPersona.swift; path = FRDEVocabMVP/ChatPersona.swift; sourceTree = "<group>"; };
 		CC15FF1200000000ABCDEF02 /* ChatConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatConfig.swift; path = FRDEVocabMVP/ChatConfig.swift; sourceTree = "<group>"; };
 		CC15FF1300000000ABCDEF02 /* DeviceTokenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DeviceTokenManager.swift; path = FRDEVocabMVP/DeviceTokenManager.swift; sourceTree = "<group>"; };
@@ -1242,6 +1254,12 @@
 				CC15FF0600000000ABCDEF02 /* ModuleCard.swift */,
 				CC15FF0E00000000ABCDEF02 /* AnswerModeSelector.swift */,
 				CC15FF1000000000ABCDEF02 /* ChatMessage.swift */,
+				D5A1100000000000000000A2 /* ScanDraft.swift */,
+				D5A1100000000000000000B2 /* DownscaleImageHelper.swift */,
+				D5A1100000000000000000C2 /* ScanDraftImageStore.swift */,
+				D5A1100000000000000000D2 /* ScanDraftStore.swift */,
+				D5A1100000000000000000E2 /* ScanDraftStoreRepository.swift */,
+				D5A1100000000000000000F2 /* ScanDraftStoreTests.swift */,
 				CC15FF1100000000ABCDEF02 /* ChatPersona.swift */,
 				CC15FF1200000000ABCDEF02 /* ChatConfig.swift */,
 				CC15FF1300000000ABCDEF02 /* DeviceTokenManager.swift */,
@@ -2214,6 +2232,12 @@
 				CC15FF0600000000ABCDEF01 /* ModuleCard.swift in Sources */,
 				CC15FF0E00000000ABCDEF01 /* AnswerModeSelector.swift in Sources */,
 				CC15FF1000000000ABCDEF01 /* ChatMessage.swift in Sources */,
+				D5A1100000000000000000A1 /* ScanDraft.swift in Sources */,
+				D5A1100000000000000000B1 /* DownscaleImageHelper.swift in Sources */,
+				D5A1100000000000000000C1 /* ScanDraftImageStore.swift in Sources */,
+				D5A1100000000000000000D1 /* ScanDraftStore.swift in Sources */,
+				D5A1100000000000000000E1 /* ScanDraftStoreRepository.swift in Sources */,
+				D5A1100000000000000000F1 /* ScanDraftStoreTests.swift in Sources */,
 				CC15FF1100000000ABCDEF01 /* ChatPersona.swift in Sources */,
 				CC15FF1200000000ABCDEF01 /* ChatConfig.swift in Sources */,
 				CC15FF1300000000ABCDEF01 /* DeviceTokenManager.swift in Sources */,

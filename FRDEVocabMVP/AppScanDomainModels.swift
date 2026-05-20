@@ -97,7 +97,7 @@ enum ScanMode: String, CaseIterable, Identifiable {
     }
 }
 
-struct ImportPreviewPair: Identifiable, Equatable {
+struct ImportPreviewPair: Identifiable, Codable, Equatable {
     var id = UUID()
     var french: String
     var german: String
