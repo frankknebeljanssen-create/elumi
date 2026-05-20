@@ -70,6 +70,12 @@ struct ScanImportView: View {
     // Sheets gehalten werden müssen.
 
     @State var isShowingImportTargetChoice = false
+
+    /// **Phase B (2026-05-20)** — In-place Success-Toast nach „Als Entwurf
+    /// speichern". Non-private, damit die `+ImportFlow`-Extension ihn setzen
+    /// kann (analog `isShowingImportTargetChoice`). Auto-Dismiss (2,5s)
+    /// hängt in `applyingScanPresentationModifiers`.
+    @State var showDraftSavedToast = false
     @State var isShowingExistingListPicker = false
     @State var isShowingConflictReview = false
     /// Neue Namensabfrage für „neue Liste importieren" (User-Spec

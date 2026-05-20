@@ -221,6 +221,10 @@ extension ScanImportView {
                     onChooseExistingList: {
                         // Pfad 2: Picker öffnen.
                         showExistingListPicker()
+                    },
+                    onSaveAsDraft: {
+                        // Pfad 3 (Phase B): Scan als Entwurf sichern.
+                        saveAsDraft()
                     }
                 )
                 .presentationDetents([.medium])
@@ -331,6 +335,44 @@ extension ScanImportView {
                         pendingFreierTextCompletion = context
                     }
                 )
+            }
+            // **Phase B (2026-05-20)** — In-place Success-Toast nach „Als
+            // Entwurf speichern". Lokales Overlay auf ScanImportView, 2,5s
+            // Auto-Dismiss; KEIN goHome (User bleibt im Scan-Bereich).
+            // Card-Stil analog `emptyPoolToast`, Success-flavored (elumiMint
+            // + checkmark).
+            .overlay(alignment: .top) {
+                if showDraftSavedToast {
+                    HStack(spacing: 10) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(AppTheme.Colors.success)
+                        Text("Als Entwurf gespeichert")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(
+                        AppTheme.Colors.surface,
+                        in: RoundedRectangle(cornerRadius: AppTheme.Radius.md)
+                    )
+                    .shadow(
+                        color: AppTheme.Shadow.card.color,
+                        radius: AppTheme.Shadow.card.radius,
+                        x: AppTheme.Shadow.card.x,
+                        y: AppTheme.Shadow.card.y
+                    )
+                    .padding(.top, 8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                }
+            }
+            .animation(.easeInOut(duration: 0.2), value: showDraftSavedToast)
+            .onChange(of: showDraftSavedToast) { _, newValue in
+                if newValue {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                        showDraftSavedToast = false
+                    }
+                }
             }
     }
 }

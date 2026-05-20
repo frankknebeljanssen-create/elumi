@@ -20,6 +20,82 @@ extension ScanImportView {
         isShowingImportTargetChoice = true
     }
 
+    /// **Phase B (2026-05-20)** — Entry-Variante, die das Ziel-Wahl-Sheet
+    /// AUCH dann öffnet, wenn 0 importable Pairs existieren (aber >0 Pairs
+    /// insgesamt) — damit der „Als Entwurf"-Pfad erreichbar bleibt.
+    /// Der Neue-/Bestehende-Liste-Pfad nutzt weiterhin nur
+    /// `pendingImportItems` (= importable), die hier leer sein dürfen;
+    /// `saveAsDraft()` greift dagegen direkt auf ALLE `session.previewPairs`
+    /// zu. `commitPreviewEditsAndSyncImportText()` zuerst (wie im Original),
+    /// damit in-progress Edits in den previewPairs landen.
+    func beginImportTargetChoiceOrDraft() {
+        commitPreviewEditsAndSyncImportText()
+        let pairs = previewPairs
+        guard !pairs.isEmpty else { return }
+        pendingImportItems = collectImportableItems()
+        isShowingImportTargetChoice = true
+    }
+
+    /// **Phase B (2026-05-20)** — Sichert den aktuellen Scan-Review als
+    /// `ScanDraft`: ALLE `previewPairs` (auch `isImportable == false`,
+    /// Toggle-State konserviert) plus komprimierte Quellbilder. In-place:
+    /// Toast + State-Reset, KEIN `goHome()` (User bleibt im Scan-Bereich).
+    ///
+    /// Non-private (wie die übrigen ImportFlow-Funktionen), weil der
+    /// Aufruf cross-file aus `+Presentations` kommt — `private` wäre
+    /// datei-scoped und unsichtbar.
+    func saveAsDraft() {
+        let pairs = session.previewPairs
+        let captures = session.capturedItems
+
+        guard !pairs.isEmpty else {
+            appDebugLog("⚠️ [ScanDraft] saveAsDraft called with empty pairs, abort")
+            return
+        }
+
+        let draftID = UUID()
+
+        // KRITISCHE REIHENFOLGE: Bilder zuerst persistieren, BEVOR der
+        // State-Reset `capturedItems` wegräumt.
+        var imageFilenames: [String] = []
+        for (idx, capture) in captures.enumerated() {
+            do {
+                let filename = try ScanDraftImageStore.save(
+                    capture.originalImage,
+                    draftID: draftID,
+                    index: idx
+                )
+                imageFilenames.append(filename)
+            } catch {
+                appDebugLog("⚠️ [ScanDraft] image save failed for capture \(idx): \(error)")
+                // Soft-Fail: Draft wird auch ohne Bild gespeichert.
+            }
+        }
+
+        let draft = ScanDraft(
+            id: draftID,
+            title: ScanDraft.autoTitle(at: .now),
+            createdAt: .now,
+            updatedAt: .now,
+            previewPairs: pairs,
+            imageFilenames: imageFilenames
+        )
+
+        ScanDraftStore.shared.add(draft)
+        appDebugLog("📁 [ScanDraft] saved draft \(draftID) with \(pairs.count) pairs, \(imageFilenames.count) images")
+
+        // In-place Feedback.
+        showDraftSavedToast = true
+
+        // `capturedItems` + Selection explizit leeren — der Standard-Reset
+        // (applyResetState) fasst `capturedItems` NICHT an.
+        session.capturedItems = []
+        session.selectedCapturedItemID = nil
+
+        // Standard-Reset über den etablierten Wrapper (korrekte Signatur).
+        resetScanInputAfterSuccessfulImport(keepingListName: false)
+    }
+
     /// Sammelt die importierbaren Items aus dem aktuellen Review-State —
     /// **gleiche** Logik wie der bestehende `importScannedText()`, nur
     /// ausgelagert, damit beide Pfade identisch importable items haben.

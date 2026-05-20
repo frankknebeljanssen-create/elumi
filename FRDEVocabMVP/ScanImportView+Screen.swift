@@ -214,12 +214,15 @@ extension ScanImportView {
             // **2026-04-22 Abend V**: ruft jetzt `beginImportTargetChoice()`
             // statt direkt `importScannedText()`. Der User sieht zuerst
             // ein Sheet mit der Wahl „neue Liste" vs. „bestehende Liste".
+            // **Phase B (2026-05-20)**: → `beginImportTargetChoiceOrDraft()`,
+            // damit das Sheet auch bei 0 importable Pairs (aber >0 Pairs)
+            // erreichbar bleibt — für den „Als Entwurf"-Pfad.
             VStack(spacing: 0) {
                 Button {
                     isShowingFullscreenReview = false
                     session.batchCompleted = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                        beginImportTargetChoice()
+                        beginImportTargetChoiceOrDraft()
                     }
                 } label: {
                     Label("Jetzt importieren", systemImage: "square.and.arrow.down.fill")
