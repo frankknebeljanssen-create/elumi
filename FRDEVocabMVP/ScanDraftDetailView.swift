@@ -235,15 +235,15 @@ struct ScanDraftDetailView: View {
                         }
                     }
 
-                    Button {
-                        isShowingTargetChoice = true
-                    } label: {
-                        Label("Zu Liste machen", systemImage: "checkmark.circle.fill")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .disabled(!canImport(draft))
+                    // **Phase D v3 (2026-05-20)** — App-Standard-CTA statt
+                    // generischem `.borderedProminent`: gespiegelt vom „Training
+                    // starten"-Button (`SessionPrimaryCTA`). Flaches Amber, kein
+                    // Icon, eingebautes Disabled-Graying über `isEnabled`.
+                    SessionPrimaryCTA(
+                        title: "Zu Liste machen",
+                        isEnabled: canImport(draft),
+                        action: { isShowingTargetChoice = true }
+                    )
                     .padding(.horizontal, 16)
 
                     vocabularySection(draft: draft)
