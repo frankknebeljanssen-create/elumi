@@ -29,7 +29,6 @@ struct ScanDraftDetailView: View {
     @State private var isShowingRenameSheet = false
     @State private var renameText = ""
     @State private var isShowingDeleteConfirm = false
-    @State private var isShowingPostImportConfirm = false
     @State private var fullscreenImage: IdentifiableImage?
 
     // **Phase D v2 (2026-05-20)** — „Zu bestehender Liste"-Merge-Pfad.
@@ -41,6 +40,11 @@ struct ScanDraftDetailView: View {
     @State private var pendingTargetListName = ""
     @State private var isShowingImportFailureAlert = false
     @State private var importFailureMessage = ""
+
+    // **Import-Success-Toast (Phase B+ 2026-05-20)** — ersetzt den früheren
+    // PostImport-Alert. Kompaktes Erfolgs-Feedback, Auto-Dismiss nach 2.5s.
+    @State private var showImportToast = false
+    @State private var importToastMessage = ""
 
     var body: some View {
         Group {
@@ -75,12 +79,6 @@ struct ScanDraftDetailView: View {
             Button("Löschen", role: .destructive) { deleteDraft() }
         } message: {
             Text("\"\(localDraft?.title ?? "")\" wird unwiderruflich gelöscht.")
-        }
-        .alert("Liste wurde erstellt", isPresented: $isShowingPostImportConfirm) {
-            Button("Behalten", role: .cancel) {}
-            Button("Entwurf löschen", role: .destructive) { deleteDraft() }
-        } message: {
-            Text("Entwurf jetzt löschen?")
         }
         // **Phase D v2 (2026-05-20)** — Ziel-Wahl (Neue/Bestehende; kein
         // „Als Entwurf" → onSaveAsDraft ungesetzt → dritte Card unsichtbar).
@@ -130,6 +128,53 @@ struct ScanDraftDetailView: View {
         } message: {
             Text(importFailureMessage)
         }
+        // **Import-Success-Toast** — Overlay auf der äußersten Ebene, damit er
+        // über Content + Custom-Header schwebt. Struktur gespiegelt vom Phase-B-
+        // Draft-Save-Toast in ScanImportView (Commit 8675ebf/da2fe6b).
+        .overlay(alignment: .top) {
+            if showImportToast {
+                importToast
+            }
+        }
+        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: showImportToast)
+        .task(id: showImportToast) {
+            guard showImportToast else { return }
+            try? await Task.sleep(for: .seconds(2.5))
+            if !Task.isCancelled {
+                showImportToast = false
+            }
+        }
+    }
+
+    // MARK: - Import-Success-Toast
+
+    /// Gespiegelt vom Draft-Save-Toast in `ScanImportView` (Phase B,
+    /// Commit 8675ebf/da2fe6b): gefülltes Success-Badge (weiß auf elumiMint),
+    /// mid-top, Pop-In-Transition, Auto-Dismiss via `.task(id:)`. Text dynamisch
+    /// (Liste + Anzahl). Äußeres `.padding(.horizontal, 24)` hält das Badge bei
+    /// längerer Message von den Screen-Rändern weg (Phase B hatte fixen Kurztext).
+    private var importToast: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 32, weight: .semibold))
+                .foregroundStyle(.white)
+            Text(importToastMessage)
+                .font(.headline)
+                .foregroundStyle(.white)
+                .lineLimit(2)
+        }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 18)
+        .background(
+            AppTheme.Colors.success,
+            in: RoundedRectangle(cornerRadius: AppTheme.Radius.lg)
+        )
+        .shadow(color: .black.opacity(0.2), radius: 16, x: 0, y: 8)
+        .padding(.top, 140)
+        .padding(.horizontal, 24)
+        .frame(maxWidth: .infinity, alignment: .top)
+        .allowsHitTesting(false)
+        .transition(.scale.combined(with: .opacity))
     }
 
     // MARK: - Content
@@ -290,18 +335,27 @@ struct ScanDraftDetailView: View {
             suggestedListName: listName
         )
         appDebugLog("📋 [ScanDraftDetail] imported \(imported) items into \"\(listName)\"")
-        // **Bug-Fix (2026-05-20)** — Settle-Delay: Alert erst zeigen, wenn
-        // das NewListNameSheet fertig dismisst hat (sonst grauer Screen /
-        // Präsentations-Kollision Alert-während-Sheet-Dismiss).
+        // **Phase B+ (2026-05-20)** — Settle-Delay: Toast erst zeigen, wenn das
+        // NewListNameSheet fertig dismisst hat (sonst erscheint er hinter dem
+        // Sheet). Ersetzt den früheren PostImport-Alert.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-            isShowingPostImportConfirm = true
+            importToastMessage = "Liste \"\(listName)\" aktualisiert (+\(imported) Vokabeln)"
+            showImportToast = true
         }
     }
 
     // MARK: - Phase D v2 — Bestehende Liste (Merge-Pfad)
 
     private func handleExistingListChosen(_ listID: UUID) {
-        appDebugLog("🐛 [Freeze] handleExistingListChosen entry: listID=\(listID)")
+        // **Reentrance-Guard (2026-05-20)** — der Picker kann seinen onConfirm-
+        // Callback im selben Runloop-Tick doppelt feuern (SwiftUI-Sheet-Quirk).
+        // Da `pendingMergePlan` unten SYNCHRON gesetzt wird, fängt dieser Guard
+        // den 2. Call ab → kein Doppel-Merge / grauer Screen.
+        guard pendingMergePlan == nil else {
+            appDebugLog("⚠️ [ScanDraftDetail] handleExistingListChosen called while merge pending — ignoring duplicate")
+            return
+        }
+        appDebugLog("📋 [ScanDraftDetail] handleExistingListChosen entry: listID=\(listID)")
         guard let listStore, let draft = localDraft else { return }
         guard let targetList = listStore.customLists.first(where: { $0.id == listID }) else {
             importFailureMessage = "Liste nicht gefunden."
@@ -323,12 +377,12 @@ struct ScanDraftDetailView: View {
             )
         }
 
-        appDebugLog("🐛 [Freeze] before computePlan, items=\(items.count), existing=\(targetList.items.count)")
+        appDebugLog("📋 [ScanDraftDetail] before computePlan, items=\(items.count), existing=\(targetList.items.count)")
         let plan = VocabularyListMergePlanner.computePlan(
             incoming: items,
             existingItems: targetList.items
         )
-        appDebugLog("🐛 [Freeze] after computePlan: requiresUserDecision=\(plan.requiresUserDecision), safeAdds=\(plan.safeAdds.count), conflicts=\(plan.conflicts.count)")
+        appDebugLog("📋 [ScanDraftDetail] after computePlan: requiresUserDecision=\(plan.requiresUserDecision), safeAdds=\(plan.safeAdds.count), conflicts=\(plan.conflicts.count)")
         pendingMergePlan = plan
         pendingTargetListID = listID
         pendingTargetListName = targetList.name
@@ -336,22 +390,28 @@ struct ScanDraftDetailView: View {
         // Settle-Delay: das vorige Sheet (Picker) erst sauber dismissen
         // lassen, bevor Conflict-Review/Apply kommt (sonst Black-Screen).
         if plan.requiresUserDecision {
-            appDebugLog("🐛 [Freeze] branching to ConflictReview after 0.4s")
+            appDebugLog("📋 [ScanDraftDetail] branching to ConflictReview after 0.4s")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                appDebugLog("🐛 [Freeze] asyncAfter fired, setting isShowingConflictReview=true")
+                appDebugLog("📋 [ScanDraftDetail] asyncAfter fired, setting isShowingConflictReview=true")
                 isShowingConflictReview = true
             }
         } else {
-            appDebugLog("🐛 [Freeze] branching to applyMerge after 0.4s")
+            appDebugLog("📋 [ScanDraftDetail] branching to applyMerge after 0.4s")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                appDebugLog("🐛 [Freeze] asyncAfter fired, calling applyMerge")
+                appDebugLog("📋 [ScanDraftDetail] asyncAfter fired, calling applyMerge")
                 applyMerge(plan)
             }
         }
     }
 
     private func handleConflictReviewConfirmed(_ resolved: [ImportConflict]) {
-        guard var plan = pendingMergePlan else { return }
+        // **Reentrance-Guard (2026-05-20)** — ohne pending Plan (z. B. Doppel-
+        // Confirm nach bereits abgeschlossenem Merge) nichts tun. `guard let`
+        // erfüllt zugleich die „pendingMergePlan != nil"-Bedingung.
+        guard var plan = pendingMergePlan else {
+            appDebugLog("⚠️ [ScanDraftDetail] handleConflictReviewConfirmed called without pending plan — ignoring")
+            return
+        }
         plan.conflicts = resolved
         pendingMergePlan = plan
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
@@ -360,22 +420,32 @@ struct ScanDraftDetailView: View {
     }
 
     private func applyMerge(_ plan: MergePlan) {
-        appDebugLog("🐛 [Freeze] applyMerge entry, plan.safeAdds=\(plan.safeAdds.count)")
+        appDebugLog("📋 [ScanDraftDetail] applyMerge entry, plan.safeAdds=\(plan.safeAdds.count)")
         guard let listStore, let listID = pendingTargetListID else { return }
-        appDebugLog("🐛 [Freeze] before applyMergePlan call")
+        appDebugLog("📋 [ScanDraftDetail] before applyMergePlan call")
         let result = listStore.applyMergePlan(plan, toListWithID: listID)
-        appDebugLog("🐛 [Freeze] after applyMergePlan, status=\(result.status)")
+        appDebugLog("📋 [ScanDraftDetail] after applyMergePlan, status=\(result.status)")
+
+        // Lokale Kopien für die Toast-Message, BEVOR der pending-State
+        // zurückgesetzt wird.
+        let addedCount = result.added
+        let listName = pendingTargetListName
+        // **Guard-Release (2026-05-20)** — Merge-Versuch abgeschlossen (Erfolg
+        // ODER Fehler): pending-State zurücksetzen, damit handleExistingList-
+        // Chosen für einen erneuten Import wieder freigegeben ist.
+        pendingMergePlan = nil
+        pendingTargetListID = nil
+
         switch result.status {
         case .success:
-            appDebugLog("📋 [ScanDraftDetail] merged into \"\(pendingTargetListName)\" (\(listID))")
-            pendingMergePlan = nil
-            pendingTargetListID = nil
-            appDebugLog("🐛 [Freeze] success branch, scheduling alert in 0.4s")
-            // **Bug-Fix (2026-05-20)** — Settle-Delay vor dem Alert (Konsistenz
-            // mit performImport; verhindert Alert-während-Sheet-Dismiss).
+            appDebugLog("📋 [ScanDraftDetail] merged into \"\(listName)\" (\(listID))")
+            appDebugLog("📋 [ScanDraftDetail] success branch, scheduling toast in 0.4s")
+            // Settle-Delay: Toast erst zeigen, wenn das Sheet (Picker/Conflict-
+            // Review) fertig dismisst hat (sonst erscheint er hinter dem Sheet).
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                appDebugLog("🐛 [Freeze] asyncAfter fired, setting isShowingPostImportConfirm=true")
-                isShowingPostImportConfirm = true
+                appDebugLog("📋 [ScanDraftDetail] asyncAfter fired, showing import toast")
+                importToastMessage = "Liste \"\(listName)\" aktualisiert (+\(addedCount) Vokabeln)"
+                showImportToast = true
             }
         case .targetListMissing:
             importFailureMessage = "Die Liste wurde inzwischen gelöscht."
