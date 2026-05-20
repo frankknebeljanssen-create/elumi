@@ -940,6 +940,10 @@ extension ScanImportView {
                 // **Phase E.2** — Bulk-Delete wird in Commit 2 gewired.
             } label: {
                 Text("Löschen (\(count))")
+                    // -1pt ggü. Typography.button (17→16); zentriert, damit der
+                    // Counter bei Umbruch mittig in der 2. Zeile sitzt.
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .multilineTextAlignment(.center)
             }
             .buttonStyle(AppDestructiveButtonStyle())
             .opacity(isEmpty ? 0.5 : 1.0)
@@ -950,6 +954,8 @@ extension ScanImportView {
                 // **Phase E.3** — Bulk-Merge wird in Commit 3 gewired.
             } label: {
                 Text("Zusammenführen (\(count))")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .multilineTextAlignment(.center)
             }
             .buttonStyle(AppPrimaryButtonStyle())
             .opacity(isEmpty ? 0.5 : 1.0)
