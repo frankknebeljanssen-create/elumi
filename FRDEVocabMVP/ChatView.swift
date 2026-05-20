@@ -502,6 +502,7 @@ struct ChatView: View {
                 }
             }
             .scrollDismissesKeyboard(.interactively)
+            .dismissKeyboardOnTap()
             .onChange(of: chatService.messages.count) { _, _ in
                 scrollToBottom(proxy: proxy)
             }
