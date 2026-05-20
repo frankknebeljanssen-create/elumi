@@ -503,6 +503,21 @@ struct ChatView: View {
             }
             .scrollDismissesKeyboard(.interactively)
             .dismissKeyboardOnTap()
+            // **Bug R (2026-05-20)** — `dismissKeyboardOnTap()` ist ein
+            // `.background()`-Recognizer und fängt nur Durchfall-Taps auf
+            // leeren Flächen; der ScrollView überdeckt seine Fläche per
+            // Hit-Test, daher feuert er auf der Konvo nicht. Die simultane
+            // TapGesture hängt direkt am Scroll und dismissed die Tastatur
+            // bei Tap auf die Bubbles — ohne Scroll oder NEW-Wort-Links zu
+            // blockieren (Pattern wie in FlashcardsView+Layout).
+            .simultaneousGesture(
+                TapGesture().onEnded {
+                    UIApplication.shared.sendAction(
+                        #selector(UIResponder.resignFirstResponder),
+                        to: nil, from: nil, for: nil
+                    )
+                }
+            )
             .onChange(of: chatService.messages.count) { _, _ in
                 scrollToBottom(proxy: proxy)
             }
