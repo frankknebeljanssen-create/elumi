@@ -92,7 +92,10 @@ extension ScanImportView {
         appDebugLog("📁 [ScanDraft] saved draft \(draftID) with \(pairs.count) pairs, \(imageFilenames.count) images")
 
         // In-place Feedback.
+        // **Diagnose (2026-05-20)** — Toast-Sichtbarkeit: Log vor/nach Setter.
+        appDebugLog("🍞 [Toast] BEFORE set: showDraftSavedToast=\(showDraftSavedToast)")
         showDraftSavedToast = true
+        appDebugLog("🍞 [Toast] AFTER set: showDraftSavedToast=\(showDraftSavedToast)")
 
         // `capturedItems` + Selection explizit leeren — der Standard-Reset
         // (applyResetState) fasst `capturedItems` NICHT an.

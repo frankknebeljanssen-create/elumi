@@ -862,6 +862,7 @@ extension ScanImportView {
             // SafeArea aus, daher reicht `.padding(.top, 8)`. Auto-Dismiss
             // via `.task(id:)` — robuster gegen Re-Renders als asyncAfter.
             if showDraftSavedToast {
+                let _ = print("🍞 [Toast] RENDER block executing, show=\(showDraftSavedToast)")
                 HStack(spacing: 10) {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundStyle(AppTheme.Colors.success)
@@ -888,11 +889,15 @@ extension ScanImportView {
         }
         .animation(.easeInOut(duration: 0.2), value: showDraftSavedToast)
         .task(id: showDraftSavedToast) {
+            appDebugLog("🍞 [Toast] task started, show=\(showDraftSavedToast)")
             guard showDraftSavedToast else { return }
             try? await Task.sleep(for: .seconds(2.5))
             if !Task.isCancelled {
                 showDraftSavedToast = false
             }
+        }
+        .onChange(of: showDraftSavedToast) { _, newValue in
+            appDebugLog("🍞 [Toast] onChange: showDraftSavedToast → \(newValue)")
         }
     }
 
