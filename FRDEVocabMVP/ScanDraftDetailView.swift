@@ -41,27 +41,7 @@ struct ScanDraftDetailView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .navigationTitle(localDraft?.title ?? "Entwurf")
-        .navigationBarTitleDisplayMode(.inline)
         .appScreenBackground(.scan)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Menu {
-                    Button {
-                        startRename()
-                    } label: {
-                        Label("Umbenennen", systemImage: "pencil")
-                    }
-                    Button(role: .destructive) {
-                        isShowingDeleteConfirm = true
-                    } label: {
-                        Label("Löschen", systemImage: "trash")
-                    }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                }
-            }
-        }
         .onAppear { loadDraft() }
         .sheet(isPresented: $isShowingNewListNameSheet) {
             NewListNameSheet(onCreate: { name in
@@ -98,35 +78,75 @@ struct ScanDraftDetailView: View {
 
     @ViewBuilder
     private func detailContent(draft: ScanDraft) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                if !draft.imageFilenames.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(draft.imageFilenames, id: \.self) { filename in
-                                DraftImageThumbnail(filename: filename) { image in
-                                    fullscreenImage = IdentifiableImage(image: image)
+        VStack(spacing: 0) {
+            // **Phase D-Fix (2026-05-20)** — Custom-Header, weil die System-
+            // Nav-Bar global versteckt ist (RootContentView:170 hängt
+            // `.toolbar(.hidden, for: .navigationBar)` auf jede Destination).
+            // AppBackButton (App-Chevron) + Titel + „…"-Menu.
+            HStack(spacing: 8) {
+                AppBackButton(
+                    action: { dismiss() },
+                    tint: AppSectionStyle.scan.accent
+                )
+
+                Text(draft.title)
+                    .font(.headline)
+                    .lineLimit(1)
+
+                Spacer()
+
+                Menu {
+                    Button {
+                        startRename()
+                    } label: {
+                        Label("Umbenennen", systemImage: "pencil")
+                    }
+                    Button(role: .destructive) {
+                        isShowingDeleteConfirm = true
+                    } label: {
+                        Label("Löschen", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .font(.system(size: 22))
+                        .foregroundStyle(AppSectionStyle.scan.accent)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    if !draft.imageFilenames.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(draft.imageFilenames, id: \.self) { filename in
+                                    DraftImageThumbnail(filename: filename) { image in
+                                        fullscreenImage = IdentifiableImage(image: image)
+                                    }
                                 }
                             }
+                            .padding(.horizontal, 16)
                         }
-                        .padding(.horizontal, 16)
                     }
-                }
 
-                Button {
-                    isShowingNewListNameSheet = true
-                } label: {
-                    Label("Zu Liste machen", systemImage: "checkmark.circle.fill")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(!canImport(draft))
-                .padding(.horizontal, 16)
+                    Button {
+                        isShowingNewListNameSheet = true
+                    } label: {
+                        Label("Zu Liste machen", systemImage: "checkmark.circle.fill")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(!canImport(draft))
+                    .padding(.horizontal, 16)
 
-                vocabularySection(draft: draft)
+                    vocabularySection(draft: draft)
+                }
+                .padding(.vertical, 16)
             }
-            .padding(.vertical, 16)
         }
     }
 
