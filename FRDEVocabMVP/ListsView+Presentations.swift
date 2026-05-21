@@ -220,35 +220,5 @@ extension ListsView {
             } message: {
                 Text(listPendingDeletion.map { "\($0.name) wird gel\u{00F6}scht." } ?? "")
             }
-            // **List-Merge Phase 1 (2026-05-21)** — Sheet-Kette: Multi-Select-
-            // Picker → (0,4s Settle-Delay) → Namensabfrage → Merge → Toast.
-            .sheet(isPresented: $mergeCoordinator.showListPicker) {
-                ListMergePickerSheet(
-                    lists: listStore.allLists,
-                    onMergeRequested: { ids in
-                        mergeCoordinator.pendingSourceIDs = ids
-                        mergeCoordinator.showListPicker = false
-                        // Settle-Delay (bewährtes Pattern Phase D v2/E) gegen
-                        // Doppel-Sheet-Remount-Flackern beim Picker→Name-Wechsel.
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                            mergeCoordinator.showNameSheet = true
-                        }
-                    },
-                    onCancel: { mergeCoordinator.showListPicker = false }
-                )
-            }
-            .sheet(isPresented: $mergeCoordinator.showNameSheet) {
-                NewListNameSheet { name in
-                    Task {
-                        let count = await mergeCoordinator.performMerge(
-                            sourceIDs: mergeCoordinator.pendingSourceIDs,
-                            newName: name,
-                            listStore: listStore
-                        )
-                        mergeCoordinator.pendingSourceIDs = []
-                        showToast("Liste '\(name)' mit \(count) Vokabeln angelegt", isSuccess: true)
-                    }
-                }
-            }
     }
 }
