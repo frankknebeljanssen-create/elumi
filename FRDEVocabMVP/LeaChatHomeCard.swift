@@ -94,7 +94,9 @@ struct LeaChatHomeCard: View {
                 ChatAvatarView(size: 40)
 
                 Text(last.text)
-                    .font(.system(size: 14, weight: .regular))
+                    // Font wie Daily-Drop-Subtitle (WideCard subtitleSize 13,
+                    // .semibold, .rounded) — gleiches Card-Design auf Home.
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundStyle(Color(red: 0.102, green: 0.102, blue: 0.102))
                     .lineLimit(1)
                     .multilineTextAlignment(.leading)
@@ -106,10 +108,13 @@ struct LeaChatHomeCard: View {
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Chat mit Léa")
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        // Font wie Daily-Drop-Title (WideCard titleSize 19,
+                        // .black, .rounded) — beide Home-Cards gleiches Design.
+                        .font(.system(size: 19, weight: .black, design: .rounded))
                         .foregroundStyle(Color(red: 0.102, green: 0.102, blue: 0.102))
                     Text("Sag bonjour zu Léa 🇫🇷")
-                        .font(.system(size: 12, weight: .medium))
+                        // Font wie Daily-Drop-Subtitle (13, .semibold, .rounded).
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
