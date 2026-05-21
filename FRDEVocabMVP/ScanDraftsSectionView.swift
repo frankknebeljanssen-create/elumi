@@ -1,43 +1,44 @@
 // ScanDraftsSectionView.swift
-// **Meine Scans — Phase C (2026-05-20)** — Sektion im Scan-Tab, die
-// gespeicherte `ScanDraft`s als vertikale Liste anzeigt. Sitzt unter
-// den Capture-Optionen (Schritt 2) im Choice-Screen von ScanImportView.
+// **Meine Scans — Phase C/D/E + Scan-Redesign (2026-05-21)** — Sektion im
+// Scan-Tab. Zeigt gespeicherte `ScanDraft`s als **horizontal scrollbare** Reihe
+// kompakter Cards (kleines Thumbnail + Counter-Pill + Title + Datum + Trash).
+// Sitzt unter Schritt 2 im Choice-Screen; blendet sich bei leer aus.
 //
-// Blendet sich selbst aus, wenn keine Drafts existieren. Karten sind
-// non-tappable (Detail-View kommt in Phase D); einzige Aktion ist der
-// Trash-Button mit Confirmation-Alert (Delete ist irreversibel — löscht
-// via `ScanDraftStore.remove` auch die zugehörigen Bilder).
+// • Section-Label nutzt `ScanSectionLabel(stepNumber: 3, …)` — selbe Optik wie 1./2.
+// • Multi-Select-Checkbox (Phase E) bleibt funktional; Card-Tap öffnet Detail.
+// • Trash mit Confirmation-Alert (löscht via `ScanDraftStore.remove` inkl. Bilder).
 
 import SwiftUI
 
 struct ScanDraftsSectionView: View {
     @ObservedObject private var draftStore = ScanDraftStore.shared
 
-    /// **Phase D (2026-05-20)** — öffnet die Detail-View eines Drafts.
+    /// **Phase D** — öffnet die Detail-View eines Drafts.
     let onOpenDraft: (UUID) -> Void
 
-    /// **Phase E (2026-05-20)** — Multi-Select. Der State lebt in
-    /// `ScanImportView` (die Action-Bar braucht Screen-Ebene); hier nur als
-    /// Binding, damit die Checkbox toggeln kann.
+    /// **Phase E** — Multi-Select-State lebt in `ScanImportView`; hier als Binding.
     @Binding var selectedDraftIDs: Set<UUID>
 
     var body: some View {
         if !draftStore.drafts.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Meine Scans")
-                    .font(.headline)
-                    .foregroundStyle(.primary)
-                    .padding(.horizontal, 4)
+                // **Scan-Redesign** — selbe Komponente/Optik wie „1./2." (Schritt 3).
+                ScanSectionLabel(stepNumber: 3, title: "Meine Scans")
 
-                LazyVStack(spacing: 8) {
-                    ForEach(draftStore.drafts) { draft in
-                        ScanDraftCard(
-                            draft: draft,
-                            isSelected: selectedDraftIDs.contains(draft.id),
-                            onOpenDraft: onOpenDraft,
-                            onToggleSelect: { toggleSelection(draft.id) }
-                        )
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: 10) {
+                        ForEach(draftStore.drafts) { draft in
+                            HorizontalScanDraftCard(
+                                draft: draft,
+                                isSelected: selectedDraftIDs.contains(draft.id),
+                                onOpenDraft: onOpenDraft,
+                                onToggleSelect: { toggleSelection(draft.id) }
+                            )
+                        }
                     }
+                    // 4 statt 16: die Section liegt bereits in `screenPadding`,
+                    // 4 richtet die erste Card am Section-Label aus.
+                    .padding(.horizontal, 4)
                 }
             }
             .padding(.top, 8)
@@ -53,122 +54,138 @@ struct ScanDraftsSectionView: View {
     }
 }
 
-private struct ScanDraftCard: View {
+// MARK: - Horizontale Draft-Card (Scan-Redesign 2026-05-21)
+
+private struct HorizontalScanDraftCard: View {
     let draft: ScanDraft
-    // **Phase E (2026-05-20)** — Multi-Select-Zustand + Toggle-Callback.
     let isSelected: Bool
     let onOpenDraft: (UUID) -> Void
     let onToggleSelect: () -> Void
+
     @State private var thumbnail: UIImage?
     @State private var showDeleteConfirm = false
 
+    // Fixe Card-Maße — 110 (Spec) hätte die 4 Zeilen geklippt → 124.
+    private static let cardWidth: CGFloat = 160
+    private static let cardHeight: CGFloat = 124
+
     var body: some View {
-        HStack(spacing: 12) {
-            // **Phase E** — Checkbox als eigenes 44pt-Tap-Target, ganz links
-            // vor dem Thumbnail. Card-Tap (öffnen) + Trash bleiben getrennt.
-            Button(action: onToggleSelect) {
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 26, weight: .semibold))
-                    .foregroundStyle(isSelected
-                        ? AppSectionStyle.scan.accent
-                        : AppTheme.Colors.textSecondary.opacity(0.5))
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
+        VStack(alignment: .leading, spacing: 0) {
+            // Top-Row: Checkbox + Thumbnail (links), Counter-Pill (oben rechts).
+            ZStack(alignment: .topTrailing) {
+                HStack(alignment: .center, spacing: 8) {
+                    Button(action: onToggleSelect) {
+                        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(isSelected
+                                ? AppSectionStyle.scan.accent
+                                : AppTheme.Colors.textSecondary.opacity(0.5))
+                            .frame(width: 30, height: 30)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
 
-            // Thumbnail (erstes Bild, async geladen)
-            ZStack {
-                RoundedRectangle(cornerRadius: AppTheme.Radius.sm)
-                    .fill(AppTheme.Colors.secondarySurface)
+                    thumbnailView
+                        .frame(width: 38, height: 38)
 
-                if let thumbnail {
-                    Image(uiImage: thumbnail)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.sm))
-                } else {
-                    Image(systemName: "doc.text.image")
-                        .font(.system(size: 22))
-                        .foregroundStyle(.secondary)
+                    Spacer(minLength: 0)
                 }
-            }
-            .frame(width: 56, height: 56)
 
-            // Title + Meta
-            VStack(alignment: .leading, spacing: 4) {
+                // Counter-Pill — Vokabelzahl (= previewPairs.count, wie bisher angezeigt).
+                Text("\(draft.previewPairs.count) Vok.")
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(AppSectionStyle.scan.accent.opacity(0.9), in: Capsule())
+            }
+            .padding(.top, 10)
+            .padding(.horizontal, 10)
+
+            VStack(alignment: .leading, spacing: 2) {
                 Text(draft.title)
-                    .font(.subheadline.weight(.semibold))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
                     .lineLimit(1)
-
-                Text(metaText)
-                    .font(.caption)
+                Text(relativeDateString(for: draft.createdAt))
+                    .font(.caption2)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 10)
+            .padding(.top, 6)
 
-            Spacer()
+            Spacer(minLength: 0)
 
-            // **Phase D** — Affordance, dass die Card öffnet.
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14))
-                .foregroundStyle(.tertiary)
-
-            // Trash-Button (44pt Tap-Target, subtil)
-            Button {
-                showDeleteConfirm = true
-            } label: {
-                Image(systemName: "trash")
-                    .font(.system(size: 16))
-                    .foregroundStyle(.secondary)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .alert("Entwurf löschen?", isPresented: $showDeleteConfirm) {
-                Button("Abbrechen", role: .cancel) {}
-                Button("Löschen", role: .destructive) {
-                    ScanDraftStore.shared.remove(draft.id)
+            // Trash klein, unten rechts (gegenüberliegende Ecke zum Counter-Pill).
+            HStack {
+                Spacer()
+                Button {
+                    showDeleteConfirm = true
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+                        .padding(6)
+                        .contentShape(Rectangle())
                 }
-            } message: {
-                Text("\"\(draft.title)\" wird unwiderruflich gelöscht.")
+                .buttonStyle(.plain)
             }
+            .padding(.horizontal, 4)
+            .padding(.bottom, 4)
         }
-        .padding(12)
-        // **Phase E** — Selected-State über höhere Card-Intensität +
-        // Accent-Border (gespiegelt von FlashcardStackComposerSheet).
-        .appCardBackground(.scan, intensity: isSelected ? AppTheme.CardIntensity.selected : AppTheme.CardIntensity.soft)
-        .overlay(
+        .frame(width: Self.cardWidth, height: Self.cardHeight)
+        .background(
             RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
-                .stroke(isSelected ? AppSectionStyle.scan.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
+                .fill(AppTheme.Colors.setupCardBackground)
         )
-        // **Phase D** — ganze Card öffnet die Detail-View. Der Trash-Button
-        // fängt seine Taps selbst ab (Button) → kein Tap-Konflikt.
+        .overlay(
+            // Selected → Accent-Border (klareres Multi-Select-Signal neben der
+            // Checkbox); sonst der ruhige setupCardBorder.
+            RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
+                .stroke(isSelected ? AppSectionStyle.scan.accent : AppTheme.Colors.setupCardBorder,
+                        lineWidth: isSelected ? 1.5 : 1)
+        )
+        // Card-Tap öffnet Detail; Checkbox + Trash fangen ihre Taps selbst ab
+        // (Button-Priorität über onTapGesture) → kein Tap-Konflikt (wie Phase D/E).
         .contentShape(Rectangle())
         .onTapGesture { onOpenDraft(draft.id) }
-        .task {
-            await loadThumbnail()
+        .task { await loadThumbnail() }
+        .alert("Entwurf löschen?", isPresented: $showDeleteConfirm) {
+            Button("Abbrechen", role: .cancel) {}
+            Button("Löschen", role: .destructive) {
+                ScanDraftStore.shared.remove(draft.id)
+            }
+        } message: {
+            Text("\"\(draft.title)\" wird unwiderruflich gelöscht.")
         }
     }
 
-    private var metaText: String {
-        let dateString = relativeDateString(for: draft.createdAt)
-        let pairCount = draft.previewPairs.count
-        var parts = ["\(dateString) · \(pairCount) Vokabeln"]
-        if draft.imageFilenames.count > 1 {
-            parts.append("\(draft.imageFilenames.count) Seiten")
+    @ViewBuilder
+    private var thumbnailView: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: AppTheme.Radius.sm)
+                .fill(AppTheme.Colors.secondarySurface)
+            if let thumbnail {
+                Image(uiImage: thumbnail)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.sm))
+            } else {
+                Image(systemName: "doc.text.image")
+                    .font(.system(size: 16))
+                    .foregroundStyle(.secondary)
+            }
         }
-        return parts.joined(separator: " · ")
     }
 
     private func relativeDateString(for date: Date) -> String {
         let calendar = Calendar.current
         let now = Date()
-
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "HH:mm"
         let time = timeFormatter.string(from: date)
-
         if calendar.isDateInToday(date) {
             return "heute, \(time)"
         } else if calendar.isDateInYesterday(date) {
