@@ -53,15 +53,14 @@ struct ScanDraft: Identifiable, Codable, Equatable {
         self.imageFilenames = imageFilenames
     }
 
-    /// Generiert einen Default-Titel im Format „Scan TT.MM. · HH:MM".
+    /// Generiert einen Default-Titel im Format „Scan TT.MM." (nur Datum —
+    /// die Uhrzeit steht in der Card-Meta-Zeile, daher kein Duplikat im Titel).
     /// Deutsche Locale, damit Tag.Monat-Reihenfolge stimmt.
     static func autoTitle(at date: Date = Date()) -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "de_DE")
         formatter.dateFormat = "dd.MM."
         let datePart = formatter.string(from: date)
-        formatter.dateFormat = "HH:mm"
-        let timePart = formatter.string(from: date)
-        return "Scan \(datePart) · \(timePart)"
+        return "Scan \(datePart)"
     }
 }

@@ -65,77 +65,63 @@ private struct HorizontalScanDraftCard: View {
     @State private var thumbnail: UIImage?
     @State private var showDeleteConfirm = false
 
-    // Fixe Card-Maße — 110 (Spec) hätte die 4 Zeilen geklippt → 124.
-    private static let cardWidth: CGFloat = 160
-    private static let cardHeight: CGFloat = 124
+    // **Scan-Redesign (2026-05-21)** — einzeilige, kompakte Card. Breite fix,
+    // Höhe intrinsisch (eine Zeile, ~64pt). 250pt, damit Titel + „· N Vok."
+    // voll passen (180/200 hätten den Titel abgeschnitten).
+    private static let cardWidth: CGFloat = 250
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Top-Row: Checkbox + Thumbnail (links), Counter-Pill (oben rechts).
-            ZStack(alignment: .topTrailing) {
-                HStack(alignment: .center, spacing: 8) {
-                    Button(action: onToggleSelect) {
-                        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(isSelected
-                                ? AppSectionStyle.scan.accent
-                                : AppTheme.Colors.textSecondary.opacity(0.5))
-                            .frame(width: 30, height: 30)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-
-                    thumbnailView
-                        .frame(width: 38, height: 38)
-
-                    Spacer(minLength: 0)
-                }
-
-                // Counter-Pill — Vokabelzahl (= previewPairs.count, wie bisher angezeigt).
-                Text("\(draft.previewPairs.count) Vok.")
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(AppSectionStyle.scan.accent.opacity(0.9), in: Capsule())
+        HStack(spacing: 10) {
+            // Checkbox (eigenes Tap-Target).
+            Button(action: onToggleSelect) {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(isSelected
+                        ? AppSectionStyle.scan.accent
+                        : AppTheme.Colors.textSecondary.opacity(0.5))
+                    .frame(width: 26, height: 26)
+                    .contentShape(Rectangle())
             }
-            .padding(.top, 10)
-            .padding(.horizontal, 10)
+            .buttonStyle(.plain)
 
+            thumbnailView
+                .frame(width: 44, height: 44)
+
+            // Titel-Zeile (Titel + Counter in Coral) + Meta darunter.
             VStack(alignment: .leading, spacing: 2) {
-                Text(draft.title)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .lineLimit(1)
+                HStack(alignment: .firstTextBaseline, spacing: 5) {
+                    Text(displayTitle)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .lineLimit(1)
+                    Text("· \(draft.previewPairs.count) Vok.")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(AppSectionStyle.scan.accent)
+                        .lineLimit(1)
+                        .layoutPriority(1)
+                }
                 Text(relativeDateString(for: draft.createdAt))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 10)
-            .padding(.top, 6)
 
-            Spacer(minLength: 0)
-
-            // Trash klein, unten rechts (gegenüberliegende Ecke zum Counter-Pill).
-            HStack {
-                Spacer()
-                Button {
-                    showDeleteConfirm = true
-                } label: {
-                    Image(systemName: "trash")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.secondary)
-                        .padding(6)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
+            // Trash klein.
+            Button {
+                showDeleteConfirm = true
+            } label: {
+                Image(systemName: "trash")
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+                    .padding(6)
+                    .contentShape(Rectangle())
             }
-            .padding(.horizontal, 4)
-            .padding(.bottom, 4)
+            .buttonStyle(.plain)
         }
-        .frame(width: Self.cardWidth, height: Self.cardHeight)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 10)
+        .frame(width: Self.cardWidth)
         .background(
             RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
                 .fill(AppTheme.Colors.setupCardBackground)
@@ -160,6 +146,18 @@ private struct HorizontalScanDraftCard: View {
         } message: {
             Text("\"\(draft.title)\" wird unwiderruflich gelöscht.")
         }
+    }
+
+    /// Titel ohne „· HH:MM"-Endung (Datum-Dedup). `autoTitle` erzeugt seit dem
+    /// Redesign nur noch das Datum; dieser Strip deckt zusätzlich ältere Drafts,
+    /// deren persistierter Titel die Uhrzeit noch enthält. Custom-Titel ohne
+    /// dieses Muster bleiben unverändert.
+    private var displayTitle: String {
+        draft.title.replacingOccurrences(
+            of: #" · \d{2}:\d{2}$"#,
+            with: "",
+            options: .regularExpression
+        )
     }
 
     @ViewBuilder
