@@ -46,4 +46,9 @@ struct ListsView: View {
     @State var isShowingToast = false
     @State var toastIsSuccess = true
     @State var toastDismissWorkItem: DispatchWorkItem?
+
+    /// **List-Merge Phase 1 (2026-05-21)** — Coordinator für die Merge-Sheet-
+    /// Kette (Picker → NewListNameSheet → Merge → Toast). Parameterloser init,
+    /// `listStore` wird `performMerge` als Param übergeben (Phase-E-Pattern).
+    @StateObject var mergeCoordinator = ListMergeCoordinator()
 }

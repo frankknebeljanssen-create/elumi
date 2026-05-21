@@ -94,5 +94,27 @@ extension ListsView {
             editableListName = listStore.selectedList.name
             cancelEditing()
         }
+        // **List-Merge Phase 1 (2026-05-21)** — Merge-Einstieg oben rechts.
+        // P1-Platzierung als Overlay, weil ListsView keine NavBar-Toolbar hat
+        // (`.toolbar(.hidden, …)`) und AppTopBar/ModuleHeaderCard keine freien
+        // Trailing-Slots bieten. Bei Direct-Launch unterdrückt (dann rendert
+        // der Screen nur `Color.clear` unter dem Detail-Sheet).
+        .overlay(alignment: .topTrailing) {
+            if !isDirectListLaunch {
+                Button {
+                    mergeCoordinator.showListPicker = true
+                } label: {
+                    Image(systemName: "arrow.triangle.merge")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(sectionStyle.accent)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Listen zusammenführen")
+                .padding(.top, 12)
+                .padding(.trailing, 16)
+            }
+        }
     }
 }
