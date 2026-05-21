@@ -14,6 +14,10 @@ struct ListPickerSheet: View {
     /// Nur der „Eigene Listen"(.own)-Caller übergibt ihn → der Button erscheint
     /// ausschließlich dort (andere Filter bleiben unverändert, default nil).
     var onStartMerge: (() -> Void)? = nil
+    /// **Gesamtzahl-Anzeige (2026-05-21)** — wenn true, wird pro Liste die
+    /// Gesamt-Vokabelzahl VOR der Wortart-Aufstellung gezeigt. Nur der
+    /// „Eigene Listen"(.own)-Caller setzt true (andere Filter: default false).
+    var showsTotalCount: Bool = false
     /// Optionaler Footer (Standard-AppBottomBar). Nur anzeigen wenn feedbackPlayer + onHome geliefert.
     var feedbackPlayer: FeedbackPlayer? = nil
     var onHome: (() -> Void)? = nil
@@ -348,7 +352,7 @@ struct ListPickerSheet: View {
                         }
                     }
                     if !list.isBuiltIn {
-                        wordClassBreakdownText(for: list)
+                        wordClassBreakdownText(for: list, showsTotalCount: showsTotalCount)
                     } else {
                         Text("\(list.items.count) Eintr\u{00E4}ge")
                             .font(AppTheme.Typography.caption)
@@ -634,18 +638,26 @@ struct ListPickerSheet: View {
         .disabled(count == 0)
     }
 
-    private func wordClassBreakdownText(for list: VocabularyList) -> some View {
+    private func wordClassBreakdownText(for list: VocabularyList, showsTotalCount: Bool = false) -> some View {
         // Zentraler Aggregator — eine Quelle für Listen-Statistik überall in der App.
         let stats = FrenchListStatisticsAggregator.cachedStatistics(for: list.items)
         let breakdown = FrenchLemmaFormatter.twoLineBreakdown(from: stats)
+        // **Gesamtzahl (2026-05-21, nur .own)** — „X Vokabel(n)" VOR die
+        // Wortart-Aufstellung stellen, in dieselbe erste Zeile, „·"-getrennt.
+        let total = list.items.count
+        let totalText = "\(total) \(total == 1 ? "Vokabel" : "Vokabeln")"
+        let firstLine: String = {
+            guard showsTotalCount else { return breakdown.line1 }
+            return breakdown.line1.isEmpty ? totalText : "\(totalText) · \(breakdown.line1)"
+        }()
         return VStack(alignment: .leading, spacing: 1) {
-            if breakdown.line1.isEmpty && breakdown.line2.isEmpty {
-                Text("\(list.items.count) Eintr\u{00E4}ge")
+            if firstLine.isEmpty && breakdown.line2.isEmpty {
+                Text("\(total) Eintr\u{00E4}ge")
                     .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             } else {
-                if !breakdown.line1.isEmpty {
-                    Text(breakdown.line1)
+                if !firstLine.isEmpty {
+                    Text(firstLine)
                         .font(.system(size: 12, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }

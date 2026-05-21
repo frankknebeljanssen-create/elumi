@@ -123,6 +123,8 @@ extension ListsView {
                             mergeCoordinator.showListPicker = true
                         }
                     } : nil,
+                    // Gesamt-Vokabelzahl pro Liste nur im „Eigene Listen"-Picker.
+                    showsTotalCount: filter == .own,
                     feedbackPlayer: feedbackPlayer,
                     onHome: { goHome() },
                     onSettings: { openSettings() },
