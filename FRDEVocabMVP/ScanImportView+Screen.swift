@@ -985,11 +985,12 @@ extension ScanImportView {
         .sheet(isPresented: $isShowingBulkNewListName) {
             NewListNameSheet(onCreate: { listName in
                 let result = multiDraftCoordinator.executeImportToNewList(name: listName, listStore: listStore)
-                if result.success {
+                if result.success, let listID = multiDraftCoordinator.pendingTargetListID {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                        showBulkMergeToast(
+                        showBulkMergeCompletion(
                             draftCount: multiDraftCoordinator.sourceDraftCount,
                             listName: listName,
+                            listID: listID,
                             addedCount: result.addedCount
                         )
                         selectedDraftIDs.removeAll()
@@ -1128,10 +1129,11 @@ extension ScanImportView {
 
     private func executeBulkMergeAndToast() {
         let result = multiDraftCoordinator.executeMerge(listStore: listStore)
-        if result.success {
-            showBulkMergeToast(
+        if result.success, let listID = multiDraftCoordinator.pendingTargetListID {
+            showBulkMergeCompletion(
                 draftCount: multiDraftCoordinator.sourceDraftCount,
                 listName: multiDraftCoordinator.pendingTargetListName,
+                listID: listID,
                 addedCount: result.addedCount
             )
             selectedDraftIDs.removeAll()
@@ -1144,10 +1146,24 @@ extension ScanImportView {
         }
     }
 
-    private func showBulkMergeToast(draftCount: Int, listName: String, addedCount: Int) {
-        let draftWord = draftCount == 1 ? "Entwurf" : "Entwürfe"
-        bulkActionMessage = "\(draftCount) \(draftWord) zu \"\(listName)\" zusammengeführt (+\(addedCount) Vokabeln)"
-        showBulkActionToast = true
+    /// **Phase D v3 Commit 2** — Bulk-Merge-Erfolg zeigt jetzt die
+    /// ImportCompletionView (CTAs) statt eines Toasts. Reused: das bestehende
+    /// `isShowingImportCompletion` + `importCompletionContext` + Content-Swap +
+    /// `handleCompletionSelection` aus dem Standard-Scan-Flow („Später" →
+    /// goHome). `draftCount` bleibt im Vertrag (Caller-Parität), wird im Context
+    /// nicht gebraucht. `importedItemIDs: []` (Merge → ganze Liste).
+    private func showBulkMergeCompletion(draftCount: Int, listName: String, listID: UUID, addedCount: Int) {
+        let context = ImportCompletionContext(
+            importedCount: addedCount,
+            targetListID: listID,
+            targetListName: listName,
+            language: .french,
+            preferredDirection: StudyLanguage.french.defaultDirectionToGerman,
+            cardType: dominantImportedCardType(in: multiDraftCoordinator.aggregatedItems),
+            importedItemIDs: []
+        )
+        importCompletionContext = context
+        isShowingImportCompletion = true
     }
 
     private func importCompletionScreen(context: ImportCompletionContext) -> some View {
