@@ -17,6 +17,13 @@ final class VocabularyListStoreRepository {
         }
     }
 
+    /// Obergrenze für den UserDefaults-Backup-Blob (~256 KB). Größere
+    /// `customLists`-Payloads (z. B. nach Kopieren von Built-in-Listen)
+    /// werden NICHT mehr in UserDefaults gespiegelt — ein zu großer Blob
+    /// kann die UserDefaults-plist destabilisieren (Diagnose 2026-05-21).
+    /// Datei + LKG bleiben als zwei vollwertige Sicherungs-Ebenen.
+    private static let maxUDBackupBytes = 256_000
+
     private let userDefaults: UserDefaults
     private let snapshotLock = NSLock()
     private var preloadedSnapshot: VocabularyListStoreSnapshot?
@@ -167,8 +174,19 @@ final class VocabularyListStoreRepository {
 
         AppPersistenceSupport.writeData(data, named: currentScopedFileName())
         // **Redundanter Backup-Pfad** (Safety-Net gegen Datei-Level-
-        // Verlust): zusätzlich eine Kopie in UserDefaults.
-        userDefaults.set(data, forKey: key)
+        // Verlust): zusätzlich eine Kopie in UserDefaults — aber nur bis
+        // `maxUDBackupBytes`. Große Blobs destabilisieren die
+        // UserDefaults-plist; Datei + LKG bleiben als volle Sicherungen.
+        if data.count <= Self.maxUDBackupBytes {
+            userDefaults.set(data, forKey: key)
+        } else {
+            // Altes, kleineres UD-Backup entfernen — sonst Mismatch
+            // gegenüber der (größeren) Datei beim Recovery.
+            userDefaults.removeObject(forKey: key)
+            #if DEBUG
+            appDebugLog("⚠️ [ListStore.save] Skipping UD backup (\(data.count) bytes > \(Self.maxUDBackupBytes) limit) — File + LKG remain")
+            #endif
+        }
 
         // **Last-Known-Good-Update**: nur wenn der neue Stand
         // **non-empty** ist. So bleibt bei einem versehentlichen
