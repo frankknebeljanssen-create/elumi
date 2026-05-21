@@ -697,7 +697,9 @@ extension ScanImportView {
                             // Modus" → „Was scannst du?" (Du-Ansatz,
                             // direkter, weniger Beamten-Sprache).
                             ScanSectionLabel(stepNumber: 1, title: "Was scannst du?")
-                                .padding(.top, 14)
+                                // Scan-Redesign: einheitlicher Section-Abstand
+                                // (8 + VStack-spacing 10 = 18, wie vor „Meine Scans").
+                                .padding(.top, 8)
 
                             HStack(spacing: 12) {
                                 ScanModeSelectionCard(
@@ -732,7 +734,8 @@ extension ScanImportView {
                             // Quelle" → „Woher?" (kompakte
                             // Frage statt Ankündigung).
                             ScanSectionLabel(stepNumber: 2, title: "Woher?")
-                                .padding(.top, 24)
+                                // Scan-Redesign: einheitlicher Section-Abstand (war 24).
+                                .padding(.top, 8)
 
                             // **Scan-Redesign (2026-05-21)** — Kamera + Foto-Album
                             // nebeneinander (2 Spalten), gespiegelt vom WAS-Pattern
