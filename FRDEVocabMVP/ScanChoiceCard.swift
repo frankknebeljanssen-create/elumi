@@ -77,11 +77,11 @@ struct ScanChoiceCard: View {
                         .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.55))
                 }
             }
-            // Scan-Redesign: Padding kompakter + uniform (h12/v10 — die alte
-            // isPriority-Padding-Differenz entfällt) + Radius 22 → 16 (passt zur
-            // kleineren Card). Chevron entfernt → Pillen-Anmutung.
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
+            // Scan-Redesign: Radius 22 → 16, Chevron entfernt (Pillen-Anmutung).
+            // „Cards mehr Platz" (2026-05-21): vertikales Padding 18 → Card ~+20%
+            // höher (gleich WAS), horizontal 14.
+            .padding(.horizontal, 14)
+            .padding(.vertical, 18)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 ZStack {
@@ -179,7 +179,10 @@ struct ScanModeSelectionCard: View {
                     .font(.system(size: 17, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
             }
-            .padding(10)
+            // „Cards mehr Platz" (2026-05-21): vertikales Padding 18 → ~+20% höher
+            // (gleich den WOHER-Cards), horizontal 14.
+            .padding(.vertical, 18)
+            .padding(.horizontal, 14)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 ZStack {

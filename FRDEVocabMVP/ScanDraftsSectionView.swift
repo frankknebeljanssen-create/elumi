@@ -119,8 +119,9 @@ private struct HorizontalScanDraftCard: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 10)
+        // „Cards mehr Platz" (2026-05-21): vertikales Padding 16 → Card ~+20% höher.
+        .padding(.horizontal, 14)
+        .padding(.vertical, 16)
         .frame(width: Self.cardWidth)
         .background(
             RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
