@@ -53,7 +53,7 @@ struct ScanChoiceCard: View {
                 Image(illustrationName)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 32, height: 32)
+                    .frame(width: 44, height: 44)
                     .scaleEffect(isPressed ? 1.05 : 1.0)
                     .brightness(isPressed ? 0.12 : 0)
                     .shadow(
@@ -163,7 +163,7 @@ struct ScanModeSelectionCard: View {
                     Image(illustrationName)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 32, height: 32)
+                        .frame(width: 44, height: 44)
                     Spacer(minLength: 0)
                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                         .font(.system(size: 18, weight: .bold))
