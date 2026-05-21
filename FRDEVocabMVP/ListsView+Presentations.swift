@@ -113,6 +113,16 @@ extension ListsView {
                         feedbackPlayer.playListAction()
                         showToast("\(source.name) in \(target.name) zusammengef\u{00FC}hrt.")
                     },
+                    // **List-Merge (2026-05-21)** — Multi-Select-Merge-Einstieg
+                    // NUR im „Eigene Listen"(.own)-Picker. Sheet→Sheet (analog
+                    // Phase E): Picker schließen, dann mit 0,4s Settle-Delay den
+                    // Merge-Picker öffnen. Andere Filter: nil → kein Button.
+                    onStartMerge: filter == .own ? {
+                        listPickerFilter = nil
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                            mergeCoordinator.showListPicker = true
+                        }
+                    } : nil,
                     feedbackPlayer: feedbackPlayer,
                     onHome: { goHome() },
                     onSettings: { openSettings() },

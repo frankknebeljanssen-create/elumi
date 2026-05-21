@@ -10,6 +10,10 @@ struct ListPickerSheet: View {
     var onView: ((VocabularyList) -> Void)? = nil
     var onRename: ((VocabularyList) -> Void)? = nil
     var onMerge: ((VocabularyList, VocabularyList) -> Void)? = nil // (source, target)
+    /// **List-Merge (2026-05-21)** — optionaler Multi-Select-Merge-Einstieg.
+    /// Nur der „Eigene Listen"(.own)-Caller übergibt ihn → der Button erscheint
+    /// ausschließlich dort (andere Filter bleiben unverändert, default nil).
+    var onStartMerge: (() -> Void)? = nil
     /// Optionaler Footer (Standard-AppBottomBar). Nur anzeigen wenn feedbackPlayer + onHome geliefert.
     var feedbackPlayer: FeedbackPlayer? = nil
     var onHome: (() -> Void)? = nil
@@ -99,6 +103,23 @@ struct ListPickerSheet: View {
                 .padding(AppTheme.Spacing.md)
                 .background(AppTheme.Colors.success.opacity(0.85))
                 .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
+
+            // **List-Merge (2026-05-21)** — Merge-Einstieg über der Liste,
+            // nur sichtbar wenn der Caller `onStartMerge` liefert (= „Eigene
+            // Listen") UND ≥ 2 Listen vorhanden sind. Dezenter Full-Width-Button.
+            if let onStartMerge, lists.count >= 2 {
+                Button(action: onStartMerge) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.triangle.merge")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("Listen zusammenführen")
+                            .font(.body.weight(.semibold))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                }
+                .buttonStyle(AppSecondaryButtonStyle())
+            }
 
             ScrollView {
                 VStack(spacing: 6) {

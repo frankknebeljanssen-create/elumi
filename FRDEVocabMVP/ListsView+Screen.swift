@@ -17,28 +17,6 @@ extension ListsView {
 
             categoryCardsSection
 
-            // **List-Merge Phase 1 (2026-05-21)** — Merge-Einstieg als
-            // dezenter Full-Width-Button (P-B), sitzt in der „Meine Listen"-
-            // Sektion zwischen Kategorien und „+ Neue Liste". Sichtbar ab
-            // 2 eigenen Listen (darunter macht ein Merge keinen Sinn).
-            if listStore.customLists.count >= 2 {
-                Button {
-                    mergeCoordinator.showListPicker = true
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.triangle.merge")
-                            .font(.system(size: 16, weight: .semibold))
-                        Text("Listen zusammenführen")
-                            .font(.body.weight(.semibold))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                }
-                .buttonStyle(AppSecondaryButtonStyle())
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-            }
-
             createListSection
 
             Spacer(minLength: 0)
