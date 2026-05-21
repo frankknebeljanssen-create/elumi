@@ -93,22 +93,18 @@ final class AppRuntimeContainer: ObservableObject {
             let totalStart = CFAbsoluteTimeGetCurrent()
             DataStore.prewarmBuiltInLaunchData()
 
-            var start = CFAbsoluteTimeGetCurrent()
-            vocabularyListRepository.prewarmStoredStateIfNeeded(
-                customListsKey: "FRDEVocabMVP.customLists.v2",
-                selectedListKey: "FRDEVocabMVP.selectedListID.v2",
-                sampleListsSeededKey: "FRDEVocabMVP.sampleListsSeeded.v1",
-                builtInListID: VocabularyListStore.builtInListID,
-                sampleSeeds: sampleVocabularyListSeeds
-            )
-            appDebugLog("⏱ [Warmup:List] prewarmStored: \(Int(((CFAbsoluteTimeGetCurrent() - start) * 1000).rounded()))ms")
-
-            let snapshot = vocabularyListRepository.cachedSnapshot()
-            if let snapshot {
-                await MainActor.run {
-                    store.apply(snapshot: snapshot)
-                    appDebugLog("⏱ [Warmup:List] applied snapshot → \(store.customLists.count) custom lists")
-                }
+            // **Fix B (2026-05-21)** — Custom-Listen über das account-scoped
+            // `loadState()` laden (analog `ScanDraftStore`), NICHT über den
+            // unscoped Prewarm-Bypass. Vorher las der Prewarm hardcodierte
+            // UNSCOPED Keys → globale `vocabulary-lists-v2.json` (leer),
+            // während Saves scoped in `…-<accountID>.json` schreiben →
+            // Custom-Listen waren nach jedem Cold-Launch „weg". `loadState`
+            // ruft `setCurrentAccount(AccountStore.shared.currentAccountID)`
+            // + namespaced Keys → eine konsistente, korrekt gescopte
+            // Lade-Wahrheit (Save & Load gleicher Scope).
+            await MainActor.run {
+                store.loadState()
+                appDebugLog("⏱ [Warmup:List] loadState (scoped) → \(store.customLists.count) custom lists")
             }
             appDebugLog("⏱ [Warmup:List] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
         }
