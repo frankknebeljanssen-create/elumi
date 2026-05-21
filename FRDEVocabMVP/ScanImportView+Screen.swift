@@ -658,13 +658,12 @@ extension ScanImportView {
                             && previewPairs.isEmpty
                             && session.batchThumbnails.isEmpty
 
-                        if isOnChoiceScreen {
-                            // Kombinierter Header — Modul-Titel + Hauptfrage
-                            // + Subtext links, Maskottchen rechts. Ersetzt
-                            // die separate ScanHeroCard (war redundant).
-                            ScanScreenHeader()
-                                .padding(.top, 4)
-                        } else {
+                        // **Scan-Redesign (2026-05-21)** — Choice-Screen-Header
+                        // („Was möchtest du scannen?" + Maskottchen) entfernt
+                        // (User-Wunsch + Platz für „Meine Scans" above-the-fold).
+                        // ScanScreenHeader ist dadurch ungenutzt (wie ScanHeroCard).
+                        // Im Review-State bleibt das ScanModeBadge erhalten.
+                        if !isOnChoiceScreen {
                             // **Feature A — ScanModeBadge im Review-State**:
                             // Sobald ein Bild vorliegt oder Preview-Paare
                             // existieren, zeigt das Badge oben, in welchem
