@@ -52,7 +52,7 @@ struct ScanChoiceCard: View {
                 Image(illustrationName)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 68, height: 68)
+                    .frame(width: 32, height: 32)
                     .scaleEffect(isPressed ? 1.05 : 1.0)
                     .brightness(isPressed ? 0.12 : 0)
                     .shadow(
@@ -84,47 +84,38 @@ struct ScanChoiceCard: View {
                     }
                 }
 
-                Spacer(minLength: 8)
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.4))
+                Spacer(minLength: 0)
             }
-            .padding(.horizontal, isPriority ? 18 : 16)
-            // **2026-05-07** — Vertical-Padding −4 pt (User-Spec
-            // „Cards etwas flacher"). Card-Höhe sinkt um ~8 pt total
-            // (4 pt oben + 4 pt unten), Choice-Screen wird kompakter
-            // und die Foto-Album-Card sitzt klar über der Footer-Linie.
-            .padding(.vertical, isPriority ? 14 : 12)
+            // Scan-Redesign: Padding kompakter + uniform (h12/v10 — die alte
+            // isPriority-Padding-Differenz entfällt) + Radius 22 → 16 (passt zur
+            // kleineren Card). Chevron entfernt → Pillen-Anmutung.
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 ZStack {
-                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
                         .fill(AppTheme.Colors.setupCardBackground)
-                    // Optionaler Quellen-Tint (Phase 7.6+): subtile 8 %-
-                    // Füllung in der Farbe der Quelle — Kamera grün,
-                    // Foto-Album violett. Sichtbar, aber nicht aufdringlich.
+                    // Optionaler Quellen-Tint: subtile 8 %-Füllung in der Farbe
+                    // der Quelle — Kamera grün, Foto-Album violett.
                     if let baseTint {
-                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .fill(baseTint.opacity(0.08))
                     }
-                    // Priority bekommt einen ganz subtilen Akzent-Tint
-                    // (nicht über die Outline) — führt den Blick ohne den
-                    // Look zu zerschneiden.
+                    // Priority (Kamera) bekommt einen ganz subtilen Akzent-Tint.
                     if isPriority {
-                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .fill(accent.opacity(0.06))
                     }
-                    // Pressed → leichte Aufhellung der gesamten Card
-                    // (statt roter Outline). Brighter in einem ruhigen Stil.
+                    // Pressed → leichte Aufhellung der gesamten Card.
                     if isPressed {
-                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .fill(Color.white.opacity(0.04))
                     }
                 }
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .stroke(
                         AppTheme.Colors.setupCardBorder,
                         lineWidth: 1
@@ -181,7 +172,7 @@ struct ScanModeSelectionCard: View {
                     Image(illustrationName)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 40, height: 40)
+                        .frame(width: 32, height: 32)
                     Spacer(minLength: 0)
                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                         .font(.system(size: 18, weight: .bold))
@@ -197,7 +188,7 @@ struct ScanModeSelectionCard: View {
                     .font(.system(size: 17, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
             }
-            .padding(14)
+            .padding(10)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 ZStack {
@@ -272,16 +263,17 @@ struct ScanHeroCard: View {
 /// der die Lider exakt auf die Augen-Positionen legt.
 struct ScanScreenHeader: View {
     @State private var blinkStartDate: Date = .now
-    // 88 → 70 (−20 %): Mascot rechts etwas dezenter, rückt den
-    // Content darunter näher ans Auge.
-    private static let mascotSize: CGFloat = 70
+    // Scan-Redesign: 70 → 56 (Header kompakter, damit „Meine Scans"
+    // above-the-fold rückt).
+    private static let mascotSize: CGFloat = 56
 
     var body: some View {
         HStack(alignment: .center, spacing: 4) {
             VStack(alignment: .leading, spacing: 0) {
                 Text("Was möchtest du scannen?")
-                    // 26 → 25 pt (−1 pt User-Wunsch).
-                    .font(.system(size: 25, weight: .black, design: .rounded))
+                    // Scan-Redesign: 25 → 18 pt (Header kompakter). Weight
+                    // bleibt .black (App-Pattern), nur Größe runter.
+                    .font(.system(size: 18, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .multilineTextAlignment(.leading)
                     .lineLimit(2)
