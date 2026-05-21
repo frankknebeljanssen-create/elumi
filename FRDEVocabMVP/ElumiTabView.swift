@@ -575,7 +575,7 @@ struct ElumiTabView: View {
                         .tracking(0.8)
                         .textCase(.uppercase)
                         .foregroundStyle(sectionStyle.accent)
-                    Text("Wie lange?")
+                    Text("Wie lange üben?")
                         .font(.system(size: 25, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .multilineTextAlignment(.center)
