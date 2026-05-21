@@ -86,7 +86,7 @@ struct ScanChoiceCard: View {
             // Änderungen die Höhe (und damit die Position von „Meine Scans")
             // verschieben. 116 = gemessener Content (Icon 44 + Titel 19 +
             // Padding 18) + kleine Marge; identisch zu den WAS-Cards.
-            .frame(maxWidth: .infinity, height: 116, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 116, maxHeight: 116, alignment: .leading)
             .background(
                 ZStack {
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -191,7 +191,7 @@ struct ScanModeSelectionCard: View {
             // **Feste Card-Höhe (2026-05-21)** — gleiche 116 wie die WOHER-Cards →
             // stabile Höhe, „Meine Scans" verschiebt sich bei Icon-/Padding-
             // Änderungen nicht mehr.
-            .frame(maxWidth: .infinity, height: 116, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 116, maxHeight: 116, alignment: .leading)
             .background(
                 ZStack {
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
