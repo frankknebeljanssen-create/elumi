@@ -697,9 +697,8 @@ extension ScanImportView {
                             // Modus" → „Was scannst du?" (Du-Ansatz,
                             // direkter, weniger Beamten-Sprache).
                             ScanSectionLabel(stepNumber: 1, title: "Was scannst du?")
-                                // Scan-Redesign: einheitlicher Section-Abstand
-                                // (8 + VStack-spacing 10 = 18, wie vor „Meine Scans").
-                                .padding(.top, 8)
+                                // Mehr Abstand über Schritt 1 (2026-05-21): 8 → 16.
+                                .padding(.top, 16)
 
                             HStack(spacing: 12) {
                                 ScanModeSelectionCard(
