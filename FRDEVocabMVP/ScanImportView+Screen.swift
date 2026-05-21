@@ -734,33 +734,38 @@ extension ScanImportView {
                             ScanSectionLabel(stepNumber: 2, title: "Woher?")
                                 .padding(.top, 24)
 
-                            ScanChoiceCard(
-                                illustrationName: "ScanIconKamera",
-                                title: "Kamera",
-                                accent: sectionStyle.accent,
-                                isPriority: true,
-                                // Kamera-Tint: dunkles Grün (moduleNomen-Ton).
-                                baseTint: Color(hex: "#059669")
-                            ) {
-                                guard !isRecognizingImage else { return }
-                                guard isCameraCaptureAvailable else { return }
-                                shouldAppendNextScan = false
-                                selectedScanInputMethod = .camera
-                                openCameraScanner()
-                            }
+                            // **Scan-Redesign (2026-05-21)** — Kamera + Foto-Album
+                            // nebeneinander (2 Spalten), gespiegelt vom WAS-Pattern
+                            // (`HStack(spacing: 12)`); beide `.frame(maxWidth: .infinity)`
+                            // → symmetrisch.
+                            HStack(spacing: 12) {
+                                ScanChoiceCard(
+                                    illustrationName: "ScanIconKamera",
+                                    title: "Kamera",
+                                    accent: sectionStyle.accent,
+                                    isPriority: true,
+                                    // Kamera-Tint: dunkles Grün (moduleNomen-Ton).
+                                    baseTint: Color(hex: "#059669")
+                                ) {
+                                    guard !isRecognizingImage else { return }
+                                    guard isCameraCaptureAvailable else { return }
+                                    shouldAppendNextScan = false
+                                    selectedScanInputMethod = .camera
+                                    openCameraScanner()
+                                }
 
-                            ScanChoiceCard(
-                                illustrationName: "ScanIconFotoAlbum",
-                                title: "Foto-Album",
-                                accent: sectionStyle.accent,
-                                // Foto-Album-Tint: dezentes Violett
-                                // (moduleVerbs-Ton).
-                                baseTint: Color(hex: "#8B5CF6")
-                            ) {
-                                guard !isRecognizingImage else { return }
-                                shouldAppendNextScan = false
-                                selectedScanInputMethod = .library
-                                showingPhotoLibrary = true
+                                ScanChoiceCard(
+                                    illustrationName: "ScanIconFotoAlbum",
+                                    title: "Foto-Album",
+                                    accent: sectionStyle.accent,
+                                    // Foto-Album-Tint: dezentes Violett (moduleVerbs-Ton).
+                                    baseTint: Color(hex: "#8B5CF6")
+                                ) {
+                                    guard !isRecognizingImage else { return }
+                                    shouldAppendNextScan = false
+                                    selectedScanInputMethod = .library
+                                    showingPhotoLibrary = true
+                                }
                             }
 
                             // **Phase C (2026-05-20)** — „Meine Scans"-Sektion:
