@@ -59,12 +59,16 @@ final class AppRuntimeContainer: ObservableObject {
         let vocabularyListRepository = self.vocabularyListRepository
         let flashcardSessionRepository = self.flashcardSessionRepository
 
-        // Phase 1: Create listStore IMMEDIATELY with built-in data only (0ms)
-        let emptySnapshot = VocabularyListStoreSnapshot(
-            customLists: [],
-            selectedListID: VocabularyListStore.builtInListID
-        )
-        let store = VocabularyListStore(repository: vocabularyListRepository, snapshot: emptySnapshot)
+        // **Struktur-Fix (2026-05-21)** — VocabularyListStore lädt jetzt
+        // SYNCHRON im init (snapshot: nil → `loadState()`), analog
+        // `ScanDraftStore.shared`. Vorher: leerer Placeholder + deferred
+        // Warmup-`loadState` → Race-Fenster, in dem ein init-Migrations-
+        // Leer-Save die scoped Datei überschreiben konnte (Custom-Listen-
+        // Verlust nach Deploy). Der teure Built-in-Katalog bleibt off-main
+        // (Warmup-Task unten); der Custom-Listen-JSON ist klein → der
+        // synchrone Read kostet nur wenige ms. init-Migrationen laufen
+        // dadurch auf den ECHTEN geladenen Daten statt auf leerem Store.
+        let store = VocabularyListStore(repository: vocabularyListRepository)
         listStore = store
         speechController = SpeechController()
         speaker = Speaker()
@@ -91,22 +95,12 @@ final class AppRuntimeContainer: ObservableObject {
 
         listWarmupTask = Task.detached(priority: .userInitiated) {
             let totalStart = CFAbsoluteTimeGetCurrent()
+            // **Struktur-Fix (2026-05-21)** — Custom-Listen sind bereits
+            // SYNCHRON im Store-init geladen. Hier nur noch den teuren
+            // Built-in-Katalog off-main materialisieren — KEIN deferred
+            // `loadState` mehr (das alte Race-Fenster ist damit zu).
             DataStore.prewarmBuiltInLaunchData()
-
-            // **Fix B (2026-05-21)** — Custom-Listen über das account-scoped
-            // `loadState()` laden (analog `ScanDraftStore`), NICHT über den
-            // unscoped Prewarm-Bypass. Vorher las der Prewarm hardcodierte
-            // UNSCOPED Keys → globale `vocabulary-lists-v2.json` (leer),
-            // während Saves scoped in `…-<accountID>.json` schreiben →
-            // Custom-Listen waren nach jedem Cold-Launch „weg". `loadState`
-            // ruft `setCurrentAccount(AccountStore.shared.currentAccountID)`
-            // + namespaced Keys → eine konsistente, korrekt gescopte
-            // Lade-Wahrheit (Save & Load gleicher Scope).
-            await MainActor.run {
-                store.loadState()
-                appDebugLog("⏱ [Warmup:List] loadState (scoped) → \(store.customLists.count) custom lists")
-            }
-            appDebugLog("⏱ [Warmup:List] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
+            appDebugLog("⏱ [Warmup:List] builtin prewarm: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
         }
 
         flashcardWarmupTask = Task.detached(priority: .userInitiated) {
