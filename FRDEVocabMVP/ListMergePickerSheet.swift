@@ -35,10 +35,17 @@ struct ListMergePickerSheet: View {
 
     private var accent: Color { AppSectionStyle.lists.accent }
 
+    /// Safety: nur mergebare (nicht-Built-in) Listen — Built-in-Listen sind
+    /// unantastbar (App-Konvention). Der Caller füttert bereits `customLists`;
+    /// dieser Filter ist doppelter Boden gegen versehentliche Built-in-Quellen.
+    private var mergeableLists: [VocabularyList] {
+        lists.filter { !$0.isBuiltIn }
+    }
+
     /// Summe der Vokabeln über alle aktuell selektierten Listen.
     private var selectedItemCount: Int {
         selectedListIDs.reduce(0) { sum, id in
-            sum + (lists.first { $0.id == id }?.items.count ?? 0)
+            sum + (mergeableLists.first { $0.id == id }?.items.count ?? 0)
         }
     }
 
@@ -48,7 +55,7 @@ struct ListMergePickerSheet: View {
     var body: some View {
         NavigationStack {
             List {
-                ForEach(lists, id: \.id) { list in
+                ForEach(mergeableLists, id: \.id) { list in
                     Button {
                         toggle(list.id)
                     } label: {

@@ -224,7 +224,9 @@ extension ListsView {
             // Picker → (0,4s Settle-Delay) → Namensabfrage → Merge → Toast.
             .sheet(isPresented: $mergeCoordinator.showListPicker) {
                 ListMergePickerSheet(
-                    lists: listStore.allLists,
+                    // Built-in-Listen sind unantastbar (App-Konvention) →
+                    // nur eigene Custom-Listen als Merge-Quelle.
+                    lists: listStore.customLists.filter { !$0.isBuiltIn },
                     onMergeRequested: { ids in
                         mergeCoordinator.pendingSourceIDs = ids
                         mergeCoordinator.showListPicker = false
