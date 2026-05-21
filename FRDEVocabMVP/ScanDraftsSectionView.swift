@@ -41,7 +41,10 @@ struct ScanDraftsSectionView: View {
                     .padding(.horizontal, 4)
                 }
             }
-            .padding(.top, 8)
+            // „Meine Scans" nach unten geschoben (2026-05-21): deutlich mehr
+            // Abstand zu den WOHER-Cards + Padding zum Footer.
+            .padding(.top, 36)
+            .padding(.bottom, 28)
         }
     }
 
