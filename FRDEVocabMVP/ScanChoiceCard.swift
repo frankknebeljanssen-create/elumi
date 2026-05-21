@@ -63,9 +63,9 @@ struct ScanChoiceCard: View {
                         y: 2
                     )
 
-                // Titel 17pt = WAS-Card-Größe → konsistentes 2×2-Grid.
+                // Titel 19pt (Card-Titel +2 — User-Wunsch 2026-05-21).
                 Text(title)
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .font(.system(size: 19, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
@@ -176,7 +176,8 @@ struct ScanModeSelectionCard: View {
                 // Titel genügen für den Modus-Switch, der Zusatzsatz hat
                 // die Card überfrachtet.
                 Text(title)
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    // Card-Titel +2 (User-Wunsch 2026-05-21): 17 → 19.
+                    .font(.system(size: 19, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
             }
             // „Cards mehr Platz" (2026-05-21): vertikales Padding 18 → ~+20% höher
