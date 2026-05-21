@@ -22,7 +22,7 @@ final class VocabularyListStoreRepository {
     /// werden NICHT mehr in UserDefaults gespiegelt — ein zu großer Blob
     /// kann die UserDefaults-plist destabilisieren (Diagnose 2026-05-21).
     /// Datei + LKG bleiben als zwei vollwertige Sicherungs-Ebenen.
-    private static let maxUDBackupBytes = 256_000
+    private static let maxUDBackupBytes = 3_000_000
 
     private let userDefaults: UserDefaults
     private let snapshotLock = NSLock()
