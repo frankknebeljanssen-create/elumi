@@ -248,7 +248,12 @@ extension ListsView {
                             listStore: listStore
                         )
                         mergeCoordinator.pendingSourceIDs = []
-                        showToast("Liste '\(name)' mit \(count) Vokabeln angelegt", isSuccess: true)
+                        // Settle-Delay (analog Phase E): NameSheet erst voll
+                        // schließen lassen — sonst verschluckt der Sheet-Dismiss
+                        // die Toast-State-Mutation auf der präsentierenden View.
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                            showToast("Liste '\(name)' mit \(count) Vokabeln angelegt", isSuccess: true)
+                        }
                     }
                 }
             }
