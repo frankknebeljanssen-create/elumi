@@ -87,19 +87,19 @@ private struct HorizontalScanDraftCard: View {
             thumbnailView
                 .frame(width: 44, height: 44)
 
-            // Titel-Zeile (Titel + Counter in Coral) + Meta darunter.
+            // 3-zeilig (User-Wunsch 2026-05-21): Titel / Vokabel-Anzahl / Zeitstempel.
             VStack(alignment: .leading, spacing: 2) {
-                HStack(alignment: .firstTextBaseline, spacing: 5) {
-                    Text(displayTitle)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .lineLimit(1)
-                    Text("· \(draft.previewPairs.count) Vok.")
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(AppSectionStyle.scan.accent)
-                        .lineLimit(1)
-                        .layoutPriority(1)
-                }
+                // Zeile 1: Titel (Datum-only, ohne Uhrzeit).
+                Text(displayTitle)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .lineLimit(1)
+                // Zeile 2: Vokabel-Anzahl (Coral-Akzent).
+                Text("\(draft.previewPairs.count) Vokabeln")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(AppSectionStyle.scan.accent)
+                    .lineLimit(1)
+                // Zeile 3: Zeitstempel.
                 Text(relativeDateString(for: draft.createdAt))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
