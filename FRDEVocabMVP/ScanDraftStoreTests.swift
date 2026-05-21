@@ -110,6 +110,39 @@ enum ScanDraftStoreTests {
         let recovered = repository.loadDrafts(legacyKey: testKey)
         check(recovered.count == 1 && recovered.first?.id == lkgDraftID, "LKG: recovered draft B after main-file corruption")
 
+        // ── Test 5: Dedup-Key — Case/Whitespace-Faltung (Stufe 1) ──
+        // Isoliert die neue `dedupNormalize`-Logik über Identity-Closures
+        // (normalizedPreviewPair/extractedDisplayTerm = pass-through), sodass
+        // ausschließlich die Key-Faltung getestet wird.
+        func survivors(_ pairs: [ImportPreviewPair]) -> Int {
+            ScanReviewMapper.deduplicatedPreviewPairs(
+                pairs,
+                normalizedPreviewPair: { $0 },
+                normalizedLookupText: { $0 },
+                extractedDisplayTerm: { $0 }
+            ).count
+        }
+        check(survivors([
+            ImportPreviewPair(french: "manger", german: "Essen"),
+            ImportPreviewPair(french: "Manger", german: "essen")
+        ]) == 1, "dedup: faltet Case-Varianten")
+        check(survivors([
+            ImportPreviewPair(french: "Ça va?", german: "Wie geht's?"),
+            ImportPreviewPair(french: " Ça va? ", german: "Wie geht's?")
+        ]) == 1, "dedup: faltet Whitespace-Varianten")
+        check(survivors([
+            ImportPreviewPair(french: "Et toi?", german: "Und du?"),
+            ImportPreviewPair(french: "Et toi?", german: "Und dir?")
+        ]) == 2, "dedup: behält Regel-4 (gleiche FR, andere DE)")
+        check(survivors([
+            ImportPreviewPair(french: "Ça va?", german: "Wie geht's?"),
+            ImportPreviewPair(french: "Ça va.", german: "Wie geht's")
+        ]) == 2, "dedup: behält Punktuations-Unterschiede")
+        check(survivors([
+            ImportPreviewPair(french: "bonjour", german: "hallo", cardType: .words),
+            ImportPreviewPair(french: "bonjour", german: "hallo", cardType: .phrases)
+        ]) == 1, "dedup: faltet cardType-inkonsistente gleiche Surface")
+
         cleanup()
 
         if failed == 0 {

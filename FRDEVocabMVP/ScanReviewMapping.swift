@@ -49,6 +49,18 @@ enum ScanReviewMapper {
         makeReviewEntries(from: deduplicatePreviewPairs(makePreviewPairs(from: entries)))
     }
 
+    // Faltet Case + Whitespace zusammen damit visuell identische
+    // Pairs ("manger"/"Essen" vs "Manger"/"essen") als Duplikat
+    // erkannt werden. Punktuation und Akzente bleiben bewusst
+    // signifikant (Ça va? ≠ Ça va., où ≠ ou). cardType ist NICHT
+    // Teil des Keys damit LLM-cardType-Inkonsistenzen bei sonst
+    // identischen Pairs zusammengeführt werden.
+    private static func dedupNormalize(_ s: String) -> String {
+        s.lowercased()
+            .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     static func deduplicatedPreviewPairs(
         _ pairs: [ImportPreviewPair],
         normalizedPreviewPair: (ImportPreviewPair) -> ImportPreviewPair,
@@ -72,12 +84,13 @@ enum ScanReviewMapper {
                 )
             )
 
-            // Use EXACT text for dedup key — punctuation is meaningful (Ça va? ≠ Ça va.)
+            // Dedup-Key: case/whitespace-gefaltet (siehe `dedupNormalize`),
+            // Punktuation signifikant (Ça va? ≠ Ça va.).
             let exactFrench = normalizedPair.french.trimmingCharacters(in: .whitespaces)
             let exactGerman = normalizedPair.german.trimmingCharacters(in: .whitespaces)
             guard !exactFrench.isEmpty || !exactGerman.isEmpty else { return nil }
 
-            let key = "\(exactFrench)|\(exactGerman)"
+            let key = "\(dedupNormalize(exactFrench))|\(dedupNormalize(exactGerman))"
             guard seen.insert(key).inserted else { return nil }
 
             // FINAL fix: force German lowercase on non-nouns AFTER all normalization
