@@ -3,10 +3,10 @@ import UIKit
 
 /// Wiederverwendbare Choice-Card für den Scan-Auswahl-Screen.
 ///
-/// Layout (per Spec):
-///   • links: Custom-Illustration ~64–72pt
-///   • rechts: Titel (bold) + Subtitle (sekundär)
-///   • ganz rechts: Chevron (transparent)
+/// Layout (Scan-Redesign 2026-05-21):
+///   • oben links: Custom-Illustration 32pt
+///   • darunter: Titel 17pt (bold) — vertikal, analog WAS-Cards
+///   • kein Chevron (kompakte Card, gleiche Höhe wie die Modus-Cards)
 ///
 /// Tap-Feedback (per Spec):
 ///   • Card scaliert auf 0.97
@@ -46,9 +46,10 @@ struct ScanChoiceCard: View {
                 action()
             }
         } label: {
-            HStack(spacing: 14) {
-                // Icon mit subtilem Glow im Pressed-State (statt rotem
-                // Outline-Ring auf der Card).
+            VStack(alignment: .leading, spacing: 8) {
+                // **Scan-Redesign (2026-05-21)** — Icon oben links, Titel
+                // darunter (Layout wie die WAS-Cards) → „Foto-Album" passt in
+                // voller Breite + gleiche Card-Höhe wie WAS. Glow im Pressed-State.
                 Image(illustrationName)
                     .resizable()
                     .scaledToFit()
@@ -62,29 +63,19 @@ struct ScanChoiceCard: View {
                         y: 2
                     )
 
-                VStack(alignment: .leading, spacing: 3) {
-                    // Zweistufige Typo-Hierarchie:
-                    //   Titel groß — Modus-Hint klein.
-                    // Der früher hier gestandene Subtext („Foto aufnehmen" /
-                    // „Bild auswählen") wurde entfernt — die Illustration
-                    // kommuniziert die Quelle bereits eindeutig, der
-                    // Subtext war Wiederholung.
-                    Text(title)
-                        .font(.system(size: isPriority ? 24 : 22, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.85)
+                // Titel 17pt = WAS-Card-Größe → konsistentes 2×2-Grid.
+                Text(title)
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
 
-                    // Modus-Hint — sehr subtil, nicht wie ein Tag.
-                    if let modeHint, !modeHint.isEmpty {
-                        Text(modeHint)
-                            .font(.system(size: 10, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.55))
-                            .padding(.top, 3)
-                    }
+                // Modus-Hint — sehr subtil (von den WOHER-Cards nicht genutzt).
+                if let modeHint, !modeHint.isEmpty {
+                    Text(modeHint)
+                        .font(.system(size: 10, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.55))
                 }
-
-                Spacer(minLength: 0)
             }
             // Scan-Redesign: Padding kompakter + uniform (h12/v10 — die alte
             // isPriority-Padding-Differenz entfällt) + Radius 22 → 16 (passt zur
