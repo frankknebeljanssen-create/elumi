@@ -17,7 +17,7 @@ final class VocabularyListStoreRepository {
         }
     }
 
-    /// Obergrenze für den UserDefaults-Backup-Blob (~256 KB). Größere
+    /// Obergrenze für den UserDefaults-Backup-Blob (~3 MB). Größere
     /// `customLists`-Payloads (z. B. nach Kopieren von Built-in-Listen)
     /// werden NICHT mehr in UserDefaults gespiegelt — ein zu großer Blob
     /// kann die UserDefaults-plist destabilisieren (Diagnose 2026-05-21).
