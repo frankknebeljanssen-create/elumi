@@ -9,17 +9,22 @@ extension QuizSessionController {
         questionPrebuildGeneration = generation
         let requestedCount = questionCountOption.rawValue
         let items = cachedMergedItems
+        let atomicOnly = self.atomicOnly
 
         Task {
             var generatedQuestions = await Task.detached(priority: .utility) {
                 QuizBuildService.generateQuestions(
                     from: candidates,
-                    count: requestedCount
+                    count: requestedCount,
+                    atomicOnly: atomicOnly
                 )
             }.value
 
-            // Insert special question types if possible
-            if requestedCount >= 5, !generatedQuestions.isEmpty {
+            // Insert special question types if possible.
+            // **Daily Drop Modul 1 (2026-05-23)** — im Atomar-Modus
+            // übersprungen, damit `questions.count == requestedCount`
+            // exakt bleibt (nur MC + Tippen).
+            if requestedCount >= 5, !generatedQuestions.isEmpty, !atomicOnly {
                 var comboPromptKeys: [String: Int] = [:]
                 var comboCandidateIDs = Set<String>()
                 var comboSignatures = Set(generatedQuestions.map(QuizBuildService.signature))
@@ -98,13 +103,15 @@ extension QuizSessionController {
 
         let requestedCount = questionCountOption.rawValue
         let initialBatchCount = min(3, requestedCount)
+        let atomicOnly = self.atomicOnly
 
         Task {
             let initialQuestions = await Task.detached(priority: .userInitiated) {
                 QuizBuildService.generateQuestions(
                     from: candidates,
                     count: initialBatchCount,
-                    excludingCandidateIDs: roundExclusionCandidateIDs
+                    excludingCandidateIDs: roundExclusionCandidateIDs,
+                    atomicOnly: atomicOnly
                 )
             }.value
             guard generation == quizPreparationGeneration else { return }
@@ -132,7 +139,8 @@ extension QuizSessionController {
                     from: candidates,
                     count: remainingQuestionCount,
                     excludingCandidateIDs: roundExclusionCandidateIDs.union(initialCandidateIDs),
-                    excludingQuestionSignatures: initialSignatures
+                    excludingQuestionSignatures: initialSignatures,
+                    atomicOnly: atomicOnly
                 )
             }.value
             guard generation == quizPreparationGeneration else { return }
@@ -140,6 +148,13 @@ extension QuizSessionController {
             isPreparingQuiz = false
             guard !generatedQuestions.isEmpty else {
                 isLoadingRemainingQuestions = false
+                return
+            }
+
+            // **Daily Drop Modul 1 (2026-05-23)** — Atomar-Modus: keine
+            // Combo-Insertion, damit `questions.count` exakt bleibt.
+            if atomicOnly {
+                appendPreparedQuizQuestions(generatedQuestions)
                 return
             }
 

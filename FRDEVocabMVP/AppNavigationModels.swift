@@ -230,6 +230,12 @@ struct TrainingLaunchContext: Hashable {
     /// gestartet wird. `nil` = normale Modul-Sitzung. Stufe 2 nutzt
     /// das Feld in den Done-CTAs zum Weiter-Springen.
     let chainContext: TrainingChainContext?
+    /// **Daily Drop Modul 1 (2026-05-23)** — Count-Cap für den Anzahl-
+    /// Modus. Non-nil → die Session endet nach genau N beantworteten
+    /// Aufgaben (Count-Guard vor dem Reshuffle, siehe
+    /// `TrainingView.loadNextTrainingCard`). `nil` = unverändertes
+    /// (endloses) Verhalten — regressionssicher nil-gated.
+    let dailyDropCount: Int?
 
     init(
         preferredListID: UUID? = nil,
@@ -238,7 +244,8 @@ struct TrainingLaunchContext: Hashable {
         preferredCardType: CardType? = nil,
         preferredMode: TrainingMode? = nil,
         shouldAutoStart: Bool = false,
-        chainContext: TrainingChainContext? = nil
+        chainContext: TrainingChainContext? = nil,
+        dailyDropCount: Int? = nil
     ) {
         self.preferredListID = preferredListID
         self.preferredLanguage = preferredLanguage
@@ -247,6 +254,7 @@ struct TrainingLaunchContext: Hashable {
         self.preferredMode = preferredMode
         self.shouldAutoStart = shouldAutoStart
         self.chainContext = chainContext
+        self.dailyDropCount = dailyDropCount
     }
 }
 
@@ -284,15 +292,28 @@ struct QuizLaunchContext: Hashable {
     let shouldAutoStart: Bool
     /// **Stufe 1 (2026-04-30)**: siehe `TrainingLaunchContext.chainContext`.
     let chainContext: TrainingChainContext?
+    /// **Daily Drop Modul 1 (2026-05-23)** — Count-Cap (Anzahl-Modus).
+    /// Non-nil → Quiz wird auf genau N Fragen gesetzt (über
+    /// `questionCountOption`) und endet natürlich am Terminal-Gate.
+    /// `nil` = unverändertes Verhalten.
+    let dailyDropCount: Int?
+    /// **Daily Drop Modul 1 (2026-05-23)** — Atomar-Modus: nur
+    /// MultipleChoice + Tippen (kein Matching/Combo/FillBlanks), damit
+    /// `questions.count == N` exakt bleibt. Nur im Daily-Drop-Pfad true.
+    let atomicOnly: Bool
 
     init(
         preferredListID: UUID? = nil,
         shouldAutoStart: Bool = false,
-        chainContext: TrainingChainContext? = nil
+        chainContext: TrainingChainContext? = nil,
+        dailyDropCount: Int? = nil,
+        atomicOnly: Bool = false
     ) {
         self.preferredListID = preferredListID
         self.shouldAutoStart = shouldAutoStart
         self.chainContext = chainContext
+        self.dailyDropCount = dailyDropCount
+        self.atomicOnly = atomicOnly
     }
 }
 

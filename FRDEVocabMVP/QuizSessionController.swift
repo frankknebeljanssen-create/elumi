@@ -43,6 +43,14 @@ final class QuizSessionController: ObservableObject {
     /// Schutz gegen doppelte Reward-Vergabe — analog zum Flashcard-Flow.
     var sessionRewardConsumed: Bool = false
 
+    /// **Daily Drop Modul 1 (2026-05-23)** — Atomar-Modus-Flag. Wenn
+    /// `true`: Generierung nur MultipleChoice + Tippen, keine
+    /// Matching-/Combo-/FillBlanks-Insertion → `questions.count == N`
+    /// exakt. Gesetzt aus `QuizLaunchContext.atomicOnly` in
+    /// `handleQuizAppear`, VOR `questionCountOption` (Prebuild-Race).
+    /// Default `false` → reguläres Quiz unverändert (nil-gated).
+    var atomicOnly: Bool = false
+
     /// **V1b (2026-04-28)** — `lernjahrMax` ist Teil des Equality-Vergleichs.
     /// `refreshMergedItemsIfNeeded` blockiert den Rebuild, wenn die letzte
     /// MergeRequest gleich der aktuellen ist; ohne `lernjahrMax`-Komponente

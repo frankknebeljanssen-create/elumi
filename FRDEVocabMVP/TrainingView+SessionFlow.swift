@@ -284,6 +284,21 @@ extension TrainingView {
     }
 
     func loadNextTrainingCard() {
+        // **Daily Drop Modul 1 (2026-05-23)** — Count-Cap-Guard: im
+        // Anzahl-Modus (`launchContext.dailyDropCount` gesetzt) endet die
+        // Session nach genau N beantworteten Aufgaben — VOR der
+        // Reshuffle-/Round-Complete-Logik in
+        // `session.loadNextTrainingCard()`. Reuse des bestehenden
+        // Finalize-Helpers `forceTrainingDoneFromChainTimer` (hängt nicht
+        // am Timer-State, finalisiert nur). nil-gated → reguläres
+        // Training unverändert; Verbformen ist nicht im MVP.
+        if let cap = launchContext?.dailyDropCount,
+           session.sessionCorrectCount + session.sessionWrongCount >= cap,
+           !isVerbformsMode,
+           trainingSessionOutcome == nil {
+            forceTrainingDoneFromChainTimer()
+            return
+        }
         // **Stufe 4b-4 (2026-05-02, Branch `feature/training-session-flow`)** —
         // Soft-Cutoff-Force-Done für den Chain-Timer im Training-
         // Modus (vocabulary / nouns / articles / verbs). Wenn der User

@@ -22,6 +22,21 @@ extension QuizView {
             direction: selectedAppDirection,
             force: session.cachedMergedItems.isEmpty
         )
+        // **Daily Drop Modul 1 (2026-05-23)** — Count-Cap-Modus aus dem
+        // Launch-Context. WICHTIG: `atomicOnly` ZUERST setzen — das
+        // Setzen von `questionCountOption` triggert via onChange den
+        // Prebuild (`handleQuizQuestionCountChange`), der `atomicOnly`
+        // schon sehen muss. `invalidatePreparedQuestions()` verwirft
+        // einen evtl. bereits vorbereiteten (nicht-atomaren) Batch,
+        // damit `startQuiz()` frisch atomar baut. nil-gated → regulär.
+        if let ddCount = launchContext?.dailyDropCount {
+            session.atomicOnly = launchContext?.atomicOnly ?? false
+            if let option = QuizQuestionCountOption(rawValue: ddCount) {
+                session.questionCountOption = option
+            }
+            session.invalidatePreparedQuestions()
+        }
+
         // Auto-start quiz from Import Completion
         if launchContext?.shouldAutoStart == true, session.questions.isEmpty {
             startQuiz()

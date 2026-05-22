@@ -29,7 +29,8 @@ extension QuizBuildService {
         from candidates: [QuizCandidate],
         count: Int,
         excludingCandidateIDs: Set<String> = [],
-        excludingQuestionSignatures: Set<String> = []
+        excludingQuestionSignatures: Set<String> = [],
+        atomicOnly: Bool = false
     ) -> [QuizQuestion] {
         let candidatePool = sampledQuizCandidates(
             from: candidates,
@@ -40,7 +41,7 @@ extension QuizBuildService {
         let availableCandidates = candidatePool.filter { !excludingCandidateIDs.contains($0.id) }
         guard availableCandidates.count >= 2 else { return [] }
 
-        let questionKinds = plannedQuizQuestionKinds(for: availableCandidates, requestedCount: count)
+        let questionKinds = plannedQuizQuestionKinds(for: availableCandidates, requestedCount: count, atomicOnly: atomicOnly)
         guard !questionKinds.isEmpty else { return [] }
 
         var questions: [QuizQuestion] = []
@@ -52,17 +53,33 @@ extension QuizBuildService {
             let nextQuestion: QuizQuestion?
             switch kind {
             case .multipleChoice:
-                nextQuestion = nextMultipleChoiceQuestion(
-                    from: availableCandidates,
-                    usedPromptKeys: &usedPromptKeys,
-                    usedCandidateIDs: &usedCandidateIDs,
-                    usedQuestionSignatures: &usedQuestionSignatures
-                ) ?? nextMatchingQuestion(
+                // **Daily Drop Modul 1 (2026-05-23)** — im Atomar-Modus
+                // fällt MC bei nil NICHT auf Matching zurück (würde ein
+                // Matching durchrutschen lassen), sondern auf Tippen.
+                var mcPicked = nextMultipleChoiceQuestion(
                     from: availableCandidates,
                     usedPromptKeys: &usedPromptKeys,
                     usedCandidateIDs: &usedCandidateIDs,
                     usedQuestionSignatures: &usedQuestionSignatures
                 )
+                if mcPicked == nil {
+                    if atomicOnly {
+                        mcPicked = nextTypingQuestion(
+                            from: availableCandidates,
+                            usedPromptKeys: &usedPromptKeys,
+                            usedCandidateIDs: &usedCandidateIDs,
+                            usedQuestionSignatures: &usedQuestionSignatures
+                        )
+                    } else {
+                        mcPicked = nextMatchingQuestion(
+                            from: availableCandidates,
+                            usedPromptKeys: &usedPromptKeys,
+                            usedCandidateIDs: &usedCandidateIDs,
+                            usedQuestionSignatures: &usedQuestionSignatures
+                        )
+                    }
+                }
+                nextQuestion = mcPicked
             case .matching:
                 nextQuestion = nextMatchingQuestion(
                     from: availableCandidates,
@@ -212,9 +229,11 @@ extension QuizBuildService {
             .map { candidates[$0] }
     }
 
-    static func plannedQuizQuestionKinds(for candidates: [QuizCandidate], requestedCount: Int) -> [QuizQuestionKind] {
+    static func plannedQuizQuestionKinds(for candidates: [QuizCandidate], requestedCount: Int, atomicOnly: Bool = false) -> [QuizQuestionKind] {
         let actualCount = min(requestedCount, max(1, candidates.count))
-        let canDoMatching = candidates.count >= 4
+        // **Daily Drop Modul 1 (2026-05-23)** — Atomar-Modus erlaubt nur
+        // MultipleChoice + Tippen (kein Matching).
+        let canDoMatching = candidates.count >= 4 && !atomicOnly
         let pool: [QuizQuestionKind] = canDoMatching
             ? [.multipleChoice, .matching, .typing]
             : [.multipleChoice, .typing]
