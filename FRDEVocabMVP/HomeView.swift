@@ -102,6 +102,7 @@ struct HomeView: View {
                 subtitle: "Selbst gemacht",
                 accent: AppTheme.Colors.moduleFlashcards,
                 emphasized: true,
+                titleSize: 22,
                 icon: { HomeModuleIconView(icon: .karteikarten, size: 60, glyphTint: .white) },
                 onTap: { openHomeScreen(.flashcards(nil)) }
             )

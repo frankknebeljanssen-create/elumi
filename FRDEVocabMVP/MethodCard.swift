@@ -45,6 +45,8 @@ struct MethodCard<Icon: View>: View {
     /// stärkeren Shadow. Genutzt für die „Haupt-Methode" auf Home
     /// (Karteikarten — App-Grundidee).
     var emphasized: Bool = false
+    /// Titel-Schriftgröße. Default 19 pt — Karteikarten-Caller setzt 22.
+    var titleSize: CGFloat = 19
     @ViewBuilder let icon: () -> Icon
     let onTap: () -> Void
 
@@ -73,9 +75,11 @@ struct MethodCard<Icon: View>: View {
             VStack(spacing: 4) {
                 Spacer(minLength: 0)
                 icon()
-                Spacer(minLength: 0)
+                // S2 entfernt (2026-05-22) — einziger Spacer (S1, oben)
+                // absorbiert den Icon-Größen-Unterschied. Titel ist jetzt
+                // fix von unten verankert → gleiche Höhe in beiden Cards.
                 Text(title)
-                    .font(.system(size: 19, weight: .black, design: .rounded))
+                    .font(.system(size: titleSize, weight: .black, design: .rounded))
                     .foregroundStyle(.white)
                     .shadow(color: .black.opacity(0.35), radius: 1, x: 0, y: 1)
                     .lineLimit(1)
