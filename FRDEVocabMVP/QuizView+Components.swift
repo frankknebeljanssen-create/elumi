@@ -205,6 +205,27 @@ var quizResultScreen: some View {
         ? (nextStepTitle.map { "Weiter zu \($0)" } ?? "Training abschließen")
         : "Nächste Runde"
     return VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+        // **Session-Header (2026-05-22)** — Chevron + „Quiz"-Titel, wie
+        // KK (`flashcardSessionHeader`) / Verbformen (`trainingSessionCompact-
+        // Header`). In-Content-Header, weil die `appLocalChrome`-TopBar
+        // vestigial (nicht gerendert) ist. Im Chain-Mode verborgen (Chain-
+        // Header trägt die Schritt-Identität). Chevron → zurück zum Quiz-
+        // Setup (analog KK-Header → returnToFlashcardSetup).
+        if !isChain {
+            ZStack {
+                Text("Quiz")
+                    .font(.system(size: 28, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                HStack {
+                    AppBackButton(action: { resetQuizToSetup() }, tint: sectionStyle.accent)
+                    Spacer()
+                }
+            }
+            .padding(.top, 4)
+            .padding(.bottom, AppLayout.screenHeaderBottomPadding)
+        }
+
         // Elumi-Level-Freischaltung (rar) — bleibt als kleiner Hinweis.
         if !isChain, !unlockedRewardLevels.isEmpty {
             VStack(spacing: AppTheme.Spacing.xs) {
