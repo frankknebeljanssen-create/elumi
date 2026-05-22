@@ -102,7 +102,8 @@ struct HomeView: View {
                 subtitle: "Selbst gemacht",
                 accent: AppTheme.Colors.moduleFlashcards,
                 emphasized: true,
-                titleSize: 21,
+                // titleSize bewusst weggelassen → Default 19 pt, exakt
+                // wie Daily Drop/Training (WideCard titleSize 19) und Quiz.
                 icon: { HomeModuleIconView(icon: .karteikarten, size: 60, glyphTint: .white) },
                 onTap: { openHomeScreen(.flashcards(nil)) }
             )
