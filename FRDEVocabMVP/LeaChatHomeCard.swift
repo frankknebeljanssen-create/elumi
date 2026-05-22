@@ -49,16 +49,16 @@ struct LeaChatHomeCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .frame(height: 86)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .fill(Color.white)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .stroke(Color.black.opacity(0.06), lineWidth: 1)
             )
             .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(AppCardPressStyle())
         .accessibilityLabel("Live Chat mit Léa")
         .onAppear {
             chatService.configure(with: modelContext)
@@ -103,10 +103,11 @@ struct LeaChatHomeCard: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         } else {
-            HStack(alignment: .center, spacing: 12) {
+            HStack(alignment: .center, spacing: 14) {
                 ChatAvatarView(size: 40)
+                    .frame(width: 52, height: 52)
 
-                VStack(alignment: .leading, spacing: 1) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text("Chat mit Léa")
                         // Font wie Daily-Drop-Title (WideCard titleSize 19,
                         // .black, .rounded) — beide Home-Cards gleiches Design.
