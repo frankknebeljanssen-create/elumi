@@ -46,6 +46,8 @@ struct UnifiedListCategoryPicker: View {
     var feedbackPlayer: FeedbackPlayer? = nil
     var onHome: (() -> Void)? = nil
 
+    @Environment(\.dismiss) private var dismiss
+
     /// Welche Kategorie ist gerade als Sheet offen.
     @State private var activeCategory: Category? = nil
 
@@ -55,39 +57,61 @@ struct UnifiedListCategoryPicker: View {
     }
 
     var body: some View {
-        // Spacing 10 — identisch zur `categoryCardsSection` in ListsView,
-        // damit die Cards überall gleich „atmen".
-        VStack(spacing: 10) {
-            ListCategoryRow(
-                title: "Eigene Listen",
-                iconAsset: "ListIconEigene",
-                count: lists(in: .own).count,
-                accent: accent
-            ) { activeCategory = .own }
-
-            ListCategoryRow(
-                title: "Nach Niveau",
-                iconAsset: "ListIconNiveau",
-                count: lists(in: .level).count,
-                accent: accent
-            ) { activeCategory = .level }
-
-            ListCategoryRow(
-                title: "Nach Themen",
-                iconAsset: "ListIconThemen",
-                count: lists(in: .topic).count,
-                accent: accent
-            ) { activeCategory = .topic }
-
-            if includeWoerterbuch {
-                ListCategoryRow(
-                    title: "Wörterbuch",
-                    iconAsset: "IconWoerterbuch",
-                    count: lists(in: .woerterbuch).count,
-                    accent: accent
-                ) { activeCategory = .woerterbuch }
+        VStack(spacing: 0) {
+            // Header — App-Standard: AppSheetHeader + Padding 18/14 +
+            // surface-Hintergrund + Trennlinie unten. Identisch zu
+            // GlobalListPickerSheet-Stil.
+            AppSheetHeader(
+                title: "Aktive Listen",
+                onLeading: { dismiss() }
+            )
+            .padding(.horizontal, 18)
+            .padding(.vertical, 14)
+            .background(AppTheme.Colors.surface)
+            .overlay(alignment: .bottom) {
+                Rectangle()
+                    .fill(AppTheme.Colors.textSecondary.opacity(0.18))
+                    .frame(height: 0.5)
             }
+
+            // Kategorie-Cards — Spacing 10 identisch zu
+            // `categoryCardsSection` in ListsView.
+            VStack(spacing: 10) {
+                ListCategoryRow(
+                    title: "Eigene Listen",
+                    iconAsset: "ListIconEigene",
+                    count: lists(in: .own).count,
+                    accent: accent
+                ) { activeCategory = .own }
+
+                ListCategoryRow(
+                    title: "Nach Niveau",
+                    iconAsset: "ListIconNiveau",
+                    count: lists(in: .level).count,
+                    accent: accent
+                ) { activeCategory = .level }
+
+                ListCategoryRow(
+                    title: "Nach Themen",
+                    iconAsset: "ListIconThemen",
+                    count: lists(in: .topic).count,
+                    accent: accent
+                ) { activeCategory = .topic }
+
+                if includeWoerterbuch {
+                    ListCategoryRow(
+                        title: "Wörterbuch",
+                        iconAsset: "IconWoerterbuch",
+                        count: lists(in: .woerterbuch).count,
+                        accent: accent
+                    ) { activeCategory = .woerterbuch }
+                }
+            }
+            .padding()
+
+            Spacer(minLength: 0)
         }
+        .background(AppTheme.Colors.background.ignoresSafeArea())
         .sheet(item: $activeCategory) { category in
             GlobalListPickerSheet(
                 allLists: availableLists,

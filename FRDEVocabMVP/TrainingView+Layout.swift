@@ -1355,7 +1355,6 @@ extension TrainingView {
                 feedbackPlayer: feedbackPlayer,
                 onHome: goHome
             )
-            .padding()
         }
     }
 
