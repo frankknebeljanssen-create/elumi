@@ -209,3 +209,98 @@ struct AppSheetHeader: View {
         }
     }
 }
+
+// MARK: - AppInputField
+
+/// **Eingabefeld-Vereinheitlichung Modul 1 (2026-05-22)** — wiederver-
+/// wendbares Lern-Antwort-Eingabefeld im hellen „cream"-Look mit dunkler
+/// Schrift. Single Source of Truth für die Tippen-Felder (Pilot:
+/// Karteikarten; später Vokabeln/Nomen/Verbformen/Quiz).
+///
+/// Optik = das frühere inline KK-cream-Feld (1:1): Hintergrund elumiCream,
+/// Schrift elumiMidnight, Placeholder als eigener Overlay (volle Farb-
+/// kontrolle — der SwiftUI-System-Placeholder rendert im Dark-Theme hell
+/// → auf cream unsichtbar), Border elumiMidnight 12 %, Radius.md,
+/// minHeight 46. `alignment` ist für Quiz (zentriert) in Modul 2 vorbereitet.
+///
+/// Lebt in dieser bestehenden In-Target-Datei (statt eigener Datei), weil
+/// das Projekt explizite `.pbxproj`-Referenzen nutzt (keine synchronisierten
+/// Ordner) — eine neue Datei wäre nicht automatisch im Build-Target.
+struct AppInputField: View {
+    let placeholder: String
+    @Binding var text: String
+
+    /// Cursor-/Tint-Farbe (Modul-Akzent). Default `primary`.
+    var accent: Color = AppTheme.Colors.primary
+    /// Mindesthöhe (bequemes Touch-Target). Default 46.
+    var minHeight: CGFloat = 46
+    /// Text-Ausrichtung. `.center` z. B. für Quiz. Default `.leading`.
+    var alignment: TextAlignment = .leading
+    /// Return-Key-Label. Default `.done`.
+    var submitLabel: SubmitLabel = .done
+    /// Aktiv/Deaktiviert. Default true.
+    var isEnabled: Bool = true
+    /// Optionale Focus-Bindung — der Caller steuert den Fokus.
+    var focus: FocusState<Bool>.Binding? = nil
+    /// Callback bei Return/Submit.
+    var onSubmit: (() -> Void)? = nil
+    /// Callback bei Tap aufs Feld (z. B. Audio-Mode wechseln).
+    var onTap: (() -> Void)? = nil
+
+    var body: some View {
+        ZStack(alignment: zStackAlignment) {
+            if text.isEmpty {
+                Text(placeholder)
+                    .foregroundStyle(AppTheme.Colors.elumiMidnight.opacity(0.5))
+                    .multilineTextAlignment(alignment)
+                    .allowsHitTesting(false)
+            }
+            fieldCore
+        }
+        .font(.system(size: 17, weight: .medium, design: .rounded))
+        .padding(.horizontal, 14)
+        .frame(minHeight: minHeight, alignment: zStackAlignment)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                .fill(AppTheme.Colors.elumiCream)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                .stroke(AppTheme.Colors.elumiMidnight.opacity(0.12), lineWidth: 1)
+        )
+    }
+
+    /// TextField mit konditionalem Focus/onTap — `.onTapGesture` wird NUR
+    /// angehängt, wenn `onTap` gesetzt ist (sonst würde eine leere Geste
+    /// das Tap-to-Focus von Feldern ohne onTap schlucken).
+    @ViewBuilder
+    private var fieldCore: some View {
+        let base = TextField("", text: $text)
+            .foregroundStyle(AppTheme.Colors.elumiMidnight)
+            .tint(accent)
+            .multilineTextAlignment(alignment)
+            .submitLabel(submitLabel)
+            .disabled(!isEnabled)
+            .onSubmit { onSubmit?() }
+
+        switch (focus, onTap) {
+        case let (focus?, onTap?):
+            base.focused(focus).onTapGesture { onTap() }
+        case let (focus?, nil):
+            base.focused(focus)
+        case let (nil, onTap?):
+            base.onTapGesture { onTap() }
+        case (nil, nil):
+            base
+        }
+    }
+
+    private var zStackAlignment: Alignment {
+        switch alignment {
+        case .center:   return .center
+        case .trailing: return .trailing
+        case .leading:  return .leading
+        }
+    }
+}

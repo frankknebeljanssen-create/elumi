@@ -10,45 +10,24 @@ extension FlashcardsView {
             // kann Tastatur als Fallback nachträglich anfordern.
             if interaction.showingTypedAnswerInput || interaction.answerMode == .tap {
                 HStack(spacing: 8) {
-                    // **Heller + höher (2026-05-22)** — `.roundedBorder`
-                    // (System-Style, im Dark-Theme fast schwarz) ersetzt durch
-                    // ein helles Cream-Feld mit dunkler Schrift → einladender.
-                    // Placeholder als eigener Overlay (volle Farbkontrolle;
-                    // SwiftUI-Default-Placeholder wäre auf Cream unsichtbar).
-                    // minHeight 46 → bequemer Touch, wirkt nicht mehr „kurz".
-                    ZStack(alignment: .leading) {
-                        if interaction.typedAnswer.isEmpty {
-                            Text("Antwort tippen")
-                                .foregroundStyle(AppTheme.Colors.elumiMidnight.opacity(0.5))
-                                .allowsHitTesting(false)
+                    // **Eingabefeld-Vereinheitlichung Modul 1 (2026-05-22)** —
+                    // KK ist der Pilot für die geteilte `AppInputField`-
+                    // Komponente (cream-Look). Optik unverändert; nur die
+                    // Quelle wandert von inline → gemeinsame Komponente.
+                    AppInputField(
+                        placeholder: "Antwort tippen",
+                        text: $interaction.typedAnswer,
+                        accent: sectionStyle.accent,
+                        isEnabled: isSessionReady,
+                        focus: $isTypedAnswerFocused,
+                        onSubmit: { submitTypedAnswer() },
+                        onTap: {
+                            interaction.handleAudioModeChange(
+                                isEnabled: false,
+                                speechController: speechController,
+                                speaker: speaker
+                            )
                         }
-                        TextField("", text: $interaction.typedAnswer)
-                            .foregroundStyle(AppTheme.Colors.elumiMidnight)
-                            .tint(sectionStyle.accent)
-                            .focused($isTypedAnswerFocused)
-                            .disabled(!isSessionReady)
-                            .onTapGesture {
-                                interaction.handleAudioModeChange(
-                                    isEnabled: false,
-                                    speechController: speechController,
-                                    speaker: speaker
-                                )
-                            }
-                            .onSubmit {
-                                submitTypedAnswer()
-                            }
-                    }
-                    .font(.system(size: 17, weight: .medium, design: .rounded))
-                    .padding(.horizontal, 14)
-                    .frame(minHeight: 46, alignment: .leading)
-                    .frame(maxWidth: .infinity)
-                    .background(
-                        RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                            .fill(AppTheme.Colors.elumiCream)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                            .stroke(AppTheme.Colors.elumiMidnight.opacity(0.12), lineWidth: 1)
                     )
 
                     Button {
