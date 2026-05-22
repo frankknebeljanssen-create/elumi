@@ -121,21 +121,25 @@ struct LeaChatHomeCard: View {
     /// Avatar mit pulsierendem Mint-Ring + Online-Dot.
     /// Gemeinsame Subview — wird in noHistory + hasHistory identisch verwendet.
     private var leaAvatarComposit: some View {
-        ZStack {
-            // Pulsierender Mint-Ring hinter dem Avatar.
-            Circle()
-                .stroke(AppTheme.Colors.success.opacity(ringOpacity), lineWidth: 2)
-                .scaleEffect(ringScale)
-
-            ChatAvatarView(size: 40)
-        }
-        .frame(width: 52, height: 52)
-        .onAppear {
-            withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-                ringScale  = 1.12
-                ringOpacity = 0.15
+        // Ring als Overlay direkt auf dem Avatar → Overlay-Content wird
+        // immer auf dem Host zentriert, liegt also garantiert konzentrisch.
+        // Vorher: flexible Circle ohne eigenen Frame neben dem fix
+        // dimensionierten Avatar im ZStack → konnte minimal verrutschen
+        // (Ring/„L" nicht exakt zentriert).
+        ChatAvatarView(size: 40)
+            .overlay {
+                Circle()
+                    .stroke(AppTheme.Colors.success.opacity(ringOpacity), lineWidth: 2)
+                    .frame(width: 52, height: 52)
+                    .scaleEffect(ringScale)
             }
-        }
+            .frame(width: 52, height: 52)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                    ringScale  = 1.12
+                    ringOpacity = 0.15
+                }
+            }
     }
 
     // MARK: - Helpers
