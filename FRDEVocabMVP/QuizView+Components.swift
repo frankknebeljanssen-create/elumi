@@ -51,6 +51,9 @@ var quizSetupScreen: some View {
         onBack: { handleBackNavigation() },
         onStart: { startQuiz() },
         contextContent: {
+            // **Gruppe-3-Migration (2026-05-22)** — `onTap` setzt
+            // `quizListPickerActive = true` → `.navigationDestination`
+            // im `body`-Chain pusht `UnifiedListCategoryPicker`.
             ListCategoryPickerView(
                 availableLists: availableQuizLists,
                 selectedListIDs: session.selectedListIDs,
@@ -60,7 +63,8 @@ var quizSetupScreen: some View {
                 summaryText: quizListSummary,
                 itemLabel: "Einträge",
                 onSelectionChanged: { session.selectedListIDs = $0 },
-                onHome: goHome
+                onHome: goHome,
+                onTap: { quizListPickerActive = true }
             )
         },
         optionsContent: {

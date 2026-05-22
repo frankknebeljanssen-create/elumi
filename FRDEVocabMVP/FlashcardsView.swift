@@ -62,6 +62,12 @@ struct FlashcardsView: View {
     // der Master-Migration durch `ListCategoryPickerView` +
     // `GlobalListPickerSheet` ersetzt wurde.
 
+    /// **Gruppe-3-Migration (2026-05-22)** — Push-State für den
+    /// `UnifiedListCategoryPicker`. Getriggert über `onTap` in der
+    /// `ListCategoryPickerView`-Card im Setup-Kontext-Slot.
+    /// `.navigationDestination` sitzt in `flashcardsBodyContent`.
+    @State var flashcardsListPickerActive: Bool = false
+
     /// **Karteikarten Pre-Screen-Pop-up (2026-05-09)** — Sichtbarkeit
     /// des Pre-Screen-Modals (Slot-Style nachgebaut), das KARTEN-Slider
     /// + SCHWIERIGKEIT-Buttons vor dem eigentlichen Setup-Screen zeigt.

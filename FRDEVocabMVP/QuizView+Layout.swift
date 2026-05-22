@@ -75,16 +75,24 @@ extension QuizView {
             .onChange(of: session.isShowingResult) { _, isShowingResult in
                 handleQuizResultVisibilityChange(isShowingResult)
             }
-            .sheet(isPresented: $showingQuizListPicker) {
-                FlashcardStackComposerSheet(
-                    style: sectionStyle,
-                    lists: availableQuizLists,
-                    selectedListIDs: session.selectedListIDs,
-                    language: selectedAppDirection.sourceLanguage,
-                    cardTypeFilter: nil
-                ) { updatedSelection in
-                    session.selectedListIDs = updatedSelection
-                }
+            // **Gruppe-3-Migration (2026-05-22)** — ehemals totes
+            // `.sheet(isPresented: $showingQuizListPicker)` entfernt
+            // (wurde nie getriggert). Ersetzt durch:
+            .navigationDestination(isPresented: $quizListPickerActive) {
+                UnifiedListCategoryPicker(
+                    availableLists: availableQuizLists,
+                    selectedIDs: session.selectedListIDs,
+                    onCommit: { session.selectedListIDs = $0 },
+                    accent: sectionStyle.accent,
+                    singleSelect: false,
+                    includeWoerterbuch: false,
+                    itemLabel: "Einträge",
+                    feedbackPlayer: feedbackPlayer,
+                    onHome: goHome,
+                    onSettings: { openSettings() }
+                )
+                .navigationBarBackButtonHidden(true)
+                .toolbar(.hidden, for: .navigationBar)
             }
             .onDisappear {
                 handleQuizDisappear()

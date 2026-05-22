@@ -65,7 +65,12 @@ struct QuizView: View {
     @State var typingInput = ""
     @State var typingLocked = false
     @State var typingShowCorrectAnswer: String?
-    @State var showingQuizListPicker = false
+    /// **Gruppe-3-Migration (2026-05-22)** — Push-State für den
+    /// `UnifiedListCategoryPicker`. Getriggert via `onTap` in der
+    /// `ListCategoryPickerView`-Card im `quizSetupScreen`.
+    /// `.navigationDestination` sitzt im `body`-Modifier-Chain.
+    /// Ersetzt den toten `showingQuizListPicker`-State (war nie true).
+    @State var quizListPickerActive: Bool = false
     @FocusState var isTypingFieldFocused: Bool
 
     var selectedAppDirection: Direction {

@@ -41,6 +41,13 @@ struct ListCategoryPickerView: View {
     /// damit existing Call-Sites ohne Anpassung weiterhin funktionieren.
     var onHome: (() -> Void)? = nil
 
+    /// **Gruppe-3-Migration (2026-05-22)** — Push-Override. Wenn gesetzt,
+    /// ruft der Card-Button-Tap DIESE Closure (statt den internen Sheet-
+    /// Pfad). Aufrufer setzt dabei einen eigenen `Bool`-State, der ein
+    /// `.navigationDestination` triggert. Backward-kompatibel: nil (Default)
+    /// → altes Sheet-Verhalten (`activeCategory = .own`) bleibt unverändert.
+    var onTap: (() -> Void)? = nil
+
     enum Category: Identifiable {
         case own, level, topic
         var id: String {
@@ -81,7 +88,14 @@ struct ListCategoryPickerView: View {
 
         Button {
             feedbackPlayer.playTabSwitch()
-            activeCategory = .own
+            if let onTap = onTap {
+                // Push-Override: Caller steuert die Navigation
+                // (z. B. .navigationDestination über externe Bool-State).
+                onTap()
+            } else {
+                // Standard-Sheet-Pfad.
+                activeCategory = .own
+            }
         } label: {
             // Master-Format: Header GANZ links oben, darunter eine HStack
             // aus Modul-Icon (links) · Listen+Summary (Mitte) · Stift-Pill

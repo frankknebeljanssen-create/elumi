@@ -99,6 +99,27 @@ extension FlashcardsView {
                 }
             )
         }
+        // **Gruppe-3-Migration (2026-05-22)** — Listen-Kategorie-Picker
+        // als Push-Screen (analog Nomen/Verben/Vokabeln). Sitzt hier in
+        // `flashcardsBodyContent` (immer im Hierarchy) statt im
+        // `flashcardSetupScreen` (konditionell). Push-Tauglichkeit
+        // belegt durch PersonalDecksView-Destination oben.
+        .navigationDestination(isPresented: $flashcardsListPickerActive) {
+            UnifiedListCategoryPicker(
+                availableLists: availableStackLists,
+                selectedIDs: setup.selectedStackListIDs,
+                onCommit: { setup.selectedStackListIDs = $0 },
+                accent: sectionStyle.accent,
+                singleSelect: false,
+                includeWoerterbuch: false,
+                itemLabel: "Karten",
+                feedbackPlayer: feedbackPlayer,
+                onHome: { dismissToHome() },
+                onSettings: { openSettings() }
+            )
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
+        }
     }
 
     var flashcardsTopBar: some View {
@@ -370,6 +391,11 @@ extension FlashcardsView {
             onBack: { handleBackNavigation() },
             onStart: { startFlashcardsFromSetup(autoplayPrompt: true) },
             contextContent: {
+                // **Gruppe-3-Migration (2026-05-22)** — `onTap` setzt
+                // `flashcardsListPickerActive = true` → `.navigationDestination`
+                // in `flashcardsBodyContent` pusht `UnifiedListCategoryPicker`.
+                // `onSelectionChanged` bleibt für backward-compat (wird im
+                // Push-Pfad nicht aufgerufen, Selektion via `onCommit`).
                 ListCategoryPickerView(
                     availableLists: availableStackLists,
                     selectedListIDs: setup.selectedStackListIDs,
@@ -379,7 +405,8 @@ extension FlashcardsView {
                     summaryText: "",
                     itemLabel: "Karten",
                     onSelectionChanged: { setup.selectedStackListIDs = $0 },
-                    onHome: { dismissToHome() }
+                    onHome: { dismissToHome() },
+                    onTap: { flashcardsListPickerActive = true }
                 )
             },
             optionsContent: {
