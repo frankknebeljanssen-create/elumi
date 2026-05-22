@@ -269,3 +269,56 @@ struct ChainStepTimerBar: View {
         }
     }
 }
+
+/// **Daily Drop Count-Bar** (Modul 2, 2026-05-23).
+///
+/// Persistente, schlanke Fortschritts-Bar für den Count-Modus der
+/// Trainings-Chain. Ersetzt im `ChainTimerOverlayModifier` die
+/// `ChainStepTimerBar`, wenn `chain.isCountMode == true` — zeigt
+/// „Übung X von N" + eine Fortschritts-Capsule statt eines Countdowns.
+/// Liest `completed`/`total` aus dem `TrainingChainStore` (Singleton),
+/// daher persistiert die Bar automatisch über alle Chain-Steps.
+struct ChainStepCountBar: View {
+    let completed: Int
+    let total: Int
+
+    private var safeTotal: Int { max(1, total) }
+
+    /// 1-basierte „aktuelle Übung", gedeckelt auf `total` (am Ende
+    /// zeigt die Bar „Übung N von N" statt „N+1").
+    private var current: Int { min(completed + 1, safeTotal) }
+
+    private var progress: CGFloat {
+        max(0, min(1, CGFloat(completed) / CGFloat(safeTotal)))
+    }
+
+    var body: some View {
+        VStack(spacing: 4) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text("Übung \(current) von \(safeTotal)")
+                    .font(.system(size: 15, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                Spacer(minLength: 0)
+                Text("\(completed)/\(safeTotal)")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .monospacedDigit()
+            }
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(AppTheme.Colors.textSecondary.opacity(0.18))
+                    Capsule()
+                        .fill(AppTheme.Colors.success)
+                        .frame(width: max(0, geo.size.width * progress))
+                        .animation(.easeOut(duration: 0.35), value: completed)
+                }
+            }
+            .frame(height: 4)
+            .clipShape(Capsule())
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+    }
+}

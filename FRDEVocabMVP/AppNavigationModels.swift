@@ -474,7 +474,12 @@ extension HomeHeroModule {
         case .quiz:
             return .quiz(QuizLaunchContext(
                 shouldAutoStart: true,
-                chainContext: chainContext
+                chainContext: chainContext,
+                // **Daily Drop Modul 2 (2026-05-23)** — Count-Modus: Cap
+                // auf perStepCount + atomar (nur MC/Tippen). Im Zeit-Modus
+                // sind beide nil/false → unverändert.
+                dailyDropCount: chainContext.perStepCount,
+                atomicOnly: chainContext.isCountMode
             ))
         case .akzente:
             return .accents(AccentsLaunchContext(
@@ -495,7 +500,10 @@ extension HomeHeroModule {
             return .train(TrainingLaunchContext(
                 preferredMode: mode,
                 shouldAutoStart: true,
-                chainContext: chainContext
+                chainContext: chainContext,
+                // **Daily Drop Modul 2 (2026-05-23)** — Count-Cap je Step;
+                // nil im Zeit-Modus → unverändert.
+                dailyDropCount: chainContext.perStepCount
             ))
         }
     }

@@ -38,6 +38,17 @@ final class TrainingChainStore: ObservableObject {
     @Published private(set) var currentChain: TrainingChainContext?
     @Published private(set) var stepOutcomes: [SessionRewardOutcome] = []
 
+    // MARK: - Daily Drop Modul 2: Count-Modus-Counter (2026-05-23)
+
+    /// Beantwortete Einzel-Aufgaben über alle Steps hinweg (smooth, pro
+    /// Antwort inkrementiert via `noteExerciseAnswered`). Speist die
+    /// persistente „Übung X von N"-Count-Bar. Nur im Count-Modus aktiv.
+    @Published private(set) var exercisesCompleted: Int = 0
+
+    /// Gesamtzahl der Aufgaben im aktuellen Count-Run
+    /// (`chain.totalExerciseCount`). `0` im Zeit-Modus.
+    @Published private(set) var totalExercises: Int = 0
+
     // MARK: - Stufe 4a: Step-Countdown-Timer (2026-05-01)
 
     /// **Stufe 4a (2026-05-01, Branch `feature/training-session-flow`)** —
@@ -169,16 +180,21 @@ final class TrainingChainStore: ObservableObject {
 
         currentChain = chain
         stepOutcomes = []
+        // **Daily Drop Modul 2 (2026-05-23)** — Count-Modus-Counter init.
+        totalExercises = chain.totalExerciseCount
+        exercisesCompleted = 0
 
         #if DEBUG
         let path = chain.plannedSteps.map(\.rawValue).joined(separator: " → ")
-        appDebugLog("🔗 [TrainingChainStore] start — id=\(chain.id.shortID), steps=[\(path)], perStep=\(chain.perStepDurationMin)min")
+        appDebugLog("🔗 [TrainingChainStore] start — id=\(chain.id.shortID), steps=[\(path)], perStep=\(chain.perStepDurationMin)min, countMode=\(chain.isCountMode), total=\(totalExercises)")
         #endif
 
-        // **Stufe 4a (2026-05-01)** — Step-Timer für ersten Step
-        // starten. Nur wenn die Chain einen `currentStep` hat (kein
-        // Jackpot-Pfad mit leeren plannedSteps).
-        if chain.currentStep != nil {
+        // **Stufe 4a (2026-05-01)** — Step-Timer für ersten Step starten.
+        // **Daily Drop Modul 2 (2026-05-23)** — im Count-Modus KEIN Timer
+        // (Timer-Bar + Cutoff-Modal bleiben dadurch automatisch dormant).
+        if chain.isCountMode {
+            clearStepTimer()
+        } else if chain.currentStep != nil {
             startStepTimer()
         } else {
             clearStepTimer()
@@ -197,11 +213,13 @@ final class TrainingChainStore: ObservableObject {
         appDebugLog("🔗 [TrainingChainStore] advance — index=\(idx)/\(total)")
         #endif
 
-        // **Stufe 4a (2026-05-01)** — Timer für den nächsten Step
-        // neu starten. Wenn die Chain durch ist (kein currentStep
-        // mehr), Timer komplett aufräumen — `trainingChainComplete`-
-        // Platzhalter zeigt keine Zeit-Anzeige.
-        if currentChain?.currentStep != nil {
+        // **Stufe 4a (2026-05-01)** — Timer für den nächsten Step neu
+        // starten. **Daily Drop Modul 2 (2026-05-23)** — im Count-Modus
+        // kein Timer (Count-Bar statt Timer-Bar; advance kommt über den
+        // Modul-Summary-CTA → chainAdvance).
+        if currentChain?.isCountMode == true {
+            clearStepTimer()
+        } else if currentChain?.currentStep != nil {
             startStepTimer()
         } else {
             clearStepTimer()
@@ -213,6 +231,17 @@ final class TrainingChainStore: ObservableObject {
     /// auf — bleibt für Stufe-2-Hook bereit.
     func recordOutcome(_ outcome: SessionRewardOutcome) {
         stepOutcomes.append(outcome)
+    }
+
+    /// **Daily Drop Modul 2 (2026-05-23)** — Smooth-Increment des
+    /// globalen Aufgaben-Counters für die persistente „Übung X von N"-
+    /// Count-Bar. Wird von den Modul-Controllern (Quiz
+    /// `completeCurrentQuestion`, Training `recordAnswer`) pro
+    /// beantworteter Aufgabe gerufen. No-op außerhalb des Count-Modus →
+    /// reguläre Sessions und die Zeit-Chain bleiben unberührt.
+    func noteExerciseAnswered() {
+        guard currentChain?.isCountMode == true else { return }
+        exercisesCompleted += 1
     }
 
     /// **Stufe 3 (2026-05-01, Branch `feature/training-session-flow`)** —
@@ -262,6 +291,9 @@ final class TrainingChainStore: ObservableObject {
     func clear() {
         currentChain = nil
         stepOutcomes = []
+        // **Daily Drop Modul 2 (2026-05-23)** — Count-Counter zurücksetzen.
+        exercisesCompleted = 0
+        totalExercises = 0
 
         // **Stufe 4a (2026-05-01)** — Timer mit räumen, sonst
         // tickt er weiter wenn die Chain abgebrochen wird (z.B. via

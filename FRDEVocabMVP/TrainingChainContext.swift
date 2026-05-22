@@ -45,6 +45,13 @@ struct TrainingChainContext: Hashable {
     /// stable-hashbar für Hashable-Konformität via NavigationPath).
     let sourceCenterSymbolKinds: [SourceSlotKind]
 
+    /// **Daily Drop Modul 2 (2026-05-23)** — Per-Step-Aufgabenzahl im
+    /// Count-Modus. `nil` = Zeit-Modus (klassische Chain mit
+    /// `perStepDurationMin` + Timer). Non-nil → die Chain läuft
+    /// anzahl-gegatet (kein Timer); jeder Step endet nach genau N
+    /// Aufgaben (über die Modul-1-Caps in den Launch-Contexts).
+    let perStepCount: Int?
+
     enum SourceSlotKind: Hashable {
         case module(HomeHeroModule)
         case game
@@ -75,6 +82,17 @@ struct TrainingChainContext: Hashable {
 
     /// Gesamt-Step-Zahl für UI-Anzeige (immer == plannedSteps.count).
     var totalStepCount: Int { plannedSteps.count }
+
+    /// **Daily Drop Modul 2 (2026-05-23)** — Count-Modus aktiv?
+    var isCountMode: Bool { perStepCount != nil }
+
+    /// **Daily Drop Modul 2 (2026-05-23)** — Gesamt-Aufgabenzahl der
+    /// Chain (Per-Step-Count × Anzahl Steps, even-split). `0` außerhalb
+    /// des Count-Modus — die Count-Bar wird dann ohnehin nicht gezeigt.
+    var totalExerciseCount: Int {
+        guard let perStepCount else { return 0 }
+        return perStepCount * plannedSteps.count
+    }
 
     /// **Stufe 2 (2026-04-30)** — alle 3 Slots waren Game (3× Game).
     /// Pre-Screen rendert dann nur Game-Cards, „Übung starten"-CTA ist
@@ -139,7 +157,38 @@ struct TrainingChainContext: Hashable {
             plannedSteps: modulesOnly,
             currentIndex: 0,
             perStepDurationMin: perStep,
-            sourceCenterSymbolKinds: kinds
+            sourceCenterSymbolKinds: kinds,
+            perStepCount: nil
+        )
+    }
+
+    /// **Daily Drop Modul 2 (2026-05-23)** — Count-Modus-Factory. Baut
+    /// die Chain aus dem Slot-Ergebnis wie `make(from:totalDuration:)`,
+    /// aber anzahl-gegatet: kein Timer, `perStepCount` Aufgaben je Step
+    /// (even-split). Game-Slots werden wie gehabt aus `plannedSteps`
+    /// gefiltert (bleiben in `sourceCenterSymbolKinds`). Der Daily-Drop-
+    /// Slot zieht nur Quiz + Vokabeln und füllt Rest-Reels mit Game →
+    /// `plannedSteps` enthält die eindeutigen Übungstypen.
+    static func make(
+        from slotResult: SlotSpinResult,
+        perStepCount: Int
+    ) -> TrainingChainContext {
+        let kinds: [SourceSlotKind] = slotResult.centerSymbols.map { symbol in
+            if symbol.isElumi { return .game }
+            if let module = symbol.homeModule { return .module(module) }
+            return .game
+        }
+        let modulesOnly: [HomeHeroModule] = kinds.compactMap { kind in
+            if case .module(let m) = kind { return m }
+            return nil
+        }
+        return TrainingChainContext(
+            id: UUID(),
+            plannedSteps: modulesOnly,
+            currentIndex: 0,
+            perStepDurationMin: 0,
+            sourceCenterSymbolKinds: kinds,
+            perStepCount: perStepCount
         )
     }
 
@@ -151,7 +200,8 @@ struct TrainingChainContext: Hashable {
             plannedSteps: plannedSteps,
             currentIndex: currentIndex + 1,
             perStepDurationMin: perStepDurationMin,
-            sourceCenterSymbolKinds: sourceCenterSymbolKinds
+            sourceCenterSymbolKinds: sourceCenterSymbolKinds,
+            perStepCount: perStepCount
         )
     }
 }

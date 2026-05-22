@@ -1633,24 +1633,40 @@ struct ElumiTabView: View {
         var targets: [ReelSymbol?] = [nil, nil, nil]
         var usedModules: Set<HomeHeroModule> = []
 
+        // **Daily Drop Modul 2 (2026-05-23)** — MVP-Pool: nur Quiz +
+        // Vokabeln. Rotation-ready: der `usedModules`-Filter +
+        // `randomElement` unten bleiben unverändert (spätere Gewichtung/
+        // Memory dockt genau dort an). Beim 5-Typen-Ausbau wird dieses
+        // Set erweitert.
+        let dailyDropModules: Set<HomeHeroModule> = [.quiz, .vokabeln]
+
         for reelIndex in 0..<3 {
             if dropRate.drawIsElumi(chance: chance) {
                 // Elumi — darf mehrfach. Kein Set-Eintrag.
                 targets[reelIndex] = ReelSymbol.elumi
                 continue
             }
-            let pool = pools[reelIndex]
-            // Kandidaten = Pool-Einträge, deren Modul noch nicht
-            // belegt ist.
+            // Pool auf die Daily-Drop-Typen beschränken.
+            let pool = pools[reelIndex].filter { symbol in
+                guard let module = symbol.homeModule else { return false }
+                return dailyDropModules.contains(module)
+            }
+            // Kandidaten = Pool-Einträge, deren Modul noch nicht belegt ist.
             let candidates = pool.filter { symbol in
                 guard let module = symbol.homeModule else { return false }
                 return !usedModules.contains(module)
             }
-            let chosen = candidates.randomElement() ?? pool.randomElement()
-            if let module = chosen?.homeModule {
-                usedModules.insert(module)
+            if let chosen = candidates.randomElement() {
+                if let module = chosen.homeModule {
+                    usedModules.insert(module)
+                }
+                targets[reelIndex] = chosen
+            } else {
+                // Daily-Drop-Pool erschöpft (nur 2 Typen, aber 3 Reels) →
+                // Rest-Reel wird Game-Bonus statt Modul-Dublette. So
+                // bleiben die `plannedSteps` eindeutig (1× Quiz + 1× Vokabel).
+                targets[reelIndex] = ReelSymbol.elumi
             }
-            targets[reelIndex] = chosen
         }
         return targets
     }
@@ -1770,9 +1786,14 @@ struct ElumiTabView: View {
         // ist `plannedSteps` leer — Pre-Screen rendert dann nur die
         // Game-Cards und disabled-CTA mit Hint „Drehe noch mal für
         // Übungen" (siehe `TrainingChainContext.isJackpot`).
+        // **Daily Drop Modul 2 (2026-05-23)** — Count-Modus (Replacement
+        // der Zeit-Chain am Daily-Drop-Eingang). N=10 hardcoded,
+        // even-split → 5 Aufgaben je Step (Anzahl-Picker = Modul 3). Das
+        // alte „Wie lange?"-Modal bleibt vorerst stehen; seine
+        // `selectedDuration` fließt im Count-Modus nicht mehr ein.
         let chain = TrainingChainContext.make(
             from: pendingResult,
-            totalDuration: selectedDuration
+            perStepCount: 5
         )
 
         // Chain-Start: Resume-Stores werden im Store geleert (R5).

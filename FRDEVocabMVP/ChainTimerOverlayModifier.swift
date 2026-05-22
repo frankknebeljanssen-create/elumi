@@ -58,13 +58,8 @@ struct ChainTimerOverlayModifier: ViewModifier {
     private var topBarOverlay: some View {
         if let chain = chainStore.currentChain,
            chain.currentStep != nil,
-           chainStore.stepTotalSeconds > 0 {
-            ChainStepTimerBar(
-                sourceSlots: chain.sourceCenterSymbolKinds,
-                currentStepIndex: chain.currentIndex,
-                remainingSeconds: chainStore.stepRemainingSeconds,
-                totalSeconds: chainStore.stepTotalSeconds
-            )
+           (chain.isCountMode || chainStore.stepTotalSeconds > 0) {
+            chainBar(for: chain)
             .background(
                 // Halb-transparenter Hintergrund, damit die Bar sauber
                 // vom Modul-Content getrennt ist. Nicht voll-solid,
@@ -79,6 +74,28 @@ struct ChainTimerOverlayModifier: ViewModifier {
                     .fill(AppTheme.Colors.border)
                     .frame(height: 1)
                     .frame(maxHeight: .infinity, alignment: .bottom)
+            )
+        }
+    }
+
+    /// **Daily Drop Modul 2 (2026-05-23)** — wählt die Bar je Modus:
+    /// Count-Modus → `ChainStepCountBar` („Übung X von N"); sonst die
+    /// klassische `ChainStepTimerBar` (Countdown). Die `||`-Bedingung in
+    /// `topBarOverlay` garantiert, dass der Else-Zweig nur bei
+    /// `stepTotalSeconds > 0` greift.
+    @ViewBuilder
+    private func chainBar(for chain: TrainingChainContext) -> some View {
+        if chain.isCountMode {
+            ChainStepCountBar(
+                completed: chainStore.exercisesCompleted,
+                total: chainStore.totalExercises
+            )
+        } else {
+            ChainStepTimerBar(
+                sourceSlots: chain.sourceCenterSymbolKinds,
+                currentStepIndex: chain.currentIndex,
+                remainingSeconds: chainStore.stepRemainingSeconds,
+                totalSeconds: chainStore.stepTotalSeconds
             )
         }
     }
