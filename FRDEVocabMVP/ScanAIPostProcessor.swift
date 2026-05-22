@@ -525,8 +525,8 @@ enum ScanAIPostProcessor {
 
         // wordClass auffüllen: wenn leer und Marker einen Genus liefert,
         // setzen wir mindestens „noun". Der separate Genus-Tag landet
-        // in den Notes — die Display-Pipeline (`displayFrenchWithGender`)
-        // konsultiert den DB-Lexikon-Lookup ohnehin selbst.
+        // in den Notes — die Genus-Anzeige (Listen-Pill) konsultiert den
+        // DB-Lexikon-Lookup ohnehin selbst.
         let resolvedWordClass: String? = {
             if let existing = entry.wordClass, !existing.isEmpty {
                 return existing
