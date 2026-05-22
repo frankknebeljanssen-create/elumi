@@ -31,7 +31,10 @@ struct AccentsEntryView: View {
     @StateObject private var adaptiveStore = AccentAdaptiveStore.shared
 
     @State private var selectedListID: UUID
-    @State private var showingListPicker = false
+    /// **Gruppe-4-Migration (2026-05-22)** — Push-State für den
+    /// `UnifiedListCategoryPicker`. Ersetzt `showingListPicker` (war
+    /// Sheet-Trigger). `.navigationDestination` sitzt im `body`-Modifier.
+    @State private var listPickerActive = false
     @State private var activeSession: ActiveSession?
     @State private var showingResult: SessionResult?
     /// **A3 Master-Migration (2026-05-06)** — bewusst gewählter Modus
@@ -302,27 +305,31 @@ struct AccentsEntryView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingListPicker) {
-            // **Phase 4 (2026-05-04)** — Migration auf
-            // `GlobalListPickerSheet` mit `singleSelect: true`. Akzente
-            // bleibt single-select-UX wie bisher, gewinnt aber Lernjahr-
-            // Auswahl im Picker. `selectedListID` ist non-optional `UUID`,
-            // wird als 1-elementiges Set initialisiert. Sheet "Fertig"
-            // ist disabled bei leerem Set — defensiver `if let`-Unwrap.
-            GlobalListPickerSheet(
-                allLists: availableLists,
-                initialSelection: [selectedListID],
+        // **Gruppe-4-Migration (2026-05-22)** — Push statt Sheet.
+        // `UnifiedListCategoryPicker` mit `singleSelect: true` ersetzt
+        // `GlobalListPickerSheet` direkt. Auto-Pop: nach Commit setzt
+        // `onCommit` `listPickerActive = false` → NavigationStack
+        // poppt sofort (kein manuelles „Zurück" nötig nach Auswahl).
+        .navigationDestination(isPresented: $listPickerActive) {
+            UnifiedListCategoryPicker(
+                availableLists: availableLists,
+                selectedIDs: [selectedListID],
                 onCommit: { newSelection in
-                    if let firstID = newSelection.first {
-                        selectedListID = firstID
+                    if let id = newSelection.first {
+                        selectedListID = id
+                        listPickerActive = false
                     }
-                    showingListPicker = false
                 },
+                accent: sectionStyle.accent,
                 singleSelect: true,
-                categoryHeaders: false,
+                includeWoerterbuch: false,
+                itemLabel: "Einträge",
                 feedbackPlayer: feedbackPlayer,
-                onHome: { goHome() }
+                onHome: { goHome() },
+                onSettings: { openSettings() }
             )
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
         }
     }
 
@@ -390,7 +397,7 @@ struct AccentsEntryView: View {
     ///   • `appSetupCardBackground` als Container
     private var listSelectorCard: some View {
         Button {
-            showingListPicker = true
+            listPickerActive = true
         } label: {
             VStack(alignment: .leading, spacing: 8) {
                 // **Naming-Sweep 2026-05-06** — „AUSGEWÄHLTE

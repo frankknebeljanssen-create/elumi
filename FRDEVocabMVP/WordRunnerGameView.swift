@@ -60,7 +60,10 @@ struct WordRunnerGameView: View {
 
     /// Präsentiert die „Liste wählen"-Sheet (User-Spec „Tap öffnet
     /// bekannte Liste-wählen-Ansicht mit Fertig-Button").
-    @State private var isShowingListPicker = false
+    /// **Gruppe-4-Migration (2026-05-22)** — Push-State für den
+    /// `UnifiedListCategoryPicker`. Ersetzt `isShowingListPicker`
+    /// (war Sheet-Trigger). `.navigationDestination` sitzt im `body`.
+    @State private var listPickerActive = false
 
     /// **Observed** — der Spieler darf auf dem Start-Screen die
     /// Vokabelliste wechseln (User-Wunsch „liste muss als option
@@ -484,25 +487,32 @@ struct WordRunnerGameView: View {
         // sind wirklich ALLE Listen sichtbar (inkl. Niveau/Thema),
         // nicht nur Built-in + Custom (User-Report „nur das
         // Standardpaket sichtbar").
-        .sheet(isPresented: $isShowingListPicker) {
+        // **Gruppe-4-Migration (2026-05-22)** — Push statt Sheet.
+        // `UnifiedListCategoryPicker` mit `singleSelect: true`. Footer
+        // leer: kein `feedbackPlayer` → `AppBottomBar`-Guard greift,
+        // kein `onHome`/`onSettings` → nil. Auto-Pop via
+        // `listPickerActive = false` in `onCommit`.
+        .navigationDestination(isPresented: $listPickerActive) {
             if let store = listStoreRef.backing {
-                // **Phase 4 (2026-05-04)** — Migration auf
-                // `GlobalListPickerSheet` mit `singleSelect: true`.
-                // Word Runner bleibt single-select-UX, gewinnt
-                // Lernjahr-Auswahl. `feedbackPlayer + onHome` sind
-                // hier nicht verfügbar — Footer-Bar bleibt ausgeblendet
-                // im Sheet (gleiches Verhalten wie vorher).
-                GlobalListPickerSheet(
-                    allLists: store.allLists,
-                    initialSelection: [store.selectedListID],
+                UnifiedListCategoryPicker(
+                    availableLists: store.allLists,
+                    selectedIDs: [store.selectedListID],
                     onCommit: { newSelection in
-                        if let firstID = newSelection.first {
-                            store.selectedListID = firstID
+                        if let id = newSelection.first {
+                            store.selectedListID = id
+                            listPickerActive = false
                         }
                     },
+                    accent: AppTheme.Colors.elumiPink,
                     singleSelect: true,
-                    categoryHeaders: false
+                    includeWoerterbuch: false,
+                    itemLabel: "Listen",
+                    feedbackPlayer: nil,
+                    onHome: nil,
+                    onSettings: nil
                 )
+                .navigationBarBackButtonHidden(true)
+                .toolbar(.hidden, for: .navigationBar)
             }
         }
         .onChange(of: game.currentCombo) { _, newCombo in
@@ -2784,7 +2794,7 @@ struct WordRunnerGameView: View {
                 }
 
                 Button {
-                    isShowingListPicker = true
+                    listPickerActive = true
                 } label: {
                     HStack(spacing: 10) {
                         // **Phase 7.6 Bug-Fix** — Listen-Name wird
