@@ -96,7 +96,7 @@ struct TrainingView: View {
     @State var nounMCOptions: [String] = []
     @State var nounMCSelected: String?
     @State var nounMCLocked = false
-    @State var listPickerCategory: ListPickerCategory?
+    @State var vocabularyListPickerActive: Bool = false
 
     // Verbformen
     @StateObject var verbformsSession = VerbformsSessionController()

@@ -1,45 +1,6 @@
 import SwiftUI
 
 extension TrainingView {
-    func listCategoryButton(title: String, count: Int, category: ListPickerCategory) -> some View {
-        let hasSelected = !session.selectedTrainingListIDs.isEmpty && {
-            let filtered = filteredLists(for: category)
-            return filtered.contains { session.selectedTrainingListIDs.contains($0.id) }
-        }()
-
-        return Button {
-            feedbackPlayer.playTabSwitch()
-            listPickerCategory = category
-        } label: {
-            HStack(spacing: 8) {
-                Text(title)
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                Spacer(minLength: 0)
-                Text("\(count)")
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(AppTheme.Colors.surface)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(hasSelected ? trainingActionTint.opacity(AppTheme.CardIntensity.medium) : trainingActionTint.opacity(AppTheme.CardIntensity.whisper))
-                    )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(hasSelected ? trainingActionTint.opacity(0.4) : AppTheme.Colors.border, lineWidth: 1)
-            )
-        }
-        .buttonStyle(.plain)
-    }
-
     // **C3-Cleanup (2026-05-06)** — `trainingDirectionCard` (Body-Card
     // mit FR↔DE-Toggle-Buttons) ist entfernt. Alle Training-Modi
     // (Vokabeln/Nomen/Artikel/Verben/Verbformen) nutzen den Direction-

@@ -396,24 +396,6 @@ extension TrainingView {
             contextContent: { trainingSetupContextContent },
             optionsContent: { trainingSetupOptionsContent }
         )
-        .sheet(item: $listPickerCategory) { category in
-            // **Phase 2 (2026-05-04)** — Migration auf
-            // `GlobalListPickerSheet`. `filteredLists(for: category)`
-            // pre-filtert nach der vom User getippten Kategorie
-            // (.topic / .level / .own / .all), wir reichen das
-            // gefilterte Set als `allLists` durch.
-            GlobalListPickerSheet(
-                allLists: filteredLists(for: category),
-                initialSelection: session.selectedTrainingListIDs,
-                onCommit: { updatedSelection in
-                    session.selectedTrainingListIDs = updatedSelection
-                    listPickerCategory = nil
-                },
-                categoryHeaders: false,
-                feedbackPlayer: feedbackPlayer,
-                onHome: goHome
-            )
-        }
     }
 
     // MARK: - Training-Setup Content-Slots (für SessionSetupScreen)
@@ -426,17 +408,10 @@ extension TrainingView {
     @ViewBuilder
     private var trainingSetupContextContent: some View {
         if session.trainingMode == .vocabulary {
-            ListCategoryPickerView(
-                availableLists: availableTrainingLists,
-                selectedListIDs: session.selectedTrainingListIDs,
-                accent: trainingActionTint,
-                style: sectionStyle,
-                feedbackPlayer: feedbackPlayer,
-                summaryText: trainingListCount.isEmpty ? "" : (trainingListName + " \u{00B7} " + trainingListCount),
-                itemLabel: "Einträge",
-                onSelectionChanged: { session.selectedTrainingListIDs = $0 },
-                onHome: goHome
-            )
+            // **Gruppe-2-Migration (2026-05-22)** — `ListCategoryPickerView`
+            // (flacher GlobalListPickerSheet) → `vocabularyListSelectionCard`
+            // (Push → UnifiedListCategoryPicker mit Wörterbuch-Card + Footer).
+            vocabularyListSelectionCard
         } else if session.trainingMode == .verbforms {
             verbformsListSelectionCard
         } else if session.trainingMode == .verbs {
@@ -577,11 +552,14 @@ extension TrainingView {
         // `setupMainSectionSpacing` — systemweit mit allen anderen
         // Modul-Setups abgestimmt.
         VStack(alignment: .leading, spacing: AppLayout.setupMainSectionSpacing) {
-            vocabularyDetailSection
+            // **Gruppe-2-Migration (2026-05-22)** — `vocabularyDetailSection`
+            // (2×2-Grid Themen/Niveau/Eigene/Wörterbuch) entfernt.
+            // Die Listen-Auswahl läuft jetzt über `vocabularyListSelectionCard`
+            // im Context-Slot → Push → `UnifiedListCategoryPicker`.
 
             // Dictionary-Level-Card bleibt konditional — wenn der Nutzer
-            // „Ganzes Wörterbuch" aktiviert, erscheint die Level-Picker-
-            // Card aus dem bestehenden System.
+            // „Ganzes Wörterbuch" (W2-Direct-Select) aktiviert, erscheint
+            // die Level-Picker-Card aus dem bestehenden System.
             if isDictionaryTrainingSelected {
                 dictionaryTrainingLevelCard
             }
@@ -652,40 +630,6 @@ extension TrainingView {
     /// nicht mehr über einen zweiten Section-Titel. Die VStack-Hülle
     /// bleibt erhalten, damit der Rhythmus zu den anderen Sektionen
     /// stabil bleibt.
-    private var vocabularyDetailSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            LazyVGrid(
-                columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)],
-                spacing: 10
-            ) {
-                vocabularyDetailCard(
-                    category: .topic,
-                    title: "Nach Themen",
-                    systemImage: "tag.fill"
-                )
-                vocabularyDetailCard(
-                    category: .level,
-                    title: "Nach Niveau",
-                    systemImage: "chart.bar.fill"
-                )
-                vocabularyDetailCard(
-                    category: .own,
-                    title: "Eigene Listen",
-                    systemImage: "person.fill"
-                )
-                // „Ganzes Wörterbuch" → „Wörterbuch" (User-Request:
-                // „Ganzes weglassen, nur Wörterbuch schreiben"). Die
-                // Card verweist weiterhin auf denselben All-in-One-
-                // Listen-Pool — nur das Label wird kompakter.
-                vocabularyDetailCard(
-                    category: .all,
-                    title: "Wörterbuch",
-                    systemImage: "book.fill"
-                )
-            }
-        }
-    }
-
     /// Section-Header — Titel + optionale Subline. Vereinheitlicht den Look
     /// beider Vokabel-Setup-Sektionen (Modus + Detail). Subline ist
     /// optional: ist sie `nil`, rendert nur der Titel — so kann die
@@ -829,87 +773,6 @@ extension TrainingView {
                 isSelected ? trainingActionTint : AppTheme.Colors.border,
                 lineWidth: isSelected ? 2 : 1
             )
-    }
-
-    /// Sekundäre Detail-Card (eine von vier im 2×2-Grid). Visuell deutlich
-    /// ruhiger als die Modus-Cards: kleineres Icon, kein Shadow, reduzierter
-    /// Tint — damit die Hierarchie (Modus-Entscheidung > Detail) liest.
-    @ViewBuilder
-    private func vocabularyDetailCard(
-        category: ListPickerCategory,
-        title: String,
-        systemImage: String
-    ) -> some View {
-        // Sublines sind pro User-Request komplett raus:
-        //   • „Strukturiert lernen" (Themen)
-        //   • „Dein passendes Level" (Niveau)
-        //   • „Deine erstellten Listen" (Eigene)
-        //   • „Alle Vokabeln" (Wörterbuch)
-        // Die Cards tragen jetzt nur noch Titel + Icon — keine zweite
-        // Text-Ebene mehr. Die Beschreibung/Beispiele (was genau hinter
-        // „Themen" / „Niveau" steckt) liefert das anschließende Picker-
-        // Sheet, nicht die Startcard. Parameter `subtitle` ist gestrichen,
-        // weil kein Call-Site sie noch setzt.
-        Button {
-            feedbackPlayer.playTabSwitch()
-            if category == .all {
-                if let allList = filteredLists(for: .all).first {
-                    session.selectedTrainingListIDs = [allList.id]
-                }
-            } else {
-                listPickerCategory = category
-            }
-        } label: {
-            HStack(alignment: .center, spacing: 10) {
-                // Icon-Puck — kleiner als bei den Modus-Cards (36 vs 44) und
-                // links angeordnet, damit die Card sich als „Listen-Row"
-                // liest, nicht als Haupt-Action.
-                ZStack {
-                    Circle()
-                        .fill(trainingActionTint.opacity(0.14))
-                    Image(systemName: systemImage)
-                        .font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(trainingActionTint)
-                }
-                .frame(width: 32, height: 32)
-
-                // Title-Font: 13 → **14** pt (+1, User-Request „weiße
-                // Schrift in den 4 Cards alle +1 p"). Bleibt `.bold`,
-                // bleibt `.rounded` — die Cards lesen sich dadurch
-                // minimal kräftiger, ohne visuell zu springen. Subline
-                // fällt weg, deshalb nutzt der Titel jetzt die ganze
-                // Card-Höhe allein.
-                Text(title)
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.85)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.6))
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, minHeight: 58, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
-                    .fill(AppTheme.Colors.surface)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
-                            .fill(trainingActionTint.opacity(AppTheme.CardIntensity.subtle))
-                    )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: AppLayout.largeCardCornerRadius, style: .continuous)
-                    .stroke(AppTheme.Colors.border.opacity(0.7), lineWidth: 1)
-            )
-            // Absichtlich KEIN Shadow — sekundäre Cards sollen flacher wirken
-            // als die Modus-Cards darüber (Hierarchie-Signal).
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(title)
     }
 
     // MARK: - Round Complete View
@@ -1394,6 +1257,44 @@ extension TrainingView {
                 feedbackPlayer: feedbackPlayer,
                 onHome: goHome,
                 onSettings: { openSettings() }
+            )
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
+        }
+    }
+
+    /// Vokabeln-Listen-Auswahl-Card — analog Nomen/Verben/Artikel-Pattern.
+    /// Zeigt gewählte Listen namentlich + Entry zum `UnifiedListCategoryPicker`
+    /// (push mit Footer).
+    ///
+    /// **Gruppe-2-Migration (2026-05-22)** — ersetzt `ListCategoryPickerView`
+    /// (Context-Slot, flacher Sheet) + `vocabularyDetailSection` (2×2-Grid).
+    /// W2: Wörterbuch-Card im Picker löst Direct-Select aus — analog dem
+    /// bisherigen `vocabularyDetailCard(category: .all)`-Verhalten (1 Tap,
+    /// kein Sheet). `isDictionaryTrainingSelected` funktioniert weiterhin, da
+    /// der Wert aus `session.selectedTrainingListIDs` kommt.
+    private var vocabularyListSelectionCard: some View {
+        setupListSelectionCard(
+            countLabel: "Einträge",
+            countValue: setupCardLemmas.count,
+            onTapPicker: { vocabularyListPickerActive = true },
+            onTapCounter: nil
+        )
+        .navigationDestination(isPresented: $vocabularyListPickerActive) {
+            UnifiedListCategoryPicker(
+                availableLists: availableTrainingLists,
+                selectedIDs: session.selectedTrainingListIDs,
+                onCommit: { session.selectedTrainingListIDs = $0 },
+                accent: trainingActionTint,
+                singleSelect: false,
+                includeWoerterbuch: true,
+                itemLabel: "Einträge",
+                feedbackPlayer: feedbackPlayer,
+                onHome: goHome,
+                onSettings: { openSettings() },
+                onWoerterbuchDirectSelect: {
+                    session.selectedTrainingListIDs = [StandardVocabularyLoader.allInOneList.id]
+                }
             )
             .navigationBarBackButtonHidden(true)
             .toolbar(.hidden, for: .navigationBar)

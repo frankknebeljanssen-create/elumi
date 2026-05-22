@@ -50,6 +50,13 @@ struct UnifiedListCategoryPicker: View {
     /// Default nil → Button ausgegraut (Sheet-Nutzung ohne Footer).
     var onSettings: (() -> Void)? = nil
 
+    /// **W2-Modus (2026-05-22)** — Wörterbuch-Direct-Select. Wenn gesetzt,
+    /// ruft ein Tap auf die Wörterbuch-Card KEIN Sheet auf, sondern diese
+    /// Closure — danach dismissed sich der Picker selbst. Aufrufer setzt
+    /// `session.selectedTrainingListIDs` in der Closure. Fallback (nil):
+    /// normales Sheet-Verhalten (W1).
+    var onWoerterbuchDirectSelect: (() -> Void)? = nil
+
     @Environment(\.dismiss) private var dismiss
     /// Steuert `.appLocalChrome`: wenn globales Chrome aktiv (Home-Ebene),
     /// kein lokales BottomBar-Inset nötig; pushed Screens: immer false.
@@ -122,7 +129,16 @@ struct UnifiedListCategoryPicker: View {
                         iconAsset: "IconWoerterbuch",
                         count: lists(in: .woerterbuch).count,
                         accent: accent
-                    ) { activeCategory = .woerterbuch }
+                    ) {
+                        // W2: Direct-Select wenn Caller-Closure gesetzt,
+                        // sonst normaler Sheet-Fallback (W1).
+                        if let directSelect = onWoerterbuchDirectSelect {
+                            directSelect()
+                            dismiss()
+                        } else {
+                            activeCategory = .woerterbuch
+                        }
+                    }
                 }
             }
             .padding()
