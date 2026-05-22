@@ -215,20 +215,13 @@ extension FlashcardsView {
             if isFlashcardSessionCompleted {
                 Spacer().frame(height: AppTheme.Spacing.sm)
 
+                // **Button-Vereinheitlichung (2026-05-22)** — externer
+                // „Zurück"-Button entfernt; die Rück-Navigation läuft jetzt
+                // über den Secondary-CTA „Zur Startseite" IN der Summary-Card
+                // (`flashcardCompletionCard` → SessionSummaryView), wie bei
+                // allen anderen Modulen.
                 flashcardCompletionCard
                     .padding(.horizontal, flashcardSessionCardInset)
-
-                Spacer().frame(height: AppTheme.Spacing.md)
-
-                Button {
-                    handleBackNavigation()
-                } label: {
-                    Label("Zurück", systemImage: "arrow.left")
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 46)
-                }
-                .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-                .padding(.horizontal, flashcardSessionCardInset)
             } else {
                 if isWaitingToStart {
                     // "Zum Starten tippen" overlay

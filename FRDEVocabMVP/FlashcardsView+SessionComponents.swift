@@ -30,11 +30,14 @@ extension FlashcardsView {
                     returnToFlashcardSetup()
                 }
             },
-            // „Zur Startseite"-Secondary-CTA entfernt — das Karteikarten-
-            // Summary wurde damit für kleinere Screens zu lang. Der User
-            // kommt jederzeit über das Home-Icon in der AppBottomBar auf
-            // die Startseite zurück, daher ist der explizite Secondary-
-            // Button hier entbehrlich.
+            // **Button-Vereinheitlichung (2026-05-22)** — Secondary „Zur
+            // Startseite" jetzt INNERHALB der Card (wie alle anderen Module);
+            // der frühere externe „Zurück"-Button unter der Card entfällt.
+            // Gleiche Aktion wie bisher (`handleBackNavigation` → dismiss).
+            // Chain: nil — kein „Zur Startseite" mitten in der Kette (analog
+            // Quiz/Training).
+            secondaryCTALabel: isChain ? nil : "Zur Startseite",
+            onSecondaryCTA: isChain ? nil : { handleBackNavigation() },
             primaryCTAPulses: isChain,
             hidesDetailedStats: isChain
         )
