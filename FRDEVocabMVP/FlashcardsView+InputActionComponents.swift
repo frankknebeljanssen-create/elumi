@@ -10,20 +10,46 @@ extension FlashcardsView {
             // kann Tastatur als Fallback nachträglich anfordern.
             if interaction.showingTypedAnswerInput || interaction.answerMode == .tap {
                 HStack(spacing: 8) {
-                    TextField("Antwort tippen", text: $interaction.typedAnswer)
-                        .textFieldStyle(.roundedBorder)
-                        .focused($isTypedAnswerFocused)
-                        .disabled(!isSessionReady)
-                        .onTapGesture {
-                            interaction.handleAudioModeChange(
-                                isEnabled: false,
-                                speechController: speechController,
-                                speaker: speaker
-                            )
+                    // **Heller + höher (2026-05-22)** — `.roundedBorder`
+                    // (System-Style, im Dark-Theme fast schwarz) ersetzt durch
+                    // ein helles Cream-Feld mit dunkler Schrift → einladender.
+                    // Placeholder als eigener Overlay (volle Farbkontrolle;
+                    // SwiftUI-Default-Placeholder wäre auf Cream unsichtbar).
+                    // minHeight 46 → bequemer Touch, wirkt nicht mehr „kurz".
+                    ZStack(alignment: .leading) {
+                        if interaction.typedAnswer.isEmpty {
+                            Text("Antwort tippen")
+                                .foregroundStyle(AppTheme.Colors.elumiMidnight.opacity(0.5))
+                                .allowsHitTesting(false)
                         }
-                        .onSubmit {
-                            submitTypedAnswer()
-                        }
+                        TextField("", text: $interaction.typedAnswer)
+                            .foregroundStyle(AppTheme.Colors.elumiMidnight)
+                            .tint(sectionStyle.accent)
+                            .focused($isTypedAnswerFocused)
+                            .disabled(!isSessionReady)
+                            .onTapGesture {
+                                interaction.handleAudioModeChange(
+                                    isEnabled: false,
+                                    speechController: speechController,
+                                    speaker: speaker
+                                )
+                            }
+                            .onSubmit {
+                                submitTypedAnswer()
+                            }
+                    }
+                    .font(.system(size: 17, weight: .medium, design: .rounded))
+                    .padding(.horizontal, 14)
+                    .frame(minHeight: 46, alignment: .leading)
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                            .fill(AppTheme.Colors.elumiCream)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                            .stroke(AppTheme.Colors.elumiMidnight.opacity(0.12), lineWidth: 1)
+                    )
 
                     Button {
                         dismissTypedAnswerFocus()
@@ -39,6 +65,11 @@ extension FlashcardsView {
                         submitTypedAnswer()
                     }
                     .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+                    // **Feste Breite (2026-05-22)** — klammert das interne
+                    // `maxWidth: .infinity` von AppPrimaryButtonStyle, damit
+                    // das Eingabefeld die Restbreite bekommt (vorher drückte
+                    // der greedy Button das Feld auf ~die Hälfte).
+                    .frame(width: 100)
                     .disabled(!isSessionReady || interaction.typedAnswer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
                 .padding(10)
