@@ -337,6 +337,15 @@ extension FlashcardsView {
 
                         flashcardPrimaryActions
                             .padding(.horizontal, flashcardSessionCardInset)
+                    } else if interaction.answerMode == .view {
+                        // **Ansehen-Modus (2026-05-22)** — kein Mikro/Eingabe-
+                        // feld. Stattdessen die 2 Selbst-Bewertungs-Buttons
+                        // (sichtbar nach dem Aufdecken). Das Typed-Overlay
+                        // greift hier nicht (`.tap`-only).
+                        Spacer().frame(height: 32)
+
+                        flashcardSelfRatingActions
+                            .padding(.horizontal, flashcardSessionCardInset)
                     }
                 }
             }

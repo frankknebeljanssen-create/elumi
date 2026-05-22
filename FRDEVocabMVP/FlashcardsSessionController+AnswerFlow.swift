@@ -131,6 +131,59 @@ extension FlashcardsSessionController {
         )
     }
 
+    /// **Ansehen-Modus (2026-05-22)** — Selbst-Bewertung nach dem Aufdecken.
+    /// Kein Tippen/Sprechen: zwei Buttons steuern das Ergebnis.
+    ///   • `known == true` („Kann ich") → Correct-Pfad
+    ///     (`animateCorrectCardRemoval` → `markCorrect`), threshold-
+    ///     respektierend (gleiche Schwierigkeit wie Speech/Tap).
+    ///   • `known == false` („Kann ich nicht") → `markWrong` + nächste Karte.
+    /// Kein Peek-Check nötig — der Reveal im View-Mode ist peek-frei.
+    func rateViewModeCard(
+        known: Bool,
+        sessionStore: FlashcardSessionStore,
+        speechController: SpeechController,
+        speaker: Speaker,
+        feedbackPlayer: FeedbackPlayer,
+        dismissTypedAnswerFocus: () -> Void
+    ) {
+        guard sessionStore.hasActiveSession, currentFlashCard != nil else { return }
+        // Nur nach dem Aufdecken bewertbar (Buttons sind sonst nicht sichtbar,
+        // dieser Guard schützt zusätzlich gegen Doppel-Taps/Race).
+        guard showingSolution else { return }
+        dismissTypedAnswerFocus()
+        cancelPendingFeedback()
+
+        if known {
+            if sessionStore.remainingCount > 1 {
+                feedbackPlayer.playFlashcardSuccess()
+            }
+            lastResult = ScoreResult(label: "Kann ich 🙂", detail: "")
+            showingSolution = false
+            isFlashcardFlipped = false
+            animateCorrectCardRemoval(
+                sessionStore: sessionStore,
+                speechController: speechController,
+                speaker: speaker,
+                feedbackPlayer: feedbackPlayer
+            )
+        } else {
+            feedbackPlayer.playFlashcardError()
+            lastResult = ScoreResult(label: "Nochmal 😕", detail: "")
+            showingSolution = false
+            isFlashcardFlipped = false
+            pushCurrentFlashcardToHistory(revealingSolution: false, sessionStore: sessionStore)
+            sessionStore.markWrong()
+            syncDisplayedCard(with: sessionStore)
+            scheduleNextPrompt(
+                after: 0.3,
+                sessionStore: sessionStore,
+                speechController: speechController,
+                speaker: speaker,
+                areSoundsEnabled: true
+            )
+        }
+    }
+
     func animateCorrectCardRemoval(
         sessionStore: FlashcardSessionStore,
         speechController: SpeechController,

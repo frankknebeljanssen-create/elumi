@@ -64,6 +64,50 @@ extension FlashcardsView {
         }
     }
 
+    /// **Ansehen-Modus (2026-05-22)** — untere UI im View-Mode. Zwei
+    /// Selbst-Bewertungs-Buttons, sichtbar erst nach dem Aufdecken der
+    /// Karte (`showingSolution`); davor ein dezenter Tipp-Hinweis.
+    /// Kein Mikro / kein Eingabefeld — der Speech-/Tap-Block entfällt.
+    @ViewBuilder
+    var flashcardSelfRatingActions: some View {
+        if interaction.showingSolution {
+            HStack(spacing: 10) {
+                // Reihenfolge wie Spec: „Kann ich" (grün) links,
+                // „Kann ich nicht" (rot) rechts.
+                selfRatingButton(title: "Kann ich", color: AppTheme.Colors.success, known: true)
+                selfRatingButton(title: "Kann ich nicht", color: AppTheme.Colors.error, known: false)
+            }
+        } else {
+            Text("Tippe die Karte zum Aufdecken")
+                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: actionButtonHeight)
+        }
+    }
+
+    /// Einzelner Bewertungs-Button — Token-basiert (success/error), weiße
+    /// Schrift (lesbar auf beiden Farben; `AppPrimaryButtonStyle` erzwingt
+    /// schwarze Schrift und wäre auf Rot schlecht lesbar).
+    private func selfRatingButton(title: String, color: Color, known: Bool) -> some View {
+        Button {
+            rateViewModeCard(known: known)
+        } label: {
+            Text(title)
+                .font(AppTheme.Typography.button)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: actionButtonHeight)
+                .background(
+                    RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                        .fill(color)
+                )
+        }
+        .buttonStyle(.plain)
+        .disabled(!isSessionReady)
+        .opacity(isSessionReady ? 1 : 0.5)
+    }
+
     /// Speech-Mode-Action-Stack — historisches Layout (Mikro + Speaker
     /// nebeneinander, Tastatur-Toggle drunter). Wird verwendet, wenn
     /// `interaction.answerMode == .speech`.

@@ -124,6 +124,9 @@ extension FlashcardsView {
                             interaction.revealSolution(
                                 sessionStore: sessionStore,
                                 speechController: speechController,
+                                // **Ansehen-Modus** — im View-Mode ist das
+                                // Aufdecken der Flow, kein Spicken → peek-frei.
+                                countsAsPeek: interaction.answerMode != .view,
                                 dismissTypedAnswerFocus: { dismissTypedAnswerFocus() }
                             )
                         }
@@ -328,12 +331,16 @@ extension FlashcardsView {
         DragGesture(minimumDistance: 8)
             .onChanged { value in
                 guard isSessionReady else { return }
+                // **Ansehen-Modus (2026-05-22)** — Swipes deaktiviert; im
+                // View-Mode steuern ausschließlich die 2 Bewertungs-Buttons.
+                guard interaction.answerMode != .view else { return }
                 // Vertikale Drags ignorieren — verhindert Konflikte mit Scroll.
                 guard abs(value.translation.width) > abs(value.translation.height) else { return }
                 // Live ohne Animation, damit die Karte exakt am Finger klebt.
                 interaction.swipeDragOffset = value.translation.width
             }
             .onEnded { value in
+                guard interaction.answerMode != .view else { return }
                 guard isSessionReady else {
                     withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
                         interaction.swipeDragOffset = 0
@@ -371,7 +378,10 @@ extension FlashcardsView {
     /// Verschwindet nach dem ersten Swipe (`hasSeenSwipeHint`).
     @ViewBuilder
     var flashcardSwipeHintCard: some View {
-        if !interaction.hasSeenSwipeHint, sessionStore.hasActiveSession {
+        // **Ansehen-Modus (2026-05-22)** — kein Wisch-Hinweis, da Swipes
+        // im View-Mode deaktiviert sind (nur die 2 Bewertungs-Buttons).
+        if !interaction.hasSeenSwipeHint, sessionStore.hasActiveSession,
+           interaction.answerMode != .view {
             HStack(spacing: 10) {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 13, weight: .semibold))

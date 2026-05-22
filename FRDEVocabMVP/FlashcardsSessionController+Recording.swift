@@ -60,6 +60,9 @@ extension FlashcardsSessionController {
         dismissTypedAnswerFocus: () -> Void
     ) {
         guard sessionStore.hasActiveSession, currentFlashCard != nil else { return }
+        // **Ansehen-Modus (2026-05-22)** — kein Auto-Mikrofon. Speech/Tap
+        // unverändert (Tap triggert ohnehin nie, da Auto-TTS unterdrückt ist).
+        guard answerMode != .view else { return }
         guard areSoundsEnabled else { return }
         guard speechController.authorizationStatus != .denied,
               speechController.authorizationStatus != .restricted else { return }
@@ -86,8 +89,11 @@ extension FlashcardsSessionController {
             appDebugLog("🔊 [FC-Speak] ❌ no currentFlashCard")
             return
         }
-        if answerMode == .tap && !force {
-            appDebugLog("🔊 [FC-Speak] ⏸ tap-mode auto-speak suppressed")
+        // **Ansehen-Modus (2026-05-22)** — wie Tap: kein ungefragtes Auto-
+        // Vorlesen (User liest selbst). `force` (manueller Tap) gibt's im
+        // View-Mode nicht (kein Speaker-Button), bleibt aber konsistent.
+        if (answerMode == .tap || answerMode == .view) && !force {
+            appDebugLog("🔊 [FC-Speak] ⏸ \(answerMode.rawValue)-mode auto-speak suppressed")
             return
         }
         stopListeningForTyping(speechController: speechController, speaker: speaker)

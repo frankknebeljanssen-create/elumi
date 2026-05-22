@@ -9,9 +9,15 @@ extension FlashcardsSessionController {
     /// gemeistert zählen — selbst wenn sie danach korrekt
     /// beantwortet wird. Die korrekte Antwort schiebt sie ans Ende
     /// des Stapels (nochmal drankommen).
+    /// **Ansehen-Modus (2026-05-22)** — `countsAsPeek` steuert die Peek-
+    /// Protection. Default `true` (Speech/Tap unverändert: manuelles Flippen
+    /// = spicken → Mastery-Reset). Im View-Mode `false`: das Aufdecken IST
+    /// der vorgesehene Flow, darf also keine Mastery resetten — sonst könnte
+    /// „Kann ich" nie werten.
     func revealSolution(
         sessionStore: FlashcardSessionStore? = nil,
         speechController: SpeechController,
+        countsAsPeek: Bool = true,
         dismissTypedAnswerFocus: () -> Void
     ) {
         guard let currentFlashCard else { return }
@@ -31,7 +37,9 @@ extension FlashcardsSessionController {
         // **Peek-Protection**: Flag setzen + Mastery zurück auf 0.
         // Nur beim ERSTEN Flip dieser Karte — wiederholtes
         // Zurück-und-wieder-Aufdecken zählt als ein Peek.
-        if let sessionStore,
+        // Im View-Mode (`countsAsPeek == false`) übersprungen.
+        if countsAsPeek,
+           let sessionStore,
            let currentCardID = sessionStore.session?.currentCardID,
            peekedCurrentCardID != currentCardID {
             peekedCurrentCardID = currentCardID

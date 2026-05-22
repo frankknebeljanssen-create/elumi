@@ -152,6 +152,19 @@ extension FlashcardsView {
         )
     }
 
+    /// **Ansehen-Modus (2026-05-22)** — View-Wrapper für die Selbst-
+    /// Bewertung („Kann ich" / „Kann ich nicht").
+    func rateViewModeCard(known: Bool) {
+        interaction.rateViewModeCard(
+            known: known,
+            sessionStore: sessionStore,
+            speechController: speechController,
+            speaker: speaker,
+            feedbackPlayer: feedbackPlayer,
+            dismissTypedAnswerFocus: dismissTypedAnswerFocus
+        )
+    }
+
     func restorePreviousFlashcard() {
         interaction.restorePreviousFlashcard(
             sessionStore: sessionStore,
