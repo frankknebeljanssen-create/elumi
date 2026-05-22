@@ -440,20 +440,13 @@ extension TrainingView {
             // on-Tap-Pfad (User aktiviert via Tastatur-Button die
             // Texteingabe als Fallback).
             if showingTypedAnswerInput || isVokabelnTapMode {
-                HStack(spacing: 10) {
-                    Image(systemName: "keyboard")
-                        // **UX-Polish 2026-05-02 (User-Spec „Keyboard-
-                        // Icon in Aufgaben-Cards verdoppeln")**: 20
-                        // → 40 pt. Inline-Hinweis „Tipp statt
-                        // Sprechen" neben dem TextField — Verdopplung
-                        // analog zum Länderflaggen-Polish vom
-                        // 2026-05-02. Trainings-Action-Tint bleibt
-                        // unverändert.
-                        .font(.system(size: 40, weight: .bold))
-                        .foregroundStyle(trainingActionTint)
-
-                    // **Eingabefeld-Vereinheitlichung Modul 2 (2026-05-22)** —
-                    // cream-Look via geteilter AppInputField (wie KK).
+                // **Zeilen-Angleichung an KK (2026-05-22)** — Reihenfolge
+                // Feld → Tastatur-Einklapp-Button → Prüfen (fix 100 pt),
+                // spacing 8. Vorher: Tastatur-Deko-Icon LINKS + greedy Prüfen
+                // → Feld auf ~½ gequetscht, Text 2-zeilig. Identisch zur KK-
+                // Zeile (`flashcardTypedAnswerCard`). AppInputField + Card-
+                // Wrapper unverändert.
+                HStack(spacing: 8) {
                     AppInputField(
                         placeholder: "Antwort tippen",
                         text: $typedAnswer,
@@ -463,10 +456,25 @@ extension TrainingView {
                         onSubmit: { submitTypedAnswer() }
                     )
 
+                    // Tastatur-Einklapp-Button (wie KK) — klappt die Tastatur
+                    // ein, indem der Fokus aufgehoben wird.
+                    Button {
+                        typedAnswerFieldFocused = false
+                    } label: {
+                        Image(systemName: "keyboard.chevron.compact.down")
+                            .font(.system(size: 22, weight: .bold))
+                            .frame(width: 40, height: 40)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+
                     Button("Prüfen") {
                         submitTypedAnswer()
                     }
                     .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+                    // Feste Breite wie KK → klammert das interne maxWidth des
+                    // Button-Styles, das Feld bekommt die Restbreite (1-zeilig).
+                    .frame(width: 100)
                     .disabled(!session.hasStartedTraining || currentCard == nil || typedAnswer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
                 .padding(.horizontal, 14)
