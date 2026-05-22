@@ -212,14 +212,6 @@ struct ElumiTabView: View {
     // wie `appOnboardingCompletedKey` in `ProfileStore`.
     @State private var showSetupModal: Bool = false
 
-    /// **2026-05-06** — Aktuell sichtbarer Header-Hint. Wird beim
-    /// Tab-Mount und bei jedem Tab-Re-Visit (`.onAppear` im
-    /// `mainContent`) zufällig aus `ElumiHints.pool` gezogen.
-    /// Initial-Value ist ein Random-Pick, damit beim allerersten
-    /// View-Build schon ein Hint da ist (statt eines leeren Strings,
-    /// der erst durch onAppear gefüllt würde).
-    @State private var currentHint: String = ElumiHints.random()
-
     // MARK: - Listen-Auswahl-Card (Stufe 1c, 2026-04-30)
 
     /// Sheet-Trigger für den `ChainListSelectionSheet` (Multi-Select
@@ -409,11 +401,6 @@ struct ElumiTabView: View {
             // CTA wird disabled. Read passiert auf jedem Tab-Open, damit
             // externe Änderungen (z.B. via Settings) reflektiert werden.
             globalSelectedListIDs = VocabularyListSelectionResolver.currentGlobalSelectedListIDs() ?? []
-            // **2026-05-06** — Header-Hint pro Tab-Visit neu würfeln.
-            // `.onAppear` feuert beim ersten Mount und bei jedem
-            // Tab-Re-Visit, sodass der Pool sich lebendig anfühlt
-            // ohne dass der User eine fixe Reihenfolge merkt.
-            currentHint = ElumiHints.random()
             checkSetupModalState()
         }
     }
@@ -796,7 +783,7 @@ struct ElumiTabView: View {
                 // weil das Frame mehr Platz bietet.)
                 ModuleHeaderCard(
                     customIcon: DailyDropStackedCardsIcon(size: 38),
-                    title: currentHint,
+                    title: "Daily Drop",
                     accent: sectionStyle.accent,
                     onBack: { dismiss() },
                     compact: true
@@ -892,14 +879,14 @@ struct ElumiTabView: View {
         }
     }
 
-    // MARK: - Header-Hint
+    // MARK: - Header-Titel
 
-    // **2026-05-06 Refactor** — `headerTitle` (statisch „Salut Frank!")
-    // entfernt. Stattdessen rotiert ein Hint-Pool aus `ElumiHints`
-    // pro Tab-Visit (`@State` + `.onAppear`-Reroll im mainContent).
-    // User-Spec: „Salut Frank!" macht im Maschine-Tab keinen Sinn —
-    // es ist keine Begrüßung, der User ist schon mehrere Tabs tief.
-    // Hint-Pool wirkt lebendig und stimmt auf den Spin-Moment ein.
+    // **2026-05-22** — Header zeigt fest „Daily Drop" (Modus-Name,
+    // konsistent mit den anderen Setup-Screens). Vorher rotierte hier
+    // ein zufälliger Hint-Pool (`ElumiHints`) pro Tab-Visit; das wurde
+    // auf User-Spec entfernt, weil der Header den Modus klar benennen
+    // soll (vorheriger Stand: rotierende Hints; davor statisch „Salut
+    // Frank!", was im Maschine-Tab keinen Sinn ergab).
 
     // MARK: - Slot-Machine-Bereich
 
