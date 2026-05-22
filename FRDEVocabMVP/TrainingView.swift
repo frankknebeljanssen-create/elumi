@@ -180,17 +180,6 @@ struct TrainingView: View {
     /// Background-Task gesetzt wie `setupCardLemmas`.
     @State var setupCanStartCached: Bool = false
 
-    enum ListPickerCategory: Identifiable {
-        case own, level, topic, all
-        var id: String {
-            switch self {
-            case .own: return "own"
-            case .level: return "level"
-            case .topic: return "topic"
-            case .all: return "all"
-            }
-        }
-    }
     /// **2026-05-06** — Phase-Enum statt `Int?`. Training (Vokabeln/
     /// Nomen/Artikel/Verben) nutzt den geteilten Countdown-Sequencer;
     /// State-Property hält die aktuelle Phase und steuert das Overlay-
@@ -353,19 +342,6 @@ struct TrainingView: View {
         availableTrainingLists.filter { $0.collectionPreset == .standardTopic }.count
     }
     var allInOneCount: Int { 1 }
-
-    func filteredLists(for category: ListPickerCategory) -> [VocabularyList] {
-        switch category {
-        case .own:
-            return availableTrainingLists.filter { !$0.isBuiltIn || $0.isAggregateVocabulary }
-        case .level:
-            return availableTrainingLists.filter { $0.collectionPreset == .standardLevel }
-        case .topic:
-            return availableTrainingLists.filter { $0.collectionPreset == .standardTopic }
-        case .all:
-            return [StandardVocabularyLoader.allInOneList]
-        }
-    }
 
     var verbPromptText: String {
         guard let item = session.currentTrainingItem else { return "" }
