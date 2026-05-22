@@ -2,15 +2,17 @@
 // **Léa-Chat MVP Schritt 1 (2026-05-10)** — Home-Screen-Card für die
 // „Live Chat"-Section. Zwei States:
 //
-//   • **noChat**: keine History — zentraler Avatar + „Sag bonjour zu
-//     Léa" — kein Live-Dot, kein Timestamp.
+//   • **noChat**: keine History — dunkler Glas-Look (AppTheme.Gradients
+//     .leaChatGlass), Avatar mit pulsierendem Mint-Ring + Online-Dot,
+//     weißer Text, Mint „● LIVE CHAT".
 //   • **hasHistory**: Last-Léa-Message als Bubble-Preview links neben
-//     einem 60pt-Avatar, „LIVE" Pulsing-Dot oben links, Uhrzeit der
-//     letzten Message rechts unten.
+//     einem 40pt-Avatar, „LIVE" Pulsing-Dot oben links, Uhrzeit der
+//     letzten Message rechts unten. Helles Card-Design (unverändert).
 //
-// Pre-Title CAPS „LIVE CHAT" + Pulsing-Dot (Brand-Anker), Card-Body
-// schlicht (kein Eigenbau-3D-Card-Look). Tap auf die Card pusht
-// `AppScreen.leaChat`.
+// **Glass Redesign (2026-05-22)** — noHistory-State: BG auf
+// AppTheme.Gradients.leaChatGlass umgebaut, Mint-Border + -Shadow,
+// Avatar-Ring (scale 1→1.12, opacity 0.6→0.15, 2 s), Online-Dot 12 pt,
+// Texte auf weiß. hasHistory-State bleibt unverändert.
 
 import SwiftUI
 import SwiftData
@@ -21,6 +23,11 @@ struct LeaChatHomeCard: View {
     @Environment(\.modelContext) private var modelContext
     @Bindable private var chatService = ChatService.shared
 
+    /// Avatar-Ring — scale-Animation (1.0 → 1.12). Nur noHistory-State.
+    @State private var ringScale: CGFloat = 1.0
+    /// Avatar-Ring — opacity-Animation (0.6 → 0.15). Nur noHistory-State.
+    @State private var ringOpacity: Double = 0.6
+
     /// Letzte Léa-Message (für Preview im hasHistory-State).
     private var lastLeaMessage: ChatMessage? {
         chatService.messages.last(where: { $0.sender == .lea })
@@ -30,18 +37,8 @@ struct LeaChatHomeCard: View {
 
     var body: some View {
         Button(action: onTap) {
-            // **Polish 2026-05-10** — Höhe an Daily Drop + Training
-            // angeglichen (beide WideCard `height: 86`). Vorher
-            // intrinsisch ~104 pt → brach den vertikalen Rhythmus
-            // der Wide-Cards-Reihe. Inhalt entsprechend kompaktiert:
-            //   • Avatar 48 → 40 (matched Daily-Drop-Icon-Frame)
-            //   • VStack-Spacing 10 → 6
-            //   • Vertical-Padding 14 → 12 (matched Daily Drop)
-            //   • hasHistory-Preview lineLimit 2 → 1
-            //   • Title-Font 16 → 15, Subtitle 13 → 12
             VStack(alignment: .leading, spacing: 6) {
                 preTitleRow
-
                 contentRow
             }
             .padding(.horizontal, 16)
@@ -50,13 +47,25 @@ struct LeaChatHomeCard: View {
             .frame(height: 86)
             .background(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(Color.white)
+                    .fill(hasHistory
+                          ? AnyShapeStyle(Color.white)
+                          : AnyShapeStyle(AppTheme.Gradients.leaChatGlass))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(Color.black.opacity(0.06), lineWidth: 1)
+                    .stroke(
+                        hasHistory
+                            ? Color.black.opacity(0.06)
+                            : AppTheme.Colors.success.opacity(0.3),
+                        lineWidth: 1
+                    )
             )
-            .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+            .shadow(
+                color: hasHistory
+                    ? .black.opacity(0.05)
+                    : AppTheme.Colors.success.opacity(0.15),
+                radius: 4, x: 0, y: 2
+            )
         }
         .buttonStyle(AppCardPressStyle())
         .accessibilityLabel("Live Chat mit Léa")
@@ -70,12 +79,22 @@ struct LeaChatHomeCard: View {
     private var preTitleRow: some View {
         HStack(spacing: 6) {
             if hasHistory {
+                // hasHistory — unverändert: pulsierender grüner Dot + blauer Label.
                 LivePulsingDot()
+                Text("LIVE CHAT")
+                    .font(.system(size: 11, weight: .black, design: .rounded))
+                    .tracking(1.4)
+                    .foregroundStyle(Color(red: 0.357, green: 0.416, blue: 0.941)) // #5B6AF0
+            } else {
+                // noHistory — statischer Mint-Dot + Mint-Label (auf dunklem Glas).
+                Circle()
+                    .fill(AppTheme.Colors.success)
+                    .frame(width: 7, height: 7)
+                Text("LIVE CHAT")
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .tracking(1.0)
+                    .foregroundStyle(AppTheme.Colors.success)
             }
-            Text("LIVE CHAT")
-                .font(.system(size: 11, weight: .black, design: .rounded))
-                .tracking(1.4)
-                .foregroundStyle(Color(red: 0.357, green: 0.416, blue: 0.941)) // #5B6AF0
             Spacer(minLength: 0)
             if hasHistory, let timestamp = lastLeaMessage?.timestamp {
                 Text(Self.timeFormatter.string(from: timestamp))
@@ -90,12 +109,11 @@ struct LeaChatHomeCard: View {
     @ViewBuilder
     private var contentRow: some View {
         if hasHistory, let last = lastLeaMessage {
+            // hasHistory — unverändert: Nachrichtenvorschau auf hellem Card-BG.
             HStack(alignment: .center, spacing: 12) {
                 ChatAvatarView(size: 40)
 
                 Text(last.text)
-                    // Font wie Daily-Drop-Subtitle (WideCard subtitleSize 13,
-                    // .semibold, .rounded) — gleiches Card-Design auf Home.
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundStyle(Color(red: 0.102, green: 0.102, blue: 0.102))
                     .lineLimit(1)
@@ -103,20 +121,43 @@ struct LeaChatHomeCard: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         } else {
+            // noHistory — Glas-Look: Avatar mit pulsierendem Ring + Online-Dot,
+            // weißer Titel + Subtitle.
             HStack(alignment: .center, spacing: 14) {
-                ChatAvatarView(size: 40)
-                    .frame(width: 52, height: 52)
+                // Avatar-Composit: Ring (ZStack) + Online-Dot (overlay).
+                ZStack {
+                    // Pulsierender Mint-Ring hinter dem Avatar.
+                    Circle()
+                        .stroke(AppTheme.Colors.success.opacity(ringOpacity), lineWidth: 2)
+                        .scaleEffect(ringScale)
+
+                    ChatAvatarView(size: 40)
+                }
+                .frame(width: 52, height: 52)
+                .overlay(alignment: .bottomTrailing) {
+                    // Online-Dot — 12 pt Mint-Kreis mit dunklem Rand.
+                    Circle()
+                        .fill(AppTheme.Colors.success)
+                        .frame(width: 12, height: 12)
+                        .overlay(
+                            Circle()
+                                .stroke(AppTheme.Colors.background, lineWidth: 1.5)
+                        )
+                }
+                .onAppear {
+                    withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                        ringScale  = 1.12
+                        ringOpacity = 0.15
+                    }
+                }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Chat mit Léa")
-                        // Font wie Daily-Drop-Title (WideCard titleSize 19,
-                        // .black, .rounded) — beide Home-Cards gleiches Design.
                         .font(.system(size: 19, weight: .black, design: .rounded))
-                        .foregroundStyle(Color(red: 0.102, green: 0.102, blue: 0.102))
+                        .foregroundStyle(Color.white)
                     Text("Sag bonjour zu Léa 🇫🇷")
-                        // Font wie Daily-Drop-Subtitle (13, .semibold, .rounded).
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.white.opacity(0.72))
                         .lineLimit(1)
                 }
 
@@ -135,6 +176,7 @@ struct LeaChatHomeCard: View {
 }
 
 /// **Pulsing-Dot** — kleiner grüner Punkt, slow-pulse 1.5 s.
+/// Verwendet ausschließlich im hasHistory-State (preTitleRow).
 private struct LivePulsingDot: View {
     @State private var pulsing = false
 

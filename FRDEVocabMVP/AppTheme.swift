@@ -126,6 +126,19 @@ enum AppTheme {
         static let shadowStrong = Color.black.opacity(0.34)
     }
 
+    enum Gradients {
+        /// Léa-Chat-Home-Card — dunkler Glas-Look mit Mint-Tint (noHistory-State).
+        /// Top-Leading: success.opacity(0.18) — Bottom-Trailing: background.opacity(0.6).
+        static let leaChatGlass = LinearGradient(
+            colors: [
+                AppTheme.Colors.success.opacity(0.18),
+                AppTheme.Colors.background.opacity(0.6)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
     enum Typography {
         static let largeTitle = Font.system(size: 32, weight: .bold, design: .rounded)
         static let largeTitleLineHeight: CGFloat = 38
