@@ -45,8 +45,15 @@ struct UnifiedListCategoryPicker: View {
     /// Footer-Chrome durchreichen (analog `GlobalListPickerSheet`). Default nil.
     var feedbackPlayer: FeedbackPlayer? = nil
     var onHome: (() -> Void)? = nil
+    /// Settings-Callback — vom Aufrufer durchgereicht, damit der Footer-
+    /// Settings-Button funktioniert (kein globaler Fallback vorhanden).
+    /// Default nil → Button ausgegraut (Sheet-Nutzung ohne Footer).
+    var onSettings: (() -> Void)? = nil
 
     @Environment(\.dismiss) private var dismiss
+    /// Steuert `.appLocalChrome`: wenn globales Chrome aktiv (Home-Ebene),
+    /// kein lokales BottomBar-Inset nötig; pushed Screens: immer false.
+    @Environment(\.appUsesGlobalChrome) private var usesGlobalChrome
 
     /// Welche Kategorie ist gerade als Sheet offen.
     @State private var activeCategory: Category? = nil
@@ -58,15 +65,26 @@ struct UnifiedListCategoryPicker: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header — App-Standard: AppSheetHeader + Padding 18/14 +
-            // surface-Hintergrund + Trennlinie unten. Identisch zu
-            // GlobalListPickerSheet-Stil.
-            AppSheetHeader(
-                title: "Aktive Listen",
-                onLeading: { dismiss() }
-            )
-            .padding(.horizontal, 18)
-            .padding(.vertical, 14)
+            // Push-Stil-Header — AppBackButton (64 pt Touch-Target) +
+            // zentrierter Titel + Balance-Spacer rechts.
+            // Ersetzt AppSheetHeader (war Sheet-Stil mit „Zurück"-Text).
+            // @Environment(\.dismiss) poppt den NavStack korrekt.
+            // .padding(.top, headerChevronTopPadding=0) → Chevron sitzt
+            // auf systemweit identischer y-Position (analog TrainingView,
+            // ListsView und allen anderen Push-Screens).
+            HStack {
+                AppBackButton(action: { dismiss() }, tint: AppTheme.Colors.elumiPink)
+                Spacer(minLength: 0)
+                Text("Aktive Listen")
+                    .font(AppTheme.Typography.cardTitle)
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                Spacer(minLength: 0)
+                // Balance-Spacer: gleiche Breite wie AppBackButton-Frame
+                // (64 pt), damit der Titel exakt mittig sitzt.
+                Color.clear.frame(width: 64, height: 64)
+            }
+            .padding(.horizontal, AppLayout.screenPadding)
+            .padding(.top, AppLayout.headerChevronTopPadding)
             .background(AppTheme.Colors.surface)
             .overlay(alignment: .bottom) {
                 Rectangle()
@@ -127,6 +145,27 @@ struct UnifiedListCategoryPicker: View {
                 feedbackPlayer: feedbackPlayer,
                 onHome: onHome
             )
+        }
+        // **Push-Footer (2026-05-22)** — AppBottomBar via .appLocalChrome,
+        // analog zu ListsView+Layout:70 und TrainingView+Layout:2227.
+        // enabled: !usesGlobalChrome → true auf jedem gepushten Screen
+        // (Home-Ebene hat usesGlobalChrome=true, pushed Screens false).
+        // topBar-Closure: von .appLocalChrome nicht aufgerufen (vestigialer
+        // Param), Dummy-Wert für Typ-Konsistenz mit anderen Call-Sites.
+        // feedbackPlayer guard: FeedbackPlayer ist optional im Picker;
+        // bei nil kein BottomBar-Render (kein Push-Einsatz ohne fp).
+        .appLocalChrome(enabled: !usesGlobalChrome) {
+            AppTopBar(onBack: { dismiss() })
+        } bottomBar: {
+            if let fp = feedbackPlayer {
+                AppBottomBar(
+                    feedbackPlayer: fp,
+                    onHome: { onHome?() },
+                    onFavorite: nil,
+                    onScan: nil,
+                    onSettings: onSettings
+                )
+            }
         }
     }
 

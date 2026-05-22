@@ -1337,13 +1337,13 @@ extension TrainingView {
             onTapPicker: { nounsListPickerActive = true },
             onTapCounter: nil
         )
-        .sheet(isPresented: $nounsListPickerActive) {
-            // **Pilot (2026-05-22)** — UnifiedListCategoryPicker als Sheet-Inhalt:
-            // 3 Kategorie-Cards (Eigene/Niveau/Themen), je ein gefilterter
-            // GlobalListPickerSheet pro Kategorie. onCommit → selectedTraining-
-            // ListIDs updaten (onChange feuert refreshSetupCardLemmas → Count
-            // in der Entry-Card aktuell). Kein automatisches Sheet-Close nach
-            // Auswahl — Cross-Category möglich, Swipe-down zum Schließen.
+        // **Push-Umbau (2026-05-22)** — Sheet → navigationDestination, damit
+        // der Footer (AppBottomBar) sichtbar bleibt. Bubblet zum
+        // NavigationStack in RootContentView hoch; kein neuer AppScreen-Case
+        // nötig. .navigationBarBackButtonHidden + .toolbar(.hidden) hier am
+        // Wrapper (nicht im Picker selbst) — verhindert System-Bar-Flash beim
+        // ersten Push (SwiftUI quirk, analog RootContentView:169/170).
+        .navigationDestination(isPresented: $nounsListPickerActive) {
             UnifiedListCategoryPicker(
                 availableLists: availableTrainingLists,
                 selectedIDs: session.selectedTrainingListIDs,
@@ -1353,8 +1353,11 @@ extension TrainingView {
                 includeWoerterbuch: false,
                 itemLabel: "Nomen",
                 feedbackPlayer: feedbackPlayer,
-                onHome: goHome
+                onHome: goHome,
+                onSettings: { openSettings() }
             )
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
         }
     }
 
