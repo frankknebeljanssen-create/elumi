@@ -27,13 +27,6 @@ struct SessionSummaryView: View {
     /// `onPrimaryCTA`/`onSecondaryCTA` gesetzt sind.
     var onContinue: (() -> Void)? = nil
 
-    /// Aktuelle Lernrichtung der Session. Gelesen direkt aus dem globalen
-    /// `appDirectionKey`-State — es gibt keine session-lokale Richtung
-    /// (siehe System-Regel „ein zentraler Switch"). Dadurch kann sich
-    /// `SessionResult`/`SessionRewardOutcome` den zusätzlichen Direction-
-    /// Parameter sparen und bleibt nicht-redundant.
-    @AppStorage(appDirectionKey) private var selectedDirectionRaw = Direction.frenchToGerman.rawValue
-
     // MARK: - Phase 3.5 optionale Parameter
 
     /// Ergebnis-Überschrift oben — z. B. „8 von 10 richtig".
@@ -113,9 +106,7 @@ struct SessionSummaryView: View {
             header
 
             if !hidesDetailedStats {
-                xpBreakdown
-
-                directionRow
+                xpHero
 
                 divider
                 levelProgress
@@ -253,67 +244,9 @@ struct SessionSummaryView: View {
             .background(Capsule().fill(tint.opacity(0.15)))
     }
 
-    // MARK: - Direction Row (Phase 9.1)
-    //
-    // Rein informative, kompakte Zeile — keine Interaktion. Spiegelt die
-    // globale Lernrichtung in der gleichen Bildsprache wie Home /
-    // Session-Setup (StraightFlagBadge + Pfeil).
-
-    private var sessionDirection: Direction {
-        Direction(rawValue: selectedDirectionRaw) ?? .frenchToGerman
-    }
-
-    private var directionRow: some View {
-        let isFrToDE = sessionDirection == .frenchToGerman
-        // Bei einem Level-Up wird die Richtung einen Ticken stärker
-        // eingefärbt, damit der „Ich habe gerade in dieser Richtung ein
-        // Level erreicht"-Moment sichtbar bleibt — ohne den
-        // Haupt-Reward-Chip zu verdrängen.
-        let highlight = outcome.leveledUp
-        return HStack(spacing: 8) {
-            setupCardLabel("RICHTUNG")
-
-            Spacer(minLength: 0)
-
-            HStack(spacing: 6) {
-                StraightFlagBadge(
-                    countryCode: isFrToDE ? "FR" : "DE",
-                    width: 26,
-                    height: 17,
-                    labelFontSize: 8
-                )
-                Image(systemName: "arrow.right")
-                    .font(.system(size: 11, weight: .black))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                StraightFlagBadge(
-                    countryCode: isFrToDE ? "DE" : "FR",
-                    width: 26,
-                    height: 17,
-                    labelFontSize: 8
-                )
-            }
-            .padding(.horizontal, highlight ? 8 : 4)
-            .padding(.vertical, highlight ? 5 : 2)
-            .background(
-                Capsule()
-                    .fill(AppTheme.Colors.cta.opacity(highlight ? 0.14 : 0))
-            )
-            .overlay(
-                Capsule()
-                    .stroke(
-                        AppTheme.Colors.cta.opacity(highlight ? 0.28 : 0),
-                        lineWidth: 1
-                    )
-            )
-            .animation(.easeOut(duration: 0.2), value: highlight)
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(
-            isFrToDE
-                ? "Lernrichtung: Französisch nach Deutsch."
-                : "Lernrichtung: Deutsch nach Französisch."
-        )
-    }
+    // **Direction Row entfernt (Slim-Down 2026-05-22)** — die
+    // FR→DE-Richtungszeile ist app-weit raus; die globale Richtung
+    // (`appDirectionKey`) bleibt unverändert, nur die Anzeige hier fällt weg.
 
     /// True, wenn mindestens **ein** Reward-Chip gezeigt würde — sonst
     /// sparen wir uns den Divider + die leere Section.
@@ -342,48 +275,22 @@ struct SessionSummaryView: View {
             && outcome.creditsFromStreakMilestone == 0
     }
 
-    private var xpBreakdown: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            // XP-Hero: größer, dominanter, mit Count-Up-Animation.
-            // `displayedTotalXP` rampt von 0 auf `outcome.totalXP` hoch;
-            // `.contentTransition(.numericText())` sorgt für sanften Morph
-            // zwischen Zwischenständen, damit der Zähler flüssig wirkt.
-            HStack(alignment: .firstTextBaseline) {
-                Text("XP")
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .tracking(1.5)
-                    .foregroundStyle(AppTheme.Colors.cardLabel)
-                Spacer()
-                Text("+\(displayedTotalXP)")
-                    .font(.system(size: 34, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.cta)
-                    .monospacedDigit()
-                    .contentTransition(.numericText())
-            }
-
-            // Aufschlüsselung — nur Posten zeigen, die > 0 sind
-            VStack(alignment: .leading, spacing: 2) {
-                xpRow("Richtige Antworten", outcome.baseXP)
-                xpRow("Combos", outcome.comboXP)
-                xpRow("Gemeisterte Karten", outcome.masteryXP)
-                xpRow("Fehlerfrei", outcome.flawlessXP)
-                xpRow("Tagesaufgabe", outcome.dailyBonusXP)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func xpRow(_ label: String, _ value: Int) -> some View {
-        if value > 0 {
-            HStack {
-                Text(label)
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.elumiBlue)
-                Spacer()
-                Text("+\(value)")
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-            }
+    /// XP-Hero — große XP-Summe mit Count-Up-Animation.
+    /// **Slim-Down (2026-05-22)** — der frühere Posten-Breakdown (Richtige
+    /// Antworten / Combos / Gemeisterte Karten / Fehlerfrei / Tagesaufgabe)
+    /// ist app-weit entfernt; die Summary zeigt nur noch die XP-Summe.
+    private var xpHero: some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text("XP")
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .tracking(1.5)
+                .foregroundStyle(AppTheme.Colors.cardLabel)
+            Spacer()
+            Text("+\(displayedTotalXP)")
+                .font(.system(size: 34, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.cta)
+                .monospacedDigit()
+                .contentTransition(.numericText())
         }
     }
 
@@ -618,7 +525,7 @@ struct SessionSummaryView: View {
             if let primary = onPrimaryCTA {
                 VStack(spacing: 8) {
                     Button(action: primary) {
-                        Text(primaryCTALabel ?? "Weiter lernen")
+                        Text(primaryCTALabel ?? "Nächste Runde")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))

@@ -258,7 +258,7 @@ struct AccentsEntryView: View {
                 if isChain {
                     return nextStepTitle.map { "Weiter zu \($0)" } ?? "Training abschließen"
                 }
-                return result.mode == .speedRound ? "Noch eine Runde" : "Weiter lernen"
+                return result.mode == .speedRound ? "Noch eine Runde" : "Nächste Runde"
             }()
             // **Full-Screen-Background-Wrapper (2026-05-02)** —
             // `SessionSummaryView` ist eine Card ohne eigenen Full-

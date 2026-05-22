@@ -131,7 +131,7 @@ extension TrainingView {
             let isChain = chain != nil
             let primaryLabel: String = isChain
                 ? (nextStepTitle.map { "Weiter zu \($0)" } ?? "Training abschließen")
-                : "Weiter lernen"
+                : "Nächste Runde"
             SessionSummaryView(
                 outcome: outcome,
                 progress: progressStore.progress,
@@ -1974,7 +1974,7 @@ extension TrainingView {
             let isChain = chain != nil
             let primaryLabel: String = isChain
                 ? (nextStepTitle.map { "Weiter zu \($0)" } ?? "Training abschließen")
-                : "Weiter lernen"
+                : "Nächste Runde"
             SessionSummaryView(
                 outcome: verbformsOutcome,
                 progress: progressStore.progress,

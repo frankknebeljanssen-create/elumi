@@ -18,7 +18,7 @@ extension FlashcardsView {
         let isChain = chain != nil
         let primaryLabel: String = isChain
             ? (nextStepTitle.map { "Weiter zu \($0)" } ?? "Training abschließen")
-            : "Weiter lernen"
+            : "Nächste Runde"
         return SessionSummaryView(
             outcome: outcome,
             progress: ProgressStore.shared.progress,
