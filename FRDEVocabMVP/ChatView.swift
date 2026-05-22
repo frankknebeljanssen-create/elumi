@@ -417,7 +417,8 @@ struct ChatView: View {
                         // `setGlobalSelectedListIDs`; nichts weiter
                         // zu tun. ChatView's `onDismiss` triggert
                         // dann den Greet-Pfad.
-                    }
+                    },
+                    showBanner: false
                 )
             }
         } else {

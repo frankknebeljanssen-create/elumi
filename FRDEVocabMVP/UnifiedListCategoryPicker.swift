@@ -159,7 +159,9 @@ struct UnifiedListCategoryPicker: View {
                 filter: predicate(for: category),
                 categoryHeaders: false,
                 feedbackPlayer: feedbackPlayer,
-                onHome: onHome
+                onHome: onHome,
+                onSettings: onSettings,
+                accent: accent
             )
         }
         // **Push-Footer (2026-05-22)** — AppBottomBar via .appLocalChrome,

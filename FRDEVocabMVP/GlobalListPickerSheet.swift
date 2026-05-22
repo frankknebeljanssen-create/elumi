@@ -65,6 +65,17 @@ struct GlobalListPickerSheet: View {
     /// `nil`, damit existing Call-Sites ohne Anpassung funktionieren.
     var feedbackPlayer: FeedbackPlayer? = nil
     var onHome: (() -> Void)? = nil
+    /// Settings-Action — analog `ListPickerSheet`. Default nil → Footer-
+    /// Button ausgegraut. Wird aus `UnifiedListCategoryPicker` durchgereicht.
+    var onSettings: (() -> Void)? = nil
+    /// Akzentfarbe für Auswahl-Highlights, „Fertig"-Button und Selection-
+    /// Border. Default `primary` für Backward-Kompatibilität. Aufrufer
+    /// reichen Modul-Akzent durch (z. B. `accent` in `UnifiedListCategoryPicker`).
+    var accent: Color = AppTheme.Colors.primary
+    /// Summary-Banner „Tipp eine Liste an" analog `ListPickerSheet`.
+    /// Default `true`. `false` für den ChatView-Inline-Kontext, wo der
+    /// Banner keinen Sheet-Rahmen hat.
+    var showBanner: Bool = true
 
     /// Lokaler Selection-State während die Sheet sichtbar ist. Wird
     /// in `onAppear` aus `initialSelection` gefüllt.
@@ -106,6 +117,9 @@ struct GlobalListPickerSheet: View {
     var body: some View {
         VStack(spacing: 0) {
             header
+            if showBanner {
+                bannerView
+            }
             scrollContent
         }
         .animation(.easeInOut(duration: 0.18), value: selectedIDs.isEmpty)
@@ -119,7 +133,9 @@ struct GlobalListPickerSheet: View {
                     onHome: { dismiss(); homeAction() },
                     onFavorite: nil,
                     onScan: nil,
-                    onSettings: nil
+                    onSettings: onSettings.map { settingsAction in
+                        { dismiss(); settingsAction() }
+                    }
                 )
                 .dismissingFooterActions(dismiss)
             }
@@ -164,7 +180,7 @@ struct GlobalListPickerSheet: View {
             } label: {
                 Text("Fertig")
                     .font(.system(size: 15, weight: .black, design: .rounded))
-                    .foregroundStyle(selectedIDs.isEmpty ? AppTheme.Colors.textSecondary : AppTheme.Colors.primary)
+                    .foregroundStyle(selectedIDs.isEmpty ? AppTheme.Colors.textSecondary : accent)
             }
             .disabled(selectedIDs.isEmpty)
         }
@@ -176,6 +192,36 @@ struct GlobalListPickerSheet: View {
                 .fill(AppTheme.Colors.textSecondary.opacity(0.18))
                 .frame(height: 0.5)
         }
+    }
+
+    // MARK: - Banner (analog ListPickerSheet)
+
+    /// Zusammenfassungs-Text im Mint-Banner. Zeigt den Status der aktuellen
+    /// Auswahl: leer → Aufforderung, Single-Select → Listenname,
+    /// Multi-Select → Anzahl gewählter Listen.
+    private var bannerText: String {
+        if selectedIDs.isEmpty {
+            return "Tipp eine Liste an"
+        }
+        if singleSelect,
+           let id = selectedIDs.first,
+           let list = allLists.first(where: { $0.id == id }) {
+            return list.name
+        }
+        let count = selectedIDs.count
+        return "\(count) \(count == 1 ? "Liste" : "Listen") gewählt"
+    }
+
+    private var bannerView: some View {
+        Text(bannerText)
+            .font(AppTheme.Typography.cardTitle)
+            .foregroundStyle(.white)
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 12)
+            .background(AppTheme.Colors.success.opacity(0.85))
     }
 
     // MARK: - Liste
@@ -213,7 +259,7 @@ struct GlobalListPickerSheet: View {
                         HStack(spacing: 8) {
                             Image(systemName: "hand.point.up.left.fill")
                                 .font(.system(size: 14, weight: .bold))
-                                .foregroundStyle(AppTheme.Colors.primary)
+                                .foregroundStyle(accent)
                             Text("Wähle mindestens eine Liste")
                                 .font(.system(size: 14, weight: .bold, design: .rounded))
                                 .foregroundStyle(AppTheme.Colors.textPrimary)
@@ -224,11 +270,11 @@ struct GlobalListPickerSheet: View {
                         .padding(.horizontal, 14)
                         .background(
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .fill(AppTheme.Colors.primary.opacity(0.10))
+                                .fill(accent.opacity(0.10))
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .stroke(AppTheme.Colors.primary.opacity(0.35), lineWidth: 1)
+                                .stroke(accent.opacity(0.35), lineWidth: 1)
                         )
                         .padding(.horizontal, 14)
                         .padding(.top, categoryHeaders ? 8 : 14)
@@ -284,7 +330,7 @@ struct GlobalListPickerSheet: View {
         return HStack(spacing: 12) {
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                 .font(.system(size: 22, weight: .semibold))
-                .foregroundStyle(isSelected ? AppTheme.Colors.primary : AppTheme.Colors.textSecondary.opacity(0.55))
+                .foregroundStyle(isSelected ? accent : AppTheme.Colors.textSecondary.opacity(0.55))
                 .frame(width: 24)
 
             VStack(alignment: .leading, spacing: 2) {
@@ -294,7 +340,7 @@ struct GlobalListPickerSheet: View {
                     .lineLimit(1)
                     .truncationMode(.tail)
 
-                Text(list.isBuiltIn ? "Vorlage" : "Eigene Liste")
+                Text("\(list.items.count) Einträge")
                     .font(.system(size: 11, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
@@ -329,7 +375,7 @@ struct GlobalListPickerSheet: View {
                 HStack(spacing: 12) {
                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                         .font(.system(size: 22, weight: .semibold))
-                        .foregroundStyle(isSelected ? AppTheme.Colors.primary : AppTheme.Colors.textSecondary.opacity(0.55))
+                        .foregroundStyle(isSelected ? accent : AppTheme.Colors.textSecondary.opacity(0.55))
                         .frame(width: 24)
 
                     VStack(alignment: .leading, spacing: 2) {
@@ -402,7 +448,7 @@ struct GlobalListPickerSheet: View {
         return HStack(spacing: 10) {
             Image(systemName: active ? "checkmark.circle.fill" : "circle")
                 .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(active ? AppTheme.Colors.primary : AppTheme.Colors.textSecondary.opacity(0.45))
+                .foregroundStyle(active ? accent : AppTheme.Colors.textSecondary.opacity(0.45))
 
             Text(child.name)
                 .font(.system(size: 14, weight: .semibold, design: .rounded))
@@ -430,7 +476,7 @@ struct GlobalListPickerSheet: View {
         .padding(.vertical, 8)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(active ? AppTheme.Colors.primary.opacity(0.06) : AppTheme.Colors.surface.opacity(0.6))
+                .fill(active ? accent.opacity(0.06) : AppTheme.Colors.surface.opacity(0.6))
         )
         .opacity(isEmpty ? 0.5 : 1.0)
         .contentShape(Rectangle())
@@ -490,12 +536,14 @@ struct GlobalListPickerSheet: View {
         max == 0 ? false : (year < max)
     }
 
-    /// Sublabel des Parents.
+    /// Sublabel des Parents — analog `ListPickerSheet`: zeigt immer die
+    /// Kartenanzahl, damit der User sofort sieht was er aktiviert.
     private func parentSublabel(for list: VocabularyList, children: [VocabularyList], max: Int) -> String {
         if max == 0 {
-            return "alle Lernjahre"
+            return "alle Lernjahre · \(list.items.count) Karten"
         }
-        return "Y1–Y\(max) (cumulative)"
+        let cnt = cumulativeItemCount(max, children: children)
+        return "\(max) von \(children.count) · \(cnt) Karten"
     }
 
     /// Item-Count über alle bis Y_max eingeschlossenen Children.
@@ -519,13 +567,13 @@ struct GlobalListPickerSheet: View {
 
     private func rowBackground(isSelected: Bool) -> some View {
         RoundedRectangle(cornerRadius: 10, style: .continuous)
-            .fill(isSelected ? AppTheme.Colors.primary.opacity(0.10) : AppTheme.Colors.surface)
+            .fill(isSelected ? accent.opacity(0.10) : AppTheme.Colors.surface)
     }
 
     private func rowBorder(isSelected: Bool) -> some View {
         RoundedRectangle(cornerRadius: 10, style: .continuous)
             .stroke(
-                isSelected ? AppTheme.Colors.primary.opacity(0.40) : AppTheme.Colors.textSecondary.opacity(0.12),
+                isSelected ? accent.opacity(0.40) : AppTheme.Colors.textSecondary.opacity(0.12),
                 lineWidth: 1
             )
     }
