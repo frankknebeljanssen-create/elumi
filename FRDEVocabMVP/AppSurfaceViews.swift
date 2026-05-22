@@ -238,6 +238,12 @@ struct AppInputField: View {
     var alignment: TextAlignment = .leading
     /// Return-Key-Label. Default `.done`.
     var submitLabel: SubmitLabel = .done
+    /// Autocorrect aus (z. B. Verbformen — französische Formen nicht
+    /// „korrigieren"). Default false.
+    var autocorrectionDisabled: Bool = false
+    /// Auto-Großschreibung. Default `.sentences` (System-Standard);
+    /// `.never` z. B. für Verbformen.
+    var autocapitalization: TextInputAutocapitalization = .sentences
     /// Aktiv/Deaktiviert. Default true.
     var isEnabled: Bool = true
     /// Optionale Focus-Bindung — der Caller steuert den Fokus.
@@ -281,6 +287,8 @@ struct AppInputField: View {
             .tint(accent)
             .multilineTextAlignment(alignment)
             .submitLabel(submitLabel)
+            .autocorrectionDisabled(autocorrectionDisabled)
+            .textInputAutocapitalization(autocapitalization)
             .disabled(!isEnabled)
             .onSubmit { onSubmit?() }
 

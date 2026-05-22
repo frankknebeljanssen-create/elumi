@@ -1867,12 +1867,18 @@ extension TrainingView {
                     .foregroundStyle(trainingActionTint)
                     .frame(width: 70, alignment: .trailing)
 
-                TextField("Verbform eingeben", text: $verbformsSession.typedAnswer)
-                    .textFieldStyle(.roundedBorder)
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
-                    .disabled(verbformsSession.isLocked)
+                // **Eingabefeld-Vereinheitlichung Modul 2 (2026-05-22)** —
+                // cream-Look via geteilter AppInputField. Autocorrect/Auto-
+                // Großschreibung aus (französische Verbformen). Submit läuft
+                // über den separaten „Prüfen"-Button → kein onSubmit/focus.
+                AppInputField(
+                    placeholder: "Verbform eingeben",
+                    text: $verbformsSession.typedAnswer,
+                    accent: trainingActionTint,
+                    autocorrectionDisabled: true,
+                    autocapitalization: .never,
+                    isEnabled: !verbformsSession.isLocked
+                )
             }
 
             if !verbformsSession.isLocked {

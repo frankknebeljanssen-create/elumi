@@ -27,31 +27,20 @@ extension QuizView {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, AppTheme.Spacing.xs)
                 } else {
-                    TextField("Antwort eingeben", text: $typingInput)
-                        .font(.system(size: 18, weight: .semibold, design: .rounded))
-                        // **Quick-Fix (2026-05-02)**: ohne expliziten
-                        // `foregroundStyle` rendert SwiftUI den User-Text
-                        // im Default-System-Schwarz auf dem dunklen
-                        // `secondarySurface`-Background — unleserlich.
-                        // Mit `textPrimary` (cream/off-white) ist der
-                        // Tipp-Text klar lesbar, konsistent zu den
-                        // anderen Text-Tokens auf Card-Surfaces.
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 12)
-                        .background(AppTheme.Colors.secondarySurface)
-                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                                .stroke(sectionStyle.accent.opacity(0.3), lineWidth: 1)
-                        )
-                        .focused($isTypingFieldFocused)
-                        .submitLabel(.done)
-                        .onSubmit {
-                            submitTyping(for: question)
-                        }
-                        .disabled(typingLocked)
+                    // **Eingabefeld-Vereinheitlichung Modul 2 (2026-05-22)** —
+                    // dunkles secondarySurface-Feld → cream-Look via geteilter
+                    // AppInputField (wie KK). Quiz-Eigenheit: zentrierter Text
+                    // (`alignment: .center`). Der frühere Accent-Border entfällt
+                    // zugunsten des einheitlichen cream-Borders.
+                    AppInputField(
+                        placeholder: "Antwort eingeben",
+                        text: $typingInput,
+                        accent: sectionStyle.accent,
+                        alignment: .center,
+                        isEnabled: !typingLocked,
+                        focus: $isTypingFieldFocused,
+                        onSubmit: { submitTyping(for: question) }
+                    )
 
                     Button {
                         submitTyping(for: question)

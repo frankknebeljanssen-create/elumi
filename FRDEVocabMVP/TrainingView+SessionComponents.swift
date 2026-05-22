@@ -452,13 +452,16 @@ extension TrainingView {
                         .font(.system(size: 40, weight: .bold))
                         .foregroundStyle(trainingActionTint)
 
-                    TextField("Antwort tippen", text: $typedAnswer)
-                        .textFieldStyle(.roundedBorder)
-                        .disabled(!session.hasStartedTraining || currentCard == nil)
-                        .focused($typedAnswerFieldFocused)
-                        .onSubmit {
-                            submitTypedAnswer()
-                        }
+                    // **Eingabefeld-Vereinheitlichung Modul 2 (2026-05-22)** —
+                    // cream-Look via geteilter AppInputField (wie KK).
+                    AppInputField(
+                        placeholder: "Antwort tippen",
+                        text: $typedAnswer,
+                        accent: trainingActionTint,
+                        isEnabled: session.hasStartedTraining && currentCard != nil,
+                        focus: $typedAnswerFieldFocused,
+                        onSubmit: { submitTypedAnswer() }
+                    )
 
                     Button("Prüfen") {
                         submitTypedAnswer()
