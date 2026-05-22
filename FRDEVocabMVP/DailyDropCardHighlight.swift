@@ -165,10 +165,11 @@ struct DailyDropCardHighlightModifier: ViewModifier {
     /// Shimmer-Cycle in Sekunden. **2026-05-07** — User-Spec
     /// „Shimmer muss schneller hintereinander kommen, sobald der
     /// erste durch ist gleich der nächste". Vorher 5 s Cycle mit
-    /// 60 % Sweep + 40 % Pause; jetzt 1.6 s Cycle ohne Pause
+    /// 60 % Sweep + 40 % Pause; dann 1.6 s Cycle ohne Pause
     /// (`sweepFraction = 1.0`) — kontinuierlicher Sweep, neuer Run
     /// startet sofort wenn der vorherige durch ist.
-    private static let shimmerCycle: Double = 1.6
+    /// **2026-05-22** — User-Spec „etwas langsamer": 1.6 → 2.2 s.
+    private static let shimmerCycle: Double = 2.2
     private static let shimmerSweepFraction: Double = 1.0
 
     func body(content: Content) -> some View {
