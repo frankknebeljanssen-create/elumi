@@ -46,6 +46,11 @@ struct SessionSummaryView: View {
     var secondaryCTALabel: String? = nil
     var onSecondaryCTA: (() -> Void)? = nil
 
+    /// **Quiz-Snack-Rewards (2026-05-22)** — optionaler kompakter Snack-Block
+    /// (Würmchen/Wasserfloh/Algenkugel) direkt unter dem XP-Hero. Leer =
+    /// kein Block → alle anderen Module unverändert. Aktuell nur Quiz.
+    var snackRewards: [SnackReward] = []
+
     /// **Block 2 (2026-05-02)** — User-Spec: im Chain-Modus soll der
     /// Primary-CTA „Weiter zu …" / „Training abschließen" pulsieren,
     /// um den User zum Weiter-Tap zu führen. Default `false` für
@@ -107,6 +112,10 @@ struct SessionSummaryView: View {
 
             if !hidesDetailedStats {
                 xpHero
+
+                if !snackRewards.isEmpty {
+                    snackRewardRow
+                }
 
                 divider
                 levelProgress
@@ -295,6 +304,33 @@ struct SessionSummaryView: View {
                 // halten 4-stellige Werte („+1.030") einzeilig im Card-Rahmen.
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
+        }
+    }
+
+    /// **Snack-Reward-Eintrag (2026-05-22)** — kompakter Quiz-Snack
+    /// (Würmchen/Wasserfloh/Algenkugel) für den optionalen Snack-Block.
+    struct SnackReward: Identifiable {
+        let kind: ElumiSnackKind
+        let count: Int
+        var id: ElumiSnackKind { kind }
+    }
+
+    /// Kompakte Snack-Reward-Zeile (klein, Chip-Stil) — ersetzt den früheren
+    /// 108-pt-Würmchen-Hero des Quiz. Nur sichtbar, wenn `snackRewards` gesetzt.
+    private var snackRewardRow: some View {
+        HStack(spacing: 8) {
+            ForEach(snackRewards) { reward in
+                HStack(spacing: 6) {
+                    ElumiSnackIcon(reward.kind, size: 20)
+                    Text("+\(reward.count)")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Capsule().fill(AppTheme.Colors.secondarySurface))
+            }
+            Spacer(minLength: 0)
         }
     }
 

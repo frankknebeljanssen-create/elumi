@@ -198,6 +198,23 @@ struct QuizView: View {
         awardedHearts + awardedWaterfloh + awardedAlgenkugel
     }
 
+    /// **Snack-Rewards für die Standard-Summary (2026-05-22)** — baut die
+    /// kompakten Snack-Chips (Würmchen/Wasserfloh/Algenkugel) für den
+    /// `snackRewards`-Block der `SessionSummaryView`. Nur Posten > 0.
+    var quizSnackRewards: [SessionSummaryView.SnackReward] {
+        var rewards: [SessionSummaryView.SnackReward] = []
+        if awardedHearts > 0 {
+            rewards.append(.init(kind: .wuermchen, count: awardedHearts))
+        }
+        if awardedWaterfloh > 0 {
+            rewards.append(.init(kind: .wasserfloh, count: awardedWaterfloh))
+        }
+        if awardedAlgenkugel > 0 {
+            rewards.append(.init(kind: .algenkugel, count: awardedAlgenkugel))
+        }
+        return rewards
+    }
+
     var dominantRewardSnackKind: ElumiSnackKind {
         if awardedAlgenkugel > 0 {
             return .algenkugel

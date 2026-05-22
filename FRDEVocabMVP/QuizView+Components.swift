@@ -207,110 +207,38 @@ var quizSessionScreen: some View {
 }
 
 var quizResultScreen: some View {
-    // Scrollbar verpackt: der Result-Screen kann bei vielen Rewards
-    // (Level-Up + Streak-Milestone + Variable-Reward + Wrong-Answers-Button)
-    // höher sein als der Viewport. Bottom-Padding deckt die Footer-AppBottomBar
-    // ab, damit die unteren CTA-Buttons nicht verdeckt werden.
-    ScrollView(showsIndicators: false) {
-    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-        // **Block 2 (2026-05-02)** — User-Spec: im Chain-Mode auf dem
-        // Result-Screen keinen eigenen Modul-Header („Ergebnis"-
-        // ScreenHeaderCard) mehr. Der Chain-Header (3 Step-Cards +
-        // Timer) via `ChainTimerOverlayModifier` trägt die Schritt-
-        // Identität; ein zusätzlicher „Ergebnis"-Title-Banner
-        // dupliziert die visuelle Hierarchie. User navigiert via
-        // Chain-Header oder System-Back-Geste. Out-of-Chain bleibt
-        // der Header sichtbar.
-        if launchContext?.chainContext == nil {
-            ScreenHeaderCard(
-                style: sectionStyle,
-                title: "Ergebnis",
-                subtitle: "",
-                systemImage: "rosette"
-            )
-        }
-
-        AppSurfaceCard(tint: sectionStyle.accent) {
-            VStack(spacing: AppTheme.Spacing.lg) {
-                VStack(spacing: AppTheme.Spacing.xs) {
-                    quizResultHero
-
-                    Text(rewardSummaryText)
-                        .font(AppTheme.Typography.screenTitle)
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
+    // **Konsolidiert (2026-05-22)** — eigene Celebration-Card (108-pt-
+    // Würmchen-Hero + Richtig/Falsch-Boxen + Snack-Chips + rewardSummaryText)
+    // + „Ergebnis"-ScreenHeaderCard + ScrollView ENTFERNT. Quiz nutzt jetzt
+    // — wie alle anderen Module — nur die geteilte `SessionSummaryView`:
+    //   • Quote „X von Y richtig" trägt die Headline (resultHeadline)
+    //   • Würmchen/Wasserfloh/Algenkugel kompakt via `snackRewards`-Block
+    //   • Richtig/Falsch-Boxen entfallen (redundant zur Headline)
+    // Elumi-Level-Freischaltungen (selten, live via rewardOutcome) bleiben als
+    // kleiner Block ÜBER der Card erhalten — sonst ginge die Anzeige verloren.
+    // No-Scroll: die Konsolidierung spart die ~250-pt-Celebration-Card → der
+    // Standard-Screen passt ohne ScrollView (analog KK/Training).
+    let outcome = quizSessionOutcome ?? .empty
+    let chain = launchContext?.chainContext
+    let nextStepTitle = chain?.nextStep?.title
+    let isChain = chain != nil
+    let primaryLabel: String = isChain
+        ? (nextStepTitle.map { "Weiter zu \($0)" } ?? "Training abschließen")
+        : "Nächste Runde"
+    return VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+        // Elumi-Level-Freischaltung (rar) — bleibt als kleiner Hinweis.
+        if !isChain, !unlockedRewardLevels.isEmpty {
+            VStack(spacing: AppTheme.Spacing.xs) {
+                ForEach(unlockedRewardLevels) { level in
+                    Text("Level \(level.level) freigeschaltet: \(level.title)")
+                        .font(AppTheme.Typography.body)
+                        .foregroundStyle(AppTheme.Colors.warning)
                         .multilineTextAlignment(.center)
-
-                    Text(resultHeadline)
-                        .font(AppTheme.Typography.cardTitle)
-                        .foregroundStyle(sectionStyle.accent)
-                        .multilineTextAlignment(.center)
-
-                }
-
-                // Richtig / Falsch als kompakte Stats-Zeile. XP wandert
-                // komplett in die `SessionSummaryView` darunter, damit beide
-                // Systeme nicht parallel dieselbe Zahl zeigen.
-                HStack(spacing: AppTheme.Spacing.sm) {
-                    resultStatCard(
-                        title: "Richtig",
-                        value: "\(correctCount)",
-                        tint: AppTheme.Colors.success
-                    )
-                    resultStatCard(
-                        title: "Falsch",
-                        value: "\(wrongCount)",
-                        tint: AppTheme.Colors.warning
-                    )
-                }
-
-                if totalRewardCount > 0 {
-                    HStack(spacing: AppTheme.Spacing.sm) {
-                        rewardChip(kind: .wuermchen, value: awardedHearts)
-                        rewardChip(kind: .wasserfloh, value: awardedWaterfloh)
-                        rewardChip(kind: .algenkugel, value: awardedAlgenkugel)
-                    }
-                }
-
-                if !unlockedRewardLevels.isEmpty {
-                    VStack(spacing: AppTheme.Spacing.xs) {
-                        ForEach(unlockedRewardLevels) { level in
-                            Text("Level \(level.level) freigeschaltet: \(level.title)")
-                                .font(AppTheme.Typography.body)
-                                .foregroundStyle(AppTheme.Colors.warning)
-                                .multilineTextAlignment(.center)
-                        }
-                    }
+                        .frame(maxWidth: .infinity)
                 }
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, AppTheme.Spacing.md)
         }
 
-        // Zentrale Session-Summary — gleiche Card wie Karteikarten/Training/
-        // Verbformen. Zeigt XP-Aufschlüsselung, Credits, Streak, Level-Progress.
-        // Die Elumi-Rewards oben bleiben als Quiz-spezifischer Celebration-Teil.
-        //
-        // Session-End Lücke 2 (Option A): Primary+Secondary CTA einheitlich zu
-        // Training / Verbformen / Karteikarten. Die früheren drei Außen-Buttons
-        // („Falsche anzeigen", „Nochmal", „Zurück") sind bewusst entfernt — die
-        // Summary-Card trägt den gesamten Session-Abschluss allein. Primary
-        // („Weiter lernen") setzt die Summary zurück und zeigt die Setup-Card;
-        // Secondary („Zur Startseite") verlässt das Quiz-Modul komplett.
-        //
-        // `showingWrongAnswers` / `wrongAnswersSheet` bleiben vorerst als
-        // (inaktiver) Code — sie werden nicht mehr getriggert, aber der
-        // Modul-interne State ist unabhängig davon. Eine spätere Cleanup-
-        // Runde kann den Sheet + den Presenter entfernen, sobald das neue
-        // Pattern freigegeben ist.
-        // **Stufe 3 (2026-05-01)** — Chain-Mode-Branching, siehe
-        // FlashcardsView+SessionComponents.swift für Doc.
-        let outcome = quizSessionOutcome ?? .empty
-        let chain = launchContext?.chainContext
-        let nextStepTitle = chain?.nextStep?.title
-        let isChain = chain != nil
-        let primaryLabel: String = isChain
-            ? (nextStepTitle.map { "Weiter zu \($0)" } ?? "Training abschließen")
-            : "Nächste Runde"
         SessionSummaryView(
             outcome: outcome,
             progress: progressStore.progress,
@@ -326,25 +254,23 @@ var quizResultScreen: some View {
             onSecondaryCTA: isChain ? nil : {
                 dismissToHome()
             },
+            // Würmchen/Wasserfloh/Algenkugel als kompakter Snack-Block in der
+            // Standard-Card. Chain: leer (Mid-Step ohne Detail-Rewards).
+            snackRewards: isChain ? [] : quizSnackRewards,
             primaryCTAPulses: isChain,
             hidesDetailedStats: isChain
         )
     }
     .padding(.horizontal, AppLayout.screenPadding)
     .padding(.top, AppLayout.contentTopPadding)
-    // **2026-05-08 Padding-Cleanup** — Bottom-Padding von
-    // `footerHeight + insetBottom + md` auf `Spacing.md` reduziert.
-    // Footer ist nach der Migration über safeAreaInset reserviert;
-    // die alte Manual-Footer-Höhe schob den Summary-Block sichtbar
-    // nach oben.
     .padding(.bottom, AppTheme.Spacing.md)
     .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .top)
-    .frame(maxWidth: .infinity, alignment: .top)
-    }
-    .frame(maxHeight: .infinity)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     .onAppear {
         persistHeartsIfNeeded()
     }
+    // `showingWrongAnswers` wird aktuell nirgends auf `true` gesetzt (faktisch
+    // inaktiv); Sheet bleibt verdrahtet für eine spätere Cleanup-Runde.
     .sheet(isPresented: $showingWrongAnswers) {
         wrongAnswersSheet
     }
