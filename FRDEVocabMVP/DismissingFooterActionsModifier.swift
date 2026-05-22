@@ -2,8 +2,8 @@ import SwiftUI
 
 /// **2026-05-04 Footer-Action-Bridge im Sheet-Kontext.**
 ///
-/// Hintergrund: Picker-Sheets (`ListPickerSheet`, `ListSelectionSheet`,
-/// `TrainingCategoryListSheet`, `ChainListSelectionSheet`) rendern
+/// Hintergrund: Picker-Sheets (`ListPickerSheet`,
+/// `ChainListSelectionSheet`) rendern
 /// einen eigenen `AppBottomBar` über `appLocalChrome`, damit der User
 /// nicht das Gefühl hat „Tab-Bar weg" (siehe Punkt 1, 2026-05-04).
 /// Aber die Footer-Buttons mit Environment-basierten Actions —
