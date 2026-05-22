@@ -75,7 +75,7 @@ struct UnifiedListCategoryPicker: View {
             HStack {
                 AppBackButton(action: { dismiss() }, tint: AppTheme.Colors.elumiPink)
                 Spacer(minLength: 0)
-                Text("Aktive Listen")
+                Text("Ausgewählte Listen")
                     .font(AppTheme.Typography.cardTitle)
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                 Spacer(minLength: 0)

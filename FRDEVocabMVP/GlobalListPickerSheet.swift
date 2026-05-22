@@ -147,7 +147,7 @@ struct GlobalListPickerSheet: View {
 
             Spacer(minLength: 0)
 
-            Text(singleSelect ? "Liste wählen" : "Aktive Listen")
+            Text(singleSelect ? "Liste wählen" : "Ausgewählte Listen")
                 .font(.system(size: 17, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
 
