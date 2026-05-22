@@ -1322,28 +1322,36 @@ extension TrainingView {
         }
     }
 
-    /// Custom Listen-Auswahl-Card für Nomen — Speed-Round-Stil, ohne Detail-Sheet
-    /// auf der Anzahl (User wollte nur Anzeige). Counter aus gecachtem State.
+    /// **Pilot Listenpicker-Vereinheitlichung (2026-05-22)** — Nomen nutzt jetzt
+    /// den geteilten `UnifiedListCategoryPicker` (Kategorie-Cards
+    /// Eigene/Niveau/Themen, Cross-Category-Auswahl über gefilterte
+    /// `GlobalListPickerSheet`) statt der flachen Listen-Summary-Card. Die
+    /// Lemma-Anzahl („X Nomen") bleibt als separates Element darunter erhalten
+    /// und wird unverändert über `refreshSetupCardLemmas()` (onChange auf
+    /// `selectedTrainingListIDs`) aktuell gehalten — die Update-Pipeline ändert
+    /// sich nicht.
     private var nounsListSelectionCard: some View {
-        setupListSelectionCard(
-            countLabel: "Nomen",
-            countValue: setupCardLemmas.count,
-            onTapPicker: { nounsListPickerActive = true },
-            onTapCounter: nil
-        )
-        .sheet(isPresented: $nounsListPickerActive) {
-            // **Phase 3 (2026-05-04)** — Migration auf `GlobalListPickerSheet`.
-            GlobalListPickerSheet(
-                allLists: availableTrainingLists,
-                initialSelection: session.selectedTrainingListIDs,
-                onCommit: { updated in
-                    session.selectedTrainingListIDs = updated
-                    nounsListPickerActive = false
-                },
-                categoryHeaders: false,
+        VStack(spacing: 10) {
+            UnifiedListCategoryPicker(
+                availableLists: availableTrainingLists,
+                selectedIDs: session.selectedTrainingListIDs,
+                onCommit: { session.selectedTrainingListIDs = $0 },
+                accent: trainingActionTint,
+                singleSelect: false,
+                includeWoerterbuch: false,
+                itemLabel: "Nomen",
                 feedbackPlayer: feedbackPlayer,
                 onHome: goHome
             )
+
+            // Lemma-Count separat erhalten (vorher Teil der Summary-Zeile in
+            // `setupListSelectionCard`). Nur bei vorhandener Auswahl sichtbar.
+            if !session.selectedTrainingListIDs.isEmpty {
+                Text("\(setupCardLemmas.count) Nomen")
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.elumiBlue)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
     }
 
