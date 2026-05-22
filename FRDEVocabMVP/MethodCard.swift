@@ -81,20 +81,28 @@ struct MethodCard<Icon: View>: View {
             // identisch groß → Icons exakt gleich hoch zentriert; Titel
             // sitzen unabhängig von der Font-Größe auf gleicher Höhe.
             VStack(spacing: 0) {
-                // Icon-Region — flexibel, füllt den Raum über dem fix
-                // dimensionierten Text-Block (in beiden Cards gleich groß).
+                // **Fixes Icon-Band (2026-05-22)** — vorher `icon()
+                // .frame(maxHeight: .infinity)`: falls die Greedy-Expansion
+                // nicht griff, wurde der Content zentriert → der Karteikarten-
+                // Titel (60-pt-Icon) saß ~4 px tiefer als Quiz (52-pt-Icon).
+                // Jetzt: EIN flexibler Spacer oben, darunter alles fix →
+                // Spacer in beiden Cards identisch groß → Icon-Band + Titel
+                // exakt auf gleicher Höhe.
+                Spacer(minLength: 0)
+                // Icon-Band — FIXE 60 pt (= größtes Icon, Karteikarten). Das
+                // kleinere Quiz-Icon (52) wird darin zentriert → beide Icon-
+                // Mitten exakt gleich. Icon-Größen selbst (60/52) unverändert.
                 icon()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                Spacer().frame(height: 2)
-                // Title-Region — fixe Höhe → Titel auf identischer Höhe,
-                // egal ob 22 pt (Karteikarten) oder 19 pt (Quiz).
+                    .frame(width: 60, height: 60)
+                Spacer().frame(height: 4)
+                // Title-Region — fixe Höhe → Titel auf identischer Höhe.
                 Text(title)
                     .font(.system(size: titleSize, weight: .black, design: .rounded))
                     .foregroundStyle(.white)
                     .shadow(color: .black.opacity(0.35), radius: 1, x: 0, y: 1)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
-                    .frame(height: 27)
+                    .frame(height: 24)
                 Spacer().frame(height: 2)
                 Text(subtitle)
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -102,7 +110,7 @@ struct MethodCard<Icon: View>: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                     .frame(height: 16)
-                Spacer().frame(height: 2)
+                Spacer().frame(height: 4)
             }
             .frame(maxWidth: .infinity)
             .frame(height: 115)

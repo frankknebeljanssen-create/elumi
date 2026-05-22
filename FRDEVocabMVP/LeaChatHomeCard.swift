@@ -132,6 +132,10 @@ struct LeaChatHomeCard: View {
                     .stroke(AppTheme.Colors.success.opacity(ringOpacity), lineWidth: 2)
                     .frame(width: 52, height: 52)
                     .scaleEffect(ringScale)
+                    // 1 pt höher → gleicht den Avatar-Schatten (y:+1) optisch
+                    // aus, damit der Ring exakt am L-Kreis sitzt (wirkte sonst
+                    // minimal zu tief).
+                    .offset(y: -1)
             }
             .frame(width: 52, height: 52)
             .onAppear {
