@@ -485,6 +485,7 @@
 		D5A1140000000000000000F1 /* ListMergePickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1140000000000000000F2 /* ListMergePickerSheet.swift */; };
 		D5A1140000000000000000F3 /* ListMergeFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1140000000000000000F4 /* ListMergeFlow.swift */; };
 		D5A1140000000000000000A1 /* ListCategoryRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1140000000000000000A2 /* ListCategoryRow.swift */; };
+		D5A1140000000000000000A3 /* UnifiedListCategoryPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1140000000000000000A4 /* UnifiedListCategoryPicker.swift */; };
 		D5A1100000000000000000E1 /* ScanDraftStoreRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000E2 /* ScanDraftStoreRepository.swift */; };
 		D5A1100000000000000000F1 /* ScanDraftStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000F2 /* ScanDraftStoreTests.swift */; };
 		CC15FF1100000000ABCDEF01 /* ChatPersona.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1100000000ABCDEF02 /* ChatPersona.swift */; };
@@ -1096,6 +1097,7 @@
 		D5A1140000000000000000F2 /* ListMergePickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ListMergePickerSheet.swift; path = FRDEVocabMVP/ListMergePickerSheet.swift; sourceTree = "<group>"; };
 		D5A1140000000000000000F4 /* ListMergeFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ListMergeFlow.swift; path = FRDEVocabMVP/ListMergeFlow.swift; sourceTree = "<group>"; };
 		D5A1140000000000000000A2 /* ListCategoryRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ListCategoryRow.swift; path = FRDEVocabMVP/ListCategoryRow.swift; sourceTree = "<group>"; };
+		D5A1140000000000000000A4 /* UnifiedListCategoryPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UnifiedListCategoryPicker.swift; path = FRDEVocabMVP/UnifiedListCategoryPicker.swift; sourceTree = "<group>"; };
 		D5A1100000000000000000E2 /* ScanDraftStoreRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftStoreRepository.swift; path = FRDEVocabMVP/ScanDraftStoreRepository.swift; sourceTree = "<group>"; };
 		D5A1100000000000000000F2 /* ScanDraftStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftStoreTests.swift; path = FRDEVocabMVP/ScanDraftStoreTests.swift; sourceTree = "<group>"; };
 		CC15FF1100000000ABCDEF02 /* ChatPersona.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatPersona.swift; path = FRDEVocabMVP/ChatPersona.swift; sourceTree = "<group>"; };
@@ -1276,6 +1278,7 @@
 				D5A1140000000000000000F2 /* ListMergePickerSheet.swift */,
 				D5A1140000000000000000F4 /* ListMergeFlow.swift */,
 				D5A1140000000000000000A2 /* ListCategoryRow.swift */,
+				D5A1140000000000000000A4 /* UnifiedListCategoryPicker.swift */,
 				D5A1100000000000000000E2 /* ScanDraftStoreRepository.swift */,
 				D5A1100000000000000000F2 /* ScanDraftStoreTests.swift */,
 				CC15FF1100000000ABCDEF02 /* ChatPersona.swift */,
@@ -2260,6 +2263,7 @@
 				D5A1140000000000000000F1 /* ListMergePickerSheet.swift in Sources */,
 				D5A1140000000000000000F3 /* ListMergeFlow.swift in Sources */,
 				D5A1140000000000000000A1 /* ListCategoryRow.swift in Sources */,
+				D5A1140000000000000000A3 /* UnifiedListCategoryPicker.swift in Sources */,
 				D5A1100000000000000000E1 /* ScanDraftStoreRepository.swift in Sources */,
 				D5A1100000000000000000F1 /* ScanDraftStoreTests.swift in Sources */,
 				CC15FF1100000000ABCDEF01 /* ChatPersona.swift in Sources */,
