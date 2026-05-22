@@ -875,7 +875,11 @@ extension TrainingView {
             // Header GANZ links oben + HStack mit Icon, Listen, Stift-Pill —
             // analog zum Karteikarten-Setup (siehe `setupListSelectionCard`).
             VStack(alignment: .leading, spacing: 8) {
-                setupCardLabel("Ausgewählte Listen")
+                Text("AUSGEWÄHLTE LISTEN")
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .tracking(1.4)
+                    .foregroundStyle(AppTheme.Colors.cardLabel)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                 HStack(alignment: .center, spacing: 14) {
                     // Home-Listen-Icon — identisch zur "Listen"-Kachel auf
@@ -1062,7 +1066,11 @@ extension TrainingView {
             // analog zum Karteikarten-Setup. Single Source of Truth: nutzt
             // `setupCardLabel` und `appSetupCardBackground` aus AppViewModifiers.
             VStack(alignment: .leading, spacing: 8) {
-                setupCardLabel("Ausgewählte Listen")
+                Text("AUSGEWÄHLTE LISTEN")
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .tracking(1.4)
+                    .foregroundStyle(AppTheme.Colors.cardLabel)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                 HStack(alignment: .center, spacing: 14) {
                     // Home-Listen-Icon — identisch zur "Listen"-Kachel auf

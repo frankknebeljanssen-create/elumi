@@ -2787,9 +2787,9 @@ struct WordRunnerGameView: View {
                         .foregroundStyle(AppTheme.Colors.elumiPink)
                     Text("Ausgewählte Liste")
                         .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .foregroundStyle(AppTheme.Colors.cardLabel)
                         .textCase(.uppercase)
-                        .tracking(0.5)
+                        .tracking(1.4)
                     Spacer()
                 }
 
@@ -2807,7 +2807,7 @@ struct WordRunnerGameView: View {
                         // **unter** dem CTA als Hint (siehe
                         // `startHintText`).
                         Text(currentListName(store: store))
-                            .font(.system(size: 17, weight: .black, design: .rounded))
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
                             .foregroundStyle(AppTheme.Colors.textPrimary)
                             .lineLimit(1)
                             .truncationMode(.middle)
