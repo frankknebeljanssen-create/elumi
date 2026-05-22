@@ -72,23 +72,36 @@ struct MethodCard<Icon: View>: View {
             // heroCardsRow. Title- und Subtitle-Fonts bleiben (Lesbar-
             // keit hat Vorrang). HIG-Tap-Target bleibt mit 115 pt
             // hoch über dem 44-pt-Minimum.
-            VStack(spacing: 4) {
-                Spacer(minLength: 0)
+            // **Fixe-Regionen-Layout (2026-05-22)** — Spacer-basierte
+            // Verteilung richtete Icons/Titel bei unterschiedlichen
+            // Icon-Größen (60/52) und Titel-Größen (22/19) NICHT exakt
+            // aus: das kleinere Quiz-Icon rutschte tiefer, Titel-Höhen
+            // variierten. Lösung: feste Höhen für Title- und Subtitle-
+            // Region → die flexible Icon-Region ist in beiden Cards
+            // identisch groß → Icons exakt gleich hoch zentriert; Titel
+            // sitzen unabhängig von der Font-Größe auf gleicher Höhe.
+            VStack(spacing: 0) {
+                // Icon-Region — flexibel, füllt den Raum über dem fix
+                // dimensionierten Text-Block (in beiden Cards gleich groß).
                 icon()
-                // S2 entfernt (2026-05-22) — einziger Spacer (S1, oben)
-                // absorbiert den Icon-Größen-Unterschied. Titel ist jetzt
-                // fix von unten verankert → gleiche Höhe in beiden Cards.
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                Spacer().frame(height: 2)
+                // Title-Region — fixe Höhe → Titel auf identischer Höhe,
+                // egal ob 22 pt (Karteikarten) oder 19 pt (Quiz).
                 Text(title)
                     .font(.system(size: titleSize, weight: .black, design: .rounded))
                     .foregroundStyle(.white)
                     .shadow(color: .black.opacity(0.35), radius: 1, x: 0, y: 1)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
+                    .frame(height: 27)
+                Spacer().frame(height: 2)
                 Text(subtitle)
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundStyle(.white.opacity(0.88))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
+                    .frame(height: 16)
                 Spacer().frame(height: 2)
             }
             .frame(maxWidth: .infinity)
