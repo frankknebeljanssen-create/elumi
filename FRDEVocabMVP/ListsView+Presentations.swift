@@ -3,7 +3,17 @@ import SwiftUI
 extension ListsView {
     func applyListsPresentations<Content: View>(to content: Content) -> some View {
         content
-            .sheet(isPresented: $showingEntryEditor) {
+            // **Nav-Bug-Fix (2026-05-22)** — Detail-Sheet wird über
+            // `onDismiss` der Editor-Sheet wieder geöffnet, NICHT mehr per
+            // fixem 0.18s-Delay aus `saveEntry`/`onCancel`. onDismiss feuert
+            // erst nach vollständigem Editor-Dismiss → keine Race mehr
+            // (vorher: Detail-Re-Präsentation wurde während des Dismiss
+            // verschluckt → User landete in der Listen-Übersicht). Deckt
+            // Save UND Cancel (und Swipe-Down) ab; der `shouldRestore…`-Flag
+            // sorgt dafür, dass nur reöffnet wird, wenn aus dem Detail editiert.
+            .sheet(isPresented: $showingEntryEditor, onDismiss: {
+                restoreListDetailIfNeeded()
+            }) {
                 VocabularyEntryEditorSheet(
                     style: sectionStyle,
                     title: editingItemID == nil ? "Neue Vokabeln eingeben" : "Vokabel bearbeiten",
@@ -12,9 +22,9 @@ extension ListsView {
                     germanText: $germanText,
                     cardType: $cardType,
                     onCancel: {
+                        // Schließen + Restore laufen über `dismiss()` (Editor-
+                        // Button) → `onDismiss` oben.
                         cancelEditing()
-                        showingEntryEditor = false
-                        restoreListDetailIfNeeded()
                     },
                     onSave: {
                         saveEntry()

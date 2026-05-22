@@ -20,9 +20,11 @@ extension ListsView {
             )
         }
 
+        // **Nav-Bug-Fix (2026-05-22)** — kein manuelles `showingEntryEditor =
+        // false` / `restoreListDetailIfNeeded()` mehr: der Editor-Save-Button
+        // ruft `dismiss()` → Sheet schließt → `onDismiss` restored die Detail-
+        // Sheet (deterministisch, kein Delay-Race).
         cancelEditing()
-        showingEntryEditor = false
-        restoreListDetailIfNeeded()
     }
 
     func beginEditing(_ item: VocabularyItem) {
@@ -67,7 +69,12 @@ extension ListsView {
     func restoreListDetailIfNeeded() {
         guard shouldRestoreListDetailAfterEditing else { return }
         shouldRestoreListDetailAfterEditing = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+        // **Nav-Bug-Fix (2026-05-22)** — wird jetzt aus dem `onDismiss` der
+        // Editor-Sheet aufgerufen, d. h. der Editor ist bereits vollständig
+        // geschlossen → kein 0.18s-Race mehr. Ein Next-Runloop-Hop (kein fixer
+        // Delay) stellt sicher, dass die Dismiss-Transaktion settled ist, bevor
+        // die Detail-Sheet neu präsentiert wird.
+        DispatchQueue.main.async {
             showingListDetail = true
         }
     }
