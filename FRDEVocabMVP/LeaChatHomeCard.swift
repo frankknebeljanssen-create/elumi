@@ -130,16 +130,6 @@ struct LeaChatHomeCard: View {
             ChatAvatarView(size: 40)
         }
         .frame(width: 52, height: 52)
-        .overlay(alignment: .bottomTrailing) {
-            // Online-Dot — 12 pt Mint-Kreis mit dunklem Rand.
-            Circle()
-                .fill(AppTheme.Colors.success)
-                .frame(width: 12, height: 12)
-                .overlay(
-                    Circle()
-                        .stroke(AppTheme.Colors.background, lineWidth: 1.5)
-                )
-        }
         .onAppear {
             withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
                 ringScale  = 1.12
