@@ -1096,20 +1096,25 @@ extension TrainingView {
             .appSetupCardBackground(cornerRadius: AppLayout.largeCardCornerRadius)
         }
         .buttonStyle(.plain)
-        .sheet(isPresented: $verbformsListPickerActive) {
-            // **Phase 3 (2026-05-04)** — Migration auf
-            // `GlobalListPickerSheet` für Verbformen.
-            GlobalListPickerSheet(
-                allLists: availableTrainingLists,
-                initialSelection: session.selectedTrainingListIDs,
-                onCommit: { updated in
-                    session.selectedTrainingListIDs = updated
-                    verbformsListPickerActive = false
-                },
-                categoryHeaders: false,
+        // **Gruppe-1-Migration (2026-05-22)** — Sheet → navigationDestination.
+        // VerbLemmaListSheet bleibt separates .sheet über
+        // $verbformsVerbDetailActive (Verb-Detail-Trigger im nested Button
+        // innerhalb der Card-Label unverändert).
+        .navigationDestination(isPresented: $verbformsListPickerActive) {
+            UnifiedListCategoryPicker(
+                availableLists: availableTrainingLists,
+                selectedIDs: session.selectedTrainingListIDs,
+                onCommit: { session.selectedTrainingListIDs = $0 },
+                accent: trainingActionTint,
+                singleSelect: false,
+                includeWoerterbuch: false,
+                itemLabel: "Verbformen",
                 feedbackPlayer: feedbackPlayer,
-                onHome: goHome
+                onHome: goHome,
+                onSettings: { openSettings() }
             )
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
         }
         .sheet(isPresented: $verbformsVerbDetailActive) {
             VerbLemmaListSheet(lemmas: verbformsLemmasFromSelectedLists())
@@ -1303,19 +1308,24 @@ extension TrainingView {
             onTapPicker: { verbsListPickerActive = true },
             onTapCounter: { verbsVerbDetailActive = true }
         )
-        .sheet(isPresented: $verbsListPickerActive) {
-            // **Phase 3 (2026-05-04)** — Migration auf `GlobalListPickerSheet`.
-            GlobalListPickerSheet(
-                allLists: availableTrainingLists,
-                initialSelection: session.selectedTrainingListIDs,
-                onCommit: { updated in
-                    session.selectedTrainingListIDs = updated
-                    verbsListPickerActive = false
-                },
-                categoryHeaders: false,
+        // **Gruppe-1-Migration (2026-05-22)** — Sheet → navigationDestination,
+        // analog Nomen-Pilot (Commit 4e19ca5). VerbLemmaListSheet bleibt
+        // separates .sheet über $verbsVerbDetailActive (unverändert).
+        .navigationDestination(isPresented: $verbsListPickerActive) {
+            UnifiedListCategoryPicker(
+                availableLists: availableTrainingLists,
+                selectedIDs: session.selectedTrainingListIDs,
+                onCommit: { session.selectedTrainingListIDs = $0 },
+                accent: trainingActionTint,
+                singleSelect: false,
+                includeWoerterbuch: false,
+                itemLabel: "Verben",
                 feedbackPlayer: feedbackPlayer,
-                onHome: goHome
+                onHome: goHome,
+                onSettings: { openSettings() }
             )
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
         }
         .sheet(isPresented: $verbsVerbDetailActive) {
             VerbLemmaListSheet(lemmas: setupCardLemmas)
@@ -1369,19 +1379,24 @@ extension TrainingView {
             onTapPicker: { articlesListPickerActive = true },
             onTapCounter: nil
         )
-        .sheet(isPresented: $articlesListPickerActive) {
-            // **Phase 3 (2026-05-04)** — Migration auf `GlobalListPickerSheet`.
-            GlobalListPickerSheet(
-                allLists: availableTrainingLists,
-                initialSelection: session.selectedTrainingListIDs,
-                onCommit: { updated in
-                    session.selectedTrainingListIDs = updated
-                    articlesListPickerActive = false
-                },
-                categoryHeaders: false,
+        // **Gruppe-1-Migration (2026-05-22)** — Sheet → navigationDestination,
+        // analog Nomen-Pilot. countLabel bleibt "Nomen" (intentional:
+        // Artikel-Training zählt Nomen, kein eigenes Artikel-Lemma-Konzept).
+        .navigationDestination(isPresented: $articlesListPickerActive) {
+            UnifiedListCategoryPicker(
+                availableLists: availableTrainingLists,
+                selectedIDs: session.selectedTrainingListIDs,
+                onCommit: { session.selectedTrainingListIDs = $0 },
+                accent: trainingActionTint,
+                singleSelect: false,
+                includeWoerterbuch: false,
+                itemLabel: "Artikel",
                 feedbackPlayer: feedbackPlayer,
-                onHome: goHome
+                onHome: goHome,
+                onSettings: { openSettings() }
             )
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
         }
     }
 
