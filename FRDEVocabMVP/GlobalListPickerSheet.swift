@@ -155,15 +155,15 @@ struct GlobalListPickerSheet: View {
 
     private var header: some View {
         HStack(alignment: .center) {
-            Button("Abbrechen") {
+            Button("Zurück") {
                 dismiss()
             }
             .font(.system(size: 15, weight: .semibold, design: .rounded))
-            .foregroundStyle(AppTheme.Colors.textSecondary)
+            .foregroundStyle(accent)
 
             Spacer(minLength: 0)
 
-            Text(singleSelect ? "Liste wählen" : "Ausgewählte Listen")
+            Text("Liste wählen")
                 .font(.system(size: 17, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
 
@@ -196,32 +196,20 @@ struct GlobalListPickerSheet: View {
 
     // MARK: - Banner (analog ListPickerSheet)
 
-    /// Zusammenfassungs-Text im Mint-Banner. Zeigt den Status der aktuellen
-    /// Auswahl: leer → Aufforderung, Single-Select → Listenname,
-    /// Multi-Select → Anzahl gewählter Listen.
-    private var bannerText: String {
-        if selectedIDs.isEmpty {
-            return "Tipp eine Liste an"
-        }
-        if singleSelect,
-           let id = selectedIDs.first,
-           let list = allLists.first(where: { $0.id == id }) {
-            return list.name
-        }
-        let count = selectedIDs.count
-        return "\(count) \(count == 1 ? "Liste" : "Listen") gewählt"
-    }
-
+    /// Runde Mint-Card analog `ListPickerSheet` — statischer Text
+    /// „Tipp eine Liste an" (kein dynamischer State, exakt Bild-2-Stil).
     private var bannerView: some View {
-        Text(bannerText)
+        Text("Tipp eine Liste an")
             .font(AppTheme.Typography.cardTitle)
             .foregroundStyle(.white)
             .lineLimit(1)
             .minimumScaleFactor(0.8)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 18)
-            .padding(.vertical, 12)
+            .padding(AppTheme.Spacing.md)
             .background(AppTheme.Colors.success.opacity(0.85))
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
+            .padding(.horizontal, AppLayout.screenPadding)
+            .padding(.top, AppTheme.Spacing.md)
     }
 
     // MARK: - Liste
@@ -283,8 +271,22 @@ struct GlobalListPickerSheet: View {
                     }
 
                     VStack(spacing: 6) {
-                        ForEach(sortedLists) { list in
-                            row(for: list)
+                        if !sectionOwnLists.isEmpty {
+                            sectionHeader("📝 Meine Listen")
+                            ForEach(sectionOwnLists) { list in row(for: list) }
+                        }
+                        if !sectionLevelLists.isEmpty {
+                            sectionHeader("📚 Wortschatz nach Niveau")
+                            ForEach(sectionLevelLists) { list in row(for: list) }
+                        }
+                        if !sectionTopicLists.isEmpty {
+                            sectionHeader("🏷️ Themen")
+                            ForEach(sectionTopicLists) { list in row(for: list) }
+                        }
+                        if !sectionDictionaryLists.isEmpty {
+                            Spacer().frame(height: 12)
+                            sectionHeader("📖 Komplettes Wörterbuch")
+                            ForEach(sectionDictionaryLists) { list in row(for: list) }
                         }
                     }
                     .padding(.horizontal, 14)
@@ -306,6 +308,51 @@ struct GlobalListPickerSheet: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    // MARK: - Section-Grouping (analog ListPickerSheet)
+
+    /// Trennlinie + fettgedruckter Sektionsname — exakt wie `ListPickerSheet`.
+    private func sectionHeader(_ title: String) -> some View {
+        VStack(spacing: 8) {
+            Rectangle()
+                .fill(AppTheme.Colors.border)
+                .frame(height: 1.5)
+            Text(title)
+                .font(.system(size: 18, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.top, 18)
+        .padding(.bottom, 6)
+    }
+
+    /// Eigene (nicht built-in) Listen + Aggregate-Vokabular, ohne Wörterbuch.
+    private var sectionOwnLists: [VocabularyList] {
+        sortedLists.filter {
+            (!$0.isBuiltIn || $0.isAggregateVocabulary)
+            && $0.id != VocabularyListStore.dictionaryListID
+        }
+    }
+
+    /// Built-in Niveau-Listen (A1, A2 …).
+    private var sectionLevelLists: [VocabularyList] {
+        sortedLists.filter { $0.collectionPreset == .standardLevel }
+    }
+
+    /// Built-in Themen-Listen.
+    private var sectionTopicLists: [VocabularyList] {
+        sortedLists.filter { $0.collectionPreset == .standardTopic }
+    }
+
+    /// Wörterbuch-Liste + alle sonstigen built-in Listen ohne Level/Topic-Preset.
+    private var sectionDictionaryLists: [VocabularyList] {
+        sortedLists.filter {
+            $0.id == VocabularyListStore.dictionaryListID
+            || ($0.isBuiltIn && !$0.isAggregateVocabulary
+                && $0.collectionPreset != .standardLevel
+                && $0.collectionPreset != .standardTopic)
         }
     }
 
