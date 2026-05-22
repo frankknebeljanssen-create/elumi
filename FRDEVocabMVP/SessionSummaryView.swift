@@ -216,7 +216,7 @@ struct SessionSummaryView: View {
             // Chain (regulärer Done-Screen mit allen Stats) bleibt
             // 22 pt — sonst dominiert die Headline die anderen
             // Sektionen zu stark.
-            let headlineFontSize: CGFloat = hidesDetailedStats ? 32 : 22
+            let headlineFontSize: CGFloat = hidesDetailedStats ? 32 : 26
             HStack(spacing: 8) {
                 Text(effectiveHeadline)
                     .font(.system(size: headlineFontSize, weight: .black, design: .rounded))
@@ -282,15 +282,19 @@ struct SessionSummaryView: View {
     private var xpHero: some View {
         HStack(alignment: .firstTextBaseline) {
             Text("XP")
-                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .font(.system(size: 13, weight: .bold, design: .rounded))
                 .tracking(1.5)
                 .foregroundStyle(AppTheme.Colors.cardLabel)
             Spacer()
             Text("+\(displayedTotalXP)")
-                .font(.system(size: 34, weight: .black, design: .rounded))
+                .font(.system(size: 52, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.cta)
                 .monospacedDigit()
                 .contentTransition(.numericText())
+                // **Größer (2026-05-22)** — 34 → 52 pt. lineLimit + minScale
+                // halten 4-stellige Werte („+1.030") einzeilig im Card-Rahmen.
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
         }
     }
 
@@ -422,21 +426,21 @@ struct SessionSummaryView: View {
     ) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: isHero ? 22 : 18, weight: .bold))
+                .font(.system(size: isHero ? 24 : 22, weight: .bold))
                 .foregroundStyle(color)
-                .frame(width: 28)
+                .frame(width: 32)
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
-                    .font(.system(size: isHero ? 15 : 14, weight: .bold, design: .rounded))
+                    .font(.system(size: isHero ? 16 : 15, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                 Text(subtitle)
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.elumiBlue)
             }
             Spacer()
         }
         .padding(.horizontal, isHero ? 12 : 4)
-        .padding(.vertical, isHero ? 10 : 2)
+        .padding(.vertical, isHero ? 11 : 4)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(color.opacity(isHero ? 0.14 : 0))
@@ -457,12 +461,12 @@ struct SessionSummaryView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text("Level \(progress.level)")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                 Spacer()
                 let nextLevelXP = GamificationConfig.levelEndXP(for: progress.level)
                 Text("\(progress.totalXP) / \(nextLevelXP) XP")
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.elumiBlue)
             }
             // Progress-Bar animiert auf `animatedLevelProgress` hoch (siehe
@@ -477,7 +481,7 @@ struct SessionSummaryView: View {
                         .frame(width: max(0, geo.size.width * animatedLevelProgress))
                 }
             }
-            .frame(height: 8)
+            .frame(height: 10)
             .clipShape(Capsule())
 
             // Phase 3.5: „Noch X XP bis …" als Richtungs-Hinweis unter der
