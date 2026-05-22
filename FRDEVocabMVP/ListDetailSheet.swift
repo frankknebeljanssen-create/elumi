@@ -104,12 +104,17 @@ struct ListDetailSheet: View {
                             //   Zeile 3: Infinitiv links (falls Verb) · Wortart + Icons rechts
                             VStack(alignment: .leading, spacing: 4) {
                                 // ─── Zeile 1: Französisch ─────────────────────────
-                                // displayFrenchWithGender ergänzt bei Nomen Artikel + Genus-
-                                // Annotation („le muesli (m)") und rekonstruiert bei
-                                // erkannten Pluralformen die Singularform („les grains"
-                                // → „le grain (m)"). Für Nicht-Nomen identisch mit
-                                // displayFrench(for:).
-                                Text(FrenchLemmaFormatter.displayFrenchWithGender(for: item))
+                                // **Anzeige-Bug-Fix (2026-05-22)** — `displayFrench`
+                                // statt `displayFrenchWithGender`. Letzteres leitete
+                                // die Anzeige-Base aus `strippingLeadingFrenchArticle`
+                                // ab, das intern `normalizedLookupText` (DB-Matching:
+                                // Diakritik-Folding + Bindestrich→Leerzeichen) nutzt →
+                                // „la belle-mère" wurde als „le belle mere" gezeigt.
+                                // `displayFrench` zeigt den GESPEICHERTEN Text 1:1
+                                // (kein Folding, Artikel nur wenn keiner da ist, keine
+                                // Singular-Rekonstruktion). Das Genus liefert die Pill
+                                // rechts (genusLabel) — kein Info-Verlust.
+                                Text(FrenchLemmaFormatter.displayFrench(for: item))
                                     .font(AppTheme.Typography.cardTitle)
                                     .foregroundStyle(AppTheme.Colors.textPrimary)
                                     .lineLimit(1)
