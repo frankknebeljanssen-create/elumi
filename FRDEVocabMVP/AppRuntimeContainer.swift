@@ -103,7 +103,7 @@ final class AppRuntimeContainer: ObservableObject {
             appDebugLog("⏱ [Warmup:List] builtin prewarm: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
         }
 
-        flashcardWarmupTask = Task.detached(priority: .userInitiated) {
+        flashcardWarmupTask = Task.detached(priority: .userInitiated) { [weak self] in
             let totalStart = CFAbsoluteTimeGetCurrent()
             DataStore.prewarmFlashcardLaunchData()
             flashcardSessionRepository.prewarmStoredStateIfNeeded(
@@ -113,6 +113,20 @@ final class AppRuntimeContainer: ObservableObject {
                 sessionKey: "FRDEVocabMVP.flashcardSession.v1"
             )
             appDebugLog("⏱ [Warmup:Flashcard] TOTAL: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
+
+            // **Preload (2026-05-22)** — den FlashcardSessionStore direkt am
+            // Warmup-Ende bauen (der Snapshot ist jetzt frisch geprewarmt →
+            // billiger Init), damit beim ersten KK-Öffnen
+            // `flashcardSessionStore != nil` ist und der „Karteikarten werden
+            // vorbereitet"-Loader gar nicht erst triggert. nil-Guard: hat der
+            // User VOR dem Warmup-Ende getippt, baut `ensureDependenciesReady`
+            // den Store → kein Doppel-Bau. App-Start bleibt unberührt (Task ist
+            // detached; nur der billige Store-Init kommt ans Task-Ende).
+            await MainActor.run {
+                guard let self, self.flashcardSessionStore == nil else { return }
+                self.flashcardSessionStore = self.makeFlashcardSessionStore()
+                appDebugLog("⏱ [Warmup:Flashcard] flashcardSessionStore preloaded")
+            }
         }
 
         // Lexicon-Prewarm entfernt: der alte Task.detached hat im
@@ -141,10 +155,15 @@ final class AppRuntimeContainer: ObservableObject {
 
         if flashcardSessionStore == nil {
             await awaitFlashcardWarmupIfNeeded()
-            let start = CFAbsoluteTimeGetCurrent()
-            flashcardSessionStore = makeFlashcardSessionStore()
-            let elapsedMS = ms(since: start)
-            markFlashcardsOpenTiming?("init_flashcardSessionStore \(elapsedMS)ms")
+            // Re-Check nach dem await: der Warmup-Preload (am Task-Ende) kann
+            // den Store inzwischen gebaut haben — dann nicht überschreiben /
+            // doppelt bauen.
+            if flashcardSessionStore == nil {
+                let start = CFAbsoluteTimeGetCurrent()
+                flashcardSessionStore = makeFlashcardSessionStore()
+                let elapsedMS = ms(since: start)
+                markFlashcardsOpenTiming?("init_flashcardSessionStore \(elapsedMS)ms")
+            }
         }
     }
 
