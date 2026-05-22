@@ -12,6 +12,21 @@ struct ListDetailSheet: View {
     /// Stift-Button. Tap feuert den Callback — der Caller (`ListsView`)
     /// schließt das Detail-Sheet und öffnet das Rename-Sheet.
     var onRename: (() -> Void)? = nil
+
+    // **Editor-über-Detail (2026-05-22)** — der Vokabel-Editor wird jetzt
+    // INNERHALB dieser Sheet präsentiert (eigener Presenter-Kontext) → das
+    // Detail bleibt gemountet (kein Flackern zur Übersicht, Scroll bleibt
+    // automatisch erhalten). Der Editor-State lebt weiter in ListsView und
+    // wird als Bindings durchgereicht (Delete-Flows referenzieren ihn dort).
+    @Binding var showingEntryEditor: Bool
+    @Binding var editFrench: String
+    @Binding var editGerman: String
+    @Binding var editCardType: CardType
+    let editorTitle: String
+    let sourceFieldLabel: String
+    let onEditorSave: () -> Void
+    let onEditorCancel: () -> Void
+
     @State private var itemPendingDeletion: VocabularyItem?
 
     var body: some View {
@@ -217,6 +232,20 @@ struct ListDetailSheet: View {
             }
         } message: {
             Text(itemPendingDeletion.map { "„\($0.french)“ wird gelöscht." } ?? "")
+        }
+        // **Editor ÜBER dem Detail (2026-05-22)** — eigener Presenter →
+        // Detail bleibt gemountet (kein Flackern, Scroll-Erhalt).
+        .sheet(isPresented: $showingEntryEditor) {
+            VocabularyEntryEditorSheet(
+                style: style,
+                title: editorTitle,
+                sourceFieldLabel: sourceFieldLabel,
+                frenchText: $editFrench,
+                germanText: $editGerman,
+                cardType: $editCardType,
+                onCancel: onEditorCancel,
+                onSave: onEditorSave
+            )
         }
     }
 

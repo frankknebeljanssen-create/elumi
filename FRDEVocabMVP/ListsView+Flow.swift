@@ -20,10 +20,11 @@ extension ListsView {
             )
         }
 
-        // **Nav-Bug-Fix (2026-05-22)** — kein manuelles `showingEntryEditor =
-        // false` / `restoreListDetailIfNeeded()` mehr: der Editor-Save-Button
-        // ruft `dismiss()` → Sheet schließt → `onDismiss` restored die Detail-
-        // Sheet (deterministisch, kein Delay-Race).
+        // **Editor-über-Detail (2026-05-22)** — der Editor liegt jetzt als
+        // Sheet ÜBER dem Detail (in ListDetailSheet). Der Save-Button ruft
+        // `dismiss()` → Editor schließt → das Detail (gemountet darunter)
+        // erscheint wieder, Scroll erhalten. Kein manuelles
+        // `showingEntryEditor = false`, kein Restore mehr nötig.
         cancelEditing()
     }
 
@@ -32,11 +33,6 @@ extension ListsView {
         frenchText = item.french
         germanText = item.german
         cardType = item.cardType
-        showingEntryEditor = true
-    }
-
-    func startNewEntry() {
-        cancelEditing()
         showingEntryEditor = true
     }
 
@@ -64,19 +60,6 @@ extension ListsView {
         editableListName = createdName
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         showToast("„\(createdName)“ wurde angelegt.")
-    }
-
-    func restoreListDetailIfNeeded() {
-        guard shouldRestoreListDetailAfterEditing else { return }
-        shouldRestoreListDetailAfterEditing = false
-        // **Nav-Bug-Fix (2026-05-22)** — wird jetzt aus dem `onDismiss` der
-        // Editor-Sheet aufgerufen, d. h. der Editor ist bereits vollständig
-        // geschlossen → kein 0.18s-Race mehr. Ein Next-Runloop-Hop (kein fixer
-        // Delay) stellt sicher, dass die Dismiss-Transaktion settled ist, bevor
-        // die Detail-Sheet neu präsentiert wird.
-        DispatchQueue.main.async {
-            showingListDetail = true
-        }
     }
 
     func showToast(_ message: String, isSuccess: Bool = true) {

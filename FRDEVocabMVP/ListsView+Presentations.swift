@@ -3,34 +3,11 @@ import SwiftUI
 extension ListsView {
     func applyListsPresentations<Content: View>(to content: Content) -> some View {
         content
-            // **Nav-Bug-Fix (2026-05-22)** — Detail-Sheet wird über
-            // `onDismiss` der Editor-Sheet wieder geöffnet, NICHT mehr per
-            // fixem 0.18s-Delay aus `saveEntry`/`onCancel`. onDismiss feuert
-            // erst nach vollständigem Editor-Dismiss → keine Race mehr
-            // (vorher: Detail-Re-Präsentation wurde während des Dismiss
-            // verschluckt → User landete in der Listen-Übersicht). Deckt
-            // Save UND Cancel (und Swipe-Down) ab; der `shouldRestore…`-Flag
-            // sorgt dafür, dass nur reöffnet wird, wenn aus dem Detail editiert.
-            .sheet(isPresented: $showingEntryEditor, onDismiss: {
-                restoreListDetailIfNeeded()
-            }) {
-                VocabularyEntryEditorSheet(
-                    style: sectionStyle,
-                    title: editingItemID == nil ? "Neue Vokabeln eingeben" : "Vokabel bearbeiten",
-                    sourceFieldLabel: sourceFieldLabel,
-                    frenchText: $frenchText,
-                    germanText: $germanText,
-                    cardType: $cardType,
-                    onCancel: {
-                        // Schließen + Restore laufen über `dismiss()` (Editor-
-                        // Button) → `onDismiss` oben.
-                        cancelEditing()
-                    },
-                    onSave: {
-                        saveEntry()
-                    }
-                )
-            }
+            // **Editor-über-Detail (2026-05-22)** — die frühere Editor-Sheet
+            // hier wurde entfernt; der Editor wird jetzt INNERHALB von
+            // `ListDetailSheet` präsentiert (siehe dortige Params), damit das
+            // Detail gemountet bleibt (kein Flackern, Scroll-Erhalt). Der
+            // close-one-open-other-Tanz + onDismiss-Restore entfällt komplett.
             .sheet(isPresented: $showingListPicker) {
                 ListPickerSheet(
                     style: sectionStyle,
@@ -158,9 +135,9 @@ extension ListsView {
                         }
                     },
                     onEdit: { item in
-                        shouldRestoreListDetailAfterEditing = true
+                        // Editor öffnet jetzt ÜBER dem Detail (Sheet in
+                        // ListDetailSheet) — Detail NICHT mehr schließen.
                         beginEditing(item)
-                        showingListDetail = false
                     },
                     onDelete: { item in
                         listStore.removeItem(itemID: item.id, from: selectedList.id)
@@ -179,7 +156,18 @@ extension ListsView {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                             showingRenameDialog = true
                         }
-                    }
+                    },
+                    // **Editor-über-Detail (2026-05-22)** — Editor-State aus
+                    // ListsView als Bindings durchgereicht; Detail trägt die
+                    // Editor-Sheet selbst.
+                    showingEntryEditor: $showingEntryEditor,
+                    editFrench: $frenchText,
+                    editGerman: $germanText,
+                    editCardType: $cardType,
+                    editorTitle: editingItemID == nil ? "Neue Vokabeln eingeben" : "Vokabel bearbeiten",
+                    sourceFieldLabel: sourceFieldLabel,
+                    onEditorSave: { saveEntry() },
+                    onEditorCancel: { cancelEditing() }
                 )
                 .interactiveDismissDisabled()
             }

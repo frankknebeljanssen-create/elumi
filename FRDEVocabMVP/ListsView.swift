@@ -40,7 +40,6 @@ struct ListsView: View {
     }
     @State var showingListDetail = false
     @State var showingCreateListForm = false
-    @State var shouldRestoreListDetailAfterEditing = false
     @State var listPendingDeletion: VocabularyList?
     @State var toastMessage = ""
     @State var isShowingToast = false
