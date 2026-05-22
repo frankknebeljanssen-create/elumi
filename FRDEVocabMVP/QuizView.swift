@@ -166,25 +166,6 @@ struct QuizView: View {
         }
     }
 
-    /// Fasst die Quiz-spezifischen Elumi-Rewards (Hearts-Sammlung) zusammen.
-    /// XP läuft jetzt ausschließlich über `SessionSummaryView` — wird hier
-    /// bewusst NICHT mehr dupliziert (sonst divergieren alte/neue Rechnung).
-    var rewardSummaryText: String {
-        var parts: [String] = []
-
-        if awardedHearts > 0 {
-            parts.append("+\(awardedHearts) Würmchen")
-        }
-        if awardedWaterfloh > 0 {
-            parts.append("+\(awardedWaterfloh) Wasserflöhe")
-        }
-        if awardedAlgenkugel > 0 {
-            parts.append("+\(awardedAlgenkugel) Algenkugeln")
-        }
-
-        return parts.isEmpty ? "Quiz beendet" : parts.joined(separator: " · ")
-    }
-
     var currentLevelAfterRewards: ElumiLevelTier {
         elumiLevelTier(for: collectedXP)
     }
@@ -212,16 +193,6 @@ struct QuizView: View {
             rewards.append(.init(kind: .algenkugel, count: awardedAlgenkugel))
         }
         return rewards
-    }
-
-    var dominantRewardSnackKind: ElumiSnackKind {
-        if awardedAlgenkugel > 0 {
-            return .algenkugel
-        }
-        if awardedWaterfloh > 0 {
-            return .wasserfloh
-        }
-        return .wuermchen
     }
 
     var quizTopBarSpacing: CGFloat {

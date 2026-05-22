@@ -1,27 +1,6 @@
 import SwiftUI
 
 extension QuizView {
-var quizResultHero: some View {
-    ZStack {
-        Circle()
-            .fill(sectionStyle.accent.opacity(0.12))
-            .frame(width: 108, height: 108)
-
-        Circle()
-            .stroke(sectionStyle.accent.opacity(0.24), lineWidth: 1.5)
-            .frame(width: 96, height: 96)
-
-        if totalRewardCount > 0 {
-            ElumiSnackIcon(dominantRewardSnackKind, size: 44)
-        } else {
-            Image(systemName: "checkmark.seal.fill")
-                .font(.system(size: 40, weight: .bold))
-                .foregroundStyle(sectionStyle.accent)
-        }
-    }
-    .frame(maxWidth: .infinity)
-}
-
 var quizSetupScreen: some View {
     // Migration auf das Master-Session-Setup-System:
     //   • Header, Spacing, CTA kommen zentral aus `SessionSetupScreen`

@@ -60,41 +60,6 @@ extension QuizView {
         }
     }
 
-    func resultStatCard(title: String, value: String, tint: Color) -> some View {
-        VStack(spacing: AppTheme.Spacing.xxs) {
-            Text(value)
-                .font(AppTheme.Typography.screenTitle)
-                .foregroundStyle(tint)
-            Text(title)
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(tint.opacity(0.92))
-        }
-        .padding(.vertical, AppTheme.Spacing.xs)
-        .frame(maxWidth: .infinity, minHeight: 76)
-        .background(tint.opacity(0.14))
-        .overlay(
-            RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                .stroke(tint.opacity(0.42), lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
-    }
-
-    @ViewBuilder
-    func rewardChip(kind: ElumiSnackKind, value: Int) -> some View {
-        if value > 0 {
-            HStack(spacing: 6) {
-                ElumiSnackIcon(kind, size: 18)
-                Text("+\(value)")
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-            }
-            .padding(.horizontal, AppTheme.Spacing.sm)
-            .padding(.vertical, AppTheme.Spacing.xs)
-            .background(AppTheme.Colors.secondarySurface)
-            .clipShape(Capsule())
-        }
-    }
-
     func multipleChoiceCard(_ question: QuizMultipleChoiceQuestion) -> some View {
         VStack(spacing: AppTheme.Spacing.sm) {
             AppSurfaceCard(tint: sectionStyle.accent) {
