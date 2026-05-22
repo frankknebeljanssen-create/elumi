@@ -428,6 +428,9 @@ extension FlashcardsView {
                 // Render-Branch in `flashcardPrimaryActions`.
                 AnswerModeSelector(
                     mode: karteikartenAnswerModeBinding,
+                    // **Ansehen-Modus (2026-05-22)** — NUR Karteikarten
+                    // bietet den 3. Modus `.view` an. Vokabeln/Nomen nicht.
+                    modes: [.speech, .tap, .view],
                     accent: sectionStyle.accent,
                     onChange: { _ in feedbackPlayer.playTabSwitch() }
                 )

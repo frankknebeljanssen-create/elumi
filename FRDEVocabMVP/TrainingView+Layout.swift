@@ -519,6 +519,9 @@ extension TrainingView {
     private var nounAnswerModeSection: some View {
         AnswerModeSelector(
             mode: nomenAnswerModeBinding,
+            // **Ansehen-Modus (2026-05-22)** — explizit ohne `.view`;
+            // der Ansehen-Modus ist Karteikarten-exklusiv.
+            modes: [.speech, .tap],
             accent: trainingActionTint,
             onChange: { _ in feedbackPlayer.playTabSwitch() }
         )
@@ -571,6 +574,9 @@ extension TrainingView {
             // auf `session.vokabelnAnswerMode` zu.
             AnswerModeSelector(
                 mode: vokabelnAnswerModeBinding,
+                // **Ansehen-Modus (2026-05-22)** — explizit ohne `.view`;
+                // der Ansehen-Modus ist Karteikarten-exklusiv.
+                modes: [.speech, .tap],
                 accent: trainingActionTint,
                 onChange: { _ in feedbackPlayer.playTabSwitch() }
             )

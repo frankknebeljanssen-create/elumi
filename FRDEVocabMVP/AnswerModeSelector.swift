@@ -28,6 +28,12 @@ struct AnswerModeSelector: View {
     /// im Setup-Screen).
     @Binding var mode: AnswerMode
 
+    /// Welche Modi angeboten werden. Default `allCases` (backward-kompat).
+    /// **2026-05-22** — Karteikarten übergibt `[.speech, .tap, .view]`,
+    /// Vokabeln/Nomen `[.speech, .tap]` → `.view` (Ansehen) erscheint NUR
+    /// im KK-Setup.
+    var modes: [AnswerMode] = AnswerMode.allCases
+
     /// Modul-Akzent-Farbe für Selected-State (Tint-Fill + Border).
     let accent: Color
 
@@ -47,7 +53,7 @@ struct AnswerModeSelector: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(alignment: .top, spacing: 10) {
-                ForEach(AnswerMode.allCases) { option in
+                ForEach(modes) { option in
                     card(for: option)
                 }
             }

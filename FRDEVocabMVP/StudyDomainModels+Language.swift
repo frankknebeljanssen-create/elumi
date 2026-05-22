@@ -278,6 +278,12 @@ enum TrainingMode: String, CaseIterable, Identifiable, Hashable {
 enum AnswerMode: String, CaseIterable, Identifiable, Hashable, Codable {
     case speech
     case tap
+    /// **Ansehen-Modus (2026-05-22)** — NUR Karteikarten. Karte
+    /// aufdecken + Selbst-Bewertung („Kann ich" / „Kann ich nicht").
+    /// Erscheint im Setup nur, wo der Caller `.view` in `modes` übergibt
+    /// (siehe `AnswerModeSelector`); Vokabeln/Nomen bieten ihn nicht an.
+    /// Die Modus-Logik selbst kommt in Modul 2 — hier nur der Case.
+    case view
 
     var id: String { rawValue }
 
@@ -286,16 +292,19 @@ enum AnswerMode: String, CaseIterable, Identifiable, Hashable, Codable {
         switch self {
         case .speech: return "Sprechen"
         case .tap:    return "Tippen"
+        case .view:   return "Ansehen"
         }
     }
 
     /// SF-Symbol für die Card. `mic.fill` für Speech, `keyboard.fill`
     /// für Tap (analog zu der bestehenden Nomen-Selector-Mechanik mit
-    /// `square.grid.2x2.fill` für die Wortauswahl-Card).
+    /// `square.grid.2x2.fill` für die Wortauswahl-Card). `eye.fill`
+    /// für Ansehen.
     var systemImage: String {
         switch self {
         case .speech: return "mic.fill"
         case .tap:    return "keyboard.fill"
+        case .view:   return "eye.fill"
         }
     }
 }
