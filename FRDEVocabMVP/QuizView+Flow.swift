@@ -15,7 +15,15 @@ extension QuizView {
         appDebugLog("🧩 [Quiz] startQuiz called, candidates=\(session.cachedCandidates.count), prepared=\(session.preparedQuestions.count)")
         // Launch-Sound beim Session-Start — systemweit identisch zum
         // Speed-Round-Start in Verbformen.
-        feedbackPlayer.playLaunch()
+        // **Daily Drop Modul 2.12 (2026-05-23)** — im Count-Modus (Daily Drop)
+        // stumm: der Quiz-Step wird nahtlos per chainAdvance erreicht, der
+        // Start-Sound bei jedem Step-Wechsel wirkt wie ein störender
+        // Übergangs-„Toast"-Ton (User-Befund; der in 2.10 geflaggte, aber
+        // noch nicht stummgeschaltete `playLaunch`). Normales Quiz +
+        // Zeit-Chain + isolierter Modul-1-Test (kein chainContext): bleibt.
+        if !isCountChainStep {
+            feedbackPlayer.playLaunch()
+        }
         session.syncSelectedLists(availableLists: availableQuizLists)
         session.startQuiz(direction: selectedAppDirection)
         awardedHearts = 0
@@ -57,27 +65,20 @@ extension QuizView {
     func submitTyping(for question: QuizTypingQuestion) {
         guard !typingLocked else { return }
         let userInput = typingInput.trimmingCharacters(in: .whitespacesAndNewlines)
-        // **Daily Drop Modul 2.12 (2026-05-23)** — im Count-Modus zählt eine
-        // leere Eingabe als falsch (löst den Soft-Lock: „Überprüfen" ist
-        // dort immer aktiv). Normales Quiz: leere Eingabe wird wie bisher
-        // ignoriert (Soft-Lock-Schutz für den entspannten Modus).
-        if !isCountChainStep {
-            guard !userInput.isEmpty else { return }
-        }
+        // **Daily Drop Modul 2.12 (2026-05-23)** — leere Eingabe wird in
+        // ALLEN Modi ignoriert: ohne Inhalt kein Check. Im Count-Modus
+        // bleibt „Weiter" dadurch gedimmt, bis tatsächlich etwas eingegeben
+        // und geprüft wurde (User-Spec).
+        guard !userInput.isEmpty else { return }
         typingLocked = true
         isTypingFieldFocused = false
 
         let got = normalizedLookupText(userInput)
         let expected = normalizedLookupText(question.correctAnswer)
-        // `!userInput.isEmpty &&` schützt gegen den `expected.contains("")`-
-        // Treffer (jeder String enthält den Leerstring) — eine leere
-        // Eingabe darf nie als richtig durchrutschen.
-        let isCorrect = !userInput.isEmpty && (
-            got == expected
+        let isCorrect = got == expected
             || levenshteinRatio(got, expected) <= 0.25
             || got.contains(expected)
             || expected.contains(got)
-        )
 
         if isCorrect {
             feedbackPlayer.playStudySuccess()

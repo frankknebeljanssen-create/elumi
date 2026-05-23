@@ -45,8 +45,10 @@ extension QuizView {
 
                     // **Daily Drop Modul 2.12 (2026-05-23)** — im Count-Modus
                     // verschwindet „Überprüfen" sobald geprüft wurde; dann
-                    // übernimmt der externe „Weiter"-Button. Außerdem ist es
-                    // dort immer aktiv (leere Eingabe zählt als falsch).
+                    // übernimmt der externe „Weiter"-Button. Bei leerer Eingabe
+                    // ist es deaktiviert (kein Check ohne Inhalt) — dadurch
+                    // bleibt „Weiter" gedimmt, bis etwas eingegeben + geprüft
+                    // wurde (User-Spec 2.12).
                     if !(isCountChainStep && quizAwaitingWeiter) {
                         let trimmedEmpty = typingInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                         Button {
@@ -55,8 +57,8 @@ extension QuizView {
                             Text("Überprüfen")
                                 .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(AppPrimaryButtonStyle(color: (isCountChainStep || !trimmedEmpty) ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled))
-                        .disabled(typingLocked || (!isCountChainStep && trimmedEmpty))
+                        .buttonStyle(AppPrimaryButtonStyle(color: trimmedEmpty ? AppTheme.Colors.textDisabled : AppTheme.Colors.cta))
+                        .disabled(trimmedEmpty || typingLocked)
                     }
                 }
             }

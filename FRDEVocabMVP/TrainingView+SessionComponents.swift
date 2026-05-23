@@ -154,23 +154,27 @@ extension TrainingView {
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
             } else if showsNotRecognizedMessage {
-                Text("Nicht erkannt — nochmal sprechen oder „Weiter\"")
+                Text("Nicht erkannt — nochmal versuchen!")
                     .font(AppTheme.Typography.body)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity, alignment: .center)
             } else {
-                Text("Antworte – dann „Weiter\"")
+                Text("Antworte und prüfe – dann „Weiter\"")
                     .font(AppTheme.Typography.body)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .center)
             }
 
+            // **Daily Drop Modul 2.12 (2026-05-23)** — „Weiter" immer sichtbar,
+            // aber gedimmt + deaktiviert bis geprüft wurde (`vokabelAwaitingWeiter`):
+            // kein Überspringen ohne Antwort (User-Spec). Erst Eingabe/Auswahl
+            // + „Prüfen", dann ist „Weiter" aktiv.
             Button("Weiter") {
                 advanceVokabelCountMode()
             }
-            .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
-            .disabled(!session.hasStartedTraining || currentCard == nil)
+            .buttonStyle(AppPrimaryButtonStyle(color: vokabelAwaitingWeiter ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled))
+            .disabled(!session.hasStartedTraining || currentCard == nil || !vokabelAwaitingWeiter)
         }
         .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
         .padding(14)
@@ -545,15 +549,14 @@ extension TrainingView {
                     // Feste Breite wie KK → klammert das interne maxWidth des
                     // Button-Styles, das Feld bekommt die Restbreite (1-zeilig).
                     .frame(width: 100)
-                    // **Daily Drop Modul 2.12 (2026-05-23)** — im Count-Modus
-                    // ist „Prüfen" auch bei leerem Feld aktiv (leer = falsch,
-                    // Soft-Lock-Auflösung) und nach dem Check deaktiviert (dann
-                    // übernimmt „Weiter" in der Feedback-Card). Normales
-                    // Training: deaktiviert bei leerer Eingabe wie bisher.
+                    // **Daily Drop Modul 2.12 (2026-05-23)** — „Prüfen" ist bei
+                    // leerem Feld in allen Modi deaktiviert (kein Check ohne
+                    // Inhalt → „Weiter" bleibt gedimmt, User-Spec). Im
+                    // Count-Modus zusätzlich nach dem Check deaktiviert (dann
+                    // übernimmt „Weiter" in der Feedback-Card).
                     .disabled(!session.hasStartedTraining || currentCard == nil
-                        || (isCountChainStep
-                            ? vokabelAwaitingWeiter
-                            : typedAnswer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty))
+                        || typedAnswer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        || (isCountChainStep && vokabelAwaitingWeiter))
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)

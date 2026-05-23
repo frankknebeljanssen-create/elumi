@@ -495,7 +495,10 @@ extension TrainingView {
     /// Counter; danach prüft `loadNextTrainingCard` den Cap mit dem frischen
     /// Zählerstand.
     func advanceVokabelCountMode() {
-        let correct = vokabelAwaitingWeiter ? (vokabelPendingCorrect ?? false) : false
+        // „Weiter" ist nur aktiv, wenn geprüft wurde — defensiver Guard
+        // gegen Doppel-Tap / Race (kein Advance ohne vorherigen Check).
+        guard vokabelAwaitingWeiter else { return }
+        let correct = vokabelPendingCorrect ?? false
         vokabelAwaitingWeiter = false
         vokabelPendingCorrect = nil
         vokabelCheckedAnswer = ""

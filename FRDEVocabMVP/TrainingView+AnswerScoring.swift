@@ -27,9 +27,12 @@ extension TrainingView {
         // überspringen (= falsch). Normales Training: unverändert darunter.
         if isCountChainStep {
             if got.isEmpty {
-                if isVokabelnTapMode {
-                    registerCountAnswer(correct: false, answerShown: rawInput)
-                } else {
+                // Leere Eingabe wertet NICHT — „Weiter" bleibt gedimmt, bis
+                // tatsächlich etwas eingegeben/gewählt und geprüft wurde
+                // (User-Spec 2.12). Sprach-Modus: „Nicht erkannt" + Mikro-
+                // Auto-Resume (Mikro-Anker, Modul 5 / Block 3.7.2). Tipp-
+                // Modus: „Prüfen" ist bei leerem Feld ohnehin deaktiviert.
+                if !isVokabelnTapMode {
                     lastResult = ScoreResult(
                         label: "Nicht erkannt",
                         detail: "Nochmal versuchen!"
