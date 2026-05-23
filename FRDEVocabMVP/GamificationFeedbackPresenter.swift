@@ -189,6 +189,73 @@ struct MilestoneOverlayView: View {
     }
 }
 
+// MARK: - Würmchen-Tick (Daily Drop Modul 5)
+
+/// **Daily Drop Modul 5 (2026-05-23)** — Mikro-Würmchen-Tick pro richtiger
+/// Aufgabe. Beobachtet denselben `successPulseTrigger`, den der
+/// `FeedbackEngine` bei jeder richtigen Antwort inkrementiert (Quiz +
+/// Vokabel), und blendet je Tick ein kleines Würmchen ein (Pop-In →
+/// Aufsteigen + Fade). **Rein visuell** — keine Snack-Vergabe (die echten
+/// Würmchen laufen weiter über die Session-End-Aggregation). Abgegrenzt
+/// zum Serien-Toast (`ComboToastOverlay`, oben, nur bei Serie): der Tick
+/// feuert bei JEDER richtigen Antwort und liegt etwas tiefer.
+struct WuermchenTickOverlay: View {
+    @ObservedObject private var presenter = GamificationFeedbackPresenter.shared
+    @State private var ticks: [Tick] = []
+
+    struct Tick: Identifiable, Equatable {
+        let id = UUID()
+    }
+
+    var body: some View {
+        ZStack {
+            ForEach(ticks) { tick in
+                WuermchenTickGlyph(id: tick.id)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        // Etwas unterhalb der oberen Kante → klar getrennt vom Serien-Toast.
+        .padding(.top, 70)
+        .allowsHitTesting(false)
+        .onChange(of: presenter.successPulseTrigger) { _, _ in
+            let tick = Tick()
+            ticks.append(tick)
+            // Nach Ablauf der Animation wieder entfernen (Cleanup gegen
+            // unbegrenztes Array-Wachstum bei schneller Antwort-Kadenz).
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
+                ticks.removeAll { $0.id == tick.id }
+            }
+        }
+    }
+}
+
+/// Einzelner Würmchen-Glyph: Pop-In (Scale + Opacity), dann Aufsteigen +
+/// Ausblenden. Selbst-startend via `onAppear`; die Eltern-View entfernt
+/// den Glyph nach ~0.9 s.
+private struct WuermchenTickGlyph: View {
+    let id: UUID
+    @State private var scale: CGFloat = 0.5
+    @State private var opacity: Double = 0
+    @State private var offsetY: CGFloat = 0
+
+    var body: some View {
+        ElumiSnackIcon(.wuermchen, size: 30)
+            .scaleEffect(scale)
+            .opacity(opacity)
+            .offset(y: offsetY)
+            .onAppear {
+                withAnimation(.easeOut(duration: 0.16)) {
+                    scale = 1.0
+                    opacity = 1.0
+                }
+                withAnimation(.easeIn(duration: 0.55).delay(0.18)) {
+                    offsetY = -64
+                    opacity = 0.0
+                }
+            }
+    }
+}
+
 // MARK: - Card-Rendering
 
 private struct StreakMomentCard: View {

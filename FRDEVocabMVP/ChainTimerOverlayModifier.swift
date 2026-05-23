@@ -43,9 +43,26 @@ struct ChainTimerOverlayModifier: ViewModifier {
             .overlay {
                 cutoffModalOverlay
             }
+            .overlay {
+                wuermchenTickOverlay
+            }
             .onChange(of: chainStore.timerExpired) { _, newValue in
                 handleTimerExpiredChange(newValue)
             }
+    }
+
+    // MARK: - Würmchen-Tick (Modul 5)
+
+    /// **Daily Drop Modul 5 (2026-05-23)** — Mikro-Würmchen-Tick pro richtiger
+    /// Aufgabe, NUR im Count-Modus. Ein Mount hier deckt alle Count-Chain-
+    /// Steps (Quiz + Vokabel) ab. Zeit-Chain + normale Module: kein Tick
+    /// (EmptyView → kein Overlay-Effekt). Rein visuell, lauscht am globalen
+    /// `successPulseTrigger`.
+    @ViewBuilder
+    private var wuermchenTickOverlay: some View {
+        if chainStore.currentChain?.isCountMode == true {
+            WuermchenTickOverlay()
+        }
     }
 
     // MARK: - Top-Bar (kompakt)
