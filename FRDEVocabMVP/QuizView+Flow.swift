@@ -271,7 +271,12 @@ extension QuizView {
         awardedWaterfloh = rewardOutcome.waterfloh
         awardedAlgenkugel = rewardOutcome.algenkugel
         unlockedRewardLevels = rewardOutcome.unlockedLevels
-        if totalRewardCount > 0 {
+        // **Daily Drop Modul 2.10 (2026-05-23)** — im Count-Modus den
+        // Abschluss-/Achievement-Sound unterdrücken: der Quiz-Step endet
+        // dort nahtlos (kein sichtbarer Abschluss). Der Antwort-Sound pro
+        // Aufgabe (`playStudySuccess`/`playStudyError`) bleibt unberührt.
+        // Normales Quiz + Zeit-Chain: Sound bleibt.
+        if totalRewardCount > 0, !isCountChainStep {
             feedbackPlayer.playStudyAchievement()
         }
     }

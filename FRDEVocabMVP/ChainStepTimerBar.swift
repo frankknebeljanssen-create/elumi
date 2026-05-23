@@ -318,7 +318,10 @@ struct ChainStepCountBar: View {
                 ForEach(0..<safeTotal, id: \.self) { index in
                     Capsule()
                         .fill(segmentColor(at: index))
-                        .frame(height: 5)
+                        // **Daily Drop Modul 2.10 (2026-05-23)** — Segment-Höhe
+                        // verdoppelt (5 → 10); Capsule rundet automatisch
+                        // proportional (kein expliziter Corner-Radius nötig).
+                        .frame(height: 10)
                         .animation(.easeOut(duration: 0.25), value: results.count)
                 }
             }

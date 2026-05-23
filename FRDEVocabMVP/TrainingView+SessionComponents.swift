@@ -390,12 +390,15 @@ extension TrainingView {
             // `textPrimary` (cream) für den Glyph; Border + Press-
             // Tint bleiben in der Modul-Akzent-Farbe (Modul-Identität
             // erhalten). Pattern-Mirror zum Pre-Screen-Pill-Fix.
-            // **Daily Drop Modul 2.7 (2026-05-23)** — Antwort-Footer
-            // (Lösung / Nächstes Wort) bei offener Tastatur ausblenden, damit
-            // er nicht mit hochschiebt. `typedAnswerFieldFocused` (FocusState
-            // am Eingabefeld) steuert das; das Eingabefeld selbst
-            // (`typedAnswerControl` darüber) bleibt sichtbar. Generisch.
-            if !typedAnswerFieldFocused {
+            // **Daily Drop Modul 2.7/2.10 (2026-05-23)** — Antwort-Footer
+            // (Lösung / Nächstes Wort) ausblenden:
+            //   • Count-Modus (Daily Drop): IMMER weg — „Nächstes Wort" (Skip)
+            //     würde die „X von N"-Zählung untergraben; „Lösung" verfälscht
+            //     die richtig/falsch-Wertung + die Balken-Segmente.
+            //   • Normales Training: nur bei offener Tastatur weg
+            //     (`typedAnswerFieldFocused`, schiebt sonst mit hoch), sonst da.
+            // Das Eingabefeld (`typedAnswerControl` darüber) bleibt sichtbar.
+            if !isCountChainStep && !typedAnswerFieldFocused {
             HStack(spacing: 10) {
                 Button {
                     revealSolution()
@@ -435,7 +438,7 @@ extension TrainingView {
                 .disabled(!session.hasStartedTraining || session.preparedTrainingItems.isEmpty)
                 .opacity(!session.hasStartedTraining || session.preparedTrainingItems.isEmpty ? 0.5 : 1)
             }
-            } // ← Ende `if !typedAnswerFieldFocused` (Footer bei Tastatur weg)
+            } // ← Ende `if !isCountChainStep && !typedAnswerFieldFocused` (Footer)
         }
     }
 
