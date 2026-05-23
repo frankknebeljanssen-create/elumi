@@ -611,9 +611,26 @@ struct ElumiTabView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 8)
                 } else {
-                    HStack(spacing: 12) {
-                        ForEach(Self.exerciseCountOptions, id: \.self) { count in
-                            exerciseCountChip(count: count)
+                    VStack(spacing: 10) {
+                        HStack(spacing: 12) {
+                            ForEach(Self.exerciseCountOptions, id: \.self) { count in
+                                exerciseCountChip(count: count)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+
+                        // **Daily Drop Modul 3 (2026-05-23)** — Material-Hinweis
+                        // unter den Chips: nennt die NÄCHSTE erreichbare Schwelle
+                        // (kleinste ausgegraute Länge) statt aller — eine klare,
+                        // umsetzbare Zeile. Sobald sie erreicht ist, rückt der
+                        // Hinweis automatisch auf die nächste Länge. Kein Hinweis
+                        // wenn alle Längen verfügbar sind (`first(where:)` == nil).
+                        if let nextLocked = Self.exerciseCountOptions.first(where: { cachedDailyDropMaterial < $0 }) {
+                            Text("\(exerciseLengthLabel(nextLocked)) braucht mindestens \(nextLocked) Vokabeln")
+                                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                                .foregroundStyle(AppTheme.Colors.textSecondary)
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: .infinity)
                         }
                     }
                     .frame(maxWidth: .infinity)
