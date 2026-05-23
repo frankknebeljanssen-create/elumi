@@ -601,9 +601,9 @@ struct ElumiTabView: View {
                 // **Daily Drop Modul 3 (2026-05-23)** — Anzahl-Picker:
                 // Kurz/Mittel/Lang (10/20/30 Übungen). Längen ohne genug
                 // Material sind ausgegraut (`exerciseCountChip`); reicht es
-                // nicht mal für Kurz (< 10), erscheint ein Hinweis statt
-                // der Chips. Tap löst auto-close aus.
-                if cachedDailyDropMaterial < (Self.exerciseCountOptions.first ?? 10) {
+                // nicht mal für Kurz (Material < 10/2 = 5), erscheint ein
+                // Hinweis statt der Chips. Tap löst auto-close aus.
+                if cachedDailyDropMaterial < ((Self.exerciseCountOptions.first ?? 10) / 2) {
                     Text("Zu wenig Material für einen Drop. Wähle mehr Listen oder erweitere die Lernjahre.")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
@@ -625,8 +625,8 @@ struct ElumiTabView: View {
                         // umsetzbare Zeile. Sobald sie erreicht ist, rückt der
                         // Hinweis automatisch auf die nächste Länge. Kein Hinweis
                         // wenn alle Längen verfügbar sind (`first(where:)` == nil).
-                        if let nextLocked = Self.exerciseCountOptions.first(where: { cachedDailyDropMaterial < $0 }) {
-                            Text("\(exerciseLengthLabel(nextLocked)) braucht mindestens \(nextLocked) Vokabeln")
+                        if let nextLocked = Self.exerciseCountOptions.first(where: { cachedDailyDropMaterial < $0 / 2 }) {
+                            Text("Für \(exerciseLengthLabel(nextLocked)) brauchst du mehr Vokabeln")
                                 .font(.system(size: 13, weight: .semibold, design: .rounded))
                                 .foregroundStyle(AppTheme.Colors.textSecondary)
                                 .multilineTextAlignment(.center)
@@ -1187,7 +1187,10 @@ struct ElumiTabView: View {
     private func exerciseCountChip(count: Int) -> some View {
         let moduleColor = sectionStyle.accent
         let isSelected = modalExerciseSelection == count
-        let isAvailable = cachedDailyDropMaterial >= count
+        // **Daily Drop Modul 3 (2026-05-23, Fix)** — Bedarf ist per-Step
+        // (even-split: N/2 je Typ), nicht N gesamt. `count / 2` statt `count`
+        // → eine 49er-Liste graut Lang nicht mehr unnötig aus.
+        let isAvailable = cachedDailyDropMaterial >= count / 2
         return ZStack {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(isSelected ? moduleColor.opacity(0.25) : AppTheme.Colors.secondarySurface)
