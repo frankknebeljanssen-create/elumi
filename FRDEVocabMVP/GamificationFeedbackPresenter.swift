@@ -224,7 +224,8 @@ struct WuermchenTickOverlay: View {
             ticks.append(tick)
             // Nach Ablauf der Animation wieder entfernen (Cleanup gegen
             // unbegrenztes Array-Wachstum bei schneller Antwort-Kadenz).
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
+            // **Politur 2026-05-23** — länger (1.7 s > Gesamt-Animation ~1.5 s).
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.7) {
                 ticks.removeAll { $0.id == tick.id }
             }
         }
@@ -236,24 +237,31 @@ struct WuermchenTickOverlay: View {
 /// den Glyph nach ~0.9 s.
 private struct WuermchenTickGlyph: View {
     let id: UUID
-    @State private var scale: CGFloat = 0.5
+    @State private var scale: CGFloat = 0.3
     @State private var opacity: Double = 0
     @State private var offsetY: CGFloat = 0
 
     var body: some View {
-        ElumiSnackIcon(.wuermchen, size: 30)
+        // **Modul 5 Politur (2026-05-23)** — größer (30 → 46), damit der
+        // Würmchen-Tick als Belohnung wahrnehmbar ist.
+        ElumiSnackIcon(.wuermchen, size: 46)
             .scaleEffect(scale)
             .opacity(opacity)
             .offset(y: offsetY)
             .onAppear {
-                withAnimation(.easeOut(duration: 0.16)) {
-                    scale = 1.0
+                // Belohnender Pop-In: kräftiger Spring mit Overshoot
+                // (0.3 → ~1.1 → 1.0), Opacity schnell rein.
+                withAnimation(.easeOut(duration: 0.18)) {
                     opacity = 1.0
                 }
-                withAnimation(.easeIn(duration: 0.55).delay(0.18)) {
-                    // **Modul 5 Fix (2026-05-23)** — kleinerer Aufstieg (-22),
-                    // damit der Tick nicht in den Titel-Bereich hochwandert.
-                    offsetY = -22
+                withAnimation(.spring(response: 0.34, dampingFraction: 0.5)) {
+                    scale = 1.0
+                }
+                // Längeres, sanftes Aufsteigen + Ausblenden (~1.1 s nach
+                // kurzem Halt → Gesamt ~1.5 s). Kleiner Aufstieg (-18), damit
+                // der größere Glyph nicht in den Titel-Bereich wandert.
+                withAnimation(.easeInOut(duration: 1.1).delay(0.4)) {
+                    offsetY = -18
                     opacity = 0.0
                 }
             }
