@@ -31,11 +31,19 @@ extension TrainingView {
                         trainingSetupScreen
                     }
                 } else if let outcome = trainingSessionOutcome {
-                    // Nach einer beendeten Session zeigen wir die einheitliche
-                    // `SessionSummaryView` — gleiche Optik wie Karteikarten /
-                    // Verbformen. „Weiter" räumt das Outcome weg und gibt die
-                    // Setup-Card wieder frei.
-                    trainingSummaryScreen(outcome: outcome)
+                    // **Daily Drop Modul 2.5** — Count-Chain: nahtlos, keine
+                    // Zwischen-Summary (Auto-Advance in
+                    // `forceTrainingDoneFromChainTimer`). `Color.clear` bis
+                    // `replaceTop` greift.
+                    if isCountChainStep {
+                        Color.clear
+                    } else {
+                        // Nach einer beendeten Session zeigen wir die einheitliche
+                        // `SessionSummaryView` — gleiche Optik wie Karteikarten /
+                        // Verbformen. „Weiter" räumt das Outcome weg und gibt die
+                        // Setup-Card wieder frei.
+                        trainingSummaryScreen(outcome: outcome)
+                    }
                 } else if session.isShowingSetup {
                     trainingSetupScreen
                 } else {

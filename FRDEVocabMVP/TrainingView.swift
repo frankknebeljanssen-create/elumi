@@ -8,6 +8,13 @@ struct TrainingView: View {
     /// `trainingSummaryScreen` als auch `verbformsResultScreen`
     /// gelesen, weil beide Done-CTAs das Chain-Pattern unterstützen.
     @Environment(\.appChainAdvanceAction) var chainAdvance
+    /// **Daily Drop Modul 2.5 (2026-05-23)** — Count-Modus-Chain-Step?
+    /// Dann nahtloser Auto-Advance statt Zwischen-Summary. False bei
+    /// Zeit-Chain (Summary+CTA) und im isolierten Modul-1-Test (kein
+    /// chainContext).
+    var isCountChainStep: Bool {
+        launchContext?.chainContext?.isCountMode == true
+    }
     @AppStorage(appDirectionKey) var selectedAppDirectionRaw = Direction.frenchToGerman.rawValue
     @AppStorage(appArcadeCreditsKey) var arcadeCredits = 0
     /// Globale Speed-Round-Dauer — liest aus dem gemeinsamen App-Storage-

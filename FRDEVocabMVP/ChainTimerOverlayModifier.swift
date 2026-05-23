@@ -87,7 +87,7 @@ struct ChainTimerOverlayModifier: ViewModifier {
     private func chainBar(for chain: TrainingChainContext) -> some View {
         if chain.isCountMode {
             ChainStepCountBar(
-                completed: chainStore.exercisesCompleted,
+                results: chainStore.exerciseResults,
                 total: chainStore.totalExercises
             )
         } else {

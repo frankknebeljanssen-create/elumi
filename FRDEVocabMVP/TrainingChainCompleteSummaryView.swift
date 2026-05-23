@@ -192,7 +192,12 @@ struct TrainingChainCompleteSummaryView: View {
     /// fallen automatisch auf `.past`. Game-Slots bleiben `.game`.
     @ViewBuilder
     private var chainStepHeader: some View {
-        if let chain = chainStore.currentChain, !chain.sourceCenterSymbolKinds.isEmpty {
+        // **Daily Drop Modul 2.5 (2026-05-23)** — im Count-Modus kein
+        // Timer-Header (würde „0:00" zeigen). Hero „Geschafft! +XP" +
+        // Stats bleiben. Zeit-Modus unverändert.
+        if let chain = chainStore.currentChain,
+           !chain.sourceCenterSymbolKinds.isEmpty,
+           !chain.isCountMode {
             ChainStepTimerBar(
                 sourceSlots: chain.sourceCenterSymbolKinds,
                 currentStepIndex: chain.totalStepCount,

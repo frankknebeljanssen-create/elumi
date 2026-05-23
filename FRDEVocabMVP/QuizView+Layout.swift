@@ -5,7 +5,14 @@ extension QuizView {
         ZStack(alignment: .top) {
             Group {
                 if session.isShowingResult {
-                    quizResultScreen
+                    // **Daily Drop Modul 2.5** — Count-Chain: nahtlos, keine
+                    // Zwischen-Summary (Auto-Advance via onChange). `Color.clear`
+                    // verhindert einen „0 von 5"-Flash bis `replaceTop` greift.
+                    if isCountChainStep {
+                        Color.clear
+                    } else {
+                        quizResultScreen
+                    }
                 } else if session.questions.isEmpty {
                     quizSetupScreen
                 } else {

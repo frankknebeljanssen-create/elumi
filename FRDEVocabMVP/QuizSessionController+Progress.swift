@@ -4,9 +4,10 @@ extension QuizSessionController {
     func completeCurrentQuestion(correct: Bool) {
         answeredResults.append(correct)
 
-        // **Daily Drop Modul 2 (2026-05-23)** — Smooth-Counter für die
-        // persistente „Übung X von N"-Bar. No-op außerhalb Count-Modus.
-        TrainingChainStore.shared.noteExerciseAnswered()
+        // **Daily Drop Modul 2/2.5 (2026-05-23)** — Smooth-Counter +
+        // grün/rotes Segment für die „Übung X von N"-Bar. No-op außerhalb
+        // Count-Modus.
+        TrainingChainStore.shared.noteExerciseAnswered(correct: correct)
 
         // Lernstatus-Signal: bevor der Cursor auf die nächste Frage
         // rutscht, die aktuelle Frage in den Per-Item-Store melden. Für

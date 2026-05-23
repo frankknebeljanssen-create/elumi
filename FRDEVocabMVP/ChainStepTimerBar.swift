@@ -279,17 +279,23 @@ struct ChainStepTimerBar: View {
 /// Liest `completed`/`total` aus dem `TrainingChainStore` (Singleton),
 /// daher persistiert die Bar automatisch über alle Chain-Steps.
 struct ChainStepCountBar: View {
-    let completed: Int
+    /// Ergebnis je beantworteter Aufgabe (true = richtig). Länge ≤ total.
+    let results: [Bool]
     let total: Int
 
     private var safeTotal: Int { max(1, total) }
+    private var completed: Int { min(results.count, safeTotal) }
 
     /// 1-basierte „aktuelle Übung", gedeckelt auf `total` (am Ende
     /// zeigt die Bar „Übung N von N" statt „N+1").
     private var current: Int { min(completed + 1, safeTotal) }
 
-    private var progress: CGFloat {
-        max(0, min(1, CGFloat(completed) / CGFloat(safeTotal)))
+    /// Segment-Farbe: beantwortet → grün/rot, noch offen → neutral.
+    private func segmentColor(at index: Int) -> Color {
+        if index < results.count {
+            return results[index] ? AppTheme.Colors.success : AppTheme.Colors.error
+        }
+        return AppTheme.Colors.textSecondary.opacity(0.18)
     }
 
     var body: some View {
@@ -305,18 +311,17 @@ struct ChainStepCountBar: View {
                     .monospacedDigit()
             }
 
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
+            // Ein Segment je Aufgabe (grün = richtig, rot = falsch,
+            // neutral = noch offen). Capsules teilen sich die Breite
+            // gleichmäßig über den HStack.
+            HStack(spacing: 3) {
+                ForEach(0..<safeTotal, id: \.self) { index in
                     Capsule()
-                        .fill(AppTheme.Colors.textSecondary.opacity(0.18))
-                    Capsule()
-                        .fill(AppTheme.Colors.success)
-                        .frame(width: max(0, geo.size.width * progress))
-                        .animation(.easeOut(duration: 0.35), value: completed)
+                        .fill(segmentColor(at: index))
+                        .frame(height: 5)
+                        .animation(.easeOut(duration: 0.25), value: results.count)
                 }
             }
-            .frame(height: 4)
-            .clipShape(Capsule())
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 6)

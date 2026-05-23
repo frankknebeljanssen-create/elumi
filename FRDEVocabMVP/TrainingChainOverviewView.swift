@@ -60,6 +60,12 @@ struct TrainingChainOverviewView: View {
     /// Total-Dauer-Anzeige im Hero. Bei Jackpot leer.
     private var totalDurationText: String {
         guard !chain.plannedSteps.isEmpty else { return "" }
+        // **Daily Drop Modul 2.5 (2026-05-23)** — Count-Modus: Anzahl
+        // statt Minuten.
+        if chain.isCountMode {
+            let total = chain.totalExerciseCount
+            return "\(total) \(total == 1 ? "Übung" : "Übungen")"
+        }
         let total = chain.plannedSteps.count * chain.perStepDurationMin
         return "\(total) Minuten · \(chain.plannedSteps.count) \(chain.plannedSteps.count == 1 ? "Übung" : "Übungen")"
     }
@@ -185,10 +191,15 @@ struct TrainingChainOverviewView: View {
         // Pre-Screen sieht damit visuell konsistent zu Slot, plus
         // das gespartene ~28 pt Card-Höhe schiebt die Übungs-Cards +
         // CTA hoch, weg von der Footer-Linie.
-        let total = chain.plannedSteps.count * chain.perStepDurationMin
+        // **Daily Drop Modul 2.5 (2026-05-23)** — Count-Modus: Anzahl
+        // statt Minuten (Label „ANZAHL", Suffix „Übungen").
+        let isCount = chain.isCountMode
+        let total = isCount
+            ? chain.totalExerciseCount
+            : chain.plannedSteps.count * chain.perStepDurationMin
         return VStack(spacing: 4) {
             // **Naming-Sweep 2026-05-06** — „TRAININGSZEIT" → „DAUER".
-            Text("DAUER")
+            Text(isCount ? "ANZAHL" : "DAUER")
                 .font(.system(size: 10, weight: .semibold, design: .rounded))
                 .tracking(1.5)
                 .foregroundStyle(AppTheme.Colors.cardLabel)
@@ -202,7 +213,7 @@ struct TrainingChainOverviewView: View {
                     .foregroundStyle(sectionStyle.accent)
                     .contentTransition(.identity)
 
-                Text("min")
+                Text(isCount ? "Übungen" : "min")
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
@@ -296,7 +307,7 @@ struct TrainingChainOverviewView: View {
             //     14/8 pt. Pill verdoppelt sich optisch — Zeit-Anteil
             //     pro Modul wird zur ablesbaren Info, nicht zum
             //     Mini-Etikett.
-            Text("\(chain.perStepDurationMin) min")
+            Text(chain.isCountMode ? "\(chain.perStepCount ?? 0) Übungen" : "\(chain.perStepDurationMin) min")
                 .font(.system(size: 22, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
                 .padding(.horizontal, 14)

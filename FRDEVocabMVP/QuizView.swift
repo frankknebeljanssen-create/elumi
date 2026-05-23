@@ -72,6 +72,14 @@ struct QuizView: View {
     @State var quizListPickerActive: Bool = false
     @FocusState var isTypingFieldFocused: Bool
 
+    /// **Daily Drop Modul 2.5 (2026-05-23)** — Läuft dieser Quiz-Step in
+    /// einer Count-Modus-Chain? Dann nahtloser Auto-Advance statt
+    /// Zwischen-Summary. False bei Zeit-Chain (Summary+CTA) und im
+    /// isolierten Modul-1-Test (kein chainContext).
+    var isCountChainStep: Bool {
+        launchContext?.chainContext?.isCountMode == true
+    }
+
     var selectedAppDirection: Direction {
         (Direction(rawValue: selectedAppDirectionRaw) ?? .frenchToGerman).sanitizedForFrenchOnly
     }

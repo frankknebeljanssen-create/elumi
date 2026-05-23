@@ -138,9 +138,10 @@ final class TrainingSessionController: ObservableObject {
             sessionWrongCount += 1
         }
 
-        // **Daily Drop Modul 2 (2026-05-23)** — Smooth-Counter für die
-        // persistente „Übung X von N"-Bar. No-op außerhalb Count-Modus.
-        TrainingChainStore.shared.noteExerciseAnswered()
+        // **Daily Drop Modul 2/2.5 (2026-05-23)** — Smooth-Counter +
+        // grün/rotes Segment für die „Übung X von N"-Bar. No-op außerhalb
+        // Count-Modus.
+        TrainingChainStore.shared.noteExerciseAnswered(correct: correct)
 
         // Nach jeder Antwort Resume-Snapshot aktualisieren, damit
         // selbst ein harter App-Kill den Fortschritt nicht verliert.

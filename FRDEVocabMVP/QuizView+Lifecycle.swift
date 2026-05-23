@@ -75,6 +75,16 @@ extension QuizView {
     func handleQuizResultVisibilityChange(_ isShowingResult: Bool) {
         guard isShowingResult else { return }
         prepareQuizRewards()
+        // **Daily Drop Modul 2.5 (2026-05-23)** — Count-Chain: nahtlos.
+        // Reward persistieren (setzt `quizSessionOutcome`) und direkt zur
+        // nächsten Aufgabe; beim letzten Step liefert `advanceChain`
+        // `.trainingChainComplete` → Complete-Summary. Zeit-Chain und der
+        // isolierte Modul-1-Test (isCountChainStep == false) zeigen die
+        // Zwischen-Summary + CTA wie bisher.
+        if isCountChainStep {
+            persistHeartsIfNeeded()
+            chainAdvance?(quizSessionOutcome ?? .empty)
+        }
     }
 
     /// **Stufe 4b-Modal-Refactor / Chain-Auto-Start (2026-05-02)** —

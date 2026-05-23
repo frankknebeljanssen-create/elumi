@@ -40,10 +40,16 @@ final class TrainingChainStore: ObservableObject {
 
     // MARK: - Daily Drop Modul 2: Count-Modus-Counter (2026-05-23)
 
-    /// Beantwortete Einzel-Aufgaben über alle Steps hinweg (smooth, pro
-    /// Antwort inkrementiert via `noteExerciseAnswered`). Speist die
-    /// persistente „Übung X von N"-Count-Bar. Nur im Count-Modus aktiv.
-    @Published private(set) var exercisesCompleted: Int = 0
+    /// **Modul 2.5 (2026-05-23)** — Ergebnis je beantworteter Einzel-
+    /// Aufgabe über alle Steps hinweg (true = richtig, false = falsch).
+    /// Speist die segmentierte „Übung X von N"-Count-Bar (grün/rot). Pro
+    /// Antwort via `noteExerciseAnswered(correct:)` ergänzt. Nur im
+    /// Count-Modus aktiv.
+    @Published private(set) var exerciseResults: [Bool] = []
+
+    /// Anzahl beantworteter Aufgaben — abgeleitet aus `exerciseResults`
+    /// (Counter bleibt smooth, Bar-Konsumenten unverändert).
+    var exercisesCompleted: Int { exerciseResults.count }
 
     /// Gesamtzahl der Aufgaben im aktuellen Count-Run
     /// (`chain.totalExerciseCount`). `0` im Zeit-Modus.
@@ -182,7 +188,7 @@ final class TrainingChainStore: ObservableObject {
         stepOutcomes = []
         // **Daily Drop Modul 2 (2026-05-23)** — Count-Modus-Counter init.
         totalExercises = chain.totalExerciseCount
-        exercisesCompleted = 0
+        exerciseResults = []
 
         #if DEBUG
         let path = chain.plannedSteps.map(\.rawValue).joined(separator: " → ")
@@ -233,15 +239,15 @@ final class TrainingChainStore: ObservableObject {
         stepOutcomes.append(outcome)
     }
 
-    /// **Daily Drop Modul 2 (2026-05-23)** — Smooth-Increment des
-    /// globalen Aufgaben-Counters für die persistente „Übung X von N"-
-    /// Count-Bar. Wird von den Modul-Controllern (Quiz
-    /// `completeCurrentQuestion`, Training `recordAnswer`) pro
-    /// beantworteter Aufgabe gerufen. No-op außerhalb des Count-Modus →
-    /// reguläre Sessions und die Zeit-Chain bleiben unberührt.
-    func noteExerciseAnswered() {
+    /// **Daily Drop Modul 2/2.5 (2026-05-23)** — hängt das Ergebnis der
+    /// gerade beantworteten Aufgabe an `exerciseResults` (true/false →
+    /// grünes/rotes Segment). Wird von den Modul-Controllern (Quiz
+    /// `completeCurrentQuestion`, Training `recordAnswer`) pro Antwort
+    /// gerufen. No-op außerhalb des Count-Modus → reguläre Sessions und
+    /// die Zeit-Chain bleiben unberührt.
+    func noteExerciseAnswered(correct: Bool) {
         guard currentChain?.isCountMode == true else { return }
-        exercisesCompleted += 1
+        exerciseResults.append(correct)
     }
 
     /// **Stufe 3 (2026-05-01, Branch `feature/training-session-flow`)** —
@@ -292,7 +298,7 @@ final class TrainingChainStore: ObservableObject {
         currentChain = nil
         stepOutcomes = []
         // **Daily Drop Modul 2 (2026-05-23)** — Count-Counter zurücksetzen.
-        exercisesCompleted = 0
+        exerciseResults = []
         totalExercises = 0
 
         // **Stufe 4a (2026-05-01)** — Timer mit räumen, sonst
