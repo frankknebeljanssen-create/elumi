@@ -52,6 +52,14 @@ struct TrainingChainContext: Hashable {
     /// Aufgaben (über die Modul-1-Caps in den Launch-Contexts).
     let perStepCount: Int?
 
+    /// **Daily Drop Modul 6 (2026-05-23)** — Variante-C-Flag: an jeder
+    /// ZWISCHEN-Step-Grenze einen Break-Screen zeigen (statt nahtlos).
+    /// `true` nur für N≥20-Fix-10-Block-Chains (`makeBlocks`). N=10
+    /// (gemischt, `make(from:perStepCount:)`) und die Zeit-Chain bleiben
+    /// `false` → nahtloser Übergang wie bisher. Klarer Diskriminator
+    /// statt abgeleiteter `perStepCount == 10`-Ambiguität.
+    let blockBreaks: Bool
+
     enum SourceSlotKind: Hashable {
         case module(HomeHeroModule)
         case game
@@ -158,7 +166,8 @@ struct TrainingChainContext: Hashable {
             currentIndex: 0,
             perStepDurationMin: perStep,
             sourceCenterSymbolKinds: kinds,
-            perStepCount: nil
+            perStepCount: nil,
+            blockBreaks: false
         )
     }
 
@@ -188,7 +197,53 @@ struct TrainingChainContext: Hashable {
             currentIndex: 0,
             perStepDurationMin: 0,
             sourceCenterSymbolKinds: kinds,
-            perStepCount: perStepCount
+            perStepCount: perStepCount,
+            blockBreaks: false
+        )
+    }
+
+    /// **Daily Drop Modul 6 (2026-05-23)** — Variante-C-Factory für N≥20.
+    /// Feste Block-Größe (`blockSize`, = 10) und feste Step-Zahl
+    /// (`stepCount` = N/10). Die `plannedSteps` werden per **Round-Robin**
+    /// aus den eindeutigen Slot-Modul-Typen gefüllt (Rotation-ready:
+    /// `computeSpinTargets` bleibt die Typ-Quelle — hier wird NICHT fix
+    /// quiz/vokabel verdrahtet). Bei 3 Steps aus 2 Typen wiederholt ein
+    /// Typ (z. B. `[quiz, vokabel, quiz]`). `sourceCenterSymbolKinds`
+    /// bleibt die Original-Reel-Sequenz (Pre-Screen/Overview). Setzt
+    /// `blockBreaks: true` → Break an jeder Zwischen-Step-Grenze.
+    static func makeBlocks(
+        from slotResult: SlotSpinResult,
+        blockSize: Int,
+        stepCount: Int
+    ) -> TrainingChainContext {
+        let kinds: [SourceSlotKind] = slotResult.centerSymbols.map { symbol in
+            if symbol.isElumi { return .game }
+            if let module = symbol.homeModule { return .module(module) }
+            return .game
+        }
+        // Eindeutige Modul-Typen, Reihenfolge-erhaltend (für stabiles
+        // Round-Robin). Game-Slots fallen raus.
+        var distinctModules: [HomeHeroModule] = []
+        for kind in kinds {
+            if case .module(let m) = kind, !distinctModules.contains(m) {
+                distinctModules.append(m)
+            }
+        }
+        // Round-Robin auf `stepCount` Steps. Leer (Jackpot) → leere Chain.
+        var steps: [HomeHeroModule] = []
+        if !distinctModules.isEmpty, stepCount > 0 {
+            for i in 0..<stepCount {
+                steps.append(distinctModules[i % distinctModules.count])
+            }
+        }
+        return TrainingChainContext(
+            id: UUID(),
+            plannedSteps: steps,
+            currentIndex: 0,
+            perStepDurationMin: 0,
+            sourceCenterSymbolKinds: kinds,
+            perStepCount: blockSize,
+            blockBreaks: true
         )
     }
 
@@ -201,7 +256,8 @@ struct TrainingChainContext: Hashable {
             currentIndex: currentIndex + 1,
             perStepDurationMin: perStepDurationMin,
             sourceCenterSymbolKinds: sourceCenterSymbolKinds,
-            perStepCount: perStepCount
+            perStepCount: perStepCount,
+            blockBreaks: blockBreaks
         )
     }
 }

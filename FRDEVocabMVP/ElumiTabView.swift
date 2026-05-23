@@ -601,7 +601,7 @@ struct ElumiTabView: View {
                 // Material sind ausgegraut (`exerciseCountChip`); reicht es
                 // nicht mal für Kurz (Material < 10/2 = 5), erscheint ein
                 // Hinweis statt der Chips. Tap löst auto-close aus.
-                if cachedDailyDropMaterial < ((Self.exerciseCountOptions.first ?? 10) / 2) {
+                if cachedDailyDropMaterial < materialThreshold(for: Self.exerciseCountOptions.first ?? 10) {
                     Text("Zu wenig Material für einen Drop. Wähle mehr Listen oder erweitere die Lernjahre.")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
@@ -623,7 +623,7 @@ struct ElumiTabView: View {
                         // umsetzbare Zeile. Sobald sie erreicht ist, rückt der
                         // Hinweis automatisch auf die nächste Länge. Kein Hinweis
                         // wenn alle Längen verfügbar sind (`first(where:)` == nil).
-                        if let nextLocked = Self.exerciseCountOptions.first(where: { cachedDailyDropMaterial < $0 / 2 }) {
+                        if let nextLocked = Self.exerciseCountOptions.first(where: { cachedDailyDropMaterial < materialThreshold(for: $0) }) {
                             Text("Für \(exerciseLengthLabel(nextLocked)) brauchst du mehr Vokabeln")
                                 .font(.system(size: 13, weight: .semibold, design: .rounded))
                                 .foregroundStyle(AppTheme.Colors.textSecondary)
@@ -1144,6 +1144,15 @@ struct ElumiTabView: View {
         }
     }
 
+    /// **Daily Drop Modul 6 (2026-05-23)** — benötigtes Material pro Länge.
+    /// N=10 (Ausnahme, gemischt, Even-split 5/Step) → ≥5. N≥20 (Variante C,
+    /// fixe 10er-Blöcke mit erlaubter Wiederholung) → ≥10 (ein voller Block;
+    /// Repeats füllen weitere Blöcke). Ersetzt die alte `count / 2`-Regel
+    /// (die Lang fälschlich auf 15 setzte).
+    private func materialThreshold(for count: Int) -> Int {
+        count <= 10 ? 5 : 10
+    }
+
     /// **Daily Drop Modul 3 (2026-05-23)** — zählt das nutzbare Material der
     /// globalen Auswahl und cached `min(quizUsable, vokabelUsable)`. Quiz-
     /// nutzbar = richtungsgefilterte, deduplizierte Merged-Items
@@ -1185,10 +1194,9 @@ struct ElumiTabView: View {
     private func exerciseCountChip(count: Int) -> some View {
         let moduleColor = sectionStyle.accent
         let isSelected = modalExerciseSelection == count
-        // **Daily Drop Modul 3 (2026-05-23, Fix)** — Bedarf ist per-Step
-        // (even-split: N/2 je Typ), nicht N gesamt. `count / 2` statt `count`
-        // → eine 49er-Liste graut Lang nicht mehr unnötig aus.
-        let isAvailable = cachedDailyDropMaterial >= count / 2
+        // **Daily Drop Modul 6 (2026-05-23)** — Schwelle pro Länge:
+        // N=10 → ≥5, N≥20 → ≥10 (fixe 10er-Blöcke, Wiederholung erlaubt).
+        let isAvailable = cachedDailyDropMaterial >= materialThreshold(for: count)
         return ZStack {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(isSelected ? moduleColor.opacity(0.25) : AppTheme.Colors.secondarySurface)
@@ -1933,22 +1941,32 @@ struct ElumiTabView: View {
         // ist `plannedSteps` leer — Pre-Screen rendert dann nur die
         // Game-Cards und disabled-CTA mit Hint „Drehe noch mal für
         // Übungen" (siehe `TrainingChainContext.isJackpot`).
-        // **Daily Drop Modul 3 (2026-05-23)** — Count-Modus mit Anzahl aus
-        // dem Picker. Even-split über die TATSÄCHLICHEN Modul-Steps (1 oder
-        // 2, je nach Slot): `perStepCount = N / moduleSteps` → Gesamt immer
-        // N, auch wenn der Slot nur 1 Übungs-Step liefert. `moduleSteps`
-        // zählt die Nicht-Game-Center-Symbole — deckungsgleich mit
-        // `plannedSteps` in `make(from:perStepCount:)`. Bei Jackpot
-        // (0 Module) → perStep 0, `make` baut leere Chain (Pre-Screen-Hint).
+        // **Daily Drop Modul 6 (2026-05-23)** — Zweimodiger Step-Bau:
+        //   • N=10 (Ausnahme): wie bisher (Modul 3) — Even-split über die
+        //     tatsächlichen Modul-Steps (1–2) → gemischt, KEIN Break.
+        //   • N≥20 (Variante C): feste Block-Größe 10, `stepCount = N/10`,
+        //     Round-Robin der Slot-Typen → Break an jeder Zwischen-Grenze.
+        // Der `blockBreaks`-Flag der erzeugten Chain steuert das Routing in
+        // `advanceChain`. Bei Jackpot (0 Module) bauen beide Pfade eine
+        // leere Chain (Pre-Screen-Hint).
         let n = modalExerciseSelection ?? Self.exerciseCountDefault
-        let moduleSteps = pendingResult.centerSymbols.filter { symbol in
-            !symbol.isElumi && symbol.homeModule != nil
-        }.count
-        let perStep = moduleSteps > 0 ? n / moduleSteps : 0
-        let chain = TrainingChainContext.make(
-            from: pendingResult,
-            perStepCount: perStep
-        )
+        let chain: TrainingChainContext
+        if n <= 10 {
+            let moduleSteps = pendingResult.centerSymbols.filter { symbol in
+                !symbol.isElumi && symbol.homeModule != nil
+            }.count
+            let perStep = moduleSteps > 0 ? n / moduleSteps : 0
+            chain = TrainingChainContext.make(
+                from: pendingResult,
+                perStepCount: perStep
+            )
+        } else {
+            chain = TrainingChainContext.makeBlocks(
+                from: pendingResult,
+                blockSize: 10,
+                stepCount: n / 10
+            )
+        }
 
         // Chain-Start: Resume-Stores werden im Store geleert (R5).
         // **Performance-Fix 2026-05-01**: direkter Singleton-Call

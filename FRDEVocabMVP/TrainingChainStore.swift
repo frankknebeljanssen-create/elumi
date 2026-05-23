@@ -274,6 +274,13 @@ final class TrainingChainStore: ObservableObject {
         advance()
         guard let chain = currentChain else { return nil }
         if let nextStep = chain.currentStep {
+            // **Daily Drop Modul 6 (2026-05-23)** — Variante C: an jeder
+            // ZWISCHEN-Step-Grenze einen Break-Screen statt nahtlos. Nur für
+            // N≥20-Block-Chains (`blockBreaks == true`). N=10 (gemischt,
+            // blockBreaks=false) + Zeit-Chain bleiben nahtlos wie bisher.
+            if chain.isCountMode, chain.blockBreaks {
+                return .trainingChainBreak
+            }
             return nextStep.chainScreen(chainContext: chain)
         }
         return .trainingChainComplete

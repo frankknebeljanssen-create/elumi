@@ -70,6 +70,14 @@ enum AppScreen: Hashable {
     /// minimalen Platzhalter mit einem „Zur Startseite"-CTA, der die
     /// Chain räumt und nach Home zurücknavigiert.
     case trainingChainComplete
+
+    /// **Daily Drop Modul 6 (2026-05-23)** — Zwischen-Break-Screen nach je
+    /// 10 Aufgaben (Variante C, N≥20). Wird von `advanceChain` zurückgegeben,
+    /// wenn ein Block fertig ist UND noch ein Block folgt
+    /// (`blockBreaks == true`). Zeigt den Etappen-Stand + Würmchen + „Weiter";
+    /// „Weiter" pusht den nächsten Block. Beim letzten Block kommt stattdessen
+    /// `.trainingChainComplete`.
+    case trainingChainBreak
 }
 
 private struct AppOpenAccountActionKey: EnvironmentKey {

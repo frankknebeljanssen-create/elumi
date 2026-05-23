@@ -239,6 +239,30 @@ struct AppDestinationHost: View {
                 onGoHome: goHome,
                 openSettings: openSettings
             )
+        case .trainingChainBreak:
+            // **Daily Drop Modul 6 (2026-05-23)** — Zwischen-Break nach einem
+            // 10er-Block (Variante C, N≥20). `advanceChain` hat den Index
+            // bereits advanced → `currentStep` ist der KOMMENDE Block.
+            // „Weiter" pusht ihn. Defensive: ohne nächsten Step → finale
+            // Summary (tritt regulär nicht auf, da advanceChain dann
+            // `.trainingChainComplete` liefert; z. B. Jackpot/0 Steps).
+            if let chain = TrainingChainStore.shared.currentChain,
+               let step = chain.currentStep {
+                TrainingChainBreakView(
+                    feedbackPlayer: feedbackPlayer,
+                    onContinue: { replaceTop(step.chainScreen(chainContext: chain)) }
+                )
+            } else {
+                TrainingChainCompleteSummaryView(
+                    feedbackPlayer: feedbackPlayer,
+                    onPlayAgain: {
+                        goHome()
+                        navigate(.elumi)
+                    },
+                    onGoHome: goHome,
+                    openSettings: openSettings
+                )
+            }
         case .trainingHub:
             // **2026-05-06 Home-Refactor (Hybrid γ v3)** — Sub-Screen
             // mit Vokabeln (Allgemein) + Nomen/Verben/Artikel/Verbformen

@@ -514,3 +514,85 @@ struct TrainingChainCompleteSummaryView: View {
 // MARK: - ConfettiBurst (extracted)
 // `ConfettiBurst` lebt in `ConfettiBurst.swift` (Block 5, 2026-05-03).
 // Wird hier mit Default-Density 60 + Lifetime 2.5 s verwendet.
+
+// MARK: - Daily Drop Modul 6 — Zwischen-Break
+
+/// **Daily Drop Modul 6 (2026-05-23)** — kompakter Etappen-Break nach je
+/// 10 Aufgaben (Variante C, N≥20). Zeigt den Stand des gerade beendeten
+/// 10er-Blocks (richtig X von 10) + verdiente Würmchen + „Block X von Y" +
+/// „Weiter". Bewusst minimal: KEIN „Nächstes Set", KEIN XP-Hero, KEIN
+/// Konfetti — das bleibt der finalen `TrainingChainCompleteSummaryView`.
+///
+/// Ein kurzer positiver Etappen-Sound on appear (`playRoundClear` —
+/// „geschafft!"): der Break ist ein GEWOLLTER Stopp, anders als die im
+/// nahtlosen Flow gemuteten Übergangs-Sounds (`playLaunch`/
+/// `playStudyAchievement`).
+///
+/// Zahlen aus `TrainingChainStore.shared.exerciseResults.suffix(blockSize)`
+/// (= der gerade beendete Block). `advanceChain` hat den Index schon
+/// advanced → `currentIndex` ist der KOMMENDE Block; der gerade beendete
+/// ist damit `currentIndex` (1-basiert).
+struct TrainingChainBreakView: View {
+    @ObservedObject private var chainStore = TrainingChainStore.shared
+    @ObservedObject var feedbackPlayer: FeedbackPlayer
+    let onContinue: () -> Void
+
+    @State private var hasPlayedSound = false
+
+    private var blockSize: Int { chainStore.currentChain?.perStepCount ?? 10 }
+    private var etappe: [Bool] { Array(chainStore.exerciseResults.suffix(blockSize)) }
+    private var correct: Int { etappe.filter { $0 }.count }
+    private var total: Int { etappe.count }
+    private var finishedBlockNumber: Int { chainStore.currentChain?.currentIndex ?? 1 }
+    private var totalBlocks: Int { chainStore.currentChain?.totalStepCount ?? 0 }
+
+    var body: some View {
+        VStack(spacing: AppTheme.Spacing.lg) {
+            Spacer(minLength: 0)
+
+            if totalBlocks > 1 {
+                Text("Block \(finishedBlockNumber) von \(totalBlocks)")
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .tracking(0.6)
+                    .textCase(.uppercase)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+
+            Text("Etappe geschafft!")
+                .font(.system(size: 26, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+                .multilineTextAlignment(.center)
+
+            Text("\(correct) von \(total) richtig")
+                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+
+            // Würmchen-Verdienst dieser Etappe (rein visuell, kompakt).
+            HStack(spacing: 6) {
+                ElumiSnackIcon(.wuermchen, size: 34)
+                Text("+\(correct)")
+                    .font(.system(size: 20, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+            }
+
+            Spacer(minLength: 0)
+
+            Button {
+                onContinue()
+            } label: {
+                Text("Weiter")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+            .padding(.horizontal, AppLayout.screenPadding)
+            .padding(.bottom, AppTheme.Spacing.lg)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(AppTheme.Colors.surface.ignoresSafeArea())
+        .onAppear {
+            guard !hasPlayedSound else { return }
+            hasPlayedSound = true
+            feedbackPlayer.playRoundClear()
+        }
+    }
+}
