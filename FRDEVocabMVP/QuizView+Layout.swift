@@ -90,6 +90,13 @@ extension QuizView {
             .onChange(of: session.isShowingResult) { _, isShowingResult in
                 handleQuizResultVisibilityChange(isShowingResult)
             }
+            // **Daily Drop Modul 2.8 (2026-05-23)** — Tippfeld-Fokus → globalen
+            // Footer ausblenden (bewiesener Chat-Mechanismus, hält die
+            // Tastatur davon ab, die View hochzuschieben). Reset in
+            // handleQuizDisappear.
+            .onChange(of: isTypingFieldFocused) { _, isFocused in
+                setKeyboardChromeHidden?(isFocused)
+            }
             // **Gruppe-3-Migration (2026-05-22)** — ehemals totes
             // `.sheet(isPresented: $showingQuizListPicker)` entfernt
             // (wurde nie getriggert). Ersetzt durch:

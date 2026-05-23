@@ -6,6 +6,10 @@ struct QuizView: View {
     /// **Stufe 3 (2026-05-01)** — Chain-Advance-Closure (siehe
     /// FlashcardsView.swift:Doc).
     @Environment(\.appChainAdvanceAction) var chainAdvance
+    /// **Daily Drop Modul 2.8 (2026-05-23)** — siehe TrainingView: bei
+    /// Tippfeld-Fokus den globalen Footer ausblenden (bewiesener Chat-
+    /// Keyboard-Mechanismus), Reset bei Blur + onDisappear.
+    @Environment(\.appSetChatKeyboardActiveAction) var setKeyboardChromeHidden
     @AppStorage(appDirectionKey) var selectedAppDirectionRaw = Direction.frenchToGerman.rawValue
     @AppStorage(appQuizHeartsKey) var collectedWorms = 0
     @AppStorage(appElumiWaterflohKey) var collectedWaterfloh = 0

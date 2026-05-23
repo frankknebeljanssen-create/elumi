@@ -8,6 +8,13 @@ struct TrainingView: View {
     /// `trainingSummaryScreen` als auch `verbformsResultScreen`
     /// gelesen, weil beide Done-CTAs das Chain-Pattern unterstützen.
     @Environment(\.appChainAdvanceAction) var chainAdvance
+    /// **Daily Drop Modul 2.8 (2026-05-23)** — bewiesener Chat-Keyboard-
+    /// Mechanismus: bei Tippfeld-Fokus blenden wir den globalen Footer
+    /// (root-`safeAreaInset(.bottom)` in RootContentView) aus, damit die
+    /// Tastatur die View nicht hochschiebt. Reset bei Blur + onDisappear
+    /// (sonst bleibt der Footer auf Folge-Screens weg). Env-Name ist
+    /// chat-historisch, der Mechanismus generisch.
+    @Environment(\.appSetChatKeyboardActiveAction) var setKeyboardChromeHidden
     /// **Daily Drop Modul 2.5 (2026-05-23)** — Count-Modus-Chain-Step?
     /// Dann nahtloser Auto-Advance statt Zwischen-Summary. False bei
     /// Zeit-Chain (Summary+CTA) und im isolierten Modul-1-Test (kein

@@ -155,9 +155,17 @@ extension TrainingView {
         if isFocused {
             stopListeningForTyping()
         }
+        // **Daily Drop Modul 2.8 (2026-05-23)** — globalen Footer aus-/
+        // einblenden (bewiesener Chat-Mechanismus), damit die Tastatur die
+        // View nicht hochschiebt. Reset auch in handleTrainingDisappear.
+        setKeyboardChromeHidden?(isFocused)
     }
 
     func handleTrainingDisappear() {
+        // **Daily Drop Modul 2.8 (2026-05-23)** — Footer-Reset-Guard: sonst
+        // bliebe der globale Footer auf Folge-Screens ausgeblendet, wenn der
+        // User mit offener Tastatur weg-navigiert (Chat macht das ebenso).
+        setKeyboardChromeHidden?(false)
         cancelPendingFeedback()
         shouldEvaluateAfterStop = false
         speechController?.stopRecording()

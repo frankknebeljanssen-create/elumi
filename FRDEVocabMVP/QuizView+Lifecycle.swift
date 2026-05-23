@@ -116,5 +116,9 @@ extension QuizView {
 
     func handleQuizDisappear() {
         cancelAdvanceTask()
+        // **Daily Drop Modul 2.8 (2026-05-23)** — Footer-Reset-Guard (siehe
+        // TrainingView): globalen Footer wieder einblenden, falls mit offener
+        // Tastatur weg-navigiert wurde.
+        setKeyboardChromeHidden?(false)
     }
 }
