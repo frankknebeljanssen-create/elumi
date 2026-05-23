@@ -367,13 +367,18 @@ extension TrainingView {
         if trainingSessionOutcome == nil {
             trainingSessionOutcome = .empty
         }
-        // **Daily Drop Modul 2.5 (2026-05-23)** — Count-Chain: nahtlos
-        // direkt zur nächsten Aufgabe; beim letzten Step liefert
-        // `advanceChain` `.trainingChainComplete` → Complete-Summary.
-        // Zeit-Chain (isCountChainStep == false) zeigt die Zwischen-
-        // Summary + CTA wie bisher (Timer-Soft-Cutoff-Pfad).
+        // **Daily Drop Modul 2.5/2.6 (2026-05-23)** — Count-Chain: nahtlos,
+        // aber `chainAdvance` über den bestehenden cancelable
+        // `scheduleFeedbackTask` kurz verzögern, damit Antwort-Feedback +
+        // Serien-Toast sichtbar werden (Toast wandert via Singleton ins
+        // nächste Modul). Beim letzten Step liefert `advanceChain`
+        // `.trainingChainComplete`. Zeit-Chain (isCountChainStep == false)
+        // zeigt die Zwischen-Summary + CTA wie bisher (kein Delay).
         if isCountChainStep {
-            chainAdvance?(trainingSessionOutcome ?? .empty)
+            let outcome = trainingSessionOutcome ?? .empty
+            scheduleFeedbackTask(after: 0.55) {
+                chainAdvance?(outcome)
+            }
         }
         #if DEBUG
         appDebugLog("🛑 [Training] Force-Done via chain-timer-soft-cutoff")

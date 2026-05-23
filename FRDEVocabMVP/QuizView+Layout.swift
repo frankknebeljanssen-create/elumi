@@ -24,6 +24,11 @@ extension QuizView {
             // in Folge einen kurzen Bonus-Hinweis. Blockiert keine Eingaben.
             ComboToastOverlay()
         }
+        // **Daily Drop Modul 2.6 (2026-05-23)** — generischer Keyboard-Fix:
+        // verhindert, dass die Tastatur die ganze View (inkl. der per
+        // `safeAreaInset(.top)` gesetzten Count-Bar) nach oben schiebt.
+        // Greift für Quiz-Typing UND das normale Quiz (kein Count-Gate).
+        .ignoresSafeArea(.keyboard, edges: .bottom)
     }
 
     var body: some View {
