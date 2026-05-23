@@ -189,9 +189,19 @@ extension QuizView {
                 // finalen Complete-Call weggecancelt → Screen blieb
                 // stehen. Direkter asyncAfter-Call ist unkündbar.
                 if matchedPairIDs.count == question.pairs.count {
+                    // **Daily Drop Modul 2.12 (2026-05-23)** — Matching zählt
+                    // als GENAU 1 Übung (1 Tick). `correct = !matchingHadMistake`:
+                    // grünes Segment nur ohne Fehlversuch, sonst rot. Im
+                    // Count-Modus kein Auto-Advance — Feedback (alle Paare grün)
+                    // bleibt, der externe „Weiter"-Button löst aus.
                     let isCorrect = !matchingHadMistake
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.72) {
-                        completeCurrentQuestion(correct: isCorrect)
+                        if isCountChainStep {
+                            quizPendingCorrect = isCorrect
+                            quizAwaitingWeiter = true
+                        } else {
+                            completeCurrentQuestion(correct: isCorrect)
+                        }
                     }
                 }
             }
@@ -251,6 +261,23 @@ extension QuizView {
            !session.isShowingResult {
             forceQuizDoneFromChainTimer()
             return
+        }
+
+        // **Daily Drop Modul 2.12 (2026-05-23)** — Count-Cap: Mit allen
+        // Fragetypen zurück werden combo/Lückentext SEPARAT eingefügt, daher
+        // kann `questions.count` über N liegen (z. B. 7 statt 5). Nach genau
+        // `dailyDropCount` beantworteten Fragen beenden wir das Quiz HIER —
+        // egal wie viele Fragen generiert wurden — damit der Quiz-Anteil exakt
+        // perStepCount bleibt (Count-Bar/Counter konsistent). Reuse des
+        // bewährten `isShowingResult` → `handleQuizResultVisibilityChange` →
+        // `chainAdvance`-Pfads. No-op außerhalb Count-Modus und wenn
+        // `questions.count == N` (dann setzt `session` `isShowingResult` selbst).
+        if isCountChainStep,
+           let cap = launchContext?.dailyDropCount,
+           session.answeredResults.count >= cap,
+           !session.isShowingResult {
+            session.isShowingResult = true
+            QuizSessionResumeStore.clear()
         }
     }
 
@@ -393,8 +420,17 @@ extension QuizView {
         if isCorrect {
             fillBlanksLocked = true
             feedbackPlayer.playStudySuccess()
+            // **Daily Drop Modul 2.12 (2026-05-23)** — 1 Übung (1 Tick),
+            // `correct = !fillBlanksHadMistake`. Count-Modus: kein Auto-Advance,
+            // „Weiter"-Button übernimmt (Feedback-Chip bleibt grün).
+            let result = !fillBlanksHadMistake
             scheduleAdvance(after: 0.8) {
-                completeCurrentQuestion(correct: !fillBlanksHadMistake)
+                if isCountChainStep {
+                    quizPendingCorrect = result
+                    quizAwaitingWeiter = true
+                } else {
+                    completeCurrentQuestion(correct: result)
+                }
             }
         } else {
             feedbackPlayer.playStudyError()

@@ -475,11 +475,17 @@ extension HomeHeroModule {
             return .quiz(QuizLaunchContext(
                 shouldAutoStart: true,
                 chainContext: chainContext,
-                // **Daily Drop Modul 2 (2026-05-23)** — Count-Modus: Cap
-                // auf perStepCount + atomar (nur MC/Tippen). Im Zeit-Modus
-                // sind beide nil/false → unverändert.
+                // **Daily Drop Modul 2 (2026-05-23)** — Count-Modus: Cap auf
+                // perStepCount. Im Zeit-Modus nil → unverändert.
+                // **Modul 2.12 (2026-05-23)** — `atomicOnly` zurückgenommen:
+                // der Daily-Drop-Quiz baut wieder ALLE Fragetypen (MC,
+                // Tippen, Matching, Combo, Lückentext). Da combo/Lückentext
+                // separat eingefügt werden und `questions.count` über N
+                // heben können, hält der Runtime-Cap in
+                // `QuizView.completeCurrentQuestion` den Quiz-Anteil exakt
+                // bei `dailyDropCount`.
                 dailyDropCount: chainContext.perStepCount,
-                atomicOnly: chainContext.isCountMode
+                atomicOnly: false
             ))
         case .akzente:
             return .accents(AccentsLaunchContext(

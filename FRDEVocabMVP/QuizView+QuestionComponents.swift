@@ -422,8 +422,17 @@ extension QuizView {
                 comboSelectedVerbID = nil
             }
             if comboMatchedIDs.count >= question.pairs.count {
+                // **Daily Drop Modul 2.12 (2026-05-23)** — 1 Übung (1 Tick),
+                // `correct = !comboHadMistake`. Count-Modus: kein Auto-Advance,
+                // „Weiter"-Button übernimmt (gelegte Paare bleiben grün).
+                let isCorrect = !comboHadMistake
                 scheduleAdvance(after: 0.6) {
-                    completeCurrentQuestion(correct: !comboHadMistake)
+                    if isCountChainStep {
+                        quizPendingCorrect = isCorrect
+                        quizAwaitingWeiter = true
+                    } else {
+                        completeCurrentQuestion(correct: isCorrect)
+                    }
                 }
             }
         } else {
