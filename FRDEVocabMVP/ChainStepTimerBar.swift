@@ -327,6 +327,10 @@ struct ChainStepCountBar: View {
             }
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 6)
+        // **Daily Drop Modul 2.12 (2026-05-23)** — mehr Abstand nach oben,
+        // damit die Bar nicht an der Statusleiste klebt, sondern tiefer
+        // (näher am Modul-Header) sitzt (User-Spec). Unten kompakt belassen.
+        .padding(.top, 16)
+        .padding(.bottom, 6)
     }
 }

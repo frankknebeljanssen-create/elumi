@@ -74,10 +74,10 @@ extension QuizView {
         VStack(spacing: AppTheme.Spacing.sm) {
             AppSurfaceCard(tint: sectionStyle.accent) {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
-                    Text("Multiple Choice")
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-
+                    // **Daily Drop Modul 2.12 (2026-05-23)** — „Multiple Choice"-
+                    // Typ-Label entfernt (User-Spec, generell): die Antwort-
+                    // Chips erklären den Aufgabentyp selbst. Andere Typ-Labels
+                    // („Eintippen", „Paare finden" …) bleiben.
                     Text(visibleQuizPromptText(question.prompt, category: question.category))
                         .font(quizPromptTypography(for: question.prompt, category: question.category))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
