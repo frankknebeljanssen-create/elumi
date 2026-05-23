@@ -75,10 +75,11 @@ extension QuizView {
 
         let got = normalizedLookupText(userInput)
         let expected = normalizedLookupText(question.correctAnswer)
-        let isCorrect = got == expected
-            || levenshteinRatio(got, expected) <= 0.25
-            || got.contains(expected)
-            || expected.contains(got)
+        // **Bug #4 Fix (2026-05-23)** — geteilter `approximateAnswerMatch`
+        // (längen-geschützter Substring) statt der vorher inline-duplizierten
+        // Kette mit nacktem `contains`. Verhindert, dass z. B. nur „das" als
+        // „das schwimmbad" durchrutscht.
+        let isCorrect = approximateAnswerMatch(got: got, expected: expected)
 
         if isCorrect {
             feedbackPlayer.playStudySuccess()

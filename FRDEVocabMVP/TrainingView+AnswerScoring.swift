@@ -163,22 +163,12 @@ extension TrainingView {
         return false
     }
 
+    /// **Bug #4 Fix (2026-05-23)** — delegiert an den geteilten
+    /// `approximateAnswerMatch` (längen-geschützter Substring statt nacktem
+    /// `contains`). Bleibt als Wrapper, weil `isCorrect` +
+    /// `hasFrenchArticleMismatch` ihn aufrufen.
     func isApproximateMatch(got: String, expected: String) -> Bool {
-        if got == expected {
-            return true
-        }
-
-        // Word-order independent: same words in any order
-        let gotWords = Set(got.split(separator: " ").map(String.init))
-        let expectedWords = Set(expected.split(separator: " ").map(String.init))
-        if gotWords.count >= 2, gotWords == expectedWords {
-            return true
-        }
-
-        let distance = levenshtein(got, expected)
-        let maxLength = max(got.count, expected.count)
-        let ratio = maxLength == 0 ? 0 : Double(distance) / Double(maxLength)
-        return ratio <= 0.25 || got.contains(expected) || expected.contains(got)
+        approximateAnswerMatch(got: got, expected: expected)
     }
 
     func requiresFrenchArticle(for card: FlashCard) -> Bool {
