@@ -17,6 +17,34 @@ extension TrainingView {
         let expected = normalized(currentCard.answer)
         let got = normalized(rawInput)
 
+        // **Daily Drop Modul 2.12 (2026-05-23)** — Count-Modus: EIN Versuch,
+        // kein Retry, keine Sofort-Wertung. Der Check setzt nur Feedback +
+        // Weiter-Wartezustand; gewertet + advanced wird erst im „Weiter"-Tap
+        // (`advanceVokabelCountMode`), konsistent zum Quiz. Leere Tipp-
+        // Eingabe = falsch (Soft-Lock-Auflösung). Leere Sprach-Erkennung
+        // bleibt „Nicht erkannt" + Mikro-Auto-Resume (Mikro-Anker, Modul 5 /
+        // Block 3.7.2) — der User kann erneut sprechen oder per „Weiter"
+        // überspringen (= falsch). Normales Training: unverändert darunter.
+        if isCountChainStep {
+            if got.isEmpty {
+                if isVokabelnTapMode {
+                    registerCountAnswer(correct: false, answerShown: rawInput)
+                } else {
+                    lastResult = ScoreResult(
+                        label: "Nicht erkannt",
+                        detail: "Nochmal versuchen!"
+                    )
+                    scheduleFeedbackTask(after: 0.4) {
+                        beginAutomaticListeningIfNeeded()
+                    }
+                }
+                return
+            }
+            let correct = isCorrect(got: got, expected: expected, for: currentCard)
+            registerCountAnswer(correct: correct, answerShown: rawInput)
+            return
+        }
+
         guard !got.isEmpty else {
             lastResult = ScoreResult(
                 label: "Nicht erkannt",
@@ -67,6 +95,29 @@ extension TrainingView {
         )
         lastResult = ScoreResult(label: "Richtig 🙂", detail: "")
         scheduleNextCard()
+    }
+
+    /// **Daily Drop Modul 2.12 (2026-05-23)** — Count-Modus-Check (Vokabel):
+    /// spielt den Antwort-Sound, setzt das Visual-Feedback (Ergebnis +
+    /// korrekte Lösung in `lastResult`/`countModeVokabelFeedback`) und den
+    /// Weiter-Wartezustand. Wertet bewusst NICHT (kein `recordAnswer`) —
+    /// Segment/Combo-Toast/Cap feuern erst im Weiter-Tap
+    /// (`advanceVokabelCountMode`), exakt wie beim Quiz. `typedAnswer`
+    /// bleibt stehen, damit das Tipp-Feld grün/rot eingefärbt werden kann.
+    func registerCountAnswer(correct: Bool, answerShown: String) {
+        if correct {
+            feedbackPlayer.playStudySuccess()
+        } else {
+            feedbackPlayer.playStudyError()
+        }
+        vokabelPendingCorrect = correct
+        vokabelCheckedAnswer = answerShown.trimmingCharacters(in: .whitespacesAndNewlines)
+        vokabelAwaitingWeiter = true
+        lastResult = ScoreResult(
+            label: correct ? "Richtig 🙂" : "Falsch 😕",
+            detail: correct ? "" : (currentCard?.answer ?? "")
+        )
+        typedAnswerFieldFocused = false
     }
 
     func normalized(_ text: String) -> String {

@@ -90,6 +90,15 @@ struct TrainingView: View {
     @State var pendingFeedbackTask: DispatchWorkItem?
     @State var typedAnswer = ""
     @State var showingTypedAnswerInput = false
+    /// **Daily Drop Modul 2.12 (2026-05-23)** — Weiter-Button-Flow im
+    /// Count-Modus (Vokabel): nach dem Check wartet die Karte auf den
+    /// expliziten „Weiter"-Tap statt auf den 2.6-Auto-Advance. EIN Versuch
+    /// pro Karte (kein Retry). `vokabelPendingCorrect` hält das gemerkte
+    /// Ergebnis, `vokabelCheckedAnswer` die geprüfte/erkannte Antwort für
+    /// die Feedback-Card. Nur Count-Modus; normales Training nutzt sie nie.
+    @State var vokabelAwaitingWeiter = false
+    @State var vokabelPendingCorrect: Bool?
+    @State var vokabelCheckedAnswer = ""
     @State var isMicPulseVisible = false
     @State var hasTriggeredAudioPreparation = false
     @State var isPreparingAudioDependencies = false

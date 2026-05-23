@@ -322,8 +322,18 @@ extension TrainingView {
                 } else {
                     actionButtons
                         .padding(.horizontal, trainingSessionCardInset)
-                    responseCard
-                        .padding(.horizontal, trainingSessionCardInset)
+                    // **Daily Drop Modul 2.12 (2026-05-23)** — im Count-Modus
+                    // ersetzt die schlanke `countModeVokabelFeedback`-Card die
+                    // `responseCard` (Sprach-Transcript-Anzeige). Ergebnis +
+                    // korrekte Lösung + „Weiter" laufen darüber. Normales
+                    // Training: `responseCard` bleibt unverändert.
+                    if isCountChainStep {
+                        countModeVokabelFeedback
+                            .padding(.horizontal, trainingSessionCardInset)
+                    } else {
+                        responseCard
+                            .padding(.horizontal, trainingSessionCardInset)
+                    }
                 }
             }
 

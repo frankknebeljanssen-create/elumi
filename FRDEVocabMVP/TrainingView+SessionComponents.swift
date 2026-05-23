@@ -123,6 +123,60 @@ extension TrainingView {
         .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 
+    /// **Daily Drop Modul 2.12 (2026-05-23)** — Ersatz für `responseCard` im
+    /// Count-Modus. Zeigt nach dem Check Ergebnis (grün/rot) + geprüfte/
+    /// erkannte Antwort + korrekte Lösung und trägt den „Weiter"-Button
+    /// (Anton-Stil, ersetzt den 2.6-Auto-Advance). Funktioniert für Tipp-
+    /// UND Sprach-Eingabe (Mikro bleibt, Entscheidung 5). „Weiter" ist immer
+    /// aktiv — auch ungeprüft (Skip = falsch), das löst den Speech-Soft-Lock
+    /// (Mikro erkennt nichts) sauber auf.
+    var countModeVokabelFeedback: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if vokabelAwaitingWeiter {
+                Text(vokabelPendingCorrect == true ? "Richtig 🙂" : "Falsch 😕")
+                    .font(AppTheme.Typography.cardTitle)
+                    .foregroundStyle(vokabelPendingCorrect == true ? AppTheme.Colors.success : AppTheme.Colors.error)
+                    .frame(maxWidth: .infinity, alignment: .center)
+
+                if !vokabelCheckedAnswer.isEmpty {
+                    Text("Deine Antwort: \(vokabelCheckedAnswer)")
+                        .font(AppTheme.Typography.caption)
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+
+                if vokabelPendingCorrect == false, let currentCard {
+                    Text("Richtig: \(currentCard.answer)")
+                        .font(AppTheme.Typography.body)
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+            } else if showsNotRecognizedMessage {
+                Text("Nicht erkannt — nochmal sprechen oder „Weiter\"")
+                    .font(AppTheme.Typography.body)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            } else {
+                Text("Antworte – dann „Weiter\"")
+                    .font(AppTheme.Typography.body)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            }
+
+            Button("Weiter") {
+                advanceVokabelCountMode()
+            }
+            .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+            .disabled(!session.hasStartedTraining || currentCard == nil)
+        }
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        .padding(14)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
+    }
+
     var articleButtons: some View {
         VStack(spacing: 10) {
             if showsSuccessOnlyMessage {
@@ -461,7 +515,13 @@ extension TrainingView {
                         placeholder: "Antwort tippen",
                         text: $typedAnswer,
                         accent: trainingActionTint,
-                        isEnabled: session.hasStartedTraining && currentCard != nil,
+                        // **Daily Drop Modul 2.12 (2026-05-23)** — Feld grün/rot
+                        // nach dem Check (Count-Modus). Sonst neutral.
+                        resultState: (isCountChainStep && vokabelAwaitingWeiter)
+                            ? (vokabelPendingCorrect == true ? .correct : .wrong)
+                            : .none,
+                        isEnabled: session.hasStartedTraining && currentCard != nil
+                            && !(isCountChainStep && vokabelAwaitingWeiter),
                         focus: $typedAnswerFieldFocused,
                         onSubmit: { submitTypedAnswer() }
                     )
@@ -485,7 +545,15 @@ extension TrainingView {
                     // Feste Breite wie KK → klammert das interne maxWidth des
                     // Button-Styles, das Feld bekommt die Restbreite (1-zeilig).
                     .frame(width: 100)
-                    .disabled(!session.hasStartedTraining || currentCard == nil || typedAnswer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    // **Daily Drop Modul 2.12 (2026-05-23)** — im Count-Modus
+                    // ist „Prüfen" auch bei leerem Feld aktiv (leer = falsch,
+                    // Soft-Lock-Auflösung) und nach dem Check deaktiviert (dann
+                    // übernimmt „Weiter" in der Feedback-Card). Normales
+                    // Training: deaktiviert bei leerer Eingabe wie bisher.
+                    .disabled(!session.hasStartedTraining || currentCard == nil
+                        || (isCountChainStep
+                            ? vokabelAwaitingWeiter
+                            : typedAnswer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty))
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)

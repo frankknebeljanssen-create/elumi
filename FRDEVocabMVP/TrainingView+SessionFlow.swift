@@ -376,9 +376,11 @@ extension TrainingView {
         // zeigt die Zwischen-Summary + CTA wie bisher (kein Delay).
         if isCountChainStep {
             let outcome = trainingSessionOutcome ?? .empty
-            scheduleFeedbackTask(after: 0.55) {
-                chainAdvance?(outcome)
-            }
+            // **Daily Drop Modul 2.12 (2026-05-23)** — der „Weiter"-Tap auf
+            // der letzten Karte IST der explizite User-Trigger; der
+            // 2.6-Auto-Advance-Delay (0.55 s) entfällt → sofortiger
+            // Step-Advance zum nächsten Modul/Chain-Ende.
+            chainAdvance?(outcome)
         }
         #if DEBUG
         appDebugLog("🛑 [Training] Force-Done via chain-timer-soft-cutoff")
@@ -479,6 +481,32 @@ extension TrainingView {
             if session.hasStartedTraining {
                 speakCurrentPromptAfterScreenUpdate(initialDelay: 0.06)
             }
+        }
+    }
+
+    /// **Daily Drop Modul 2.12 (2026-05-23)** — „Weiter"-Tap im Count-Modus
+    /// (Vokabel). Wertet die genau EINE Antwort dieser Karte und advanced.
+    /// `loadNextTrainingCard` routet selbst: nächste Karte (intern) bzw. bei
+    /// erreichtem Count-Cap → `forceTrainingDoneFromChainTimer` →
+    /// `chainAdvance` zum nächsten Modul/Chain-Ende — ein Button, alle 3
+    /// Ebenen. Tappt der User ohne vorherigen Check weiter (z. B. nicht
+    /// erkannte Sprache), zählt das als falsch (Skip = falsch).
+    /// `recordAnswer` feuert hier Segment + Modul-5-Combo/Pulse + Cap-
+    /// Counter; danach prüft `loadNextTrainingCard` den Cap mit dem frischen
+    /// Zählerstand.
+    func advanceVokabelCountMode() {
+        let correct = vokabelAwaitingWeiter ? (vokabelPendingCorrect ?? false) : false
+        vokabelAwaitingWeiter = false
+        vokabelPendingCorrect = nil
+        vokabelCheckedAnswer = ""
+        lastResult = nil
+        session.recordAnswer(correct: correct, firstAttempt: true)
+        loadNextTrainingCard()
+        // Nächste Karte vorlesen (Speech-Modus) — Spiegel von
+        // `scheduleNextCard`. Nicht sprechen, wenn die Session gerade durch
+        // den Count-Cap beendet wurde (Outcome gesetzt → Step wird ersetzt).
+        if session.hasStartedTraining, trainingSessionOutcome == nil {
+            speakCurrentPromptAfterScreenUpdate(initialDelay: 0.06)
         }
     }
 

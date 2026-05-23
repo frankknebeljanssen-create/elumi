@@ -227,11 +227,22 @@ struct AppSheetHeader: View {
 /// das Projekt explizite `.pbxproj`-Referenzen nutzt (keine synchronisierten
 /// Ordner) — eine neue Datei wäre nicht automatisch im Build-Target.
 struct AppInputField: View {
+    /// **Daily Drop Modul 2.12 (2026-05-23)** — Optionaler Ergebnis-Zustand
+    /// für das Antwort-Feedback im Count-Modus: färbt den Feld-Border grün
+    /// (richtig) bzw. rot (falsch). Default `.none` → Border unverändert
+    /// (Midnight 12 %). Rein additiv; alle bestehenden Call-Sites bleiben
+    /// gleich.
+    enum ResultState {
+        case none, correct, wrong
+    }
+
     let placeholder: String
     @Binding var text: String
 
     /// Cursor-/Tint-Farbe (Modul-Akzent). Default `primary`.
     var accent: Color = AppTheme.Colors.primary
+    /// Ergebnis-Feedback-Zustand (grün/rot Border). Default `.none`.
+    var resultState: ResultState = .none
     /// Mindesthöhe (bequemes Touch-Target). Default 46.
     var minHeight: CGFloat = 46
     /// Text-Ausrichtung. `.center` z. B. für Quiz. Default `.leading`.
@@ -273,8 +284,20 @@ struct AppInputField: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                .stroke(AppTheme.Colors.elumiMidnight.opacity(0.12), lineWidth: 1)
+                .stroke(resultBorderColor, lineWidth: resultBorderWidth)
         )
+    }
+
+    private var resultBorderColor: Color {
+        switch resultState {
+        case .none:    return AppTheme.Colors.elumiMidnight.opacity(0.12)
+        case .correct: return AppTheme.Colors.success
+        case .wrong:   return AppTheme.Colors.error
+        }
+    }
+
+    private var resultBorderWidth: CGFloat {
+        resultState == .none ? 1 : 2
     }
 
     /// TextField mit konditionalem Focus/onTap — `.onTapGesture` wird NUR

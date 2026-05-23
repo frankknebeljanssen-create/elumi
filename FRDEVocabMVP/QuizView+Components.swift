@@ -182,6 +182,24 @@ var quizSessionScreen: some View {
             }
         }
 
+        // **Daily Drop Modul 2.12 (2026-05-23)** — Weiter-Button im
+        // Count-Modus (Anton-Stil), ersetzt den 2.6-Auto-Advance.
+        // Erscheint nach dem Check (Antwort-Feedback sichtbar). Ruft
+        // `completeCurrentQuestion(correct:)` — die Funktion routet selbst
+        // alle 3 Ebenen: nächste Frage (intern) bzw. am Quiz-Ende
+        // `isShowingResult = true` → `handleQuizResultVisibilityChange`
+        // → `chainAdvance` zum nächsten Modul/Chain-Ende.
+        if isCountChainStep, quizAwaitingWeiter {
+            Button {
+                completeCurrentQuestion(correct: quizPendingCorrect ?? false)
+            } label: {
+                Text("Weiter")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+            .padding(.top, AppTheme.Spacing.xs)
+        }
+
         Spacer(minLength: 0)
     }
     .padding(.horizontal, AppLayout.screenPadding)

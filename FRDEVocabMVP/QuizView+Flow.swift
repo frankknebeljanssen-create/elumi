@@ -39,24 +39,45 @@ extension QuizView {
             feedbackPlayer.playStudyError()
         }
 
-        scheduleAdvance(after: 0.95) {
-            completeCurrentQuestion(correct: isCorrect)
+        // **Daily Drop Modul 2.12 (2026-05-23)** — Count-Modus: kein
+        // Auto-Advance. Antwort-Feedback (grün/rot Chips) bleibt sichtbar,
+        // bis der User „Weiter" tappt (Anton-Stil). Gewertet + advanced
+        // wird erst im Weiter-Tap (`completeCurrentQuestion`). Normales
+        // Quiz/Zeit-Chain: 2.6-Auto-Advance-Delay wie bisher.
+        if isCountChainStep {
+            quizPendingCorrect = isCorrect
+            quizAwaitingWeiter = true
+        } else {
+            scheduleAdvance(after: 0.95) {
+                completeCurrentQuestion(correct: isCorrect)
+            }
         }
     }
 
     func submitTyping(for question: QuizTypingQuestion) {
         guard !typingLocked else { return }
         let userInput = typingInput.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !userInput.isEmpty else { return }
+        // **Daily Drop Modul 2.12 (2026-05-23)** — im Count-Modus zählt eine
+        // leere Eingabe als falsch (löst den Soft-Lock: „Überprüfen" ist
+        // dort immer aktiv). Normales Quiz: leere Eingabe wird wie bisher
+        // ignoriert (Soft-Lock-Schutz für den entspannten Modus).
+        if !isCountChainStep {
+            guard !userInput.isEmpty else { return }
+        }
         typingLocked = true
         isTypingFieldFocused = false
 
         let got = normalizedLookupText(userInput)
         let expected = normalizedLookupText(question.correctAnswer)
-        let isCorrect = got == expected
+        // `!userInput.isEmpty &&` schützt gegen den `expected.contains("")`-
+        // Treffer (jeder String enthält den Leerstring) — eine leere
+        // Eingabe darf nie als richtig durchrutschen.
+        let isCorrect = !userInput.isEmpty && (
+            got == expected
             || levenshteinRatio(got, expected) <= 0.25
             || got.contains(expected)
             || expected.contains(got)
+        )
 
         if isCorrect {
             feedbackPlayer.playStudySuccess()
@@ -65,8 +86,14 @@ extension QuizView {
             typingShowCorrectAnswer = question.correctAnswer
         }
 
-        scheduleAdvance(after: 1.2) {
-            completeCurrentQuestion(correct: isCorrect)
+        // Count-Modus: Feedback halten bis „Weiter" (siehe submitMultipleChoice).
+        if isCountChainStep {
+            quizPendingCorrect = isCorrect
+            quizAwaitingWeiter = true
+        } else {
+            scheduleAdvance(after: 1.2) {
+                completeCurrentQuestion(correct: isCorrect)
+            }
         }
     }
 
@@ -352,6 +379,10 @@ extension QuizView {
         typingLocked = false
         typingShowCorrectAnswer = nil
         isTypingFieldFocused = false
+        // **Daily Drop Modul 2.12** — Weiter-Flow-States zurücksetzen,
+        // damit die nächste Frage frisch ohne „Weiter"-Wartezustand startet.
+        quizAwaitingWeiter = false
+        quizPendingCorrect = nil
     }
 
     func submitFillBlanks(for question: QuizFillBlanksQuestion) {

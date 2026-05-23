@@ -68,6 +68,14 @@ struct QuizView: View {
     @State var typingInput = ""
     @State var typingLocked = false
     @State var typingShowCorrectAnswer: String?
+    /// **Daily Drop Modul 2.12 (2026-05-23)** — Weiter-Button-Flow im
+    /// Count-Modus: nach dem Check (Antwort geprüft, Feedback sichtbar)
+    /// wartet die Frage auf den expliziten „Weiter"-Tap statt auf den
+    /// 2.6-Auto-Advance. `quizPendingCorrect` hält das gemerkte Ergebnis
+    /// bis Weiter es an `completeCurrentQuestion(correct:)` weiterreicht.
+    /// Nur Count-Modus; normales Quiz/Zeit-Chain nutzt die States nie.
+    @State var quizAwaitingWeiter = false
+    @State var quizPendingCorrect: Bool?
     /// **Gruppe-3-Migration (2026-05-22)** — Push-State für den
     /// `UnifiedListCategoryPicker`. Getriggert via `onTap` in der
     /// `ListCategoryPickerView`-Card im `quizSetupScreen`.

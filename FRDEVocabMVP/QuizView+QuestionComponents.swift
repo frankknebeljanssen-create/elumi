@@ -36,20 +36,28 @@ extension QuizView {
                         placeholder: "Antwort eingeben",
                         text: $typingInput,
                         accent: sectionStyle.accent,
+                        resultState: (isCountChainStep && quizAwaitingWeiter && quizPendingCorrect == true) ? .correct : .none,
                         alignment: .center,
                         isEnabled: !typingLocked,
                         focus: $isTypingFieldFocused,
                         onSubmit: { submitTyping(for: question) }
                     )
 
-                    Button {
-                        submitTyping(for: question)
-                    } label: {
-                        Text("Überprüfen")
-                            .frame(maxWidth: .infinity)
+                    // **Daily Drop Modul 2.12 (2026-05-23)** — im Count-Modus
+                    // verschwindet „Überprüfen" sobald geprüft wurde; dann
+                    // übernimmt der externe „Weiter"-Button. Außerdem ist es
+                    // dort immer aktiv (leere Eingabe zählt als falsch).
+                    if !(isCountChainStep && quizAwaitingWeiter) {
+                        let trimmedEmpty = typingInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        Button {
+                            submitTyping(for: question)
+                        } label: {
+                            Text("Überprüfen")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(AppPrimaryButtonStyle(color: (isCountChainStep || !trimmedEmpty) ? AppTheme.Colors.cta : AppTheme.Colors.textDisabled))
+                        .disabled(typingLocked || (!isCountChainStep && trimmedEmpty))
                     }
-                    .buttonStyle(AppPrimaryButtonStyle(color: typingInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? AppTheme.Colors.textDisabled : AppTheme.Colors.cta))
-                    .disabled(typingInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || typingLocked)
                 }
             }
         }

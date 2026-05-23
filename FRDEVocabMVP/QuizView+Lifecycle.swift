@@ -87,9 +87,13 @@ extension QuizView {
         if isCountChainStep {
             persistHeartsIfNeeded()
             let outcome = quizSessionOutcome ?? .empty
-            scheduleAdvance(after: 0.55) {
-                chainAdvance?(outcome)
-            }
+            // **Daily Drop Modul 2.12 (2026-05-23)** — der „Weiter"-Tap auf
+            // der letzten Frage IST bereits der explizite User-Trigger; der
+            // 2.6-Auto-Advance-Delay (0.55 s) entfällt → sofortiger
+            // Step-Advance. Reward-Prep lief synchron oben
+            // (`prepareQuizRewards` + `persistHeartsIfNeeded`),
+            // `quizSessionOutcome` ist gesetzt.
+            chainAdvance?(outcome)
         }
     }
 
