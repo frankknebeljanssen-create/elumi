@@ -41,6 +41,16 @@ final class AppNavigationCoordinator: ObservableObject {
         !shouldShowSplashOverlay && !isImmersiveArcadeActive && !isChatKeyboardActive
     }
 
+    /// **Daily Drop Modul 2.9 (2026-05-23)** — Chrome-LAYOUT-Modus, bewusst
+    /// OHNE `isChatKeyboardActive`. Steuert `appUsesGlobalChrome` (ob Module
+    /// ihr lokales `appLocalChrome` einschalten). Beim Keyboard wird nur der
+    /// globale Footer versteckt (`shouldShowGlobalChrome`), aber das Layout-
+    /// Mode bleibt stabil → kein `appLocalChrome`-if/else-Zweigwechsel →
+    /// kein Re-Parent der Modul-Views (sonst Quiz-Typing-Fokus-Loop).
+    var shouldUseGlobalChromeLayout: Bool {
+        !shouldShowSplashOverlay && !isImmersiveArcadeActive
+    }
+
     var isSettingsScreenActive: Bool {
         if case .settings = currentScreen {
             return true

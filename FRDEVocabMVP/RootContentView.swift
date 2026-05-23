@@ -283,7 +283,14 @@ struct ContentView: View {
                 .environment(\.appSetImmersiveArcadeAction, { active in
                     navigation.setImmersiveArcade(active)
                 })
-                .environment(\.appUsesGlobalChrome, navigation.shouldShowGlobalChrome)
+                // **Daily Drop Modul 2.9 (2026-05-23)** — Layout-Modus
+                // entkoppelt vom Keyboard-Flag: der globale Footer (oben,
+                // `safeAreaInset` :230) bleibt auf `shouldShowGlobalChrome`
+                // gated (versteckt sich bei Tastatur), aber `appUsesGlobalChrome`
+                // nutzt `shouldUseGlobalChromeLayout` (ohne `isChatKeyboardActive`).
+                // So togglen die Module ihr `appLocalChrome` NICHT mehr beim
+                // Tippen → kein Re-Parent → kein Quiz-Typing-Loop.
+                .environment(\.appUsesGlobalChrome, navigation.shouldUseGlobalChromeLayout)
                 // **Léa-Chat MVP — Keyboard-Footer-Hide (2026-05-10)** —
                 // ChatView ruft diese Closure aus seinem
                 // NotificationCenter-Listener für `keyboardWillShow/Hide`.

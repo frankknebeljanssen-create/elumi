@@ -119,6 +119,11 @@ var quizSessionScreen: some View {
         // nicht raus zu Home. ScreenHeaderCard + großer Zurück-Button raus.
         quizSetupHeader
 
+        // **Daily Drop Modul 2.9 (2026-05-23)** — im Count-Modus ist die
+        // Quiz-interne Frage-Progress-Card redundant zur persistenten
+        // Daily-Drop-Count-Bar oben → ganze Card ausblenden. Zeit-Chain +
+        // normales Quiz: bleibt.
+        if !isCountChainStep {
         AppSurfaceCard(tint: sectionStyle.accent) {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 // **Block 3.7.3 (2026-05-03)** — Im Chain-Modus
@@ -143,6 +148,7 @@ var quizSessionScreen: some View {
                 quizProgressBar
             }
         }
+        } // ← Ende `if !isCountChainStep` (Progress-Card im Count-Modus aus)
 
         if let currentQuestion {
             switch currentQuestion {
