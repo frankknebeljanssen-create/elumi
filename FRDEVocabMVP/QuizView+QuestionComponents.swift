@@ -492,11 +492,16 @@ extension QuizView {
         guard multipleChoiceLocked else {
             return AppTheme.Colors.secondarySurface
         }
+        // **Daily Drop Modul 2.12 (2026-05-23)** — nach der Antwort die
+        // richtige (grün) und die falsch angetippte (rot) Option HELL
+        // hinterlegen statt nur 18 % Deckkraft (User-Befund: wirkte
+        // gedimmt). Volle Akzentfläche + weißer Text/Icon — analog zum
+        // Lückentext-Chip (`fillBlanksChipColor`).
         if normalizedLookupText(option) == normalizedLookupText(correctAnswer) {
-            return AppTheme.Colors.success.opacity(0.18)
+            return AppTheme.Colors.success
         }
         if selectedMultipleChoiceOption == option {
-            return AppTheme.Colors.error.opacity(0.18)
+            return AppTheme.Colors.error
         }
         return AppTheme.Colors.secondarySurface
     }
@@ -505,11 +510,13 @@ extension QuizView {
         guard multipleChoiceLocked else {
             return AppTheme.Colors.textPrimary
         }
+        // Weißer Text/Icon auf der vollen grünen/roten Fläche (s. o.) —
+        // klarer Kontrast statt farbiger Text auf zarter Tönung.
         if normalizedLookupText(option) == normalizedLookupText(correctAnswer) {
-            return AppTheme.Colors.success
+            return .white
         }
         if selectedMultipleChoiceOption == option {
-            return AppTheme.Colors.error
+            return .white
         }
         return AppTheme.Colors.textPrimary
     }
