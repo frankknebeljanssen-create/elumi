@@ -62,6 +62,13 @@ struct ChainTimerOverlayModifier: ViewModifier {
     private var wuermchenTickOverlay: some View {
         if chainStore.currentChain?.isCountMode == true {
             WuermchenTickOverlay()
+                // **Modul 5 Fix (2026-05-23)** — Identität an den Step
+                // (`currentIndex`) koppeln: Beim Step-Wechsel (chainAdvance
+                // setzt `currentChain.advancedToNextStep()`) ändert sich die
+                // `.id` → SwiftUI verwirft das alte Overlay samt evtl. noch
+                // laufendem Tick und mountet ein leeres. So „rutscht" kein
+                // Alt-Tick aus dem vorigen Step in den neuen durch.
+                .id(chainStore.currentChain?.currentIndex ?? -1)
         }
     }
 

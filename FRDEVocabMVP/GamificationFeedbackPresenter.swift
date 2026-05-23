@@ -214,8 +214,10 @@ struct WuermchenTickOverlay: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        // Etwas unterhalb der oberen Kante → klar getrennt vom Serien-Toast.
-        .padding(.top, 70)
+        // **Modul 5 Fix (2026-05-23)** — tiefer (140 statt 70): liegt unter
+        // der Count-Bar UND unter dem Modul-Titel („Quiz"/„Vokabeln"), nicht
+        // mehr darüber. Weiterhin klar getrennt vom Serien-Toast (ganz oben).
+        .padding(.top, 140)
         .allowsHitTesting(false)
         .onChange(of: presenter.successPulseTrigger) { _, _ in
             let tick = Tick()
@@ -249,7 +251,9 @@ private struct WuermchenTickGlyph: View {
                     opacity = 1.0
                 }
                 withAnimation(.easeIn(duration: 0.55).delay(0.18)) {
-                    offsetY = -64
+                    // **Modul 5 Fix (2026-05-23)** — kleinerer Aufstieg (-22),
+                    // damit der Tick nicht in den Titel-Bereich hochwandert.
+                    offsetY = -22
                     opacity = 0.0
                 }
             }
