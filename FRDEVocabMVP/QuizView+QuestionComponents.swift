@@ -111,7 +111,14 @@ extension QuizView {
                             .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
                         }
                         .buttonStyle(.plain)
-                        .disabled(multipleChoiceLocked)
+                        // **Daily Drop Modul 2.12 (2026-05-23)** — nach der
+                        // Antwort nur die Interaktion sperren, NICHT `.disabled`:
+                        // disabled dimmt SwiftUI-weit den Button-Inhalt (auch die
+                        // weiße Schrift auf grün/rot wirkt dann ausgegraut).
+                        // `allowsHitTesting(false)` hält die Optik voll hell; ein
+                        // Re-Tap wird ohnehin vom Guard in `submitMultipleChoice`
+                        // abgefangen.
+                        .allowsHitTesting(!multipleChoiceLocked)
                     }
                 }
             }
