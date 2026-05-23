@@ -130,3 +130,50 @@ func answerLevenshtein(_ lhs: String, _ rhs: String) -> Int {
     }
     return dist[a.count][b.count]
 }
+
+// MARK: - Geteilte zulässige Antworten (Wertung #3, 2026-05-23)
+
+/// Sammelt ALLE zulässigen Antwort-Varianten für eine Prompt-Seite — über
+/// drei Quellen:
+///   1. **Geschwister-Einträge** im aktiven Pool mit gleicher Prompt-Seite
+///      (z. B. „un peu" → „ein wenig" UND „ein bisschen" als zwei Einträge),
+///   2. deren `answerVariants` (Trennzeichen-/Genus-Varianten),
+///   3. **Lexikon-Synonyme** (`SupplementalFreeDictLexicon`), wenn der Prompt
+///      französisch ist.
+///
+/// Damit akzeptiert die Wertung mehrere gültige Übersetzungen, nicht nur die
+/// EINE hinterlegte. Der Aufrufer prüft `got` gegen das zurückgegebene Set
+/// via `approximateAnswerMatch` (diese Funktion bleibt unverändert — das
+/// Multi-Expected sitzt hier im Aufrufer-Set).
+///
+/// `pool` ist die aktive Auswahl als `(french, german)`-Paare (Quiz:
+/// `cachedMergedItems`, Vokabel: `preparedTrainingItems`, Karteikarte:
+/// `session.cards`). `promptIsFrench` bestimmt, welche Seite die Prompt- bzw.
+/// Antwort-Seite ist. `normalize` ist die Normalisierung des Aufrufers
+/// (damit das Set zu dessen `got` passt). Geschwister-Match läuft über
+/// `normalizedLookupText` (dieselbe Normalisierung wie der Dedup-Key).
+func acceptedAnswerVariants(
+    forPrompt prompt: String,
+    answerLanguageCode: String,
+    promptIsFrench: Bool,
+    pool: [(french: String, german: String)],
+    normalize: (String) -> String
+) -> Set<String> {
+    let promptKey = normalizedLookupText(prompt)
+    var accepted = Set<String>()
+
+    for entry in pool {
+        let entryPrompt = promptIsFrench ? entry.french : entry.german
+        guard normalizedLookupText(entryPrompt) == promptKey else { continue }
+        let entryAnswer = promptIsFrench ? entry.german : entry.french
+        accepted.formUnion(answerVariants(for: normalize(entryAnswer), answerLanguageCode: answerLanguageCode))
+    }
+
+    if promptIsFrench {
+        for translation in SupplementalFreeDictLexicon.exactTranslations(for: prompt) {
+            accepted.formUnion(answerVariants(for: normalize(translation), answerLanguageCode: answerLanguageCode))
+        }
+    }
+
+    return accepted
+}

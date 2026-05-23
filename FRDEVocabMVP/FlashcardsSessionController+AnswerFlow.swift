@@ -49,7 +49,12 @@ extension FlashcardsSessionController {
         typedAnswer = ""
         hideTypedAnswerField()
 
-        if isCorrect(got: got, expected: expected, card: currentFlashCard) {
+        if isCorrect(
+            got: got,
+            expected: expected,
+            card: currentFlashCard,
+            pool: sessionStore.selectedDeck.cards.map { (french: $0.french, german: $0.german) }
+        ) {
             // **Peek-Protection (User-Revision 2026-04-22)**: Wurde die
             // Karte vorher manuell geflippt (gepeekt), zählt die
             // korrekte Antwort NICHT als gemeistert. Stattdessen wird

@@ -14,7 +14,7 @@ extension FlashcardsSessionController {
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    func isCorrect(got: String, expected: String, card: FlashCard) -> Bool {
+    func isCorrect(got: String, expected: String, card: FlashCard, pool: [(french: String, german: String)]) -> Bool {
         if requiresFrenchArticle(for: card),
            hasFrenchArticleMismatch(got: got, expected: expected) {
             return false
@@ -22,13 +22,18 @@ extension FlashcardsSessionController {
 
         var expectedVariants = answerVariants(for: expected, answerLanguageCode: card.answerLanguageCode)
 
-        // Add synonym translations from supplemental lexicon
-        if card.promptLanguageCode == "fr-FR" {
-            let translations = SupplementalFreeDictLexicon.exactTranslations(for: card.prompt)
-            for translation in translations {
-                expectedVariants.formUnion(answerVariants(for: normalized(translation), answerLanguageCode: card.answerLanguageCode))
-            }
-        }
+        // **Wertung #3 (2026-05-23)** — Geschwister-Karten (gleiche Prompt-
+        // Seite im aktiven Deck) + deren `answerVariants` + Lexikon-Synonyme
+        // als zusätzlich zulässige Antworten. Ersetzt die reine Lexikon-
+        // Schleife: jetzt zählen auch mehrere hinterlegte Übersetzungen
+        // desselben Prompts.
+        expectedVariants.formUnion(acceptedAnswerVariants(
+            forPrompt: card.prompt,
+            answerLanguageCode: card.answerLanguageCode,
+            promptIsFrench: card.promptLanguageCode == "fr-FR",
+            pool: pool,
+            normalize: normalized
+        ))
 
         let gotVariants = answerVariants(for: got, answerLanguageCode: card.answerLanguageCode)
 

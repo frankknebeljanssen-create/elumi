@@ -75,11 +75,24 @@ extension QuizView {
 
         let got = normalizedLookupText(userInput)
         let expected = normalizedLookupText(question.correctAnswer)
+        // **Wertung #3 (2026-05-23)** — mehrere gültige Übersetzungen: das
+        // erwartete Set sammelt Geschwister-Einträge (gleiche Prompt-Seite im
+        // aktiven Pool) + deren `answerVariants` + Lexikon-Synonyme. So zählt
+        // z. B. bei „un peu" sowohl „ein wenig" als auch „ein bisschen". Das
+        // Quiz arbeitet damit erstmals gegen eine erwartete-Menge statt einen
+        // Einzelwert.
+        var accepted = acceptedAnswerVariants(
+            forPrompt: question.prompt,
+            answerLanguageCode: question.answerLanguageCode,
+            promptIsFrench: question.promptLanguageCode == "fr-FR",
+            pool: session.cachedMergedItems.map { (french: $0.french, german: $0.german) },
+            normalize: normalizedLookupText
+        )
+        accepted.formUnion(answerVariants(for: expected, answerLanguageCode: question.answerLanguageCode))
         // **Bug #4 Fix (2026-05-23)** — geteilter `approximateAnswerMatch`
-        // (längen-geschützter Substring) statt der vorher inline-duplizierten
-        // Kette mit nacktem `contains`. Verhindert, dass z. B. nur „das" als
-        // „das schwimmbad" durchrutscht.
-        let isCorrect = approximateAnswerMatch(got: got, expected: expected)
+        // (längen-geschützter Substring) statt nacktem `contains`. Verhindert,
+        // dass z. B. nur „das" als „das schwimmbad" durchrutscht.
+        let isCorrect = accepted.contains { approximateAnswerMatch(got: got, expected: $0) }
 
         if isCorrect {
             feedbackPlayer.playStudySuccess()

@@ -144,13 +144,18 @@ extension TrainingView {
 
         var expectedVariants = answerVariants(for: expected, answerLanguageCode: card.answerLanguageCode)
 
-        // Add synonym translations from supplemental lexicon
-        if card.promptLanguageCode == "fr-FR" {
-            let translations = SupplementalFreeDictLexicon.exactTranslations(for: card.prompt)
-            for translation in translations {
-                expectedVariants.formUnion(answerVariants(for: normalized(translation), answerLanguageCode: card.answerLanguageCode))
-            }
-        }
+        // **Wertung #3 (2026-05-23)** — Geschwister-Einträge (gleiche Prompt-
+        // Seite im aktiven Pool) + deren `answerVariants` + Lexikon-Synonyme
+        // als zusätzlich zulässige Antworten. Ersetzt die reine Lexikon-
+        // Schleife: jetzt zählen auch mehrere hinterlegte Übersetzungen
+        // desselben Prompts (z. B. „un peu" → „ein wenig" UND „ein bisschen").
+        expectedVariants.formUnion(acceptedAnswerVariants(
+            forPrompt: card.prompt,
+            answerLanguageCode: card.answerLanguageCode,
+            promptIsFrench: card.promptLanguageCode == "fr-FR",
+            pool: session.preparedTrainingItems.map { (french: $0.french, german: $0.german) },
+            normalize: normalized
+        ))
 
         let gotVariants = answerVariants(for: got, answerLanguageCode: card.answerLanguageCode)
 
