@@ -390,6 +390,12 @@ extension TrainingView {
             // `textPrimary` (cream) für den Glyph; Border + Press-
             // Tint bleiben in der Modul-Akzent-Farbe (Modul-Identität
             // erhalten). Pattern-Mirror zum Pre-Screen-Pill-Fix.
+            // **Daily Drop Modul 2.7 (2026-05-23)** — Antwort-Footer
+            // (Lösung / Nächstes Wort) bei offener Tastatur ausblenden, damit
+            // er nicht mit hochschiebt. `typedAnswerFieldFocused` (FocusState
+            // am Eingabefeld) steuert das; das Eingabefeld selbst
+            // (`typedAnswerControl` darüber) bleibt sichtbar. Generisch.
+            if !typedAnswerFieldFocused {
             HStack(spacing: 10) {
                 Button {
                     revealSolution()
@@ -429,6 +435,7 @@ extension TrainingView {
                 .disabled(!session.hasStartedTraining || session.preparedTrainingItems.isEmpty)
                 .opacity(!session.hasStartedTraining || session.preparedTrainingItems.isEmpty ? 0.5 : 1)
             }
+            } // ← Ende `if !typedAnswerFieldFocused` (Footer bei Tastatur weg)
         }
     }
 

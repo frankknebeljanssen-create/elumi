@@ -83,11 +83,6 @@ extension TrainingView {
                     .allowsHitTesting(false)
             }
         }
-        // **Daily Drop Modul 2.6 (2026-05-23)** — generischer Keyboard-Fix
-        // (siehe `quizRootContent`): verankert Content + Count-Bar, damit
-        // die Tastatur die View nicht nach oben schiebt. Greift für die
-        // Vokabel-Eingabe UND das normale Training (kein Count-Gate).
-        .ignoresSafeArea(.keyboard, edges: .bottom)
     }
 
     /// Empty-Pool-Toast-Zelle — Warning-Style (orange Akzent, Achtung-

@@ -339,6 +339,12 @@ struct AppDestinationHost: View {
             .id("train:\(modeKey):\(chainIdx)")
             .environment(\.appChainAdvanceAction, chainAdvanceClosure())
             .modifier(ChainTimerOverlayModifier())
+            // **Daily Drop Modul 2.7 (2026-05-23)** — Keyboard-Anchor am
+            // äußersten Level (ÜBER den safeAreaInset-Wrappern für Count-Bar
+            // + Footer), damit die Tastatur die View nicht hochschiebt.
+            // Generisch (chain + nicht-chain). `ignoresSafeArea` propagiert
+            // nur nach unten — darum muss es hierher, nicht an den Modul-Root.
+            .ignoresSafeArea(.keyboard, edges: .bottom)
         } else {
             loadingDestinationView("Trainieren wird vorbereitet") {
                 await runtime.ensureTrainingDependenciesReady()
@@ -366,6 +372,8 @@ struct AppDestinationHost: View {
             )
             .environment(\.appChainAdvanceAction, chainAdvanceClosure())
             .modifier(ChainTimerOverlayModifier())
+            // **Daily Drop Modul 2.7 (2026-05-23)** — Keyboard-Anchor (siehe train).
+            .ignoresSafeArea(.keyboard, edges: .bottom)
         } else {
             let _ = markFlashcardsOpenTiming("destination_showing_loader")
             loadingDestinationView("Karteikarten werden vorbereitet") {
@@ -388,6 +396,8 @@ struct AppDestinationHost: View {
             )
             .environment(\.appChainAdvanceAction, chainAdvanceClosure())
             .modifier(ChainTimerOverlayModifier())
+            // **Daily Drop Modul 2.7 (2026-05-23)** — Keyboard-Anchor (siehe train).
+            .ignoresSafeArea(.keyboard, edges: .bottom)
         } else {
             loadingDestinationView("Quiz wird vorbereitet") {
                 await runtime.ensureQuizDependenciesReady()

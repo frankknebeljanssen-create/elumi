@@ -14,7 +14,15 @@ extension QuizView {
                         quizResultScreen
                     }
                 } else if session.questions.isEmpty {
-                    quizSetupScreen
+                    // **Daily Drop Modul 2.7** — Count-Modus: kein Setup-Blitz
+                    // während die Fragen async laden; sauberes `Color.clear`
+                    // bis die erste Frage steht (echte Frage wird nie versteckt,
+                    // weil dieser Zweig nur bei `questions.isEmpty` greift).
+                    if isCountChainStep {
+                        Color.clear
+                    } else {
+                        quizSetupScreen
+                    }
                 } else {
                     quizSessionScreen
                 }
@@ -24,11 +32,6 @@ extension QuizView {
             // in Folge einen kurzen Bonus-Hinweis. Blockiert keine Eingaben.
             ComboToastOverlay()
         }
-        // **Daily Drop Modul 2.6 (2026-05-23)** — generischer Keyboard-Fix:
-        // verhindert, dass die Tastatur die ganze View (inkl. der per
-        // `safeAreaInset(.top)` gesetzten Count-Bar) nach oben schiebt.
-        // Greift für Quiz-Typing UND das normale Quiz (kein Count-Gate).
-        .ignoresSafeArea(.keyboard, edges: .bottom)
     }
 
     var body: some View {
