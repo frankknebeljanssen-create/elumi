@@ -266,13 +266,11 @@ struct ElumiTabView: View {
     /// Das Label „Jetzt üben" bleibt identisch zwischen 2-Button-State
     /// und post-Spin-3-State — Konsistenz für den User.
     private var spinPrimaryLabel: String {
-        // **Naming-Sweep 2026-05-06** — „Maschine jetzt starten!" →
-        // „Drop starten". Konsistent zum Brand-Begriff „Daily Drop"
-        // (Home-Card + Pop-up-Pre-Title). Kürzer, kernig, passt zum
-        // einmal-pro-Tag-Charakter des Modus. Nach erstem Spin
-        // bleibt „Nochmal drehen" — Re-Spin-Variante kommuniziert
-        // weiterhin die Slot-Mechanik.
-        currentSpinNumber == 0 ? "Drop starten" : "Nochmal drehen"
+        // **2026-05-23 (User-Spec)** — „Drop starten" → „Maschine starten".
+        // Benennt die Slot-Mechanik direkt. Nach erstem Spin bleibt
+        // „Nochmal drehen" — Re-Spin-Variante kommuniziert weiterhin die
+        // Slot-Mechanik.
+        currentSpinNumber == 0 ? "Maschine starten" : "Nochmal drehen"
     }
 
     private let sectionStyle: AppSectionStyle = .elumi
