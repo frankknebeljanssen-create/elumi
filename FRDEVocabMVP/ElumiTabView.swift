@@ -138,6 +138,18 @@ struct ElumiTabView: View {
     /// `selectedDuration` gesetzt; CTA-Tap dismisst das Modal mit dem
     /// (jetzt gültig persistierten) Wert.
     @State private var modalDurationSelection: Int? = nil
+    /// **Daily Drop Modul 3 (2026-05-23)** — Anzahl-Picker (ersetzt die
+    /// „Wie lange?"-Zeitwahl). Gewählte Gesamt-Übungszahl (10/20/30 =
+    /// Kurz/Mittel/Lang). Optional → kein Default-Preselect, bewusste Wahl;
+    /// dient zugleich als Gate für `canTriggerSpin`. Die Duration-States
+    /// oben (`selectedDuration`/`modalDurationSelection`) sind damit toter
+    /// Code (separater Cleanup, User-Spec).
+    @State private var modalExerciseSelection: Int? = nil
+    /// **Daily Drop Modul 3 (2026-05-23)** — gecachte Material-Basis
+    /// (`min(quizUsable, vokabelUsable)` der globalen Auswahl). Bestimmt,
+    /// welche Längen anbietbar sind. Wird bei Modal-Open + Selection-Change
+    /// neu berechnet (`recomputeDailyDropMaterial`), NICHT pro Render.
+    @State private var cachedDailyDropMaterial: Int = 0
     /// Slot-Phase — externe Sicht der State-Maschine in `SlotMachineView`.
     @State private var slotPhase: SlotPhase = .idle
     /// Trigger-Token — Setzen auf `true` startet einen Spin.
@@ -326,6 +338,13 @@ struct ElumiTabView: View {
     // als die alten 12 min.
     private static let durationOptions: [Int] = [5, 10, 15]
 
+    /// **Daily Drop Modul 3 (2026-05-23)** — Anzahl-Optionen (Übungen
+    /// gesamt): Kurz/Mittel/Lang. Ersetzt `durationOptions` (Minuten, tot).
+    static let exerciseCountOptions: [Int] = [10, 20, 30]
+    /// Default-Übungszahl (Mittel) — Anzeige-Fallback, falls noch keine
+    /// Wahl getroffen wurde (der Slot ist bis zur Wahl ohnehin gegated).
+    static let exerciseCountDefault: Int = 20
+
     /// **Slot-Spin Credit-Mapping** (Pool-Vereinheitlichung 2026-04-30,
     /// Stufe 1b). Aus dem ehemaligen `ElumiCreditsStore.GrantTable`
     /// in den Tab gezogen, weil der Store entfernt wurde. Mapping
@@ -403,6 +422,13 @@ struct ElumiTabView: View {
             globalSelectedListIDs = VocabularyListSelectionResolver.currentGlobalSelectedListIDs() ?? []
             checkSetupModalState()
         }
+        // **Daily Drop Modul 3 (2026-05-23)** — Material-Gating neu zählen,
+        // wenn der User die globale Listen-Auswahl ändert (z. B. via
+        // GlobalListPickerSheet). Hält die Längen-Verfügbarkeit aktuell,
+        // ohne pro Render zu rechnen.
+        .onChange(of: globalSelectedListIDs) { _, _ in
+            recomputeDailyDropMaterial()
+        }
     }
 
     /// Zeigt das Setup-Modal beim Tab-Mount **immer** (Spec-Update
@@ -430,7 +456,10 @@ struct ElumiTabView: View {
         // Auswahl die einzige Wahl bleibt. Beim Skip-X bleibt
         // `modalDurationSelection` nil → CTA bleibt disabled, Pop-up
         // zeigt sich beim nächsten Tab-Open wieder.
-        guard modalDurationSelection == nil else { return }
+        guard modalExerciseSelection == nil else { return }
+        // **Daily Drop Modul 3 (2026-05-23)** — Material frisch zählen,
+        // bevor der Picker erscheint (gegated Längen).
+        recomputeDailyDropMaterial()
         withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
             showSetupModal = true
         }
@@ -562,21 +591,33 @@ struct ElumiTabView: View {
                         .tracking(0.8)
                         .textCase(.uppercase)
                         .foregroundStyle(sectionStyle.accent)
-                    Text("Wie lange üben?")
+                    Text("Wie viele Übungen?")
                         .font(.system(size: 25, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity)
 
-                // Time-Cards — Tap löst auto-close aus (siehe
-                // `durationChip` Tap-Handler).
-                HStack(spacing: 12) {
-                    ForEach(Self.durationOptions, id: \.self) { minutes in
-                        durationChip(minutes: minutes)
+                // **Daily Drop Modul 3 (2026-05-23)** — Anzahl-Picker:
+                // Kurz/Mittel/Lang (10/20/30 Übungen). Längen ohne genug
+                // Material sind ausgegraut (`exerciseCountChip`); reicht es
+                // nicht mal für Kurz (< 10), erscheint ein Hinweis statt
+                // der Chips. Tap löst auto-close aus.
+                if cachedDailyDropMaterial < (Self.exerciseCountOptions.first ?? 10) {
+                    Text("Zu wenig Material für einen Drop. Wähle mehr Listen oder erweitere die Lernjahre.")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                } else {
+                    HStack(spacing: 12) {
+                        ForEach(Self.exerciseCountOptions, id: \.self) { count in
+                            exerciseCountChip(count: count)
+                        }
                     }
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
             }
             .padding(20)
             .frame(maxWidth: 340)
@@ -993,22 +1034,21 @@ struct ElumiTabView: View {
                 // Dauer-Label inline mit der Zahl — gleiche Font-
                 // Klasse wie der Wert. Mixed-Case statt Caps, weil
                 // als Wort + Zahl zusammen ruhiger wirkt.
-                Text("Dauer")
+                // **Daily Drop Modul 3 (2026-05-23)** — zeigt jetzt die
+                // gewählte Übungs-Anzahl statt der (toten) Minuten.
+                Text("Anzahl")
                     .font(.system(size: 23, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
 
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text("\(selectedDuration)")
+                    Text("\(modalExerciseSelection ?? Self.exerciseCountDefault)")
                         .font(.system(size: 23, weight: .black, design: .rounded))
                         .foregroundStyle(sectionStyle.accent)
-                        // **Spec-1 (2026-04-30)** — `.identity` statt
-                        // `.numericText()`. Mit Optionen 6/12/18
-                        // wechselt die Anzeige zwischen 1- und
-                        // 2-stelligen Werten. `.identity` ist harter
-                        // Crossfade ohne Glyph-Morphing.
+                        // `.identity`: harter Crossfade ohne Glyph-Morphing
+                        // beim Wechsel 10/20/30.
                         .contentTransition(.identity)
 
-                    Text("min")
+                    Text("Übungen")
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
@@ -1044,7 +1084,7 @@ struct ElumiTabView: View {
         .padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .appSetupCardBackground()
-        .animation(.easeInOut(duration: 0.20), value: selectedDuration)
+        .animation(.easeInOut(duration: 0.20), value: modalExerciseSelection)
         .animation(.easeInOut(duration: 0.20), value: isSpinAllowed)
     }
 
@@ -1067,10 +1107,96 @@ struct ElumiTabView: View {
         // preselected die persistierte `selectedDuration`. Dismiss
         // ohne Änderung → CTA bleibt aktiv (kein Regression). Tap auf
         // andere Card → Auto-Close mit neuem Wert.
-        modalDurationSelection = selectedDuration
+        // **Daily Drop Modul 3 (2026-05-23)** — Re-Edit: Material neu zählen
+        // (globale Auswahl kann sich geändert haben). `modalExerciseSelection`
+        // bleibt als aktuelle Wahl erhalten → Chip preselected, Slot-CTA aktiv.
+        recomputeDailyDropMaterial()
         withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
             showSetupModal = true
         }
+    }
+
+    // MARK: - Daily Drop Modul 3 — Anzahl-Picker + Material-Gating
+
+    /// **Daily Drop Modul 3 (2026-05-23)** — Längen-Label für die
+    /// Anzahl-Chips (Kurz/Mittel/Lang).
+    private func exerciseLengthLabel(_ count: Int) -> String {
+        switch count {
+        case 10: return "Kurz"
+        case 20: return "Mittel"
+        case 30: return "Lang"
+        default: return "\(count)"
+        }
+    }
+
+    /// **Daily Drop Modul 3 (2026-05-23)** — zählt das nutzbare Material der
+    /// globalen Auswahl und cached `min(quizUsable, vokabelUsable)`. Quiz-
+    /// nutzbar = richtungsgefilterte, deduplizierte Merged-Items
+    /// (`makeMergedItems`); Vokabel-nutzbar = effectiveItems mit
+    /// `cardType == .words`. Aufruf NUR bei Modal-Open + Selection-Change
+    /// (teuer wegen `effectiveItems`-Slicing) — nie pro Render.
+    private func recomputeDailyDropMaterial() {
+        let lernjahrMax = VocabularyListSelectionResolver.currentLernjahrMax()
+        let direction = (Direction(rawValue: UserDefaults.standard.string(forKey: appDirectionKey) ?? "") ?? .frenchToGerman).sanitizedForFrenchOnly
+        // **Daily Drop Modul 3 (2026-05-23)** — leere globale Auswahl → A1-
+        // Grundwortschatz-Fallback, exakt wie `effectiveSelectedListIDs`
+        // (`currentGlobalSelectedListIDs() ?? [defaultGlobalSelectionListID]`).
+        // KRITISCH: ohne diesen Fallback würde ein frischer User (nie global
+        // gewählt) Material 0 zählen → „zu wenig" → kein Einstieg, obwohl die
+        // echte Session auf A1 zurückfällt und Material hätte.
+        let resolvedIDs = globalSelectedListIDs.isEmpty
+            ? [VocabularyListSelectionResolver.defaultGlobalSelectionListID]
+            : globalSelectedListIDs
+        let lists = listStore.allLists.filter { resolvedIDs.contains($0.id) }
+        let quizUsable = QuizBuildService.makeMergedItems(
+            from: lists,
+            direction: direction,
+            lernjahrMax: lernjahrMax
+        ).count
+        let vokabelUsable = lists
+            .flatMap { VocabularyListSelectionResolver.effectiveItems(for: $0, lernjahrMax: lernjahrMax) }
+            .filter { $0.sourceLanguage == direction.sourceLanguage }
+            .filter { $0.cardType == .words }
+            .count
+        cachedDailyDropMaterial = min(quizUsable, vokabelUsable)
+        #if DEBUG
+        appDebugLog("📦 [DailyDrop] material recompute — quiz=\(quizUsable) vokabel=\(vokabelUsable) → min=\(cachedDailyDropMaterial)")
+        #endif
+    }
+
+    /// **Daily Drop Modul 3 (2026-05-23)** — Anzahl-Chip (Kurz/Mittel/Lang).
+    /// Ausgegraut + nicht tappbar, wenn zu wenig Material für diese Länge
+    /// (`cachedDailyDropMaterial < count`). Tap setzt die Wahl + auto-close.
+    private func exerciseCountChip(count: Int) -> some View {
+        let moduleColor = sectionStyle.accent
+        let isSelected = modalExerciseSelection == count
+        let isAvailable = cachedDailyDropMaterial >= count
+        return ZStack {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(isSelected ? moduleColor.opacity(0.25) : AppTheme.Colors.secondarySurface)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(isSelected ? moduleColor : Color.clear, lineWidth: isSelected ? 2 : 0)
+            VStack(alignment: .center, spacing: 2) {
+                Text(exerciseLengthLabel(count))
+                    .font(.system(size: 18, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                Text("\(count) Übungen")
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary.opacity(0.78))
+            }
+        }
+        .frame(maxWidth: .infinity, minHeight: 88)
+        .opacity(isAvailable ? (isSelected ? 1.0 : 0.85) : 0.35)
+        .scaleEffect(isSelected ? 1.03 : 1.0)
+        .contentShape(Rectangle())
+        .allowsHitTesting(isAvailable)
+        .onTapGesture {
+            guard isAvailable else { return }
+            modalExerciseSelection = count
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            dismissSetupModal()
+        }
+        .animation(.easeInOut(duration: 0.20), value: modalExerciseSelection)
     }
 
     /// Pro-Chip-Renderer für das Setup-Modal (Sache B Stufe 2). Vor
@@ -1078,6 +1204,8 @@ struct ElumiTabView: View {
     /// `durationCard` im Setup-Screen genutzt; mit dem Wechsel zur
     /// `timeDisplayCard` (XXL + Pencil) ist das Modal jetzt der einzige
     /// Call-Site.
+    /// **Daily Drop Modul 3 (2026-05-23)** — toter Code (ersetzt durch
+    /// `exerciseCountChip`); bleibt vorerst (separater Cleanup).
     private func durationChip(minutes: Int) -> some View {
         // **2026-04-24 Tap-Reliability-Fix** (User-Report: „1–2 Taps
         // gehen, dann nicht mehr"). Frühere Varianten mit `Button {}
@@ -1309,12 +1437,11 @@ struct ElumiTabView: View {
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                     }
-                    // Sub-Label: gewählte Trainings-Dauer in Klammern.
-                    // Identische Schrift wie der Versuch-Counter im
-                    // Re-Spin-Button (User-Spec 2026-04-30) — damit
-                    // beide Buttons visuell symmetrisch zweizeilig
-                    // wirken und gleich hoch bleiben.
-                    Text("(\(selectedDuration) min)")
+                    // Sub-Label: gewählte Übungs-Anzahl in Klammern (Modul 3,
+                    // ersetzt die Minuten). Identische Schrift wie der
+                    // Versuch-Counter im Re-Spin-Button → beide Buttons
+                    // symmetrisch zweizeilig, gleich hoch.
+                    Text("(\(modalExerciseSelection ?? Self.exerciseCountDefault) Übungen)")
                         .font(.system(size: 11, weight: .semibold, design: .rounded))
                         .opacity(0.7)
                         .contentTransition(.numericText())
@@ -1328,7 +1455,7 @@ struct ElumiTabView: View {
             // ist der Confirmation-CTA → Success-Grün, klar abgesetzt
             // vom Warning-Amber des „Nochmal drehen"-Retry-CTA daneben.
             .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.success))
-            .accessibilityLabel(Text("Jetzt \u{00FC}ben \(selectedDuration) Minuten"))
+            .accessibilityLabel(Text("Jetzt \u{00FC}ben \(modalExerciseSelection ?? Self.exerciseCountDefault) \u{00DC}bungen"))
             .accessibilityHint(Text("Startet die generierte Trainingseinheit sofort"))
         }
         .transition(.opacity.combined(with: .scale(scale: 0.98)))
@@ -1375,7 +1502,9 @@ struct ElumiTabView: View {
     /// (User-Spec: „Falls keine Zeit gewählt: Slot-Screen-CTA bleibt
     /// gegraut/disabled bis Zeit gesetzt ist").
     private var canTriggerSpin: Bool {
-        isSpinAllowed && hasRemainingSpins && modalDurationSelection != nil
+        // **Daily Drop Modul 3 (2026-05-23)** — Gate auf die Anzahl-Wahl
+        // (`modalExerciseSelection`) statt der alten Zeitwahl.
+        isSpinAllowed && hasRemainingSpins && modalExerciseSelection != nil
     }
 
     /// Spin ist nur in `.idle` und `.revealed` erlaubt — während
@@ -1786,14 +1915,21 @@ struct ElumiTabView: View {
         // ist `plannedSteps` leer — Pre-Screen rendert dann nur die
         // Game-Cards und disabled-CTA mit Hint „Drehe noch mal für
         // Übungen" (siehe `TrainingChainContext.isJackpot`).
-        // **Daily Drop Modul 2 (2026-05-23)** — Count-Modus (Replacement
-        // der Zeit-Chain am Daily-Drop-Eingang). N=10 hardcoded,
-        // even-split → 5 Aufgaben je Step (Anzahl-Picker = Modul 3). Das
-        // alte „Wie lange?"-Modal bleibt vorerst stehen; seine
-        // `selectedDuration` fließt im Count-Modus nicht mehr ein.
+        // **Daily Drop Modul 3 (2026-05-23)** — Count-Modus mit Anzahl aus
+        // dem Picker. Even-split über die TATSÄCHLICHEN Modul-Steps (1 oder
+        // 2, je nach Slot): `perStepCount = N / moduleSteps` → Gesamt immer
+        // N, auch wenn der Slot nur 1 Übungs-Step liefert. `moduleSteps`
+        // zählt die Nicht-Game-Center-Symbole — deckungsgleich mit
+        // `plannedSteps` in `make(from:perStepCount:)`. Bei Jackpot
+        // (0 Module) → perStep 0, `make` baut leere Chain (Pre-Screen-Hint).
+        let n = modalExerciseSelection ?? Self.exerciseCountDefault
+        let moduleSteps = pendingResult.centerSymbols.filter { symbol in
+            !symbol.isElumi && symbol.homeModule != nil
+        }.count
+        let perStep = moduleSteps > 0 ? n / moduleSteps : 0
         let chain = TrainingChainContext.make(
             from: pendingResult,
-            perStepCount: 5
+            perStepCount: perStep
         )
 
         // Chain-Start: Resume-Stores werden im Store geleert (R5).

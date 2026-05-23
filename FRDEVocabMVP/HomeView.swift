@@ -260,31 +260,6 @@ struct HomeView: View {
                     )
                     .appEntryTransition()
 
-                    #if DEBUG
-                    // TEMP MODUL 1 TEST — Daily-Drop Count-Cap isoliert
-                    // testen (ohne Chain). Vor Release wieder entfernen.
-                    HStack(spacing: 8) {
-                        Button("DD Quiz N=5") {
-                            openHomeScreen(.quiz(QuizLaunchContext(
-                                shouldAutoStart: true,
-                                dailyDropCount: 5,
-                                atomicOnly: true
-                            )))
-                        }
-                        Button("DD Vokabel N=5") {
-                            openHomeScreen(.train(TrainingLaunchContext(
-                                preferredMode: .vocabulary,
-                                shouldAutoStart: true,
-                                dailyDropCount: 5
-                            )))
-                        }
-                    }
-                    .font(.caption.weight(.bold))
-                    .buttonStyle(.borderedProminent)
-                    .tint(.purple)
-                    .padding(.top, 8)
-                    #endif
-
                     // Section-Header über den Methoden-Cards. Größe
                     // 16 → 22 pt + textPrimary + .bold (User-Spec
                     // Spacing-Polish: prominenter, klarer Anker
