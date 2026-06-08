@@ -14,40 +14,14 @@ struct AIScanProvider: ScanProvider {
             return unavailableResult(for: request, context: context)
         }
 
-        let isClaudeVision = client is ClaudeHaikuScanAIClient
-        let compressionQuality: CGFloat = isClaudeVision ? 0.90 : 0.45
+        // **Phase 1.6** — der Scan läuft ausschließlich über den Claude-
+        // Vision-Client (Backend-Proxy). Der frühere OpenAI-Text-Only-
+        // Fast-Path (`if !isClaudeVision { … }`) ist mit dem OpenAI-
+        // Provider entfernt; die Kompression ist damit fix auf den
+        // Vision-Wert gesetzt.
+        let compressionQuality: CGFloat = 0.90
 
-        // Claude Haiku: Skip text-only, go straight to vision
-        // OpenAI: Try text-only first for speed
-        if !isClaudeVision {
-            let ocrBoxCount = context?.primaryResult?.recognizedBoxes.count ?? 0
-            if ocrBoxCount >= 3,
-               let textOnlyClient = client as? OpenAIResponsesScanAIClient {
-                let textOnlyPayload = makePayload(
-                    from: request,
-                    context: context,
-                    maxLongEdge: maxUploadLongEdge,
-                    compressionQuality: compressionQuality,
-                    compactContext: false
-                )
-                if let textOnlyPayload {
-                    do {
-                        let response = try await textOnlyClient.analyzeTextOnly(textOnlyPayload)
-                        logTiming("ai_text_only", start: start)
-                        let result = mapResponse(response, context: context)
-                        let importableCount = result.entries.filter({ $0.reviewMetadata.isImportable }).count
-                        if importableCount >= 3 {
-                            appDebugLog("📡 [Scan] ✅ text-only accepted (\(importableCount) importable)")
-                            return result
-                        }
-                    } catch {
-                        appDebugLog("📡 [Scan] ⚠️ text-only failed: \(error.localizedDescription)")
-                    }
-                }
-            }
-        }
-
-        // Full vision request (Claude Haiku: primary, OpenAI: fallback after text-only)
+        // Full vision request (Claude Haiku primary, danach Sonnet-Merge).
         guard let payload = makePayload(
             from: request,
             context: context,

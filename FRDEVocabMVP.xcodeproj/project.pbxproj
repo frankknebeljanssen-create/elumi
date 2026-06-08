@@ -130,7 +130,6 @@
 		A00000000000000000000236 /* TrainingView+Flow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000237 /* TrainingView+Flow.swift */; };
 		A00000000000000000000238 /* QuizView+Flow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000239 /* QuizView+Flow.swift */; };
 		A00000000000000000000240 /* ScanAIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000241 /* ScanAIClient.swift */; };
-		A00000000000000000000242 /* OpenAIResponsesScanAIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000243 /* OpenAIResponsesScanAIClient.swift */; };
 		A00000000000000000000244 /* AIScanProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000245 /* AIScanProvider.swift */; };
 		A00000000000000000000246 /* OpenAIScanSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000247 /* OpenAIScanSchema.swift */; };
 		A00000000000000000000248 /* FlashcardsView+Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000249 /* FlashcardsView+Components.swift */; };
@@ -358,9 +357,6 @@
 		A00000000000000000000712 /* ListsView+Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000713 /* ListsView+Screen.swift */; };
 		A00000000000000000000714 /* ListsView+Sections.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000715 /* ListsView+Sections.swift */; };
 		A00000000000000000000716 /* ListsView+Presentations.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000717 /* ListsView+Presentations.swift */; };
-		A00000000000000000000718 /* OpenAIResponsesScanAIClient+Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000719 /* OpenAIResponsesScanAIClient+Configuration.swift */; };
-		A00000000000000000000720 /* OpenAIResponsesScanAIClient+Request.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000721 /* OpenAIResponsesScanAIClient+Request.swift */; };
-		A00000000000000000000722 /* OpenAIResponsesScanAIClient+Schema.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000723 /* OpenAIResponsesScanAIClient+Schema.swift */; };
 		A00000000000000000000724 /* TrainingSessionController+DictionarySelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000725 /* TrainingSessionController+DictionarySelection.swift */; };
 		A00000000000000000000726 /* TrainingSessionController+LaunchContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000727 /* TrainingSessionController+LaunchContext.swift */; };
 		A00000000000000000000728 /* FlashcardsSetupController+CardCount.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000729 /* FlashcardsSetupController+CardCount.swift */; };
@@ -747,7 +743,6 @@
 		A00000000000000000000237 /* TrainingView+Flow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrainingView+Flow.swift"; sourceTree = "<group>"; };
 		A00000000000000000000239 /* QuizView+Flow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "QuizView+Flow.swift"; sourceTree = "<group>"; };
 		A00000000000000000000241 /* ScanAIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanAIClient.swift; sourceTree = "<group>"; };
-		A00000000000000000000243 /* OpenAIResponsesScanAIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIResponsesScanAIClient.swift; sourceTree = "<group>"; };
 		A00000000000000000000245 /* AIScanProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIScanProvider.swift; sourceTree = "<group>"; };
 		A00000000000000000000247 /* OpenAIScanSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIScanSchema.swift; sourceTree = "<group>"; };
 		A00000000000000000000249 /* FlashcardsView+Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsView+Components.swift"; sourceTree = "<group>"; };
@@ -975,9 +970,6 @@
 		A00000000000000000000713 /* ListsView+Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListsView+Screen.swift"; sourceTree = "<group>"; };
 		A00000000000000000000715 /* ListsView+Sections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListsView+Sections.swift"; sourceTree = "<group>"; };
 		A00000000000000000000717 /* ListsView+Presentations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ListsView+Presentations.swift"; sourceTree = "<group>"; };
-		A00000000000000000000719 /* OpenAIResponsesScanAIClient+Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OpenAIResponsesScanAIClient+Configuration.swift"; sourceTree = "<group>"; };
-		A00000000000000000000721 /* OpenAIResponsesScanAIClient+Request.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OpenAIResponsesScanAIClient+Request.swift"; sourceTree = "<group>"; };
-		A00000000000000000000723 /* OpenAIResponsesScanAIClient+Schema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OpenAIResponsesScanAIClient+Schema.swift"; sourceTree = "<group>"; };
 		A00000000000000000000725 /* TrainingSessionController+DictionarySelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrainingSessionController+DictionarySelection.swift"; sourceTree = "<group>"; };
 		A00000000000000000000727 /* TrainingSessionController+LaunchContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrainingSessionController+LaunchContext.swift"; sourceTree = "<group>"; };
 		A00000000000000000000729 /* FlashcardsSetupController+CardCount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlashcardsSetupController+CardCount.swift"; sourceTree = "<group>"; };
@@ -1699,10 +1691,6 @@
 				A00000000000000000000105 /* ScanClassifier.swift */,
 				A00000000000000000000107 /* ScanAIProvider.swift */,
 				A00000000000000000000241 /* ScanAIClient.swift */,
-				A00000000000000000000243 /* OpenAIResponsesScanAIClient.swift */,
-				A00000000000000000000719 /* OpenAIResponsesScanAIClient+Configuration.swift */,
-				A00000000000000000000721 /* OpenAIResponsesScanAIClient+Request.swift */,
-				A00000000000000000000723 /* OpenAIResponsesScanAIClient+Schema.swift */,
 				A00000000000000000000245 /* AIScanProvider.swift */,
 				A00000000000000000000389 /* AIScanProvider+Payload.swift */,
 				A00000000000000000000391 /* AIScanProvider+Errors.swift */,
@@ -2129,10 +2117,6 @@
 				A00000000000000000000480 /* SupplementalFreeDictLexicon+Database.swift in Sources */,
 				A00000000000000000000482 /* SupplementalFreeDictLexicon+Queries.swift in Sources */,
 				A00000000000000000000240 /* ScanAIClient.swift in Sources */,
-				A00000000000000000000242 /* OpenAIResponsesScanAIClient.swift in Sources */,
-				A00000000000000000000718 /* OpenAIResponsesScanAIClient+Configuration.swift in Sources */,
-				A00000000000000000000720 /* OpenAIResponsesScanAIClient+Request.swift in Sources */,
-				A00000000000000000000722 /* OpenAIResponsesScanAIClient+Schema.swift in Sources */,
 				A00000000000000000000244 /* AIScanProvider.swift in Sources */,
 				A00000000000000000000388 /* AIScanProvider+Payload.swift in Sources */,
 				A00000000000000000000390 /* AIScanProvider+Errors.swift in Sources */,
