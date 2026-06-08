@@ -500,7 +500,12 @@ extension ScanImportView {
         scanRuntimeStage = .preparingImage
         importMessage = "Text wird erkannt..."
         let appendToExistingPreview = shouldAppendNextScan
-        let aiConfiguredForScan = OpenAIResponsesScanAIClient.fromEnvironment() != nil
+        // Der Scan läuft seit Phase 1.5 über den Backend-Proxy — die
+        // KI-Analyse ist immer konfiguriert (Auth via Anon-Key +
+        // Device-Token, kein lokaler Schlüssel mehr). Phase 1.6: ersetzt
+        // den früheren `OpenAIResponsesScanAIClient.fromEnvironment()`-
+        // Check, der mit dem OpenAI-Fallback entfernt wurde.
+        let aiConfiguredForScan = true
         let scanStart = CFAbsoluteTimeGetCurrent()
         releaseScanWorkingImages()
 

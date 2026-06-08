@@ -12,20 +12,13 @@ struct ScanAnalysisFactory {
 
     init(
         aiClientProvider: @escaping AIClientProvider = {
-            // Vokabel-Scan läuft seit Phase 1.5 über den Backend-Proxy —
-            // `ClaudeHaikuScanAIClient.fromEnvironment()` braucht keinen
-            // lokalen Schlüssel mehr und liefert immer einen Client.
-            if let claude = ClaudeHaikuScanAIClient.fromEnvironment() {
-                return claude
-            }
-            // TODO (Phase 2): Toter Code seit der Proxy-Migration — der
-            // Claude-Client ist immer verfügbar, dieser OpenAI-Fallback
-            // wird nie erreicht. Beim Aufräumen dieses Pfads sollte auch
-            // der separat in `OpenAIConfig.plist` gebundelte
-            // OPENAI_API_KEY (sk-proj-…) entfernt werden — eigener
-            // Schlüssel eines anderen Providers, von dieser Migration
-            // bewusst nicht berührt.
-            return OpenAIResponsesScanAIClient.fromEnvironment() ?? UnavailableScanAIClient()
+            // Vokabel-Scan läuft seit Phase 1.5 ausschließlich über den
+            // Backend-Proxy — der Claude-Scan-Client ist immer verfügbar
+            // (kein lokaler Schlüssel nötig). Der frühere OpenAI-Fallback
+            // wurde dadurch zu totem Code und ist in Phase 1.6 entfernt.
+            // `fromEnvironment()` liefert nie nil; der `??`-Zweig ist nur
+            // ein defensiver Default, der nie greift.
+            ClaudeHaikuScanAIClient.fromEnvironment() ?? ClaudeHaikuScanAIClient()
         }
     ) {
         self.aiClientProvider = aiClientProvider
