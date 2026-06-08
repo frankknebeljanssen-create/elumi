@@ -51,18 +51,6 @@
             ReferencedContainer = "container:FRDEVocabMVP.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <EnvironmentVariables>
-         <EnvironmentVariable
-            key = "OPENAI_API_KEY"
-            value = "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"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "OPENAI_SCAN_MODEL"
-            value = ""
-            isEnabled = "YES">
-         </EnvironmentVariable>
-      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

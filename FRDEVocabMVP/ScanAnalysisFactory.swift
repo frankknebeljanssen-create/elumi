@@ -1,6 +1,11 @@
 import UIKit
 import Vision
 
+/// Baut die Scan-Analyse-Engine. **Seit Phase 1.6 ist Anthropic der
+/// einzige Scan-Provider** — der Vokabel-Scan läuft über den
+/// Claude-Vision-Client gegen den Backend-Proxy (`scan-vision-proxy`).
+/// Der frühere Zweit-Provider samt lokalem Schlüssel ist vollständig
+/// entfernt; das geteilte Antwort-Schema bleibt erhalten.
 struct ScanAnalysisFactory {
     typealias OCRAnalyzer = ([OCRLineBox], ScanMode?) -> ScanAnalysisResult
     typealias OCRLineExtractor = (UIImage, StudyLanguage, Bool, VNRequestTextRecognitionLevel, Bool, Int) -> [OCRLineBox]
@@ -12,20 +17,14 @@ struct ScanAnalysisFactory {
 
     init(
         aiClientProvider: @escaping AIClientProvider = {
-            // Vokabel-Scan läuft seit Phase 1.5 über den Backend-Proxy —
-            // `ClaudeHaikuScanAIClient.fromEnvironment()` braucht keinen
-            // lokalen Schlüssel mehr und liefert immer einen Client.
-            if let claude = ClaudeHaikuScanAIClient.fromEnvironment() {
-                return claude
-            }
-            // TODO (Phase 2): Toter Code seit der Proxy-Migration — der
-            // Claude-Client ist immer verfügbar, dieser OpenAI-Fallback
-            // wird nie erreicht. Beim Aufräumen dieses Pfads sollte auch
-            // der separat in `OpenAIConfig.plist` gebundelte
-            // OPENAI_API_KEY (sk-proj-…) entfernt werden — eigener
-            // Schlüssel eines anderen Providers, von dieser Migration
-            // bewusst nicht berührt.
-            return OpenAIResponsesScanAIClient.fromEnvironment() ?? UnavailableScanAIClient()
+            // Vokabel-Scan läuft seit Phase 1.5 ausschließlich über den
+            // Backend-Proxy — der Claude-Scan-Client ist immer verfügbar
+            // (kein lokaler Schlüssel nötig). Der frühere Zweit-Provider-
+            // Fallback wurde dadurch zu totem Code und ist in Phase 1.6
+            // entfernt; Anthropic ist jetzt der einzige Scan-Provider.
+            // `fromEnvironment()` liefert nie nil; der `??`-Zweig ist nur
+            // ein defensiver Default, der nie greift.
+            ClaudeHaikuScanAIClient.fromEnvironment() ?? ClaudeHaikuScanAIClient()
         }
     ) {
         self.aiClientProvider = aiClientProvider
