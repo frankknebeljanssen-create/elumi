@@ -371,7 +371,7 @@ enum FreierTextError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingAPIKey:
-            return "Kein Anthropic API-Key konfiguriert."
+            return "Scan-Dienst nicht verfügbar."
         case .invalidImage:
             return "Bild konnte nicht verarbeitet werden."
         case .networkFailure(let error):

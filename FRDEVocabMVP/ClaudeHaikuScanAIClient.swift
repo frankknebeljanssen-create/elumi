@@ -1,40 +1,51 @@
 import Foundation
 
-/// Scan AI client using Claude Haiku Vision via Anthropic Messages API.
-/// Single-step: image → vocabulary pairs. No OCR needed.
+/// Scan AI client für den Vokabel-Scan. Ruft seit **Phase 1.5 nicht
+/// mehr direkt** die Anthropic-Messages-API, sondern den Supabase-
+/// Edge-Function-Proxy `scan-vision-proxy` (siehe
+/// `ChatConfig.scanBackendURL`). Der Proxy hält den Anthropic-Schlüssel
+/// serverseitig (Auth via Anon-Key + Device-Token) und reicht den
+/// Antwort-Envelope 1:1 zurück — das Response-Decoding hier bleibt
+/// deshalb unverändert. Single-step: image → vocabulary pairs. No OCR
+/// needed.
 struct ClaudeHaikuScanAIClient: ScanAIClient {
-    let apiKey: String
     let model: String
     let maxTokens: Int
     let session: URLSession
 
     init(
-        apiKey: String,
         model: String = "claude-haiku-4-5-20251001",
         maxTokens: Int = 8192,
         session: URLSession = .shared
     ) {
-        self.apiKey = apiKey
         self.model = model
         self.maxTokens = maxTokens
         self.session = session
     }
 
+    /// Immer verfügbar — der Scan läuft über den Backend-Proxy, der die
+    /// Auth via Anon-Key + Device-Token hält. Kein lokaler API-Key, der
+    /// fehlen könnte.
     var isAvailable: Bool {
-        !apiKey.isEmpty
+        true
     }
 
     func analyze(_ payload: ScanAIRequestPayload) async throws -> ScanAIResponsePayload {
-        guard let url = URL(string: "https://api.anthropic.com/v1/messages") else {
-            throw ScanAIProviderError.invalidEndpoint
-        }
+        let url = ChatConfig.scanBackendURL
 
         let base64Image = payload.imageJPEGData.base64EncodedString()
 
+        // **Backend-Proxy (Phase 1.5)** — Body minimal: `max_tokens`,
+        // `temperature` und `stream` setzt der Proxy serverseitig fix.
+        // Der Client schickt nur `model` (Whitelist im Backend) + die
+        // `messages` (Bild + 220-Zeilen-Prompt im user-content-text).
+        // `telemetry_hint` taggt die Backend-Logzeile (kein PII) — der
+        // Vokabel-Scan nutzt denselben Struct für Haiku + Sonnet, daher
+        // wird der Hint aus dem Modell abgeleitet.
+        let telemetryHint = model.contains("sonnet") ? "scan_sonnet" : "scan_haiku"
         let requestBody: [String: Any] = [
             "model": model,
-            "max_tokens": maxTokens,
-            "temperature": 0,
+            "telemetry_hint": telemetryHint,
             "messages": [
                 [
                     "role": "user",
@@ -60,8 +71,10 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         request.httpMethod = "POST"
         request.timeoutInterval = 60
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
-        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
+        // Auth analog Léa-Chat: Supabase-Anon-Key (publishable-safe) +
+        // anonymer Device-Token. Kein Anthropic-Key mehr im Client.
+        request.setValue("Bearer \(ChatConfig.anonKey)", forHTTPHeaderField: "Authorization")
+        request.setValue(DeviceTokenManager.getOrCreateToken(), forHTTPHeaderField: "X-Device-Token")
 
         let body = try JSONSerialization.data(withJSONObject: requestBody)
         request.httpBody = body
@@ -86,6 +99,12 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         guard 200..<300 ~= httpResponse.statusCode else {
             let errorText = String(data: data, encoding: .utf8) ?? "unknown"
             appDebugLog("📡 [Scan] ❌ HTTP \(httpResponse.statusCode): \(errorText.prefix(200))")
+            // Proxy-Tageslimit (429, `scan_daily_limit_exceeded`) eigens
+            // mappen — die UI zeigt dann die Limit-Meldung statt eines
+            // generischen HTTP-Fehlers.
+            if httpResponse.statusCode == 429 {
+                throw ScanAIProviderError.rateLimitExceeded
+            }
             throw ScanAIProviderError.httpFailure(httpResponse.statusCode, errorText)
         }
 

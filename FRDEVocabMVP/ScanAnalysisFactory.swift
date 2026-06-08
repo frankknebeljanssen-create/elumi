@@ -12,11 +12,19 @@ struct ScanAnalysisFactory {
 
     init(
         aiClientProvider: @escaping AIClientProvider = {
-            // Prefer Claude Haiku Vision (faster, single-step)
+            // Vokabel-Scan läuft seit Phase 1.5 über den Backend-Proxy —
+            // `ClaudeHaikuScanAIClient.fromEnvironment()` braucht keinen
+            // lokalen Schlüssel mehr und liefert immer einen Client.
             if let claude = ClaudeHaikuScanAIClient.fromEnvironment() {
                 return claude
             }
-            // Fallback to OpenAI if no Anthropic key
+            // TODO (Phase 2): Toter Code seit der Proxy-Migration — der
+            // Claude-Client ist immer verfügbar, dieser OpenAI-Fallback
+            // wird nie erreicht. Beim Aufräumen dieses Pfads sollte auch
+            // der separat in `OpenAIConfig.plist` gebundelte
+            // OPENAI_API_KEY (sk-proj-…) entfernt werden — eigener
+            // Schlüssel eines anderen Providers, von dieser Migration
+            // bewusst nicht berührt.
             return OpenAIResponsesScanAIClient.fromEnvironment() ?? UnavailableScanAIClient()
         }
     ) {
@@ -49,8 +57,11 @@ struct ScanAnalysisFactory {
 
     private func makeAIProvider() -> ScanProvider {
         let primary = aiClientProvider()
-        let fallback: ScanAIClient? = (primary as? ClaudeHaikuScanAIClient).map {
-            ClaudeHaikuScanAIClient(apiKey: $0.apiKey, model: "claude-sonnet-4-5-20250929", maxTokens: 16384)
+        // Doppel-Analyse: nur wenn der Primary ein Claude-Scan-Client ist,
+        // schieben wir einen Sonnet-Client als Fallback nach. Kein API-Key
+        // mehr nötig — beide Clients routen über den Backend-Proxy.
+        let fallback: ScanAIClient? = (primary as? ClaudeHaikuScanAIClient).map { _ in
+            ClaudeHaikuScanAIClient(model: "claude-sonnet-4-5-20250929", maxTokens: 16384)
         }
         return AIScanProvider(client: primary, fallbackClient: fallback)
     }

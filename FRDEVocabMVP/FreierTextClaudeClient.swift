@@ -17,40 +17,29 @@ import UIKit
 /// Transport-Format der Messages-API beschreibt und keinerlei
 /// Domain-Wissen enthält.
 struct FreierTextClaudeClient {
-    let apiKey: String
     let model: String
     let maxTokens: Int
     let session: URLSession
 
     init(
-        apiKey: String,
         model: String = "claude-haiku-4-5-20251001",
         maxTokens: Int = 8192,
         session: URLSession = .shared
     ) {
-        self.apiKey = apiKey
         self.model = model
         self.maxTokens = maxTokens
         self.session = session
     }
 
-    /// Konfigurations-Factory: liest den API-Key in derselben Kette wie
-    /// `ClaudeHaikuScanAIClient.fromEnvironment()` (Env-Var → Info.plist
-    /// → gebundelte `OpenAIConfig.plist`). So muss der Entwickler keinen
-    /// separaten Key pflegen — der bestehende ANTHROPIC_API_KEY wird
-    /// wiederverwendet.
+    /// Konfigurations-Factory für den Backend-Proxy. Kein lokaler
+    /// Schlüssel mehr nötig — die Auth läuft serverseitig. Das Modell
+    /// kann optional via Env/Plist (`ANTHROPIC_FREETEXT_MODEL`)
+    /// überschrieben werden; Default ist Haiku. Liefert nie `nil`
+    /// (Optional-Signatur bleibt nur für Aufruf-Kompatibilität).
     static func fromEnvironment() -> FreierTextClaudeClient? {
         let environment = ProcessInfo.processInfo.environment
         let bundledInfo = Bundle.main.infoDictionary
         let bundledConfig = OpenAIResponsesScanAIClient.bundledOpenAIConfig()
-
-        guard let key = OpenAIResponsesScanAIClient.resolvedConfigValue(
-            environment["ANTHROPIC_API_KEY"],
-            fallback: bundledInfo?["ANTHROPIC_API_KEY"] as? String,
-            extraFallback: bundledConfig?["ANTHROPIC_API_KEY"] as? String
-        ) else {
-            return nil
-        }
 
         let model = OpenAIResponsesScanAIClient.resolvedConfigValue(
             environment["ANTHROPIC_FREETEXT_MODEL"],
@@ -58,14 +47,17 @@ struct FreierTextClaudeClient {
             extraFallback: bundledConfig?["ANTHROPIC_FREETEXT_MODEL"] as? String
         ) ?? "claude-haiku-4-5-20251001"
 
-        return FreierTextClaudeClient(apiKey: key, model: model)
+        return FreierTextClaudeClient(model: model)
     }
 
     /// Hauptflow: `UIImage` → komprimiertes JPEG → Base64 → Messages-API
     /// → `FreeTextResult`. Fehlerpfad wirft `FreierTextError`, die View
     /// mappt auf die user-facing Texte aus der Spezifikation.
     func analyze(image: UIImage) async throws -> FreeTextResult {
-        guard !apiKey.isEmpty else { throw FreierTextError.missingAPIKey }
+        // **Backend-Proxy (Phase 1.5)** — kein Anthropic-Key mehr im
+        // Client; die Auth läuft über Anon-Key + Device-Token gegen den
+        // Scan-Vision-Proxy. Der frühere `guard !apiKey.isEmpty`-Check
+        // entfällt damit.
 
         // Bild auf ~1 MB JPEG komprimieren. Vision-APIs tolerieren deutlich
         // größere Payloads, aber wir halten Latency & Mobile-Data-Verbrauch
@@ -77,10 +69,13 @@ struct FreierTextClaudeClient {
         let base64Image = jpegData.base64EncodedString()
         let prompt = Self.freeTextPrompt
 
+        // **Backend-Proxy (Phase 1.5)** — Body minimal: `max_tokens`,
+        // `temperature` und `stream` setzt der Proxy serverseitig fix.
+        // `telemetry_hint` trennt den Freier-Text-Pfad in der Backend-
+        // Telemetrie vom Vokabel-Scan ab (kein PII).
         let requestBody: [String: Any] = [
             "model": model,
-            "max_tokens": maxTokens,
-            "temperature": 0,
+            "telemetry_hint": "scan_freetext",
             "messages": [
                 [
                     "role": "user",
@@ -102,16 +97,15 @@ struct FreierTextClaudeClient {
             ]
         ]
 
-        guard let url = URL(string: "https://api.anthropic.com/v1/messages") else {
-            throw FreierTextError.invalidResponse
-        }
+        let url = ChatConfig.scanBackendURL
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.timeoutInterval = 60
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
-        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
+        // Auth analog Léa-Chat: Anon-Key + Device-Token, kein Anthropic-Key.
+        request.setValue("Bearer \(ChatConfig.anonKey)", forHTTPHeaderField: "Authorization")
+        request.setValue(DeviceTokenManager.getOrCreateToken(), forHTTPHeaderField: "X-Device-Token")
         request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
 
         let bodyKB = (request.httpBody?.count ?? 0) / 1024
