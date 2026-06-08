@@ -25,16 +25,16 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
     }
 
     func analyze(_ payload: ScanAIRequestPayload) async throws -> ScanAIResponsePayload {
-        guard let url = URL(string: "https://api.anthropic.com/v1/messages") else {
-            throw ScanAIProviderError.invalidEndpoint
-        }
+        let url = ChatConfig.scanBackendURL
 
         let base64Image = payload.imageJPEGData.base64EncodedString()
 
+        // **Backend-Proxy (Phase 1.5)** — Body minimal: `max_tokens`,
+        // `temperature` und `stream` setzt der Proxy serverseitig fix.
+        // Der Client schickt nur `model` (Whitelist im Backend) + die
+        // `messages` (Bild + 220-Zeilen-Prompt im user-content-text).
         let requestBody: [String: Any] = [
             "model": model,
-            "max_tokens": maxTokens,
-            "temperature": 0,
             "messages": [
                 [
                     "role": "user",
@@ -60,8 +60,10 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         request.httpMethod = "POST"
         request.timeoutInterval = 60
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
-        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
+        // Auth analog Léa-Chat: Supabase-Anon-Key (publishable-safe) +
+        // anonymer Device-Token. Kein Anthropic-Key mehr im Client.
+        request.setValue("Bearer \(ChatConfig.anonKey)", forHTTPHeaderField: "Authorization")
+        request.setValue(DeviceTokenManager.getOrCreateToken(), forHTTPHeaderField: "X-Device-Token")
 
         let body = try JSONSerialization.data(withJSONObject: requestBody)
         request.httpBody = body
