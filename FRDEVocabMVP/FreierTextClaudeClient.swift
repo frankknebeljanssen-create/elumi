@@ -65,7 +65,10 @@ struct FreierTextClaudeClient {
     /// → `FreeTextResult`. Fehlerpfad wirft `FreierTextError`, die View
     /// mappt auf die user-facing Texte aus der Spezifikation.
     func analyze(image: UIImage) async throws -> FreeTextResult {
-        guard !apiKey.isEmpty else { throw FreierTextError.missingAPIKey }
+        // **Backend-Proxy (Phase 1.5)** — kein Anthropic-Key mehr im
+        // Client; die Auth läuft über Anon-Key + Device-Token gegen den
+        // Scan-Vision-Proxy. Der frühere `guard !apiKey.isEmpty`-Check
+        // entfällt damit.
 
         // Bild auf ~1 MB JPEG komprimieren. Vision-APIs tolerieren deutlich
         // größere Payloads, aber wir halten Latency & Mobile-Data-Verbrauch
@@ -77,10 +80,10 @@ struct FreierTextClaudeClient {
         let base64Image = jpegData.base64EncodedString()
         let prompt = Self.freeTextPrompt
 
+        // **Backend-Proxy (Phase 1.5)** — Body minimal: `max_tokens`,
+        // `temperature` und `stream` setzt der Proxy serverseitig fix.
         let requestBody: [String: Any] = [
             "model": model,
-            "max_tokens": maxTokens,
-            "temperature": 0,
             "messages": [
                 [
                     "role": "user",
@@ -102,16 +105,15 @@ struct FreierTextClaudeClient {
             ]
         ]
 
-        guard let url = URL(string: "https://api.anthropic.com/v1/messages") else {
-            throw FreierTextError.invalidResponse
-        }
+        let url = ChatConfig.scanBackendURL
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.timeoutInterval = 60
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
-        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
+        // Auth analog Léa-Chat: Anon-Key + Device-Token, kein Anthropic-Key.
+        request.setValue("Bearer \(ChatConfig.anonKey)", forHTTPHeaderField: "Authorization")
+        request.setValue(DeviceTokenManager.getOrCreateToken(), forHTTPHeaderField: "X-Device-Token")
         request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
 
         let bodyKB = (request.httpBody?.count ?? 0) / 1024
