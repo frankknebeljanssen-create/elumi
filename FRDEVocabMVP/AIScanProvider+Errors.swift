@@ -17,6 +17,8 @@ extension AIScanProvider {
             return "ai_invalid_response"
         case .timedOut:
             return "ai_timeout"
+        case .rateLimitExceeded:
+            return "scan_daily_limit_exceeded"
         case .httpFailure(let code, _):
             return "ai_http_\(code)"
         }
@@ -36,6 +38,8 @@ extension AIScanProvider {
             return "GPT hat keine gültige Antwort geliefert. Bitte nochmal versuchen."
         case .timedOut:
             return "GPT hat zu lange gebraucht. Bitte nochmal versuchen."
+        case .rateLimitExceeded:
+            return "Tägliches Scan-Limit erreicht (100 pro Tag). Morgen wieder verfügbar."
         case .httpFailure(let code, let message):
             switch code {
             case 401:
@@ -64,7 +68,7 @@ extension AIScanProvider {
             return true
         case .httpFailure(let code, _):
             return code == 408 || code == 504 || code == 524
-        case .unavailable, .invalidImage, .invalidEndpoint, .invalidResponse:
+        case .rateLimitExceeded, .unavailable, .invalidImage, .invalidEndpoint, .invalidResponse:
             return false
         }
     }

@@ -88,6 +88,12 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         guard 200..<300 ~= httpResponse.statusCode else {
             let errorText = String(data: data, encoding: .utf8) ?? "unknown"
             appDebugLog("📡 [Scan] ❌ HTTP \(httpResponse.statusCode): \(errorText.prefix(200))")
+            // Proxy-Tageslimit (429, `scan_daily_limit_exceeded`) eigens
+            // mappen — die UI zeigt dann die Limit-Meldung statt eines
+            // generischen HTTP-Fehlers.
+            if httpResponse.statusCode == 429 {
+                throw ScanAIProviderError.rateLimitExceeded
+            }
             throw ScanAIProviderError.httpFailure(httpResponse.statusCode, errorText)
         }
 
