@@ -118,7 +118,6 @@
 		A00000000000000000000212 /* ScanImportReviewComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000213 /* ScanImportReviewComponents.swift */; };
 		A00000000000000000000214 /* ScanImportView+Flow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000215 /* ScanImportView+Flow.swift */; };
 		A00000000000000000000216 /* ScanImportView+Analysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000217 /* ScanImportView+Analysis.swift */; };
-		A00000000000000000000218 /* OpenAIConfig.plist in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000219 /* OpenAIConfig.plist */; };
 		A00000000000000000000220 /* AppStorageKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000221 /* AppStorageKeys.swift */; };
 		A00000000000000000000222 /* AppDomainModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000223 /* AppDomainModels.swift */; };
 		A00000000000000000000224 /* AppSharedVisuals.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000225 /* AppSharedVisuals.swift */; };
@@ -731,7 +730,6 @@
 		A00000000000000000000213 /* ScanImportReviewComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanImportReviewComponents.swift; sourceTree = "<group>"; };
 		A00000000000000000000215 /* ScanImportView+Flow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScanImportView+Flow.swift"; sourceTree = "<group>"; };
 		A00000000000000000000217 /* ScanImportView+Analysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScanImportView+Analysis.swift"; sourceTree = "<group>"; };
-		A00000000000000000000219 /* OpenAIConfig.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = OpenAIConfig.plist; sourceTree = "<group>"; };
 		A00000000000000000000221 /* AppStorageKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStorageKeys.swift; sourceTree = "<group>"; };
 		A00000000000000000000223 /* AppDomainModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDomainModels.swift; sourceTree = "<group>"; };
 		A00000000000000000000225 /* AppSharedVisuals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSharedVisuals.swift; sourceTree = "<group>"; };
@@ -1525,7 +1523,6 @@
 				A00000000000000000000615 /* ScanImportReviewRowViews.swift */,
 				A00000000000000000000207 /* ScanMediaPickers.swift */,
 				A00000000000000000000209 /* ManualCropSheet.swift */,
-				A00000000000000000000219 /* OpenAIConfig.plist */,
 				A00000000000000000000015 /* DesignSystem.swift */,
 				A00000000000000000000687 /* AppSurfaceViews.swift */,
 				A00000000000000000000689 /* AppButtonStyles.swift */,
@@ -1916,7 +1913,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A00000000000000000000003 /* Assets.xcassets in Resources */,
-				A00000000000000000000218 /* OpenAIConfig.plist in Resources */,
 				A00000000000000000000034 /* ESM_Wrong_Answer_Game_Over_6_Sound_FX_Arcade_Casino_Kids_Mobile_App.wav in Resources */,
 				A00000000000000000000036 /* ESM_Kids_Game_Correct_Fanfare_01_Trill_Bling_Tada_Happy_Success_Positive.wav in Resources */,
 				A00000000000000000000038 /* ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav in Resources */,
