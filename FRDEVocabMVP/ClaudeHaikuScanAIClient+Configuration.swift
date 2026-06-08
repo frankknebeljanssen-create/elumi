@@ -7,10 +7,11 @@ extension ClaudeHaikuScanAIClient {
     /// werden (leerer Wert = ignoriert); Default ist Haiku. Liefert nie
     /// `nil` (Optional-Signatur bleibt nur für Aufruf-Kompatibilität).
     ///
-    /// **Phase 1.6** — die frühere Env→Info.plist→OpenAIConfig.plist-
-    /// Auflösung über `OpenAIResponsesScanAIClient`-Helfer ist entfernt;
-    /// die Plist hielt nie einen `ANTHROPIC_SCAN_MODEL`-Eintrag, daher
-    /// ist die reine Env-Auflösung verhaltens-äquivalent.
+    /// **Phase 1.6** — die frühere mehrstufige Auflösung (Env →
+    /// Info.plist → gebundelte Config-Plist) über die geteilten Config-
+    /// Helfer ist entfernt; die Plist hielt nie einen
+    /// `ANTHROPIC_SCAN_MODEL`-Eintrag, daher ist die reine Env-Auflösung
+    /// verhaltens-äquivalent.
     static func fromEnvironment() -> ClaudeHaikuScanAIClient? {
         let model = ProcessInfo.processInfo.environment["ANTHROPIC_SCAN_MODEL"]
             .flatMap { $0.isEmpty ? nil : $0 }

@@ -503,8 +503,8 @@ extension ScanImportView {
         // Der Scan läuft seit Phase 1.5 über den Backend-Proxy — die
         // KI-Analyse ist immer konfiguriert (Auth via Anon-Key +
         // Device-Token, kein lokaler Schlüssel mehr). Phase 1.6: ersetzt
-        // den früheren `OpenAIResponsesScanAIClient.fromEnvironment()`-
-        // Check, der mit dem OpenAI-Fallback entfernt wurde.
+        // den früheren Provider-Verfügbarkeits-Check, der mit dem
+        // Zweit-Provider-Fallback entfernt wurde.
         let aiConfiguredForScan = true
         let scanStart = CFAbsoluteTimeGetCurrent()
         releaseScanWorkingImages()

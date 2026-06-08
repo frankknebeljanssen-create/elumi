@@ -15,8 +15,8 @@ struct AIScanProvider: ScanProvider {
         }
 
         // **Phase 1.6** — der Scan läuft ausschließlich über den Claude-
-        // Vision-Client (Backend-Proxy). Der frühere OpenAI-Text-Only-
-        // Fast-Path (`if !isClaudeVision { … }`) ist mit dem OpenAI-
+        // Vision-Client (Backend-Proxy). Der frühere Text-Only-Fast-Path
+        // des Zweit-Providers (`if !isClaudeVision { … }`) ist mit jenem
         // Provider entfernt; die Kompression ist damit fix auf den
         // Vision-Wert gesetzt.
         let compressionQuality: CGFloat = 0.90

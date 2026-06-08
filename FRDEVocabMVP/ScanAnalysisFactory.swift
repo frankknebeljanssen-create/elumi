@@ -1,6 +1,11 @@
 import UIKit
 import Vision
 
+/// Baut die Scan-Analyse-Engine. **Seit Phase 1.6 ist Anthropic der
+/// einzige Scan-Provider** — der Vokabel-Scan läuft über den
+/// Claude-Vision-Client gegen den Backend-Proxy (`scan-vision-proxy`).
+/// Der frühere Zweit-Provider samt lokalem Schlüssel ist vollständig
+/// entfernt; das geteilte Antwort-Schema bleibt erhalten.
 struct ScanAnalysisFactory {
     typealias OCRAnalyzer = ([OCRLineBox], ScanMode?) -> ScanAnalysisResult
     typealias OCRLineExtractor = (UIImage, StudyLanguage, Bool, VNRequestTextRecognitionLevel, Bool, Int) -> [OCRLineBox]
@@ -14,8 +19,9 @@ struct ScanAnalysisFactory {
         aiClientProvider: @escaping AIClientProvider = {
             // Vokabel-Scan läuft seit Phase 1.5 ausschließlich über den
             // Backend-Proxy — der Claude-Scan-Client ist immer verfügbar
-            // (kein lokaler Schlüssel nötig). Der frühere OpenAI-Fallback
-            // wurde dadurch zu totem Code und ist in Phase 1.6 entfernt.
+            // (kein lokaler Schlüssel nötig). Der frühere Zweit-Provider-
+            // Fallback wurde dadurch zu totem Code und ist in Phase 1.6
+            // entfernt; Anthropic ist jetzt der einzige Scan-Provider.
             // `fromEnvironment()` liefert nie nil; der `??`-Zweig ist nur
             // ein defensiver Default, der nie greift.
             ClaudeHaikuScanAIClient.fromEnvironment() ?? ClaudeHaikuScanAIClient()
