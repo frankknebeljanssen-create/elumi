@@ -33,8 +33,13 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         // `temperature` und `stream` setzt der Proxy serverseitig fix.
         // Der Client schickt nur `model` (Whitelist im Backend) + die
         // `messages` (Bild + 220-Zeilen-Prompt im user-content-text).
+        // `telemetry_hint` taggt die Backend-Logzeile (kein PII) — der
+        // Vokabel-Scan nutzt denselben Struct für Haiku + Sonnet, daher
+        // wird der Hint aus dem Modell abgeleitet.
+        let telemetryHint = model.contains("sonnet") ? "scan_sonnet" : "scan_haiku"
         let requestBody: [String: Any] = [
             "model": model,
+            "telemetry_hint": telemetryHint,
             "messages": [
                 [
                     "role": "user",

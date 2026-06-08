@@ -71,8 +71,11 @@ struct FreierTextClaudeClient {
 
         // **Backend-Proxy (Phase 1.5)** — Body minimal: `max_tokens`,
         // `temperature` und `stream` setzt der Proxy serverseitig fix.
+        // `telemetry_hint` trennt den Freier-Text-Pfad in der Backend-
+        // Telemetrie vom Vokabel-Scan ab (kein PII).
         let requestBody: [String: Any] = [
             "model": model,
+            "telemetry_hint": "scan_freetext",
             "messages": [
                 [
                     "role": "user",
