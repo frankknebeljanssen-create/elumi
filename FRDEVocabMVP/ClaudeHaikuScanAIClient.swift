@@ -1,7 +1,13 @@
 import Foundation
 
-/// Scan AI client using Claude Haiku Vision via Anthropic Messages API.
-/// Single-step: image → vocabulary pairs. No OCR needed.
+/// Scan AI client für den Vokabel-Scan. Ruft seit **Phase 1.5 nicht
+/// mehr direkt** die Anthropic-Messages-API, sondern den Supabase-
+/// Edge-Function-Proxy `scan-vision-proxy` (siehe
+/// `ChatConfig.scanBackendURL`). Der Proxy hält den Anthropic-Schlüssel
+/// serverseitig (Auth via Anon-Key + Device-Token) und reicht den
+/// Antwort-Envelope 1:1 zurück — das Response-Decoding hier bleibt
+/// deshalb unverändert. Single-step: image → vocabulary pairs. No OCR
+/// needed.
 struct ClaudeHaikuScanAIClient: ScanAIClient {
     let model: String
     let maxTokens: Int
