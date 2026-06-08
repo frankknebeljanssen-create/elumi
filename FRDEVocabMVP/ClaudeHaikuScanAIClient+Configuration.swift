@@ -1,18 +1,15 @@
 import Foundation
 
 extension ClaudeHaikuScanAIClient {
+    /// Konstruiert den Scan-Client für den Backend-Proxy. Kein lokaler
+    /// Schlüssel mehr nötig — die Auth läuft serverseitig. Das Modell
+    /// kann optional via Env/Plist (`ANTHROPIC_SCAN_MODEL`) überschrieben
+    /// werden; Default ist Haiku. Liefert nie `nil` (Optional-Signatur
+    /// bleibt nur für Aufruf-Kompatibilität erhalten).
     static func fromEnvironment() -> ClaudeHaikuScanAIClient? {
         let environment = ProcessInfo.processInfo.environment
         let bundledInfo = Bundle.main.infoDictionary
         let bundledConfig = OpenAIResponsesScanAIClient.bundledOpenAIConfig()
-
-        guard let key = OpenAIResponsesScanAIClient.resolvedConfigValue(
-            environment["ANTHROPIC_API_KEY"],
-            fallback: bundledInfo?["ANTHROPIC_API_KEY"] as? String,
-            extraFallback: bundledConfig?["ANTHROPIC_API_KEY"] as? String
-        ) else {
-            return nil
-        }
 
         let model = OpenAIResponsesScanAIClient.resolvedConfigValue(
             environment["ANTHROPIC_SCAN_MODEL"],
@@ -20,6 +17,6 @@ extension ClaudeHaikuScanAIClient {
             extraFallback: bundledConfig?["ANTHROPIC_SCAN_MODEL"] as? String
         ) ?? "claude-haiku-4-5-20251001"
 
-        return ClaudeHaikuScanAIClient(apiKey: key, model: model)
+        return ClaudeHaikuScanAIClient(model: model)
     }
 }

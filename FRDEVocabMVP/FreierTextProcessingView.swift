@@ -209,7 +209,7 @@ struct FreierTextProcessingView: View {
 
     private func runAnalysis() async {
         guard let client = FreierTextClaudeClient.fromEnvironment() else {
-            appDebugLog("📄 [FreierText] ❌ kein API-Key konfiguriert")
+            appDebugLog("📄 [FreierText] ❌ Scan-Client nicht verfügbar")
             await MainActor.run {
                 onFailure(.missingAPIKey)
             }

@@ -6,7 +6,7 @@
 // Der Anon-Key ist per Supabase-Konvention publishable-safe (er
 // identifiziert nur das Projekt, gewährt ohne RLS-Policy KEINE
 // Schreibrechte und ist im iOS-Bundle als Bare-String akzeptabel).
-// Das eigentliche Sensitive Material (Anthropic-API-Key) lebt
+// Das eigentliche Sensitive Material (der Anthropic-Schlüssel) lebt
 // serverseitig in Supabase Secrets — der iOS-Client kann nur via
 // Edge Function dorthin proxen.
 
@@ -20,7 +20,7 @@ enum ChatConfig {
 
     /// Edge-Function-Endpoint des Scan-Vision-Proxy. Teilt sich Anon-Key
     /// und Device-Token-Auth mit dem Léa-Chat-Pfad, ruft aber eine eigene
-    /// Function (Bulk-JSON statt SSE). Hält den Anthropic-API-Key
+    /// Function (Bulk-JSON statt SSE). Hält den Anthropic-Schlüssel
     /// serverseitig — der iOS-Scan-Client kennt ihn nicht mehr.
     static let scanBackendURL = URL(
         string: "https://lvqayhkdgdypdvzdinvy.supabase.co/functions/v1/scan-vision-proxy"

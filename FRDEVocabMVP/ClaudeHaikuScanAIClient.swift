@@ -3,25 +3,25 @@ import Foundation
 /// Scan AI client using Claude Haiku Vision via Anthropic Messages API.
 /// Single-step: image → vocabulary pairs. No OCR needed.
 struct ClaudeHaikuScanAIClient: ScanAIClient {
-    let apiKey: String
     let model: String
     let maxTokens: Int
     let session: URLSession
 
     init(
-        apiKey: String,
         model: String = "claude-haiku-4-5-20251001",
         maxTokens: Int = 8192,
         session: URLSession = .shared
     ) {
-        self.apiKey = apiKey
         self.model = model
         self.maxTokens = maxTokens
         self.session = session
     }
 
+    /// Immer verfügbar — der Scan läuft über den Backend-Proxy, der die
+    /// Auth via Anon-Key + Device-Token hält. Kein lokaler API-Key, der
+    /// fehlen könnte.
     var isAvailable: Bool {
-        !apiKey.isEmpty
+        true
     }
 
     func analyze(_ payload: ScanAIRequestPayload) async throws -> ScanAIResponsePayload {

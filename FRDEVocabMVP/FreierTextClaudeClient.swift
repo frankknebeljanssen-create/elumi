@@ -17,40 +17,29 @@ import UIKit
 /// Transport-Format der Messages-API beschreibt und keinerlei
 /// Domain-Wissen enthält.
 struct FreierTextClaudeClient {
-    let apiKey: String
     let model: String
     let maxTokens: Int
     let session: URLSession
 
     init(
-        apiKey: String,
         model: String = "claude-haiku-4-5-20251001",
         maxTokens: Int = 8192,
         session: URLSession = .shared
     ) {
-        self.apiKey = apiKey
         self.model = model
         self.maxTokens = maxTokens
         self.session = session
     }
 
-    /// Konfigurations-Factory: liest den API-Key in derselben Kette wie
-    /// `ClaudeHaikuScanAIClient.fromEnvironment()` (Env-Var → Info.plist
-    /// → gebundelte `OpenAIConfig.plist`). So muss der Entwickler keinen
-    /// separaten Key pflegen — der bestehende ANTHROPIC_API_KEY wird
-    /// wiederverwendet.
+    /// Konfigurations-Factory für den Backend-Proxy. Kein lokaler
+    /// Schlüssel mehr nötig — die Auth läuft serverseitig. Das Modell
+    /// kann optional via Env/Plist (`ANTHROPIC_FREETEXT_MODEL`)
+    /// überschrieben werden; Default ist Haiku. Liefert nie `nil`
+    /// (Optional-Signatur bleibt nur für Aufruf-Kompatibilität).
     static func fromEnvironment() -> FreierTextClaudeClient? {
         let environment = ProcessInfo.processInfo.environment
         let bundledInfo = Bundle.main.infoDictionary
         let bundledConfig = OpenAIResponsesScanAIClient.bundledOpenAIConfig()
-
-        guard let key = OpenAIResponsesScanAIClient.resolvedConfigValue(
-            environment["ANTHROPIC_API_KEY"],
-            fallback: bundledInfo?["ANTHROPIC_API_KEY"] as? String,
-            extraFallback: bundledConfig?["ANTHROPIC_API_KEY"] as? String
-        ) else {
-            return nil
-        }
 
         let model = OpenAIResponsesScanAIClient.resolvedConfigValue(
             environment["ANTHROPIC_FREETEXT_MODEL"],
@@ -58,7 +47,7 @@ struct FreierTextClaudeClient {
             extraFallback: bundledConfig?["ANTHROPIC_FREETEXT_MODEL"] as? String
         ) ?? "claude-haiku-4-5-20251001"
 
-        return FreierTextClaudeClient(apiKey: key, model: model)
+        return FreierTextClaudeClient(model: model)
     }
 
     /// Hauptflow: `UIImage` → komprimiertes JPEG → Base64 → Messages-API
