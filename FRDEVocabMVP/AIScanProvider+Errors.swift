@@ -43,7 +43,7 @@ extension AIScanProvider {
         case .httpFailure(let code, let message):
             switch code {
             case 401:
-                return "GPT-Key wurde abgelehnt. Bitte OPENAI_API_KEY prüfen."
+                return "Der Scan-Dienst hat die Anfrage abgelehnt. Bitte später erneut versuchen."
             case 429:
                 return "GPT-Limit erreicht. Bitte später nochmal versuchen."
             case 400:

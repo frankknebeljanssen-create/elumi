@@ -26,10 +26,6 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>OPENAI_API_KEY</key>
-	<string>$(OPENAI_API_KEY)</string>
-	<key>OPENAI_SCAN_MODEL</key>
-	<string>$(OPENAI_SCAN_MODEL)</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Die App braucht das Mikrofon, damit du Wörter und Phrasen nachsprechen kannst.</string>
 	<key>NSCameraUsageDescription</key>
