@@ -8,6 +8,17 @@ import Foundation
 /// Antwort-Envelope 1:1 zurück — das Response-Decoding hier bleibt
 /// deshalb unverändert. Single-step: image → vocabulary pairs. No OCR
 /// needed.
+///
+/// **Prompt-Struktur (Phase 2a)** — der Prompt ist in zwei Blöcke
+/// getrennt, als Vorbereitung auf Prompt-Caching (Phase 2b):
+///   • **`system`-Field** = `scanSystemPrompt` — statisch (Rollendefi-
+///     nition + 15 Regeln + JSON-Schema), byte-identisch über alle
+///     Scans, daher in Phase 2b via `cache_control` cacheable.
+///   • **`user-content`** = das Bild + optional der dynamische OCR-
+///     Referenz-Block (`buildDynamicUserText`), der pro Bild variiert.
+///     Ohne hochwertigen OCR-Kontext besteht der user-content nur aus
+///     dem Bild.
+/// Haiku und Sonnet teilen sich diesen Struct + dieselbe Aufteilung.
 struct ClaudeHaikuScanAIClient: ScanAIClient {
     let model: String
     let maxTokens: Int

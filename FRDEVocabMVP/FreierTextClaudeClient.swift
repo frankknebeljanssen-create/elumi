@@ -5,12 +5,20 @@ import UIKit
 ///
 /// Bewusst **nicht** an den `ClaudeHaikuScanAIClient` gekoppelt — der
 /// Vokabel-Scan-Client ist auf Tabellenpaare optimiert (eigenes Schema
-/// `OpenAIScanSchemaResponse`, `scanPrompt`, Post-Processing-Heuristiken
-/// für OCR-Misreads in FR/DE-Paaren). Freier Text braucht ein anderes
-/// Prompt (lexikalische Analyse statt Paar-Extraktion) und ein anderes
-/// Response-Schema (`FreeTextResult`). Ein Mischen würde die beiden
-/// Flows schwerer wartbar machen — dieser Client hat **genau eine**
-/// Aufgabe: Bild → FreeTextResult.
+/// `OpenAIScanSchemaResponse`, `scanSystemPrompt`, Post-Processing-
+/// Heuristiken für OCR-Misreads in FR/DE-Paaren). Freier Text braucht
+/// ein anderes Prompt (lexikalische Analyse statt Paar-Extraktion) und
+/// ein anderes Response-Schema (`FreeTextResult`). Ein Mischen würde die
+/// beiden Flows schwerer wartbar machen — dieser Client hat **genau
+/// eine** Aufgabe: Bild → FreeTextResult.
+///
+/// **Prompt-Struktur (Phase 2a)** — wie beim Vokabel-Client ist der
+/// Prompt für Caching-Bereitschaft getrennt:
+///   • **`system`-Field** = `freeTextSystemPrompt` — der gesamte
+///     (statische) Prompt, byte-identisch über alle Scans, in Phase 2b
+///     via `cache_control` cacheable.
+///   • **`user-content`** = nur das Bild — der Freier-Text-Flow hat
+///     keinen dynamischen Prompt-Anteil (kein OCR-Kontext).
 ///
 /// Das Envelope-Decoding (`AnthropicMessagesResponse`) stammt aus dem
 /// Scan-Client; Wiederverwendung ist OK, weil das nur das API-
