@@ -37,32 +37,42 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
 
         // **Backend-Proxy (Phase 1.5)** — Body minimal: `max_tokens`,
         // `temperature` und `stream` setzt der Proxy serverseitig fix.
-        // Der Client schickt nur `model` (Whitelist im Backend) + die
-        // `messages` (Bild + 220-Zeilen-Prompt im user-content-text).
         // `telemetry_hint` taggt die Backend-Logzeile (kein PII) — der
         // Vokabel-Scan nutzt denselben Struct für Haiku + Sonnet, daher
         // wird der Hint aus dem Modell abgeleitet.
         let telemetryHint = model.contains("sonnet") ? "scan_sonnet" : "scan_haiku"
+
+        // **Prompt-Splitting (Phase 2a)** — der statische ~220-Zeilen-
+        // Prompt wandert ins Top-Level-`system`-Field (byte-identisch
+        // über alle Scans → in Phase 2b via `cache_control` cacheable).
+        // Der user-content trägt nur noch das Bild + optional den
+        // variablen OCR-Referenz-Block. Reihenfolge wie bisher: Bild
+        // zuerst, dann (falls vorhanden) der dynamische Text.
+        var userContent: [[String: Any]] = [
+            [
+                "type": "image",
+                "source": [
+                    "type": "base64",
+                    "media_type": "image/jpeg",
+                    "data": base64Image
+                ]
+            ]
+        ]
+        if let dynamicText = buildDynamicUserText(ocrContext: payload.ocrContext) {
+            userContent.append([
+                "type": "text",
+                "text": dynamicText
+            ])
+        }
+
         let requestBody: [String: Any] = [
             "model": model,
             "telemetry_hint": telemetryHint,
+            "system": scanSystemPrompt,
             "messages": [
                 [
                     "role": "user",
-                    "content": [
-                        [
-                            "type": "image",
-                            "source": [
-                                "type": "base64",
-                                "media_type": "image/jpeg",
-                                "data": base64Image
-                            ]
-                        ],
-                        [
-                            "type": "text",
-                            "text": buildPrompt(ocrContext: payload.ocrContext)
-                        ]
-                    ]
+                    "content": userContent
                 ]
             ]
         ]
@@ -344,26 +354,38 @@ struct ClaudeHaikuScanAIClient: ScanAIClient {
         try await analyze(payload)
     }
 
-    private func buildPrompt(ocrContext: ScanAIContextSnapshot?) -> String {
-        var prompt = scanPrompt
-        // Only include OCR context if it's high quality (enough lines detected)
-        if let context = ocrContext, context.recognizedLines.count >= 10 {
-            let lines = context.recognizedLines.prefix(50).joined(separator: "\n")
-            prompt += """
-
-            \n\nOCR-Referenz (erkannte Zeilen). Nutze dies NUR als Checkliste — nicht als Textquelle.
-            WICHTIG: Vertraue bei Konflikten DEINER eigenen Bilderkennung, NICHT dem OCR-Text.
-            OCR kann Buchstaben falsch lesen (z.B. "mais" als "mah", "ou" als etwas anderes).
-            Lies die Wörter IMMER selbst vom Bild ab.
-            ACHTUNG: Nicht alle Zeilen sind Vokabeln! Ignoriere Beispielsätze, Dialoge, Grammatik-Erklärungen und Überschriften.
-            Extrahiere NUR echte Vokabelpaare die SICHTBAR auf dem Bild stehen — NIEMALS Wörter erfinden:
-            \(lines)
-            """
+    /// Baut den **dynamischen** user-content-Text — den OCR-Referenz-
+    /// Block, der pro Bild variiert und daher NICHT in den (cacheable)
+    /// `system`-Prompt gehört. Liefert `nil`, wenn kein hochwertiger
+    /// OCR-Kontext vorliegt (< 10 erkannte Zeilen) — dann besteht der
+    /// user-content nur aus dem Bild (Edge-Case-Schutz: kein leerer
+    /// Text-Block im Body).
+    ///
+    /// **Phase 2a** — ersetzt das frühere `buildPrompt`, das den
+    /// statischen Prompt + OCR-Block zu EINEM user-content-Text
+    /// konkateniert hat. Der statische Teil lebt jetzt in
+    /// `scanSystemPrompt`.
+    private func buildDynamicUserText(ocrContext: ScanAIContextSnapshot?) -> String? {
+        guard let context = ocrContext, context.recognizedLines.count >= 10 else {
+            return nil
         }
-        return prompt
+        let lines = context.recognizedLines.prefix(50).joined(separator: "\n")
+        return """
+        OCR-Referenz (erkannte Zeilen). Nutze dies NUR als Checkliste — nicht als Textquelle.
+        WICHTIG: Vertraue bei Konflikten DEINER eigenen Bilderkennung, NICHT dem OCR-Text.
+        OCR kann Buchstaben falsch lesen (z.B. "mais" als "mah", "ou" als etwas anderes).
+        Lies die Wörter IMMER selbst vom Bild ab.
+        ACHTUNG: Nicht alle Zeilen sind Vokabeln! Ignoriere Beispielsätze, Dialoge, Grammatik-Erklärungen und Überschriften.
+        Extrahiere NUR echte Vokabelpaare die SICHTBAR auf dem Bild stehen — NIEMALS Wörter erfinden:
+        \(lines)
+        """
     }
 
-    private var scanPrompt: String {
+    /// **Statischer, cacheable Scan-Prompt** (Phase 2a) — Rollendefinition
+    /// + 15 Regeln + JSON-Schema. Byte-identisch über alle Scans, lebt
+    /// daher im `system`-Field. Vorher hieß diese Property `scanPrompt`
+    /// und wurde in den user-content konkateniert.
+    private var scanSystemPrompt: String {
         """
         Du bist ein Vokabel-Extraktor für Französisch-Deutsch Schulbuchseiten.
 
