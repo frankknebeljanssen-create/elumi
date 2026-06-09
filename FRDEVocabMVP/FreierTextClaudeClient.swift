@@ -66,15 +66,21 @@ struct FreierTextClaudeClient {
         }
 
         let base64Image = jpegData.base64EncodedString()
-        let prompt = Self.freeTextPrompt
 
         // **Backend-Proxy (Phase 1.5)** — Body minimal: `max_tokens`,
         // `temperature` und `stream` setzt der Proxy serverseitig fix.
         // `telemetry_hint` trennt den Freier-Text-Pfad in der Backend-
         // Telemetrie vom Vokabel-Scan ab (kein PII).
+        //
+        // **Prompt-Splitting (Phase 2a)** — der gesamte (statische)
+        // Prompt wandert ins Top-Level-`system`-Field (byte-identisch
+        // über alle Scans → in Phase 2b via `cache_control` cacheable).
+        // Der Freier-Text-Flow hat KEINEN dynamischen Anteil, daher
+        // trägt der user-content nur das Bild.
         let requestBody: [String: Any] = [
             "model": model,
             "telemetry_hint": "scan_freetext",
+            "system": Self.freeTextSystemPrompt,
             "messages": [
                 [
                     "role": "user",
@@ -86,10 +92,6 @@ struct FreierTextClaudeClient {
                                 "media_type": "image/jpeg",
                                 "data": base64Image
                             ]
-                        ],
-                        [
-                            "type": "text",
-                            "text": prompt
                         ]
                     ]
                 ]
@@ -223,7 +225,11 @@ struct FreierTextClaudeClient {
     /// Übersetzungsrichtung: Die App ist für FR↔DE-Lerner. Wenn der
     /// erkannte Text Deutsch ist, muss die Übersetzung ins Französische
     /// gehen (nicht de→de). Für alle anderen Sprachen → Deutsch.
-    private static let freeTextPrompt: String = """
+    ///
+    /// **Statischer, cacheable Prompt** (Phase 2a) — der Freier-Text-Flow
+    /// hat keinen dynamischen Anteil, daher lebt der gesamte Prompt im
+    /// `system`-Field. Vorher hieß diese Property `freeTextPrompt`.
+    private static let freeTextSystemPrompt: String = """
     Du bist ein Sprachanalyse-Assistent. Analysiere den auf dem Bild sichtbaren Text und liefere eine strukturierte Antwort mit drei Teilen: Originaltext, Übersetzung, Wortlisten nach Wortart.
 
     AUFGABE:
