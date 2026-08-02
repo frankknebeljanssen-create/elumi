@@ -312,7 +312,12 @@ struct AppInputField: View {
             .submitLabel(submitLabel)
             .autocorrectionDisabled(autocorrectionDisabled)
             .textInputAutocapitalization(autocapitalization)
-            .disabled(!isEnabled)
+            // Kein .disabled() — natives TextField-Dimming überschreibt
+            // sonst .foregroundStyle() und macht den Text unlesbar
+            // (bereits einmal analog bei Buttons aufgetreten, siehe
+            // AppPrimaryButtonStyle-Historie).
+            .allowsHitTesting(isEnabled)
+            .opacity(isEnabled ? 1 : 0.5)
             .onSubmit { onSubmit?() }
 
         switch (focus, onTap) {

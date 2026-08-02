@@ -1,4 +1,20 @@
 import SwiftUI
+import UIKit
+
+extension Color {
+    /// Vereinfachte Luminanz-Heuristik: hell genug für schwarzen Text?
+    /// Berücksichtigt Alpha, weil halbtransparente Farben (z. B.
+    /// `textDisabled`) auf dunklem App-Hintergrund effektiv dunkler
+    /// wirken als ihre reine RGB-Komponente.
+    var isLightBackground: Bool {
+        guard let components = UIColor(self).cgColor.components, components.count >= 3 else {
+            return true
+        }
+        let alpha = components.count >= 4 ? components[3] : 1.0
+        let luminance = 0.299 * components[0] + 0.587 * components[1] + 0.114 * components[2]
+        return (luminance * alpha) > 0.6
+    }
+}
 
 struct AppPrimaryButtonStyle: ButtonStyle {
     var color: Color = AppTheme.Colors.cta
@@ -10,9 +26,11 @@ struct AppPrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(AppTheme.Typography.button)
-            // Schwarze Schrift — der CTA-Hintergrund (#FFD166, sonniger Amber)
-            // ist hell genug, dass weiße Schrift unleserlich wäre.
-            .foregroundStyle(Color.black)
+            // Kontrastsicher statt hartkodiert Schwarz — bei hellem
+            // `color` (z. B. CTA-Amber) bleibt Schwarz, bei dunklerem/
+            // transparentem `color` (z. B. textDisabled) wird auf Weiß
+            // gewechselt, damit der Text nicht unlesbar wird.
+            .foregroundStyle(color.isLightBackground ? Color.black : Color.white)
             .frame(maxWidth: .infinity)
             .frame(minHeight: AppTheme.Layout.buttonHeight)
             .background(
