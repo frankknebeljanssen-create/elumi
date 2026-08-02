@@ -289,6 +289,15 @@ struct HomeView: View {
                     // Vollbreite-WideMethodCards (~86 pt) drunter.
                     heroCardsRow
                         .appEntryTransition(delay: 0.1)
+                        // **Erstnutzer-Hint (2026-06-09)** — TestFlight-
+                        // Vorbereitung: additiver Dismissible-Hint für
+                        // Erstnutzer ohne begleiteten Onboarding-Flow.
+                        // Verschwindet nach Dismiss dauerhaft (HintStore).
+                        .hintBubble(
+                            id: "home_intro",
+                            text: "Hi, ich bin Elumi! 👋 Tipp auf Scannen und fotografier eine Seite aus deinem Vokabelbuch — ich mach dir daraus Karteikarten zum Üben.",
+                            alignment: .top
+                        )
 
                     wideMethodCards
                         // **Polish 2026-05-07** — Top-Padding 12 →

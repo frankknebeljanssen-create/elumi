@@ -112,6 +112,16 @@ extension ScanImportView {
             .padding(.horizontal, AppLayout.screenPadding)
             .padding(.vertical, 14)
             .background(AppTheme.Colors.surface.opacity(0.95))
+            // **Erstnutzer-Hint (2026-06-09)** — TestFlight-Vorbereitung.
+            // scanFullscreenReview ist der TATSÄCHLICH live genutzte
+            // Review-Screen (nicht `previewCard`/`previewListContent`
+            // in ScanImportView+ReviewCards.swift — die sind toter
+            // Code, nirgends aufgerufen).
+            .hintBubble(
+                id: "scan_result",
+                text: "Cool, oder? Ich hab die Wörter von deiner Seite gelesen und Karten draus gemacht. Schau kurz drüber, ob alles passt — dann speicherst du sie als deine eigene Liste.",
+                alignment: .bottom
+            )
 
             Divider().opacity(0.3)
 

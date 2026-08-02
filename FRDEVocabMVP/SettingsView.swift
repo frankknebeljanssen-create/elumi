@@ -277,6 +277,34 @@ struct SettingsView: View {
             }
             .buttonStyle(.plain)
 
+            // **Tipps erneut anzeigen** (2026-06-09) — setzt den
+            // `HintStore` zurück, damit alle dismissible Erstnutzer-
+            // Hints wieder erscheinen. Nicht-destruktiv (nur UI-State,
+            // keine Lerndaten), daher ohne Bestätigungs-Alert — anders
+            // als die Reset-Cards weiter unten.
+            Button {
+                HintStore.shared.resetAll()
+            } label: {
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Tipps erneut anzeigen")
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                        Text("Setzt die App-Hinweise zurück")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "lightbulb.circle.fill")
+                        .font(.system(size: 36, weight: .bold))
+                        .foregroundStyle(sectionStyle.accent)
+                        .frame(width: 56, height: 56)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(18)
+                .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
+            }
+            .buttonStyle(.plain)
+
             speedRoundDurationCard
 
             dictionaryStatsCard
