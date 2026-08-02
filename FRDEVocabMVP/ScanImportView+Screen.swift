@@ -119,8 +119,7 @@ extension ScanImportView {
             // Code, nirgends aufgerufen).
             .hintBubble(
                 id: "scan_result",
-                text: "Cool, oder? Ich hab die Wörter von deiner Seite gelesen und Karten draus gemacht. Schau kurz drüber, ob alles passt — dann speicherst du sie als deine eigene Liste.",
-                alignment: .top
+                text: "Cool, oder? Ich hab die Wörter von deiner Seite gelesen und Karten draus gemacht. Schau kurz drüber, ob alles passt — dann speicherst du sie als deine eigene Liste."
             )
 
             Divider().opacity(0.3)

@@ -130,6 +130,36 @@ struct HomeView: View {
     private var wideMethodCards: some View {
         VStack(spacing: 12) {
             WideCard(
+                // **Card-Cleanup 2026-05-07** — Method-Style via
+                // `subtitle:` + `showsChevron: true` + Method-Padding/
+                // Corner; siehe Daily-Drop-Card unten für Pattern.
+                title: "Training",
+                subtitle: "Vokabeln & Spezial",
+                accent: AppTheme.Colors.moduleVocabulary,
+                height: 86,
+                titleSize: 19,
+                showsChevron: true,
+                cornerRadius: 22,
+                horizontalPadding: 16,
+                verticalPadding: 12,
+                iconFrameSize: 52,
+                icon: {
+                    Image(systemName: "graduationcap.fill")
+                        .font(.system(size: 30, weight: .bold))
+                        .foregroundStyle(.white)
+                },
+                onTap: { openHomeScreen(.trainingHub) }
+            )
+
+            // **Live Chat — Léa-Chat MVP Schritt 1 (2026-05-10)** —
+            // Card zwischen Training und Daily-Drop. Section-Header
+            // entfernt (Polish 2026-05-10) — andere Cards auf Home
+            // haben auch keinen Section-Header, Drift weg.
+            LeaChatHomeCard {
+                openHomeScreen(.leaChat)
+            }
+
+            WideCard(
                 // **Naming-Sweep 2026-05-06** — „Mix-Training" →
                 // „Daily Drop" + neuer Subtitle. Brand-Begriff für
                 // die Slot-basierte Surprise-Übung; konsistent zum
@@ -168,36 +198,6 @@ struct HomeView: View {
                 badgeText: dailyDropBadgeState.text,
                 badgeColor: dailyDropBadgeState.color,
                 badgeForeground: dailyDropBadgeState.foreground
-            )
-
-            // **Live Chat — Léa-Chat MVP Schritt 1 (2026-05-10)** —
-            // Card zwischen Daily-Drop und Training. Section-Header
-            // entfernt (Polish 2026-05-10) — andere Cards auf Home
-            // haben auch keinen Section-Header, Drift weg.
-            LeaChatHomeCard {
-                openHomeScreen(.leaChat)
-            }
-
-            WideCard(
-                // **Card-Cleanup 2026-05-07** — Method-Style via
-                // `subtitle:` + `showsChevron: true` + Method-Padding/
-                // Corner; siehe Daily-Drop-Card oben für Pattern.
-                title: "Training",
-                subtitle: "Vokabeln & Spezial",
-                accent: AppTheme.Colors.moduleVocabulary,
-                height: 86,
-                titleSize: 19,
-                showsChevron: true,
-                cornerRadius: 22,
-                horizontalPadding: 16,
-                verticalPadding: 12,
-                iconFrameSize: 52,
-                icon: {
-                    Image(systemName: "graduationcap.fill")
-                        .font(.system(size: 30, weight: .bold))
-                        .foregroundStyle(.white)
-                },
-                onTap: { openHomeScreen(.trainingHub) }
             )
         }
     }
@@ -295,8 +295,7 @@ struct HomeView: View {
                         // Verschwindet nach Dismiss dauerhaft (HintStore).
                         .hintBubble(
                             id: "home_intro",
-                            text: "Hi, ich bin Elumi! 👋 Tipp auf Scannen und fotografier eine Seite aus deinem Vokabelbuch — ich mach dir daraus Karteikarten zum Üben.",
-                            alignment: .top
+                            text: "Hi, ich bin Elumi! 👋 Tipp auf Scannen und fotografier eine Seite aus deinem Vokabelbuch — ich mach dir daraus Karteikarten zum Üben."
                         )
 
                     wideMethodCards

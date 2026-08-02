@@ -69,8 +69,7 @@ struct TrophyView: View {
                     // Section, immer ohne Scroll sichtbar.
                     .hintBubble(
                         id: "progress_intro",
-                        text: "Jedes Wort, das du übst, bringt dir Punkte — und mir was zu futtern. 😋 Üb lieber jeden Tag ein bisschen als alles auf einmal, dann wächst deine Serie und du merkst dir mehr.",
-                        alignment: .top
+                        text: "Jedes Wort, das du übst, bringt dir Punkte — und mir was zu futtern. 😋 Üb lieber jeden Tag ein bisschen als alles auf einmal, dann wächst deine Serie und du merkst dir mehr."
                     )
                 streakCard
                 lernstatusCard

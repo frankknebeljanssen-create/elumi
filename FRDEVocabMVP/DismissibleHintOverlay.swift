@@ -64,10 +64,11 @@ final class HintStore: ObservableObject {
 // MARK: - Bubble-View
 
 /// Sprechblase mit Maskottchen-Avatar (oben/links) + Text + Dismiss-
-/// Button (oben rechts). Style: `leaChatGlass`-Gradient als Background
-/// (bestehender Glas-Look), `elumiBlue` als Info-Akzent (bewusst nicht
-/// Warning-Farbe — der Hint ist eine freundliche Erklärung, keine
-/// Warnung).
+/// Button (oben rechts). Style: solider `secondarySurface`-Hintergrund
+/// (bewusst KEIN transparentes Glass — der Hint muss über jedem
+/// darunterliegenden Content lesbar bleiben, unabhängig von dessen
+/// Farbe), `elumiBlue` als Info-Akzent (bewusst nicht Warning-Farbe —
+/// der Hint ist eine freundliche Erklärung, keine Warnung).
 private struct DismissibleHintBubble: View {
     let text: String
     let onDismiss: () -> Void
@@ -90,15 +91,16 @@ private struct DismissibleHintBubble: View {
                     .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .frame(width: 22, height: 22)
-                    .background(Circle().fill(AppTheme.Colors.secondarySurface))
+                    .background(Circle().fill(AppTheme.Colors.surface))
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Tipp schließen")
         }
         .padding(AppTheme.Spacing.md)
+        .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
-                .fill(AppTheme.Gradients.leaChatGlass)
+                .fill(AppTheme.Colors.secondarySurface)
         )
         .overlay(
             RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
@@ -114,19 +116,22 @@ private struct DismissibleHintBubble: View {
 private struct HintBubbleModifier: ViewModifier {
     let id: String
     let text: String
-    let alignment: Alignment
 
     @ObservedObject private var store = HintStore.shared
 
     func body(content: Content) -> some View {
-        content.overlay(alignment: alignment) {
+        // Zentriert statt an einer Card-Kante verankert (`.top`/`.bottom`
+        // führte dazu, dass die Bubble je nach Anker-View teils über den
+        // sichtbaren Bereich hinausragte). Zentrierte Position ist robust
+        // gegen unterschiedlich große Anker-Views.
+        content.overlay(alignment: .center) {
             if !store.hasSeen(id) {
                 DismissibleHintBubble(text: text) {
                     withAnimation(.easeOut(duration: 0.2)) {
                         store.markSeen(id)
                     }
                 }
-                .transition(.opacity.combined(with: .scale(scale: 0.94, anchor: .top)))
+                .transition(.opacity.combined(with: .scale(scale: 0.94, anchor: .center)))
                 .padding(.horizontal, AppTheme.Spacing.sm)
             }
         }
@@ -134,10 +139,10 @@ private struct HintBubbleModifier: ViewModifier {
 }
 
 extension View {
-    /// Hängt eine dismissible Sprechblase als Overlay an — erscheint
-    /// nur, solange `id` noch nicht in `HintStore` als gesehen markiert
-    /// ist. Persistiert über App-Neustarts hinweg.
-    func hintBubble(id: String, text: String, alignment: Alignment = .top) -> some View {
-        modifier(HintBubbleModifier(id: id, text: text, alignment: alignment))
+    /// Hängt eine dismissible Sprechblase als zentriertes Overlay an —
+    /// erscheint nur, solange `id` noch nicht in `HintStore` als gesehen
+    /// markiert ist. Persistiert über App-Neustarts hinweg.
+    func hintBubble(id: String, text: String) -> some View {
+        modifier(HintBubbleModifier(id: id, text: text))
     }
 }
