@@ -93,7 +93,7 @@ struct InfoView: View {
                 )
 
                 colorInfoCard(
-                    title: "Vokabeln",
+                    title: "Alle Vokabeln",
                     icon: "character.book.closed.fill",
                     tint: AppTheme.Colors.moduleVocabulary,
                     lines: [
@@ -133,7 +133,7 @@ struct InfoView: View {
                     icon: "list.bullet.rectangle.fill",
                     tint: AppTheme.Colors.moduleLists,
                     lines: [
-                        "Eigene Listen anlegen und verwalten.",
+                        "Meine Listen anlegen und verwalten.",
                         "Wörterbuch zeigt alle gelernten Vokabeln.",
                         "Einträge bearbeiten und löschen."
                     ]

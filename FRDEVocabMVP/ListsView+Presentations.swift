@@ -101,7 +101,7 @@ extension ListsView {
                         showToast("\(source.name) in \(target.name) zusammengef\u{00FC}hrt.")
                     },
                     // **List-Merge (2026-05-21)** — Multi-Select-Merge-Einstieg
-                    // NUR im „Eigene Listen"(.own)-Picker. Sheet→Sheet (analog
+                    // NUR im „Meine Listen"(.own)-Picker. Sheet→Sheet (analog
                     // Phase E): Picker schließen, dann mit 0,4s Settle-Delay den
                     // Merge-Picker öffnen. Andere Filter: nil → kein Button.
                     onStartMerge: filter == .own ? {
@@ -110,7 +110,7 @@ extension ListsView {
                             mergeCoordinator.showListPicker = true
                         }
                     } : nil,
-                    // Gesamt-Vokabelzahl pro Liste nur im „Eigene Listen"-Picker.
+                    // Gesamt-Vokabelzahl pro Liste nur im „Meine Listen"-Picker.
                     showsTotalCount: filter == .own,
                     feedbackPlayer: feedbackPlayer,
                     onHome: { goHome() },

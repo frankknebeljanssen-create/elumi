@@ -113,7 +113,7 @@ func listCollectionSummary(for list: VocabularyList) -> String {
     }
 
     if list.isAggregateVocabulary {
-        return "Alle eigenen Listen"
+        return "Alle meine Listen"
     }
 
     return list.collectionPreset.displayPath

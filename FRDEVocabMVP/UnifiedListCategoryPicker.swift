@@ -103,7 +103,7 @@ struct UnifiedListCategoryPicker: View {
             // `categoryCardsSection` in ListsView.
             VStack(spacing: 10) {
                 ListCategoryRow(
-                    title: "Eigene Listen",
+                    title: "Meine Listen",
                     iconAsset: "ListIconEigene",
                     count: lists(in: .own).count,
                     accent: accent

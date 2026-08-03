@@ -122,7 +122,9 @@ struct ExistingListPickerSheet: View {
             Image(systemName: "tray")
                 .font(.system(size: 38, weight: .light))
                 .foregroundStyle(AppTheme.Colors.textSecondary)
-            Text("Du hast noch keine eigenen Listen.")
+            // **2026-06-09** — „eigene Listen" vermieden, seit die
+            // Kategorie app-weit „Meine Listen" heißt.
+            Text("Du hast noch keine eigenen Listen angelegt.")
                 .font(.system(size: 16, weight: .semibold, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
                 .multilineTextAlignment(.center)
@@ -137,7 +139,7 @@ struct ExistingListPickerSheet: View {
             } label: {
                 // **Naming-Sweep 2026-05-06** — „Neue Liste
                 // anlegen" → „+ Neue Liste".
-                Text("+ Neue Liste")
+                Text("+ Neue Liste anlegen")
                     .font(AppTheme.Typography.button)
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: 50)

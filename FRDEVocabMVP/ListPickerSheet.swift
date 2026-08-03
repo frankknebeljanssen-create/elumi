@@ -11,12 +11,12 @@ struct ListPickerSheet: View {
     var onRename: ((VocabularyList) -> Void)? = nil
     var onMerge: ((VocabularyList, VocabularyList) -> Void)? = nil // (source, target)
     /// **List-Merge (2026-05-21)** — optionaler Multi-Select-Merge-Einstieg.
-    /// Nur der „Eigene Listen"(.own)-Caller übergibt ihn → der Button erscheint
+    /// Nur der „Meine Listen"(.own)-Caller übergibt ihn → der Button erscheint
     /// ausschließlich dort (andere Filter bleiben unverändert, default nil).
     var onStartMerge: (() -> Void)? = nil
     /// **Gesamtzahl-Anzeige (2026-05-21)** — wenn true, wird pro Liste die
     /// Gesamt-Vokabelzahl VOR der Wortart-Aufstellung gezeigt. Nur der
-    /// „Eigene Listen"(.own)-Caller setzt true (andere Filter: default false).
+    /// „Meine Listen"(.own)-Caller setzt true (andere Filter: default false).
     var showsTotalCount: Bool = false
     /// Optionaler Footer (Standard-AppBottomBar). Nur anzeigen wenn feedbackPlayer + onHome geliefert.
     var feedbackPlayer: FeedbackPlayer? = nil

@@ -71,10 +71,10 @@ extension ListsView {
         let ownLists = listStore.sortedCustomLists
 
         return VStack(spacing: 10) {
-            // Eigene Listen
+            // Meine Listen
             if !ownLists.isEmpty {
                 listsCategoryRow(
-                    title: "Eigene Listen",
+                    title: "Meine Listen",
                     iconAsset: "ListIconEigene",
                     count: ownLists.count
                 ) {
@@ -165,7 +165,7 @@ extension ListsView {
                     // **Naming-Sweep 2026-05-06** — „Neue Liste
                     // anlegen" → „+ Neue Liste". Plus-Icon im Text
                     // betont das Hinzufügen-Pattern.
-                    Text("+ Neue Liste")
+                    Text("+ Neue Liste anlegen")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }

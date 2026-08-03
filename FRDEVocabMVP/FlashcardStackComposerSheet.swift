@@ -147,7 +147,7 @@ struct FlashcardStackComposerSheet: View {
 
             ScrollView {
                 VStack(spacing: 6) {
-                    // Section: Eigene Listen
+                    // Section: Meine Listen
                     if !ownLists.isEmpty {
                         sectionHeader("📝 Meine Listen")
                         ForEach(ownLists) { list in

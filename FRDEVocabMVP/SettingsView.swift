@@ -77,7 +77,7 @@ struct SettingsView: View {
     @State private var isShowingVoiceSettings: Bool = false
 
     /// **Developer-Gruppe (User-Revision 2026-04-22)** — faltet
-    /// Icon-Stil, Spiel-Events-Test, „Eigene Listen löschen" und (in
+    /// Icon-Stil, Spiel-Events-Test, „Meine Listen löschen" und (in
     /// DEBUG) den Entwicklungs-Spielstand-Reset in eine einzige
     /// ausklappbare Section zusammen. Entlastet die Haupt-Settings-
     /// Liste und trennt optisch User-relevante Aktionen (oben) vom
@@ -633,7 +633,7 @@ struct SettingsView: View {
 
     /// Kollabierbare Gruppe mit Entwickler-nahen Reglern. Default
     /// collapsed — expandiert auf Tap-Header. Enthält (in dieser
-    /// Reihenfolge): Icon-Stil → Spiel-Events-Test → Eigene Listen
+    /// Reihenfolge): Icon-Stil → Spiel-Events-Test → Meine Listen
     /// löschen → (DEBUG) Entwicklungs-Spielstand-Reset.
     private var developerSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -745,7 +745,7 @@ struct SettingsView: View {
         } label: {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Eigene Listen löschen")
+                    Text("Meine Listen löschen")
                         .font(.system(size: 20, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                     Text("Entfernt alle selbst angelegten Vokabel-Listen. Nicht rückgängig zu machen.")
@@ -767,7 +767,7 @@ struct SettingsView: View {
             .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
         }
         .buttonStyle(.plain)
-        .alert("Eigene Listen löschen?", isPresented: $isShowingListsResetAlert) {
+        .alert("Meine Listen löschen?", isPresented: $isShowingListsResetAlert) {
             Button("Abbrechen", role: .cancel) { }
             Button("Löschen", role: .destructive) {
                 GameStateResetService.resetCustomLists()
