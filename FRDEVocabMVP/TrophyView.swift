@@ -64,13 +64,6 @@ struct TrophyView: View {
                     onBack: { dismiss() }
                 )
                 heroProgressCard
-                    // **Erstnutzer-Hint (2026-06-09)** — TestFlight-
-                    // Vorbereitung: additiver Dismissible-Hint, erste
-                    // Section, immer ohne Scroll sichtbar.
-                    .hintBubble(
-                        id: "progress_intro",
-                        text: "Jedes Wort, das du übst, bringt dir Punkte — und mir was zu futtern. 😋 Üb lieber jeden Tag ein bisschen als alles auf einmal, dann wächst deine Serie und du merkst dir mehr."
-                    )
                 streakCard
                 lernstatusCard
                 achievementsCard
@@ -111,6 +104,12 @@ struct TrophyView: View {
                 isTrophyActive: true
             )
         }
+        // **Erstnutzer-Hint (2026-06-09)** — am Screen-Root eingehängt,
+        // damit der Dim-Scrim den ganzen Screen abdeckt.
+        .hintBubble(
+            id: "progress_intro",
+            text: "Jedes Wort, das du übst, bringt dir Punkte — und mir was zu futtern. 😋 Üb lieber jeden Tag ein bisschen, als alles auf einmal, dann wächst deine Serie und du merkst dir mehr."
+        )
     }
 
     // MARK: - Section 1: Hero Progress (Level + Progressbar + XP-Ziel)

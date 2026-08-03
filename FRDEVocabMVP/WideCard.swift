@@ -36,6 +36,10 @@ struct WideCard<Icon: View>: View {
     /// kann bumpen — z. B. Hub-Akzente nutzt 20 pt nach den Hub-
     /// Cards-Polish-Iterationen, Method-Cards nutzen 19 pt.
     var titleSize: CGFloat = 17
+    /// Max. Zeilen für den Title im Tools-Style. Default 1 (einzeilig);
+    /// die Home-Tools (Neues Scannen / Meine Listen) nutzen 2 für
+    /// zweizeilige Labels. Wirkt nur im Tools-Style (ohne `subtitle`).
+    var titleLineLimit: Int = 1
     /// Subtitle-Schriftgröße (nur wirksam wenn `subtitle != nil`).
     var subtitleSize: CGFloat = 13
     /// Optionaler Chevron-Right rechts in der Card als Tap-Affordance
@@ -82,12 +86,14 @@ struct WideCard<Icon: View>: View {
                             .minimumScaleFactor(0.85)
                     }
                 } else {
-                    // Tools-Style: nur Title, einzeilig.
+                    // Tools-Style: nur Title. `titleLineLimit` erlaubt
+                    // zweizeilige Labels (Home-Tools), Default 1.
                     Text(title)
                         .font(.system(size: titleSize, weight: .black, design: .rounded))
                         .foregroundStyle(.white)
                         .shadow(color: .black.opacity(0.4), radius: 1, x: 0, y: 1)
-                        .lineLimit(1)
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(titleLineLimit)
                         .minimumScaleFactor(0.7)
                 }
 

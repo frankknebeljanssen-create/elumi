@@ -63,22 +63,27 @@ final class HintStore: ObservableObject {
 
 // MARK: - Bubble-View
 
-/// Sprechblase mit Maskottchen-Avatar (oben/links) + Text + Dismiss-
-/// Button (oben rechts). Style: solider `secondarySurface`-Hintergrund
-/// (bewusst KEIN transparentes Glass — der Hint muss über jedem
-/// darunterliegenden Content lesbar bleiben, unabhängig von dessen
-/// Farbe), `elumiBlue` als Info-Akzent (bewusst nicht Warning-Farbe —
-/// der Hint ist eine freundliche Erklärung, keine Warnung).
+/// Sprechblase mit Maskottchen-Avatar (links) + Text + Dismiss-Button
+/// (oben rechts). Style: solider, bläulich getönter Hintergrund
+/// (`secondarySurface` + `elumiBlue`-Tint — bewusst deutlich anders als
+/// der flache Screen-Hintergrund, damit die Box klar als eigenes
+/// Element „aufpoppt"), `elumiBlue` als Info-Akzent (bewusst nicht
+/// Warning-Farbe — der Hint ist eine freundliche Erklärung).
+///
+/// **2026-06-09** — Box vergrößert (mehr vertikaler Innenraum + Min-
+/// Höhe), Hintergrund vom flachen `secondarySurface` auf einen
+/// blau-getönten Ton gebracht (User-Spec „andere Farbe, nicht wie der
+/// Screen").
 private struct DismissibleHintBubble: View {
     let text: String
     let onDismiss: () -> Void
 
     var body: some View {
-        HStack(alignment: .top, spacing: AppTheme.Spacing.sm) {
+        HStack(alignment: .center, spacing: AppTheme.Spacing.md) {
             Image("SplashCharacter")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 40, height: 40)
+                .frame(width: 52, height: 52)
 
             Text(text)
                 .font(AppTheme.Typography.body)
@@ -88,25 +93,31 @@ private struct DismissibleHintBubble: View {
 
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .frame(width: 22, height: 22)
+                    .frame(width: 26, height: 26)
                     .background(Circle().fill(AppTheme.Colors.surface))
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Tipp schließen")
         }
-        .padding(AppTheme.Spacing.md)
+        .padding(.horizontal, AppTheme.Spacing.lg)
+        .padding(.vertical, AppTheme.Spacing.xl)
         .frame(maxWidth: .infinity)
+        .frame(minHeight: 132)
         .background(
-            RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
+            RoundedRectangle(cornerRadius: AppTheme.Radius.xl, style: .continuous)
                 .fill(AppTheme.Colors.secondarySurface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.Radius.xl, style: .continuous)
+                        .fill(AppTheme.Colors.elumiBlue.opacity(0.16))
+                )
         )
         .overlay(
-            RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
-                .stroke(AppTheme.Colors.elumiBlue.opacity(0.4), lineWidth: 1)
+            RoundedRectangle(cornerRadius: AppTheme.Radius.xl, style: .continuous)
+                .stroke(AppTheme.Colors.elumiBlue.opacity(0.45), lineWidth: 1)
         )
-        .shadow(color: AppTheme.Colors.shadow, radius: 14, x: 0, y: 6)
+        .shadow(color: AppTheme.Colors.shadow, radius: 18, x: 0, y: 8)
         .accessibilityElement(children: .combine)
     }
 }
@@ -120,28 +131,42 @@ private struct HintBubbleModifier: ViewModifier {
     @ObservedObject private var store = HintStore.shared
 
     func body(content: Content) -> some View {
-        // Zentriert statt an einer Card-Kante verankert (`.top`/`.bottom`
-        // führte dazu, dass die Bubble je nach Anker-View teils über den
-        // sichtbaren Bereich hinausragte). Zentrierte Position ist robust
-        // gegen unterschiedlich große Anker-Views.
-        content.overlay(alignment: .center) {
+        // **2026-06-09** — Der Hint wird als Screen-Root-Overlay
+        // eingehängt (siehe Aufruf-Seite), damit der Dim-Scrim den
+        // GESAMTEN Bildschirm abdeckt. Während ein Hint sichtbar ist,
+        // wird alles dahinter abgedunkelt; die Box sitzt zentriert
+        // darauf. Tap auf den Scrim schließt den Hint ebenfalls.
+        content.overlay {
             if !store.hasSeen(id) {
-                DismissibleHintBubble(text: text) {
-                    withAnimation(.easeOut(duration: 0.2)) {
-                        store.markSeen(id)
-                    }
+                ZStack {
+                    Color.black.opacity(0.55)
+                        .ignoresSafeArea()
+                        .contentShape(Rectangle())
+                        .onTapGesture { dismiss() }
+
+                    DismissibleHintBubble(text: text, onDismiss: dismiss)
+                        .padding(.horizontal, AppTheme.Spacing.lg)
                 }
-                .transition(.opacity.combined(with: .scale(scale: 0.94, anchor: .center)))
-                .padding(.horizontal, AppTheme.Spacing.sm)
+                .transition(.opacity)
             }
+        }
+    }
+
+    private func dismiss() {
+        withAnimation(.easeOut(duration: 0.2)) {
+            store.markSeen(id)
         }
     }
 }
 
 extension View {
-    /// Hängt eine dismissible Sprechblase als zentriertes Overlay an —
+    /// Hängt einen dismissiblen Hint als Screen-Root-Overlay an —
     /// erscheint nur, solange `id` noch nicht in `HintStore` als gesehen
-    /// markiert ist. Persistiert über App-Neustarts hinweg.
+    /// markiert ist, dunkelt den Screen dahinter ab und zeigt die
+    /// zentrierte Sprechblase. Persistiert über App-Neustarts hinweg.
+    ///
+    /// **Wichtig:** Am Screen-Root einhängen (nicht an einer inneren
+    /// Anker-View), damit der Dim-Scrim den ganzen Bildschirm abdeckt.
     func hintBubble(id: String, text: String) -> some View {
         modifier(HintBubbleModifier(id: id, text: text))
     }

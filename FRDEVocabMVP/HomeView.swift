@@ -50,17 +50,6 @@ struct HomeView: View {
 
     @ObservedObject private var profileStore = ProfileStore.shared
 
-    // MARK: - Layout helpers
-
-    /// **2026-05-08 Padding-Cleanup** — Footer-Migration zu
-    /// `.safeAreaInset(.bottom)` reserviert die Footer-Höhe systemweit;
-    /// das frühere `footerHeight + insetBottom + sm` schob den letzten
-    /// Home-Block sichtbar nach oben. Property gibt jetzt nur noch
-    /// den Atemraum-Buffer zurück.
-    private var homeFooterClearance: CGFloat {
-        AppTheme.Spacing.sm
-    }
-
     // MARK: - Navigation
 
     /// **Daily-Drop-Badge-State 2026-05-06** — computed aus dem
@@ -181,29 +170,32 @@ struct HomeView: View {
 
     // MARK: - Tools-Cards (Typ C 76pt, quer)
 
-    /// Zwei Tools-Cards nebeneinander (Scannen + Listen). Layout:
-    /// HStack mit Spacing 10 pt (matched die alte HomeToolsSection-
-    /// Geometrie, damit der visuelle Rhythmus konsistent bleibt).
+    /// Zwei Tools-Cards nebeneinander (Neues Scannen + Meine Listen).
+    /// Layout: HStack mit Spacing 10 pt (matched die alte
+    /// HomeToolsSection-Geometrie, damit der visuelle Rhythmus
+    /// konsistent bleibt).
+    ///
+    /// **2026-06-09** — Titel „Scannen"→„Neues Scannen", „Listen"→
+    /// „Meine Listen", beide zweizeilig (`titleLineLimit: 2`, expliziter
+    /// Umbruch). Card-Höhe unverändert 76 pt — die zwei Zeilen 17 pt
+    /// passen mit Raum.
     @ViewBuilder
     private var toolsRow: some View {
         HStack(spacing: 10) {
             WideCard(
-                title: "Scannen",
+                title: "Neues\nScannen",
                 accent: AppTheme.Colors.moduleScan,
                 height: 76,
+                titleLineLimit: 2,
                 icon: { HomeModuleIconView(icon: .scan, size: 48, glyphTint: AppTheme.Colors.moduleScan) },
                 onTap: { openHomeScreen(.scan) }
             )
 
             WideCard(
-                // **Naming-Sweep 2026-05-06 — Revert** — „Meine
-                // Listen" → zurück zu „Listen" (User-Feedback). Mit
-                // dem längeren Text griff `minimumScaleFactor` und
-                // die Schrift wirkte kleiner; mit „Listen" steht
-                // sie wieder auf den vollen 17 pt.
-                title: "Listen",
+                title: "Meine\nListen",
                 accent: AppTheme.Colors.moduleLists,
                 height: 76,
+                titleLineLimit: 2,
                 icon: { HomeModuleIconView(icon: .listen, size: 48, glyphTint: AppTheme.Colors.moduleLists) },
                 onTap: { openHomeScreen(.lists(nil)) }
             )
@@ -249,58 +241,17 @@ struct HomeView: View {
                     // Training-Hub gewandert (nicht mehr als eigene
                     // Home-Card).
                     wideMethodCards
-                        .padding(.top, 24)
+                        // **2026-06-09** — Top-Padding 24 → 44 pt
+                        // (User-Spec „Cards etwas runter, mehr Abstand
+                        // zur Streak-Card").
+                        .padding(.top, 44)
                         .appEntryTransition(delay: 0.1)
-                        // **Erstnutzer-Hint (2026-06-09)** — TestFlight-
-                        // Vorbereitung: additiver Dismissible-Hint für
-                        // Erstnutzer ohne begleiteten Onboarding-Flow.
-                        // Verschwindet nach Dismiss dauerhaft (HintStore).
-                        .hintBubble(
-                            id: "home_intro",
-                            text: "Hi, ich bin Elumi! 👋 Tipp auf Scannen und fotografier eine Seite aus deinem Vokabelbuch — ich mach dir daraus Karteikarten zum Üben."
-                        )
-                        // Bottom-Padding 8 pt bis zum Hairline-Divider
-                        // (zusammen mit dem 2-pt-Spacer drunter ~10 pt).
+                        // Bottom-Padding 8 pt — Atemluft nach der
+                        // letzten Method-Card. Die Tools-Row (Scannen/
+                        // Listen) ist nicht mehr Teil des Scroll-Flows,
+                        // sondern fix unten am Footer verankert (siehe
+                        // `.safeAreaInset(.bottom)` weiter unten).
                         .padding(.bottom, 8)
-
-                    // **Naming-Sweep 2026-05-06 Iteration 6** — vom
-                    // ehemaligen flexiblen `Spacer(minLength: 32)`
-                    // (der Tools ans Footer drückte) zu einem fixen
-                    // 8 pt Abstand. Iterativ über 56 → 24 → 16 → 8 pt
-                    // gedrückt nach mehreren User-Feedback-Runden.
-                    //
-                    // **Polish 2026-05-10 Iter-3 → Iter-4** — 8 → 6
-                    // → 2 pt. Reine Atemluft zwischen Training-Card
-                    // und Hairline-Divider; nicht mehr.
-                    Color.clear.frame(height: 2)
-
-                    // **Top-Trennlinie** vor der Tools-Sektion —
-                    // dezenter Hairline (0.5 pt, border-token).
-                    // Edge-to-edge via negativem Horizontal-Padding,
-                    // identisch zur Footer-Top-Border-Geometrie.
-                    Rectangle()
-                        .fill(AppTheme.Colors.border)
-                        .frame(height: 0.5)
-                        .padding(.horizontal, -AppLayout.screenPadding)
-                        .appEntryTransition(delay: 0.2)
-
-                    // **Polish 2026-05-10** — „Deine Tools"-Section-
-                    // Label entfernt. Drift gegenüber dem Rest der
-                    // Home-Sections (Daily Drop, Live Chat, Training
-                    // haben keinen Section-Header). Trennlinie davor
-                    // bleibt als visueller Anker zwischen Hauptmodul-
-                    // Block und Tools-Block. `.padding(.top, 16)`
-                    // wandert vom (gelöschten) SectionLabel hoch
-                    // auf die toolsRow, damit der Abstand zur
-                    // Trennlinie unverändert bleibt; entry-delay 0.22
-                    // (vorher 0.25, jetzt einer Stufe schneller, weil
-                    // ein Stagger-Step ausfällt).
-                    toolsRow
-                        .padding(.top, 16)
-                        .padding(.bottom, 16)
-                        .appEntryTransition(delay: 0.22)
-
-                    Color.clear.frame(height: homeFooterClearance)
                 }
                 .padding(.horizontal, AppLayout.screenPadding)
                 .padding(.top, AppLayout.contentTopPadding)
@@ -313,6 +264,30 @@ struct HomeView: View {
         .appScreenBackground(sectionStyle)
         .dismissKeyboardOnTap()
         .toolbar(.hidden, for: .navigationBar)
+        // **2026-06-09** — Scannen/Listen sind jetzt FIX unten am
+        // Footer verankert (User-Spec „keine relativen Positionen"),
+        // nicht mehr im Scroll-Flow relativ zu den Method-Cards.
+        // `safeAreaInset(.bottom)` pinnt die Tools-Row direkt über den
+        // AppBottomBar; der `background`-Fill matcht den flachen
+        // Screen-Hintergrund nahtlos.
+        //
+        // Bei globalem Chrome liegt der Footer als eigener
+        // `safeAreaInset` in RootContentView; HomeView füllt aber den
+        // ganzen Screen (ignoresSafeArea-Background), daher hier die
+        // Footer-Höhe reservieren, damit die Tools-Bar ÜBER dem Footer
+        // sitzt (analog ScanImportView). Bei lokalem Chrome liefert
+        // `appLocalChrome` den Footer als eigenen Inset darunter — dann
+        // ist keine Reservierung nötig.
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            VStack(spacing: 0) {
+                pinnedToolsBar
+                if usesGlobalChrome {
+                    Color.clear.frame(
+                        height: AppTheme.Layout.footerHeight + AppLayout.bottomBarInsetBottom
+                    )
+                }
+            }
+        }
         .appLocalChrome(enabled: !usesGlobalChrome) {
             AppTopBar(onInfo: openInfo, onAccount: openAccount)
                 .padding(.horizontal, AppLayout.screenPadding)
@@ -329,5 +304,37 @@ struct HomeView: View {
                 isSettingsActive: false
             )
         }
+        // **Erstnutzer-Hint (2026-06-09)** — TestFlight-Vorbereitung:
+        // Dismissible-Hint für Erstnutzer ohne begleiteten Onboarding-
+        // Flow. Am Screen-Root eingehängt, damit der Dim-Scrim den
+        // ganzen Screen abdeckt. Verschwindet nach Dismiss dauerhaft.
+        .hintBubble(
+            id: "home_intro",
+            text: "Hi, ich bin Elumi! 👋 Tipp auf Scannen und fotografier eine Seite aus deinem Vokabelbuch — ich mach dir daraus Karteikarten zum Üben."
+        )
+    }
+
+    // MARK: - Pinned-Tools-Bar (fix am Footer)
+
+    /// Scannen/Listen als fixe Bottom-Sektion über dem Footer. Hairline
+    /// als Oberkante, Tools-Row mit Screen-Padding + maxContentWidth
+    /// zentriert. `background`-Fill = flacher Screen-Hintergrund, damit
+    /// der Übergang zum Scroll-Content nahtlos ist.
+    private var pinnedToolsBar: some View {
+        VStack(spacing: 0) {
+            Rectangle()
+                .fill(AppTheme.Colors.border)
+                .frame(height: 0.5)
+            toolsRow
+                .padding(.top, 12)
+                // **2026-06-09** — Bottom 8 → 16 pt: die Tools lagen
+                // optisch auf der Footer-Trennlinie; etwas mehr Luft
+                // hebt sie leicht davon ab (User-Spec).
+                .padding(.bottom, 16)
+                .padding(.horizontal, AppLayout.screenPadding)
+                .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .center)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .background(AppTheme.Colors.background)
     }
 }

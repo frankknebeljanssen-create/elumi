@@ -29,7 +29,7 @@ enum TrainingHubTips {
         "5 Min Speed-Modus reicht.",
         "Le, la oder l'? Mit Übung kein Problem.",
         "Lieber 10 Min täglich als 1 Stunde am Sonntag.",
-        "Imparfait nervt? Ja, allen.",
+        "Imparfait nervt? Ja, alle.",
         "Heute 5 Min. Morgen wieder 5. Reicht."
     ]
 

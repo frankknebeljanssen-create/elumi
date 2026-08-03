@@ -109,7 +109,9 @@ struct LeaChatHomeCard: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 } else {
                     // noHistory — Einladungs-Fallback.
-                    Text("Chat mit Léa")
+                    // **2026-06-09** — Titel „Chat mit Léa" → „Live-Chat"
+                    // (User-Spec); Subtitle „Sag bonjour zu Léa" bleibt.
+                    Text("Live-Chat")
                         .font(.system(size: 19, weight: .black, design: .rounded))
                         .foregroundStyle(Color.white)
                     Text("Sag bonjour zu Léa 🇫🇷")
