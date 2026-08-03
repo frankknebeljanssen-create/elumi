@@ -313,8 +313,8 @@ struct HomeView: View {
             // Ein Satz pro Zeile (User-Spec Lesbarkeit für Kinder).
             text: """
             Hi, ich bin Elumi! 👋
-            Tipp auf „Neues Scannen" und fotografier eine Seite aus deinem Vokabelbuch.
-            Ich mach dir daraus Karteikarten zum Üben.
+            Tipp auf „Neues Scannen" und fotografier eine Seite aus deinem Vokabelheft oder -buch.
+            Ich mach dir daraus verschiedene Übungen.
             """
         )
     }

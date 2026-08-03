@@ -602,7 +602,11 @@ struct ElumiTabView: View {
                 // nicht mal für Kurz (Material < 10/2 = 5), erscheint ein
                 // Hinweis statt der Chips. Tap löst auto-close aus.
                 if cachedDailyDropMaterial < materialThreshold(for: Self.exerciseCountOptions.first ?? 10) {
-                    Text("Zu wenig Material für einen Drop. Wähle mehr Listen oder erweitere die Lernjahre.")
+                    // **2026-06-09** — Vorher stand hier nur „Wähle mehr
+                    // Listen", ohne zu sagen WO das geht. Die Auswahl
+                    // liegt nicht im Drop selbst, sondern im Hauptmenü
+                    // unter „Meine Listen" — das benennt der Text jetzt.
+                    Text("Zu wenig Material für einen Drop. Wähle im Hauptmenü unter \u{201E}Meine Listen\u{201C} mehr Listen aus oder erweitere die Lernjahre.")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                         .multilineTextAlignment(.center)

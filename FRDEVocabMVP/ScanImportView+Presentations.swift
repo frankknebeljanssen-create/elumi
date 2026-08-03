@@ -35,10 +35,10 @@ extension ScanImportView {
             .hintBubble(
                 id: "scan_intro",
                 text: """
-                Hier machst du aus deinem Vokabelbuch Karteikarten.
+                Hier machst du aus deinem Vokabelheft oder -buch neue Übungen.
                 Wähl erst aus, was du scannst und woher das Bild kommt.
                 Dann fotografier die Seite oder nimm ein Bild aus deinem Album.
-                Ich lese die Wörter und mach dir Karten daraus.
+                Ich lese die Wörter und mach dir verschiedene Übungen daraus.
                 """
             )
             .onAppear {

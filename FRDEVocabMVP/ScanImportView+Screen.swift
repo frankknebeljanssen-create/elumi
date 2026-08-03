@@ -256,9 +256,9 @@ extension ScanImportView {
             // Ein Satz pro Zeile (User-Spec Lesbarkeit für Kinder).
             text: """
             Cool, oder?
-            Ich hab die Wörter von deiner Seite gelesen und Karten draus gemacht.
+            Ich hab die Wörter von deiner Seite gelesen.
             Schau kurz drüber, ob alles passt.
-            Dann speicherst du sie als deine eigene Liste.
+            Dann speicherst du sie als eigene Liste und kannst sie üben.
             """
         )
         // **Phase B v3 (2026-05-20)** — TabBar-Höhe reservieren. Spiegelt

@@ -87,7 +87,7 @@ extension ListsView {
             text: """
             Hier wohnen alle deine Vokabeln.
             Fertige Listen findest du unter „Nach Niveau" und „Nach Themen".
-            Deine eigenen — zum Beispiel aus dem Scannen — liegen unter „Eigene Listen".
+            Was du selbst gescannt oder angelegt hast, liegt unter „Meine Listen".
             Tipp eine Liste an, um sie anzuschauen oder damit zu üben.
             """
         )
