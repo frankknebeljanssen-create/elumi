@@ -32,8 +32,15 @@ struct LeaChatHomeCard: View {
 
     /// Letzte Léa-Message — steuert Content-Row-Inhalt + Zeitstempel.
     /// nil = noHistory (keine Léa-Nachricht vorhanden).
+    ///
+    /// **2026-06-09** — Solange Léa-Chat wegen Backend-Bug deaktiviert
+    /// ist (`FeatureFlags.leaChatEnabled == false`), zeigt die Card
+    /// immer den noHistory-State („Chat mit Léa" bold) statt einer
+    /// stale Chat-Preview aus einem vorherigen Test. Nach dem Fix
+    /// (Flag → `true`) erscheinen automatisch wieder echte Previews.
     private var lastLeaMessage: ChatMessage? {
-        chatService.messages.last(where: { $0.sender == .lea })
+        guard FeatureFlags.leaChatEnabled else { return nil }
+        return chatService.messages.last(where: { $0.sender == .lea })
     }
 
     var body: some View {

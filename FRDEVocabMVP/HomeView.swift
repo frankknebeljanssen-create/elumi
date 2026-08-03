@@ -237,36 +237,19 @@ struct HomeView: View {
                     )
                     .appEntryTransition()
 
-                    // Section-Header über den Methoden-Cards. Größe
-                    // 16 → 22 pt + textPrimary + .bold (User-Spec
-                    // Spacing-Polish: prominenter, klarer Anker
-                    // zwischen Header und Card-Block). Text-Update
-                    // „lernen" → „üben" (User-Spec).
+                    // **2026-06-09** — Section-Header „Was möchtest du
+                    // heute üben?" entfernt (User-Spec). Das Top-Padding
+                    // (vorher am Header) wandert auf den Card-Block,
+                    // damit der Atemraum nach dem HomeHeader gleich
+                    // bleibt.
                     //
-                    // **Polish 2026-05-10** — Top-Padding 48 → 24 pt
-                    // (halbiert). Vorher 48 pt für „Atemraum nach
-                    // HomeHeader"; mit dem neuen Live-Chat-Card-
-                    // Block dazwischen rutscht der Section-Header
-                    // nun zu tief — Halbierung bringt ihn wieder
-                    // näher an den Streak-Pill-Block heran.
-                    Text("Was möchtest du heute üben?")
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .padding(.top, 24)
-                        // **Polish 2026-05-10 Iter-3** — Bottom-Padding
-                        // 16 → 10. Section-Header rückt enger an die
-                        // Karteikarten/Quiz-Hero-Reihe; das 22 pt-bold
-                        // Heading hat schon eigene Linienhöhe und
-                        // braucht keinen extra Atemraum drunter.
-                        .padding(.bottom, 10)
-                        .appEntryTransition(delay: 0.05)
-
                     // Methoden-Cards: vier Vollbreite-Cards
                     // untereinander (Training, Quiz, Live Chat, Daily
                     // Drop). Karteikarten ist als Auswahl-Option in den
                     // Training-Hub gewandert (nicht mehr als eigene
                     // Home-Card).
                     wideMethodCards
+                        .padding(.top, 24)
                         .appEntryTransition(delay: 0.1)
                         // **Erstnutzer-Hint (2026-06-09)** — TestFlight-
                         // Vorbereitung: additiver Dismissible-Hint für
