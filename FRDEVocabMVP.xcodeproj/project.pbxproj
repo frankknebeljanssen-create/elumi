@@ -343,6 +343,7 @@
 		A00000000000000000000684 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000685 /* AppTheme.swift */; };
 		234DE340B5E433AEBF8A0904 /* FeatureFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E38F945ACB17745C201EF5 /* FeatureFlags.swift */; };
 		0265CEDE6BBA1CE77B6F5542 /* DismissibleHintOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B414D4B55A7DA15E71F357D /* DismissibleHintOverlay.swift */; };
+		7C3A91E204B6D5F81A9C0E33 /* WelcomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8F44A7B0E2C693175A4F20 /* WelcomeScreen.swift */; };
 		A00000000000000000000686 /* AppSurfaceViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000687 /* AppSurfaceViews.swift */; };
 		A00000000000000000000688 /* AppButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000689 /* AppButtonStyles.swift */; };
 		A00000000000000000000690 /* AppViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000691 /* AppViewModifiers.swift */; };
@@ -957,6 +958,7 @@
 		A00000000000000000000685 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		94E38F945ACB17745C201EF5 /* FeatureFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlags.swift; sourceTree = "<group>"; };
 		9B414D4B55A7DA15E71F357D /* DismissibleHintOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DismissibleHintOverlay.swift; sourceTree = "<group>"; };
+		1D8F44A7B0E2C693175A4F20 /* WelcomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeScreen.swift; sourceTree = "<group>"; };
 		A00000000000000000000687 /* AppSurfaceViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSurfaceViews.swift; sourceTree = "<group>"; };
 		A00000000000000000000689 /* AppButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppButtonStyles.swift; sourceTree = "<group>"; };
 		A00000000000000000000691 /* AppViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViewModifiers.swift; sourceTree = "<group>"; };
@@ -1385,6 +1387,7 @@
 				A00000000000000000000685 /* AppTheme.swift */,
 				94E38F945ACB17745C201EF5 /* FeatureFlags.swift */,
 				9B414D4B55A7DA15E71F357D /* DismissibleHintOverlay.swift */,
+				1D8F44A7B0E2C693175A4F20 /* WelcomeScreen.swift */,
 				A00000000000000000000223 /* AppDomainModels.swift */,
 				A00000000000000000000315 /* AppNavigationModels.swift */,
 				A00000000000000000000317 /* QuizDomainModels.swift */,
@@ -2028,6 +2031,7 @@
 				A00000000000000000000684 /* AppTheme.swift in Sources */,
 				234DE340B5E433AEBF8A0904 /* FeatureFlags.swift in Sources */,
 				0265CEDE6BBA1CE77B6F5542 /* DismissibleHintOverlay.swift in Sources */,
+				7C3A91E204B6D5F81A9C0E33 /* WelcomeScreen.swift in Sources */,
 				A00000000000000000000190 /* AppShellViews.swift in Sources */,
 				A00000000000000000000358 /* RootContentView.swift in Sources */,
 				A00000000000000000000360 /* HomeView.swift in Sources */,

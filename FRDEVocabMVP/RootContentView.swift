@@ -6,6 +6,16 @@ struct ContentView: View {
     @StateObject private var navigation = AppNavigationCoordinator()
     @ObservedObject private var profileStore = ProfileStore.shared
     @ObservedObject private var accountStore = AccountStore.shared
+    @ObservedObject private var hintStore = HintStore.shared
+
+    /// **Welcome-Screen (2026-06-09)** — pro App-Start einmal true,
+    /// sobald der User den Screen weggeklickt hat. Bewusst reiner
+    /// Launch-State (kein UserDefaults): mit
+    /// `FeatureFlags.alwaysShowWelcomeScreen == true` erscheint der
+    /// Screen dadurch bei JEDEM Start neu. Im Release-Pfad (Flag
+    /// `false`) übernimmt zusätzlich der `HintStore` die dauerhafte
+    /// Persistenz — siehe `shouldShowWelcomeScreen`.
+    @State private var hasDismissedWelcomeThisLaunch = false
     @AppStorage(appDirectionKey) private var selectedDirectionRaw = Direction.frenchToGerman.rawValue
 
     private var navigationPathBinding: Binding<[AppScreen]> {
@@ -325,6 +335,16 @@ struct ContentView: View {
                 .id(navigation.splashReplayID)
                 .transition(.opacity)
             }
+
+            // **Welcome-Screen (2026-06-09)** — liegt ÜBER Home, aber
+            // UNTER dem Splash: erscheint erst, wenn der Splash durch
+            // ist, und nur wenn schon ein Account existiert (sonst
+            // läuft noch das Account-Onboarding).
+            if shouldShowWelcomeScreen {
+                WelcomeScreen(onStart: dismissWelcomeScreen)
+                    .transition(.opacity)
+                    .zIndex(1)
+            }
         }
         .onAppear {
             runtime.bootstrapDependenciesIfNeeded()
@@ -336,6 +356,39 @@ struct ContentView: View {
                 profileStore.touchLastActive()
             }
         }
+    }
+
+    // MARK: - Welcome-Screen
+
+    /// Sichtbarkeit des Willkommensscreens.
+    ///
+    /// Bedingungen (alle müssen erfüllt sein):
+    ///   • Splash ist durch — sonst lägen zwei Vollbild-Layer übereinander.
+    ///   • Ein Account existiert — sonst läuft noch das Account-Onboarding.
+    ///   • In diesem App-Start noch nicht weggeklickt.
+    ///   • Testphase (`alwaysShowWelcomeScreen == true`): immer.
+    ///     Release (`false`): nur solange die ID im `HintStore` fehlt.
+    private var shouldShowWelcomeScreen: Bool {
+        guard !navigation.shouldShowSplashOverlay,
+              accountStore.hasAnyAccount,
+              !hasDismissedWelcomeThisLaunch
+        else { return false }
+
+        if FeatureFlags.alwaysShowWelcomeScreen { return true }
+        return !hintStore.hasSeen(WelcomeScreen.hintID)
+    }
+
+    @MainActor
+    private func dismissWelcomeScreen() {
+        runtime.feedbackPlayer?.playTabSwitch()
+        withAnimation(.easeOut(duration: 0.28)) {
+            hasDismissedWelcomeThisLaunch = true
+        }
+        // Im Release-Pfad zusätzlich dauerhaft merken. In der Testphase
+        // ist das wirkungslos, weil `shouldShowWelcomeScreen` das Flag
+        // vorher abfängt — schadet aber nicht und macht das Umstellen
+        // auf Release zu einer Ein-Zeilen-Änderung.
+        hintStore.markSeen(WelcomeScreen.hintID)
     }
 
     @MainActor
