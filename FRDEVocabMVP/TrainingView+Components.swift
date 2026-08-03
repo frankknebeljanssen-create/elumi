@@ -30,7 +30,7 @@ extension TrainingView {
 
     var dictionaryTrainingLevelCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Lernniveau")
+            Text("Lernstand")
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.textSecondary)
 

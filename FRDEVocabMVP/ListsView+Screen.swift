@@ -82,10 +82,10 @@ extension ListsView {
                 }
             }
 
-            // Nach Niveau
+            // Nach Lernstand
             if !levelLists.isEmpty {
                 listsCategoryRow(
-                    title: "Nach Niveau",
+                    title: "Nach Lernstand",
                     iconAsset: "ListIconNiveau",
                     count: levelLists.count
                 ) {

@@ -276,7 +276,7 @@ struct GlobalListPickerSheet: View {
                             ForEach(sectionOwnLists) { list in row(for: list) }
                         }
                         if !sectionLevelLists.isEmpty {
-                            sectionHeader("📚 Wortschatz nach Niveau")
+                            sectionHeader("📚 Wortschatz nach Lernstand")
                             ForEach(sectionLevelLists) { list in row(for: list) }
                         }
                         if !sectionTopicLists.isEmpty {

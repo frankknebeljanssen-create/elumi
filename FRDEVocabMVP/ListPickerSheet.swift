@@ -133,7 +133,7 @@ struct ListPickerSheet: View {
                     }
 
                     if !levelLists.isEmpty {
-                        sectionHeader("📚 Wortschatz nach Niveau")
+                        sectionHeader("📚 Wortschatz nach Lernstand")
                         ForEach(levelLists) { list in listRow(list) }
                     }
 

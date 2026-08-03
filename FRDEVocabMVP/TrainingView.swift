@@ -565,7 +565,7 @@ struct TrainingView: View {
 
     var startHintText: String {
         if isDictionaryTrainingSelected {
-            return "Wähle ein anderes Lernniveau oder eine andere Quelle."
+            return "Wähle ein anderen Lernstand oder eine andere Quelle."
         }
         if availableTrainingLists.isEmpty {
             return "Lege zuerst eine Liste mit Vokabeln an."

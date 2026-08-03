@@ -43,7 +43,7 @@ extension ListsView {
                         selectedPreset.wrappedValue = preset
                     } label: {
                         HStack {
-                            Text(preset.rawValue)
+                            Text(preset.displayName)
                                 .font(AppTheme.Typography.body)
                                 .lineLimit(2)
                                 .minimumScaleFactor(0.85)

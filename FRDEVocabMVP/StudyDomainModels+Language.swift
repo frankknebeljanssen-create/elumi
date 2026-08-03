@@ -403,6 +403,16 @@ enum ListCollectionGroup: String, CaseIterable, Codable, Identifiable {
 
     var id: String { rawValue }
 
+    /// Anzeigename für die UI — `rawValue` bleibt wegen der
+    /// `Codable`-Persistenz unverändert (siehe
+    /// `ListCollectionPreset.displayName`).
+    var displayName: String {
+        switch self {
+        case .standardLevel: return "Wortschatz nach Lernstand"
+        default: return rawValue
+        }
+    }
+
     var sortOrder: Int {
         switch self {
         case .books:
@@ -445,8 +455,20 @@ enum ListCollectionPreset: String, CaseIterable, Codable, Identifiable {
         }
     }
 
+    /// Anzeigename für die UI. **2026-06-09** — „Niveau" ist für
+    /// Kinder kein geläufiges Wort, deshalb heißt es überall
+    /// „Lernstand". Der `rawValue` bleibt unverändert, weil er über
+    /// `Codable` in gespeicherten Listen persistiert wird — dieselbe
+    /// Trennung wie bei `standardTopic` („Thema" → „Themen").
+    var displayName: String {
+        switch self {
+        case .standardLevel: return "Lernstand"
+        default: return rawValue
+        }
+    }
+
     var displayPath: String {
-        "\(group.rawValue) · \(rawValue)"
+        "\(group.displayName) · \(displayName)"
     }
 
     var sortOrder: Int {

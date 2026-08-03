@@ -102,7 +102,7 @@ func listCollectionSummary(for list: VocabularyList) -> String {
 
     if list.isBuiltIn {
         switch list.collectionPreset {
-        case .standardLevel: return "Wortschatz nach Niveau"
+        case .standardLevel: return "Wortschatz nach Lernstand"
         // **Naming-Sweep 2026-05-06** — Display-String „Wortschatz
         // nach Thema" → „Themen". Der enum-rawValue in
         // `ListCollectionGroup.standardTopic` bleibt unverändert

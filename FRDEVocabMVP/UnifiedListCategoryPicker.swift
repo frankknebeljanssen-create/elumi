@@ -110,7 +110,7 @@ struct UnifiedListCategoryPicker: View {
                 ) { activeCategory = .own }
 
                 ListCategoryRow(
-                    title: "Nach Niveau",
+                    title: "Nach Lernstand",
                     iconAsset: "ListIconNiveau",
                     count: lists(in: .level).count,
                     accent: accent
