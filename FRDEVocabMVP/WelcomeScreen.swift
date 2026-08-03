@@ -1,7 +1,10 @@
 // WelcomeScreen.swift
 // **2026-06-09** — Vollbild-Willkommensscreen, der direkt nach dem
-// Splash (und nach abgeschlossenem Account-Onboarding) erscheint und
-// per CTA weggeklickt wird. Danach steht der User auf Home.
+// Splash erscheint und per CTA weggeklickt wird.
+//
+// Reihenfolge: Splash → Welcome → (beim ersten Start) Account-
+// Onboarding → Home. Der Screen läuft bewusst VOR der Namenseingabe:
+// Erstnutzer sehen erst, worum es geht, und tragen sich danach ein.
 //
 // Sichtbarkeit: gesteuert über `FeatureFlags.alwaysShowWelcomeScreen`.
 //   • `true`  (Testphase): erscheint bei JEDEM App-Start. Der Screen
@@ -127,6 +130,17 @@ struct WelcomeScreen: View {
                 title: "Jeden Tag ein bisschen",
                 subtitle: "Damit wächst deine Serie — und ich krieg was zu futtern. 😋",
                 tint: AppTheme.Colors.elumiPinkDeep
+            )
+            // Bewusst die kürzeste Card und bewusst am Ende: erst was
+            // die App macht, dann die Belohnung. Formulierung folgt der
+            // Spec in `ArcadeCreditSystem` — Spiele werden FREIGESCHALTET
+            // (nicht jede Session gibt eines), deshalb kein Versprechen
+            // wie „nach jeder Übung ein Spiel".
+            featureCard(
+                emoji: "🎮",
+                title: "Spiele freischalten",
+                subtitle: "Wer fleißig übt, darf zocken.",
+                tint: AppTheme.Colors.moduleQuiz
             )
         }
     }

@@ -304,19 +304,11 @@ struct HomeView: View {
                 isSettingsActive: false
             )
         }
-        // **Erstnutzer-Hint (2026-06-09)** — TestFlight-Vorbereitung:
-        // Dismissible-Hint für Erstnutzer ohne begleiteten Onboarding-
-        // Flow. Am Screen-Root eingehängt, damit der Dim-Scrim den
-        // ganzen Screen abdeckt. Verschwindet nach Dismiss dauerhaft.
-        .hintBubble(
-            id: "home_intro",
-            // Ein Satz pro Zeile (User-Spec Lesbarkeit für Kinder).
-            text: """
-            Hi, ich bin Elumi! 👋
-            Tipp auf „Neues Scannen" und fotografier eine Seite aus deinem Vokabelheft oder -buch.
-            Ich mach dir daraus verschiedene Übungen.
-            """
-        )
+        // **2026-06-09** — Der frühere `home_intro`-Hint ist entfallen.
+        // Der Willkommensscreen (`WelcomeScreen`) läuft jetzt direkt
+        // davor und erklärt dasselbe ausführlicher; ein Hint gleich
+        // danach wäre doppelt. Nach dem CTA landet der User ohne
+        // Zwischenschritt auf Home.
     }
 
     // MARK: - Pinned-Tools-Bar (fix am Footer)

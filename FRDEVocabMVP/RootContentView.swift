@@ -362,15 +362,20 @@ struct ContentView: View {
 
     /// Sichtbarkeit des Willkommensscreens.
     ///
-    /// Bedingungen (alle müssen erfüllt sein):
+    /// **2026-06-09** — Der Screen läuft bewusst VOR dem Account-
+    /// Onboarding: Erstnutzer sehen erst, worum es geht, und geben
+    /// danach ihren Namen ein. Deshalb hier KEINE Bedingung auf
+    /// `accountStore.hasAnyAccount` — der Screen liegt im ZStack über
+    /// beidem und gibt nach dem CTA den Blick frei auf das, was
+    /// dahinter dran ist (Onboarding beim ersten Mal, sonst Home).
+    ///
+    /// Bedingungen:
     ///   • Splash ist durch — sonst lägen zwei Vollbild-Layer übereinander.
-    ///   • Ein Account existiert — sonst läuft noch das Account-Onboarding.
     ///   • In diesem App-Start noch nicht weggeklickt.
     ///   • Testphase (`alwaysShowWelcomeScreen == true`): immer.
     ///     Release (`false`): nur solange die ID im `HintStore` fehlt.
     private var shouldShowWelcomeScreen: Bool {
         guard !navigation.shouldShowSplashOverlay,
-              accountStore.hasAnyAccount,
               !hasDismissedWelcomeThisLaunch
         else { return false }
 
