@@ -1305,10 +1305,35 @@ extension TrainingView {
     /// bisherigen `vocabularyDetailCard(category: .all)`-Verhalten (1 Tap,
     /// kein Sheet). `isDictionaryTrainingSelected` funktioniert weiterhin, da
     /// der Wert aus `session.selectedTrainingListIDs` kommt.
+    /// Einträge-Anzahl für die Vokabeln-Setup-Card. Nutzt bewusst
+    /// dieselbe Quelle wie das Quiz (`quizListSummary`) — den
+    /// `VocabularyListSelectionResolver` inklusive Lernjahr-Filter —
+    /// damit dieselbe Liste in beiden Modulen dieselbe Zahl zeigt.
+    ///
+    /// **Bug-Fix 2026-06-09** — Vorher hing die Card an
+    /// `setupCardLemmas.count`, das für den Vokabeln-Modus per `guard`
+    /// in `refreshSetupCardLemmas()` immer leer bleibt (die Lemma-
+    /// Analyse läuft nur für Nomen/Verben/Artikel/Verbformen) → es
+    /// stand dauerhaft „0 Einträge". `activeItems.count` wäre auch
+    /// falsch gewesen: das filtert zusätzlich auf trainierbare
+    /// Kartentypen und liegt dadurch unter der Listengröße, die
+    /// Quiz/Karteikarten anzeigen.
+    private var vocabularyEntryCount: Int {
+        let ids = session.selectedTrainingListIDs
+        guard !ids.isEmpty else { return 0 }
+        let selected = availableTrainingLists.filter { ids.contains($0.id) }
+        let lernjahrMax = VocabularyListSelectionResolver.currentLernjahrMax()
+        return selected.reduce(0) { acc, list in
+            acc + VocabularyListSelectionResolver.effectiveItems(
+                for: list, lernjahrMax: lernjahrMax
+            ).count
+        }
+    }
+
     private var vocabularyListSelectionCard: some View {
         setupListSelectionCard(
             countLabel: "Einträge",
-            countValue: setupCardLemmas.count,
+            countValue: vocabularyEntryCount,
             onTapPicker: { vocabularyListPickerActive = true },
             onTapCounter: nil
         )
