@@ -147,7 +147,10 @@ extension FlashcardsView {
             // „Karten" (selbsterklärend mit der großen roten Zahl
             // + Karten-Stack-Icon daneben; „Anzahl der" war
             // beamten-haft).
-            flashcardSetupCardLabelLarge("Karten")
+            // **2026-06-09** — Zurück auf „Anzahl Karten": „Karten"
+            // allein war neben dem Schwierigkeits-Slider zu unklar,
+            // worauf sich die Zahl bezieht.
+            flashcardSetupCardLabelLarge("Anzahl Karten")
 
             // Kompakte Inline-Zeile: links die große rote Zahl, daneben der
             // kleine Mini-Stapel (in derselben roten Farbe), dann der Slider.
