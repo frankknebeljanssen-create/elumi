@@ -199,7 +199,7 @@ struct GlobalListPickerSheet: View {
     /// Runde Mint-Card analog `ListPickerSheet` — statischer Text
     /// „Tipp eine Liste an" (kein dynamischer State, exakt Bild-2-Stil).
     private var bannerView: some View {
-        Text("Tipp eine Liste an")
+        Text("Wähle eine oder mehrere Listen")
             .font(AppTheme.Typography.cardTitle)
             .foregroundStyle(.white)
             .lineLimit(1)

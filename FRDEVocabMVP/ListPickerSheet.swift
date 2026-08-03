@@ -77,7 +77,7 @@ struct ListPickerSheet: View {
         // **Naming-Sweep 2026-05-06** — „Keine Liste ausgewählt" →
         // „Tipp eine Liste an" (kindgerecht-aktiv: zeigt eine
         // Aktion statt eines passiven Status).
-        return "Tipp eine Liste an"
+        return "Wähle eine oder mehrere Listen"
     }
 
     var body: some View {
