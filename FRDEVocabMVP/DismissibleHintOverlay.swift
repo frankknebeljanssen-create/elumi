@@ -74,22 +74,52 @@ final class HintStore: ObservableObject {
 /// Höhe), Hintergrund vom flachen `secondarySurface` auf einen
 /// blau-getönten Ton gebracht (User-Spec „andere Farbe, nicht wie der
 /// Screen").
+///
+/// **2026-06-09 Lesbarkeits-Pass** — Kinder als Hauptzielgruppe:
+/// Box nochmal vertikal vergrößert, und der Text wird pro Satz in
+/// einen eigenen Block gerendert (die Aufrufer setzen `\n` zwischen
+/// den Sätzen). Der Abstand zwischen den Sätzen ist dabei größer als
+/// der innerhalb eines Satzes, sodass die Struktur auch bei langen,
+/// selbst umbrechenden Sätzen erkennbar bleibt.
 private struct DismissibleHintBubble: View {
     let text: String
     let onDismiss: () -> Void
 
+    /// Der übergebene Text, aufgeteilt in seine Sätze — die Aufrufer
+    /// setzen pro Satz einen Zeilenumbruch. Leerzeilen werden
+    /// verworfen, damit ein versehentlicher Doppel-Umbruch keine
+    /// Lücke erzeugt.
+    private var sentences: [String] {
+        text
+            .split(separator: "\n", omittingEmptySubsequences: true)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+    }
+
     var body: some View {
-        HStack(alignment: .center, spacing: AppTheme.Spacing.md) {
+        HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
             Image("SplashCharacter")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 52, height: 52)
 
-            Text(text)
-                .font(AppTheme.Typography.body)
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            // Jeder Satz (= eine Zeile im übergebenen Text) wird als
+            // eigener Block gerendert. Der Abstand ZWISCHEN den Sätzen
+            // (VStack-spacing) ist größer als der Zeilenabstand
+            // INNERHALB eines Satzes (`lineSpacing`) — dadurch bleibt
+            // die Satz-Struktur auch dann sichtbar, wenn ein langer
+            // Satz selbst über mehrere Zeilen umbricht.
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(Array(sentences.enumerated()), id: \.offset) { _, sentence in
+                    Text(sentence)
+                        .font(AppTheme.Typography.body)
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
@@ -102,9 +132,9 @@ private struct DismissibleHintBubble: View {
             .accessibilityLabel("Tipp schließen")
         }
         .padding(.horizontal, AppTheme.Spacing.lg)
-        .padding(.vertical, AppTheme.Spacing.xl)
+        .padding(.vertical, AppTheme.Spacing.xl + AppTheme.Spacing.xs)
         .frame(maxWidth: .infinity)
-        .frame(minHeight: 132)
+        .frame(minHeight: 180)
         .background(
             RoundedRectangle(cornerRadius: AppTheme.Radius.xl, style: .continuous)
                 .fill(AppTheme.Colors.secondarySurface)

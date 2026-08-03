@@ -310,7 +310,12 @@ struct HomeView: View {
         // ganzen Screen abdeckt. Verschwindet nach Dismiss dauerhaft.
         .hintBubble(
             id: "home_intro",
-            text: "Hi, ich bin Elumi! 👋 Tipp auf Scannen und fotografier eine Seite aus deinem Vokabelbuch — ich mach dir daraus Karteikarten zum Üben."
+            // Ein Satz pro Zeile (User-Spec Lesbarkeit für Kinder).
+            text: """
+            Hi, ich bin Elumi! 👋
+            Tipp auf „Neues Scannen" und fotografier eine Seite aus deinem Vokabelbuch.
+            Ich mach dir daraus Karteikarten zum Üben.
+            """
         )
     }
 

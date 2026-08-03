@@ -108,7 +108,12 @@ struct TrophyView: View {
         // damit der Dim-Scrim den ganzen Screen abdeckt.
         .hintBubble(
             id: "progress_intro",
-            text: "Jedes Wort, das du übst, bringt dir Punkte — und mir was zu futtern. 😋 Üb lieber jeden Tag ein bisschen, als alles auf einmal, dann wächst deine Serie und du merkst dir mehr."
+            // Ein Satz pro Zeile (User-Spec Lesbarkeit für Kinder).
+            text: """
+            Jedes Wort, das du übst, bringt dir Punkte — und mir was zu futtern. 😋
+            Üb lieber jeden Tag ein bisschen, als alles auf einmal.
+            So wächst deine Serie und du merkst dir mehr.
+            """
         )
     }
 

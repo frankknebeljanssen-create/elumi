@@ -253,7 +253,13 @@ extension ScanImportView {
         // ScanImportView+ReviewCards.swift — die sind toter Code).
         .hintBubble(
             id: "scan_result",
-            text: "Cool, oder? Ich hab die Wörter von deiner Seite gelesen und Karten draus gemacht. Schau kurz drüber, ob alles passt — dann speicherst du sie als deine eigene Liste."
+            // Ein Satz pro Zeile (User-Spec Lesbarkeit für Kinder).
+            text: """
+            Cool, oder?
+            Ich hab die Wörter von deiner Seite gelesen und Karten draus gemacht.
+            Schau kurz drüber, ob alles passt.
+            Dann speicherst du sie als deine eigene Liste.
+            """
         )
         // **Phase B v3 (2026-05-20)** — TabBar-Höhe reservieren. Spiegelt
         // RootContentView:187-192: nested `navigationDestination(isPresented:)`-
