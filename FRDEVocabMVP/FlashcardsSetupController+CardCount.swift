@@ -22,12 +22,17 @@ extension FlashcardsSetupController {
         customCardCountText = customCardCountText.filter(\.isNumber)
     }
 
-    /// **User-Revision 2026-04-22**: Flashcard-Sessions sind auf
-    /// maximal 200 Karten pro Durchlauf begrenzt (Setup-Card-Cap).
-    /// Wer eine Liste mit >200 Einträgen wählt, bekommt automatisch
-    /// nur die ersten 200 Karten — das hält die Session verdaulich
-    /// und den Streak-Zähler im fairen Rahmen.
-    static let maxCardsPerSession: Int = 200
+    /// **User-Revision 2026-04-22**: Flashcard-Sessions sind auf eine
+    /// feste Obergrenze pro Durchlauf begrenzt (Setup-Card-Cap). Wer
+    /// eine größere Liste wählt, bekommt automatisch nur die ersten
+    /// N Karten — das hält die Session verdaulich und den Streak-
+    /// Zähler im fairen Rahmen.
+    ///
+    /// **2026-06-09** — 200 → 100. 200 Karten am Stück sind für die
+    /// Zielgruppe zu lang; wer mehr will, macht mehrere Durchläufe.
+    /// Single Source of Truth — der Setup-Slider liest diesen Wert,
+    /// statt die Zahl ein zweites Mal zu führen.
+    static let maxCardsPerSession: Int = 100
 
     func effectiveSelectedCardCount(for selectedStackCardCount: Int) -> Int {
         let capped = min(selectedStackCardCount, Self.maxCardsPerSession)

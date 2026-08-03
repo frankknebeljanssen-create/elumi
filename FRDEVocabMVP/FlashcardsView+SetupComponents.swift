@@ -111,11 +111,15 @@ extension FlashcardsView {
     // showsModuleCard: true)`); die Body-Card war seither toter Code.
 
     var flashcardCountLimitCard: some View {
-        // **User-Revision 2026-04-22**: Hard-Cap bei 200 Karten in der
-        // Auswahl-Card. Größere Listen werden intern weiterhin geladen,
-        // aber der Setup-Slider erlaubt maximal 200 — wer mehr will,
-        // splittet seine Session sauber in mehrere Durchläufe.
-        let maxCards = min(max(selectedStackCardCount, 1), 200)
+        // **User-Revision 2026-04-22**: Hard-Cap in der Auswahl-Card.
+        // Größere Listen werden intern weiterhin geladen, aber der
+        // Setup-Slider deckelt — wer mehr will, splittet seine Session
+        // sauber in mehrere Durchläufe.
+        //
+        // **2026-06-09** — Zahl war hier hartkodiert (200) und wich
+        // damit von `maxCardsPerSession` ab, sobald eine der beiden
+        // Stellen geändert wird. Liest jetzt die Konstante.
+        let maxCards = min(max(selectedStackCardCount, 1), FlashcardsSetupController.maxCardsPerSession)
         let minSlider = min(5, maxCards)
         let sliderValue = Binding<Double>(
             get: {
@@ -316,8 +320,9 @@ extension FlashcardsView {
     /// den Slider-Wert (oder „alle" wenn 0). Wird sowohl in der Hunger-Card
     /// als auch in der Geschätzte-Zeit-Tile verwendet.
     ///
-    /// **User-Revision 2026-04-22**: On 200-Karten-Cap pro Session —
-    /// derselbe Hard-Limit wie in `effectiveSelectedCardCount(for:)`.
+    /// **User-Revision 2026-04-22**: Karten-Cap pro Session — dasselbe
+    /// Hard-Limit (`FlashcardsSetupController.maxCardsPerSession`) wie
+    /// in `effectiveSelectedCardCount(for:)`.
     var flashcardEffectiveCardCount: Int {
         let rawMax = Swift.max(selectedStackCardCount, 0)
         guard rawMax > 0 else { return 0 }
