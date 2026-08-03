@@ -35,10 +35,11 @@ extension ScanImportView {
             .hintBubble(
                 id: "scan_intro",
                 text: """
-                Hier machst du aus deinem Vokabelheft oder -buch neue Übungen.
-                Wähl erst aus, was du scannst und woher das Bild kommt.
-                Dann fotografier die Seite oder nimm ein Bild aus deinem Album.
-                Ich lese die Wörter und mach dir verschiedene Übungen daraus.
+                Hier wird aus deinem Vokabelheft oder -buch eine eigene Liste.
+                Sag mir erst, was auf der Seite steht und woher das Bild kommt.
+                Dann fotografierst du die Seite — oder nimmst ein Bild aus deinem Album.
+                Ich lese die Wörter raus und zeig sie dir zum Prüfen.
+                Danach kannst du sie sofort üben.
                 """
             )
             .onAppear {

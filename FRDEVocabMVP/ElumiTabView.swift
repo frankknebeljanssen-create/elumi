@@ -606,7 +606,15 @@ struct ElumiTabView: View {
                     // Listen", ohne zu sagen WO das geht. Die Auswahl
                     // liegt nicht im Drop selbst, sondern im Hauptmenü
                     // unter „Meine Listen" — das benennt der Text jetzt.
-                    Text("Zu wenig Material für einen Drop. Wähle im Hauptmenü unter \u{201E}Meine Listen\u{201C} mehr Listen aus oder erweitere die Lernjahre.")
+                    // **2026-06-09** — Der Hinweis auf die Lernjahre
+                    // entfällt, solange die Lernjahr-Auswahl per Flag
+                    // versteckt ist — sonst verweist der Text auf eine
+                    // UI, die es gerade nicht gibt.
+                    Text(
+                        FeatureFlags.learningYearSelectionEnabled
+                        ? "Zu wenig Material für einen Drop. Wähle im Hauptmenü unter \u{201E}Meine Listen\u{201C} mehr Listen aus oder erweitere die Lernjahre."
+                        : "Zu wenig Material für einen Drop. Wähle im Hauptmenü unter \u{201E}Meine Listen\u{201C} mehr Listen aus."
+                    )
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                         .multilineTextAlignment(.center)
@@ -937,6 +945,19 @@ struct ElumiTabView: View {
                 onSettings: openSettings
             )
         }
+        // **Erstnutzer-Hint (2026-06-09)** — erklärt, was einen beim
+        // Daily Drop erwartet. Der Modus ist der erklärungs-
+        // bedürftigste: die Slot-Maschine würfelt Übungsart und Liste
+        // aus, das versteht man ohne Hinweis nicht.
+        .hintBubble(
+            id: "daily_drop_intro",
+            text: """
+            Dein Mix des Tages — jeden Tag neu.
+            Ich würfel dir aus, was du übst: mal Vokabeln, mal Verben, mal was anderes.
+            Du wählst nur, wie lang es sein soll.
+            Dann einfach loslegen und deine Serie am Laufen halten.
+            """
+        )
     }
 
     // MARK: - Header-Titel

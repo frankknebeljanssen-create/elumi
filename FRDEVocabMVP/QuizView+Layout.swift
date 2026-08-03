@@ -59,10 +59,10 @@ extension QuizView {
             .hintBubble(
                 id: "quiz_intro",
                 text: """
-                Im Quiz testest du, was schon sitzt.
-                Wähl eine Liste aus und wie viele Fragen du haben willst.
-                Mal musst du ankreuzen, mal die Antwort eintippen.
-                Keine Sorge — Fehler sind zum Lernen da.
+                Im Quiz findest du raus, was schon wirklich sitzt.
+                Du bekommst gemischte Fragen: mal ankreuzen, mal selbst eintippen.
+                Vorher wählst du die Liste und wie viele Fragen es sein sollen.
+                Am Ende siehst du, was du schon kannst — und was noch wackelt.
                 """
             )
             .onAppear {

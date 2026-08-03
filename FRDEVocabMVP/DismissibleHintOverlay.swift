@@ -187,7 +187,12 @@ private struct HintBubbleModifier: ViewModifier {
         content.overlay {
             if !store.hasSeen(id) {
                 ZStack {
-                    Color.black.opacity(0.55)
+                    // **2026-06-09** — 0.55 → 0.78. Bei 55 % blieb der
+                    // Screen dahinter so präsent, dass die Bubble nicht
+                    // klar als eigene Ebene las. Dunkler heißt: der
+                    // Kontext bleibt erahnbar (deshalb kein Vollbild),
+                    // aber der Fokus liegt eindeutig auf dem Hint.
+                    Color.black.opacity(0.78)
                         .ignoresSafeArea()
                         .contentShape(Rectangle())
                         .onTapGesture { dismiss() }

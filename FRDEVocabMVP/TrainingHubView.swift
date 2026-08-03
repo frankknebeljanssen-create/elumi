@@ -244,10 +244,11 @@ struct TrainingHubView: View {
         .hintBubble(
             id: "training_intro",
             text: """
-            Such dir aus, was du üben willst.
-            Unter „Basics" lernst du neue Wörter — mit Karteikarten oder Vokabeln.
-            Unter „Specials" übst du gezielt Nomen, Verben, Artikel oder Akzente.
-            Tipp einfach an, worauf du Lust hast.
+            Hier suchst du dir selbst aus, was du übst.
+            „Karteikarten" zeigt dir ein Wort — du überlegst und drehst um.
+            „Alle Vokabeln" fragt dich ab, per Tippen oder Sprechen.
+            Bei den „Specials" trainierst du gezielt eine Sache: Nomen, Verben, Artikel oder Akzente.
+            Du bestimmst vorher, wie viel du machen willst.
             """
         )
         .onAppear {
