@@ -100,7 +100,7 @@ struct TrainingHubView: View {
                 .padding(.bottom, 10)
 
                 ModuleCard(
-                    title: "Vokabeln",
+                    title: "Alle Vokabeln",
                     accent: AppTheme.Colors.moduleVocabulary,
                     icon: { HomeModuleIconView(icon: .vokabeln, size: 44, glyphTint: .white) },
                     onTap: {
@@ -274,17 +274,22 @@ struct TrainingHubView: View {
         // (86 → 72 pt) + internal VStack-spacing (10 → 6 pt), damit
         // der Block ohne Scroll in den Hub-Viewport passt nach den
         // Card-Bumps von 76 → 88 pt. Tipp-Text-Größe unverändert.
+        //
+        // **2026-06-09** — 72 → 52 pt. Nach dem neuen „Alle Vokabeln"-
+        // Titel und dem Karteikarten-Eintrag in den Basics wurde der
+        // Tipp-Text unter dem Maskottchen aus dem Viewport gedrückt;
+        // mit dem kleineren Mascot ist er wieder sichtbar.
         VStack(spacing: 6) {
             ZStack {
                 Image("SplashCharacter")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 72, height: 72)
+                    .frame(width: 52, height: 52)
                 SplashCharacterBlinkOverlay(
-                    size: 72,
+                    size: 52,
                     startDate: .now
                 )
-                .frame(width: 72, height: 72)
+                .frame(width: 52, height: 52)
             }
             // Subtiler Drop-Shadow, identisch zur Footer-Maskottchen-
             // Behandlung — Maskottchen liegt visuell „auf" dem
