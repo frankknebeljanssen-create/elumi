@@ -37,19 +37,20 @@ struct WelcomeScreen: View {
             AppTheme.Colors.background
                 .ignoresSafeArea()
 
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(spacing: AppTheme.Spacing.xl) {
-                    mascot
-                    greeting
-                    featureList
-                    reassurance
-                }
-                .padding(.horizontal, AppLayout.screenPadding)
-                .padding(.top, AppTheme.Spacing.xl)
-                .padding(.bottom, AppTheme.Spacing.lg)
-                .frame(maxWidth: AppTheme.Layout.maxContentWidth)
-                .frame(maxWidth: .infinity)
+            // **2026-06-09** — Kein ScrollView mehr: der Screen muss
+            // komplett auf eine iPhone-Höhe passen (User-Spec). Dafür
+            // Maskottchen verkleinert, Abstände enger und der frühere
+            // Abschluss-Block „Keine Angst vor Fehlern" entfernt.
+            VStack(spacing: AppTheme.Spacing.md) {
+                mascot
+                greeting
+                featureList
+                Spacer(minLength: 0)
             }
+            .padding(.horizontal, AppLayout.screenPadding)
+            .padding(.top, AppTheme.Spacing.sm)
+            .frame(maxWidth: AppTheme.Layout.maxContentWidth)
+            .frame(maxWidth: .infinity)
 
             // CTA fix am unteren Rand — der Screen darf scrollen, der
             // Weiter-Weg bleibt immer sichtbar.
@@ -71,9 +72,9 @@ struct WelcomeScreen: View {
             Image("SplashCharacter")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 132, height: 132)
-            SplashCharacterBlinkOverlay(size: 132, startDate: .now)
-                .frame(width: 132, height: 132)
+                .frame(width: 92, height: 92)
+            SplashCharacterBlinkOverlay(size: 92, startDate: .now)
+                .frame(width: 92, height: 92)
         }
         .shadow(color: .black.opacity(0.22), radius: 8, x: 0, y: 4)
         .scaleEffect(hasAppeared ? 1 : 0.88)
@@ -82,29 +83,28 @@ struct WelcomeScreen: View {
 
     // MARK: - Begrüßung
 
+    /// **2026-06-09** — Kompakter als zuvor, damit der Screen ohne
+    /// Scrollen passt: „Schön, dass du da bist!" ist in die Subline
+    /// gewandert, Schriftgrößen leicht reduziert.
     private var greeting: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 4) {
             Text("Salut! 👋")
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .font(.system(size: 18, weight: .bold, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textSecondary)
 
             Text("Ich bin Elumi.")
-                .font(.system(size: 34, weight: .black, design: .rounded))
+                .font(.system(size: 30, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.elumiPink)
                 .multilineTextAlignment(.center)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
 
-            Text("Schön, dass du da bist!")
-                .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-
-            Text("Zusammen bringen wir dein Französisch zum Laufen.\nDas hier kannst du mit mir machen:")
-                .font(AppTheme.Typography.body)
+            Text("Schön, dass du da bist!\nDas hier kannst du mit mir machen:")
+                .font(.system(size: 15, weight: .medium, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textSecondary)
                 .multilineTextAlignment(.center)
-                .lineSpacing(4)
-                .padding(.top, AppTheme.Spacing.xs)
+                .lineSpacing(3)
+                .padding(.top, 2)
         }
         .frame(maxWidth: .infinity)
     }
@@ -189,20 +189,9 @@ struct WelcomeScreen: View {
         )
     }
 
-    // MARK: - Abschluss
-
-    private var reassurance: some View {
-        VStack(spacing: 2) {
-            Text("Keine Angst vor Fehlern.")
-                .font(.system(size: 16, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-            Text("Genau davon lernst du am meisten.")
-                .font(AppTheme.Typography.body)
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-        }
-        .multilineTextAlignment(.center)
-        .frame(maxWidth: .infinity)
-    }
+    // **2026-06-09** — Der Abschluss-Block („Keine Angst vor Fehlern")
+    // ist entfallen: der Screen soll ohne Scrollen auf eine
+    // iPhone-Höhe passen (User-Spec).
 
     // MARK: - CTA
 
