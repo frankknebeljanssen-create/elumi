@@ -22,4 +22,21 @@ enum FeatureFlags {
     /// beim allerersten Start (persistiert über `HintStore`, gleiche
     /// Mechanik wie die Erstnutzer-Hints).
     static let alwaysShowWelcomeScreen = true
+
+    /// **2026-06-09** — Lernjahr-Auswahl für die Demo ausgeblendet.
+    /// Der Grundwortschatz A1 ist damit nur noch als Ganzes an- und
+    /// abwählbar; die „LJ 1-3"-Pills verschwinden app-weit.
+    ///
+    /// Der Mechanismus dahinter bleibt vollständig erhalten — es ist
+    /// ein reines UI-Gate:
+    ///   • `VocabularyListSelectionResolver.currentLernjahrMax()` gibt
+    ///     `nil` zurück → `effectiveItems` liefert den vollen Parent.
+    ///     Der gespeicherte Wert in UserDefaults bleibt unangetastet.
+    ///   • `lernjahrRangeLabel()` gibt `nil` → alle Pills verschwinden.
+    ///   • Die aufklappbaren Lernjahr-Rows in den beiden Listen-Pickern
+    ///     rendern als einfache Zeile.
+    ///
+    /// Auf `true` zurückstellen reaktiviert alles, inklusive der zuvor
+    /// gespeicherten Lernjahr-Wahl.
+    static let learningYearSelectionEnabled = false
 }

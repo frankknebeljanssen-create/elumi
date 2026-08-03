@@ -294,7 +294,13 @@ struct GlobalListPickerSheet: View {
                 }
 
                 if categoryHeaders {
-                    Text("Die gewählten Listen werden in allen Trainingsmodulen (Karteikarten, Quiz, Word Runner, Training) als gemeinsamer Pool verwendet — analog zur globalen Listen-Auswahl in den Einstellungen. Bei Listen mit Lernjahr-Aufteilung (z. B. Grundwortschatz A1) gilt das gewählte Lernjahr global für alle hierarchischen Listen.")
+                    // **2026-06-09** — Der Lernjahr-Zusatz entfällt,
+                    // solange die Auswahl per Flag versteckt ist.
+                    Text(
+                        FeatureFlags.learningYearSelectionEnabled
+                        ? "Die gewählten Listen werden in allen Trainingsmodulen (Karteikarten, Quiz, Word Runner, Training) als gemeinsamer Pool verwendet — analog zur globalen Listen-Auswahl in den Einstellungen. Bei Listen mit Lernjahr-Aufteilung (z. B. Grundwortschatz A1) gilt das gewählte Lernjahr global für alle hierarchischen Listen."
+                        : "Die gewählten Listen werden in allen Trainingsmodulen (Karteikarten, Quiz, Word Runner, Training) als gemeinsamer Pool verwendet — analog zur globalen Listen-Auswahl in den Einstellungen."
+                    )
                         .font(.system(size: 11, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -361,9 +367,19 @@ struct GlobalListPickerSheet: View {
     /// Routet zwischen flacher und expandable Hierarchie-Row. Listen
     /// mit `cumulativeChildren=true` und nicht-leerer `children`-Liste
     /// bekommen das expandable Pattern aus `ListPickerSheet`.
+    ///
+    /// **2026-06-09** — Bei deaktivierter Lernjahr-Auswahl
+    /// (`FeatureFlags.learningYearSelectionEnabled == false`) fällt auch
+    /// die hierarchische Liste auf `flatRow` zurück: der Grundwortschatz
+    /// ist dann nur als Ganzes an-/abwählbar, ohne aufklappbare
+    /// Lernjahr-Children. `expandableLernjahrRow` bleibt unangetastet
+    /// im Code und greift wieder, sobald das Flag auf `true` geht.
     @ViewBuilder
     private func row(for list: VocabularyList) -> some View {
-        if list.cumulativeChildren, let children = list.children, !children.isEmpty {
+        if FeatureFlags.learningYearSelectionEnabled,
+           list.cumulativeChildren,
+           let children = list.children,
+           !children.isEmpty {
             expandableLernjahrRow(list, children: children)
         } else {
             flatRow(for: list)

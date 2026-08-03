@@ -319,9 +319,17 @@ struct ListPickerSheet: View {
     /// Branch-Punkt: hierarchische Listen mit cumulativeChildren bekommen
     /// das expandable Layout (Stufe 1 V1a). Alle anderen rendern wie
     /// bisher als flache Row.
+    ///
+    /// **2026-06-09** — Bei deaktivierter Lernjahr-Auswahl
+    /// (`FeatureFlags.learningYearSelectionEnabled == false`) rendert
+    /// auch die hierarchische Liste als `regularListRow`: nur als Ganzes
+    /// wählbar, keine Lernjahr-Children. `expandableLernjahrListRow`
+    /// bleibt im Code und greift wieder, sobald das Flag `true` ist.
     @ViewBuilder
     private func listRow(_ list: VocabularyList) -> some View {
-        if let children = list.children, list.cumulativeChildren {
+        if FeatureFlags.learningYearSelectionEnabled,
+           let children = list.children,
+           list.cumulativeChildren {
             expandableLernjahrListRow(list, children: children)
         } else {
             regularListRow(list)

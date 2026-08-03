@@ -65,8 +65,16 @@ enum VocabularyListSelectionResolver {
     ///
     /// Returns: nil wenn der User noch nie gewählt hat (= „alle
     /// Lernjahre"), sonst 1...5.
+    ///
+    /// **2026-06-09** — Bei deaktivierter Lernjahr-Auswahl
+    /// (`FeatureFlags.learningYearSelectionEnabled == false`) liefert
+    /// dieser Helper immer `nil`, also „kein Filter" → `effectiveItems`
+    /// gibt den vollen Parent zurück. Der gespeicherte UserDefaults-Wert
+    /// bleibt dabei erhalten und greift wieder, sobald das Flag auf
+    /// `true` geht.
     static func currentLernjahrMax() -> Int? {
-        UserDefaults.standard.object(forKey: appLernjahrMaxKey) as? Int
+        guard FeatureFlags.learningYearSelectionEnabled else { return nil }
+        return UserDefaults.standard.object(forKey: appLernjahrMaxKey) as? Int
     }
 
     // MARK: - Globale Listen-Auswahl (Stufe 5, 2026-04-29)
