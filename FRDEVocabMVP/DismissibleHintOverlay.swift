@@ -81,6 +81,17 @@ final class HintStore: ObservableObject {
 /// den Sätzen). Der Abstand zwischen den Sätzen ist dabei größer als
 /// der innerhalb eines Satzes, sodass die Struktur auch bei langen,
 /// selbst umbrechenden Sätzen erkennbar bleibt.
+///
+/// **2026-06-09 CI-Angleichung** — Die Bubble sah neben dem
+/// `WelcomeScreen` nach Fremdkörper aus. Jetzt dieselbe Bildsprache:
+/// Maskottchen groß und oben mittig (statt klein links), gleiche
+/// Card-Geometrie und Border wie die Feature-Cards im Welcome, und
+/// ein echter CTA-Button unten statt des X-Kreuzes oben rechts.
+///
+/// Bewusst KEIN Vollbild: drei der Hints verweisen wörtlich auf
+/// Elemente, die auf dem Screen sichtbar sind („unter Basics…",
+/// „Schau kurz drüber"). Ein Vollbild-Screen würde genau das
+/// verdecken, worauf der Text zeigt.
 private struct DismissibleHintBubble: View {
     let text: String
     let onDismiss: () -> Void
@@ -97,11 +108,19 @@ private struct DismissibleHintBubble: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
-            Image("SplashCharacter")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 52, height: 52)
+        VStack(spacing: AppTheme.Spacing.lg) {
+            // Maskottchen groß + mittig — identische Behandlung wie im
+            // WelcomeScreen (Blink-Overlay, gleicher Shadow), nur
+            // kleiner skaliert.
+            ZStack {
+                Image("SplashCharacter")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 88, height: 88)
+                SplashCharacterBlinkOverlay(size: 88, startDate: .now)
+                    .frame(width: 88, height: 88)
+            }
+            .shadow(color: .black.opacity(0.22), radius: 6, x: 0, y: 3)
 
             // Jeder Satz (= eine Zeile im übergebenen Text) wird als
             // eigener Block gerendert. Der Abstand ZWISCHEN den Sätzen
@@ -121,20 +140,19 @@ private struct DismissibleHintBubble: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
+            // Echter CTA statt X-Kreuz — gleiche Geste wie „Los geht's!"
+            // im WelcomeScreen, nur in Info-Blau statt CTA-Amber, damit
+            // der Hint nicht wie eine Hauptaktion wirkt.
             Button(action: onDismiss) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .frame(width: 26, height: 26)
-                    .background(Circle().fill(AppTheme.Colors.surface))
+                Text("Alles klar!")
+                    .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.elumiBlue))
             .accessibilityLabel("Tipp schließen")
         }
         .padding(.horizontal, AppTheme.Spacing.lg)
-        .padding(.vertical, AppTheme.Spacing.xl + AppTheme.Spacing.xs)
+        .padding(.vertical, AppTheme.Spacing.xl)
         .frame(maxWidth: .infinity)
-        .frame(minHeight: 180)
         .background(
             RoundedRectangle(cornerRadius: AppTheme.Radius.xl, style: .continuous)
                 .fill(AppTheme.Colors.secondarySurface)
