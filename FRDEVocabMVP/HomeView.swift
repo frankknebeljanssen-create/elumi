@@ -1,27 +1,26 @@
 import Foundation
 import SwiftUI
 
-/// Home-Screen (Hybrid γ v3 Refactor, 2026-05-06).
+/// Home-Screen (Home-Rebuild, 2026-06-09).
 ///
 /// Blöcke von oben nach unten:
 ///   1. Greeting + Streak-Inline + Maskottchen (`HomeHeader`) — unverändert
-///   2. Headline „Was möchtest du heute lernen?"
-///   3. **4 Methoden-Cards 2×2** (Typ A, je 110 pt):
-///      • Karteikarten („Selbst gemacht")
+///   2. Headline „Was möchtest du heute üben?"
+///   3. **4 Methoden-Cards Vollbreite** (Typ Wide, je 86 pt):
+///      • Training („Karteikarten, Vokabeln & Spezial") — führt zu
+///        `TrainingHubView`; Karteikarten ist hier als Auswahl-Option
+///        eingehängt (nicht mehr als eigene Home-Card)
 ///      • Quiz („Teste dich!")
-///      • Mix-Training („Surprise!") — öffnet Slot-Pop-up via
-///        `AppScreen.elumi`
-///      • Training („Vokabeln & mehr") — führt zu `TrainingHubView`
-///        mit Vokabeln + 4 Spezial-Modi + Akzente
-///   4. Sub-Section-Label „DEINE TOOLS" (CAPS, klein, grau)
-///   5. **2 Tools-Cards quer** (Typ C, je 76 pt): Scannen, Listen
-///   6. Footer-Clearance
+///      • Live Chat (`LeaChatHomeCard`) — führt zu `AppScreen.leaChat`
+///      • Daily Drop („Heute schon gecheckt?") — öffnet Slot-Pop-up
+///        via `AppScreen.elumi`
+///   4. **2 Tools-Cards quer** (Typ C, je 76 pt): Scannen, Listen
+///   5. Footer-Clearance
 ///
-/// Vorher (vor Refactor): 2×2-Hero (Karteikarten/Nomen/Verben/Quiz) +
-/// Weitere-Übungen-Reihe (Artikel/Verbformen/Akzente/Vokabeln) + Tools.
-/// Mit dem Refactor sind Vokabeln + die vier Spezial-Modi hinter der
-/// Training-Card gebündelt; der Slot/ELUMI-Tab entfällt als eigener
-/// Tab und wandert hinter die Mix-Training-Card.
+/// Vorher (Hybrid-γ-v3): Karteikarten + Quiz als 2×1-Hero-Reihe oben,
+/// darunter Training/Live-Chat/Daily-Drop als Vollbreite-Cards. Mit dem
+/// Rebuild ist die Karteikarten-Card ganz von Home entfernt und in den
+/// Training-Hub gewandert; alle vier Method-Cards sind jetzt Vollbreite.
 ///
 /// Navigation ist über `openScreen` injiziert — Home selbst kennt keine
 /// konkrete Route-Logik, nur das Mapping Card → `AppScreen`.
@@ -86,55 +85,21 @@ struct HomeView: View {
         }
     }
 
-    // MARK: - Hero-Methoden-Cards (Typ A 135pt, 2×1)
-
-    /// **2026-05-06 Hybrid-γ-v3 Iteration 3** — Karteikarten + Quiz
-    /// als Hero-Reihe oben (zwei Cards in einer Zeile). Vorher waren
-    /// vier Cards in einem 2×2-Grid; jetzt sind nur die zwei
-    /// „Identitäts-Methoden" hier oben — Mix-Training und Training
-    /// wandern als Vollbreite-Cards drunter (`wideMethodCards`).
-    /// Karteikarten bleibt emphasized (App-Grundidee).
-    @ViewBuilder
-    private var heroCardsRow: some View {
-        HStack(spacing: 12) {
-            MethodCard(
-                title: "Karteikarten",
-                subtitle: "Selbst gemacht",
-                accent: AppTheme.Colors.moduleFlashcards,
-                emphasized: true,
-                // titleSize bewusst weggelassen → Default 19 pt, exakt
-                // wie Daily Drop/Training (WideCard titleSize 19) und Quiz.
-                icon: { HomeModuleIconView(icon: .karteikarten, size: 60, glyphTint: .white) },
-                onTap: { openHomeScreen(.flashcards(nil)) }
-            )
-
-            MethodCard(
-                title: "Quiz",
-                subtitle: "Teste dich!",
-                accent: AppTheme.Colors.moduleQuiz,
-                icon: { HomeModuleIconView(icon: .quiz, size: 52, glyphTint: .white) },
-                onTap: { openHomeScreen(.quiz(nil)) }
-            )
-        }
-    }
-
     // MARK: - Wide-Methoden-Cards (Typ Wide ~86pt, untereinander)
 
-    /// **2026-05-06 Hybrid-γ-v3 Iteration 3** — Mix-Training + Training
-    /// als Vollbreite-Cards untereinander. Vorher Teil des 2×2-Grids
-    /// oben; jetzt eigener Block mit Icon-links + Title + Subtitle +
-    /// Chevron-rechts. Visuell kleiner als die Hero-Cards (App-
-    /// Identität bleibt oben), aber prominenter als die Tools-Reihe
-    /// (Scannen/Listen).
+    /// **2026-06-09 Home-Rebuild** — Vier Vollbreite-Method-Cards
+    /// untereinander: Training, Quiz, Live Chat, Daily Drop. Vorher
+    /// lagen Karteikarten + Quiz als 2×1-Hero-Reihe oben; jetzt ist
+    /// die Karteikarten-Card ganz von Home entfernt und als Auswahl-
+    /// Option in den Training-Hub gewandert, Quiz ist zur Vollbreite-
+    /// Card geworden. Alle vier Cards teilen das gleiche Method-Style-
+    /// Profil (Icon-links + Title + Subtitle + Chevron, 86 pt).
     @ViewBuilder
     private var wideMethodCards: some View {
         VStack(spacing: 12) {
             WideCard(
-                // **Card-Cleanup 2026-05-07** — Method-Style via
-                // `subtitle:` + `showsChevron: true` + Method-Padding/
-                // Corner; siehe Daily-Drop-Card unten für Pattern.
                 title: "Training",
-                subtitle: "Vokabeln & Spezial",
+                subtitle: "Karteikarten, Vokabeln & Spezial",
                 accent: AppTheme.Colors.moduleVocabulary,
                 height: 86,
                 titleSize: 19,
@@ -151,10 +116,26 @@ struct HomeView: View {
                 onTap: { openHomeScreen(.trainingHub) }
             )
 
+            // Quiz — vorher Hero-Card neben Karteikarten, jetzt als
+            // Vollbreite-Method-Card. Route unverändert (`.quiz(nil)`).
+            WideCard(
+                title: "Quiz",
+                subtitle: "Teste dich!",
+                accent: AppTheme.Colors.moduleQuiz,
+                height: 86,
+                titleSize: 19,
+                showsChevron: true,
+                cornerRadius: 22,
+                horizontalPadding: 16,
+                verticalPadding: 12,
+                iconFrameSize: 52,
+                icon: { HomeModuleIconView(icon: .quiz, size: 44, glyphTint: .white) },
+                onTap: { openHomeScreen(.quiz(nil)) }
+            )
+
             // **Live Chat — Léa-Chat MVP Schritt 1 (2026-05-10)** —
-            // Card zwischen Training und Daily-Drop. Section-Header
-            // entfernt (Polish 2026-05-10) — andere Cards auf Home
-            // haben auch keinen Section-Header, Drift weg.
+            // Section-Header entfernt (Polish 2026-05-10) — andere
+            // Cards auf Home haben auch keinen Section-Header, Drift weg.
             LeaChatHomeCard {
                 openHomeScreen(.leaChat)
             }
@@ -165,10 +146,6 @@ struct HomeView: View {
                 // die Slot-basierte Surprise-Übung; konsistent zum
                 // Pop-up-Pre-Title („DAILY DROP") und CTA („Drop
                 // starten").
-                // **Card-Cleanup 2026-05-07** — `WideMethodCard` mit
-                // `WideCard` zusammengelegt. Method-Style hier via
-                // `subtitle: …` + `showsChevron: true` + Method-
-                // Padding/Corner aktiviert.
                 title: "Daily Drop",
                 subtitle: "Heute schon gecheckt?",
                 accent: AppTheme.Colors.elumiPinkDeep,
@@ -284,10 +261,12 @@ struct HomeView: View {
                         .padding(.bottom, 10)
                         .appEntryTransition(delay: 0.05)
 
-                    // Methoden-Cards: Karteikarten + Quiz Hero-Reihe
-                    // (2×1, 135 pt) und Mix-Training + Training als
-                    // Vollbreite-WideMethodCards (~86 pt) drunter.
-                    heroCardsRow
+                    // Methoden-Cards: vier Vollbreite-Cards
+                    // untereinander (Training, Quiz, Live Chat, Daily
+                    // Drop). Karteikarten ist als Auswahl-Option in den
+                    // Training-Hub gewandert (nicht mehr als eigene
+                    // Home-Card).
+                    wideMethodCards
                         .appEntryTransition(delay: 0.1)
                         // **Erstnutzer-Hint (2026-06-09)** — TestFlight-
                         // Vorbereitung: additiver Dismissible-Hint für
@@ -297,29 +276,9 @@ struct HomeView: View {
                             id: "home_intro",
                             text: "Hi, ich bin Elumi! 👋 Tipp auf Scannen und fotografier eine Seite aus deinem Vokabelbuch — ich mach dir daraus Karteikarten zum Üben."
                         )
-
-                    wideMethodCards
-                        // **Polish 2026-05-07** — Top-Padding 12 →
-                        // 20 pt. Daily-Drop-Card (erstes Element im
-                        // wideMethodCards-VStack) hat ein Badge oben
-                        // rechts, das -8pt über die Card-Kante ragt.
-                        // Mit nur 12pt Abstand zur KK/Quiz-Hero-Reihe
-                        // wirkte das Badge gequetscht; die zusätzlichen
-                        // 8pt geben ihm subtilen Atemraum, ohne den
-                        // Layout-Rhythmus zu brechen. Training-Card
-                        // darunter rückt durch das interne VStack-
-                        // Spacing (12pt) entsprechend mit.
-                        //
-                        // **Polish 2026-05-10 Iter-3** — Bottom-Padding
-                        // 24 → 14 → 8. Frank-Feedback (Iter-4): Abstand
-                        // immer noch zu groß; weiter zusammenzogen.
-                        // Zusammen mit dem 2-pt-Spacer drunter sitzt
-                        // der Hairline-Divider jetzt mit insgesamt
-                        // ~10 pt unter der Training-Card. Top-Padding
-                        // 20 bleibt wegen Daily-Drop-Badge.
-                        .padding(.top, 20)
+                        // Bottom-Padding 8 pt bis zum Hairline-Divider
+                        // (zusammen mit dem 2-pt-Spacer drunter ~10 pt).
                         .padding(.bottom, 8)
-                        .appEntryTransition(delay: 0.15)
 
                     // **Naming-Sweep 2026-05-06 Iteration 6** — vom
                     // ehemaligen flexiblen `Spacer(minLength: 32)`

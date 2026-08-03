@@ -83,6 +83,22 @@ struct TrainingHubView: View {
                 // (Game-Sprache, kürzer, kindgerechter).
                 SectionLabel(text: "Basics", size: 15, weight: .bold)
 
+                // **Home-Rebuild 2026-06-09** — Karteikarten ist von
+                // Home in den Hub gewandert und liegt hier als erste
+                // Basics-Option (App-Kern-Methode), vor Vokabeln. Route
+                // unverändert: bestehender FlashcardsView-Flow (Setup-
+                // Sheet etc.) via `AppScreen.flashcards(nil)`.
+                ModuleCard(
+                    title: "Karteikarten",
+                    accent: AppTheme.Colors.moduleFlashcards,
+                    icon: { HomeModuleIconView(icon: .karteikarten, size: 44, glyphTint: .white) },
+                    onTap: {
+                        feedbackPlayer.playTabSwitch()
+                        openScreen(.flashcards(nil))
+                    }
+                )
+                .padding(.bottom, 10)
+
                 ModuleCard(
                     title: "Vokabeln",
                     accent: AppTheme.Colors.moduleVocabulary,
