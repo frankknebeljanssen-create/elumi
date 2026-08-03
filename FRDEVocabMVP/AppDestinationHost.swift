@@ -150,15 +150,30 @@ struct AppDestinationHost: View {
             // „Aus Chat mit Léa"-Stapel im Karteikarten-Setup, sodass
             // der User direkt mit den frisch gesammelten Korrekturen
             // + neuen Wörtern üben kann ohne manuelle Listen-Wahl.
-            ChatView(
-                onBack: goHome,
-                listStore: runtime.listStore,
-                onPracticeInFlashcards: {
-                    replaceTop(.flashcards(FlashcardLaunchContext(
-                        preferredListID: VocabularyListStore.chatStapelListID
-                    )))
-                }
-            )
+            //
+            // **2026-06-09** — Solange `FeatureFlags.leaChatEnabled`
+            // false ist, führt dieselbe Destination auf einen
+            // „kommt bald"-Screen statt in den kaputten Chat. Die
+            // Weiche sitzt bewusst NUR hier: `ChatView`, `ChatService`
+            // und das Routing bleiben unangetastet, und ein Flip des
+            // Flags stellt den echten Chat sofort wieder her.
+            if FeatureFlags.leaChatEnabled {
+                ChatView(
+                    onBack: goHome,
+                    listStore: runtime.listStore,
+                    onPracticeInFlashcards: {
+                        replaceTop(.flashcards(FlashcardLaunchContext(
+                            preferredListID: VocabularyListStore.chatStapelListID
+                        )))
+                    }
+                )
+            } else {
+                LeaComingSoonView(
+                    feedbackPlayer: feedbackPlayer,
+                    goHome: goHome,
+                    openSettings: openSettings
+                )
+            }
         case .trophy:
             // Pokal-Tab — sammelt die ausführlichen Status-Cards, die
             // früher dominant auf Home lagen (Streak, Level/XP,
