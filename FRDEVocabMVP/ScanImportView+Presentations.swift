@@ -29,6 +29,18 @@ extension ScanImportView {
                     isScanActive: true
                 )
             }
+            // **Erstnutzer-Hint (2026-06-09)** — Einstiegs-Screen des
+            // Scans. Der zweite Scan-Hint (`scan_result`) sitzt auf dem
+            // gepushten Review-Screen, kollidiert also nicht.
+            .hintBubble(
+                id: "scan_intro",
+                text: """
+                Hier machst du aus deinem Vokabelbuch Karteikarten.
+                Wähl erst aus, was du scannst und woher das Bild kommt.
+                Dann fotografier die Seite oder nimm ein Bild aus deinem Album.
+                Ich lese die Wörter und mach dir Karten daraus.
+                """
+            )
             .onAppear {
                 scanSourceLanguage = .french
                 ensureSuggestedListName()

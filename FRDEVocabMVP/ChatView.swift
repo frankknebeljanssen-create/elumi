@@ -201,6 +201,18 @@ struct ChatView: View {
         })
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
+        // **Erstnutzer-Hint (2026-06-09)** — Léa-Chat ist wegen des
+        // Backend-Bugs noch nicht nutzbar (`FeatureFlags.leaChatEnabled`).
+        // Der Hint sagt das ehrlich, statt den User ins Leere laufen zu
+        // lassen. Nach dem Fix Text auf die normale Erklärung ändern.
+        .hintBubble(
+            id: "lea_chat_intro",
+            text: """
+            Hier kannst du bald mit Léa auf Französisch schreiben.
+            Sie antwortet dir und verbessert dich ganz nebenbei.
+            Wir basteln noch daran — schau später nochmal rein!
+            """
+        )
         .task {
             // **Schritt 2B-1** — `listStore` wird beim Configure
             // mit reingegeben, damit der `ChatVocabularyProvider`

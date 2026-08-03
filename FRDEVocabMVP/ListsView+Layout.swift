@@ -80,6 +80,17 @@ extension ListsView {
                 onSettings: { openSettings() }
             )
         }
+        // **Erstnutzer-Hint (2026-06-09)** — erklärt, wozu die Listen da
+        // sind und wie man von hier aus ins Üben kommt.
+        .hintBubble(
+            id: "lists_intro",
+            text: """
+            Hier wohnen alle deine Vokabeln.
+            Fertige Listen findest du unter „Nach Niveau" und „Nach Themen".
+            Deine eigenen — zum Beispiel aus dem Scannen — liegen unter „Eigene Listen".
+            Tipp eine Liste an, um sie anzuschauen oder damit zu üben.
+            """
+        )
         .animation(.easeInOut(duration: 0.22), value: isShowingToast)
         .onAppear {
             if let preferredListID = launchContext?.preferredListID,

@@ -54,6 +54,17 @@ extension QuizView {
                     onSettings: { openSettings() }
                 )
             }
+            // **Erstnutzer-Hint (2026-06-09)** — erklärt, was das Quiz
+            // ist und welche Einstellungen man vorher trifft.
+            .hintBubble(
+                id: "quiz_intro",
+                text: """
+                Im Quiz testest du, was schon sitzt.
+                Wähl eine Liste aus und wie viele Fragen du haben willst.
+                Mal musst du ankreuzen, mal die Antwort eintippen.
+                Keine Sorge — Fehler sind zum Lernen da.
+                """
+            )
             .onAppear {
                 handleQuizAppear()
             }

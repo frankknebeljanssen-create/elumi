@@ -239,6 +239,17 @@ struct TrainingHubView: View {
                 onSettings: openSettings
             )
         }
+        // **Erstnutzer-Hint (2026-06-09)** — erklärt die Aufteilung
+        // Basics/Specials und fordert zur Auswahl auf.
+        .hintBubble(
+            id: "training_intro",
+            text: """
+            Such dir aus, was du üben willst.
+            Unter „Basics" lernst du neue Wörter — mit Karteikarten oder Vokabeln.
+            Unter „Specials" übst du gezielt Nomen, Verben, Artikel oder Akzente.
+            Tipp einfach an, worauf du Lust hast.
+            """
+        )
         .onAppear {
             // **Polish 2026-05-06** — Lern-Tipp pro Hub-Visit neu
             // würfeln. `.onAppear` feuert beim ersten Mount und bei
