@@ -111,6 +111,21 @@ struct ItemLearningStatus: Codable, Equatable, Hashable, Identifiable {
         currentStreak = try container.decodeIfPresent(Int.self, forKey: .currentStreak) ?? 0
     }
 
+    /// **2026-08-04** — beide Sprachseiten vorhanden (nicht leer)? Manche
+    /// Tracking-Pfade liefern nur eine Seite (z. B. Akzent-Training:
+    /// nur Französisch, `displayGerman` bleibt leer). Solche Einträge
+    /// tauchten in den Lernstatus-Sektionszahlen mit, fielen aber beim
+    /// Bau von „Meine Wackelkandidaten" durch den Filter raus (braucht
+    /// beide Seiten für eine sinnvolle Karte) — die Summe „Zum Üben" +
+    /// „Im Aufbau" stimmte dadurch nicht mit der Wackelkandidaten-Zahl
+    /// überein (User-Report). Beide Stellen filtern jetzt auf dasselbe
+    /// Kriterium, siehe `LernstatusView.sectionsContent` und
+    /// `VocabularyListStore.usableWackelkandidatenItems(from:)`.
+    var hasCompleteTranslation: Bool {
+        !displayFrench.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && !displayGerman.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
     var totalAttempts: Int { correctCount + wrongCount }
 
     /// Trefferquote als [0…1]-Wert. Bei `totalAttempts == 0` liefert 0,
