@@ -1387,7 +1387,15 @@ extension TrainingView {
     }
 
     private func verbformsTenseButton(for tense: VerbformsTense) -> some View {
-        let isActive = tense.isAvailable
+        // **2026-06-09 Bug-Fix** — Vorher `tense.isAvailable` (statisch
+        // `true` für alle vier Zeiten), unabhängig davon, ob für die
+        // gewählte(n) Liste(n) tatsächlich Formen in der DB liegen.
+        // Dadurch wirkten alle Buttons antippbar, auch für Zeiten ohne
+        // Daten. `verbformsSession.availableTenses` ist der bereits
+        // bestehende, dynamisch aus der DB berechnete Ist-Zustand
+        // (`VerbformsEngine.availableTenses(in:)`, gate't auch schon
+        // den Start-Button) — die Buttons lesen jetzt dieselbe Quelle.
+        let isActive = verbformsSession.availableTenses.contains(tense)
         let isSelected = verbformsSession.selectedTenses.contains(tense)
         return Button {
             guard isActive else { return }
