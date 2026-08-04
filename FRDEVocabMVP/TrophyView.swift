@@ -242,12 +242,22 @@ struct TrophyView: View {
     /// und bei `needsWork > 0` kommt eine eigene, hervorgehobene
     /// „Üben"-Zeile dazu — die Handlung, die am meisten bringt, muss
     /// auf dem Hauptscreen stehen, nicht erst eine Ebene tiefer.
+    /// **2026-08-05** — Von drei auf zwei Spalten reduziert (User-Spec:
+    /// „Gesamt" war redundant und die Zahlen nicht durchschaubar — zwei
+    /// unterschiedliche „wackelt"-Werte auf derselben Card, einmal die
+    /// Spalte oben (alle Nicht-Stark, hier „trained"), einmal der CTA-
+    /// Text darunter (nur `needsWork`). Jetzt zeigt EINE Zahl denselben
+    /// Bestand an beiden Stellen: die Spalte oben UND der CTA-Tap führen
+    /// zum selben „Wackelkandidaten"-Pool. Labels konjugieren jetzt
+    /// korrekt Singular/Plural („sitzt"/„sitzen", „wackelt"/„wackeln
+    /// noch"), der CTA-Text wiederholt die Zahl nicht mehr (steht ja
+    /// schon in der Spalte drüber), sondern heißt schlicht
+    /// „Wackelkandidaten jetzt üben".
     private var lernstatusCard: some View {
         let strong = itemLearningStatusStore.strongItems.count
         let needsWork = itemLearningStatusStore.needsWorkItems.count
         let learning = itemLearningStatusStore.learningItems.count
         let sparse = itemLearningStatusStore.sparseItems.count
-        let total = itemLearningStatusStore.totalTracked
         let trained = needsWork + learning + sparse
 
         return VStack(alignment: .leading, spacing: 10) {
@@ -270,22 +280,15 @@ struct TrophyView: View {
                 lernstatusColumn(
                     icon: "checkmark.seal.fill",
                     tint: Color(hex: "#4ADE80"),
-                    label: "Sitzt",
+                    label: strong == 1 ? "sitzt" : "sitzen",
                     value: strong
                 )
                 lernstatusDivider
                 lernstatusColumn(
                     icon: "bolt.fill",
                     tint: Color(hex: "#F59E0B"),
-                    label: "Wackelt noch",
+                    label: trained == 1 ? "wackelt noch" : "wackeln noch",
                     value: trained
-                )
-                lernstatusDivider
-                lernstatusColumn(
-                    icon: "sparkles",
-                    tint: AppTheme.Colors.elumiPink,
-                    label: "Gesamt",
-                    value: total
                 )
             }
 
@@ -302,9 +305,7 @@ struct TrophyView: View {
                         Image(systemName: "bolt.fill")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(Color(hex: "#F59E0B"))
-                        Text(needsWork == 1
-                             ? "1 Wort wackelt noch"
-                             : "\(needsWork) Wörter wackeln noch")
+                        Text("Wackelkandidaten jetzt üben")
                             .font(.system(size: 14, weight: .semibold, design: .rounded))
                             .foregroundStyle(AppTheme.Colors.textPrimary)
                         Spacer(minLength: 0)

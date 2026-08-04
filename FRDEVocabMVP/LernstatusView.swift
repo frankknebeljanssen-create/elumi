@@ -190,6 +190,16 @@ struct LernstatusView: View {
     /// bisschen mehr ins Auge springen"): größeres Icon, kräftiger
     /// Farb-Rahmen in der Wackelkandidaten-Farbe statt der neutralen
     /// Setup-Card, Titel eine Stufe größer.
+    ///
+    /// **2026-08-05** — Auf CTA-Gelb umgestellt (User-Spec: „ist ja auch
+    /// eine Art CTA, müsste dann wahrscheinlich auch so gelblich sein,
+    /// wie die Üben-Pill"). Vollflächig `AppTheme.Colors.cta` statt
+    /// dunkler Card mit farbigem Rahmen — dieselbe Farbe wie „Los
+    /// geht's!" und die „Üben"-Pille, damit sie unmissverständlich als
+    /// primäre Aktion auf dem Screen erkennbar ist. Text/Icon dafür auf
+    /// Schwarz umgestellt (Kontrast auf hellem Gelb) statt der bisherigen
+    /// hellen Primary-/Secondary-Textfarben, die auf Gelb kaum lesbar
+    /// wären.
     @ViewBuilder
     private var practiceListCTA: some View {
         // **2026-08-04** — tatsächliche, gefilterte Zahl statt der rohen
@@ -207,22 +217,22 @@ struct LernstatusView: View {
                 HStack(spacing: 14) {
                     ZStack {
                         Circle()
-                            .fill(HomeLernstatusCard.needsWorkTint.opacity(0.2))
+                            .fill(Color.black.opacity(0.12))
                         Image(systemName: "dumbbell.fill")
                             .font(.system(size: 22, weight: .bold))
-                            .foregroundStyle(HomeLernstatusCard.needsWorkTint)
+                            .foregroundStyle(.black)
                     }
                     .frame(width: 52, height: 52)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Diese Wörter jetzt üben")
                             .font(.system(size: 17, weight: .black, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                            .foregroundStyle(.black)
                         Text(count == 1
                              ? "Baut aus deinem 1 Wackelkandidaten eine Übungsliste."
                              : "Baut aus deinen \(count) Wackelkandidaten eine Übungsliste.")
                             .font(.system(size: 12, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                            .foregroundStyle(.black.opacity(0.65))
                             .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -231,15 +241,20 @@ struct LernstatusView: View {
 
                     Image(systemName: "chevron.right")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(HomeLernstatusCard.needsWorkTint)
+                        .foregroundStyle(.black)
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 16)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .appSetupCardBackground()
-                .overlay(
+                .background(
                     RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
-                        .stroke(HomeLernstatusCard.needsWorkTint.opacity(0.55), lineWidth: 1.5)
+                        .fill(AppTheme.Colors.cta)
+                )
+                .shadow(
+                    color: AppTheme.Shadow.card.color,
+                    radius: AppTheme.Shadow.card.radius,
+                    x: AppTheme.Shadow.card.x,
+                    y: AppTheme.Shadow.card.y
                 )
             }
             .buttonStyle(AppCardPressStyle())
@@ -285,9 +300,15 @@ struct LernstatusView: View {
     @ViewBuilder
     private var sectionsContent: some View {
         let strong = statusStore.strongItems
-        let needsWork = statusStore.needsWorkItems
+        // **2026-08-04** — `hasCompleteTranslation`-Filter (User-Report:
+        // „Zum Üben" + „Im Aufbau" summierten sich auf 64, aber die
+        // Wackelkandidaten-Liste zeigte nur 54 — Einträge mit nur einer
+        // Sprachseite zählten hier mit, fielen aber beim Listenbau raus).
+        // Beide Zahlen laufen jetzt über dasselbe Kriterium.
+        let needsWork = statusStore.needsWorkItems.filter(\.hasCompleteTranslation)
         // Für „Im Aufbau": `.learning` ODER `.sparse`.
         let inProgress = (statusStore.learningItems + statusStore.sparseItems)
+            .filter(\.hasCompleteTranslation)
 
         // User-Request: **immer alle drei Kategorien anzeigen**, auch
         // wenn leer. Auf/Zu-klappbar pro Sektion. Microcopy bewusst
