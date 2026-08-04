@@ -282,6 +282,16 @@ extension ElumiArcadeGameView {
                         .padding(.top, 102)
                         .transition(.move(edge: .top).combined(with: .opacity))
                 }
+
+                // **2026-06-09** — Arcade-Zäsur nach einem Lebens-Verlust.
+                // Zustandsgesteuert statt über `context.date`: dieser
+                // ZStack liegt außerhalb der TimelineView-Closure. Die
+                // eigene Zeitachse für den „Bereit?"-Wechsel bringt das
+                // Overlay selbst mit.
+                if lifeLostPauseUntil != nil, !isGameOver {
+                    lifeLostPauseOverlay()
+                        .zIndex(6)
+                }
             }
             .offset(x: screenShakeOffset)
             .contentShape(Rectangle())

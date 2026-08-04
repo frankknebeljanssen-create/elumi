@@ -600,6 +600,73 @@ extension ElumiArcadeGameView {
         .shadow(color: .cyan.opacity(0.2), radius: 20, x: 0, y: 8)
     }
 
+    /// **2026-06-09** — Arcade-Zäsur nach einem Lebens-Verlust.
+    ///
+    /// Klassisches Automaten-Muster: Bild einfrieren, kurz zeigen was
+    /// passiert ist und wie viele Leben bleiben, dann „Bereit?" und
+    /// weiter. Vorher lief das Spiel nach einem Treffer ungebremst
+    /// durch und nur der Zähler oben sprang herunter — der Verlust ging
+    /// im laufenden Geschehen unter.
+    ///
+    /// Die zweite Hälfte der Pause zeigt „Bereit?", damit der Neustart
+    /// angekündigt ist und nicht überraschend kommt.
+    @ViewBuilder
+    func lifeLostPauseOverlay() -> some View {
+        TimelineView(.animation(minimumInterval: 1.0 / 20.0)) { context in
+            lifeLostPauseContent(at: context.date)
+        }
+    }
+
+    @ViewBuilder
+    private func lifeLostPauseContent(at date: Date) -> some View {
+        let remaining = max(0, maxMisses - misses)
+        let elapsed = lifeLostPauseStartedAt.map { date.timeIntervalSince($0) } ?? 0
+        let showsReady = elapsed >= lifeLostPauseDuration * 0.5
+
+        ZStack {
+            Color.black.opacity(0.55)
+                .ignoresSafeArea()
+
+            VStack(spacing: 14) {
+                Text("Leben verloren")
+                    .font(.system(size: 30, weight: .black, design: .rounded))
+                    .foregroundStyle(.white)
+
+                // Verbleibende Leben als Punktreihe — auf einen Blick
+                // ablesbar, ohne den Zähler oben suchen zu müssen.
+                HStack(spacing: 10) {
+                    ForEach(0..<maxMisses, id: \.self) { index in
+                        Circle()
+                            .fill(index < remaining
+                                  ? AppTheme.Colors.elumiPink
+                                  : Color.white.opacity(0.22))
+                            .frame(width: 16, height: 16)
+                    }
+                }
+
+                Text(showsReady
+                     ? "Bereit?"
+                     : (remaining == 1 ? "Noch 1 Leben" : "Noch \(remaining) Leben"))
+                    .font(.system(size: 20, weight: .black, design: .rounded))
+                    .foregroundStyle(showsReady ? AppTheme.Colors.elumiAmber : .white.opacity(0.85))
+                    .scaleEffect(showsReady ? 1.12 : 1.0)
+                    .animation(.spring(response: 0.32, dampingFraction: 0.55), value: showsReady)
+            }
+            .padding(.horizontal, 34)
+            .padding(.vertical, 28)
+            .background(
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(Color.black.opacity(0.55))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                    )
+            )
+        }
+        .allowsHitTesting(false)
+        .transition(.opacity)
+    }
+
     func comboBanner(text: String) -> some View {
         HStack(spacing: 8) {
             if comboCount >= 2 {

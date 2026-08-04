@@ -701,6 +701,15 @@ extension ElumiArcadeGameView {
         lifeLostFlashAt = Date()
         triggerScreenShake()
 
+        // **2026-06-09** — Kurze Zäsur wie im Arcade-Automaten: Spiel
+        // anhalten, „Bereit?" zeigen, dann weiter. Nicht beim letzten
+        // Leben — da folgt ohnehin der Game-Over-Screen.
+        if misses < maxMisses {
+            let now = Date()
+            lifeLostPauseStartedAt = now
+            lifeLostPauseUntil = now.addingTimeInterval(lifeLostPauseDuration)
+        }
+
         // Scale-Zucker mit Bounce: kurz hart schrumpfen, dann mit
         // Overshoot zurück.
         withAnimation(.easeOut(duration: 0.12)) {
@@ -999,8 +1008,31 @@ extension ElumiArcadeGameView {
         bonusRoundWaitingForTap = true
     }
 
+    /// Dauer der Zäsur nach einem Lebens-Verlust: 0.9 s Standbild plus
+    /// die Einblendung — lang genug, dass der Verlust ankommt, kurz
+    /// genug, dass der Spielfluss nicht reißt.
+    var lifeLostPauseDuration: TimeInterval { 1.4 }
+
+    /// Läuft gerade die Lebens-Verlust-Zäsur?
+    func isInLifeLostPause(at date: Date) -> Bool {
+        guard let until = lifeLostPauseUntil else { return false }
+        return date < until
+    }
+
     func updateGame(now: Date) {
         guard gameSize != .zero else { return }
+
+        // **2026-06-09** — Während der Zäsur steht das Spielfeld still:
+        // keine Bewegung, kein Spawn, keine Kollision. Der Game-Clock
+        // wird nicht weitergedreht, damit Snacks nach dem Fortsetzen
+        // dort weiterlaufen, wo sie standen, statt zu springen.
+        if isInLifeLostPause(at: now) { return }
+        if lifeLostPauseUntil != nil {
+            // Zäsur gerade abgelaufen → aufräumen und normal weiter.
+            lifeLostPauseUntil = nil
+            lifeLostPauseStartedAt = nil
+            gameClock = Date()
+        }
 
         // Bonus round uses its own update logic
         if isBonusRound {

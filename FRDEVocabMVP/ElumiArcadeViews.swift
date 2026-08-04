@@ -337,6 +337,19 @@ struct ElumiArcadeGameView: View {
     /// er hat gerade ein Leben verloren.
     @State var lifeLostFlashAt: Date?
 
+    /// **2026-06-09** — Arcade-Zäsur nach einem Lebens-Verlust. Solange
+    /// gesetzt, steht das Spiel still (`updateGame` kehrt früh zurück)
+    /// und das „Bereit?"-Overlay liegt über dem Feld. Danach läuft alles
+    /// weiter — wie in klassischen Arcade-Automaten, wo nach einem
+    /// verlorenen Leben kurz angehalten wird, statt nahtlos
+    /// weiterzuspielen. Bleibt `nil` beim letzten Leben: dort kommt der
+    /// Game-Over-Screen, eine Zäsur davor wäre doppelt.
+    @State var lifeLostPauseUntil: Date?
+
+    /// Ab wann die laufende Zäsur begonnen hat — für die Einblend-
+    /// Animation des Overlays.
+    @State var lifeLostPauseStartedAt: Date?
+
     /// **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`, 2. Iteration)** —
     /// Animierte Charakter-Opacity beim Lebens-Verlust. 1.0 = normal,
     /// 0.40 = getroffen-und-blass. Wird in `triggerLifeLossVisual()`
