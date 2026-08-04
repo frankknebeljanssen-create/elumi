@@ -418,7 +418,14 @@ struct ElumiTabView: View {
             // CTA wird disabled. Read passiert auf jedem Tab-Open, damit
             // externe Änderungen (z.B. via Settings) reflektiert werden.
             globalSelectedListIDs = VocabularyListSelectionResolver.currentGlobalSelectedListIDs() ?? []
-            checkSetupModalState()
+            // **2026-06-09** — Beim allerersten Öffnen (Erstnutzer-Hint
+            // „daily_drop_intro" noch ungesehen) NICHT sofort das Setup-
+            // Modal zeigen — sonst poppen Hint und „Wie viele Übungen?"-
+            // Picker gleichzeitig auf. Der Hint triggert das Modal selbst
+            // via `onDismiss` unten, sobald er weggetippt wurde.
+            if HintStore.shared.hasSeen("daily_drop_intro") {
+                checkSetupModalState()
+            }
         }
         // **Daily Drop Modul 3 (2026-05-23)** — Material-Gating neu zählen,
         // wenn der User die globale Listen-Auswahl ändert (z. B. via
@@ -964,7 +971,11 @@ struct ElumiTabView: View {
             Ich würfel dir aus, was du übst: mal Vokabeln, mal Verben, mal was anderes.
             Du wählst nur, wie lang es sein soll.
             Dann einfach loslegen und deine Serie am Laufen halten.
-            """
+            """,
+            // **2026-06-09** — Setup-Modal („Wie viele Übungen?") erst
+            // NACH dem Hint öffnen, nicht gleichzeitig damit (siehe
+            // Gate in `.onAppear` oben).
+            onDismiss: { checkSetupModalState() }
         )
     }
 

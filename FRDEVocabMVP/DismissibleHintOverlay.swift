@@ -175,6 +175,12 @@ private struct DismissibleHintBubble: View {
 private struct HintBubbleModifier: ViewModifier {
     let id: String
     let text: String
+    /// **2026-06-09** — Optionaler Callback, der NACH dem Markieren als
+    /// „gesehen" feuert. Aufrufer nutzen das, um etwas, das sonst
+    /// gleichzeitig mit dem Hint erscheinen würde (z. B. ein Setup-
+    /// Modal), erst danach zu zeigen — sonst überlappen sich Hint und
+    /// Folge-UI beim allerersten Öffnen.
+    var onDismiss: (() -> Void)? = nil
 
     @ObservedObject private var store = HintStore.shared
 
@@ -209,6 +215,7 @@ private struct HintBubbleModifier: ViewModifier {
         withAnimation(.easeOut(duration: 0.2)) {
             store.markSeen(id)
         }
+        onDismiss?()
     }
 }
 
@@ -220,7 +227,11 @@ extension View {
     ///
     /// **Wichtig:** Am Screen-Root einhängen (nicht an einer inneren
     /// Anker-View), damit der Dim-Scrim den ganzen Bildschirm abdeckt.
-    func hintBubble(id: String, text: String) -> some View {
-        modifier(HintBubbleModifier(id: id, text: text))
+    ///
+    /// `onDismiss` (optional) feuert, sobald der Hint geschlossen wird
+    /// (Tap auf CTA oder Backdrop) — für Aufrufer, die eine Folge-UI
+    /// erst NACH dem Hint zeigen wollen, statt beide gleichzeitig.
+    func hintBubble(id: String, text: String, onDismiss: (() -> Void)? = nil) -> some View {
+        modifier(HintBubbleModifier(id: id, text: text, onDismiss: onDismiss))
     }
 }
