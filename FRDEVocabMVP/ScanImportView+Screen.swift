@@ -344,6 +344,15 @@ extension ScanImportView {
     /// Ergebnis ist konsistent mit Listen-Detail, Wörterbuch und Training.
     /// Nutzer-gesetzte `pair.wordClass` hat Vorrang.
     private func resolvedWordClass(for pair: ImportPreviewPair) -> String? {
+        // **2026-06-09** — Artikel zuerst, VOR dem gespeicherten Wert.
+        // Die KI liefert für einzeln gescannte Artikel verlässlich
+        // falsche Wortarten („le" als Pronomen, „la" als Adverb), weil
+        // sie ohne Satzkontext raten muss. Der Artikel-Satz ist
+        // geschlossen und vollständig hinterlegt — hier gibt es nichts
+        // zu erkennen, nur nachzuschlagen. Deshalb schlägt der Lookup
+        // auch einen bereits gesetzten `wordClass`.
+        if isFrenchArticleEntry(pair.french) { return "article" }
+
         if let wc = pair.wordClass, !wc.isEmpty { return wc }
 
         let result = FrenchListStatisticsAggregator.cachedAnalyze(pair.french)
@@ -996,7 +1005,6 @@ extension ScanImportView {
         // Sheets; Settle-Delays 0.4s; Reentrance über den Coordinator).
         .sheet(isPresented: $isShowingBulkTargetChoice) {
             ImportTargetChoiceSheet(
-                importableCount: multiDraftCoordinator.aggregatedItems.count,
                 onChooseNewList: {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                         isShowingBulkNewListName = true

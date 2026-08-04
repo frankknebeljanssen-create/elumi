@@ -127,3 +127,51 @@ func preferredLexiconGenderInfo(
         return nil
     }
 }
+
+// MARK: - Französische Artikel als eigene Wortart
+
+/// **2026-06-09** — Der geschlossene Satz französischer Artikel, fest
+/// hinterlegt statt geraten.
+///
+/// Grund (User-Bugreport): Die Wortart-Analyse kennt gar keine Kategorie
+/// „Artikel". Einzeln gescannte Artikel landeten deshalb in der jeweils
+/// nächstbesten Schublade — `le` als Pronomen, `la` als Adverb, `l'` nur
+/// als „Wort". Artikel sind aber eine geschlossene, vollständig
+/// aufzählbare Klasse: Es gibt genau diese und keine weiteren, also gibt
+/// es hier nichts zu erkennen, nur nachzuschlagen.
+///
+/// Der Wert ist die kanonische deutsche Beschreibung — Artikel lassen
+/// sich nicht wie Vokabeln „übersetzen" (`le` heißt nicht schlicht
+/// „der"), deshalb steht die Funktion dabei.
+let frenchArticleDescriptions: [String: String] = [
+    "le":    "der (bestimmter Artikel, männlich)",
+    "la":    "die (bestimmter Artikel, weiblich)",
+    "l'":    "der/die (bestimmter Artikel vor Vokal)",
+    "l’":    "der/die (bestimmter Artikel vor Vokal)",
+    "les":   "die (bestimmter Artikel, Plural)",
+    "un":    "ein (unbestimmter Artikel, männlich)",
+    "une":   "eine (unbestimmter Artikel, weiblich)",
+    "des":   "unbestimmter Artikel im Plural",
+    "du":    "Teilungsartikel, männlich",
+    "de la": "Teilungsartikel, weiblich",
+    "de l'": "Teilungsartikel vor Vokal",
+    "de l’": "Teilungsartikel vor Vokal",
+    "au":    "zusammengezogen aus à + le",
+    "aux":   "zusammengezogen aus à + les"
+]
+
+/// Ist der Eintrag ein französischer Artikel? Erwartet den reinen
+/// Eintragstext; Groß-/Kleinschreibung und umgebende Leerzeichen sind
+/// egal.
+func isFrenchArticleEntry(_ text: String) -> Bool {
+    frenchArticleDescription(for: text) != nil
+}
+
+/// Kanonische deutsche Beschreibung eines französischen Artikels —
+/// `nil`, wenn der Text kein Artikel ist.
+func frenchArticleDescription(for text: String) -> String? {
+    let key = text
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+        .lowercased()
+    return frenchArticleDescriptions[key]
+}

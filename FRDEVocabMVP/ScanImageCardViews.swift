@@ -35,6 +35,11 @@ struct ScanProgressOverlayCardView: View {
     var currentImageIndex: Int? = nil
     var totalImageCount: Int? = nil
 
+    /// Startzeitpunkt für die Laufzeit-Anzeige. Wird beim ersten
+    /// Erscheinen der Card gesetzt — die Card lebt genau so lange wie
+    /// der laufende Scan.
+    @State private var startedAt = Date()
+
     var body: some View {
         VStack(spacing: 10) {
             // Zeile 1: Batch-/Progress-Info („Seite 2/3", „Analysiere…")
@@ -101,6 +106,20 @@ struct ScanProgressOverlayCardView: View {
                 )
                 .padding(.top, 6)
             }
+
+            // **2026-06-09** — Zeitanzeige + Verlaufsbalken.
+            //
+            // Vorher liefen nur Spinner und Scanner-Animation in Schleife.
+            // Beides wiederholt sich identisch, egal wie lange es dauert —
+            // nach einer Weile wirkt das wie ein Absturz (User-Report).
+            //
+            // Die verstrichene Zeit ist die einzige ehrliche
+            // Fortschrittsinformation, die wir haben: Die KI meldet keinen
+            // Zwischenstand. Sie läuft sichtbar weiter und zeigt auch bei
+            // einem Abbruch, wie weit es kam. Der Balken darüber ist als
+            // Schätzung markiert und läuft bewusst NIE ganz voll — sonst
+            // stünde er bei 100 %, während noch nichts fertig ist.
+            elapsedProgressSection
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 14)
@@ -115,6 +134,54 @@ struct ScanProgressOverlayCardView: View {
         // Sanfter Fade beim Stage-Wechsel — Titel/Sub-Zeile wechseln
         // dadurch mit einem weichen Übergang statt hart zu springen.
         .animation(.easeInOut(duration: 0.22), value: stage)
+    }
+
+    // MARK: - Zeit + Verlauf
+
+    /// Erwartete Gesamtdauer für die Balken-Schätzung. Bewusst großzügig:
+    /// Ein Scan über den KI-Proxy liegt typisch bei 20–60 s, kann aber
+    /// deutlich länger brauchen. Der Balken nähert sich diesem Wert
+    /// asymptotisch und bleibt bei 92 % stehen.
+    private static let expectedDuration: TimeInterval = 60
+
+    @ViewBuilder
+    private var elapsedProgressSection: some View {
+        TimelineView(.periodic(from: .now, by: 0.5)) { context in
+            let elapsed = max(0, context.date.timeIntervalSince(startedAt))
+            // Asymptotisch: schnell auf ~70 %, danach immer langsamer.
+            // Erreicht nie 1.0 — fertig ist erst, wenn die Card weg ist.
+            let fraction = min(0.92, 1 - exp(-elapsed / (Self.expectedDuration * 0.55)))
+
+            VStack(spacing: 5) {
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(AppTheme.Colors.textSecondary.opacity(0.18))
+                        Capsule()
+                            .fill(stage.tintColor)
+                            .frame(width: geo.size.width * fraction)
+                    }
+                }
+                .frame(height: 6)
+
+                HStack(spacing: 6) {
+                    Text(elapsedLabel(elapsed))
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .monospacedDigit()
+                    Spacer(minLength: 0)
+                    Text("Kann bis zu 2 Minuten dauern")
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.75))
+                }
+            }
+            .padding(.top, 8)
+        }
+    }
+
+    private func elapsedLabel(_ elapsed: TimeInterval) -> String {
+        let total = Int(elapsed)
+        return String(format: "%d:%02d", total / 60, total % 60)
     }
 }
 

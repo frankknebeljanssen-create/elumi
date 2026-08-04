@@ -7,6 +7,19 @@ extension ScanImportNormalizer {
         cardType: CardType,
         sourceLanguage: StudyLanguage
     ) -> String {
+        // **2026-06-09** — Französische Artikel bekommen ihre feste
+        // Beschreibung statt einer „Übersetzung".
+        //
+        // Die KI lieferte für `l'` schlicht „die" und für `le` „der` —
+        // beides irreführend: `l'` steht für männlich UND weiblich, und
+        // `le` ist kein Wort mit eigener Bedeutung, sondern eine
+        // grammatische Form. Der Artikel-Satz ist geschlossen, also
+        // steht die richtige Erklärung fest hinterlegt bereit.
+        if sourceLanguage == .french,
+           let description = frenchArticleDescription(for: source) {
+            return description
+        }
+
         let cleanedTarget = dependencies.extractedDisplayTerm(target)
         guard !cleanedTarget.isEmpty else { return "" }
 
