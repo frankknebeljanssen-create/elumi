@@ -232,6 +232,16 @@ struct TrophyView: View {
 
     // MARK: - Section 3: Lernstatus (gelernt · trainiert · gesamt)
 
+    /// **2026-06-09** — Umbenannt von „Lernstatus" (User-Spec: klingt
+    /// nach Systembegriff, nicht nach Aussage). Spalten ebenso: „Sitzt"
+    /// / „Wackelt noch" / „Gesamt" statt „Geschafft" / „In Arbeit" /
+    /// „Insgesamt" — sagen direkter, was sie zeigen.
+    ///
+    /// Struktur geändert: vorher war die GANZE Card ein Button (Tap
+    /// überall → Lernstatus-Detail). Jetzt ist nur der Header tappbar,
+    /// und bei `needsWork > 0` kommt eine eigene, hervorgehobene
+    /// „Üben"-Zeile dazu — die Handlung, die am meisten bringt, muss
+    /// auf dem Hauptscreen stehen, nicht erst eine Ebene tiefer.
     private var lernstatusCard: some View {
         let strong = itemLearningStatusStore.strongItems.count
         let needsWork = itemLearningStatusStore.needsWorkItems.count
@@ -240,12 +250,12 @@ struct TrophyView: View {
         let total = itemLearningStatusStore.totalTracked
         let trained = needsWork + learning + sparse
 
-        return Button {
-            navigate(.lernstatus)
-        } label: {
-            VStack(alignment: .leading, spacing: 10) {
+        return VStack(alignment: .leading, spacing: 10) {
+            Button {
+                navigate(.lernstatus)
+            } label: {
                 HStack(alignment: .firstTextBaseline) {
-                    Text("Lernstatus")
+                    Text("Was du schon kannst")
                         .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                     Spacer()
@@ -253,43 +263,76 @@ struct TrophyView: View {
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
+            }
+            .buttonStyle(.plain)
 
-                // **Naming-Sweep 2026-05-06** — Lernstatus-Pillars:
-                //   • „Gelernt" → „Geschafft" (positiver, achievement-
-                //     orientiert)
-                //   • „Im Training" → „In Arbeit" (neutraler, weniger
-                //     fachsprachlich)
-                //   • „Gesamt" → „Insgesamt" (vollständigeres
-                //     deutsches Wort, freundlicher)
-                HStack(spacing: 0) {
-                    lernstatusColumn(
-                        icon: "checkmark.seal.fill",
-                        tint: Color(hex: "#4ADE80"),
-                        label: "Geschafft",
-                        value: strong
+            HStack(spacing: 0) {
+                lernstatusColumn(
+                    icon: "checkmark.seal.fill",
+                    tint: Color(hex: "#4ADE80"),
+                    label: "Sitzt",
+                    value: strong
+                )
+                lernstatusDivider
+                lernstatusColumn(
+                    icon: "bolt.fill",
+                    tint: Color(hex: "#F59E0B"),
+                    label: "Wackelt noch",
+                    value: trained
+                )
+                lernstatusDivider
+                lernstatusColumn(
+                    icon: "sparkles",
+                    tint: AppTheme.Colors.elumiPink,
+                    label: "Gesamt",
+                    value: total
+                )
+            }
+
+            // **Üben-CTA** — gezielt auf `needsWorkItems` (die Vokabeln
+            // mit der niedrigsten Trefferquote), nicht auf die breitere
+            // „Wackelt noch"-Summe oben. Das deckt sich mit der „Zum
+            // Üben"-Sektion im Lernstatus-Detail, zu der dieser Button
+            // führt — dieselbe Zahl, derselbe Bestand.
+            if needsWork > 0 {
+                Button {
+                    navigate(.lernstatus)
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "bolt.fill")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(Color(hex: "#F59E0B"))
+                        Text(needsWork == 1
+                             ? "1 Wort wackelt noch"
+                             : "\(needsWork) Wörter wackeln noch")
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                        Spacer(minLength: 0)
+                        Text("Üben")
+                            .font(.system(size: 13, weight: .bold, design: .rounded))
+                            .foregroundStyle(.black)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Capsule().fill(Color(hex: "#F59E0B")))
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(Color(hex: "#F59E0B").opacity(0.14))
                     )
-                    lernstatusDivider
-                    lernstatusColumn(
-                        icon: "bolt.fill",
-                        tint: Color(hex: "#F59E0B"),
-                        label: "In Arbeit",
-                        value: trained
-                    )
-                    lernstatusDivider
-                    lernstatusColumn(
-                        icon: "sparkles",
-                        tint: AppTheme.Colors.elumiPink,
-                        label: "Insgesamt",
-                        value: total
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(Color(hex: "#F59E0B").opacity(0.35), lineWidth: 1)
                     )
                 }
+                .buttonStyle(AppCardPressStyle())
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .appSetupCardBackground()
         }
-        .buttonStyle(AppCardPressStyle())
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .appSetupCardBackground()
     }
 
     private func lernstatusColumn(icon: String, tint: Color, label: String, value: Int) -> some View {
@@ -323,37 +366,96 @@ struct TrophyView: View {
         let emoji: String
         let title: String
         let unlocked: Bool
+        /// 0…1 — wie nah dran, unabhängig von `unlocked`. Bestimmt,
+        /// welches gesperrte Abzeichen als „nächstes Ziel" gezeigt wird.
+        let progress: Double
+        /// Fortschritts-Satz für den gesperrten Zustand, z. B. „Noch 2
+        /// Tage bis zur Wochenflamme". `nil`, wenn `progress` nicht
+        /// sinnvoll in Worte zu fassen ist (z. B. „Erster Funke").
+        let remainingText: String?
     }
 
     private var achievements: [Achievement] {
         let strong = itemLearningStatusStore.strongItems.count
         let level = GamificationConfig.level(forXP: collectedXP)
+        let xpIntoLevel3 = collectedXP - GamificationConfig.levelStartXP(for: 3)
+        let xpNeededForLevel3 = GamificationConfig.levelStartXP(for: 3) - GamificationConfig.levelStartXP(for: level)
         return [
-            Achievement(id: "first-xp",  emoji: "🌱", title: "Erster Funke",   unlocked: collectedXP > 0),
-            Achievement(id: "streak-3",  emoji: "⚡", title: "3-Tage-Streak",  unlocked: currentStreak >= 3),
-            Achievement(id: "streak-7",  emoji: "🔥", title: "Wochenflamme",   unlocked: currentStreak >= 7),
-            Achievement(id: "level-3",   emoji: "⭐", title: "Level 3",        unlocked: level >= 3),
-            Achievement(id: "strong-20", emoji: "💎", title: "20 sichere Wörter", unlocked: strong >= 20)
+            Achievement(
+                id: "first-xp", emoji: "🌱", title: "Erster Funke",
+                unlocked: collectedXP > 0,
+                progress: collectedXP > 0 ? 1 : 0,
+                remainingText: "Verdien deine ersten Punkte."
+            ),
+            Achievement(
+                id: "streak-3", emoji: "⚡", title: "3-Tage-Streak",
+                unlocked: currentStreak >= 3,
+                progress: min(1, Double(currentStreak) / 3),
+                remainingText: "Noch \(max(0, 3 - currentStreak)) \(3 - currentStreak == 1 ? "Tag" : "Tage") bis zur 3-Tage-Streak."
+            ),
+            Achievement(
+                id: "streak-7", emoji: "🔥", title: "Wochenflamme",
+                unlocked: currentStreak >= 7,
+                progress: min(1, Double(currentStreak) / 7),
+                remainingText: "Noch \(max(0, 7 - currentStreak)) \(7 - currentStreak == 1 ? "Tag" : "Tage") bis zur Wochenflamme."
+            ),
+            Achievement(
+                id: "level-3", emoji: "⭐", title: "Level 3",
+                unlocked: level >= 3,
+                progress: level >= 3 ? 1 : min(1, Double(xpIntoLevel3 + xpNeededForLevel3) / Double(max(1, xpNeededForLevel3))),
+                remainingText: "Noch \(max(0, GamificationConfig.levelStartXP(for: 3) - collectedXP)) XP bis Level 3."
+            ),
+            Achievement(
+                id: "strong-20", emoji: "💎", title: "20 sichere Wörter",
+                unlocked: strong >= 20,
+                progress: min(1, Double(strong) / 20),
+                remainingText: "Noch \(max(0, 20 - strong)) \(20 - strong == 1 ? "Wort" : "Wörter") bis zu 20 sicheren Wörtern."
+            )
         ]
+    }
+
+    /// **2026-06-09** — Option A (User-Entscheidung): statt fünf grauer
+    /// Symbole, von denen die meisten unerreicht wirken, steht hier NUR
+    /// das nächste erreichbare Abzeichen groß — mit einem konkreten
+    /// Nahziel statt fünf abstrakten Fernzielen. Ausgewählt wird das
+    /// gesperrte Abzeichen mit dem höchsten Fortschritt, nicht das
+    /// erste in der Liste — der User soll sehen, was er als Nächstes
+    /// wirklich erreicht, nicht was zufällig zuerst kommt.
+    private var nextAchievement: Achievement? {
+        achievements.filter { !$0.unlocked }.max { $0.progress < $1.progress }
+    }
+
+    private var unlockedAchievementCount: Int {
+        achievements.filter(\.unlocked).count
     }
 
     private var achievementsCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .firstTextBaseline) {
-                Text("Erfolge")
+                // **2026-06-09** — „Erfolge" → „Deine Abzeichen" (User-
+                // Spec): wärmer, weniger nach Bewertungssystem.
+                Text("Deine Abzeichen")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                 Spacer()
-                let count = achievements.filter(\.unlocked).count
-                Text("\(count) / \(achievements.count)")
+                Text("\(unlockedAchievementCount) / \(achievements.count)")
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .monospacedDigit()
             }
 
-            HStack(alignment: .top, spacing: 8) {
-                ForEach(achievements) { achievement in
-                    achievementBadge(achievement)
+            if let next = nextAchievement {
+                nextAchievementHighlight(next)
+            } else {
+                // Alle fünf freigeschaltet — eigener Feier-Zustand statt
+                // eines leeren „nichts mehr zu zeigen".
+                HStack(spacing: 10) {
+                    Text("🏆")
+                        .font(.system(size: 26))
+                    Text("Alle Abzeichen gesammelt — stark!")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                    Spacer(minLength: 0)
                 }
             }
         }
@@ -362,37 +464,46 @@ struct TrophyView: View {
         .appSetupCardBackground()
     }
 
-    private func achievementBadge(_ achievement: Achievement) -> some View {
-        VStack(spacing: 4) {
+    private func nextAchievementHighlight(_ achievement: Achievement) -> some View {
+        HStack(spacing: 14) {
             ZStack {
                 Circle()
-                    .fill(achievement.unlocked
-                          ? sectionStyle.accent.opacity(0.22)
-                          : AppTheme.Colors.textSecondary.opacity(0.12))
-                    .frame(width: 44, height: 44)
+                    .fill(sectionStyle.accent.opacity(0.18))
+                    .frame(width: 52, height: 52)
                 Circle()
-                    .stroke(
-                        achievement.unlocked
-                        ? sectionStyle.accent.opacity(0.45)
-                        : AppTheme.Colors.border.opacity(0.4),
-                        lineWidth: 1
-                    )
-                    .frame(width: 44, height: 44)
+                    .stroke(sectionStyle.accent.opacity(0.4), lineWidth: 1)
+                    .frame(width: 52, height: 52)
                 Text(achievement.emoji)
-                    .font(.system(size: 20))
-                    .opacity(achievement.unlocked ? 1.0 : 0.35)
+                    .font(.system(size: 24))
             }
-            Text(achievement.title)
-                .font(.system(size: 10, weight: .semibold, design: .rounded))
-                .foregroundStyle(achievement.unlocked
-                                 ? AppTheme.Colors.textPrimary
-                                 : AppTheme.Colors.textSecondary)
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .minimumScaleFactor(0.75)
-                .frame(height: 28, alignment: .top)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(achievement.title)
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+
+                if let remainingText = achievement.remainingText {
+                    Text(remainingText)
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(AppTheme.Colors.textSecondary.opacity(0.18))
+                        Capsule()
+                            .fill(sectionStyle.accent)
+                            .frame(width: geo.size.width * max(0.04, achievement.progress))
+                    }
+                }
+                .frame(height: 6)
+            }
+
+            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity)
     }
 
     // MARK: - Section 5: Spiele / Word Runner

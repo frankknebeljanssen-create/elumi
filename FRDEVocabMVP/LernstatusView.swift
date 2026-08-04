@@ -187,21 +187,28 @@ struct LernstatusView: View {
         // User-Request: **immer alle drei Kategorien anzeigen**, auch
         // wenn leer. Auf/Zu-klappbar pro Sektion. Microcopy bewusst
         // warm: keine Mahn- oder Alarm-Tonalität.
-        section(
-            id: "needsWork",
-            title: "Zum Üben",
-            subtitle: "Hier lohnt sich die nächste Runde — wiederhol einfach kurz.",
-            tint: HomeLernstatusCard.needsWorkTint,
-            items: needsWork,
-            showAccuracy: true
-        )
-
+        //
+        // **2026-06-09** — Reihenfolge: Stark → Zum Üben → Im Aufbau
+        // (User-Spec). Vorher stand „Zum Üben" zuerst; der Screen soll
+        // aber mit einer Bestätigung öffnen, bevor er zeigt, was noch
+        // fehlt — der Blick wandert dann von selbst nach unten zu dem,
+        // was als Nächstes dran ist. Der Default-Expand-State bleibt
+        // unverändert bei „Zum Üben" (siehe `expandedSections`).
         section(
             id: "strong",
             title: "Stark",
             subtitle: "Sitzt — das kannst du im Schlaf. Schönes Fundament.",
             tint: HomeLernstatusCard.strongTint,
             items: strong,
+            showAccuracy: true
+        )
+
+        section(
+            id: "needsWork",
+            title: "Zum Üben",
+            subtitle: "Hier lohnt sich die nächste Runde — wiederhol einfach kurz.",
+            tint: HomeLernstatusCard.needsWorkTint,
+            items: needsWork,
             showAccuracy: true
         )
 
@@ -242,8 +249,13 @@ struct LernstatusView: View {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(spacing: 8) {
+                            // **2026-06-09** — 17 → 21 pt (User-Spec
+                            // „Überschriften größer"). Diese drei
+                            // Titel sind die eigentliche Orientierung
+                            // auf dem Screen und gingen im 17-pt-Grau
+                            // fast unter.
                             Text(title)
-                                .font(.system(size: 17, weight: .black, design: .rounded))
+                                .font(.system(size: 21, weight: .black, design: .rounded))
                                 .foregroundStyle(AppTheme.Colors.textPrimary)
                             Text("\(items.count)")
                                 .font(.system(size: 13, weight: .bold, design: .rounded))
