@@ -56,6 +56,12 @@ extension QuizView {
             }
             // **Erstnutzer-Hint (2026-06-09)** — erklärt, was das Quiz
             // ist und welche Einstellungen man vorher trifft.
+            //
+            // **2026-06-09** — Nicht beim Auto-Start (Daily-Drop-Chain):
+            // dort läuft das Quiz sofort los, der Hint spräche von einer
+            // Listen- und Fragenzahl-Auswahl, die in diesem Moment gar
+            // nicht kommt. Er bleibt ungesehen und erscheint beim
+            // normalen Öffnen über den Trainings-Hub weiterhin.
             .hintBubble(
                 id: "quiz_intro",
                 text: """
@@ -63,7 +69,8 @@ extension QuizView {
                 Du bekommst gemischte Fragen: mal ankreuzen, mal selbst eintippen.
                 Vorher wählst du die Liste und wie viele Fragen es sein sollen.
                 Am Ende siehst du, was du schon kannst — und was noch wackelt.
-                """
+                """,
+                isEnabled: launchContext?.shouldAutoStart != true
             )
             .onAppear {
                 handleQuizAppear()

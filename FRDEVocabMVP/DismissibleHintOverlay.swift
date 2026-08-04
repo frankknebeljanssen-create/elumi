@@ -175,6 +175,14 @@ private struct DismissibleHintBubble: View {
 private struct HintBubbleModifier: ViewModifier {
     let id: String
     let text: String
+    /// **2026-06-09** — Wenn `false`, erscheint der Hint nicht und wird
+    /// auch NICHT als gesehen markiert. Für Screens, die je nach
+    /// Einstiegsweg unterschiedlich funktionieren: das Quiz aus dem
+    /// Daily Drop startet sofort, dort erklärt der Hint einen Setup-
+    /// Screen, den es in diesem Moment gar nicht gibt. Beim späteren
+    /// normalen Öffnen soll er trotzdem noch kommen — deshalb nicht
+    /// als gesehen abhaken.
+    var isEnabled: Bool = true
     /// **2026-06-09** — Optionaler Callback, der NACH dem Markieren als
     /// „gesehen" feuert. Aufrufer nutzen das, um etwas, das sonst
     /// gleichzeitig mit dem Hint erscheinen würde (z. B. ein Setup-
@@ -191,7 +199,7 @@ private struct HintBubbleModifier: ViewModifier {
         // wird alles dahinter abgedunkelt; die Box sitzt zentriert
         // darauf. Tap auf den Scrim schließt den Hint ebenfalls.
         content.overlay {
-            if !store.hasSeen(id) {
+            if isEnabled, !store.hasSeen(id) {
                 ZStack {
                     // **2026-06-09** — 0.55 → 0.78. Bei 55 % blieb der
                     // Screen dahinter so präsent, dass die Bubble nicht
@@ -231,7 +239,16 @@ extension View {
     /// `onDismiss` (optional) feuert, sobald der Hint geschlossen wird
     /// (Tap auf CTA oder Backdrop) — für Aufrufer, die eine Folge-UI
     /// erst NACH dem Hint zeigen wollen, statt beide gleichzeitig.
-    func hintBubble(id: String, text: String, onDismiss: (() -> Void)? = nil) -> some View {
-        modifier(HintBubbleModifier(id: id, text: text, onDismiss: onDismiss))
+    ///
+    /// `isEnabled: false` unterdrückt den Hint für diesen Aufruf, ohne
+    /// ihn zu verbrauchen — er erscheint beim nächsten passenden
+    /// Einstieg wieder.
+    func hintBubble(
+        id: String,
+        text: String,
+        isEnabled: Bool = true,
+        onDismiss: (() -> Void)? = nil
+    ) -> some View {
+        modifier(HintBubbleModifier(id: id, text: text, isEnabled: isEnabled, onDismiss: onDismiss))
     }
 }
