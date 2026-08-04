@@ -202,7 +202,13 @@ struct HomeView: View {
             )
 
             WideCard(
-                title: "Meine\nLernlisten",
+                // **2026-08-04** — „Meine" → „Alle" (User-Spec): auf dem
+                // Lists-Screen selbst gibt es schon eine „Meine
+                // Lernlisten"-Kategorie neben „Alle Lernlisten"/„Nach
+                // Lernstand"/„Nach Themen" — die Home-Kachel führt zu
+                // allen davon, „Meine" suggerierte fälschlich, dass nur
+                // die eigenen Listen dahinter stecken.
+                title: "Alle\nLernlisten",
                 accent: AppTheme.Colors.moduleLists,
                 height: 76,
                 titleSize: 15,

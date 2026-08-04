@@ -336,29 +336,33 @@ struct ListPickerSheet: View {
         }
     }
 
+    /// **2026-08-04** — Zeilen-Redesign (User-Spec):
+    ///   • Name darf jetzt **umbrechen** (`lineLimit(2)`) statt bei einer
+    ///     Zeile abgeschnitten zu werden — „Meine Wackelkandidaten" o. ä.
+    ///     lange Namen sind jetzt vollständig lesbar statt „Meine
+    ///     Wackelk…".
+    ///   • Der Umbenennen-Stift ist aus der engen Name-Zeile in den
+    ///     Trailing-Icon-Cluster gewandert (neben Auge/Merge/Löschen) —
+    ///     dort hat er dasselbe verlässliche 40×40-Tap-Ziel wie seine
+    ///     Nachbarn, statt als nackter 18pt-Glyph ohne Hit-Frame zu
+    ///     schweben (Ursache für „Stift geht nicht").
+    ///   • Alle Icon-Buttons einheitlich auf 40×40 (vorher 32×32) +
+    ///     `contentShape(Rectangle())` — größere, kindgerechte Tap-Ziele.
+    ///   • `.frame(minHeight:)` auf der ganzen Row sorgt dafür, dass
+    ///     **jede** Karte gleich hoch ist, unabhängig davon, ob der Name
+    ///     eine oder zwei Zeilen braucht.
     private func regularListRow(_ list: VocabularyList) -> some View {
         Button {
             localSelectedID = list.id
         } label: {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
-                        Text(list.name)
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                            .foregroundStyle(AppTheme.Colors.textPrimary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
-                        if !list.isBuiltIn, onRename != nil {
-                            Button {
-                                onRename?(list)
-                            } label: {
-                                Image(systemName: "pencil")
-                                    .font(.system(size: 18, weight: .semibold))
-                                    .foregroundStyle(style.accent.opacity(0.6))
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
+                    Text(list.name)
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.85)
+                        .fixedSize(horizontal: false, vertical: true)
                     if !list.isBuiltIn {
                         wordClassBreakdownText(for: list, showsTotalCount: showsTotalCount)
                     } else {
@@ -371,6 +375,19 @@ struct ListPickerSheet: View {
                 Spacer(minLength: 0)
 
                 if !list.isBuiltIn {
+                    if onRename != nil {
+                        Button {
+                            onRename?(list)
+                        } label: {
+                            Image(systemName: "pencil")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundStyle(style.accent.opacity(0.7))
+                                .frame(width: 40, height: 40)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+
                     if onView != nil {
                         Button {
                             onView?(list)
@@ -378,7 +395,8 @@ struct ListPickerSheet: View {
                             Image(systemName: "eye")
                                 .font(.system(size: 19, weight: .semibold))
                                 .foregroundStyle(style.accent.opacity(0.7))
-                                .frame(width: 32, height: 32)
+                                .frame(width: 40, height: 40)
+                                .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                     }
@@ -390,7 +408,8 @@ struct ListPickerSheet: View {
                             Image(systemName: "plus.circle")
                                 .font(.system(size: 19, weight: .semibold))
                                 .foregroundStyle(style.accent.opacity(0.7))
-                                .frame(width: 32, height: 32)
+                                .frame(width: 40, height: 40)
+                                .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                     }
@@ -401,7 +420,8 @@ struct ListPickerSheet: View {
                         Image(systemName: "trash")
                             .font(.system(size: 19, weight: .semibold))
                             .foregroundStyle(AppTheme.Colors.error.opacity(0.7))
-                            .frame(width: 32, height: 32)
+                            .frame(width: 40, height: 40)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }
@@ -411,7 +431,8 @@ struct ListPickerSheet: View {
                     .foregroundStyle(list.id == currentSelectedID ? style.accent : AppTheme.Colors.textDisabled)
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.vertical, 16)
+            .frame(minHeight: 72)
             .appCardBackground(style, intensity: list.id == currentSelectedID ? AppTheme.CardIntensity.selected : AppTheme.CardIntensity.whisper, cornerRadius: 14)
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)

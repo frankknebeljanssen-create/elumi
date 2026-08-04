@@ -40,6 +40,12 @@ struct LernstatusView: View {
     /// (kein zusätzlicher Section-Accent-Typ im `AppSectionStyle`-Enum).
     let sectionStyle: AppSectionStyle = .home
 
+    /// **2026-08-04** — Non-nil, sobald „Meine Wackelkandidaten" gebaut
+    /// wurde. Treibt das Bestätigungs-Popup (User-Spec: nicht direkt in
+    /// Karteikarten springen, sondern erst bestätigen + Übungsart wählen
+    /// lassen).
+    @State private var practiceConfirmation: WackelkandidatenConfirmation?
+
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
@@ -48,7 +54,6 @@ struct LernstatusView: View {
                 if statusStore.totalTracked == 0 {
                     emptyState
                 } else {
-                    heroSummary
                     practiceListCTA
                     sectionsContent
                 }
@@ -75,6 +80,26 @@ struct LernstatusView: View {
                 onFavorite: nil,
                 onScan: nil,
                 onSettings: { openSettings() }
+            )
+        }
+        .sheet(item: $practiceConfirmation) { confirmation in
+            WackelkandidatenConfirmationSheet(
+                count: confirmation.count,
+                onStartFlashcards: {
+                    practiceConfirmation = nil
+                    navigate(.flashcards(FlashcardLaunchContext(preferredListID: confirmation.listID)))
+                },
+                onStartQuiz: {
+                    practiceConfirmation = nil
+                    navigate(.quiz(QuizLaunchContext(preferredListID: confirmation.listID)))
+                },
+                onStartTraining: {
+                    practiceConfirmation = nil
+                    navigate(.train(TrainingLaunchContext(preferredListID: confirmation.listID, preferredMode: .vocabulary)))
+                },
+                onDismiss: {
+                    practiceConfirmation = nil
+                }
             )
         }
     }
@@ -110,79 +135,16 @@ struct LernstatusView: View {
         if total == 0 {
             return "Noch nichts getrackt — spiel ein paar Runden, dann siehst du hier deinen Fortschritt."
         }
-        return "Zusammengefasst aus deinen Karteikarten-, Training-, Verbformen- und Quiz-Antworten."
-    }
-
-    // MARK: - Hero Summary
-
-    /// Große, warme Bestätigungs-Card ganz oben — zeigt die dominante
-    /// Zahl und rahmt sie in einen freundlichen Satz. Zweck: der User
-    /// soll den Screen mit einem Gefühl öffnen („24 sicher, stark!"),
-    /// bevor er die kleinteiligen Sektionen durchforstet. Kein Alarm,
-    /// keine Mahnung — der Detail-Screen ist zum Feiern und Üben da.
-    private var heroSummary: some View {
-        let total = statusStore.totalTracked
-        let strong = statusStore.strongCount
-        let needsWork = statusStore.needsWorkCount
-
-        let strongRatio = total > 0 ? Double(strong) / Double(total) : 0
-        let heroLine: String
-        let heroTint: Color
-
-        if strongRatio >= 0.6 {
-            heroLine = "Du hast \(strong) \(strong == 1 ? "Vokabel" : "Vokabeln") sicher — stark!"
-            heroTint = HomeLernstatusCard.strongTint
-        } else if strong >= 5 {
-            heroLine = "Schon \(strong) sitzen — weiter so!"
-            heroTint = HomeLernstatusCard.strongTint
-        } else if needsWork >= 3 {
-            heroLine = "\(needsWork) Einträge freuen sich auf eine Wiederholung."
-            heroTint = HomeLernstatusCard.needsWorkTint
-        } else {
-            heroLine = "Der Lernstatus füllt sich — spiel weiter Runden."
-            heroTint = AppTheme.Colors.elumiPink
-        }
-
-        return HStack(alignment: .center, spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(heroTint.opacity(0.18))
-                Image(systemName: "sparkles")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(heroTint)
-            }
-            .frame(width: 52, height: 52)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text("\(strong)")
-                    .font(.system(size: 30, weight: .black, design: .rounded))
-                    .foregroundStyle(heroTint)
-                    .monospacedDigit()
-                Text(heroLine)
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(sectionCardBackground)
-        .overlay(sectionCardBorder)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: AppTheme.Shadow.card.color.opacity(0.4), radius: 5, x: 0, y: 2)
+        return "Was du schon kannst — und was noch etwas Übung braucht."
     }
 
     // MARK: - Übungsliste-CTA („Meine Wackelkandidaten")
 
     /// **2026-08-04** — Verwandelt den Lernstatus von einer reinen
     /// Anzeige in etwas Handelbares: baut aus allem, was noch nicht
-    /// „Stark" ist, eine echte Übungsliste und springt direkt in die
-    /// Karteikarten damit. Die Liste bleibt in „Meine Listen" liegen, ist
-    /// also danach auch für Quiz/Training auswählbar.
+    /// „Stark" ist, eine echte Übungsliste und öffnet ein Bestätigungs-
+    /// Popup, in dem der User wählt, womit er üben will (Karteikarten /
+    /// Quiz / Training). Die Liste bleibt in „Meine Listen" liegen.
     ///
     /// Nur sichtbar, wenn es überhaupt Wackelkandidaten gibt — bei einem
     /// reinen „alles stark"-Stand wäre der Button sinnlos.
@@ -232,23 +194,34 @@ struct LernstatusView: View {
     }
 
     /// Baut/aktualisiert die Liste „Meine Wackelkandidaten" aus dem
-    /// aktuellen Lernstatus und navigiert direkt in die Karteikarten,
-    /// **auf genau diese Liste gescoped** (`preferredListID`) — ohne die
-    /// globale Listen-Auswahl des Users zu überschreiben.
+    /// aktuellen Lernstatus.
+    ///
+    /// **2026-08-04** — springt NICHT mehr direkt in die Karteikarten
+    /// (User-Spec: „das ist ein bisschen zu schnell"). Stattdessen öffnet
+    /// sich das Bestätigungs-Popup (`practiceConfirmation`), das erst
+    /// zeigt, dass die Liste entstanden ist, und dann fragt, welche
+    /// Übung der User starten möchte.
     private func buildAndPracticeWackelkandidaten() {
         let weakItems = statusStore.wackelkandidatenItems
         guard let listID = listStore.rebuildWackelkandidatenList(from: weakItems) else { return }
+        // Tatsächliche Item-Zahl aus der gebauten Liste lesen — kann kleiner
+        // sein als `weakItems.count`, weil `rebuildWackelkandidatenList`
+        // unvollständige Einträge (fehlende Übersetzung) & Duplikate filtert.
+        let actualCount = listStore.customList(with: listID)?.items.count ?? weakItems.count
         feedbackPlayer.playListAction()
-        navigate(.flashcards(FlashcardLaunchContext(preferredListID: listID)))
+        practiceConfirmation = WackelkandidatenConfirmation(listID: listID, count: actualCount)
     }
 
     // MARK: - Sections
 
-    /// Welche Kategorien sind aktuell ausgeklappt. Default: **„Zum Üben"
-    /// aufgeklappt** — das ist die Sektion, die der User in 80 % der
-    /// Fälle wirklich sehen will. Die anderen beiden bleiben eingeklappt,
-    /// damit der Screen ruhig bleibt.
-    @State private var expandedSections: Set<String> = ["needsWork"]
+    /// Welche Kategorien sind aktuell ausgeklappt.
+    ///
+    /// **2026-08-04** — Default geändert auf **komplett eingeklappt**
+    /// (User-Spec: „Zum Üben" wirkte bei jedem Screen-Öffnen — auch nach
+    /// App-Neustart — seltsam vorgeplumt und machte den Screen unruhig).
+    /// Der User klappt die Sektion, die ihn interessiert, jetzt bewusst
+    /// selbst auf.
+    @State private var expandedSections: Set<String> = []
 
     @ViewBuilder
     private var sectionsContent: some View {
@@ -387,20 +360,6 @@ struct LernstatusView: View {
         .appSetupCardBackground()
     }
 
-    private var sectionCardBackground: some View {
-        RoundedRectangle(cornerRadius: 16, style: .continuous)
-            .fill(AppTheme.Colors.surface)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(AppSectionStyle.home.accent.opacity(AppTheme.CardIntensity.soft))
-            )
-    }
-
-    private var sectionCardBorder: some View {
-        RoundedRectangle(cornerRadius: 16, style: .continuous)
-            .stroke(AppTheme.Colors.border.opacity(0.5), lineWidth: 1)
-    }
-
     // MARK: - Empty State
 
     private var emptyState: some View {
@@ -486,5 +445,99 @@ private struct LernstatusItemRow: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+/// Trägerobjekt für das Bestätigungs-Popup nach dem Bauen von „Meine
+/// Wackelkandidaten" — `Identifiable`, damit `.sheet(item:)` greift.
+private struct WackelkandidatenConfirmation: Identifiable {
+    let id = UUID()
+    let listID: UUID
+    let count: Int
+}
+
+/// **2026-08-04** — Großes, unübersehbares Bestätigungs-Popup (User-
+/// Spec: „muss ein Bildschirm-Popup sein, den man sieht, zur Not
+/// wegklicken"). Bestätigt zuerst, dass die Liste entstanden ist, und
+/// bietet dann bewusst **drei** gleichwertige Übungswege an, statt den
+/// User automatisch in eine davon zu schieben — der Sprung direkt in
+/// die Karteikarten fühlte sich laut Feedback zu abrupt an.
+private struct WackelkandidatenConfirmationSheet: View {
+    let count: Int
+    let onStartFlashcards: () -> Void
+    let onStartQuiz: () -> Void
+    let onStartTraining: () -> Void
+    let onDismiss: () -> Void
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Spacer(minLength: 4)
+
+            ZStack {
+                Circle()
+                    .fill(HomeLernstatusCard.needsWorkTint.opacity(0.16))
+                    .frame(width: 84, height: 84)
+                Text("💪")
+                    .font(.system(size: 38))
+            }
+
+            VStack(spacing: 8) {
+                Text("Liste erstellt!")
+                    .font(.system(size: 24, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+
+                Text(count == 1
+                     ? "„Meine Wackelkandidaten\" wurde mit 1 Wort gefüllt."
+                     : "„Meine Wackelkandidaten\" wurde mit \(count) Wörtern gefüllt.")
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
+
+                Text("Was möchtest du üben?")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .padding(.top, 6)
+            }
+            .padding(.horizontal, 24)
+
+            VStack(spacing: 12) {
+                practiceOptionButton(title: "Karteikarten", systemImage: "rectangle.on.rectangle.angled", action: onStartFlashcards)
+                practiceOptionButton(title: "Quiz", systemImage: "checkmark.circle.fill", action: onStartQuiz)
+                practiceOptionButton(title: "Training", systemImage: "figure.strengthtraining.traditional", action: onStartTraining)
+            }
+            .padding(.horizontal, 20)
+
+            Button("Später") { onDismiss() }
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .padding(.top, 2)
+
+            Spacer(minLength: 12)
+        }
+        .padding(.top, 16)
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+
+    private func practiceOptionButton(title: String, systemImage: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 20, weight: .bold))
+                Text(title)
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .bold))
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(HomeLernstatusCard.needsWorkTint)
+            )
+        }
+        .buttonStyle(AppCardPressStyle())
     }
 }

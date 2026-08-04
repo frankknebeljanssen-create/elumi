@@ -3,12 +3,15 @@ import SwiftUI
 extension ListsView {
     var listsPrimaryContent: some View {
         VStack(spacing: 14) {
-            // **Naming-Sweep 2026-05-06** — „Listen verwalten" →
-            // „Meine Listen". Kürzer, persönlicher, weniger
-            // Verwaltungs-Sprache.
+            // **2026-08-04** — „Meine Lernlisten" → „Lernlisten" (User-
+            // Spec): der Screen zeigt „Alle Lernlisten" UND „Meine
+            // Lernlisten" als eigene Kategorien darunter — der
+            // Screen-Titel „Meine..." kollidierte mit der „Alle..."-Card
+            // direkt drunter. Neutraler Titel grenzt „Meine Lernlisten"
+            // als eigene, klar abgesetzte Kategorie ab.
             ModuleHeaderCard(
                 icon: .listen,
-                title: "Meine Lernlisten",
+                title: "Lernlisten",
                 accent: sectionStyle.accent,
                 onBack: { dismiss() }
             )
