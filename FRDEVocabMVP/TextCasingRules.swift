@@ -1,4 +1,5 @@
 import Foundation
+import SQLite3
 
 // MARK: - Zentrale Normalisierungs-Engine
 //
@@ -483,3 +484,117 @@ enum TextNormalizationEngineSelfTest {
     }
 }
 #endif
+
+// MARK: - Satz-Struktur (finites Verb)
+
+/// **2026-06-09** — Was ist ein Satz?
+///
+/// Bis hierher entschied das eine Liste von Anfangswörtern („ich", „du",
+/// „je", „c'est" …) plus eine Mindest-Wortzahl. Das ging an zwei Stellen
+/// vorbei:
+///
+///   • „Morgen gehe ich ins Kino." beginnt mit keinem gelisteten Wort und
+///     galt deshalb nicht als Satz.
+///   • „du heißt" und „tu t'appelles" erfüllten die Liste und bekamen
+///     einen Punkt, obwohl es Fragmente sind.
+///
+/// Die tragfähige Regel ist strukturell: **Ein Satz braucht ein finites,
+/// also konjugiertes Verb.** Nicht Subjekt-Prädikat-Objekt — „Ich
+/// schlafe." hat kein Objekt, „Mach das Licht aus!" kein Subjekt, beide
+/// sind Sätze. Und „Musik hören" enthält zwar ein Verb, aber ein
+/// infinites; deshalb ist es keiner.
+///
+/// **Datenlage, ehrlich benannt:** Für Französisch liegen die
+/// konjugierten Formen vollständig im Lexikon (rund 59.000, als „je
+/// parle", „tu parles" …) — dort ist die Prüfung ein Nachschlagen, kein
+/// Raten. Für Deutsch gibt es keine solche Quelle; dort greift eine
+/// gepflegte Liste der häufigsten finiten Formen. Sie deckt den
+/// Schulwortschatz ab, ist aber erweiterbar und bewusst der schwächere
+/// Teil der Regel.
+enum SentenceStructure {
+
+    /// Enthält der Text ein finites Verb — ist er also ein Satz?
+    static func containsFiniteVerb(_ text: String, language: NormalizationLanguage) -> Bool {
+        let tokens = normalizedLookupWords(text)
+        guard !tokens.isEmpty else { return false }
+
+        switch language {
+        case .german:
+            return tokens.contains { germanFiniteVerbs.contains($0) }
+        case .french:
+            return tokens.contains { frenchFiniteVerbForms.contains($0) }
+        }
+    }
+
+    /// Finite französische Verbformen, aus den Lexikon-Flexionen
+    /// gewonnen. Die Einträge stehen dort als „je parle" / „nous
+    /// parlons"; gebraucht wird nur die Verbform, das Pronomen fällt weg.
+    ///
+    /// Einmalig beim ersten Zugriff aufgebaut — der Set wird für jede
+    /// Anzeige-Entscheidung gebraucht, ein Query pro Aufruf wäre zu teuer.
+    static let frenchFiniteVerbForms: Set<String> = {
+        let pronouns: Set<String> = [
+            "je", "j", "tu", "il", "elle", "on", "nous", "vous", "ils", "elles"
+        ]
+        guard let forms = SupplementalFreeDictLexicon.withReadOnlyDatabase({ database -> Set<String> in
+            var result: Set<String> = []
+            let sql = """
+                SELECT f.form FROM forms f
+                JOIN entries e ON e.entry_id = f.entry_id
+                WHERE e.word_class = 'verb' AND f.form_type = 'inflection'
+                """
+            var statement: OpaquePointer?
+            guard sqlite3_prepare_v2(database, sql, -1, &statement, nil) == SQLITE_OK,
+                  let stmt = statement else { return result }
+            defer { sqlite3_finalize(stmt) }
+
+            while sqlite3_step(stmt) == SQLITE_ROW {
+                guard let raw = sqlite3_column_text(stmt, 0) else { continue }
+                let words = normalizedLookupWords(String(cString: raw))
+                // Führende Pronomen abwerfen; übrig bleibt die Verbform.
+                let verbWords = words.drop { pronouns.contains($0) }
+                guard let verb = verbWords.first, verb.count >= 2 else { continue }
+                result.insert(verb)
+            }
+            return result
+        }) else { return [] }
+        return forms
+    }()
+
+    /// Häufige finite Verbformen im Deutschen.
+    ///
+    /// Handgepflegt, weil das Lexikon für die deutsche Seite nur
+    /// Übersetzungen führt und keine Formen. Bewusst nur eindeutige
+    /// Formen: „heißt" ja, „liebe" nein (auch Nomen).
+    static let germanFiniteVerbs: Set<String> = [
+        "ist", "sind", "bin", "bist", "seid", "war", "warst", "waren", "wart",
+        "hat", "habe", "hast", "habt", "haben", "hatte", "hattest", "hatten",
+        "wird", "wirst", "werde", "werdet", "werden", "wurde", "wurden",
+        "kann", "kannst", "k\u{00F6}nnen", "k\u{00F6}nnt", "konnte", "konnten",
+        "muss", "musst", "m\u{00FC}ssen", "m\u{00FC}sst", "musste", "mussten",
+        "will", "willst", "wollen", "wollt", "wollte", "wollten",
+        "soll", "sollst", "sollen", "sollt", "sollte", "sollten",
+        "darf", "darfst", "d\u{00FC}rfen", "d\u{00FC}rft", "durfte", "durften",
+        "mag", "magst", "m\u{00F6}gen", "m\u{00F6}gt", "mochte", "mochten",
+        "geht", "gehe", "gehst", "gehen", "ging", "gingen",
+        "kommt", "komme", "kommst", "kommen", "kam", "kamen",
+        "macht", "mache", "machst", "machen", "machte", "machten",
+        "sagt", "sage", "sagst", "sagen", "sagte", "sagten",
+        "sieht", "sehe", "siehst", "sehen", "sah", "sahen",
+        "wei\u{00DF}", "weisst", "wei\u{00DF}t", "wissen", "wusste", "wussten",
+        "gibt", "gebe", "gibst", "geben", "gab", "gaben",
+        "nimmt", "nehme", "nimmst", "nehmen", "nahm", "nahmen",
+        "hei\u{00DF}t", "heisst", "hei\u{00DF}e", "hei\u{00DF}en",
+        "findet", "finde", "findest", "finden", "fand", "fanden",
+        "bleibt", "bleibe", "bleibst", "bleiben", "blieb", "blieben",
+        "steht", "stehe", "stehst", "stehen", "stand", "standen",
+        "liegt", "liege", "liegst", "liegen", "lag", "lagen",
+        "braucht", "brauche", "brauchst", "brauchen",
+        "wohnt", "wohne", "wohnst", "wohnen",
+        "spielt", "spiele", "spielst", "spielen",
+        "lernt", "lerne", "lernst", "lernen",
+        "isst", "esse", "essen", "trinkt", "trinke", "trinken",
+        "schl\u{00E4}ft", "schlafe", "schlafen",
+        "f\u{00E4}hrt", "fahre", "fahren", "fuhr", "fuhren"
+    ]
+}

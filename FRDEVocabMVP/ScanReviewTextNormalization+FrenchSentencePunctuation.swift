@@ -32,17 +32,13 @@ func shouldDisplayStatementPeriod(
 ) -> Bool {
     guard cardType == .phrases else { return false }
 
-    let normalizedWords = normalizedLookupWords(cleaned)
-    guard normalizedWords.count >= 3 else { return false }
-
-    let firstWord = normalizedWords[0]
+    // **2026-06-09** — Strukturregel statt Anfangswort-Liste: Ein Satz
+    // braucht ein finites Verb (siehe `SentenceStructure`). Die alte
+    // Liste erkannte „Morgen gehe ich ins Kino." nicht als Satz und
+    // hielt umgekehrt Fragmente wie „tu t'appelles" für einen.
     switch language {
     case .french:
-        let statementStarts: Set<String> = [
-            "je", "j", "tu", "il", "elle", "on", "nous", "vous", "ils", "elles",
-            "c", "ce", "cet", "cette", "ces", "il", "elle", "on"
-        ]
-        return statementStarts.contains(firstWord)
+        return SentenceStructure.containsFiniteVerb(cleaned, language: .french)
     case .english:
         return false
     }

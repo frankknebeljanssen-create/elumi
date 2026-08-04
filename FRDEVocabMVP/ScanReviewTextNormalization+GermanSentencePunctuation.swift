@@ -65,15 +65,10 @@ func shouldDisplayGermanExclamationMark(_ cleaned: String) -> Bool {
 func shouldDisplayGermanStatementPeriod(_ cleaned: String, cardType: CardType?) -> Bool {
     guard cardType == .phrases else { return false }
 
-    let normalizedWords = normalizedLookupWords(cleaned)
-    guard normalizedWords.count >= 3 else { return false }
-
-    let firstWord = normalizedWords[0]
-    let statementStarts: Set<String> = [
-        "ich", "du", "er", "sie", "es", "wir", "ihr", "man",
-        "der", "die", "das", "ein", "eine", "mein", "dein", "sein", "unser"
-    ]
-    return statementStarts.contains(firstWord)
+    // **2026-06-09** — Strukturregel statt Anfangswort-Liste, siehe
+    // `SentenceStructure` und die Begründung in der französischen
+    // Entsprechung.
+    return SentenceStructure.containsFiniteVerb(cleaned, language: .german)
 }
 
 func inferredGermanTerminalSentencePunctuation(_ cleaned: String, cardType: CardType?) -> String? {
