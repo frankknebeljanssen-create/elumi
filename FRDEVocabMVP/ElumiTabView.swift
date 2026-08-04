@@ -602,24 +602,32 @@ struct ElumiTabView: View {
                 // nicht mal für Kurz (Material < 10/2 = 5), erscheint ein
                 // Hinweis statt der Chips. Tap löst auto-close aus.
                 if cachedDailyDropMaterial < materialThreshold(for: Self.exerciseCountOptions.first ?? 10) {
-                    // **2026-06-09** — Vorher stand hier nur „Wähle mehr
-                    // Listen", ohne zu sagen WO das geht. Die Auswahl
-                    // liegt nicht im Drop selbst, sondern im Hauptmenü
-                    // unter „Meine Listen" — das benennt der Text jetzt.
-                    // **2026-06-09** — Der Hinweis auf die Lernjahre
-                    // entfällt, solange die Lernjahr-Auswahl per Flag
-                    // versteckt ist — sonst verweist der Text auf eine
-                    // UI, die es gerade nicht gibt.
-                    Text(
-                        FeatureFlags.learningYearSelectionEnabled
-                        ? "Zu wenig Material für einen Drop. Wähle im Hauptmenü unter \u{201E}Meine Listen\u{201C} mehr Listen aus oder erweitere die Lernjahre."
-                        : "Zu wenig Material für einen Drop. Wähle im Hauptmenü unter \u{201E}Meine Listen\u{201C} mehr Listen aus."
-                    )
-                        .font(.system(size: 14, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
+                    // **2026-06-09** — Statt nur zu SAGEN, wo die Auswahl
+                    // liegt, führt ein Button jetzt direkt dorthin. Der
+                    // Lernjahr-Zusatz entfällt, solange die Lernjahr-
+                    // Auswahl per Flag versteckt ist — sonst verweist der
+                    // Text auf eine UI, die es gerade nicht gibt.
+                    VStack(spacing: 10) {
+                        Text(
+                            FeatureFlags.learningYearSelectionEnabled
+                            ? "Zu wenig Material für einen Drop. Wähle mehr Listen aus oder erweitere die Lernjahre."
+                            : "Zu wenig Material für einen Drop. Wähle mehr Listen aus."
+                        )
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity)
+
+                        Button {
+                            dismissSetupModal()
+                            navigate(.lists(nil))
+                        } label: {
+                            Text("Zu Meine Listen")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+                    }
+                    .padding(.vertical, 8)
                 } else {
                     VStack(spacing: 10) {
                         HStack(spacing: 12) {

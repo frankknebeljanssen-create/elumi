@@ -125,7 +125,7 @@ struct UnifiedListCategoryPicker: View {
 
                 if includeWoerterbuch {
                     ListCategoryRow(
-                        title: "Wörterbuch",
+                        title: "Komplettes Wörterbuch",
                         iconAsset: "IconWoerterbuch",
                         count: lists(in: .woerterbuch).count,
                         accent: accent
