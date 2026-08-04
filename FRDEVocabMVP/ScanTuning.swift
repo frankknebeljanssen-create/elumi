@@ -62,6 +62,18 @@ enum ScanTuning {
         /// Triggert das Auto-Optimierungs-Profil mit Brightness-Boost.
         static let tooDarkThreshold: Double = 0.35
 
+        /// **Soft-Issue-Fallback-Schwelle.** `level` (Banner-Text) hängt
+        /// vom gewichteten `overallScore` ab, `issues` (Hinweistext +
+        /// Auto-optimieren-Button) von harten Einzel-Schwellen (s.o.).
+        /// Beides kann auseinanderfallen: mehrere Dimensionen liegen
+        /// knapp **über** ihrer Einzel-Schwelle, drücken den gewichteten
+        /// Score aber trotzdem unter `goodLevelThreshold` → Banner
+        /// erscheint mit leerem `issues`-Array (kein Hinweis, kein
+        /// Button). Fällt eine Dimension unter diese weichere Schwelle,
+        /// zählt sie als Fallback-Issue, wenn keine harte Schwelle
+        /// gerissen wurde.
+        static let softIssueThreshold: Double = 0.85
+
         // ── Glare-Detection ────────────────────────────────────────
         /// `glareClean < glareThresholdPaper` (normales Papier) → `.glare`.
         static let glareThresholdPaper: Double = 0.6

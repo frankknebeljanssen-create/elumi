@@ -390,6 +390,31 @@ enum ImageQualityAnalyzer {
             return .poor
         }()
 
+        // Soft-Issue-Fallback: der Banner (`level`) basiert auf dem
+        // gewichteten Gesamt-Score, `issues` auf harten Einzel-Schwellen.
+        // Liegen mehrere Dimensionen nur knapp über ihrer Schwelle,
+        // reicht das für „medium"/„poor", ohne dass eine einzelne davon
+        // als Issue erkannt wird — der Banner erschiene dann ohne
+        // Hinweistext und ohne Auto-optimieren-Button. Fallback: die
+        // schwächste Dimension als Issue werten, wenn sie unter der
+        // weicheren `softIssueThreshold` liegt.
+        if issues.isEmpty && level != .good {
+            var candidates: [(value: Double, issue: Report.Issue)] = [
+                (sharpness, .blurry),
+                (contrast, .lowContrast),
+                (glareClean, .glare)
+            ]
+            if !hints.isTextDense {
+                candidates.append((sizeFraction, .tooSmall))
+                candidates.append((completeness, .clipped))
+                candidates.append((perspectiveQuality, .tooSkewed))
+            }
+            if let worst = candidates.min(by: { $0.value < $1.value }),
+               worst.value < ScanTuning.Quality.softIssueThreshold {
+                issues.append(worst.issue)
+            }
+        }
+
         return Report(
             overallScore: overall,
             level: level,
