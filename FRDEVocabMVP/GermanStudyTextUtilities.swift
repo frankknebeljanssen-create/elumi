@@ -64,7 +64,10 @@ func frenchStudyCardDisplayText(
     // vorangestellt: „le l'" — im Quiz sichtbar als „le l"
     // (User-Report). Artikel sind eine geschlossene Klasse, der Test
     // ist derselbe wie im Scan-Pfad.
-    if isFrenchArticleEntry(displayed) { return displayed }
+    if isFrenchArticleEntry(displayed) {
+        // Artikel-Ketten aus dem Scan („le l'") lesbar zusammenfassen.
+        return normalizedFrenchArticleDisplay(displayed)
+    }
     // Non-nouns never get articles
     if StandardVocabularyLoader.isNonNoun(displayed) { return displayed }
     guard shouldDisplayStudyArticles(french: displayed, german: german, cardType: cardType) else { return displayed }

@@ -163,8 +163,36 @@ let frenchArticleDescriptions: [String: String] = [
 /// Ist der Eintrag ein französischer Artikel? Erwartet den reinen
 /// Eintragstext; Groß-/Kleinschreibung und umgebende Leerzeichen sind
 /// egal.
+///
+/// **2026-06-09** — Erkennt auch Ketten aus mehreren Artikeln („le l'",
+/// „le la l'"). Solche Einträge entstehen beim Scannen, wenn im
+/// Vokabelheft „le/la/l'" in einer Zeile steht und die Trennung
+/// misslingt. Der Eintrag ist dann trotzdem ein Artikel-Eintrag und darf
+/// weder ein Satzzeichen noch einen weiteren Artikel bekommen.
 func isFrenchArticleEntry(_ text: String) -> Bool {
-    frenchArticleDescription(for: text) != nil
+    if frenchArticleDescription(for: text) != nil { return true }
+    return articleChainComponents(in: text) != nil
+}
+
+/// Zerlegt einen Text in Artikel-Bestandteile — `nil`, sobald ein
+/// Bestandteil kein Artikel ist.
+func articleChainComponents(in text: String) -> [String]? {
+    let parts = text
+        .replacingOccurrences(of: "/", with: " ")
+        .split(separator: " ")
+        .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+        .filter { !$0.isEmpty }
+    guard parts.count >= 2 else { return nil }
+    guard parts.allSatisfy({ frenchArticleDescriptions[$0] != nil }) else { return nil }
+    return parts
+}
+
+/// Anzeigetext für einen Artikel-Eintrag. Eine Kette wie „le l'" wird zu
+/// „le/la/l'" zusammengefasst — so, wie das Vokabelheft es meint, statt
+/// als sinnlose Aneinanderreihung.
+func normalizedFrenchArticleDisplay(_ text: String) -> String {
+    guard let parts = articleChainComponents(in: text) else { return text }
+    return parts.joined(separator: "/")
 }
 
 /// Kanonische deutsche Beschreibung eines französischen Artikels —
