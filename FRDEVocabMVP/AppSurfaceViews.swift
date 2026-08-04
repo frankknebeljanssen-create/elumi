@@ -348,7 +348,13 @@ struct AppInputField: View {
             // (bereits einmal analog bei Buttons aufgetreten, siehe
             // AppPrimaryButtonStyle-Historie).
             .allowsHitTesting(isEnabled)
-            .opacity(isEnabled ? 1 : 0.5)
+            // **Bug-Fix 2026-06-09** — Nicht dimmen, solange ein
+            // Ergebnis angezeigt wird. Nach dem Prüfen wird das Feld
+            // gesperrt (`isEnabled == false`) und lief dadurch auf 50 %
+            // Deckkraft — genau in dem Moment, in dem die Antwort am
+            // besten lesbar sein muss (User-Report: Kontrast zu schwach).
+            // Das Dimmen bleibt für echte Deaktivierung erhalten.
+            .opacity(isEnabled || resultState != .none ? 1 : 0.5)
             .onSubmit { onSubmit?() }
 
         switch (focus, onTap) {
