@@ -546,34 +546,72 @@ struct TrainingChainBreakView: View {
     private var finishedBlockNumber: Int { chainStore.currentChain?.currentIndex ?? 1 }
     private var totalBlocks: Int { chainStore.currentChain?.totalStepCount ?? 0 }
 
+    /// Ergebnis-Zeile mit Haltung — die Quote entscheidet den Ton.
+    private var blockResultHeadline: String {
+        guard total > 0 else { return "Geschafft!" }
+        let ratio = Double(correct) / Double(total)
+        if correct == total { return "Alles richtig!" }
+        if ratio >= 0.8 { return "Stark!" }
+        if ratio >= 0.5 { return "Gut gemacht!" }
+        return "Weiter geht's!"
+    }
+
     var body: some View {
         VStack(spacing: AppTheme.Spacing.lg) {
             Spacer(minLength: 0)
 
+            // **2026-06-09** — Etappen-Screen an die übrigen Feier-
+            // Screens angeglichen (User-Spec): Block-Zeile war zu klein,
+            // das Ergebnis nüchtern, und „+8" neben einem Würmchen sagte
+            // nicht, wofür die Zahl steht.
             if totalBlocks > 1 {
                 Text("Block \(finishedBlockNumber) von \(totalBlocks)")
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .tracking(0.6)
+                    .font(.system(size: 19, weight: .black, design: .rounded))
+                    .tracking(1.0)
                     .textCase(.uppercase)
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .foregroundStyle(AppTheme.Colors.elumiPink)
             }
 
             Text("Etappe geschafft!")
-                .font(.system(size: 26, weight: .black, design: .rounded))
+                .font(.system(size: 34, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
                 .multilineTextAlignment(.center)
 
-            Text("\(correct) von \(total) richtig")
-                .font(.system(size: 18, weight: .semibold, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-
-            // Würmchen-Verdienst dieser Etappe (rein visuell, kompakt).
-            HStack(spacing: 6) {
-                ElumiSnackIcon(.wuermchen, size: 34)
-                Text("+\(correct)")
-                    .font(.system(size: 20, weight: .black, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
+            // Ergebnis mit Haltung statt reiner Zahl — die Formulierung
+            // richtet sich nach der Quote.
+            VStack(spacing: 4) {
+                Text(blockResultHeadline)
+                    .font(.system(size: 22, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.success)
+                Text("\(correct) von \(total) richtig")
+                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
             }
+            .multilineTextAlignment(.center)
+
+            // Würmchen-Verdienst dieser Etappe — beschriftet, damit die
+            // Zahl eine Bedeutung hat.
+            HStack(spacing: 10) {
+                ElumiSnackIcon(.wuermchen, size: 44)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("+\(correct)")
+                        .font(.system(size: 26, weight: .black, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                    Text(correct == 1 ? "Würmchen verdient" : "Würmchen verdient")
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                }
+            }
+            .padding(.horizontal, 22)
+            .padding(.vertical, 14)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(AppTheme.Colors.surface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .stroke(AppTheme.Colors.elumiPink.opacity(0.3), lineWidth: 1)
+                    )
+            )
 
             Spacer(minLength: 0)
 

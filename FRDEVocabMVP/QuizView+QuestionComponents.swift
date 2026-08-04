@@ -442,6 +442,13 @@ extension QuizView {
                 // `correct = !comboHadMistake`. Count-Modus: kein Auto-Advance,
                 // „Weiter"-Button übernimmt (gelegte Paare bleiben grün).
                 let isCorrect = !comboHadMistake
+                // **Bug-Fix 2026-06-09** — Der Würmchen-Tick war nur an
+                // Tippen und Multiple Choice gehängt; „Paare finden"
+                // hat einen eigenen Abschluss-Pfad und ging deshalb
+                // immer leer aus (User-Report).
+                if isCorrect {
+                    GamificationFeedbackPresenter.shared.noteWormEarned()
+                }
                 scheduleAdvance(after: 0.6) {
                     if isCountChainStep {
                         quizPendingCorrect = isCorrect

@@ -30,6 +30,10 @@ final class GamificationFeedbackPresenter: ObservableObject {
     /// Zähler für den Würmchen-Tick — feuert beim Beantworten, nicht
     /// beim Weiterschalten. Siehe `noteWormEarned()`.
     @Published var wormEarnedTrigger: Int = 0
+
+    /// Gesetzt, wenn der aktuelle Tick eine Feier auslöst — enthält die
+    /// Anzahl der gesammelten Würmchen. `nil` = stiller Tick.
+    @Published var celebratedWormBatch: Int?
     @Published var wrongPulseTrigger: Int = 0
 
     // MARK: - Event-Modelle
@@ -71,7 +75,24 @@ final class GamificationFeedbackPresenter: ObservableObject {
     /// beim Beantworten gefeuert.
     func noteWormEarned() {
         wormEarnedTrigger &+= 1
+        earnedWormsSinceCelebration += 1
+        // **2026-06-09** — Nicht jede richtige Antwort wird gefeiert.
+        // Ein Würmchen gibt es weiterhin für jede (`baseWorms:
+        // correctCount`), aber eine beschriftete Feier bei jedem Tick
+        // nutzt sich ab und wird zur Kulisse (User-Report „inflationär").
+        // Deshalb: stiller Tick als Regel, Feier alle fünf Würmchen.
+        if earnedWormsSinceCelebration >= Self.wormCelebrationInterval {
+            earnedWormsSinceCelebration = 0
+            celebratedWormBatch = Self.wormCelebrationInterval
+        } else {
+            celebratedWormBatch = nil
+        }
     }
+
+    /// Nach wie vielen Würmchen die beschriftete Feier kommt.
+    static let wormCelebrationInterval = 5
+
+    private var earnedWormsSinceCelebration = 0
 
     func noteWrongPulse() {
         wrongPulseTrigger &+= 1
