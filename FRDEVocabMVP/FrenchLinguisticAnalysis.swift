@@ -1191,6 +1191,27 @@ enum FrenchLemmaFormatter {
 
     // MARK: - Display-Formatter (anzeigefertige Texte für Listen / Cards)
 
+    /// **Bugfix 2026-08-04** — Präfixe, die anzeigen: „dieses Nomen hat
+    /// schon einen Determinierer, keinen Artikel mehr davorsetzen".
+    ///
+    /// Vorher enthielt diese Liste nur die klassischen Artikel
+    /// (le/la/les/l'/un/une/des/du/de la/de l'). Possessiv- und
+    /// Demonstrativbegleiter fehlten — deshalb wurde z. B. „mon amie"
+    /// fälschlich zu „la mon amie": `determineDisplayType(for:)` stuft
+    /// „Pronomen + Nomen" (line ~538, z. B. „mon"+"amie") korrekt als
+    /// kompletten Nomen-Ausdruck ein (`.singleWord`), aber die
+    /// Artikel-Ergänzung hier kannte „mon" nicht als bereits
+    /// vorhandenen Determinierer und hängte trotzdem einen Artikel an.
+    static let existingDeterminerPrefixes: [String] = [
+        // Klassische Artikel
+        "le ", "la ", "les ", "l'", "l\u{2019}", "un ", "une ", "des ", "du ", "de la ", "de l'",
+        // Possessivbegleiter
+        "mon ", "ma ", "mes ", "ton ", "ta ", "tes ", "son ", "sa ", "ses ",
+        "notre ", "nos ", "votre ", "vos ", "leur ", "leurs ",
+        // Demonstrativbegleiter
+        "ce ", "cet ", "cette ", "ces "
+    ]
+
     /// Französisch display-ready aus Roh-Strings — gleiche Logik wie für VocabularyItem.
     /// Wird vom Lexikon-Display genutzt, damit Nomen immer einen Artikel haben.
     /// `gender` (m/f/pl) hilft beim Artikel-Wahl, sonst Heuristik.
@@ -1198,7 +1219,7 @@ enum FrenchLemmaFormatter {
         let base = TextNormalizationEngine.normalize(text, language: .french)
         guard isNoun, !base.isEmpty else { return base }
         let lower = base.lowercased()
-        let existingArticles = ["le ", "la ", "les ", "l'", "l\u{2019}", "un ", "une ", "des ", "du ", "de la ", "de l'"]
+        let existingArticles = FrenchLemmaFormatter.existingDeterminerPrefixes
         for prefix in existingArticles where lower.hasPrefix(prefix) {
             return base
         }
@@ -1248,7 +1269,7 @@ enum FrenchLemmaFormatter {
 
         // Artikel bereits vorhanden?
         let lower = base.lowercased()
-        let existingArticles = ["le ", "la ", "les ", "l'", "l\u{2019}", "un ", "une ", "des ", "du ", "de la ", "de l'"]
+        let existingArticles = FrenchLemmaFormatter.existingDeterminerPrefixes
         for prefix in existingArticles where lower.hasPrefix(prefix) {
             return base
         }
