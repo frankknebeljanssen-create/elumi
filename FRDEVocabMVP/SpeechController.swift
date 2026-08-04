@@ -4,6 +4,16 @@ import Speech
 
 final class SpeechController: NSObject, ObservableObject {
     @Published var transcript: String = ""
+    /// **2026-06-09** — Alternative Transkriptionen zum aktuellen
+    /// `transcript` (ohne diesen selbst). Die Wertung akzeptiert eine
+    /// Antwort, wenn IRGENDEINE davon passt.
+    ///
+    /// Grund (User-Bugreport): Bei kurzen Wörtern rät die Erkennung
+    /// gerne die häufigere Homophon-Schreibweise — „mai" (Monat) kam
+    /// konsistent als „my" zurück, obwohl korrekt gesprochen. Die
+    /// richtige Variante lag dabei in `result.transcriptions`, wurde
+    /// aber nie ausgewertet, weil nur `bestTranscription` gelesen wurde.
+    @Published var alternativeTranscripts: [String] = []
     @Published var isRecording = false
     @Published var authorizationStatus: SFSpeechRecognizerAuthorizationStatus = .notDetermined
     @Published var recordError: String?
@@ -38,9 +48,14 @@ final class SpeechController: NSObject, ObservableObject {
         }
     }
 
-    func startRecording(localeIdentifier: String) {
+    /// `expectedPhrases` werden als `contextualStrings` an die Erkennung
+    /// gereicht — das gewichtet genau die Wörter hoch, die als Antwort
+    /// erwartet werden. Ohne diesen Hinweis gewinnt bei Homophonen die
+    /// statistisch häufigere Schreibweise („my" statt „mai").
+    func startRecording(localeIdentifier: String, expectedPhrases: [String] = []) {
         stopRecording()
         transcript = ""
+        alternativeTranscripts = []
         recordError = nil
         requestAuthorizationIfNeeded { [weak self] status in
             guard let self else { return }
@@ -48,7 +63,7 @@ final class SpeechController: NSObject, ObservableObject {
                 self.recordError = self.authorizationErrorMessage(for: status)
                 return
             }
-            self.beginRecording(localeIdentifier: localeIdentifier)
+            self.beginRecording(localeIdentifier: localeIdentifier, expectedPhrases: expectedPhrases)
         }
     }
 
@@ -73,7 +88,7 @@ final class SpeechController: NSObject, ObservableObject {
         try? audioSession.setActive(false, options: .notifyOthersOnDeactivation)
     }
 
-    private func beginRecording(localeIdentifier: String) {
+    private func beginRecording(localeIdentifier: String, expectedPhrases: [String] = []) {
         recognizer = SFSpeechRecognizer(locale: Locale(identifier: localeIdentifier))
 
         guard let recognizer = recognizer, recognizer.isAvailable else {
@@ -92,6 +107,11 @@ final class SpeechController: NSObject, ObservableObject {
                 return
             }
             request.shouldReportPartialResults = true
+            // Erwartete Antwort als Kontext-Hinweis — hebt Homophone
+            // wie „mai" gegenüber dem häufigeren „my" an.
+            if !expectedPhrases.isEmpty {
+                request.contextualStrings = expectedPhrases
+            }
 
             let inputNode = audioEngine.inputNode
             let format = inputNode.outputFormat(forBus: 0)
@@ -107,9 +127,13 @@ final class SpeechController: NSObject, ObservableObject {
             task = recognizer.recognitionTask(with: request) { [weak self] result, error in
                 DispatchQueue.main.async {
                     if let result = result {
-                        self?.transcript = result.bestTranscription.formattedString
+                        let best = result.bestTranscription.formattedString
+                        self?.transcript = best
+                        self?.alternativeTranscripts = result.transcriptions
+                            .map(\.formattedString)
+                            .filter { $0 != best }
                         self?.scheduleSilenceStopIfNeeded(
-                            for: result.bestTranscription.formattedString,
+                            for: best,
                             isFinal: result.isFinal
                         )
                     }

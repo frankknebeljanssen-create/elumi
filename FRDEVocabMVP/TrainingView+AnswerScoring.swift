@@ -8,7 +8,36 @@ extension TrainingView {
         stopListeningForTyping()
         typedAnswerFieldFocused = false
         speechController?.transcript = typedAnswer
+        // Getippte Antwort ist eindeutig — evtl. noch stehende
+        // Sprach-Alternativen dürfen hier nicht mitgewertet werden.
+        speechController?.alternativeTranscripts = []
         evaluateResponse(typedAnswer)
+    }
+
+    /// **2026-06-09** — Alle zu prüfenden Eingabe-Varianten: die
+    /// Haupteingabe plus die Alternativ-Transkriptionen der
+    /// Spracherkennung. Eine Antwort gilt als richtig, wenn IRGENDEINE
+    /// davon passt.
+    ///
+    /// Grund (User-Bugreport): „mai" wurde als „my" transkribiert und
+    /// dadurch als falsch gewertet, obwohl die korrekte Variante in
+    /// `result.transcriptions` vorlag — bisher wurde nur die
+    /// Best-Transkription geprüft.
+    private func answerCandidates(for rawInput: String) -> [String] {
+        var candidates = [normalized(rawInput)]
+        for alternative in speechController?.alternativeTranscripts ?? [] {
+            let normalizedAlternative = normalized(alternative)
+            if !normalizedAlternative.isEmpty, !candidates.contains(normalizedAlternative) {
+                candidates.append(normalizedAlternative)
+            }
+        }
+        return candidates
+    }
+
+    private func matchesExpected(rawInput: String, expected: String, card: FlashCard) -> Bool {
+        answerCandidates(for: rawInput).contains {
+            isCorrect(got: $0, expected: expected, for: card)
+        }
     }
 
     func evaluateResponse(_ rawInput: String) {
@@ -43,7 +72,7 @@ extension TrainingView {
                 }
                 return
             }
-            let correct = isCorrect(got: got, expected: expected, for: currentCard)
+            let correct = matchesExpected(rawInput: rawInput, expected: expected, card: currentCard)
             registerCountAnswer(correct: correct, answerShown: rawInput)
             return
         }
@@ -69,7 +98,7 @@ extension TrainingView {
             return
         }
 
-        if isCorrect(got: got, expected: expected, for: currentCard) {
+        if matchesExpected(rawInput: rawInput, expected: expected, card: currentCard) {
             typedAnswer = ""
             showingTypedAnswerInput = false
             handleCorrectAnswer()
