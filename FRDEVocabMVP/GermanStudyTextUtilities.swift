@@ -59,6 +59,12 @@ func frenchStudyCardDisplayText(
 ) -> String {
     let displayed = sourceDisplayText(text, sourceLanguage: sourceLanguage)
     guard sourceLanguage == .french else { return displayed }
+    // **Bug-Fix 2026-06-09** — Vor einen Artikel kommt kein Artikel.
+    // Ein Eintrag „l'" wurde als Nomen behandelt und bekam „le"
+    // vorangestellt: „le l'" — im Quiz sichtbar als „le l"
+    // (User-Report). Artikel sind eine geschlossene Klasse, der Test
+    // ist derselbe wie im Scan-Pfad.
+    if isFrenchArticleEntry(displayed) { return displayed }
     // Non-nouns never get articles
     if StandardVocabularyLoader.isNonNoun(displayed) { return displayed }
     guard shouldDisplayStudyArticles(french: displayed, german: german, cardType: cardType) else { return displayed }

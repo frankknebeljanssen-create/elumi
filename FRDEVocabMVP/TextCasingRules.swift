@@ -251,9 +251,15 @@ enum TextNormalizationEngine {
         let lowerStem = letterStem(of: lower)
         let originallyCapitalized = startsWithUppercaseLetter(token)
 
-        // 1) Höflichkeitsform immer groß
+        // 1) Höflichkeitsform — NUR groß, wenn die Quelle es so hatte.
+        //
+        // **Bug-Fix 2026-06-09** — Vorher wurde jedes „sie" kapitalisiert.
+        // Aus „Das ist sie?" wurde dadurch „Das ist Sie?" (User-Report),
+        // aus „sie ist da" ein „Sie ist da". Ob die Höflichkeitsform
+        // gemeint ist, lässt sich am Einzelwort nicht entscheiden — die
+        // Schreibweise der Quelle ist die verlässlichere Information.
         if germanPolitePronouns.contains(lowerStem) {
-            return capitalizeFirstLetter(lower)
+            return originallyCapitalized ? capitalizeFirstLetter(lower) : lower
         }
 
         // 2) Bekannte Artikel/Präp-Artikel immer klein (auch wenn im Input groß)
