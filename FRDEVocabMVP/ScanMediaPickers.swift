@@ -72,7 +72,11 @@ struct PhotoLibraryPicker: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> PHPickerViewController {
         var config = PHPickerConfiguration()
-        config.selectionLimit = 20
+        // **2026-06-09** — Nativer Wert 20; per Demo-Flag
+        // (`FeatureFlags.maxScanPagesPerRun`) nach unten gedeckelt.
+        // `min(...)` liefert bei einem Flag-Wert ≥ 20 exakt das alte
+        // Verhalten. Bei Demo (1) erlaubt der Picker nur ein Bild.
+        config.selectionLimit = min(20, FeatureFlags.maxScanPagesPerRun)
         config.filter = .images
         let picker = PHPickerViewController(configuration: config)
         picker.delegate = context.coordinator

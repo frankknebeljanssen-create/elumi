@@ -39,4 +39,17 @@ enum FeatureFlags {
     /// Auf `true` zurückstellen reaktiviert alles, inklusive der zuvor
     /// gespeicherten Lernjahr-Wahl.
     static let learningYearSelectionEnabled = false
+
+    /// **2026-06-09** — Maximale Anzahl Seiten pro Scan-Durchgang.
+    /// Für die Demo auf 1 begrenzt: weniger Anthropic-Vision-Kosten
+    /// pro Scan und ein einfacherer, geradliniger Flow (fotografieren →
+    /// direkt zur Analyse, kein „weitere Seite hinzufügen").
+    ///
+    /// Der Produktionswert ist 10 (Kamera-Multi-Shot) bzw. 20
+    /// (Album-Mehrfachauswahl). Beide Consumer lesen diesen Flag als
+    /// Obergrenze via `min(nativerWert, maxScanPagesPerRun)` — steht der
+    /// Flag also auf einen Wert ≥ dem nativen Limit (z. B. 20 oder
+    /// `Int.max`), greift wieder exakt das alte Verhalten. Die
+    /// Mehrseiten-Logik selbst bleibt vollständig im Code.
+    static let maxScanPagesPerRun = 1
 }

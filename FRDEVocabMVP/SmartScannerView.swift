@@ -144,9 +144,11 @@ struct SmartScannerView: View {
     /// (`SmartScannerCaptureView`) bekommt Read+Write-Zugang via
     /// `@Binding`.
     @State private var batchCapturedImages: [UIImage] = []
-    /// Maximum für die Batch-Größe (UI-Sanity-Check). Apple-PHPicker
-    /// erlaubt 10 — wir folgen demselben Limit.
-    private let batchMaxImages: Int = 10
+    /// Maximum für die Batch-Größe (UI-Sanity-Check). Nativer Wert 10;
+    /// per Demo-Flag (`FeatureFlags.maxScanPagesPerRun`) nach unten
+    /// gedeckelt. `min(...)` sorgt dafür, dass ein Flag-Wert ≥ 10 exakt
+    /// das alte Verhalten liefert.
+    private var batchMaxImages: Int { min(10, FeatureFlags.maxScanPagesPerRun) }
 
     /// Aktueller Quality-Report aus dem `Machine.reviewReady`-State.
     /// Wird an `onUse(...)` weitergereicht, damit die Analyse-Pipeline
@@ -650,6 +652,16 @@ struct SmartScannerView: View {
                 #if DEBUG
                 appDebugLog("📸 [Multi-Shot] vocabularyList capture #\(batchCapturedImages.count) appended (id=\(captureID.shortID))")
                 #endif
+                // **2026-06-09** — Sobald das Seiten-Limit erreicht ist,
+                // direkt abschließen statt zurück zur Live-Kamera. Beim
+                // Demo-Limit (1) heißt das: erstes Bild → sofort in die
+                // Analyse, ohne „weitere Seite hinzufügen"-Footer. Beim
+                // Produktionswert (10) greift es beim 10. Bild — der
+                // User kann davor jederzeit selbst „Fertig" drücken.
+                if batchCapturedImages.count >= batchMaxImages {
+                    finalizeBatch()
+                    return
+                }
                 controller.resetToLive()
                 return
             }
