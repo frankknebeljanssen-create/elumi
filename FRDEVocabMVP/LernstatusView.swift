@@ -109,16 +109,13 @@ struct LernstatusView: View {
             )
         }
         .onAppear { silentlyRefreshWackelkandidatenListIfNeeded() }
-        .alert(
-            sectionInfo?.title ?? "",
-            isPresented: Binding(
-                get: { sectionInfo != nil },
-                set: { if !$0 { sectionInfo = nil } }
-            )
-        ) {
-            Button("Verstanden") { sectionInfo = nil }
-        } message: {
-            Text(sectionInfo?.message ?? "")
+        // **2026-08-04** — Eigenes Popup statt `.alert(...)` (User-Spec:
+        // „nicht grau, sieht aus wie'n Trauerkasten" — der System-Alert
+        // lässt sich nicht umfärben, das ist iOS-Fixstil). Gleiches
+        // Sheet-Muster wie `WackelkandidatenConfirmationSheet`, im
+        // normalen Elumi-Kartendesign.
+        .sheet(item: $sectionInfo) { info in
+            SectionInfoSheet(info: info) { sectionInfo = nil }
         }
     }
 
@@ -273,13 +270,9 @@ struct LernstatusView: View {
     @State private var expandedSections: Set<String> = []
 
     /// **2026-08-04** — Trägt Titel + Erklärtext für den aktuell offenen
-    /// Info-Alert (User-Spec: Unterschied „Zum Üben" vs. „Im Aufbau" war
-    /// nicht selbsterklärend).
-    private struct SectionInfo: Identifiable {
-        let id = UUID()
-        let title: String
-        let message: String
-    }
+    /// Info-Popup (User-Spec: Unterschied „Zum Üben" vs. „Im Aufbau" war
+    /// nicht selbsterklärend). Typ-Definition auf Dateiebene, siehe
+    /// `SectionInfo` unten.
     @State private var sectionInfo: SectionInfo?
 
     @ViewBuilder
@@ -388,7 +381,7 @@ struct LernstatusView: View {
                             // klappen.
                             if let infoMessage {
                                 Button {
-                                    sectionInfo = SectionInfo(title: title, message: infoMessage)
+                                    sectionInfo = SectionInfo(title: title, message: infoMessage, tint: tint)
                                 } label: {
                                     Image(systemName: "info.circle")
                                         .font(.system(size: 15, weight: .semibold))
@@ -528,6 +521,69 @@ private struct LernstatusItemRow: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+/// Trägerobjekt für das Info-Popup zu „Zum Üben"/„Im Aufbau" —
+/// `Identifiable`, damit `.sheet(item:)` greift.
+private struct SectionInfo: Identifiable {
+    let id = UUID()
+    let title: String
+    let message: String
+    let tint: Color
+}
+
+/// **2026-08-04** — Eigenes, kleines Popup im Elumi-Kartendesign statt
+/// `.alert(...)` (User-Spec: „nicht grau, sieht aus wie'n Trauerkasten"
+/// — der System-Alert ist fix grau/weiß und nicht themebar). Kompakter
+/// als das Wackelkandidaten-Bestätigungs-Popup — hier gibt's nur einen
+/// Erklärtext + einen Schließen-Button, kein Detent-Höhen-Bedarf.
+private struct SectionInfoSheet: View {
+    let info: SectionInfo
+    let onDismiss: () -> Void
+
+    var body: some View {
+        VStack(spacing: 18) {
+            Spacer(minLength: 20)
+
+            ZStack {
+                Circle()
+                    .fill(info.tint.opacity(0.16))
+                    .frame(width: 64, height: 64)
+                Image(systemName: "info.circle.fill")
+                    .font(.system(size: 30, weight: .semibold))
+                    .foregroundStyle(info.tint)
+            }
+
+            VStack(spacing: 8) {
+                Text(info.title)
+                    .font(.system(size: 21, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+
+                Text(info.message)
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.horizontal, 28)
+
+            Button("Verstanden") { onDismiss() }
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 32)
+                .padding(.vertical, 14)
+                .background(
+                    Capsule().fill(info.tint)
+                )
+                .buttonStyle(AppCardPressStyle())
+                .padding(.top, 4)
+
+            Spacer(minLength: 20)
+        }
+        .padding(.top, 12)
+        .presentationDetents([.height(360)])
+        .presentationDragIndicator(.visible)
     }
 }
 
