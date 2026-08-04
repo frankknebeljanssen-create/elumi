@@ -497,6 +497,11 @@ private struct LernstatusItemRow: View {
 
             Spacer(minLength: 8)
 
+            // **2026-08-04** — Beide Zweige zeigen jetzt zusätzlich
+            // `remainingCorrectForStrong` (User-Spec: „nur die Anzahl
+            // Versuche sagt mir nichts — ich brauche richtig/falsch UND
+            // wie viel noch fehlt"). Kein Alarm-Ton, sondern eine
+            // konkrete, erreichbare Zielgröße.
             if showAccuracy {
                 VStack(alignment: .trailing, spacing: 1) {
                     Text("\(Int((item.accuracy * 100).rounded()))%")
@@ -507,15 +512,25 @@ private struct LernstatusItemRow: View {
                         .font(.system(size: 11, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                         .monospacedDigit()
+                    Text("noch \(item.remainingCorrectForStrong)×")
+                        .font(.system(size: 10, weight: .semibold, design: .rounded))
+                        .foregroundStyle(tint.opacity(0.85))
+                        .monospacedDigit()
                 }
             } else {
-                // Sparse-Items: statt Prozenten nur die absolute Versuchs-
-                // Anzahl — eine Quote aus 2 Antworten wäre statistisch
-                // sinnlos und pädagogisch eher verunsichernd.
-                Text("\(item.totalAttempts) \(item.totalAttempts == 1 ? "Versuch" : "Versuche")")
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .monospacedDigit()
+                // Sparse-/Learning-Items: statt einer nackten Prozentzahl
+                // (bei wenigen Versuchen statistisch wenig aussagekräftig)
+                // die konkrete richtig/falsch-Aufschlüsselung + Prognose.
+                VStack(alignment: .trailing, spacing: 1) {
+                    Text("\(item.correctCount) richtig · \(item.wrongCount) falsch")
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .monospacedDigit()
+                    Text("noch \(item.remainingCorrectForStrong)×")
+                        .font(.system(size: 10, weight: .semibold, design: .rounded))
+                        .foregroundStyle(tint.opacity(0.85))
+                        .monospacedDigit()
+                }
             }
         }
         .padding(.horizontal, 14)

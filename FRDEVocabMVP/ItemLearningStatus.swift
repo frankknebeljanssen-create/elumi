@@ -84,4 +84,24 @@ struct ItemLearningStatus: Codable, Equatable, Hashable, Identifiable {
         }
         return .learning
     }
+
+    /// **2026-08-04** — Wie oft der User ab jetzt **hintereinander richtig**
+    /// antworten müsste, damit das Wort zu `.strong` wird (User-Spec: „nur
+    /// die Anzahl Versuche sagt mir nichts"). Nimmt an, dass ab jetzt kein
+    /// weiterer Fehler passiert — ist also die bestmögliche Prognose, kein
+    /// Durchschnitt über zukünftiges Rateverhalten.
+    ///
+    /// Herleitung aus der `.strong`-Schwelle (`totalAttempts >= 5 &&
+    /// accuracy >= 0.8`): gesucht ist das kleinste `k >= 0` mit
+    /// `(correctCount + k) / (totalAttempts + k) >= 0.8`. Nach `k`
+    /// aufgelöst (Multiplikation mit 5 macht 0.8 → 4, ganzzahlig, keine
+    /// Rundung nötig): `k >= 4 * totalAttempts - 5 * correctCount`.
+    /// Kombiniert mit der Mindest-Versuchszahl (`totalAttempts + k >= 5`)
+    /// ergibt sich das Maximum aus beiden Bedingungen.
+    var remainingCorrectForStrong: Int {
+        guard status != .strong else { return 0 }
+        let byAccuracy = 4 * totalAttempts - 5 * correctCount
+        let byMinAttempts = 5 - totalAttempts
+        return max(0, byAccuracy, byMinAttempts)
+    }
 }
