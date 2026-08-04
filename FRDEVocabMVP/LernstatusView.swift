@@ -26,8 +26,14 @@ struct LernstatusView: View {
 
     @ObservedObject var feedbackPlayer: FeedbackPlayer
     @ObservedObject var statusStore: ItemLearningStatusStore = .shared
+    /// **2026-08-04** — für die generierte Übungsliste „Meine
+    /// Wackelkandidaten": der Screen baut die Liste im `listStore` und
+    /// springt per `navigate` in die Karteikarten mit genau diesem
+    /// Bestand.
+    @ObservedObject var listStore: VocabularyListStore
     let goHome: () -> Void
     let openSettings: () -> Void
+    let navigate: (AppScreen) -> Void
 
     /// Home-Akzent — der Screen ist die „Detail-Ebene" der Home-Card, kein
     /// eigenständiges Modul. Dadurch bleibt die visuelle Sprache konsistent
@@ -43,6 +49,7 @@ struct LernstatusView: View {
                     emptyState
                 } else {
                     heroSummary
+                    practiceListCTA
                     sectionsContent
                 }
             }
@@ -167,6 +174,72 @@ struct LernstatusView: View {
         .overlay(sectionCardBorder)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: AppTheme.Shadow.card.color.opacity(0.4), radius: 5, x: 0, y: 2)
+    }
+
+    // MARK: - Übungsliste-CTA („Meine Wackelkandidaten")
+
+    /// **2026-08-04** — Verwandelt den Lernstatus von einer reinen
+    /// Anzeige in etwas Handelbares: baut aus allem, was noch nicht
+    /// „Stark" ist, eine echte Übungsliste und springt direkt in die
+    /// Karteikarten damit. Die Liste bleibt in „Meine Listen" liegen, ist
+    /// also danach auch für Quiz/Training auswählbar.
+    ///
+    /// Nur sichtbar, wenn es überhaupt Wackelkandidaten gibt — bei einem
+    /// reinen „alles stark"-Stand wäre der Button sinnlos.
+    @ViewBuilder
+    private var practiceListCTA: some View {
+        let count = statusStore.wackelkandidatenCount
+        if count > 0 {
+            Button {
+                buildAndPracticeWackelkandidaten()
+            } label: {
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(HomeLernstatusCard.needsWorkTint.opacity(0.18))
+                        Image(systemName: "dumbbell.fill")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundStyle(HomeLernstatusCard.needsWorkTint)
+                    }
+                    .frame(width: 46, height: 46)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Diese Wörter üben")
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                        Text(count == 1
+                             ? "Baut aus deinem 1 Wackelkandidaten eine Übungsliste."
+                             : "Baut aus deinen \(count) Wackelkandidaten eine Übungsliste.")
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    Spacer(minLength: 0)
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .appSetupCardBackground()
+            }
+            .buttonStyle(AppCardPressStyle())
+        }
+    }
+
+    /// Baut/aktualisiert die Liste „Meine Wackelkandidaten" aus dem
+    /// aktuellen Lernstatus und navigiert direkt in die Karteikarten,
+    /// **auf genau diese Liste gescoped** (`preferredListID`) — ohne die
+    /// globale Listen-Auswahl des Users zu überschreiben.
+    private func buildAndPracticeWackelkandidaten() {
+        let weakItems = statusStore.wackelkandidatenItems
+        guard let listID = listStore.rebuildWackelkandidatenList(from: weakItems) else { return }
+        feedbackPlayer.playListAction()
+        navigate(.flashcards(FlashcardLaunchContext(preferredListID: listID)))
     }
 
     // MARK: - Sections

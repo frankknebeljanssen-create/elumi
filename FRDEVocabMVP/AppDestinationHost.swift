@@ -46,8 +46,10 @@ struct AppDestinationHost: View {
         case .lernstatus:
             LernstatusView(
                 feedbackPlayer: feedbackPlayer,
+                listStore: runtime.ensureListStoreReady(),
                 goHome: goHome,
-                openSettings: openSettings
+                openSettings: openSettings,
+                navigate: navigate
             )
         case .gameHub:
             GameHubView(

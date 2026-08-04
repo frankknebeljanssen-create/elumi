@@ -240,6 +240,23 @@ final class ItemLearningStatusStore: ObservableObject {
 
     var totalTracked: Int { statuses.count }
 
+    /// **Wackelkandidaten (2026-08-04)** — alles außer `.strong`:
+    /// `needsWork` + `learning` + `sparse`. Das ist der Bestand, aus dem
+    /// die generierte Übungsliste „Meine Wackelkandidaten" gebaut wird
+    /// (siehe `VocabularyListStore.rebuildWackelkandidatenList(from:)`).
+    ///
+    /// Reihenfolge bewusst: erst `needsWork` (nach Trefferquote, das am
+    /// stärksten Hakende zuerst), dann `learning`, dann `sparse` — so
+    /// steht beim Drill das Schwächste vorne.
+    var wackelkandidatenItems: [ItemLearningStatus] {
+        needsWorkItems + learningItems + sparseItems
+    }
+
+    /// Anzahl ohne Sort/Filter-Ketten — für Button-Sichtbarkeit & Label.
+    var wackelkandidatenCount: Int {
+        statuses.values.reduce(0) { $1.status == .strong ? $0 : $0 + 1 }
+    }
+
     // MARK: - Reine Anzahl-Aggregate
     //
     // `strongItems.count` etc. würden immer den kompletten Filter + Sort
