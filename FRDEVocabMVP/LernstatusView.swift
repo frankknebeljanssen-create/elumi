@@ -512,10 +512,20 @@ private struct LernstatusItemRow: View {
                         .font(.system(size: 11, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                         .monospacedDigit()
-                    Text("noch \(item.remainingCorrectForStrong)×")
+                    // **2026-08-04** — „in Folge" ergänzt (User-Spec: bei
+                    // niedriger Quote wirkte eine nackte „noch 10×" ohne
+                    // Kontext unverständlich/entmutigend groß — die Zahl
+                    // ist so hoch, weil die GESAMT-Quote über alle
+                    // bisherigen Versuche hinweg gerechnet wird, nicht
+                    // nur die letzten Antworten. „in Folge" macht klar:
+                    // das ist der garantierte Weg (ohne einen weiteren
+                    // Fehler), nicht die einzig mögliche Reihenfolge.
+                    Text("noch \(item.remainingCorrectForStrong)× in Folge")
                         .font(.system(size: 10, weight: .semibold, design: .rounded))
                         .foregroundStyle(tint.opacity(0.85))
                         .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
             } else {
                 // Sparse-/Learning-Items: statt einer nackten Prozentzahl
@@ -526,10 +536,20 @@ private struct LernstatusItemRow: View {
                         .font(.system(size: 11, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                         .monospacedDigit()
-                    Text("noch \(item.remainingCorrectForStrong)×")
+                    // **2026-08-04** — „in Folge" ergänzt (User-Spec: bei
+                    // niedriger Quote wirkte eine nackte „noch 10×" ohne
+                    // Kontext unverständlich/entmutigend groß — die Zahl
+                    // ist so hoch, weil die GESAMT-Quote über alle
+                    // bisherigen Versuche hinweg gerechnet wird, nicht
+                    // nur die letzten Antworten. „in Folge" macht klar:
+                    // das ist der garantierte Weg (ohne einen weiteren
+                    // Fehler), nicht die einzig mögliche Reihenfolge.
+                    Text("noch \(item.remainingCorrectForStrong)× in Folge")
                         .font(.system(size: 10, weight: .semibold, design: .rounded))
                         .foregroundStyle(tint.opacity(0.85))
                         .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
             }
         }
