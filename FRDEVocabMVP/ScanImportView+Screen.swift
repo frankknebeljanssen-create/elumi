@@ -437,7 +437,10 @@ extension ScanImportView {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(AppTheme.Colors.warning)
-                        Text("\(unsureCount) unsichere Eintr\u{00E4}ge")
+                        // **2026-06-09** — Singular/Plural-Fix: bei genau
+                        // 1 Eintrag muss es „unsicherer Eintrag" heißen,
+                        // nicht „unsichere Einträge".
+                        Text(unsureCount == 1 ? "1 unsicherer Eintrag" : "\(unsureCount) unsichere Eintr\u{00E4}ge")
                             .font(.system(size: 15, weight: .semibold, design: .rounded))
                             .foregroundStyle(AppTheme.Colors.warning)
                         Spacer()
