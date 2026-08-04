@@ -222,10 +222,13 @@ struct LernstatusView: View {
         )
     }
 
-    /// Einzel-Sektion: farbig getönter Header + Card-Container mit den
-    /// Item-Rows. Header ist tapbar und klappt die Sektion auf/zu.
-    /// Leere Sektionen zeigen einen dezenten Empty-State-Text statt
-    /// der Item-Liste.
+    /// Einzel-Sektion als **eine** Card — Header + Item-Liste sitzen jetzt
+    /// gemeinsam in `appSetupCardBackground()`, demselben Card-Stil wie
+    /// „Dein Fortschritt" & Co. auf dem Fortschritt-Hauptscreen (User-
+    /// Spec 2026-08-04: „damit sich das Design fortsetzt"). Vorher war
+    /// nur der aufgeklappte Inhalt geboxt, der Header schwamm frei auf
+    /// dem Screen-Hintergrund — das brach den Card-Look der ersten Seite.
+    /// Header ist tapbar und klappt die Sektion auf/zu.
     private func section(
         id: String,
         title: String,
@@ -290,11 +293,7 @@ struct LernstatusView: View {
                     Text("Noch nichts in dieser Kategorie.")
                         .font(.system(size: 13, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
-                        .padding(14)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(sectionCardBackground)
-                        .overlay(sectionCardBorder)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .padding(.top, 2)
                 } else {
                     VStack(spacing: 0) {
                         ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
@@ -306,13 +305,13 @@ struct LernstatusView: View {
                             }
                         }
                     }
-                    .background(sectionCardBackground)
-                    .overlay(sectionCardBorder)
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                    .shadow(color: AppTheme.Shadow.card.color.opacity(0.4), radius: 5, x: 0, y: 2)
                 }
             }
         }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .appSetupCardBackground()
     }
 
     private var sectionCardBackground: some View {
