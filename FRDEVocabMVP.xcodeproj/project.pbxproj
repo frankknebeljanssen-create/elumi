@@ -32,6 +32,7 @@
 		54A069E941A24FAA8F5763B6 /* Sounds/elumi_gameover.wav in Resources */ = {isa = PBXBuildFile; fileRef = 6DC3E67A0E5B47A6A21D7589 /* Sounds/elumi_gameover.wav */; };
 		55916C8754034661BBD48F46 /* FRDEMasterLexicon.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */; };
 		FEDEA20800000000000099003 /* gender_ai_overrides.json in Resources */ = {isa = PBXBuildFile; fileRef = FEDEA20800000000000099004 /* gender_ai_overrides.json */; };
+		FEDEA20900000000000099003 /* german_finite_verbs.json in Resources */ = {isa = PBXBuildFile; fileRef = FEDEA20900000000000099004 /* german_finite_verbs.json */; };
 		58A13D20DB064DC3A1CFBDDD /* Sounds/elumi_tentacle_sting.wav in Resources */ = {isa = PBXBuildFile; fileRef = 14D6AA0E2F7547C58EFD2C7B /* Sounds/elumi_tentacle_sting.wav */; };
 		616E2C714CE745070CD98CBB /* AppBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77D1F5E4FBCC08EBB9C7AFB9 /* AppBackButton.swift */; };
 		637BA521C77B4EC8B8FB9AAC /* DailyChallengeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C3FB95BD334EE18408771B /* DailyChallengeStore.swift */; };
@@ -1046,6 +1047,7 @@
 		DADBA6D5B4FF4413839CBF0D /* Sounds/elumi_shieldactivate.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_shieldactivate.wav; sourceTree = "<group>"; };
 		DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = FRDEMasterLexicon.sqlite; sourceTree = "<group>"; };
 		FEDEA20800000000000099004 /* gender_ai_overrides.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = gender_ai_overrides.json; sourceTree = "<group>"; };
+		FEDEA20900000000000099004 /* german_finite_verbs.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = german_finite_verbs.json; sourceTree = "<group>"; };
 		ED6E2620B526439EA130ADE9 /* Sounds/elumi_jellyfish_ambient.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_jellyfish_ambient.wav; sourceTree = "<group>"; };
 		F1C01A111A111A111A111111 /* GamificationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamificationConfig.swift; sourceTree = "<group>"; };
 		F244E2378E0C4DF89CC561E1 /* ProgressHubComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProgressHubComponents.swift; path = FRDEVocabMVP/ProgressHubComponents.swift; sourceTree = "<group>"; };
@@ -1782,6 +1784,7 @@
 				A00000000000000000000093 /* FRDEKnowledgePool.sqlite */,
 				DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */,
 				FEDEA20800000000000099004 /* gender_ai_overrides.json */,
+				FEDEA20900000000000099004 /* german_finite_verbs.json */,
 				F1C01A111A111A111A111111 /* GamificationConfig.swift */,
 				F2C01A111A111A111A111111 /* LearningSession.swift */,
 				F3C01A111A111A111A111111 /* ProgressStore.swift */,
@@ -1938,6 +1941,7 @@
 				A00000000000000000000092 /* FRDEKnowledgePool.sqlite in Resources */,
 				55916C8754034661BBD48F46 /* FRDEMasterLexicon.sqlite in Resources */,
 				FEDEA20800000000000099003 /* gender_ai_overrides.json in Resources */,
+				FEDEA20900000000000099003 /* german_finite_verbs.json in Resources */,
 				F43B1C0A2F877A000094BA73 /* VerbNounPairs.tsv in Resources */,
 				F43B1C0E2F878B000094BA73 /* FillBlankSentences.tsv in Resources */,
 				A92FD19A63604A98AC7A62D8 /* Sounds/elumi_bgm_fischfang.wav in Resources */,

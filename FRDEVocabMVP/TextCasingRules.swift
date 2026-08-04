@@ -564,37 +564,42 @@ enum SentenceStructure {
     /// Häufige finite Verbformen im Deutschen.
     ///
     /// Handgepflegt, weil das Lexikon für die deutsche Seite nur
-    /// Übersetzungen führt und keine Formen. Bewusst nur eindeutige
-    /// Formen: „heißt" ja, „liebe" nein (auch Nomen).
-    static let germanFiniteVerbs: Set<String> = [
-        "ist", "sind", "bin", "bist", "seid", "war", "warst", "waren", "wart",
-        "hat", "habe", "hast", "habt", "haben", "hatte", "hattest", "hatten",
-        "wird", "wirst", "werde", "werdet", "werden", "wurde", "wurden",
-        "kann", "kannst", "k\u{00F6}nnen", "k\u{00F6}nnt", "konnte", "konnten",
-        "muss", "musst", "m\u{00FC}ssen", "m\u{00FC}sst", "musste", "mussten",
-        "will", "willst", "wollen", "wollt", "wollte", "wollten",
-        "soll", "sollst", "sollen", "sollt", "sollte", "sollten",
-        "darf", "darfst", "d\u{00FC}rfen", "d\u{00FC}rft", "durfte", "durften",
-        "mag", "magst", "m\u{00F6}gen", "m\u{00F6}gt", "mochte", "mochten",
-        "geht", "gehe", "gehst", "gehen", "ging", "gingen",
-        "kommt", "komme", "kommst", "kommen", "kam", "kamen",
-        "macht", "mache", "machst", "machen", "machte", "machten",
-        "sagt", "sage", "sagst", "sagen", "sagte", "sagten",
-        "sieht", "sehe", "siehst", "sehen", "sah", "sahen",
-        "wei\u{00DF}", "weisst", "wei\u{00DF}t", "wissen", "wusste", "wussten",
-        "gibt", "gebe", "gibst", "geben", "gab", "gaben",
-        "nimmt", "nehme", "nimmst", "nehmen", "nahm", "nahmen",
-        "hei\u{00DF}t", "heisst", "hei\u{00DF}e", "hei\u{00DF}en",
-        "findet", "finde", "findest", "finden", "fand", "fanden",
-        "bleibt", "bleibe", "bleibst", "bleiben", "blieb", "blieben",
-        "steht", "stehe", "stehst", "stehen", "stand", "standen",
-        "liegt", "liege", "liegst", "liegen", "lag", "lagen",
-        "braucht", "brauche", "brauchst", "brauchen",
-        "wohnt", "wohne", "wohnst", "wohnen",
-        "spielt", "spiele", "spielst", "spielen",
-        "lernt", "lerne", "lernst", "lernen",
-        "isst", "esse", "essen", "trinkt", "trinke", "trinken",
-        "schl\u{00E4}ft", "schlafe", "schlafen",
-        "f\u{00E4}hrt", "fahre", "fahren", "fuhr", "fuhren"
-    ]
+    /// Übersetzungen führt und keine Formen (anders als Französisch, wo
+    /// `frenchFiniteVerbForms` die Flexionen direkt aus den Lexikon-Daten
+    /// zieht). Damit die Liste ohne Code-Änderung wachsen kann, liegt sie
+    /// als Datendatei `german_finite_verbs.json` im Bundle; bewusst nur
+    /// eindeutige Formen: „heißt" ja, „liebe" nein (auch Nomen).
+    ///
+    /// Einmalig beim ersten Zugriff geladen und normalisiert — der Set wird
+    /// für jede Anzeige-Entscheidung gebraucht.
+    static let germanFiniteVerbs: Set<String> = {
+        guard let url = Bundle.main.url(forResource: "german_finite_verbs", withExtension: "json") else {
+            #if DEBUG
+            appDebugLog("\u{26A0}\u{FE0F} [SentenceStructure] german_finite_verbs.json nicht im Bundle gefunden.")
+            #endif
+            return []
+        }
+        do {
+            let data = try Data(contentsOf: url)
+            struct Payload: Decodable { let forms: [String] }
+            let payload = try JSONDecoder().decode(Payload.self, from: data)
+            // Über normalizedLookupWords laufen lassen, damit die Formen
+            // exakt so vorliegen wie die Tokens aus dem geprüften Text.
+            var result: Set<String> = []
+            for form in payload.forms {
+                if let normalized = normalizedLookupWords(form).first {
+                    result.insert(normalized)
+                }
+            }
+            #if DEBUG
+            appDebugLog("\u{2705} [SentenceStructure] \(result.count) deutsche Verbformen geladen.")
+            #endif
+            return result
+        } catch {
+            #if DEBUG
+            appDebugLog("\u{26A0}\u{FE0F} [SentenceStructure] Fehler beim Laden von german_finite_verbs.json: \(error)")
+            #endif
+            return []
+        }
+    }()
 }
