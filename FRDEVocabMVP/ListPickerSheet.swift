@@ -370,7 +370,14 @@ struct ListPickerSheet: View {
                         .foregroundStyle(list.id == currentSelectedID ? style.accent : AppTheme.Colors.textDisabled)
                 }
 
-                // Zeile 2: Beschreibung, darf mehrzeilig umbrechen.
+                // **2026-08-04** — Zeile 2 reserviert jetzt eine FESTE
+                // 2-Zeilen-Höhe (User-Spec: Karten waren immer noch
+                // unterschiedlich hoch, weil kürzere Beschreibungen
+                // — z. B. eine einzelne „N Einträge"-Zeile — weniger
+                // Platz brauchten als eine zweizeilige Wortart-
+                // Aufstellung). `lineLimit(2)` deckelt nach oben,
+                // `frame(height:)` reserviert den Platz auch, wenn nur
+                // eine Zeile tatsächlich Inhalt hat.
                 Group {
                     if !list.isBuiltIn {
                         wordClassBreakdownText(for: list, showsTotalCount: showsTotalCount)
@@ -380,10 +387,19 @@ struct ListPickerSheet: View {
                             .foregroundStyle(AppTheme.Colors.textSecondary)
                     }
                 }
+                .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .fixedSize(horizontal: false, vertical: true)
+                .frame(height: 32, alignment: .topLeading)
 
                 // Zeile 3: Editier-Icons — nur für eigene (nicht built-in) Listen.
+                //
+                // **2026-08-04** — Löschen (Mülltonne) bewusst vom
+                // Umbenennen/Ansehen/Zusammenführen-Cluster abgesetzt
+                // (User-Spec): eigener Spacer schiebt sie ganz an den
+                // rechten Rand, und ein runder, rot getönter Kreis
+                // dahinter macht sie optisch als „andere Art von
+                // Aktion" erkennbar statt als vierten gleichrangigen
+                // Icon-Button in derselben Reihe.
                 if !list.isBuiltIn {
                     HStack(spacing: 4) {
                         if onRename != nil {
@@ -425,24 +441,27 @@ struct ListPickerSheet: View {
                             .buttonStyle(.plain)
                         }
 
+                        Spacer(minLength: 8)
+
                         Button {
                             listPendingDeletion = list
                         } label: {
                             Image(systemName: "trash")
-                                .font(.system(size: 19, weight: .semibold))
-                                .foregroundStyle(AppTheme.Colors.error.opacity(0.7))
-                                .frame(width: 40, height: 40)
-                                .contentShape(Rectangle())
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundStyle(AppTheme.Colors.error)
+                                .frame(width: 36, height: 36)
+                                .background(
+                                    Circle().fill(AppTheme.Colors.error.opacity(0.14))
+                                )
+                                .contentShape(Circle())
                         }
                         .buttonStyle(.plain)
-
-                        Spacer(minLength: 0)
                     }
                 }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
-            .frame(minHeight: 128)
+            .frame(minHeight: 144)
             .appCardBackground(style, intensity: list.id == currentSelectedID ? AppTheme.CardIntensity.selected : AppTheme.CardIntensity.whisper, cornerRadius: 14)
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)

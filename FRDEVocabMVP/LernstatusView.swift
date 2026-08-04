@@ -61,7 +61,7 @@ struct LernstatusView: View {
                     // wirkt, sondern als eigener, auffälliger Schlusspunkt.
                     sectionsContent
                     practiceListCTA
-                        .padding(.top, AppTheme.Spacing.sm)
+                        .padding(.top, AppTheme.Spacing.xl)
                 }
             }
             .padding(.horizontal, AppLayout.screenPadding)
@@ -108,6 +108,40 @@ struct LernstatusView: View {
                 }
             )
         }
+        .onAppear { silentlyRefreshWackelkandidatenListIfNeeded() }
+        .alert(
+            sectionInfo?.title ?? "",
+            isPresented: Binding(
+                get: { sectionInfo != nil },
+                set: { if !$0 { sectionInfo = nil } }
+            )
+        ) {
+            Button("Verstanden") { sectionInfo = nil }
+        } message: {
+            Text(sectionInfo?.message ?? "")
+        }
+    }
+
+    /// **2026-08-04** — Hält „Meine Wackelkandidaten" automatisch aktuell
+    /// (User-Spec: „sollte im Hintergrund geschehen, ohne dass der User
+    /// das merkt"). `ItemLearningStatusStore` selbst ist live/published —
+    /// die Zahlen bei „Zum Üben"/„Im Aufbau" aktualisieren sich schon von
+    /// selbst, sobald irgendwo geübt wird. Die generierte Liste ist aber
+    /// ein Snapshot: ohne diesen Hook würden bereits gemeisterte Wörter
+    /// erst beim nächsten manuellen Tap auf „Diese Wörter jetzt üben"
+    /// wieder rausfallen.
+    ///
+    /// Sync-Punkt bewusst **Screen-Appear**, nicht live während einer
+    /// laufenden Übungs-Session: mitten in einer Karteikarten-Runde
+    /// Karten unter dem User wegzuziehen wäre verwirrend. Beim nächsten
+    /// Öffnen des Lernstatus-Screens ist der Bestand aber garantiert
+    /// frisch — und genau von hier aus wird die Liste sowieso gestartet.
+    ///
+    /// Baut NUR neu, wenn die Liste schon existiert (User sie also schon
+    /// mal explizit angelegt hat) — legt sie nie ungefragt neu an.
+    private func silentlyRefreshWackelkandidatenListIfNeeded() {
+        guard listStore.customList(with: VocabularyListStore.wackelkandidatenListID) != nil else { return }
+        listStore.rebuildWackelkandidatenList(from: statusStore.wackelkandidatenItems)
     }
 
     // MARK: - Header
@@ -238,6 +272,16 @@ struct LernstatusView: View {
     /// selbst auf.
     @State private var expandedSections: Set<String> = []
 
+    /// **2026-08-04** — Trägt Titel + Erklärtext für den aktuell offenen
+    /// Info-Alert (User-Spec: Unterschied „Zum Üben" vs. „Im Aufbau" war
+    /// nicht selbsterklärend).
+    private struct SectionInfo: Identifiable {
+        let id = UUID()
+        let title: String
+        let message: String
+    }
+    @State private var sectionInfo: SectionInfo?
+
     @ViewBuilder
     private var sectionsContent: some View {
         let strong = statusStore.strongItems
@@ -270,7 +314,8 @@ struct LernstatusView: View {
             subtitle: "Hier lohnt sich die nächste Runde — wiederhol einfach kurz.",
             tint: HomeLernstatusCard.needsWorkTint,
             items: needsWork,
-            showAccuracy: true
+            showAccuracy: true,
+            infoMessage: "Diese Wörter hast du schon öfter geübt — aber noch nicht oft genug richtig beantwortet. Deshalb lohnt sich hier eine Wiederholung besonders."
         )
 
         section(
@@ -279,7 +324,8 @@ struct LernstatusView: View {
             subtitle: "Frisch dabei — nach ein paar weiteren Versuchen sortiert sich das ganz von selbst.",
             tint: AppTheme.Colors.elumiPink,
             items: inProgress,
-            showAccuracy: false
+            showAccuracy: false,
+            infoMessage: "Bei diesen Wörtern hat die App noch nicht genug Antworten von dir, um sicher zu sagen, ob sie schon sitzen oder noch wackeln. Übe einfach weiter, dann sortieren sie sich von selbst in „Stark\" oder „Zum Üben\" ein."
         )
     }
 
@@ -296,7 +342,8 @@ struct LernstatusView: View {
         subtitle: String,
         tint: Color,
         items: [ItemLearningStatus],
-        showAccuracy: Bool
+        showAccuracy: Bool,
+        infoMessage: String? = nil
     ) -> some View {
         let isExpanded = expandedSections.contains(id)
         return VStack(alignment: .leading, spacing: 10) {
@@ -330,6 +377,27 @@ struct LernstatusView: View {
                                 .background(
                                     Capsule().fill(tint.opacity(0.18))
                                 )
+                            // **2026-08-04** — Info-Button (User-Spec: der
+                            // Unterschied „Zum Üben" vs. „Im Aufbau" war
+                            // nicht selbsterklärend). Eigenes 28×28-Tap-
+                            // Ziel + `contentShape`, verschachtelt im
+                            // Header-Button — dasselbe Pattern wie der
+                            // reparierte Umbenennen-Stift bei „Meine
+                            // Listen", damit der Tap zuverlässig NUR den
+                            // Info-Alert öffnet statt die Sektion zu
+                            // klappen.
+                            if let infoMessage {
+                                Button {
+                                    sectionInfo = SectionInfo(title: title, message: infoMessage)
+                                } label: {
+                                    Image(systemName: "info.circle")
+                                        .font(.system(size: 15, weight: .semibold))
+                                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                                        .frame(width: 28, height: 28)
+                                        .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
                         Text(subtitle)
                             .font(.system(size: 12, weight: .medium, design: .rounded))
@@ -527,10 +595,15 @@ private struct WackelkandidatenConfirmationSheet: View {
             // **2026-08-04** — Icons + Farben 1:1 vom Hauptscreen (User-
             // Spec): `HomeModuleIcon` + `AppTheme.Colors.module*` statt
             // generischer SF-Symbole — dasselbe Karteikarten-/Quiz-/
-            // Vokabeln-Icon-Set wie im Home-Grid. „Training" mappt auf
-            // `.vokabeln`, weil genau dieses Icon/dieser Screen (Training
-            // im Modus „Vokabeln") auch tatsächlich unter `onStartTraining`
-            // aufgerufen wird.
+            // Vokabeln-Icon-Set wie im Home-Grid.
+            //
+            // **2026-08-04, zweite Runde** — dritter Button hieß erst
+            // „Training", sprang aber technisch immer nur in den
+            // Vokabeln-Modus (Training hat daneben noch Nomen/Artikel/
+            // Verben/Verbformen). User-Entscheidung: Button ehrlich
+            // „Vokabeln üben" nennen statt ein Untermenü einzubauen —
+            // die anderen Trainingsmodi bleiben über Meine Listen →
+            // Liste auswählen → Training-Hub erreichbar.
             VStack(spacing: 12) {
                 practiceOptionButton(
                     title: "Karteikarten",
@@ -545,7 +618,7 @@ private struct WackelkandidatenConfirmationSheet: View {
                     action: onStartQuiz
                 )
                 practiceOptionButton(
-                    title: "Training",
+                    title: "Vokabeln üben",
                     icon: .vokabeln,
                     tint: AppTheme.Colors.moduleVocabulary,
                     action: onStartTraining
