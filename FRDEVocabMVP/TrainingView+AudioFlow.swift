@@ -418,7 +418,6 @@ extension TrainingView {
             speechController?.stopRecording()
         }
         speaker?.stop()
-        isMicPulseVisible = false
     }
 
     func handleAudioModeChange(isEnabled: Bool) {

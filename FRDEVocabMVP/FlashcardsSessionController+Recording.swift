@@ -49,7 +49,6 @@ extension FlashcardsSessionController {
             )
         }
 
-        isMicPulseVisible = isRecording
     }
 
     func beginAutomaticListeningIfNeeded(

@@ -47,7 +47,6 @@ final class FlashcardsSessionController: ObservableObject {
         let raw = UserDefaults.standard.string(forKey: appAnswerModeKarteikartenKey)
         return raw.flatMap { AnswerMode(rawValue: $0) } ?? .speech
     }()
-    @Published var isMicPulseVisible = false
     @Published var displayedFlashCard: FlashCard?
 
     /// Live-Offset, während der User die Karte mit dem Finger zieht.

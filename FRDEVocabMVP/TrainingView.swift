@@ -99,7 +99,6 @@ struct TrainingView: View {
     @State var vokabelAwaitingWeiter = false
     @State var vokabelPendingCorrect: Bool?
     @State var vokabelCheckedAnswer = ""
-    @State var isMicPulseVisible = false
     @State var hasTriggeredAudioPreparation = false
     @State var isPreparingAudioDependencies = false
     @State var wasSpeakerSpeaking = false

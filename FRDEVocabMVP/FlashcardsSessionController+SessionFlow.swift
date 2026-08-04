@@ -34,7 +34,6 @@ extension FlashcardsSessionController {
         speechController.recordError = nil
         typedAnswer = ""
         hideTypedAnswerField()
-        isMicPulseVisible = false
         if clearDisplayedCard {
             displayedFlashCard = nil
         }
@@ -155,7 +154,6 @@ extension FlashcardsSessionController {
         if speaker.isSpeaking {
             speaker.stop()
         }
-        isMicPulseVisible = false
     }
 
     func pushCurrentFlashcardToHistory(

@@ -163,7 +163,6 @@ extension TrainingView {
         typedAnswer = ""
         showingTypedAnswerInput = !isAudioModeEnabled
         typedAnswerFieldFocused = false
-        isMicPulseVisible = false
         articleAnswer = nil
         articleLocked = false
         showingArticleTranslation = false

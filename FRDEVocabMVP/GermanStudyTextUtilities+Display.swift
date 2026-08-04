@@ -17,11 +17,19 @@ func germanDisplayText(_ text: String, cardType: CardType, sourceHint: String? =
         style: .neutral,
         cardType: cardType
     )
+    // **Audit 2026-06-09** — Die Satzanfang-Großschreibung gehört in
+    // die Anzeige-Funktion selbst, nicht an die Aufrufer. Vorher lag sie
+    // nur im Quiz-Pfad, wodurch dieselbe Phrase je nach Aufrufer anders
+    // aussah; die französische Seite macht es seit demselben Audit
+    // ebenso. Wer einen neuen Anzeigepfad baut, bekommt es dadurch
+    // automatisch richtig.
     if detectedTerminalSentencePunctuation(from: preserved) != nil {
-        return preserved
+        return capitalizingSentenceStartIfTerminated(preserved)
     }
     if let inferred = inferredGermanTerminalSentencePunctuation(preserved, cardType: cardType) {
-        return applyingTerminalSentencePunctuation(inferred, to: preserved, style: .neutral)
+        return capitalizingSentenceStartIfTerminated(
+            applyingTerminalSentencePunctuation(inferred, to: preserved, style: .neutral)
+        )
     }
     return preserved
 }
@@ -105,17 +113,17 @@ private func quizCardType(for category: String) -> CardType {
 func visibleQuizPromptText(_ text: String, category: String) -> String {
     let cardType = quizCardType(for: category)
     if looksLikeGermanDisplayText(text) {
-        return capitalizingSentenceStartIfTerminated(germanDisplayText(text, cardType: cardType))
+        return germanDisplayText(text, cardType: cardType)
     }
-    return capitalizingSentenceStartIfTerminated(sourceDisplayText(text, sourceLanguage: .french))
+    return sourceDisplayText(text, sourceLanguage: .french)
 }
 
 func visibleQuizAnswerText(_ text: String, category: String) -> String {
     let cardType = quizCardType(for: category)
     if looksLikeGermanDisplayText(text) {
-        return capitalizingSentenceStartIfTerminated(germanDisplayText(text, cardType: cardType))
+        return germanDisplayText(text, cardType: cardType)
     }
-    return capitalizingSentenceStartIfTerminated(sourceDisplayText(text, sourceLanguage: .french))
+    return sourceDisplayText(text, sourceLanguage: .french)
 }
 
 /// **2026-06-09** — Anzeige eines zusammengehörenden Paars (Frage +
@@ -158,6 +166,10 @@ func visibleQuizPairTexts(
     let syncedPrompt = promptIsGerman ? synchronized.target : synchronized.source
     let syncedAnswer = promptIsGerman ? synchronized.source : synchronized.target
 
+    // Die Anzeige-Funktionen kapitalisieren bereits selbst; nach der
+    // Paar-Synchronisierung kann eine Seite aber ein Satzzeichen NEU
+    // bekommen haben (Frage gewinnt vor Aussage). Deshalb hier noch
+    // einmal — idempotent, aber notwendig für genau diesen Fall.
     return (
         capitalizingSentenceStartIfTerminated(syncedPrompt),
         capitalizingSentenceStartIfTerminated(syncedAnswer)

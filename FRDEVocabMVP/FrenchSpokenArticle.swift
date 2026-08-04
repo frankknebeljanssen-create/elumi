@@ -49,7 +49,7 @@ enum FrenchSpokenArticle {
         // maskulin, „le mai" wäre aber falsch — der Guard steht hier
         // unabhängig davon, ob die Genus-Quelle für sie je einen Wert
         // liefert.
-        guard !isArticleless(trimmed) else { return text }
+        guard !isArticlelessFrenchNoun(trimmed) else { return text }
 
         guard let gender = StandardVocabularyLoader.frenchGender(for: trimmed) else {
             return text
@@ -62,27 +62,13 @@ enum FrenchSpokenArticle {
         }
     }
 
-    /// Nomen, die im Französischen grundsätzlich ohne Artikel stehen:
-    /// Monatsnamen und Eigennamen. Ein Artikel davor wäre schlicht
-    /// falsches Französisch („le mai").
-    private static func isArticleless(_ word: String) -> Bool {
-        let normalized = word
-            .lowercased()
-            .folding(options: .diacriticInsensitive, locale: Locale(identifier: "fr_FR"))
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        if monthNames.contains(normalized) { return true }
-        // Eigennamen: im Lexikon durchgängig großgeschrieben („Paris",
-        // „Noël"), während Gattungsnamen klein stehen.
-        return word.first?.isUppercase == true
-    }
-
-    /// Die zwölf Monate in diakritik-freier Schreibweise — der Vergleich
-    /// oben faltet Akzente weg („aout" trifft auch „août").
-    private static let monthNames: Set<String> = [
-        "janvier", "fevrier", "mars", "avril", "mai", "juin",
-        "juillet", "aout", "septembre", "octobre", "novembre", "decembre"
-    ]
+    // **Audit 2026-06-09** — Die artikellosen Nomen (Monate,
+    // Eigennamen) lagen hier als zweite, unabhängige Kopie der Liste
+    // aus `LexiconGenderUtilities+Constants`. Zwei Quellen für dieselbe
+    // Regel driften auseinander, sobald eine ergänzt wird — sichtbar
+    // würde das als „le mai" beim Vorsprechen bei gleichzeitig
+    // korrektem Quiz. Es gilt jetzt ausschließlich
+    // `isArticlelessFrenchNoun(_:)`.
 
     /// „le "/„la " — oder „l'" bei Elision. Ohne Elision spräche die
     /// TTS-Stimme „le école" wörtlich aus, was hörbar falsch ist.
