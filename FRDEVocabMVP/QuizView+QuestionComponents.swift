@@ -36,7 +36,11 @@ extension QuizView {
                         placeholder: "Antwort eingeben",
                         text: $typingInput,
                         accent: sectionStyle.accent,
-                        resultState: (isCountChainStep && quizAwaitingWeiter && quizPendingCorrect == true) ? .correct : .none,
+                        // **2026-06-09** — Grün bei richtiger Antwort in
+                        // ALLEN Modi. Vorher nur im Daily-Drop-Count-Modus
+                        // (`isCountChainStep && quizAwaitingWeiter`), im
+                        // normalen Quiz gab es keine sichtbare Bestätigung.
+                        resultState: typingWasCorrect ? .correct : .none,
                         alignment: .center,
                         isEnabled: !typingLocked,
                         focus: $isTypingFieldFocused,

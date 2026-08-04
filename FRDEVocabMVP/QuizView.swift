@@ -67,6 +67,16 @@ struct QuizView: View {
     @State var advanceTask: DispatchWorkItem?
     @State var typingInput = ""
     @State var typingLocked = false
+
+    /// **2026-06-09** — War die getippte Antwort richtig? Färbt das
+    /// Eingabefeld grün, sobald geprüft wurde.
+    ///
+    /// Vorher gab es diese Bestätigung nur im Daily-Drop-Modus (wo auf
+    /// „Weiter" gewartet wird); im normalen Quiz schaltete die Frage
+    /// kommentarlos weiter. Alle anderen Fragetypen (Multiple Choice,
+    /// Lückentext, Zuordnen) zeigen ihren Treffer grün — Tippen war die
+    /// Ausnahme.
+    @State var typingWasCorrect = false
     @State var typingShowCorrectAnswer: String?
     /// **Daily Drop Modul 2.12 (2026-05-23)** — Weiter-Button-Flow im
     /// Count-Modus: nach dem Check (Antwort geprüft, Feedback sichtbar)

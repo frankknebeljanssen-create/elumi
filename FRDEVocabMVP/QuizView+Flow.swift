@@ -52,11 +52,22 @@ extension QuizView {
         // bis der User „Weiter" tappt (Anton-Stil). Gewertet + advanced
         // wird erst im Weiter-Tap (`completeCurrentQuestion`). Normales
         // Quiz/Zeit-Chain: 2.6-Auto-Advance-Delay wie bisher.
+        // **2026-06-09** — Würmchen-Tick sofort beim Beantworten, nicht
+        // erst in `completeCurrentQuestion` (siehe `noteWormEarned()`).
+        // Jede richtige Antwort verdient ein Würmchen (`baseWorms:
+        // correctCount`), verbucht wird am Sessionende.
+        if isCorrect {
+            GamificationFeedbackPresenter.shared.noteWormEarned()
+        }
+
         if isCountChainStep {
             quizPendingCorrect = isCorrect
             quizAwaitingWeiter = true
         } else {
-            scheduleAdvance(after: 0.95) {
+            // Bei richtiger Antwort etwas länger stehen lassen, damit der
+            // Würmchen-Tick sichtbar zu Ende läuft, bevor die nächste
+            // Frage kommt.
+            scheduleAdvance(after: isCorrect ? 1.7 : 0.95) {
                 completeCurrentQuestion(correct: isCorrect)
             }
         }
@@ -96,9 +107,18 @@ extension QuizView {
 
         if isCorrect {
             feedbackPlayer.playStudySuccess()
+            // **2026-06-09** — Grüne Bestätigung am Eingabefeld, in
+            // allen Modi (siehe `typingWasCorrect`).
+            typingWasCorrect = true
         } else {
             feedbackPlayer.playStudyError()
             typingShowCorrectAnswer = question.correctAnswer
+        }
+
+        // **2026-06-09** — Würmchen-Tick sofort beim Beantworten (siehe
+        // `submitMultipleChoice`).
+        if isCorrect {
+            GamificationFeedbackPresenter.shared.noteWormEarned()
         }
 
         // Count-Modus: Feedback halten bis „Weiter" (siehe submitMultipleChoice).
@@ -106,7 +126,7 @@ extension QuizView {
             quizPendingCorrect = isCorrect
             quizAwaitingWeiter = true
         } else {
-            scheduleAdvance(after: 1.2) {
+            scheduleAdvance(after: isCorrect ? 1.9 : 1.2) {
                 completeCurrentQuestion(correct: isCorrect)
             }
         }
@@ -419,6 +439,7 @@ extension QuizView {
         promptFrames = [:]
         typingInput = ""
         typingLocked = false
+        typingWasCorrect = false
         typingShowCorrectAnswer = nil
         isTypingFieldFocused = false
         // **Daily Drop Modul 2.12** — Weiter-Flow-States zurücksetzen,
