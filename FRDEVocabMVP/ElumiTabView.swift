@@ -610,8 +610,8 @@ struct ElumiTabView: View {
                     VStack(spacing: 10) {
                         Text(
                             FeatureFlags.learningYearSelectionEnabled
-                            ? "Zu wenig Material für einen Drop. Wähle mehr Listen aus oder erweitere die Lernjahre."
-                            : "Zu wenig Material für einen Drop. Wähle mehr Listen aus."
+                            ? "Zu wenig Material für einen Drop. Wähle mehr Lernlisten aus oder erweitere die Lernjahre."
+                            : "Zu wenig Material für einen Drop. Wähle mehr Lernlisten aus."
                         )
                             .font(.system(size: 14, weight: .semibold, design: .rounded))
                             .foregroundStyle(AppTheme.Colors.textSecondary)
@@ -622,7 +622,7 @@ struct ElumiTabView: View {
                             dismissSetupModal()
                             navigate(.lists(nil))
                         } label: {
-                            Text("Zu Meine Listen")
+                            Text("Zu Meine Lernlisten")
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
@@ -749,7 +749,7 @@ struct ElumiTabView: View {
                     .frame(width: 32, height: 32)
 
                 if isEmpty {
-                    Text("Listen wählen")
+                    Text("Lernlisten wählen")
                         .font(.system(size: 18, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -804,7 +804,7 @@ struct ElumiTabView: View {
 
         let listLine: String = {
             if resolvedLists.count >= 4 {
-                return "\(resolvedLists.count) Listen ausgewählt"
+                return "\(resolvedLists.count) Lernlisten ausgewählt"
             }
             return resolvedLists.map(\.name).joined(separator: ", ")
         }()

@@ -552,11 +552,11 @@ struct SettingsView: View {
                 Image(systemName: "list.bullet.rectangle")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(AppTheme.Colors.elumiBlue)
-                Text("Globale Listen-Auswahl")
+                Text("Globale Lernlisten-Auswahl")
                     .font(.system(size: 16, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
             }
-            Text("Wenn aktiv, nutzen Karteikarten, Quiz, Training und Word Runner dieselbe Listen-Auswahl. Wenn aus, behält jedes Modul seine eigene. Akzente und persönliche Stapel sind unabhängig.")
+            Text("Wenn aktiv, nutzen Karteikarten, Quiz, Training und Word Runner dieselbe Lernlisten-Auswahl. Wenn aus, behält jedes Modul seine eigene. Akzente und persönliche Stapel sind unabhängig.")
                 .font(.system(size: 12, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -654,7 +654,7 @@ struct SettingsView: View {
                             .foregroundStyle(AppTheme.Colors.textPrimary)
                         Text(isDeveloperExpanded
                              ? "Regler für Tester:innen & Entwicklung"
-                             : "Icon-Stil, Spiel-Events, Listen-Reset")
+                             : "Icon-Stil, Spiel-Events, Lernlisten-Reset")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
@@ -728,7 +728,7 @@ struct SettingsView: View {
                 GameStateResetService.resetGameState()
             }
         } message: {
-            Text("Credits, XP, Streak und Tagesaufgabe werden auf den Ausgangszustand gesetzt. Beim nächsten Start werden neue Credits vergeben. Profil und eigene Listen bleiben erhalten.")
+            Text("Credits, XP, Streak und Tagesaufgabe werden auf den Ausgangszustand gesetzt. Beim nächsten Start werden neue Credits vergeben. Profil und eigene Lernlisten bleiben erhalten.")
         }
     }
 
@@ -745,10 +745,10 @@ struct SettingsView: View {
         } label: {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Meine Listen löschen")
+                    Text("Meine Lernlisten löschen")
                         .font(.system(size: 20, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
-                    Text("Entfernt alle selbst angelegten Vokabel-Listen. Nicht rückgängig zu machen.")
+                    Text("Entfernt alle selbst angelegten Lernlisten. Nicht rückgängig zu machen.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.leading)
@@ -767,13 +767,13 @@ struct SettingsView: View {
             .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
         }
         .buttonStyle(.plain)
-        .alert("Meine Listen löschen?", isPresented: $isShowingListsResetAlert) {
+        .alert("Meine Lernlisten löschen?", isPresented: $isShowingListsResetAlert) {
             Button("Abbrechen", role: .cancel) { }
             Button("Löschen", role: .destructive) {
                 GameStateResetService.resetCustomLists()
             }
         } message: {
-            Text("Alle vom dir angelegten Listen werden entfernt. Die App-Startlisten bleiben. Eventuell einmal die App neu starten, damit die Änderung überall sichtbar wird.")
+            Text("Alle vom dir angelegten Lernlisten werden entfernt. Die App-Startlisten bleiben. Eventuell einmal die App neu starten, damit die Änderung überall sichtbar wird.")
         }
     }
 
@@ -808,7 +808,7 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Spielstand zurücksetzen")
                     .font(.system(size: 20, weight: .bold, design: .rounded))
-                Text("XP, Streak, Credits, Highscore, Tages-Challenge und Sammelwerte (Würmer, Wasserfloh, Algenkugel) auf Ausgangszustand. Profil und Custom-Listen bleiben erhalten.")
+                Text("XP, Streak, Credits, Highscore, Tages-Challenge und Sammelwerte (Würmer, Wasserfloh, Algenkugel) auf Ausgangszustand. Profil und Custom-Lernlisten bleiben erhalten.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -898,7 +898,7 @@ struct SettingsView: View {
                 devSpiele = 0  // UI-Stepper auch zurück
             }
         } message: {
-            Text("Setzt XP, Streak, Credits, Highscore und Sammelwerte zurück. Profil und Custom-Listen bleiben erhalten.")
+            Text("Setzt XP, Streak, Credits, Highscore und Sammelwerte zurück. Profil und Custom-Lernlisten bleiben erhalten.")
         }
         .onAppear {
             // Stepper spiegelt beim Öffnen den echten Stand wider.

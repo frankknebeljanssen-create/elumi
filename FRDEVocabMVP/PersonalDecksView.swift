@@ -157,12 +157,12 @@ struct PersonalDecksView: View {
                     // war silent). Jetzt: User sieht direkt was zu tun
                     // ist, ohne dass das Sheet wegklappt.
                     if selectedIDs.isEmpty {
-                        return "W\u{00E4}hle mindestens eine Liste, aus der dein Stapel bestehen soll."
+                        return "W\u{00E4}hle mindestens eine Lernliste, aus der dein Stapel bestehen soll."
                     }
                     let selectedLists = allLists.filter { selectedIDs.contains($0.id) }
                     let cardIDs = PersonalDeck.buildCardOrderSnapshot(from: selectedLists)
                     if cardIDs.isEmpty {
-                        return "In deinem aktuellen Lernjahr-Range ergeben diese Listen keine Karten — w\u{00E4}hle andere Listen oder erweitere den Range."
+                        return "In deinem aktuellen Lernjahr-Range ergeben diese Lernlisten keine Karten — w\u{00E4}hle andere Lernlisten oder erweitere den Range."
                     }
                     return nil
                 }
@@ -196,12 +196,12 @@ struct PersonalDecksView: View {
                     // war silent). Jetzt: User sieht direkt was zu tun
                     // ist, ohne dass das Sheet wegklappt.
                     if selectedIDs.isEmpty {
-                        return "W\u{00E4}hle mindestens eine Liste, aus der dein Stapel bestehen soll."
+                        return "W\u{00E4}hle mindestens eine Lernliste, aus der dein Stapel bestehen soll."
                     }
                     let selectedLists = allLists.filter { selectedIDs.contains($0.id) }
                     let cardIDs = PersonalDeck.buildCardOrderSnapshot(from: selectedLists)
                     if cardIDs.isEmpty {
-                        return "In deinem aktuellen Lernjahr-Range ergeben diese Listen keine Karten — w\u{00E4}hle andere Listen oder erweitere den Range."
+                        return "In deinem aktuellen Lernjahr-Range ergeben diese Lernlisten keine Karten — w\u{00E4}hle andere Lernlisten oder erweitere den Range."
                     }
                     return nil
                 }
@@ -269,7 +269,7 @@ struct PersonalDecksView: View {
             // (z. B. „Buch Unite 1 · A1 Grundwortschatz") sieht aus wie
             // eine Listen-Bezeichnung; ohne den Reassurance-Satz könnte
             // der User denken, er löscht den Grundwortschatz selbst.
-            Text("Der Stapel \u{201E}\(deck.name)\u{201C} und dein Lernfortschritt werden gel\u{00F6}scht. Die Quelllisten bleiben erhalten.")
+            Text("Der Stapel \u{201E}\(deck.name)\u{201C} und dein Lernfortschritt werden gel\u{00F6}scht. Die Quell-Lernlisten bleiben erhalten.")
         }
     }
 
@@ -523,7 +523,7 @@ struct PersonalDeckDetailCard: View {
             Button {
                 onEditList()
             } label: {
-                Label("Listen ändern", systemImage: "list.bullet.rectangle")
+                Label("Lernlisten ändern", systemImage: "list.bullet.rectangle")
             }
             Button(role: .destructive) {
                 onDelete()

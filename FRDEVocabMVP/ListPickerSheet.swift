@@ -77,13 +77,13 @@ struct ListPickerSheet: View {
         // **Naming-Sweep 2026-05-06** — „Keine Liste ausgewählt" →
         // „Tipp eine Liste an" (kindgerecht-aktiv: zeigt eine
         // Aktion statt eines passiven Status).
-        return "Wähle eine oder mehrere Listen"
+        return "Wähle eine oder mehrere Lernlisten"
     }
 
     var body: some View {
         VStack(spacing: AppTheme.Spacing.md) {
             AppSheetHeader(
-                title: "Liste wählen",
+                title: "Lernliste wählen",
                 trailingTitle: "Fertig",
                 leadingTint: style.accent,
                 trailingTint: style.accent,
@@ -116,7 +116,7 @@ struct ListPickerSheet: View {
                     HStack(spacing: 8) {
                         Image(systemName: "arrow.triangle.merge")
                             .font(.system(size: 16, weight: .semibold))
-                        Text("Listen zusammenführen")
+                        Text("Lernlisten zusammenführen")
                             .font(.body.weight(.semibold))
                     }
                     .frame(maxWidth: .infinity)
@@ -267,7 +267,7 @@ struct ListPickerSheet: View {
             }
 
             if targets.isEmpty {
-                Text("Keine andere eigene Liste vorhanden.")
+                Text("Keine andere eigene Lernliste vorhanden.")
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }

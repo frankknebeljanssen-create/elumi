@@ -205,14 +205,14 @@ struct FlashcardsView: View {
         let totalCards = selectedStackCardCount
 
         if listCount == 0 {
-            return "Liste wählen"
+            return "Lernliste wählen"
         }
 
         if listCount == 1, let firstList = selectedStackLists.first {
             return "\(flashcardListDisplayName(firstList)) · \(countLabel(totalCards, singular: "Karte", plural: "Karten"))"
         }
 
-        return "\(countLabel(listCount, singular: "Liste", plural: "Listen")) · \(countLabel(totalCards, singular: "Karte", plural: "Karten"))"
+        return "\(countLabel(listCount, singular: "Lernliste", plural: "Lernlisten")) · \(countLabel(totalCards, singular: "Karte", plural: "Karten"))"
     }
 
     var isDictionarySelectedInStack: Bool {

@@ -506,7 +506,7 @@ struct WordRunnerGameView: View {
                     accent: AppTheme.Colors.elumiPink,
                     singleSelect: true,
                     includeWoerterbuch: false,
-                    itemLabel: "Listen",
+                    itemLabel: "Lernlisten",
                     feedbackPlayer: nil,
                     onHome: nil,
                     onSettings: nil
@@ -2562,7 +2562,7 @@ struct WordRunnerGameView: View {
 
     private var startHintText: String? {
         if !hasUsableList {
-            return "Wähle erst eine Liste mit Nomen."
+            return "Wähle erst eine Lernliste mit Nomen."
         }
         if arcadeCredits < ArcadeCreditSystem.gamesCost {
             return "Keine Spiele übrig — verdiene welche durchs Lernen."
@@ -2785,7 +2785,7 @@ struct WordRunnerGameView: View {
                     Image(systemName: "list.bullet.rectangle.portrait")
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(AppTheme.Colors.elumiPink)
-                    Text("Ausgewählte Liste")
+                    Text("Ausgewählte Lernliste")
                         .font(.system(size: 12, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.cardLabel)
                         .textCase(.uppercase)
@@ -2878,7 +2878,7 @@ struct WordRunnerGameView: View {
             return store.builtInList.name
         }
         return store.allLists.first(where: { $0.id == store.selectedListID })?.name
-            ?? "Liste"
+            ?? "Lernliste"
     }
 
     private func recomputeHasUsableList() {

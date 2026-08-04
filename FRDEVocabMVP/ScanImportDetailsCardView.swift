@@ -14,7 +14,7 @@ struct ScanImportDetailsCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Name der Liste")
+                Text("Name der Lernliste")
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
 

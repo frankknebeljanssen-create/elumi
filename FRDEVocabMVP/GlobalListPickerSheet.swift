@@ -163,7 +163,7 @@ struct GlobalListPickerSheet: View {
 
             Spacer(minLength: 0)
 
-            Text("Liste wählen")
+            Text("Lernliste wählen")
                 .font(.system(size: 17, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
 
@@ -199,7 +199,7 @@ struct GlobalListPickerSheet: View {
     /// Runde Mint-Card analog `ListPickerSheet` — statischer Text
     /// „Tipp eine Liste an" (kein dynamischer State, exakt Bild-2-Stil).
     private var bannerView: some View {
-        Text("Wähle eine oder mehrere Listen")
+        Text("Wähle eine oder mehrere Lernlisten")
             .font(AppTheme.Typography.cardTitle)
             .foregroundStyle(.white)
             .lineLimit(1)
@@ -218,7 +218,7 @@ struct GlobalListPickerSheet: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 6) {
                 if categoryHeaders {
-                    Text("Listen für Training")
+                    Text("Lernlisten für Training")
                         .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                         .padding(.horizontal, 18)
@@ -227,7 +227,7 @@ struct GlobalListPickerSheet: View {
                 }
 
                 if sortedLists.isEmpty {
-                    Text("Keine Listen verfügbar.")
+                    Text("Keine Lernlisten verfügbar.")
                         .font(.system(size: 14, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                         .padding(.horizontal, 18)
@@ -248,7 +248,7 @@ struct GlobalListPickerSheet: View {
                             Image(systemName: "hand.point.up.left.fill")
                                 .font(.system(size: 14, weight: .bold))
                                 .foregroundStyle(accent)
-                            Text("Wähle mindestens eine Liste")
+                            Text("Wähle mindestens eine Lernliste")
                                 .font(.system(size: 14, weight: .bold, design: .rounded))
                                 .foregroundStyle(AppTheme.Colors.textPrimary)
                                 .multilineTextAlignment(.center)
@@ -298,8 +298,8 @@ struct GlobalListPickerSheet: View {
                     // solange die Auswahl per Flag versteckt ist.
                     Text(
                         FeatureFlags.learningYearSelectionEnabled
-                        ? "Die gewählten Listen werden in allen Trainingsmodulen (Karteikarten, Quiz, Word Runner, Training) als gemeinsamer Pool verwendet — analog zur globalen Listen-Auswahl in den Einstellungen. Bei Listen mit Lernjahr-Aufteilung (z. B. Grundwortschatz A1) gilt das gewählte Lernjahr global für alle hierarchischen Listen."
-                        : "Die gewählten Listen werden in allen Trainingsmodulen (Karteikarten, Quiz, Word Runner, Training) als gemeinsamer Pool verwendet — analog zur globalen Listen-Auswahl in den Einstellungen."
+                        ? "Die gewählten Lernlisten werden in allen Trainingsmodulen (Karteikarten, Quiz, Word Runner, Training) als gemeinsamer Pool verwendet — analog zur globalen Lernlisten-Auswahl in den Einstellungen. Bei Lernlisten mit Lernjahr-Aufteilung (z. B. Grundwortschatz A1) gilt das gewählte Lernjahr global für alle hierarchischen Lernlisten."
+                        : "Die gewählten Lernlisten werden in allen Trainingsmodulen (Karteikarten, Quiz, Word Runner, Training) als gemeinsamer Pool verwendet — analog zur globalen Lernlisten-Auswahl in den Einstellungen."
                     )
                         .font(.system(size: 11, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)

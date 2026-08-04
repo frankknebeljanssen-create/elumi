@@ -65,7 +65,7 @@ struct ListMergePickerSheet: View {
                 }
             }
             .listStyle(.plain)
-            .navigationTitle("Listen zusammenführen")
+            .navigationTitle("Lernlisten zusammenführen")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -94,7 +94,7 @@ struct ListMergePickerSheet: View {
                 // Built-in dezent markieren (ListPickerSheet trennt ebenfalls
                 // nach `isBuiltIn`); rein informativ, nicht selektions-relevant.
                 if list.isBuiltIn {
-                    Text("Standardliste")
+                    Text("Standard-Lernliste")
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }

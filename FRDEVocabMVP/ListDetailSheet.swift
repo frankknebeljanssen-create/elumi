@@ -32,7 +32,7 @@ struct ListDetailSheet: View {
     var body: some View {
         VStack(spacing: AppTheme.Spacing.md) {
             AppSheetHeader(
-                title: "Liste",
+                title: "Lernliste",
                 leadingTint: style.accent,
                 onLeading: {
                     onClose()
@@ -65,7 +65,7 @@ struct ListDetailSheet: View {
                                 .contentShape(Circle())
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel("Liste umbenennen")
+                        .accessibilityLabel("Lernliste umbenennen")
                     }
                 }
 
@@ -87,7 +87,7 @@ struct ListDetailSheet: View {
 
             if list.items.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Noch keine Einträge in dieser Liste.")
+                    Text("Noch keine Einträge in dieser Lernliste.")
                         .font(AppTheme.Typography.body)
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }

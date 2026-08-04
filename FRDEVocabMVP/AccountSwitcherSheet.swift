@@ -89,7 +89,7 @@ struct AccountSwitcherSheet: View {
                 pendingDeletion = nil
             }
         } message: {
-            Text("Dieser Account wird vom Gerät entfernt. Fortschritt und Listen gehen verloren.")
+            Text("Dieser Account wird vom Gerät entfernt. Fortschritt und Lernlisten gehen verloren.")
         }
     }
 

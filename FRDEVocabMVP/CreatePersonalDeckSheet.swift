@@ -291,7 +291,7 @@ struct CreatePersonalDeckSheet: View {
     private var summaryText: String {
         let listCount = selectedListIDs.count
         let cardCount = selectedLists.reduce(0) { $0 + $1.items.count }
-        let lists = listCount == 1 ? "1 Liste" : "\(listCount) Listen"
+        let lists = listCount == 1 ? "1 Lernliste" : "\(listCount) Lernlisten"
         let cards = cardCount == 1 ? "1 Karte" : "\(cardCount) Karten"
         return "\(lists) · \(cards) werden gemischt und zu einem Stapel."
     }

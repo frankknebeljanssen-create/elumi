@@ -345,7 +345,7 @@ struct ChatView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Lektionswörter benutzen")
                             .font(.system(size: 16, weight: .semibold))
-                        Text("Léa nutzt deine aktive Wortliste")
+                        Text("Léa nutzt deine aktive Lernliste")
                             .font(.system(size: 13, weight: .regular))
                             .foregroundStyle(.secondary)
                     }
@@ -412,7 +412,7 @@ struct ChatView: View {
     private var listSelectionSheetContent: some View {
         if let listStore {
             VStack(spacing: 0) {
-                Text("Wähle eine Liste, damit Léa weiß, was du gerade übst.")
+                Text("Wähle eine Lernliste, damit Léa weiß, was du gerade übst.")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Color(red: 0.4, green: 0.4, blue: 0.4))
                     .multilineTextAlignment(.center)
@@ -439,7 +439,7 @@ struct ChatView: View {
             // immer gesetzt sein. Falls nicht: kurzes Info-Sheet
             // mit Zurück-Button, damit der User nicht stuck ist.
             VStack(spacing: 16) {
-                Text("Listen werden geladen — bitte gleich nochmal versuchen.")
+                Text("Lernlisten werden geladen — bitte gleich nochmal versuchen.")
                     .font(.system(size: 15, weight: .medium))
                     .multilineTextAlignment(.center)
                 Button("Zurück") {

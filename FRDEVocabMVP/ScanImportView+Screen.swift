@@ -1121,7 +1121,7 @@ extension ScanImportView {
     private func handleBulkExistingListChosen(_ listID: UUID) {
         guard let listStore else { return }
         guard let targetList = listStore.customLists.first(where: { $0.id == listID }) else {
-            bulkImportFailureMessage = "Liste nicht gefunden."
+            bulkImportFailureMessage = "Lernliste nicht gefunden."
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                 isShowingBulkImportFailureAlert = true
             }

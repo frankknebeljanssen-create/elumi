@@ -97,7 +97,7 @@ struct InfoView: View {
                     icon: "character.book.closed.fill",
                     tint: AppTheme.Colors.moduleVocabulary,
                     lines: [
-                        "Alle Vokabeln aus deinen Listen üben.",
+                        "Alle Vokabeln aus deinen Lernlisten üben.",
                         "Sprechen oder Tippen — du entscheidest.",
                         // Dauer kommt aus der globalen Settings-Einstellung —
                         // Info-Zeile bleibt damit automatisch korrekt, wenn
@@ -129,11 +129,11 @@ struct InfoView: View {
                 )
 
                 colorInfoCard(
-                    title: "Listen & Wörterbuch",
+                    title: "Lernlisten & Wörterbuch",
                     icon: "list.bullet.rectangle.fill",
                     tint: AppTheme.Colors.moduleLists,
                     lines: [
-                        "Meine Listen anlegen und verwalten.",
+                        "Meine Lernlisten anlegen und verwalten.",
                         "Wörterbuch zeigt alle gelernten Vokabeln.",
                         "Einträge bearbeiten und löschen."
                     ]

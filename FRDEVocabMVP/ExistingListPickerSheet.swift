@@ -36,7 +36,7 @@ struct ExistingListPickerSheet: View {
                     listContent
                 }
             }
-            .navigationTitle("Liste wählen")
+            .navigationTitle("Lernliste wählen")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -106,7 +106,7 @@ struct ExistingListPickerSheet: View {
             dismiss()
             DispatchQueue.main.async { onConfirm(id) }
         } label: {
-            Text("In diese Liste einfügen")
+            Text("In diese Lernliste einfügen")
                 .font(AppTheme.Typography.button)
                 .frame(maxWidth: .infinity)
                 .frame(minHeight: 52)
@@ -124,11 +124,11 @@ struct ExistingListPickerSheet: View {
                 .foregroundStyle(AppTheme.Colors.textSecondary)
             // **2026-06-09** — „eigene Listen" vermieden, seit die
             // Kategorie app-weit „Meine Listen" heißt.
-            Text("Du hast noch keine eigenen Listen angelegt.")
+            Text("Du hast noch keine eigenen Lernlisten angelegt.")
                 .font(.system(size: 16, weight: .semibold, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
                 .multilineTextAlignment(.center)
-            Text("Lege eine neue Liste an und importiere die Scan-Einträge dort.")
+            Text("Lege eine neue Lernliste an und importiere die Scan-Einträge dort.")
                 .font(.system(size: 13, weight: .medium, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textSecondary)
                 .multilineTextAlignment(.center)
@@ -139,7 +139,7 @@ struct ExistingListPickerSheet: View {
             } label: {
                 // **Naming-Sweep 2026-05-06** — „Neue Liste
                 // anlegen" → „+ Neue Liste".
-                Text("+ Neue Liste anlegen")
+                Text("+ Neue Lernliste anlegen")
                     .font(AppTheme.Typography.button)
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: 50)

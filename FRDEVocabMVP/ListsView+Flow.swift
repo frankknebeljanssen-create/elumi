@@ -47,7 +47,7 @@ extension ListsView {
         let trimmedName = newListName.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmedName.isEmpty else {
-            showToast("Bitte gib zuerst einen Listennamen ein.", isSuccess: false)
+            showToast("Bitte gib zuerst einen Lernlistennamen ein.", isSuccess: false)
             return
         }
 

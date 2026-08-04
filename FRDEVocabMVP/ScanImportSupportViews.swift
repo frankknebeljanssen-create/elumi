@@ -65,7 +65,7 @@ struct ImportCompletionView: View {
                     Text(context.summaryText)
                         .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
-                    Text("Liste: \(context.targetListName)")
+                    Text("Lernliste: \(context.targetListName)")
                         .font(.system(size: 14, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                         .lineLimit(2)
@@ -86,7 +86,7 @@ struct ImportCompletionView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "eye.fill")
                             .font(.system(size: 18, weight: .semibold))
-                        Text("Liste ansehen")
+                        Text("Lernliste ansehen")
                             .font(.system(size: 17, weight: .bold, design: .rounded))
                     }
                     .foregroundStyle(.white)

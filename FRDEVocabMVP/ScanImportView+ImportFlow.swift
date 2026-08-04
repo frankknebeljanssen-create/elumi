@@ -159,7 +159,7 @@ extension ScanImportView {
     func handleExistingListChosen(_ listID: UUID) {
         let activeListStore = listStore ?? ensureListStoreReady()
         guard let targetList = activeListStore.customLists.first(where: { $0.id == listID }) else {
-            importMessage = "Liste nicht gefunden."
+            importMessage = "Lernliste nicht gefunden."
             return
         }
         pendingTargetListID = listID
@@ -238,7 +238,7 @@ extension ScanImportView {
             let errorText: String = {
                 switch result.status {
                 case .targetListMissing:
-                    return "Liste nicht gefunden. Bitte erneut wählen."
+                    return "Lernliste nicht gefunden. Bitte erneut wählen."
                 case .persistenceMismatch(let expected, let actual):
                     return "Import fehlgeschlagen (erwartet \(expected), gespeichert \(actual)). Bitte erneut versuchen."
                 case .success:
@@ -281,7 +281,7 @@ extension ScanImportView {
         if result.replaced > 0 {
             parts.append("\(result.replaced) ersetzt")
         }
-        return "Zur Liste \(targetListName): " + parts.joined(separator: ", ")
+        return "Zur Lernliste \(targetListName): " + parts.joined(separator: ", ")
     }
 
     // MARK: - Bestehender „neue Liste"-Flow (unverändert)

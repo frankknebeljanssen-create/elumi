@@ -444,7 +444,7 @@ struct AccentsEntryView: View {
                             let totalText = "\(cnt) \(cnt == 1 ? "Eintrag" : "Einträge")"
                             let lernjahrRange = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: [list])
                             HStack(spacing: 4) {
-                                Text("1 Liste ·")
+                                Text("1 Lernliste ·")
                                     .font(.system(size: 13, weight: .medium, design: .rounded))
                                     .foregroundStyle(AppTheme.Colors.elumiBlue)
                                 if let range = lernjahrRange {

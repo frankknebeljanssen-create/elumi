@@ -48,7 +48,7 @@ struct NewListNameSheet: View {
                     .padding(.bottom, 18)
             }
             .padding(.horizontal, 20)
-            .navigationTitle("Wie soll die Liste heißen?")
+            .navigationTitle("Wie soll die Lernliste heißen?")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -69,7 +69,7 @@ struct NewListNameSheet: View {
     // MARK: - Subviews
 
     private var introText: some View {
-        Text("Wähle einen Namen für deine neue Liste — oder lass dir automatisch einen Zeitstempel geben.")
+        Text("Wähle einen Namen für deine neue Lernliste — oder lass dir automatisch einen Zeitstempel geben.")
             .font(.system(size: 13, weight: .medium, design: .rounded))
             .foregroundStyle(AppTheme.Colors.textSecondary)
             .multilineTextAlignment(.center)
@@ -77,7 +77,7 @@ struct NewListNameSheet: View {
     }
 
     private var nameField: some View {
-        TextField("Listenname", text: $name)
+        TextField("Lernlistenname", text: $name)
             .font(.system(size: 17, weight: .semibold, design: .rounded))
             .focused($isNameFieldFocused)
             .submitLabel(.done)
@@ -102,7 +102,7 @@ struct NewListNameSheet: View {
                 guard canCreate else { return }
                 confirmCreate(name: trimmedName)
             } label: {
-                Text("Liste erstellen")
+                Text("Lernliste erstellen")
                     .font(AppTheme.Typography.button)
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: 52)

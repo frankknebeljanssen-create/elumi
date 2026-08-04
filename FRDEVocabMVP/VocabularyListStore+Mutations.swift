@@ -7,7 +7,7 @@ extension VocabularyListStore {
         collectionPreset: ListCollectionPreset = .other
     ) -> UUID {
         let trimmed = proposedName.trimmingCharacters(in: .whitespacesAndNewlines)
-        let baseName = trimmed.isEmpty ? "Liste" : trimmed
+        let baseName = trimmed.isEmpty ? "Lernliste" : trimmed
 
         if let existingIndex = customLists.firstIndex(where: {
             $0.name.localizedCaseInsensitiveCompare(baseName) == .orderedSame
@@ -26,7 +26,7 @@ extension VocabularyListStore {
         collectionPreset: ListCollectionPreset = .other
     ) -> UUID {
         let trimmed = proposedName.trimmingCharacters(in: .whitespacesAndNewlines)
-        let baseName = trimmed.isEmpty ? "Liste" : trimmed
+        let baseName = trimmed.isEmpty ? "Lernliste" : trimmed
         let uniqueName = uniqueListName(from: baseName)
         let list = VocabularyList(name: uniqueName, items: [], collectionPreset: collectionPreset)
         customLists.append(list)

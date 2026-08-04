@@ -82,7 +82,7 @@ struct WordRunnerListPickerSheet: View {
                 }
             }
             .listStyle(.insetGrouped)
-            .navigationTitle("Liste wählen")
+            .navigationTitle("Lernliste wählen")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

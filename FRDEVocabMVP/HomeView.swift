@@ -192,7 +192,7 @@ struct HomeView: View {
             )
 
             WideCard(
-                title: "Meine\nListen",
+                title: "Meine\nLernlisten",
                 accent: AppTheme.Colors.moduleLists,
                 height: 76,
                 titleLineLimit: 2,

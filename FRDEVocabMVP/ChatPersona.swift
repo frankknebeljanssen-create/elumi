@@ -90,7 +90,7 @@ struct ChatPersona {
     /// danach läuft wieder cached.
     func buildSystemPrompt(vocabulary: [String], level: ChatLevel) -> String {
         let vocabBlock = vocabulary.isEmpty
-            ? "(Aktuell keine Wortschatz-Liste aktiv.)"
+            ? "(Aktuell keine Lernliste aktiv.)"
             : vocabulary.joined(separator: ", ")
 
         return """

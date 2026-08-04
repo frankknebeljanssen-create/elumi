@@ -81,18 +81,18 @@ struct ScanOCRAnalyzer {
         if completeCount == 0 {
             summary = mode == .text
                 ? "Der Text wurde erkannt, aber es konnten noch keine passenden Lern-Einträge gefunden werden."
-                : "Die Struktur wirkt wie eine Liste, aber es konnten noch keine sauberen Paare gebildet werden."
-            importMessage = "Bitte prüfe den Zuschnitt oder wechsle im Review kurz zwischen Liste und Text."
+                : "Die Struktur wirkt wie eine Lernliste, aber es konnten noch keine sauberen Paare gebildet werden."
+            importMessage = "Bitte prüfe den Zuschnitt oder wechsle im Review kurz zwischen Lernliste und Text."
         } else if mode == .list {
             summary = modeWasPreselected
                 ? "Die Vorlage wurde als Vokabelliste verarbeitet."
-                : "\(detectedSourceLanguage.rawValue)-Deutsch als strukturierte Liste erkannt."
-            importMessage = "\(completeCount) Einträge vorbereitet. Prüfe kurz und importiere dann die Liste."
+                : "\(detectedSourceLanguage.rawValue)-Deutsch als strukturierte Lernliste erkannt."
+            importMessage = "\(completeCount) Einträge vorbereitet. Prüfe kurz und importiere dann die Lernliste."
         } else {
             summary = modeWasPreselected
                 ? "Die Vorlage wurde als freier Text verarbeitet."
                 : "\(detectedSourceLanguage.rawValue)-Deutsch als freier Text erkannt."
-            importMessage = "\(completeCount) lernbare Einträge aus dem Text vorbereitet. Prüfe kurz und importiere dann die Liste."
+            importMessage = "\(completeCount) lernbare Einträge aus dem Text vorbereitet. Prüfe kurz und importiere dann die Lernliste."
         }
 
         return ScanAnalysisResult(

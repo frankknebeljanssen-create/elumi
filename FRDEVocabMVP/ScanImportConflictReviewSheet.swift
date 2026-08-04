@@ -55,7 +55,7 @@ struct ScanImportConflictReviewSheet: View {
             Text("Bitte folgende Einträge überprüfen")
                 .font(.system(size: 15, weight: .bold, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
-            Text("Liste \(targetListName) hat ähnliche Einträge. Wähle pro Konflikt, was passieren soll.")
+            Text("Lernliste \(targetListName) hat ähnliche Einträge. Wähle pro Konflikt, was passieren soll.")
                 .font(.system(size: 12, weight: .medium, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)

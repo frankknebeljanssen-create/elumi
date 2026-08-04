@@ -193,7 +193,7 @@ extension ListsView {
                         listStore.renameList(id: selectedList.id, to: editableListName)
                         editableListName = listStore.selectedList.name
                         showingRenameDialog = false
-                        showToast("Liste umbenannt.")
+                        showToast("Lernliste umbenannt.")
                         // **Bug-Fix 2026-04-23**: dito — Rename-Save
                         // schloss vorher das Rename-Sheet, ließ aber
                         // `showingListDetail = false` → schwarzer
@@ -262,7 +262,7 @@ extension ListsView {
                         // schließen lassen — sonst verschluckt der Sheet-Dismiss
                         // die Toast-State-Mutation auf der präsentierenden View.
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                            showToast("Liste '\(name)' mit \(count) Vokabeln angelegt", isSuccess: true)
+                            showToast("Lernliste '\(name)' mit \(count) Vokabeln angelegt", isSuccess: true)
                         }
                     }
                 }

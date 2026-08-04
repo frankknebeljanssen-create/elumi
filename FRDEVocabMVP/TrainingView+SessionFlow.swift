@@ -555,7 +555,7 @@ extension TrainingView {
     func showEmptyPoolToast() {
         emptyPoolToastDismissWorkItem?.cancel()
         withAnimation(.easeInOut(duration: 0.22)) {
-            emptyPoolToastMessage = "F\u{00FC}r deine Auswahl gibt es keine Eintr\u{00E4}ge. W\u{00E4}hle eine andere Liste oder erweitere die Lernjahre."
+            emptyPoolToastMessage = "F\u{00FC}r deine Auswahl gibt es keine Eintr\u{00E4}ge. W\u{00E4}hle eine andere Lernliste oder erweitere die Lernjahre."
         }
 
         let work = DispatchWorkItem {

@@ -82,7 +82,7 @@ struct UnifiedListCategoryPicker: View {
             HStack {
                 AppBackButton(action: { dismiss() }, tint: AppTheme.Colors.elumiPink)
                 Spacer(minLength: 0)
-                Text("Ausgewählte Listen")
+                Text("Ausgewählte Lernlisten")
                     .font(AppTheme.Typography.cardTitle)
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                 Spacer(minLength: 0)
@@ -103,7 +103,7 @@ struct UnifiedListCategoryPicker: View {
             // `categoryCardsSection` in ListsView.
             VStack(spacing: 10) {
                 ListCategoryRow(
-                    title: "Meine Listen",
+                    title: "Meine Lernlisten",
                     iconAsset: "ListIconEigene",
                     count: lists(in: .own).count,
                     accent: accent

@@ -530,7 +530,7 @@ struct FreierTextResultView: View {
             // Primärer CTA: Speichern (wenn listStore vorhanden und Einträge da)
             if listStore != nil, result.totalEntryCount > 0, !hasSaved {
                 Button(action: { showingSaveSheet = true }) {
-                    Text("Als Liste speichern")
+                    Text("Als Lernliste speichern")
                         .font(AppTheme.Typography.button)
                         .foregroundStyle(Color.black)
                         .frame(maxWidth: .infinity)

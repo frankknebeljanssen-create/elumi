@@ -224,13 +224,13 @@ struct TrainingView: View {
 
     var trainingListName: String {
         let ids = session.selectedTrainingListIDs
-        if ids.isEmpty { return "Listen wählen" }
+        if ids.isEmpty { return "Lernlisten wählen" }
         let allAvailable = availableTrainingLists
         let selected = allAvailable.filter { ids.contains($0.id) }
         if selected.count == 1, let first = selected.first {
             return first.name
         }
-        return "\(selected.count) Listen"
+        return "\(selected.count) Lernlisten"
     }
 
     /// Master-Session-Setup-Estimate für die verpflichtende Gamification-Bar
@@ -568,16 +568,16 @@ struct TrainingView: View {
             return "Wähle ein anderen Lernstand oder eine andere Quelle."
         }
         if availableTrainingLists.isEmpty {
-            return "Lege zuerst eine Liste mit Vokabeln an."
+            return "Lege zuerst eine Lernliste mit Vokabeln an."
         }
         // Verben sollen sprachlich identisch zu Verbformen („keine Verben
         // erkannt") klingen — statt der generischen „Für diesen Typ…"-
         // Zeile. Alle anderen Modi (Nomen, Artikel, Vokabeln) behalten
         // den allgemeinen Fallback-Text.
         if session.trainingMode == .verbs {
-            return "In der gewählten Liste wurden keine Verben erkannt."
+            return "In der gewählten Lernliste wurden keine Verben erkannt."
         }
-        return "Für diesen Typ gibt es in der gewählten Liste noch keine Einträge."
+        return "Für diesen Typ gibt es in der gewählten Lernliste noch keine Einträge."
     }
 
     /// Hint, der **in** der GamificationBar (Preview-Card über dem CTA)

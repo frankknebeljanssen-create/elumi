@@ -472,7 +472,7 @@ struct AppDestinationHost: View {
                 openInfo: openInfo
             )
         } else {
-            loadingDestinationView("Listen werden vorbereitet") {
+            loadingDestinationView("Lernlisten werden vorbereitet") {
                 await runtime.ensureListDrivenDependenciesReady()
             }
         }

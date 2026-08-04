@@ -956,7 +956,7 @@ extension TrainingView {
                             }
                             .padding(.top, 2)
                         } else {
-                            Text("Keine Liste gewählt")
+                            Text("Keine Lernliste gewählt")
                                 .font(.system(size: 18, weight: .bold, design: .rounded))
                                 .foregroundStyle(AppTheme.Colors.textPrimary)
                             Text("Tippe zum Auswählen")
@@ -1127,7 +1127,7 @@ extension TrainingView {
                             // Tap auf Total-Text-Button (wenn handler
                             // übergeben) öffnet weiterhin den Counter-
                             // Sheet/Drilldown.
-                            let listsText = "\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n")"
+                            let listsText = "\(selectedLists.count) Lernliste\(selectedLists.count == 1 ? "" : "n")"
                             let totalText = "\(countValue) \(countLabel)"
                             let lernjahrRange = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: selectedLists)
                             HStack(spacing: 4) {
@@ -1159,7 +1159,7 @@ extension TrainingView {
                             }
                             .padding(.top, 2)
                         } else {
-                            Text("Keine Liste gewählt")
+                            Text("Keine Lernliste gewählt")
                                 .font(.system(size: 18, weight: .bold, design: .rounded))
                                 .foregroundStyle(AppTheme.Colors.textPrimary)
                             Text("Tippe zum Auswählen")
@@ -2101,10 +2101,10 @@ extension TrainingView {
     /// Liest aus dem gecachten setupCardLemmas — kein Live-Compute pro Render.
     var verbformsStartHint: String {
         if session.selectedTrainingListIDs.isEmpty {
-            return "Wähle zuerst eine Liste aus."
+            return "Wähle zuerst eine Lernliste aus."
         }
         if setupCardLemmas.isEmpty {
-            return "In der gewählten Liste wurden keine Verben erkannt."
+            return "In der gewählten Lernliste wurden keine Verben erkannt."
         }
         if verbformsSession.availableTenses.isEmpty {
             return "Für die erkannten Verben sind noch keine Konjugationsformen verfügbar."

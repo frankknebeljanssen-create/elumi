@@ -81,7 +81,7 @@ struct FlashcardStackComposerSheet: View {
     var body: some View {
         VStack(spacing: AppTheme.Spacing.md) {
             AppSheetHeader(
-                title: "Listen auswählen",
+                title: "Lernlisten auswählen",
                 trailingTitle: "Fertig",
                 leadingTint: style.accent,
                 trailingTint: style.accent,
@@ -103,10 +103,10 @@ struct FlashcardStackComposerSheet: View {
             )
 
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xxs) {
-                Text("\(countLabel(localSelection.count, singular: "Liste", plural: "Listen")) · \(countLabel(totalSelectedCards, singular: "Karte", plural: "Karten"))")
+                Text("\(countLabel(localSelection.count, singular: "Lernliste", plural: "Lernlisten")) · \(countLabel(totalSelectedCards, singular: "Karte", plural: "Karten"))")
                     .font(AppTheme.Typography.cardTitle)
                     .foregroundStyle(.white)
-                Text("Tippe an, aus welchen Listen dein Stapel bestehen soll.")
+                Text("Tippe an, aus welchen Lernlisten dein Stapel bestehen soll.")
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(.white.opacity(0.8))
             }

@@ -314,7 +314,7 @@ struct POSLemmaListSheet: View {
     /// „Verben", „Adjektive" …) als Titel bereits gesetzt — der Header
     /// kombiniert nur noch Count + Titel.
     private var headerLabel: String {
-        "\(lemmas.count) \(lemmas.count == 1 ? singularFromTitle : title) in dieser Liste"
+        "\(lemmas.count) \(lemmas.count == 1 ? singularFromTitle : title) in dieser Lernliste"
     }
 
     private var singularFromTitle: String {

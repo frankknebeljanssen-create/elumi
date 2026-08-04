@@ -8,7 +8,7 @@ extension ListsView {
             // Verwaltungs-Sprache.
             ModuleHeaderCard(
                 icon: .listen,
-                title: "Meine Listen",
+                title: "Meine Lernlisten",
                 accent: sectionStyle.accent,
                 onBack: { dismiss() }
             )
@@ -41,14 +41,14 @@ extension ListsView {
                 // Titel +1 pt (22 → 23) — kräftigere Hierarchie gegenüber
                 // den Kategorie-Cards (deren Titel 17 → 18 mitgewachsen
                 // sind).
-                Text("Alle Listen")
+                Text("Alle Lernlisten")
                     .font(.system(size: 23, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
 
                 // Count-Text mit der Card mitgewachsen (14 → 15) — bleibt
                 // sekundär, aber nicht mehr winzig gegenüber dem größeren
                 // Titel.
-                Text(countLabel(listStore.allLists.count, singular: "Liste", plural: "Listen"))
+                Text(countLabel(listStore.allLists.count, singular: "Lernliste", plural: "Lernlisten"))
                     .font(.system(size: 15, weight: .semibold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
@@ -74,7 +74,7 @@ extension ListsView {
             // Meine Listen
             if !ownLists.isEmpty {
                 listsCategoryRow(
-                    title: "Meine Listen",
+                    title: "Meine Lernlisten",
                     iconAsset: "ListIconEigene",
                     count: ownLists.count
                 ) {
@@ -165,7 +165,7 @@ extension ListsView {
                     // **Naming-Sweep 2026-05-06** — „Neue Liste
                     // anlegen" → „+ Neue Liste". Plus-Icon im Text
                     // betont das Hinzufügen-Pattern.
-                    Text("+ Neue Liste anlegen")
+                    Text("+ Neue Lernliste anlegen")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
@@ -184,10 +184,10 @@ extension ListsView {
                 // Datenkompatibilität ist damit unverändert, der UI-
                 // Block ist nur ausgeblendet.
                 VStack(alignment: .leading, spacing: 12) {
-                    TextField("Name der Liste", text: $newListName)
+                    TextField("Name der Lernliste", text: $newListName)
                         .textFieldStyle(.roundedBorder)
 
-                    Button("Liste erstellen") {
+                    Button("Lernliste erstellen") {
                         createNewList()
                     }
                     .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))

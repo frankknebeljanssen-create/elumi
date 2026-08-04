@@ -45,7 +45,7 @@ struct RenameListSheet: View {
     var body: some View {
         VStack(spacing: AppTheme.Spacing.md) {
             AppSheetHeader(
-                title: "Liste umbenennen",
+                title: "Lernliste umbenennen",
                 leadingTitle: "Abbrechen",
                 trailingTitle: "Speichern",
                 leadingTint: style.accent,
@@ -63,11 +63,11 @@ struct RenameListSheet: View {
             )
 
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                Text("Name der Liste")
+                Text("Name der Lernliste")
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
 
-                TextField("Name der Liste", text: $listName)
+                TextField("Name der Lernliste", text: $listName)
                     .font(AppTheme.Typography.body)
                     .textFieldStyle(.plain)
                     .focused($isNameFocused)

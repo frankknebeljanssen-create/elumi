@@ -286,7 +286,7 @@ struct ScanDraftDetailView: View {
                     // starten"-Button (`SessionPrimaryCTA`). Flaches Amber, kein
                     // Icon, eingebautes Disabled-Graying über `isEnabled`.
                     SessionPrimaryCTA(
-                        title: "Zu Liste machen",
+                        title: "Zu Lernliste machen",
                         isEnabled: canImport(draft),
                         action: { isShowingTargetChoice = true }
                     )
@@ -413,7 +413,7 @@ struct ScanDraftDetailView: View {
         appDebugLog("📋 [ScanDraftDetail] handleExistingListChosen entry: listID=\(listID)")
         guard let listStore, let draft = localDraft else { return }
         guard let targetList = listStore.customLists.first(where: { $0.id == listID }) else {
-            importFailureMessage = "Liste nicht gefunden."
+            importFailureMessage = "Lernliste nicht gefunden."
             // Settle-Delay (Konsistenz): Alert nach Picker-Dismiss.
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                 isShowingImportFailureAlert = true
@@ -515,7 +515,7 @@ struct ScanDraftDetailView: View {
                 isShowingImportCompletion = true
             }
         case .targetListMissing:
-            importFailureMessage = "Die Liste wurde inzwischen gelöscht."
+            importFailureMessage = "Die Lernliste wurde inzwischen gelöscht."
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                 isShowingImportFailureAlert = true
             }

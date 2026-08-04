@@ -68,7 +68,7 @@ var quizSetupScreen: some View {
             }
 
             if !canStartQuiz {
-                Text("Wähle mindestens eine Liste mit Einträgen, um zu starten.")
+                Text("Wähle mindestens eine Lernliste mit Einträgen, um zu starten.")
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.elumiBlue)
                     .frame(maxWidth: .infinity, alignment: .leading)

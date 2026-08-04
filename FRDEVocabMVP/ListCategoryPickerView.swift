@@ -138,7 +138,7 @@ struct ListCategoryPickerView: View {
                             // LJ-Range ist jetzt ein tappbarer
                             // `AppLernjahrPill`. Eligibility identisch zur
                             // alten Plain-Text-Render-Bedingung.
-                            let listsText = "\(selectedLists.count) Liste\(selectedLists.count == 1 ? "" : "n")"
+                            let listsText = "\(selectedLists.count) Lernliste\(selectedLists.count == 1 ? "" : "n")"
                             let totalText = "\(totalItems) \(itemLabel)"
                             let lernjahrRange = VocabularyListSelectionResolver.lernjahrRangeLabel(forSelectedLists: selectedLists)
                             HStack(spacing: 4) {
@@ -157,7 +157,7 @@ struct ListCategoryPickerView: View {
                             }
                             .padding(.top, 2)
                         } else {
-                            Text("Keine Liste gewählt")
+                            Text("Keine Lernliste gewählt")
                                 .font(.system(size: 18, weight: .bold, design: .rounded))
                                 .foregroundStyle(AppTheme.Colors.textPrimary)
                             Text("Tippe zum Auswählen")

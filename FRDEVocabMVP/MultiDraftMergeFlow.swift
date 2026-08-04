@@ -112,7 +112,7 @@ final class MultiDraftMergeCoordinator: ObservableObject {
             appDebugLog("📋 [MultiDraftMerge] merged into \"\(pendingTargetListName)\" — added=\(result.added)")
             return (true, result.added, nil)
         case .targetListMissing:
-            return (false, 0, "Die Liste wurde inzwischen gelöscht.")
+            return (false, 0, "Die Lernliste wurde inzwischen gelöscht.")
         case .persistenceMismatch:
             return (false, 0, "Speichern fehlgeschlagen. Bitte erneut versuchen.")
         }

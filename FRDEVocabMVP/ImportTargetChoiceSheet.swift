@@ -29,8 +29,8 @@ struct ImportTargetChoiceSheet: View {
 
                 choiceCard(
                     icon: "square.and.pencil",
-                    title: "In neue Liste importieren",
-                    subtitle: "Eine frische Liste mit eigenem Namen anlegen.",
+                    title: "In neue Lernliste importieren",
+                    subtitle: "Eine frische Lernliste mit eigenem Namen anlegen.",
                     action: {
                         dismiss()
                         // Defer: damit Sheet-Dismiss-Animation nicht mit
@@ -41,8 +41,8 @@ struct ImportTargetChoiceSheet: View {
 
                 choiceCard(
                     icon: "tray.and.arrow.down",
-                    title: "Zu bestehender Liste hinzufügen",
-                    subtitle: "Auswahl aus deinen vorhandenen Listen — Duplikate werden übersprungen.",
+                    title: "Zu bestehender Lernliste hinzufügen",
+                    subtitle: "Auswahl aus deinen vorhandenen Lernlisten — Duplikate werden übersprungen.",
                     action: {
                         dismiss()
                         DispatchQueue.main.async { onChooseExistingList() }

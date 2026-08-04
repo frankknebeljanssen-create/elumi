@@ -53,7 +53,7 @@ struct SaveNewListSheet: View {
                 .padding(.bottom, AppTheme.Spacing.md)
 
             // Titel
-            Text("Neue Liste speichern")
+            Text("Neue Lernliste speichern")
                 .font(AppTheme.Typography.screenTitle)
                 .foregroundStyle(AppTheme.Colors.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -62,11 +62,11 @@ struct SaveNewListSheet: View {
 
             // Eingabefeld
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xxs) {
-                Text("Listenname")
+                Text("Lernlistenname")
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
 
-                TextField("Listenname", text: $listName)
+                TextField("Lernlistenname", text: $listName)
                     .font(AppTheme.Typography.body)
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                     .padding(.horizontal, 14)

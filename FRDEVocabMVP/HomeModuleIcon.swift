@@ -61,7 +61,7 @@ enum HomeModuleIcon: String, CaseIterable, Hashable {
         case .verbformen:    return "Verbformen"
         case .vokabeln:      return "Vokabeln"
         case .quiz:          return "Quiz"
-        case .listen:        return "Listen"
+        case .listen:        return "Lernlisten"
         case .akzente:       return "Akzente"
         case .scan:          return "Scan"
         }

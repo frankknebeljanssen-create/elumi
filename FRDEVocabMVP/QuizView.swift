@@ -98,7 +98,7 @@ struct QuizView: View {
 
     var quizListSummary: String {
         let ids = session.selectedListIDs
-        if ids.isEmpty { return "Listen wählen" }
+        if ids.isEmpty { return "Lernlisten wählen" }
         let selected = availableQuizLists.filter { ids.contains($0.id) }
         // **V1b (2026-04-28)** — Setup-Counts respektieren den globalen
         // Lernjahr-Filter; konsistent zu dem was nach „Quiz starten"
@@ -115,7 +115,7 @@ struct QuizView: View {
                 for: list, lernjahrMax: lernjahrMax
             ).count
         }
-        return "\(selected.count) Listen · \(total) Einträge"
+        return "\(selected.count) Lernlisten · \(total) Einträge"
     }
 
     var availableQuizLists: [VocabularyList] {
