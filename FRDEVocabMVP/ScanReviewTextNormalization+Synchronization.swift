@@ -78,6 +78,26 @@ private func mirroredGermanTerminalSentencePunctuation(
     return target
 }
 
+/// **2026-06-09** — Satzanfang groß, wenn der Text als Satz endet.
+///
+/// Trägt ein Eintrag ein Satzendzeichen (`.`, `?`, `!`), ist er ein
+/// vollständiger Satz und beginnt groß — in beiden Sprachen: „Ich höre
+/// Musik.", „J'écoute de la musique.", „Wie geht es dir?". Ein einzelnes
+/// Wort oder Fragment („ausschalten", „la voiture") bekommt kein
+/// Satzzeichen und bleibt dadurch klein.
+///
+/// Warum als eigener Schritt: `TextNormalizationEngine.normalize`
+/// kapitalisiert den ersten Token zwar bereits bei vorhandenem
+/// Satzendzeichen — die Anzeige-Funktionen hängen das Satzzeichen aber
+/// erst NACH dem Casing-Durchlauf an. Zu diesem Zeitpunkt war der Text
+/// noch satzzeichenlos, die Regel lief also ins Leere und Sätze
+/// erschienen klein („ich höre Musik.").
+func capitalizingSentenceStartIfTerminated(_ text: String) -> String {
+    guard detectedTerminalSentencePunctuation(from: text) != nil else { return text }
+    guard let first = text.first, first.isLowercase else { return text }
+    return first.uppercased() + text.dropFirst()
+}
+
 func synchronizedPairTerminalSentencePunctuation(
     source: String,
     target: String,

@@ -293,6 +293,18 @@ enum TextNormalizationEngine {
                     if StandardVocabularyLoader.germanNounSet.contains(lowerStem) {
                         return capitalizeFirstLetter(lower)
                     }
+                    // **2026-06-09** — War das Wort in der Quelle groß,
+                    // ist das die verlässlichere Information als die
+                    // Adjektiv-Annahme: die Lexikon-Daten sind korrekt
+                    // geschrieben, und Komposita wie „Haustür" stehen
+                    // nicht zwangsläufig als eigenes Nomen im Set (dort
+                    // liegen nur „Haustürschlüssel"/„Haustürcode").
+                    // Ohne diesen Zweig wurde aus „die Haustür schließen"
+                    // ein „die haustür schließen" — die Regel zerstörte
+                    // also gerade die richtige Schreibung.
+                    if originallyCapitalized {
+                        return token
+                    }
                     return lower
                 }
             }

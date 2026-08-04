@@ -105,17 +105,63 @@ private func quizCardType(for category: String) -> CardType {
 func visibleQuizPromptText(_ text: String, category: String) -> String {
     let cardType = quizCardType(for: category)
     if looksLikeGermanDisplayText(text) {
-        return germanDisplayText(text, cardType: cardType)
+        return capitalizingSentenceStartIfTerminated(germanDisplayText(text, cardType: cardType))
     }
-    return sourceDisplayText(text, sourceLanguage: .french)
+    return capitalizingSentenceStartIfTerminated(sourceDisplayText(text, sourceLanguage: .french))
 }
 
 func visibleQuizAnswerText(_ text: String, category: String) -> String {
     let cardType = quizCardType(for: category)
     if looksLikeGermanDisplayText(text) {
-        return germanDisplayText(text, cardType: cardType)
+        return capitalizingSentenceStartIfTerminated(germanDisplayText(text, cardType: cardType))
     }
-    return sourceDisplayText(text, sourceLanguage: .french)
+    return capitalizingSentenceStartIfTerminated(sourceDisplayText(text, sourceLanguage: .french))
+}
+
+/// **2026-06-09** — Anzeige eines zusammengehörenden Paars (Frage +
+/// Antwort) im Quiz.
+///
+/// Beide Seiten bekommen dasselbe Satzendzeichen, weil sie derselbe Satz
+/// in zwei Sprachen sind. Vorher entschied jede Seite für sich, wodurch
+/// links „tu veux un dessert." und rechts „…Dessert?" stehen konnte.
+/// `synchronizedPairTerminalSentencePunctuation` löst das bereits
+/// korrekt auf (Frage gewinnt vor Aussage) — sie wurde im Quiz nur nie
+/// benutzt, obwohl Karteikarten sie längst verwenden.
+///
+/// Danach greift die Satzanfang-Großschreibung: Was als Satz endet,
+/// beginnt groß.
+func visibleQuizPairTexts(
+    prompt: String,
+    answer: String,
+    category: String
+) -> (prompt: String, answer: String) {
+    let cardType = quizCardType(for: category)
+    let promptIsGerman = looksLikeGermanDisplayText(prompt)
+
+    let displayedPrompt = promptIsGerman
+        ? germanDisplayText(prompt, cardType: cardType)
+        : sourceDisplayText(prompt, sourceLanguage: .french)
+    let displayedAnswer = looksLikeGermanDisplayText(answer)
+        ? germanDisplayText(answer, cardType: cardType)
+        : sourceDisplayText(answer, sourceLanguage: .french)
+
+    // `source` ist immer die französische Seite — die Funktion leitet
+    // daran ihre Sprachlogik ab.
+    let synchronized = promptIsGerman
+        ? synchronizedPairTerminalSentencePunctuation(
+            source: displayedAnswer, target: displayedPrompt,
+            sourceLanguage: .french, cardType: cardType)
+        : synchronizedPairTerminalSentencePunctuation(
+            source: displayedPrompt, target: displayedAnswer,
+            sourceLanguage: .french, cardType: cardType)
+
+    let syncedPrompt = promptIsGerman ? synchronized.target : synchronized.source
+    let syncedAnswer = promptIsGerman ? synchronized.source : synchronized.target
+
+    return (
+        capitalizingSentenceStartIfTerminated(syncedPrompt),
+        capitalizingSentenceStartIfTerminated(syncedAnswer)
+    )
 }
 
 func canonicalGermanQuizText(

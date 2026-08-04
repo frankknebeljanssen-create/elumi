@@ -143,7 +143,15 @@ extension QuizView {
                 HStack(alignment: .top, spacing: AppTheme.Spacing.sm) {
                     VStack(spacing: AppTheme.Spacing.xs) {
                         ForEach(question.pairs) { pair in
-                            Text(visibleQuizPromptText(pair.prompt, category: question.category))
+                            // **2026-06-09** — Beide Seiten gemeinsam
+                            // punktieren: sie sind derselbe Satz in zwei
+                            // Sprachen, also darf nicht links ein Punkt
+                            // und rechts ein Fragezeichen stehen.
+                            Text(visibleQuizPairTexts(
+                                prompt: pair.prompt,
+                                answer: pair.answer,
+                                category: question.category
+                            ).prompt)
                                 .font(AppTheme.Typography.body)
                                 .foregroundStyle(matchingTextColor(for: pair.id))
                                 .multilineTextAlignment(.center)
@@ -186,7 +194,11 @@ extension QuizView {
 
                     VStack(spacing: AppTheme.Spacing.xs) {
                         ForEach(question.shuffledAnswers) { pair in
-                            Text(visibleQuizAnswerText(pair.answer, category: question.category))
+                            Text(visibleQuizPairTexts(
+                                prompt: pair.prompt,
+                                answer: pair.answer,
+                                category: question.category
+                            ).answer)
                                 .font(AppTheme.Typography.body)
                                 .foregroundStyle(matchingTextColor(for: pair.id, isAnswerSide: true))
                                 .multilineTextAlignment(.center)
