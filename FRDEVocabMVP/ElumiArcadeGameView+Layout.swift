@@ -485,7 +485,14 @@ extension ElumiArcadeGameView {
                 HStack(spacing: 8) {
                     playCreditsHUDChip
                     Spacer(minLength: 0)
-                    playCreditsSkipChip
+                    // **2026-06-09** — Skip nur zeigen, wenn er auch
+                    // benutzbar ist. Vorher stand er dauerhaft da und
+                    // sah im deaktivierten Zustand genauso aus wie im
+                    // aktiven — ein Knopf, der auf Tippen nicht
+                    // reagiert, wirkt kaputt (User-Report).
+                    if playCreditsSkipEnabled {
+                        playCreditsSkipChip
+                    }
                 }
             }
 

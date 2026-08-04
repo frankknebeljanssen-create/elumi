@@ -628,9 +628,12 @@ extension ElumiArcadeGameView {
                 .ignoresSafeArea()
 
             VStack(spacing: 14) {
-                Text("Leben verloren")
-                    .font(.system(size: 30, weight: .black, design: .rounded))
-                    .foregroundStyle(.white)
+                // Gleiche Bildsprache wie der Rundenstart: farbige
+                // Kopfzeile, große schwarze Rundschrift, blinkendes
+                // Signalwort darunter.
+                Text("1 Leben verloren")
+                    .font(.system(size: 22, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.warning)
 
                 // Verbleibende Leben als Punktreihe — auf einen Blick
                 // ablesbar, ohne den Zähler oben suchen zu müssen.
@@ -644,13 +647,17 @@ extension ElumiArcadeGameView {
                     }
                 }
 
-                Text(showsReady
-                     ? "Bereit?"
-                     : (remaining == 1 ? "Noch 1 Leben" : "Noch \(remaining) Leben"))
-                    .font(.system(size: 20, weight: .black, design: .rounded))
-                    .foregroundStyle(showsReady ? AppTheme.Colors.elumiAmber : .white.opacity(0.85))
-                    .scaleEffect(showsReady ? 1.12 : 1.0)
-                    .animation(.spring(response: 0.32, dampingFraction: 0.55), value: showsReady)
+                Text(remaining == 1 ? "Noch 1 Leben" : "Noch \(remaining) Leben")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+
+                // „Bereit?" in derselben Größe und mit demselben Blinken
+                // wie das „Ready?" beim Rundenstart.
+                Text("Bereit?")
+                    .font(.system(size: 36, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+                    .opacity(showsReady ? 1 : 0)
+                    .animation(.easeInOut(duration: 0.25), value: showsReady)
             }
             .padding(.horizontal, 34)
             .padding(.vertical, 28)

@@ -380,23 +380,28 @@ extension TrainingView {
                         // die foregroundStyle-Tönung (weiß / rot), das Cartoon-
                         // Mikrofon kommt mit eigener Farbe und ignoriert Tints.
                         Group {
-                            if showsSuccessOnlyMessage {
+                            // **2026-06-09** — Aufnahme hat Vorrang vor
+                            // den Ergebnis-Texten. Vorher gewann ein noch
+                            // stehendes „Richtig 🙂"/„Falsch 😕" und
+                            // verdeckte den Zuhör-Zustand, sobald die
+                            // nächste Aufnahme startete (User-Report: Ohr
+                            // fehlt in Vokabeln).
+                            if isSpeechRecording {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.white.opacity(0.22))
+                                    .frame(width: 52, height: 52)
+                                Image(systemName: "ear.fill")
+                                    .font(.system(size: 26, weight: .bold))
+                                    .foregroundStyle(.white)
+                            }
+                            } else if showsSuccessOnlyMessage {
                                 Text("Richtig 🙂")
                                     .font(.system(size: 26, weight: .bold, design: .rounded))
                                     .foregroundStyle(.white)
                             } else if showsRetryOnlyMessage {
                                 Text("Falsch 😕")
                                     .font(.system(size: 26, weight: .bold, design: .rounded))
-                                    .foregroundStyle(.white)
-                            } else if isSpeechRecording {
-                                // **2026-06-09** — Ohr statt rotem Stop-
-                                // Quadrat: Das Stop-Symbol beschrieb die
-                                // Bedienung („hier drücken zum Beenden"),
-                                // nicht den Zustand. Gefragt ist die
-                                // Aussage „ich höre dir gerade zu" —
-                                // besonders für Kinder eindeutiger.
-                                Image(systemName: "ear.fill")
-                                    .font(.system(size: 32, weight: .bold))
                                     .foregroundStyle(.white)
                             } else {
                                 // Idle: Cartoon-Mikrofon.

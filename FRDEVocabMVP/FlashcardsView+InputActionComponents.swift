@@ -129,21 +129,26 @@ extension FlashcardsView {
                     toggleRecording()
                 } label: {
                     Group {
-                        if showsSuccessOnlyMessage {
+                        // **2026-06-09** — Aufnahme hat Vorrang vor den
+                        // Ergebnis-Texten: Startet die nächste Aufnahme,
+                        // während noch ein „Richtig 🙂" steht, verdeckt
+                        // dieses sonst den Zuhör-Zustand.
+                        if speechController.isRecording {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.white.opacity(0.22))
+                                    .frame(width: 52, height: 52)
+                                Image(systemName: "ear.fill")
+                                    .font(.system(size: 26, weight: .bold))
+                                    .foregroundStyle(.white)
+                            }
+                        } else if showsSuccessOnlyMessage {
                             Text("Richtig 🙂")
                                 .font(.system(size: 24, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
                         } else if showsWrongOnlyMessage {
                             Text("Falsch 😕")
                                 .font(.system(size: 24, weight: .bold, design: .rounded))
-                                .foregroundStyle(.white)
-                        } else if speechController.isRecording {
-                            // **2026-06-09** — Ohr statt rotem Stop-
-                            // Quadrat: benennt den Zustand („ich höre
-                            // zu") statt der Bedienung. Gleich wie im
-                            // Vokabel-/Nomen-/Verben-Training.
-                            Image(systemName: "ear.fill")
-                                .font(.system(size: 32, weight: .bold))
                                 .foregroundStyle(.white)
                         } else {
                             // Idle: Cartoon-Mikrofon statt mic.fill. Kein

@@ -301,7 +301,10 @@ struct AppInputField: View {
         // Voll deckend — zusammen mit der weißen Schrift (siehe
         // `resultTextColor`) ergibt das dieselbe Sprache wie die
         // Multiple-Choice-Karten: farbige Fläche, helle Schrift.
-        case .correct: return AppTheme.Colors.success
+        // Kräftigeres Grün als `success`: Der helle Mint-Ton trug die
+        // weiße Schrift nicht (User-Report „nicht hell genug" — es fehlte
+        // nicht Weiß, sondern Kontrast dahinter).
+        case .correct: return Color(hex: "#0F9D6E")
         case .wrong:   return AppTheme.Colors.error
         }
     }

@@ -375,9 +375,9 @@ private struct StreakMomentCard: View {
 
     private var subtitle: String? {
         switch moment.tier {
-        case .small:     return "läuft"
-        case .medium:    return "stark"
-        case .large:     return "weiter so"
+        case .small:     return "läuft!"
+        case .medium:    return "stark!"
+        case .large:     return "weiter so!"
         case .milestone: return nil
         }
     }

@@ -1011,7 +1011,7 @@ extension ElumiArcadeGameView {
     /// Dauer der Zäsur nach einem Lebens-Verlust: 0.9 s Standbild plus
     /// die Einblendung — lang genug, dass der Verlust ankommt, kurz
     /// genug, dass der Spielfluss nicht reißt.
-    var lifeLostPauseDuration: TimeInterval { 1.4 }
+    var lifeLostPauseDuration: TimeInterval { 2.4 }
 
     /// Läuft gerade die Lebens-Verlust-Zäsur?
     func isInLifeLostPause(at date: Date) -> Bool {
