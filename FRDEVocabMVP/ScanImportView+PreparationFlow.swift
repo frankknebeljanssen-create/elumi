@@ -27,10 +27,31 @@ extension ScanImportView {
     }
 
     func restartCurrentScan() {
-        guard !isRecognizingImage else { return }
-        guard let imageToAnalyze = scanPreparationPreviewImage ?? selectedImage else { return }
+        // **Bug-Fix 2026-06-09** — Beide Guards brachen vorher stumm ab.
+        // Nach einem KI-Fehler tippte man auf „Nochmal versuchen", es
+        // passierte nichts, und der Screen blieb leer zurück (User-
+        // Bugreport): `prepareForRescanDisplay()` hatte die Vorschau
+        // schon geleert, der Neustart lief aber nie an. Jetzt wird der
+        // Grund benannt, statt ihn zu verschlucken.
+        guard !isRecognizingImage else {
+            presentScanAIInfo("Die Analyse läuft noch. Bitte einen Moment warten.")
+            return
+        }
+        // `originalScanImage` explizit als letzte Rückfallebene:
+        // `releaseWorkingImages()` behält es bewusst genau für diesen
+        // Fall, während `preparedScanImage` verworfen wird.
+        guard let imageToAnalyze = scanPreparationPreviewImage
+                ?? selectedImage
+                ?? originalScanImage else {
+            presentScanAIInfo("Das Bild steht nicht mehr zur Verfügung. Bitte neu scannen.")
+            return
+        }
         shouldAppendNextScan = false
         prepareForRescanDisplay()
+        // Abschluss-Zustand des fehlgeschlagenen Laufs zurücksetzen —
+        // sonst bleibt der Screen in der Ergebnis-Ansicht ohne Ergebnis
+        // hängen, also leer.
+        session.batchCompleted = false
         recognizeText(from: imageToAnalyze)
     }
 

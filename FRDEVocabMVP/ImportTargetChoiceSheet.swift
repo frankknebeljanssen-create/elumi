@@ -13,7 +13,6 @@ import SwiftUI
 struct ImportTargetChoiceSheet: View {
     @Environment(\.dismiss) private var dismiss
 
-    let importableCount: Int
     let onChooseNewList: () -> Void
     let onChooseExistingList: () -> Void
     // **Phase B (2026-05-20)** — dritter Pfad: Scan als Entwurf sichern.
@@ -35,13 +34,18 @@ struct ImportTargetChoiceSheet: View {
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                     Spacer(minLength: 0)
                 }
-                Text("Wohin speichern?")
+                Text("Wie speichern?")
                     .font(AppTheme.Typography.cardTitle)
                     .foregroundStyle(AppTheme.Colors.textPrimary)
             }
             .padding(.top, 8)
 
-            summary
+            // **2026-06-09** — Zusammenfassungszeile entfernt (User-Spec).
+            // Sie nannte eine Zahl, die an dieser Stelle nichts entscheidet
+            // — die drei Karten darunter sagen bereits alles — und war im
+            // Fehlerfall aktiv irreführend („0 Einträge", obwohl 60 Wörter
+            // erkannt wurden). Der Zähler bleibt im Review-Screen davor,
+            // wo er zur Prüfung gehört.
 
             choiceCard(
                 icon: "square.and.pencil",
@@ -85,14 +89,6 @@ struct ImportTargetChoiceSheet: View {
         .padding(.bottom, 20)
     }
 
-    private var summary: some View {
-        Text("\(importableCount) \(importableCount == 1 ? "Eintrag" : "Einträge") aus dem Scan bereit zum Import.")
-            .font(.system(size: 14, weight: .medium, design: .rounded))
-            .foregroundStyle(AppTheme.Colors.textSecondary)
-            .multilineTextAlignment(.center)
-            .frame(maxWidth: .infinity, alignment: .center)
-    }
-
     private func choiceCard(
         icon: String,
         title: String,
@@ -106,9 +102,16 @@ struct ImportTargetChoiceSheet: View {
                     .foregroundStyle(AppTheme.Colors.cta)
                     .frame(width: 36)
                 VStack(alignment: .leading, spacing: 4) {
+                    // **2026-06-09** — Titel darf umbrechen statt
+                    // abzuschneiden. „Zu bestehender Lernliste
+                    // hinzufügen" endete vorher als „…Lernliste hin…";
+                    // der Untertitel hatte `fixedSize` längst, der Titel
+                    // nicht — deshalb wurde nur er gekürzt.
                     Text(title)
                         .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
                     Text(subtitle)
                         .font(.system(size: 13, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)

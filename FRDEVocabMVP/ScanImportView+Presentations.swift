@@ -226,7 +226,6 @@ extension ScanImportView {
             //   3. ScanImportConflictReviewSheet — bei Konflikten vor Apply
             .sheet(isPresented: $isShowingImportTargetChoice) {
                 ImportTargetChoiceSheet(
-                    importableCount: pendingImportItems.count,
                     onChooseNewList: {
                         // Pfad 1: bestehender Flow läuft unverändert.
                         proceedWithNewListImport()

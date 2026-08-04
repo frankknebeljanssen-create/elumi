@@ -97,7 +97,6 @@ struct ScanDraftDetailView: View {
         // „Als Entwurf" → onSaveAsDraft ungesetzt → dritte Card unsichtbar).
         .sheet(isPresented: $isShowingTargetChoice) {
             ImportTargetChoiceSheet(
-                importableCount: localDraft.map { activeCount($0) } ?? 0,
                 onChooseNewList: {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                         isShowingNewListNameSheet = true
