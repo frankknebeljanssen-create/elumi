@@ -1031,7 +1031,17 @@ extension ElumiArcadeGameView {
             // Zäsur gerade abgelaufen → aufräumen und normal weiter.
             lifeLostPauseUntil = nil
             lifeLostPauseStartedAt = nil
-            gameClock = Date()
+            // **Bug-Fix 2026-06-09** — `lastFrameDate` MUSS hier zurück
+            // auf nil. Während der Pause kehrt diese Funktion früh
+            // zurück, noch bevor `advanceGameClock(now:)` läuft — die
+            // Frame-Referenz bleibt also auf dem Zeitpunkt vor der
+            // Pause stehen. Ohne Reset flösse beim ersten Frame danach
+            // die gesamte Pausendauer als ein einziges Delta in die
+            // Spieluhr: alle Snacks springen gleichzeitig über die
+            // Fanglinie, mehrere Leben gehen in einem Frame verloren
+            // und das Spiel landet direkt im Game-Over samt Rescue-
+            // Prompt. Mit `nil` startet das nächste Delta bei 0.
+            lastFrameDate = nil
         }
 
         // Bonus round uses its own update logic
@@ -1391,23 +1401,41 @@ extension ElumiArcadeGameView {
     func runGameLoops() async {
         guard await MainActor.run(body: { !self.showingStartOverlay }) else { return }
 
-        await MainActor.run {
-            resetGameState()
-            // Show "Runde 1 / Ready?" at game start
-            showingRoundBanner = true
-            roundBannerPhase = 1
-            readyBlinkVisible = true
+        // **Bug-Fix 2026-06-09** — Nach dem Retten per Credit soll das
+        // Spiel dort weitergehen, wo es aufgehört hat. `resetGameState()`
+        // und das „Runde 1 / Ready?"-Intro werden deshalb übersprungen;
+        // beides gehört zum Spielstart, nicht zur Fortsetzung.
+        let isRescueResume = await MainActor.run { () -> Bool in
+            let resuming = isResumingAfterRescue
+            isResumingAfterRescue = false
+            return resuming
         }
 
-        // Ready blink sequence
-        for _ in 0..<3 {
-            await MainActor.run { withAnimation(.easeInOut(duration: 0.25)) { readyBlinkVisible = false } }
-            try? await Task.sleep(for: .milliseconds(300))
-            await MainActor.run { withAnimation(.easeInOut(duration: 0.25)) { readyBlinkVisible = true } }
-            try? await Task.sleep(for: .milliseconds(300))
+        if !isRescueResume {
+            await MainActor.run {
+                resetGameState()
+                // Show "Runde 1 / Ready?" at game start
+                showingRoundBanner = true
+                roundBannerPhase = 1
+                readyBlinkVisible = true
+            }
+
+            // Ready blink sequence
+            for _ in 0..<3 {
+                await MainActor.run { withAnimation(.easeInOut(duration: 0.25)) { readyBlinkVisible = false } }
+                try? await Task.sleep(for: .milliseconds(300))
+                await MainActor.run { withAnimation(.easeInOut(duration: 0.25)) { readyBlinkVisible = true } }
+                try? await Task.sleep(for: .milliseconds(300))
+            }
+            try? await Task.sleep(for: .milliseconds(200))
+            await MainActor.run { showingRoundBanner = false }
+        } else {
+            // Frame-Referenz zurücksetzen, damit der erste Schritt nach
+            // der Game-Over-Unterbrechung nicht die gesamte Standzeit
+            // als ein Delta einrechnet (gleiche Falle wie bei der
+            // Lebens-Verlust-Zäsur).
+            await MainActor.run { lastFrameDate = nil }
         }
-        try? await Task.sleep(for: .milliseconds(200))
-        await MainActor.run { showingRoundBanner = false }
 
         await withTaskGroup(of: Void.self) { group in
             group.addTask {

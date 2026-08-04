@@ -225,6 +225,12 @@ extension ElumiArcadeGameView {
         // (gameSeed steuert nur die Spawn-Task-ID, keine Wave-
         // Geometrie). User sieht: Charakter da + Musik an + Snacks
         // beginnen wieder zu fallen.
+        // **Bug-Fix 2026-06-09** — Muss VOR `gameSeed` gesetzt werden:
+        // `runGameLoops()` beginnt mit `resetGameState()` (Score 0,
+        // misses 0), wodurch das Spiel nach dem Retten von vorne anfing.
+        // Der Credit ist aber fürs Weiterspielen da. Das Flag
+        // überspringt Reset und Runden-Intro einmalig.
+        isResumingAfterRescue = true
         gameSeed = UUID()
         withAnimation(.spring(response: 0.35, dampingFraction: 0.65)) {
             elumiVisible = true

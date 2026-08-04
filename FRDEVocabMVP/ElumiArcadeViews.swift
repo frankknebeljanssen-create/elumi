@@ -344,6 +344,17 @@ struct ElumiArcadeGameView: View {
     /// verlorenen Leben kurz angehalten wird, statt nahtlos
     /// weiterzuspielen. Bleibt `nil` beim letzten Leben: dort kommt der
     /// Game-Over-Screen, eine Zäsur davor wäre doppelt.
+    /// **Bug-Fix 2026-06-09** — Beim Retten per Credit darf die neu
+    /// gestartete Spiel-Schleife den Spielstand NICHT zurücksetzen.
+    ///
+    /// `consumePlayCreditRescue()` setzt `gameSeed` neu, damit die
+    /// beendeten Spawn-Tasks wieder anlaufen — das startet aber
+    /// `runGameLoops()`, und die beginnt mit `resetGameState()`
+    /// (Score 0, misses 0). Das Spiel fing dadurch von vorne an,
+    /// obwohl der Credit fürs Weiterspielen gedacht ist. Dieses Flag
+    /// überspringt genau diesen Reset einmalig.
+    @State var isResumingAfterRescue = false
+
     @State var lifeLostPauseUntil: Date?
 
     /// Ab wann die laufende Zäsur begonnen hat — für die Einblend-
