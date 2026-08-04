@@ -33,7 +33,33 @@ final class HintStore: ObservableObject {
 
     private static let storageKey = "com.frank.FRDEVocabMVP.seenHintIDs"
 
+    /// **2026-06-09** — Katalog aller vergebenen Hint-IDs. Die
+    /// Developer-Card „Tipps erneut anzeigen" liest daran ab, ob noch
+    /// Tipps offen sind, und färbt ihr Lämpchen entsprechend.
+    ///
+    /// **Muss ergänzt werden, wenn ein neuer `hintBubble(id:)`-Aufruf
+    /// dazukommt** — sonst gilt der neue Tipp für die Anzeige als nicht
+    /// existent. Der Katalog beeinflusst ausschließlich diese Anzeige;
+    /// ob ein einzelner Hint erscheint, hängt allein an `hasSeen(_:)`.
+    static let allHintIDs: Set<String> = [
+        "daily_drop_intro",
+        "home_intro",
+        "lea_chat_intro",
+        "lists_intro",
+        "progress_intro",
+        "quiz_intro",
+        "scan_intro",
+        "scan_result",
+        "training_intro"
+    ]
+
     @Published private(set) var seenHintIDs: Set<String>
+
+    /// Sind noch Tipps offen (= mindestens einer aus dem Katalog wurde
+    /// noch nicht gesehen)?
+    var hasPendingHints: Bool {
+        !Self.allHintIDs.isSubset(of: seenHintIDs)
+    }
 
     private init() {
         seenHintIDs = Set(UserDefaults.standard.stringArray(forKey: Self.storageKey) ?? [])

@@ -54,8 +54,8 @@ struct HomeHeader: View {
                     .fill(
                         LinearGradient(
                             colors: [
-                                AppTheme.Colors.moduleQuiz.opacity(0.95),
-                                AppTheme.Colors.moduleQuiz.opacity(0.78)
+                                AppTheme.Colors.streakAccent.opacity(0.95),
+                                AppTheme.Colors.streakAccent.opacity(0.78)
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -66,7 +66,7 @@ struct HomeHeader: View {
                 Capsule(style: .continuous)
                     .stroke(Color.white.opacity(0.25), lineWidth: 1)
             )
-            .shadow(color: AppTheme.Colors.moduleQuiz.opacity(0.35), radius: 4, x: 0, y: 2)
+            .shadow(color: AppTheme.Colors.streakAccent.opacity(0.35), radius: 4, x: 0, y: 2)
             .accessibilityLabel(Text("Streak: \(streakDays) \(streakDays == 1 ? "Tag" : "Tage")"))
     }
 

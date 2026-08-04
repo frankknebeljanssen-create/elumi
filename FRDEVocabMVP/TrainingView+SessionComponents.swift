@@ -389,11 +389,15 @@ extension TrainingView {
                                     .font(.system(size: 26, weight: .bold, design: .rounded))
                                     .foregroundStyle(.white)
                             } else if isSpeechRecording {
-                                // Recording: klassisches rotes Stop-Quadrat
-                                // (OS-Konvention, nicht Teil des Cartoon-Sets).
-                                Image(systemName: "stop.fill")
-                                    .font(.system(size: 28, weight: .bold))
-                                    .foregroundStyle(AppTheme.Colors.error)
+                                // **2026-06-09** — Ohr statt rotem Stop-
+                                // Quadrat: Das Stop-Symbol beschrieb die
+                                // Bedienung („hier drücken zum Beenden"),
+                                // nicht den Zustand. Gefragt ist die
+                                // Aussage „ich höre dir gerade zu" —
+                                // besonders für Kinder eindeutiger.
+                                Image(systemName: "ear.fill")
+                                    .font(.system(size: 32, weight: .bold))
+                                    .foregroundStyle(.white)
                             } else {
                                 // Idle: Cartoon-Mikrofon.
                                 ElumiIconView(icon: .mikrofon, size: 48)
@@ -405,13 +409,13 @@ extension TrainingView {
                         .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
                     }
                     .buttonStyle(.plain)
-                    .overlay {
-                        RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                            .stroke(Color.white.opacity(isSpeechRecording && isMicPulseVisible ? 0.28 : 0), lineWidth: 2)
-                            .animation(.easeInOut(duration: 0.55), value: isMicPulseVisible)
-                    }
+                    // **2026-06-09** — Deutlich sichtbarer Zuhör-Puls
+                    // (siehe `appListeningPulse`). Ersetzt den alten
+                    // Rahmen-Puls, der an `isMicPulseVisible` hing und
+                    // bei 28 % Weiß praktisch unsichtbar war.
+                    .appListeningPulse(isActive: isSpeechRecording)
                     .disabled(!session.hasStartedTraining || currentCard == nil || !isAudioModeEnabled || !canUseSpeechRecognition)
-                    .opacity(!session.hasStartedTraining || currentCard == nil || !isAudioModeEnabled || !canUseSpeechRecognition ? 0.45 : (isSpeechRecording && isMicPulseVisible ? 0.72 : 1))
+                    .opacity(!session.hasStartedTraining || currentCard == nil || !isAudioModeEnabled || !canUseSpeechRecognition ? 0.45 : 1)
 
                     Button {
                         // **Sweep C** — manueller Speaker-Tap (im Speech-

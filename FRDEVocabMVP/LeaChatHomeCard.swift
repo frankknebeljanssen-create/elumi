@@ -78,7 +78,11 @@ struct LeaChatHomeCard: View {
             Circle()
                 .fill(AppTheme.Colors.success)
                 .frame(width: 7, height: 7)
-            Text("LIVE CHAT")
+            // **2026-06-09** — „LIVE CHAT" → „LIVE". Der Titel darunter
+            // heißt bereits „Live-Chat"; das Wort stand also doppelt auf
+            // derselben Card. Oben zählt nur die Statusaussage — der
+            // grüne Punkt plus „LIVE" sagt: Léa ist gerade erreichbar.
+            Text("LIVE")
                 .font(.system(size: 11, weight: .bold, design: .rounded))
                 .tracking(1.0)
                 .foregroundStyle(AppTheme.Colors.success)

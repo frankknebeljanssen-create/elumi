@@ -48,7 +48,56 @@ struct AppBottomBarSurfaceModifier: ViewModifier {
     }
 }
 
+/// **2026-06-09** — „Ich höre zu"-Zustand für Aufnahme-Buttons.
+///
+/// Der Screen wirkte während der Spracheingabe statisch: ein rotes
+/// Stop-Quadrat und ein kaum sichtbarer Rahmen-Puls (Weiß bei 28 %
+/// Deckkraft). Man sah nicht, dass die App gerade auf eine Antwort
+/// wartet (User-Report).
+///
+/// Der Puls läuft hier selbstständig als Dauer-Animation — er hängt
+/// nicht mehr an einem extern getakteten Flag, das nur den
+/// Aufnahmezustand spiegelte und deshalb gar nicht blinkte. Sichtbar
+/// über drei Kanäle gleichzeitig, damit es auch im Augenwinkel auffällt:
+/// atmende Skalierung, wandernde Rahmenstärke und ein farbiger Schein.
+private struct ListeningPulseModifier: ViewModifier {
+    let isActive: Bool
+    let tint: Color
+    let cornerRadius: CGFloat
+
+    @State private var isPulsing = false
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(isActive && isPulsing ? 1.035 : 1.0)
+            .overlay {
+                if isActive {
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .stroke(tint.opacity(isPulsing ? 0.95 : 0.35),
+                                lineWidth: isPulsing ? 4 : 2)
+                }
+            }
+            .shadow(color: isActive ? tint.opacity(isPulsing ? 0.7 : 0.2) : .clear,
+                    radius: isPulsing ? 16 : 6)
+            .animation(.easeInOut(duration: 0.65).repeatForever(autoreverses: true),
+                       value: isPulsing)
+            .onAppear { if isActive { isPulsing = true } }
+            .onChange(of: isActive) { _, active in
+                isPulsing = active
+            }
+    }
+}
+
 extension View {
+    /// Markiert einen Button sichtbar als „wartet auf Spracheingabe".
+    func appListeningPulse(
+        isActive: Bool,
+        tint: Color = AppTheme.Colors.elumiMint,
+        cornerRadius: CGFloat = AppTheme.Radius.md
+    ) -> some View {
+        modifier(ListeningPulseModifier(isActive: isActive, tint: tint, cornerRadius: cornerRadius))
+    }
+
     func appScreenBackground(_ style: AppSectionStyle) -> some View {
         // System-Pattern: Screen-Hintergrund ist der **dunklere** Ton
         // (`background` = elumiMidnight), Cards darauf nutzen `surface`

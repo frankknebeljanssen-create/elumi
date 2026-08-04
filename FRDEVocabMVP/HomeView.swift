@@ -183,9 +183,19 @@ struct HomeView: View {
     private var toolsRow: some View {
         HStack(spacing: 10) {
             WideCard(
-                title: "Neues\nScannen",
+                // **2026-06-09** — „Neues Scannen" → „Vokabeln scannen":
+                // benennt das Ergebnis statt der Aktion und deckt sich
+                // mit dem Titel im Scan-Modus selbst.
+                title: "Vokabeln\nscannen",
                 accent: AppTheme.Colors.moduleScan,
                 height: 76,
+                // **2026-06-09** — Beide Tools-Cards mit festem, gleichem
+                // Titel-Grad. Vorher stand auf beiden der Default 17 pt,
+                // aber „Lernlisten" ist länger und wurde per
+                // `minimumScaleFactor` kleiner gerendert als „scannen" —
+                // nebeneinander sah das nach zwei Schriftgrößen aus.
+                // 15 pt passt für beide ohne Schrumpfen.
+                titleSize: 15,
                 titleLineLimit: 2,
                 icon: { HomeModuleIconView(icon: .scan, size: 48, glyphTint: AppTheme.Colors.moduleScan) },
                 onTap: { openHomeScreen(.scan) }
@@ -195,6 +205,7 @@ struct HomeView: View {
                 title: "Meine\nLernlisten",
                 accent: AppTheme.Colors.moduleLists,
                 height: 76,
+                titleSize: 15,
                 titleLineLimit: 2,
                 icon: { HomeModuleIconView(icon: .listen, size: 48, glyphTint: AppTheme.Colors.moduleLists) },
                 onTap: { openHomeScreen(.lists(nil)) }

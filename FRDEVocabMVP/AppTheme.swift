@@ -110,6 +110,17 @@ enum AppTheme {
         static let moduleLists = Color(hex: "#57B8C9")           // Listen — Teal
         static let moduleScan = Color(hex: "#EF6C50")            // Scan — Coral
         static let moduleAccents = Color(hex: "#F43F5E")         // Akzente — Rose (distinct from Vocab-Pink und Hearts-Red, passt thematisch zu „Akzenten")
+        /// **Streak-Akzent** (2026-06-09) — eigene Identität für die
+        /// Serien-Anzeige (Pille unter der Begrüßung, Trophäen).
+        ///
+        /// Vorher lief sie auf `moduleQuiz` und war damit farbgleich mit
+        /// der Quiz-Card direkt darunter — sie las sich wie ein weiterer
+        /// Quiz-Einstieg statt als Fortschrittsanzeige. Violett kollidiert
+        /// mit keiner Home-Card (`moduleVocabulary` Dunkelblau,
+        /// `moduleQuiz` Amber, `elumiPinkDeep` Pink, `moduleScan` Koralle,
+        /// `moduleLists` Türkis) und liest sich als Auszeichnung.
+        static let streakAccent = Color(hex: "#A855F7")          // Streak — Violett
+
         /// **Developer-Section-Akzent** (2026-06-09) — kühles Slate-Grau,
         /// bewusst außerhalb der Modul-Farbfamilie, damit alle Cards in
         /// `SettingsView.developerSection` auf einen Blick als „Developer-

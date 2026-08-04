@@ -280,12 +280,40 @@ struct AppInputField: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                .fill(AppTheme.Colors.elumiCream)
+                .fill(resultFillColor)
         )
         .overlay(
             RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
                 .stroke(resultBorderColor, lineWidth: resultBorderWidth)
         )
+        .animation(.easeOut(duration: 0.18), value: resultState)
+    }
+
+    /// **2026-06-09** — Das ganze Feld färbt sich, nicht nur der Rand.
+    ///
+    /// Vorher blieb die Füllung cremefarben und nur eine 2 pt starke
+    /// Kontur wurde grün — im Quiz war die Bestätigung dadurch kaum zu
+    /// sehen (User-Report). Andere Fragetypen färben ihre ganze Karte,
+    /// das Eingabefeld zieht jetzt nach.
+    private var resultFillColor: Color {
+        switch resultState {
+        case .none:    return AppTheme.Colors.elumiCream
+        // Voll deckend — zusammen mit der weißen Schrift (siehe
+        // `resultTextColor`) ergibt das dieselbe Sprache wie die
+        // Multiple-Choice-Karten: farbige Fläche, helle Schrift.
+        case .correct: return AppTheme.Colors.success
+        case .wrong:   return AppTheme.Colors.error
+        }
+    }
+
+    /// **2026-06-09** — Schrift wird weiß, sobald die Fläche farbig ist.
+    ///
+    /// Auf dem grünen Feld wirkte das dunkle `elumiMidnight` wie
+    /// ausgegraut (User-Report) — die Multiple-Choice-Antworten nutzen
+    /// bei Treffern längst weiße Schrift auf farbigem Grund. Im
+    /// Normalzustand (cremefarbenes Feld) bleibt die Schrift dunkel.
+    private var resultTextColor: Color {
+        resultState == .none ? AppTheme.Colors.elumiMidnight : .white
     }
 
     private var resultBorderColor: Color {
@@ -297,7 +325,7 @@ struct AppInputField: View {
     }
 
     private var resultBorderWidth: CGFloat {
-        resultState == .none ? 1 : 2
+        resultState == .none ? 1 : 3
     }
 
     /// TextField mit konditionalem Focus/onTap — `.onTapGesture` wird NUR
@@ -306,7 +334,7 @@ struct AppInputField: View {
     @ViewBuilder
     private var fieldCore: some View {
         let base = TextField("", text: $text)
-            .foregroundStyle(AppTheme.Colors.elumiMidnight)
+            .foregroundStyle(resultTextColor)
             .tint(accent)
             .multilineTextAlignment(alignment)
             .submitLabel(submitLabel)

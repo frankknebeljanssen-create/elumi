@@ -15,6 +15,10 @@ struct SettingsView: View {
     /// Gate für das Multi-Account-Switcher-Sheet. Zeigt `AccountSwitcherSheet`.
     @State private var isShowingAccountSwitcher: Bool = false
     @ObservedObject private var accountStore = AccountStore.shared
+    /// Für das Zustands-Lämpchen auf der „Tipps erneut anzeigen"-Card —
+    /// die Farbe muss sich ändern, sobald Tipps gesehen oder
+    /// zurückgesetzt wurden.
+    @ObservedObject private var hintStore = HintStore.shared
     /// Zweistufige Alerts für die beiden User-sichtbaren Resets. Getrennte
     /// Flags, damit versehentlich nie beides zusammen geöffnet wird —
     /// das würde die Warnlogik untergraben.
@@ -652,10 +656,13 @@ struct SettingsView: View {
 
             if isDeveloperExpanded {
                 VStack(spacing: 14) {
+                    // **2026-06-09** — Ganz oben: die im Test am
+                    // häufigsten gebrauchte Aktion, und ihr Lämpchen
+                    // zeigt gleich den Zustand der Tipps an.
+                    hintsResetCard
                     testModusArcadeCard
                     customListsResetCard
                     gameStateResetCard
-                    hintsResetCard
                     #if DEBUG
                     devResetCard
                     #endif
@@ -672,7 +679,13 @@ struct SettingsView: View {
     /// daneben. In die Developer-Section verschoben (vorher im
     /// Haupt-Flow) — reine Tester-Aktion.
     private var hintsResetCard: some View {
-        Button {
+        // **2026-06-09** — Das Lämpchen zeigt den Zustand: grün, solange
+        // noch Tipps offen sind, grau sobald alle gesehen wurden. Vorher
+        // war es dauerhaft grau — man konnte nicht erkennen, ob der Tap
+        // etwas bewirkt hat oder ob noch Tipps zu erwarten sind.
+        let hasPending = hintStore.hasPendingHints
+        let openCount = HintStore.allHintIDs.subtracting(hintStore.seenHintIDs).count
+        return Button {
             HintStore.shared.resetAll()
         } label: {
             HStack(spacing: 12) {
@@ -680,19 +693,32 @@ struct SettingsView: View {
                     Text("Tipps erneut anzeigen")
                         .font(.system(size: 20, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
-                    Text("Setzt die App-Hinweise zurück")
+                    Text(hasPending
+                         ? "\(openCount) von \(HintStore.allHintIDs.count) Tipps offen"
+                         : "Alle Tipps gesehen — tippen zum Zurücksetzen")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "lightbulb.circle.fill")
                     .font(.system(size: 36, weight: .bold))
-                    .foregroundStyle(AppTheme.Colors.developerAccent)
+                    .foregroundStyle(hasPending
+                                     ? AppTheme.Colors.success
+                                     : AppTheme.Colors.developerAccent)
+                    // Leichter Schein im aktiven Zustand — macht den
+                    // Unterschied auch im Augenwinkel sichtbar.
+                    .shadow(color: hasPending
+                            ? AppTheme.Colors.success.opacity(0.55)
+                            : .clear,
+                            radius: 8)
                     .frame(width: 56, height: 56)
+                    .animation(.easeInOut(duration: 0.22), value: hasPending)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(18)
-            .appCardBackground(tint: AppTheme.Colors.developerAccent)
+            .appCardBackground(tint: hasPending
+                               ? AppTheme.Colors.success
+                               : AppTheme.Colors.developerAccent)
         }
         .buttonStyle(.plain)
     }

@@ -138,12 +138,13 @@ extension FlashcardsView {
                                 .font(.system(size: 24, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
                         } else if speechController.isRecording {
-                            // Bei aktiver Aufnahme das Stop-Quadrat rot
-                            // einfärben — Standard-Aufnahmeindikator
-                            // (OS-Konvention, nicht Teil des Cartoon-Sets).
-                            Image(systemName: "stop.fill")
-                                .font(.system(size: 28, weight: .bold))
-                                .foregroundStyle(AppTheme.Colors.error)
+                            // **2026-06-09** — Ohr statt rotem Stop-
+                            // Quadrat: benennt den Zustand („ich höre
+                            // zu") statt der Bedienung. Gleich wie im
+                            // Vokabel-/Nomen-/Verben-Training.
+                            Image(systemName: "ear.fill")
+                                .font(.system(size: 32, weight: .bold))
+                                .foregroundStyle(.white)
                         } else {
                             // Idle: Cartoon-Mikrofon statt mic.fill. Kein
                             // foregroundStyle — das SVG bringt seine
@@ -159,13 +160,12 @@ extension FlashcardsView {
                     .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
                 }
                 .buttonStyle(.plain)
-                .overlay {
-                    RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                        .stroke(Color.white.opacity(speechController.isRecording && interaction.isMicPulseVisible ? 0.28 : 0), lineWidth: 2)
-                        .animation(.easeInOut(duration: 0.55), value: interaction.isMicPulseVisible)
-                }
+                // **2026-06-09** — Gemeinsamer Zuhör-Puls (siehe
+                // `appListeningPulse`); ersetzt den kaum sichtbaren
+                // Rahmen-Puls.
+                .appListeningPulse(isActive: speechController.isRecording)
                 .disabled(!isSessionReady || !isAudioModeEnabled || !canUseSpeechRecognition)
-                .opacity(!isSessionReady || !isAudioModeEnabled || !canUseSpeechRecognition ? 0.45 : (speechController.isRecording && interaction.isMicPulseVisible ? 0.72 : 1))
+                .opacity(!isSessionReady || !isAudioModeEnabled || !canUseSpeechRecognition ? 0.45 : 1)
 
                 Button {
                     // **Sweep C** — manueller Speaker-Tap; `force: true`
