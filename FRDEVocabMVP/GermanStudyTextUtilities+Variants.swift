@@ -7,6 +7,8 @@ func answerVariants(for normalizedText: String, answerLanguageCode: String) -> S
     if answerLanguageCode == "de-DE" {
         for alternative in Array(variants) {
             variants.formUnion(germanGenderAnswerVariants(for: alternative))
+            variants.formUnion(germanSynonymVariants(for: alternative))
+            variants.formUnion(germanNumberVariants(for: alternative))
         }
     }
 
@@ -55,6 +57,123 @@ func germanGenderWordVariants(for word: String) -> Set<String> {
 
     return variants
 }
+
+/// **Kuratierte Synonym-Gruppen (2026-08-04)** — User-Report: „Sie ist
+/// ein bisschen schüchtern" wurde als falsch gewertet, obwohl die
+/// gespeicherte Antwort „Sie ist etwas schüchtern" bedeutungsgleich
+/// ist. Die Bewertung vergleicht sonst nur Text-Ähnlichkeit (exakt/
+/// Wortmenge/Tippfehler-Toleranz/Substring) — keine Bedeutung. Statt
+/// die generische Fuzzy-Toleranz weiter aufzuweichen (das hätte
+/// unabhängig davon zum „Ost wurde als voilà akzeptiert"-Fehlerbild
+/// beigetragen), pflegen wir eine **explizite, bewusst kleine** Liste
+/// bedeutungsgleicher Wörter/Wendungen. Nur eingetragene Paare zählen
+/// als Synonym — kein Rückschluss jenseits dieser Liste. Wächst mit der
+/// Zeit, wenn weitere Fälle auftauchen.
+///
+/// Jede innere Liste ist eine Gruppe austauschbarer Wendungen; findet
+/// sich EIN Mitglied als vollständiges Wort/Wendung im Text, werden
+/// Varianten mit jedem anderen Gruppenmitglied an derselben Stelle
+/// erzeugt.
+private let germanSynonymGroups: [[String]] = [
+    ["etwas", "ein bisschen", "ein wenig"],
+    ["sehr", "total", "echt", "wirklich"],
+    ["schnell", "rasch", "zügig"],
+    ["schön", "hübsch"],
+    ["groß", "riesig"],
+    ["klein", "winzig"],
+    ["viel", "eine menge"],
+    ["oft", "häufig"],
+    ["immer", "stets"],
+    ["manchmal", "ab und zu"],
+    ["sofort", "gleich"],
+    ["vielleicht", "eventuell"]
+]
+
+func germanSynonymVariants(for normalizedText: String) -> Set<String> {
+    var variants: Set<String> = []
+    for group in germanSynonymGroups {
+        guard let matchedMember = group.first(where: {
+            containsWholeWordPhrase($0, in: normalizedText)
+        }) else { continue }
+        for replacement in group where replacement != matchedMember {
+            if let substituted = replacingWholeWordPhrase(
+                matchedMember, with: replacement, in: normalizedText
+            ) {
+                variants.insert(substituted)
+            }
+        }
+    }
+    return variants
+}
+
+/// Wortgrenzen-sicherer Containment-Check — verhindert, dass z. B.
+/// „viel" fälschlich innerhalb von „vielleicht" anschlägt.
+private func containsWholeWordPhrase(_ phrase: String, in text: String) -> Bool {
+    let pattern = "\\b\(NSRegularExpression.escapedPattern(for: phrase))\\b"
+    return text.range(of: pattern, options: .regularExpression) != nil
+}
+
+/// Ersetzt die erste wortgrenzen-sichere Fundstelle von `phrase` durch
+/// `replacement`. `nil`, wenn `phrase` nicht als eigenständiges Wort/
+/// Wendung vorkommt.
+private func replacingWholeWordPhrase(_ phrase: String, with replacement: String, in text: String) -> String? {
+    let pattern = "\\b\(NSRegularExpression.escapedPattern(for: phrase))\\b"
+    guard let range = text.range(of: pattern, options: .regularExpression) else { return nil }
+    return text.replacingCharacters(in: range, with: replacement)
+}
+
+/// **Zahlwort ↔ Ziffer (2026-08-04)** — User-Report: Karteikarte
+/// „vingt" (frz. zwanzig), gesprochene Antwort korrekt „zwanzig", aber
+/// Spracherkennung transkribiert das als Ziffernfolge „20" — Text-
+/// Vergleich gegen die ausgeschriebene Antwort „zwanzig" scheitert.
+/// Deckt 0…999 ab (reicht für Alter, Uhrzeiten, Mengen, Daten — der
+/// weit überwiegende Teil der Zahlen-Vokabeln). Nur die **ganze**
+/// normalisierte Antwort wird geprüft (kein Zahlwort-Erkennen mitten
+/// im Satz) — der gemeldete Fall ist eine isolierte Zahl-Karte.
+func germanNumberVariants(for normalizedText: String) -> Set<String> {
+    var variants: Set<String> = []
+    if let n = Int(normalizedText), let word = germanNumberWord(for: n) {
+        variants.insert(word)
+    }
+    if let digits = germanNumberWordToDigits[normalizedText] {
+        variants.insert(digits)
+    }
+    return variants
+}
+
+private func germanNumberWord(for n: Int) -> String? {
+    guard n >= 0, n <= 999 else { return nil }
+    if n == 0 { return "null" }
+
+    let onesStandalone = ["", "eins", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun"]
+    let onesPrefix = ["", "ein", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun"]
+    let teens = ["zehn", "elf", "zwölf", "dreizehn", "vierzehn", "fünfzehn", "sechzehn", "siebzehn", "achtzehn", "neunzehn"]
+    let tens = ["", "", "zwanzig", "dreißig", "vierzig", "fünfzig", "sechzig", "siebzig", "achtzig", "neunzig"]
+
+    if n < 10 { return onesStandalone[n] }
+    if n < 20 { return teens[n - 10] }
+    if n < 100 {
+        let t = n / 10, o = n % 10
+        return o == 0 ? tens[t] : "\(onesPrefix[o])und\(tens[t])"
+    }
+
+    let h = n / 100
+    let rest = n % 100
+    let hundredPart = h == 1 ? "hundert" : "\(onesStandalone[h])hundert"
+    guard rest > 0, let restWord = germanNumberWord(for: rest) else { return hundredPart }
+    return hundredPart + restWord
+}
+
+/// Umkehr-Lookup, einmalig aus `germanNumberWord(for:)` aufgebaut.
+private let germanNumberWordToDigits: [String: String] = {
+    var map: [String: String] = [:]
+    for n in 0...999 {
+        if let word = germanNumberWord(for: n) {
+            map[word] = String(n)
+        }
+    }
+    return map
+}()
 
 func isLikelyGermanRoleWord(_ word: String) -> Bool {
     let roleEndings = [
