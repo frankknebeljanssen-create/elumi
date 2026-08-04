@@ -54,8 +54,14 @@ struct LernstatusView: View {
                 if statusStore.totalTracked == 0 {
                     emptyState
                 } else {
-                    practiceListCTA
+                    // **2026-08-04** — Reihenfolge getauscht (User-Spec):
+                    // erst Stark/Zum Üben/Im Aufbau anschauen, DANN der
+                    // CTA — mit spürbarem Extra-Abstand abgesetzt, damit
+                    // er nicht wie eine vierte gleichrangige Sektion
+                    // wirkt, sondern als eigener, auffälliger Schlusspunkt.
                     sectionsContent
+                    practiceListCTA
+                        .padding(.top, AppTheme.Spacing.sm)
                 }
             }
             .padding(.horizontal, AppLayout.screenPadding)
@@ -148,6 +154,11 @@ struct LernstatusView: View {
     ///
     /// Nur sichtbar, wenn es überhaupt Wackelkandidaten gibt — bei einem
     /// reinen „alles stark"-Stand wäre der Button sinnlos.
+    ///
+    /// **2026-08-04** — Auffälliger gemacht (User-Spec: „muss ein
+    /// bisschen mehr ins Auge springen"): größeres Icon, kräftiger
+    /// Farb-Rahmen in der Wackelkandidaten-Farbe statt der neutralen
+    /// Setup-Card, Titel eine Stufe größer.
     @ViewBuilder
     private var practiceListCTA: some View {
         let count = statusStore.wackelkandidatenCount
@@ -155,19 +166,19 @@ struct LernstatusView: View {
             Button {
                 buildAndPracticeWackelkandidaten()
             } label: {
-                HStack(spacing: 12) {
+                HStack(spacing: 14) {
                     ZStack {
                         Circle()
-                            .fill(HomeLernstatusCard.needsWorkTint.opacity(0.18))
+                            .fill(HomeLernstatusCard.needsWorkTint.opacity(0.2))
                         Image(systemName: "dumbbell.fill")
-                            .font(.system(size: 18, weight: .bold))
+                            .font(.system(size: 22, weight: .bold))
                             .foregroundStyle(HomeLernstatusCard.needsWorkTint)
                     }
-                    .frame(width: 46, height: 46)
+                    .frame(width: 52, height: 52)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Diese Wörter üben")
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                        Text("Diese Wörter jetzt üben")
+                            .font(.system(size: 17, weight: .black, design: .rounded))
                             .foregroundStyle(AppTheme.Colors.textPrimary)
                         Text(count == 1
                              ? "Baut aus deinem 1 Wackelkandidaten eine Übungsliste."
@@ -181,13 +192,17 @@ struct LernstatusView: View {
                     Spacer(minLength: 0)
 
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(HomeLernstatusCard.needsWorkTint)
                 }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 16)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .appSetupCardBackground()
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
+                        .stroke(HomeLernstatusCard.needsWorkTint.opacity(0.55), lineWidth: 1.5)
+                )
             }
             .buttonStyle(AppCardPressStyle())
         }
@@ -471,7 +486,10 @@ private struct WackelkandidatenConfirmationSheet: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            Spacer(minLength: 4)
+            // **2026-08-04** — 24pt statt vorher zu wenig Top-Abstand
+            // (User-Spec: „Kreis um die Faust ist abgeschnitten"). Der
+            // Kreis brauchte mehr Luft zum Drag-Indicator des Sheets.
+            Spacer(minLength: 24)
 
             ZStack {
                 Circle()
@@ -486,12 +504,18 @@ private struct WackelkandidatenConfirmationSheet: View {
                     .font(.system(size: 24, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
 
+                // **2026-08-04** — `fixedSize` erzwingt, dass der Text
+                // seine volle benötigte Höhe bekommt, statt bei knappem
+                // Sheet-Platz mit „…" abgeschnitten zu werden (User-Spec:
+                // „darf nicht abgekürzt werden"). In Kombination mit dem
+                // festen `.large`-Detent unten ist immer genug Höhe da.
                 Text(count == 1
                      ? "„Meine Wackelkandidaten\" wurde mit 1 Wort gefüllt."
                      : "„Meine Wackelkandidaten\" wurde mit \(count) Wörtern gefüllt.")
                     .font(.system(size: 15, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Text("Was möchtest du üben?")
                     .font(.system(size: 15, weight: .bold, design: .rounded))
@@ -500,10 +524,32 @@ private struct WackelkandidatenConfirmationSheet: View {
             }
             .padding(.horizontal, 24)
 
+            // **2026-08-04** — Icons + Farben 1:1 vom Hauptscreen (User-
+            // Spec): `HomeModuleIcon` + `AppTheme.Colors.module*` statt
+            // generischer SF-Symbole — dasselbe Karteikarten-/Quiz-/
+            // Vokabeln-Icon-Set wie im Home-Grid. „Training" mappt auf
+            // `.vokabeln`, weil genau dieses Icon/dieser Screen (Training
+            // im Modus „Vokabeln") auch tatsächlich unter `onStartTraining`
+            // aufgerufen wird.
             VStack(spacing: 12) {
-                practiceOptionButton(title: "Karteikarten", systemImage: "rectangle.on.rectangle.angled", action: onStartFlashcards)
-                practiceOptionButton(title: "Quiz", systemImage: "checkmark.circle.fill", action: onStartQuiz)
-                practiceOptionButton(title: "Training", systemImage: "figure.strengthtraining.traditional", action: onStartTraining)
+                practiceOptionButton(
+                    title: "Karteikarten",
+                    icon: .karteikarten,
+                    tint: AppTheme.Colors.moduleFlashcards,
+                    action: onStartFlashcards
+                )
+                practiceOptionButton(
+                    title: "Quiz",
+                    icon: .quiz,
+                    tint: AppTheme.Colors.moduleQuiz,
+                    action: onStartQuiz
+                )
+                practiceOptionButton(
+                    title: "Training",
+                    icon: .vokabeln,
+                    tint: AppTheme.Colors.moduleVocabulary,
+                    action: onStartTraining
+                )
             }
             .padding(.horizontal, 20)
 
@@ -512,30 +558,49 @@ private struct WackelkandidatenConfirmationSheet: View {
                 .foregroundStyle(AppTheme.Colors.textSecondary)
                 .padding(.top, 2)
 
-            Spacer(minLength: 12)
+            Spacer(minLength: 20)
         }
-        .padding(.top, 16)
-        .presentationDetents([.medium, .large])
+        .padding(.top, 12)
+        // **2026-08-04** — Nur noch `.large` (vorher `[.medium, .large]`):
+        // beim `.medium`-Start war zu wenig Höhe für Icon-Kreis + Text +
+        // drei Options-Buttons, was zu Beschnitt/Abkürzung führte (User-
+        // Spec: „Fenster muss größer aufgehen").
+        .presentationDetents([.large])
         .presentationDragIndicator(.visible)
     }
 
-    private func practiceOptionButton(title: String, systemImage: String, action: @escaping () -> Void) -> some View {
+    /// **2026-08-04** — Icon bleibt in seinen nativen Asset-Farben (wie
+    /// überall sonst in der App, z. B. `moduleResultCard` im GameHub) —
+    /// eine vollflächig eingefärbte Pille dahinter würde mit den eigenen
+    /// Farben des Icons kollidieren. Der Modul-Akzent färbt stattdessen
+    /// den dezenten Card-Hintergrund + Rahmen + Chevron ein.
+    private func practiceOptionButton(
+        title: String,
+        icon: HomeModuleIcon,
+        tint: Color,
+        action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
-            HStack(spacing: 12) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 20, weight: .bold))
+            HStack(spacing: 14) {
+                HomeModuleIconView(icon: icon, size: 36)
                 Text(title)
                     .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(tint)
             }
-            .foregroundStyle(.white)
             .padding(.horizontal, 18)
-            .padding(.vertical, 16)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(HomeLernstatusCard.needsWorkTint)
+                    .fill(tint.opacity(0.14))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(tint.opacity(0.4), lineWidth: 1.5)
             )
         }
         .buttonStyle(AppCardPressStyle())

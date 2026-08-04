@@ -336,33 +336,42 @@ struct ListPickerSheet: View {
         }
     }
 
-    /// **2026-08-04** — Zeilen-Redesign (User-Spec):
-    ///   • Name darf jetzt **umbrechen** (`lineLimit(2)`) statt bei einer
-    ///     Zeile abgeschnitten zu werden — „Meine Wackelkandidaten" o. ä.
-    ///     lange Namen sind jetzt vollständig lesbar statt „Meine
-    ///     Wackelk…".
-    ///   • Der Umbenennen-Stift ist aus der engen Name-Zeile in den
-    ///     Trailing-Icon-Cluster gewandert (neben Auge/Merge/Löschen) —
-    ///     dort hat er dasselbe verlässliche 40×40-Tap-Ziel wie seine
-    ///     Nachbarn, statt als nackter 18pt-Glyph ohne Hit-Frame zu
-    ///     schweben (Ursache für „Stift geht nicht").
-    ///   • Alle Icon-Buttons einheitlich auf 40×40 (vorher 32×32) +
-    ///     `contentShape(Rectangle())` — größere, kindgerechte Tap-Ziele.
-    ///   • `.frame(minHeight:)` auf der ganzen Row sorgt dafür, dass
-    ///     **jede** Karte gleich hoch ist, unabhängig davon, ob der Name
-    ///     eine oder zwei Zeilen braucht.
+    /// **2026-08-04** — Zeilen-Redesign, zweite Runde (User-Spec: die
+    /// erste Runde mit 2-Zeilen-Namen + Icons rechts daneben reichte bei
+    /// langen Namen wie „Meine Wackelkandidaten" immer noch nicht, weil
+    /// die vier 40pt-Icon-Buttons rechts zu viel Breite wegnahmen). Jetzt
+    /// **drei gestapelte Zeilen** statt einer engen Horizontalen:
+    ///   1. Titel — **einzeilig, volle Zeilenbreite** (nur der kleine
+    ///      Auswahl-Kreis rechts konkurriert noch um Platz).
+    ///   2. Beschreibung (Wortart-Aufstellung) — darf jetzt über 2–3
+    ///      Zeilen laufen, statt in einer enger Restbreite nach dem
+    ///      ersten Wort umzubrechen.
+    ///   3. Eigene Zeile für die Editier-Icons (Umbenennen/Ansehen/
+    ///      Zusammenführen/Löschen), 40×40 Tap-Ziele + `contentShape`.
+    /// `.frame(minHeight:)` hält alle Karten gleich hoch, unabhängig
+    /// davon, wie viele Zeilen Beschreibung/wie viele Icons eine
+    /// konkrete Liste braucht.
     private func regularListRow(_ list: VocabularyList) -> some View {
         Button {
             localSelectedID = list.id
         } label: {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 8) {
+                // Zeile 1: Titel, volle Breite, einzeilig.
+                HStack(spacing: 10) {
                     Text(list.name)
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.85)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Image(systemName: list.id == currentSelectedID ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(list.id == currentSelectedID ? style.accent : AppTheme.Colors.textDisabled)
+                }
+
+                // Zeile 2: Beschreibung, darf mehrzeilig umbrechen.
+                Group {
                     if !list.isBuiltIn {
                         wordClassBreakdownText(for: list, showsTotalCount: showsTotalCount)
                     } else {
@@ -371,68 +380,69 @@ struct ListPickerSheet: View {
                             .foregroundStyle(AppTheme.Colors.textSecondary)
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
 
-                Spacer(minLength: 0)
-
+                // Zeile 3: Editier-Icons — nur für eigene (nicht built-in) Listen.
                 if !list.isBuiltIn {
-                    if onRename != nil {
-                        Button {
-                            onRename?(list)
-                        } label: {
-                            Image(systemName: "pencil")
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundStyle(style.accent.opacity(0.7))
-                                .frame(width: 40, height: 40)
-                                .contentShape(Rectangle())
+                    HStack(spacing: 4) {
+                        if onRename != nil {
+                            Button {
+                                onRename?(list)
+                            } label: {
+                                Image(systemName: "pencil")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundStyle(style.accent.opacity(0.7))
+                                    .frame(width: 40, height: 40)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
-                    }
 
-                    if onView != nil {
+                        if onView != nil {
+                            Button {
+                                onView?(list)
+                            } label: {
+                                Image(systemName: "eye")
+                                    .font(.system(size: 19, weight: .semibold))
+                                    .foregroundStyle(style.accent.opacity(0.7))
+                                    .frame(width: 40, height: 40)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                        }
+
+                        if onMerge != nil {
+                            Button {
+                                listPendingMerge = list
+                            } label: {
+                                Image(systemName: "plus.circle")
+                                    .font(.system(size: 19, weight: .semibold))
+                                    .foregroundStyle(style.accent.opacity(0.7))
+                                    .frame(width: 40, height: 40)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                        }
+
                         Button {
-                            onView?(list)
+                            listPendingDeletion = list
                         } label: {
-                            Image(systemName: "eye")
+                            Image(systemName: "trash")
                                 .font(.system(size: 19, weight: .semibold))
-                                .foregroundStyle(style.accent.opacity(0.7))
+                                .foregroundStyle(AppTheme.Colors.error.opacity(0.7))
                                 .frame(width: 40, height: 40)
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
-                    }
 
-                    if onMerge != nil {
-                        Button {
-                            listPendingMerge = list
-                        } label: {
-                            Image(systemName: "plus.circle")
-                                .font(.system(size: 19, weight: .semibold))
-                                .foregroundStyle(style.accent.opacity(0.7))
-                                .frame(width: 40, height: 40)
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
+                        Spacer(minLength: 0)
                     }
-
-                    Button {
-                        listPendingDeletion = list
-                    } label: {
-                        Image(systemName: "trash")
-                            .font(.system(size: 19, weight: .semibold))
-                            .foregroundStyle(AppTheme.Colors.error.opacity(0.7))
-                            .frame(width: 40, height: 40)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
                 }
-
-                Image(systemName: list.id == currentSelectedID ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(list.id == currentSelectedID ? style.accent : AppTheme.Colors.textDisabled)
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 16)
-            .frame(minHeight: 72)
+            .padding(.vertical, 14)
+            .frame(minHeight: 128)
             .appCardBackground(style, intensity: list.id == currentSelectedID ? AppTheme.CardIntensity.selected : AppTheme.CardIntensity.whisper, cornerRadius: 14)
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
