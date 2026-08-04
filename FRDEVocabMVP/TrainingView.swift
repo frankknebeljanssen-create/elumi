@@ -144,6 +144,12 @@ struct TrainingView: View {
     // Outcome den bisherigen Result-Screen komplett.
     @State var trainingSessionOutcome: SessionRewardOutcome?
     @State var verbformsSessionOutcome: SessionRewardOutcome?
+    /// **2026-08-04** — Anzahl der Wörter, die während der jeweiligen
+    /// Session von „Wackelkandidat" zu „Stark" gewechselt sind. Gesetzt
+    /// zusammen mit den Outcomes oben (`awardTrainingXPIfNeeded()` /
+    /// `awardVerbformsXPIfNeeded()`).
+    @State var trainingWackelkandidatenCleared: Int = 0
+    @State var verbformsWackelkandidatenCleared: Int = 0
 
     /// Zentrale Session-End-Prüfung — wahr, sobald
     ///   (a) die Speed-Round-Zeit abgelaufen ist **und** eine Speed Round

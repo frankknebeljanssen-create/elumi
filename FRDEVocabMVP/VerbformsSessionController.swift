@@ -70,6 +70,12 @@ final class VerbformsSessionController: ObservableObject {
     /// Round-Complete-Screen (Wiederholungsangebot + „Fertig").
     @Published var isShowingRoundComplete: Bool = false
 
+    /// **Wackelkandidaten-Erfolg (2026-08-04)** — analog zu
+    /// `TrainingSessionController.wackelkandidatenSnapshot`. Gesetzt in
+    /// `start(with:)`/`startMatching(with:)`, gegen den aktuellen Stand
+    /// gedifft in `TrainingView+SessionFlow.awardVerbformsXPIfNeeded()`.
+    var wackelkandidatenSnapshot: Set<String> = []
+
     // MARK: - Gamification (ProgressService-Kopplung)
 
     /// Combo-Tracking für ProgressService-Bonus. Reset bei Session-Start
@@ -201,6 +207,7 @@ final class VerbformsSessionController: ObservableObject {
             speedRoundTotalSeconds = duration
         }
         resetGamificationCounters()
+        wackelkandidatenSnapshot = ItemLearningStatusStore.shared.wackelkandidatenSnapshotKeys()
         advanceToNext()
     }
 
@@ -223,6 +230,7 @@ final class VerbformsSessionController: ObservableObject {
             speedRoundTotalSeconds = duration
         }
         resetGamificationCounters()
+        wackelkandidatenSnapshot = ItemLearningStatusStore.shared.wackelkandidatenSnapshotKeys()
         advanceToNextMatching()
     }
 

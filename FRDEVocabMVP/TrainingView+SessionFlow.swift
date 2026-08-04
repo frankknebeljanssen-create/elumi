@@ -79,6 +79,8 @@ extension TrainingView {
         verbformsSession.sessionRewardConsumed = true
         let outcome = ProgressService.shared.record(session: learningSession)
         verbformsSessionOutcome = outcome
+        verbformsWackelkandidatenCleared = ItemLearningStatusStore.shared
+            .wackelkandidatenClearedCount(since: verbformsSession.wackelkandidatenSnapshot)
         arcadeCredits = ProgressStore.shared.progress.arcadeCredits
     }
 
@@ -107,6 +109,8 @@ extension TrainingView {
         session.sessionRewardConsumed = true
         let outcome = ProgressService.shared.record(session: learningSession)
         trainingSessionOutcome = outcome
+        trainingWackelkandidatenCleared = ItemLearningStatusStore.shared
+            .wackelkandidatenClearedCount(since: session.wackelkandidatenSnapshot)
         arcadeCredits = ProgressStore.shared.progress.arcadeCredits
         // Session ist abgeschlossen → Resume-Snapshot verwerfen. Ohne
         // diesen Cleanup würde der User beim nächsten Setup in eine

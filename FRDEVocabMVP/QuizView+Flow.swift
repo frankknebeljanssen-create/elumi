@@ -32,6 +32,8 @@ extension QuizView {
         unlockedRewardLevels = []
         didPersistHearts = false
         quizSessionOutcome = nil
+        quizWackelkandidatenCleared = 0
+        quizWackelkandidatenSnapshot = ItemLearningStatusStore.shared.wackelkandidatenSnapshotKeys()
         resetPerQuestionState()
     }
 
@@ -404,6 +406,8 @@ extension QuizView {
         session.sessionRewardConsumed = true
         let outcome = ProgressService.shared.record(session: learningSession)
         quizSessionOutcome = outcome
+        quizWackelkandidatenCleared = ItemLearningStatusStore.shared
+            .wackelkandidatenClearedCount(since: quizWackelkandidatenSnapshot)
         // @AppStorage-Spiegel aktualisieren, damit Views die auf den Legacy-
         // Keys lesen (z. B. HomeView) sofort reaktiv sind.
         collectedXP = ProgressStore.shared.progress.totalXP

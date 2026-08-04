@@ -52,6 +52,10 @@ struct FlashcardsView: View {
     /// für die Session-Summary-Card (`flashcardCompletionCard`) gebraucht.
     /// Gesetzt von `consumeFlashcardSessionReward()`.
     @State var flashcardSessionOutcome: SessionRewardOutcome?
+    /// **2026-08-04** — wie viele Wörter während dieser Session von
+    /// „Wackelkandidat" zu „Stark" gewechselt sind. Gesetzt zusammen mit
+    /// `flashcardSessionOutcome` in `consumeFlashcardSessionReward()`.
+    @State var flashcardWackelkandidatenCleared: Int = 0
     @FocusState var isTypedAnswerFocused: Bool
     @FocusState var isCardCountFieldFocused: Bool
     let flashcardCountInputScrollID = "flashcardCountInput"

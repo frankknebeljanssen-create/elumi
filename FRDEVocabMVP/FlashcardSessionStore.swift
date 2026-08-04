@@ -60,6 +60,13 @@ final class FlashcardSessionStore: ObservableObject {
     /// doppelte XP-Buchung bei mehrfachem `onAppear` der Completion-Card.
     var sessionRewardConsumed: Bool = false
 
+    /// **Wackelkandidaten-Erfolg (2026-08-04)** — Keys aller Wackelkandidaten
+    /// (`ItemLearningStatusStore.wackelkandidatenSnapshotKeys()`) zum
+    /// Zeitpunkt des Session-Starts. `consumeFlashcardSessionReward()`
+    /// diffed dagegen, um zu zeigen, wie viele während dieser Session
+    /// „stark" geworden sind.
+    var wackelkandidatenSnapshot: Set<String> = []
+
     /// **Persönlicher Trainingsmodus** (Phase 8): wenn die aktuelle
     /// Session aus einem `PersonalDeck` gestartet wurde, hält dieses Feld
     /// dessen ID. Nicht persistiert — wird beim Session-Start gesetzt und

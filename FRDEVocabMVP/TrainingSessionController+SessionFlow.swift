@@ -47,6 +47,7 @@ extension TrainingSessionController {
         // Controller wird nicht überall gepflegt. Wir schreiben ihn
         // einmal hier synchron, damit Save/Resume konsistent bleiben.
         direction = selectedAppDirection
+        wackelkandidatenSnapshot = ItemLearningStatusStore.shared.wackelkandidatenSnapshotKeys()
 
         if launchContext == nil, !isSpeedRound {
             let restored = tryRestoreResumeSnapshot(

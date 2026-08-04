@@ -72,6 +72,17 @@ struct SessionSummaryView: View {
     /// heute (Default `false`).
     var hidesDetailedStats: Bool = false
 
+    /// **Wackelkandidaten-Erfolg (2026-08-04)** — Anzahl der Wörter, die
+    /// während DIESER Session von „Wackelkandidat" (alles außer `.strong`)
+    /// zu `.strong` gewechselt sind. Der Caller ermittelt das per Diff aus
+    /// `ItemLearningStatusStore.wackelkandidatenSnapshotKeys()` (Session-
+    /// Start) gegen `wackelkandidatenClearedCount(since:)` (Session-Ende).
+    /// 0 = kein Chip (Default — alle bestehenden Call-Sites unverändert).
+    /// Ans Ende der Property-Liste gesetzt, damit sie am Call-Site immer
+    /// als letztes Argument stehen kann (Swifts synthetisierter
+    /// Memberwise-Init verlangt Deklarationsreihenfolge).
+    var wackelkandidatenClearedCount: Int = 0
+
     /// Steuert die gestaffelten Einblend-Animationen der Reward-Chips beim
     /// ersten Erscheinen. So wirkt die Summary nicht statisch, sondern
     /// feiert dezent — ohne Arcade-Optik.
@@ -271,6 +282,7 @@ struct SessionSummaryView: View {
             || outcome.dailyBonusXP > 0
             || outcome.variableReward.hasBonus
             || showsStreakActive
+            || wackelkandidatenClearedCount > 0
     }
 
     /// „Streak bleibt aktiv"-Signal: nur wenn diese Session die Streak
@@ -402,6 +414,26 @@ struct SessionSummaryView: View {
                     subtitle: "aus XP-Meilensteinen",
                     color: AppTheme.Colors.elumiBlue,
                     isHero: false,
+                    animationDelay: FeedbackTiming.rewardChipStagger[3]
+                )
+            }
+
+            // **Wackelkandidaten-Erfolg (2026-08-04)** — User-Spec: „direkt
+            // in der Übung merken, dass ein Wort aus der Liste
+            // rausfliegt". Umgesetzt als Session-Summary-Chip statt
+            // Live-Mid-Session-Popup (Scope-Entscheidung: ein Hook-Punkt
+            // pro Modul statt vier Eingriffe pro Antwort, siehe Chat).
+            // Dieselbe „Stark"-Tönung wie auf dem Lernstatus-Screen —
+            // derselbe visuelle Wortschatz für denselben Erfolg.
+            if wackelkandidatenClearedCount > 0 {
+                rewardChip(
+                    icon: "checkmark.seal.fill",
+                    title: wackelkandidatenClearedCount == 1
+                        ? "1 Wackelkandidat geschafft"
+                        : "\(wackelkandidatenClearedCount) Wackelkandidaten geschafft",
+                    subtitle: "Sitzen jetzt sicher",
+                    color: HomeLernstatusCard.strongTint,
+                    isHero: !outcome.leveledUp && outcome.creditsFromStreakMilestone == 0,
                     animationDelay: FeedbackTiming.rewardChipStagger[3]
                 )
             }

@@ -156,7 +156,8 @@ extension TrainingView {
                     dismissToHome()
                 },
                 primaryCTAPulses: isChain,
-                hidesDetailedStats: isChain
+                hidesDetailedStats: isChain,
+                wackelkandidatenClearedCount: trainingWackelkandidatenCleared
             )
 
             Spacer(minLength: 0)
@@ -2043,7 +2044,8 @@ extension TrainingView {
                     dismissToHome()
                 },
                 primaryCTAPulses: isChain,
-                hidesDetailedStats: isChain
+                hidesDetailedStats: isChain,
+                wackelkandidatenClearedCount: verbformsWackelkandidatenCleared
             )
 
             Spacer(minLength: 0)

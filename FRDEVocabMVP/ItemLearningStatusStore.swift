@@ -257,6 +257,30 @@ final class ItemLearningStatusStore: ObservableObject {
         statuses.values.reduce(0) { $1.status == .strong ? $0 : $0 + 1 }
     }
 
+    /// **2026-08-04** — Snapshot der aktuellen Wackelkandidaten-Keys, zu
+    /// nehmen beim START einer Übungs-Session (Karteikarten/Quiz/
+    /// Training/Verbformen). `clearedCount` am Session-Ende liefert, wie
+    /// viele davon in der Zwischenzeit `.strong` geworden sind — die
+    /// Grundlage für die „🎉 X Wörter sind jetzt raus"-Meldung auf dem
+    /// Session-Summary-Screen.
+    ///
+    /// Bewusst ein reiner Value-Type-Snapshot (kein Live-Binding): eine
+    /// Session soll das Ergebnis zeigen, das beim Start galt, nicht
+    /// nachträglich durch parallele Aktivität in einem anderen Modul
+    /// verfälscht werden (in der Praxis läuft ohnehin immer nur eine
+    /// Session gleichzeitig, aber so bleibt die Zuordnung eindeutig).
+    func wackelkandidatenSnapshotKeys() -> Set<String> {
+        Set(wackelkandidatenItems.map(\.key))
+    }
+
+    /// Wie viele Keys aus einem zu Session-Start genommenen
+    /// `wackelkandidatenSnapshotKeys()` inzwischen `.strong` geworden sind.
+    func wackelkandidatenClearedCount(since snapshot: Set<String>) -> Int {
+        snapshot.reduce(0) { count, key in
+            (statuses[key]?.status == .strong) ? count + 1 : count
+        }
+    }
+
     // MARK: - Reine Anzahl-Aggregate
     //
     // `strongItems.count` etc. würden immer den kompletten Filter + Sort

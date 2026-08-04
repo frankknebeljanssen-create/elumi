@@ -285,7 +285,8 @@ var quizResultScreen: some View {
             // Standard-Card. Chain: leer (Mid-Step ohne Detail-Rewards).
             snackRewards: isChain ? [] : quizSnackRewards,
             primaryCTAPulses: isChain,
-            hidesDetailedStats: isChain
+            hidesDetailedStats: isChain,
+            wackelkandidatenClearedCount: quizWackelkandidatenCleared
         )
     }
     .padding(.horizontal, AppLayout.screenPadding)

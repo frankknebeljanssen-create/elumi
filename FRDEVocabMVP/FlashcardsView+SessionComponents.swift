@@ -39,7 +39,8 @@ extension FlashcardsView {
             secondaryCTALabel: isChain ? nil : "Zur Startseite",
             onSecondaryCTA: isChain ? nil : { handleBackNavigation() },
             primaryCTAPulses: isChain,
-            hidesDetailedStats: isChain
+            hidesDetailedStats: isChain,
+            wackelkandidatenClearedCount: flashcardWackelkandidatenCleared
         )
         .onAppear {
             consumeFlashcardSessionReward()
@@ -60,6 +61,8 @@ extension FlashcardsView {
         )
         let outcome = ProgressService.shared.record(session: session)
         flashcardSessionOutcome = outcome
+        flashcardWackelkandidatenCleared = ItemLearningStatusStore.shared
+            .wackelkandidatenClearedCount(since: sessionStore.wackelkandidatenSnapshot)
         // Mirror auf den Legacy-AppStorage-Wert, damit andere Views, die
         // noch direkt `arcadeCredits` lesen, konsistent bleiben.
         arcadeCredits = ProgressStore.shared.progress.arcadeCredits

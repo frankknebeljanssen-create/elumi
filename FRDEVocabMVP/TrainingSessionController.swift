@@ -76,6 +76,11 @@ final class TrainingSessionController: ObservableObject {
     @Published var completedRound: Int = 0
     @Published var isShowingRoundComplete = false
     @Published var showingTrainingListPicker = false
+    /// **Wackelkandidaten-Erfolg (2026-08-04)** — Keys aller Wackelkandidaten
+    /// zum Zeitpunkt des Session-Starts (`startTraining(...)`). Diff gegen
+    /// den aktuellen Stand liefert, wie viele während der Session „stark"
+    /// geworden sind — siehe `TrainingView+SessionFlow.awardTrainingXPIfNeeded()`.
+    var wackelkandidatenSnapshot: Set<String> = []
     @Published var selectedDictionaryLearningLevel: DictionaryLearningLevel = .beginner
     @Published var loadedDictionaryTrainingList: VocabularyList?
 

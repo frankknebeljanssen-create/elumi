@@ -63,6 +63,11 @@ struct QuizView: View {
     /// Outcome aus dem zentralen `ProgressService` — wird in `persistHeartsIfNeeded`
     /// gesetzt und speist die `SessionSummaryView` im Ergebnis-Screen.
     @State var quizSessionOutcome: SessionRewardOutcome?
+    /// **2026-08-04** — Wackelkandidaten-Snapshot bei Quiz-Start
+    /// (`startQuiz()`) und die daraus in `persistHeartsIfNeeded()`
+    /// berechnete Anzahl frisch „stark" gewordener Wörter.
+    @State var quizWackelkandidatenSnapshot: Set<String> = []
+    @State var quizWackelkandidatenCleared: Int = 0
     @ObservedObject var progressStore = ProgressStore.shared
     @State var advanceTask: DispatchWorkItem?
     @State var typingInput = ""

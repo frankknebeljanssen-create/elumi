@@ -10,6 +10,7 @@ extension FlashcardSessionStore {
         }
 
         resetGamificationCounters()
+        wackelkandidatenSnapshot = ItemLearningStatusStore.shared.wackelkandidatenSnapshotKeys()
         let ids = selectedDeck.cards.map(\.id)
         // **Personal-Deck-Resume (User-Revision 2026-04-22)**: Wenn ein
         // Personal-Deck aktiv ist, hat der Aufrufer die Karten BEREITS
@@ -40,6 +41,7 @@ extension FlashcardSessionStore {
 
     func restartSession() {
         resetGamificationCounters()
+        wackelkandidatenSnapshot = ItemLearningStatusStore.shared.wackelkandidatenSnapshotKeys()
         let ids = selectedDeck.cards.map(\.id)
         session = FlashcardSessionState(
             deckID: selectedDeck.id,
