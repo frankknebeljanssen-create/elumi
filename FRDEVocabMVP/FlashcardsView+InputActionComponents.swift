@@ -138,9 +138,10 @@ extension FlashcardsView {
                                 Circle()
                                     .fill(Color.white.opacity(0.22))
                                     .frame(width: 52, height: 52)
-                                Image(systemName: "ear.fill")
+                                Image(systemName: "waveform")
                                     .font(.system(size: 26, weight: .bold))
                                     .foregroundStyle(.white)
+                                    .symbolEffect(.variableColor.iterative, options: .repeating)
                             }
                         } else if showsSuccessOnlyMessage {
                             Text("Richtig 🙂")
