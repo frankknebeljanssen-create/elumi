@@ -647,7 +647,9 @@ extension ScanImportView {
                 //     Home / vorherigem Screen).
                 ModuleHeaderCard(
                     icon: .scan,
-                    title: "Scan",
+                    // **2026-06-09** — Gleiche Beschriftung wie die
+                    // Home-Kachel, über die man hierher kommt.
+                    title: "Vokabeln scannen",
                     accent: sectionStyle.accent,
                     onBack: {
                         if hasActiveScanDraft {

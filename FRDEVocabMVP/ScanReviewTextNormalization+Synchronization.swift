@@ -108,6 +108,17 @@ func synchronizedPairTerminalSentencePunctuation(
 
     let cleanedSource = strippingTerminalSentencePunctuation(from: source)
     let cleanedTarget = strippingTerminalSentencePunctuation(from: target)
+
+    // **2026-06-09** — Artikel bekommen NIE ein Satzzeichen.
+    //
+    // „la" ist kein Satz, und die deutsche Erklärung („die (bestimmter
+    // Artikel, weiblich)") sieht für die Satz-Erkennung nur deshalb wie
+    // einer aus, weil sie mit „die" beginnt und drei Wörter hat. Das
+    // Ergebnis war „la." / „die (bestimmter Artikel, weiblich)."
+    // (User-Bugreport). Beide Seiten bleiben hier unangetastet.
+    if sourceLanguage == .french, isFrenchArticleEntry(cleanedSource) {
+        return (cleanedSource, cleanedTarget)
+    }
     let explicitPunctuation =
         detectedTerminalSentencePunctuation(from: source) ??
         detectedTerminalSentencePunctuation(from: target)

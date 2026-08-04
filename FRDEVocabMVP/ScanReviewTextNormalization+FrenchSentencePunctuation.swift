@@ -118,11 +118,11 @@ func sourceDisplayText(_ text: String, sourceLanguage: StudyLanguage) -> String 
         let inferredCardType: CardType? = normalizedLookupWords(base).count > 1 ? .phrases : .words
 
         if let punctuation = detectedTerminalSentencePunctuation(from: text), punctuation.contains("?") {
-            return applyingTerminalSentencePunctuation(punctuation, to: base, style: .french)
+            return capitalizingSentenceStartIfTerminated(applyingTerminalSentencePunctuation(punctuation, to: base, style: .french))
         }
 
         if shouldDisplayFrenchQuestionMark(original: text, cleaned: restored) {
-            return applyingTerminalSentencePunctuation("?", to: base, style: .french)
+            return capitalizingSentenceStartIfTerminated(applyingTerminalSentencePunctuation("?", to: base, style: .french))
         }
 
         let preserved = preservingTerminalSentencePunctuation(
@@ -132,10 +132,12 @@ func sourceDisplayText(_ text: String, sourceLanguage: StudyLanguage) -> String 
             cardType: inferredCardType
         )
         if detectedTerminalSentencePunctuation(from: preserved) != nil {
-            return preserved
+            return capitalizingSentenceStartIfTerminated(preserved)
         }
         if let inferred = inferredFrenchTerminalSentencePunctuation(preserved, cardType: inferredCardType) {
-            return applyingTerminalSentencePunctuation(inferred, to: preserved, style: .french)
+            return capitalizingSentenceStartIfTerminated(
+                applyingTerminalSentencePunctuation(inferred, to: preserved, style: .french)
+            )
         }
         return preserved
     case .english:

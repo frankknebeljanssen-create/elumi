@@ -23,7 +23,7 @@ struct ScanDraftsSectionView: View {
         if !draftStore.drafts.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
                 // **Scan-Redesign** — selbe Komponente/Optik wie „1./2." (Schritt 3).
-                ScanSectionLabel(stepNumber: 3, title: "Meine Scans")
+                ScanSectionLabel(stepNumber: 3, title: "Meine Scans (Entwürfe)")
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 10) {

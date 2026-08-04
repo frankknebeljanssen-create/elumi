@@ -80,11 +80,59 @@ enum ScanMetaMarkerExtractor {
             return match
         }
 
+        // 3. Bare-Trailing-Match: „ici adv" → core „ici" + marker „adv".
+        //
+        // **2026-06-09** — Viele Lehrwerke drucken die Wortart OHNE
+        // Klammern direkt hinter die Vokabel. Ohne diesen Fall landete
+        // das Kürzel als Teil des Wortes in der Lernliste („ici adv",
+        // „depuis adv") — der Schüler hätte es mitgelernt.
+        if let match = bareTrailingMarkerMatch(in: trimmed) {
+            return match
+        }
+
         // 3. Kein Match → Original durchreichen.
         return ExtractionResult(cleanedText: trimmed, normalizedMarker: nil)
     }
 
     // MARK: - Internal helpers
+
+    /// Kürzel, die auch OHNE Klammern sicher als Marker gelten dürfen.
+    ///
+    /// Bewusst eine engere Liste als `knownMarkers`: Einbuchstabige
+    /// Marker („m", „f", „n") bleiben draußen, weil ein alleinstehendes
+    /// „m" hinter einer Vokabel zu leicht etwas anderes sein kann. Die
+    /// hier gelisteten Kürzel sind im Französischen keine eigenen
+    /// Wörter, ein Fehlgriff ist damit praktisch ausgeschlossen.
+    private static let bareTrailingMarkers: Set<String> = [
+        "adj", "adj.",
+        "adv", "adv.",
+        "prep", "prep.",
+        "conj", "conj.",
+        "interj", "interj.",
+        "pl", "pl.",
+        "sg", "sg.",
+        "inv", "inv.",
+        "fam", "fam.",
+        "fig", "fig."
+    ]
+
+    private static func bareTrailingMarkerMatch(in text: String) -> ExtractionResult? {
+        let parts = text.split(separator: " ").map(String.init)
+        // Mindestens ein Wort muss übrig bleiben — „adv" allein ist
+        // keine Vokabel mit Marker, sondern nur ein Kürzel.
+        guard parts.count >= 2, let last = parts.last else { return nil }
+
+        let candidate = last.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard bareTrailingMarkers.contains(candidate) else { return nil }
+
+        let core = parts.dropLast().joined(separator: " ")
+        guard !core.isEmpty else { return nil }
+
+        return ExtractionResult(
+            cleanedText: core,
+            normalizedMarker: normalize(marker: candidate)
+        )
+    }
 
     private static func trailingParentheticalMatch(in text: String) -> ExtractionResult? {
         guard text.hasSuffix(")"), let openIdx = text.lastIndex(of: "(") else {
