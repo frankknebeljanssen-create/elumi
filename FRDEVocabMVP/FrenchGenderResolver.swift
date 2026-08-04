@@ -121,6 +121,28 @@ enum FrenchGenderResolver {
         // Ab hier: entweder `l'`, `les`, oder kein Artikel.
         // Wir brauchen Genus aus anderer Quelle.
 
+        // **Bug-Fix 2026-06-09** — Monatsnamen und Eigennamen stehen im
+        // Französischen artikellos und dürfen hier NICHT weiterlaufen.
+        //
+        // Ohne diesen Riegel griff am Ende der Endungs-Heuristik die
+        // Auffangregel „endet auf -e → feminin" (Confidence 0.62) und
+        // machte aus `novembre`/`septembre`/`octobre`/`décembre` ein
+        // „la novembre" — im Quiz sichtbar (User-Bugreport). Monate sind
+        // maskulin, aber „le novembre" wäre genauso falsch: sie stehen
+        // schlicht ohne Artikel („en novembre").
+        //
+        // Rückgabe ohne Genus und mit unverändertem Lemma — der
+        // Aufrufer baut daraus keinen Artikel.
+        if isArticlelessFrenchNoun(core) {
+            return ResolvedGender(
+                gender: nil,
+                source: .unknown,
+                confidence: 0.0,
+                number: detectedNumber,
+                normalizedLemma: trimmed
+            )
+        }
+
         // Schritt 2a — KI-Overrides (Phase 2) haben höchste Priorität.
         // Wir erlauben sie vor Schritt 2b, weil eine dedizierte KI-Antwort
         // zuverlässiger ist als die Endungs-Heuristik.

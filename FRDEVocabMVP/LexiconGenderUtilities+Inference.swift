@@ -45,6 +45,11 @@ func frenchGenderInfo(for text: String, cardType: CardType) -> LexiconGenderInfo
     let bare = strippingLeadingFrenchArticle(from: text)
     guard !bare.isEmpty else { return nil }
 
+    // **2026-06-09** — Monatsnamen und Eigennamen stehen artikellos.
+    // Muss VOR den Endungs-Heuristiken greifen: „septembre" endet sonst
+    // auf eine als feminin gewertete Endung und bekäme „la" davor.
+    guard !isArticlelessFrenchNoun(bare) else { return nil }
+
     if strongFrenchFeminineSuffixes.contains(where: { bare.hasSuffix($0) }) {
         return LexiconGenderInfo(gender: .feminine, article: suggestedFrenchArticle(for: .feminine), isHeuristic: true)
     }

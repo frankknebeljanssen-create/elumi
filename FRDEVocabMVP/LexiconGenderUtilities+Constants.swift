@@ -30,6 +30,34 @@ let germanLexiconLowercaseExceptions: Set<String> = [
     "langsam", "schnell", "warm", "kalt", "sauber", "schmutzig"
 ]
 
+/// **2026-06-09** — Nomen, die im Französischen grundsätzlich ohne
+/// Artikel stehen: Monatsnamen und Eigennamen.
+///
+/// Grund (User-Bugreport „la septembre"): Die Endungs-Heuristik stufte
+/// `septembre` wegen der Endung als feminin ein und stellte „la" davor.
+/// Monate sind aber maskulin UND artikellos — „le septembre" wäre
+/// genauso falsch wie „la septembre". Diese Prüfung läuft deshalb VOR
+/// jeder Genus-Ableitung.
+let frenchArticlelessMonths: Set<String> = [
+    "janvier", "fevrier", "mars", "avril", "mai", "juin",
+    "juillet", "aout", "septembre", "octobre", "novembre", "decembre"
+]
+
+/// Steht dieses Wort im Französischen ohne Artikel? Monatsnamen und
+/// Eigennamen (im Lexikon durchgängig großgeschrieben, Gattungsnamen
+/// klein).
+func isArticlelessFrenchNoun(_ text: String) -> Bool {
+    let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard let first = trimmed.first else { return false }
+
+    let normalized = trimmed
+        .lowercased()
+        .folding(options: .diacriticInsensitive, locale: Locale(identifier: "fr_FR"))
+
+    if frenchArticlelessMonths.contains(normalized) { return true }
+    return first.isUppercase
+}
+
 let strongFrenchFeminineSuffixes = [
     "tion", "sion", "té", "té", "ette", "ance", "ence", "ie",
     "ure", "esse", "euse", "ence", "aison", "eille", "ille"
