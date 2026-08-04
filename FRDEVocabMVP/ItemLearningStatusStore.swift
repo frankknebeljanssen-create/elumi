@@ -190,8 +190,10 @@ final class ItemLearningStatusStore: ObservableObject {
 
         if correct {
             entry.correctCount += 1
+            entry.currentStreak += 1
         } else {
             entry.wrongCount += 1
+            entry.currentStreak = 0
         }
         entry.lastSeen = Date()
         entry.displayFrench = trimmedFrench

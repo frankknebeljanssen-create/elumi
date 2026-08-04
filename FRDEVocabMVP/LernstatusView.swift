@@ -192,7 +192,14 @@ struct LernstatusView: View {
     /// Setup-Card, Titel eine Stufe größer.
     @ViewBuilder
     private var practiceListCTA: some View {
-        let count = statusStore.wackelkandidatenCount
+        // **2026-08-04** — tatsächliche, gefilterte Zahl statt der rohen
+        // Wackelkandidaten-Zählung (User-Report: Button sagte „68",
+        // Popup danach „58 Wörtern" — die Differenz sind Einträge ohne
+        // beide Sprachseiten oder Duplikate, die `rebuildWackelkandidatenList`
+        // ohnehin rausfiltert). Beide Zahlen laufen jetzt über dieselbe
+        // Filter-Funktion, damit sie strukturell nie auseinanderlaufen
+        // können.
+        let count = VocabularyListStore.usableWackelkandidatenItems(from: statusStore.wackelkandidatenItems).count
         if count > 0 {
             Button {
                 buildAndPracticeWackelkandidaten()

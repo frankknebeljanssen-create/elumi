@@ -64,6 +64,53 @@ struct ItemLearningStatus: Codable, Equatable, Hashable, Identifiable {
     /// sortiert liefert der Detail-Screen „was wurde zuletzt geübt".
     var lastSeen: Date
 
+    /// **2026-08-04** — Serie ununterbrochen richtiger Antworten, über
+    /// **alle** Module hinweg (nicht auf eine Übungsrunde beschränkt —
+    /// „dreimal richtig in verschiedenen Übungen" laut User-Spec zählt
+    /// genauso). Steigt bei jeder richtigen Antwort um 1, springt bei
+    /// jeder falschen Antwort sofort auf 0 zurück. Treibt den primären
+    /// Weg zu `.strong` (siehe `status`) — realistischer als die reine
+    /// Gesamt-Trefferquote, die bei einer schlechten Vorgeschichte
+    /// unrealistisch hohe „noch X richtig"-Zahlen produzierte (User-
+    /// Report: „noch 12x" / „noch 13x" — das übt kein Schüler).
+    ///
+    /// `decodeIfPresent` mit Default 0 in `init(from:)`, damit bereits
+    /// gespeicherte Einträge ohne dieses Feld nicht am Decodieren
+    /// scheitern (Migration bestehender Nutzerdaten).
+    var currentStreak: Int
+
+    init(
+        key: String,
+        displayFrench: String,
+        displayGerman: String,
+        cardType: CardType,
+        correctCount: Int,
+        wrongCount: Int,
+        lastSeen: Date,
+        currentStreak: Int = 0
+    ) {
+        self.key = key
+        self.displayFrench = displayFrench
+        self.displayGerman = displayGerman
+        self.cardType = cardType
+        self.correctCount = correctCount
+        self.wrongCount = wrongCount
+        self.lastSeen = lastSeen
+        self.currentStreak = currentStreak
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        key = try container.decode(String.self, forKey: .key)
+        displayFrench = try container.decode(String.self, forKey: .displayFrench)
+        displayGerman = try container.decode(String.self, forKey: .displayGerman)
+        cardType = try container.decode(CardType.self, forKey: .cardType)
+        correctCount = try container.decode(Int.self, forKey: .correctCount)
+        wrongCount = try container.decode(Int.self, forKey: .wrongCount)
+        lastSeen = try container.decode(Date.self, forKey: .lastSeen)
+        currentStreak = try container.decodeIfPresent(Int.self, forKey: .currentStreak) ?? 0
+    }
+
     var totalAttempts: Int { correctCount + wrongCount }
 
     /// Trefferquote als [0…1]-Wert. Bei `totalAttempts == 0` liefert 0,
@@ -74,7 +121,17 @@ struct ItemLearningStatus: Codable, Equatable, Hashable, Identifiable {
         return Double(correctCount) / Double(totalAttempts)
     }
 
+    /// **2026-08-04** — Ab dieser Streak-Länge gilt ein Wort als „stark",
+    /// unabhängig von der Gesamt-Vorgeschichte (User-Spec: „dreimal
+    /// richtig hintereinander... dann passt das"). Ersetzt NICHT die
+    /// alte Quoten-Schwelle (bleibt als zweiter, unabhängiger Weg
+    /// erhalten — siehe `status`), sondern ergänzt sie um einen
+    /// erreichbaren, vorwärtsgerichteten Pfad für Wörter mit
+    /// schlechter Historie.
+    static let strongStreakThreshold = 3
+
     var status: ItemLearningStatusClass {
+        if currentStreak >= Self.strongStreakThreshold { return .strong }
         guard totalAttempts >= 3 else { return .sparse }
         if totalAttempts >= 5 && accuracy >= 0.8 {
             return .strong
@@ -86,22 +143,19 @@ struct ItemLearningStatus: Codable, Equatable, Hashable, Identifiable {
     }
 
     /// **2026-08-04** — Wie oft der User ab jetzt **hintereinander richtig**
-    /// antworten müsste, damit das Wort zu `.strong` wird (User-Spec: „nur
-    /// die Anzahl Versuche sagt mir nichts"). Nimmt an, dass ab jetzt kein
-    /// weiterer Fehler passiert — ist also die bestmögliche Prognose, kein
-    /// Durchschnitt über zukünftiges Rateverhalten.
-    ///
-    /// Herleitung aus der `.strong`-Schwelle (`totalAttempts >= 5 &&
-    /// accuracy >= 0.8`): gesucht ist das kleinste `k >= 0` mit
-    /// `(correctCount + k) / (totalAttempts + k) >= 0.8`. Nach `k`
-    /// aufgelöst (Multiplikation mit 5 macht 0.8 → 4, ganzzahlig, keine
-    /// Rundung nötig): `k >= 4 * totalAttempts - 5 * correctCount`.
-    /// Kombiniert mit der Mindest-Versuchszahl (`totalAttempts + k >= 5`)
-    /// ergibt sich das Maximum aus beiden Bedingungen.
+    /// antworten müsste, damit das Wort zu `.strong` wird. Nimmt den
+    /// SCHNELLEREN der beiden unabhängigen Wege zu `.strong`:
+    ///   • Streak-Pfad: `strongStreakThreshold - currentStreak` — dank
+    ///     des Caps oben nie größer als `strongStreakThreshold` (User-
+    ///     Spec „maximal fünfmal in Folge ist das Allerhöchste" ist damit
+    ///     strukturell erfüllt, nicht nur in der Anzeige gedeckelt).
+    ///   • Quoten-Pfad: die alte Herleitung aus der 80-%-Schwelle — bei
+    ///     einem Wort, das schon nah an 80 % liegt, kann das sogar
+    ///     kleiner sein als der Streak-Pfad.
     var remainingCorrectForStrong: Int {
         guard status != .strong else { return 0 }
-        let byAccuracy = 4 * totalAttempts - 5 * correctCount
-        let byMinAttempts = 5 - totalAttempts
-        return max(0, byAccuracy, byMinAttempts)
+        let byStreak = max(0, Self.strongStreakThreshold - currentStreak)
+        let byAccuracy = max(0, 4 * totalAttempts - 5 * correctCount, 5 - totalAttempts)
+        return min(byStreak, byAccuracy)
     }
 }

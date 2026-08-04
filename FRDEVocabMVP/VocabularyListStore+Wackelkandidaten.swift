@@ -50,8 +50,15 @@ extension VocabularyListStore {
     /// eine evtl. vorhandene leergeräumte Liste bleibt unangetastet — der
     /// Aufrufer sollte den Button ohnehin nur bei vorhandenen
     /// Wackelkandidaten zeigen).
-    @discardableResult
-    func rebuildWackelkandidatenList(from statuses: [ItemLearningStatus]) -> UUID? {
+    /// **2026-08-04** — Reine Filter-/Dedupe-Logik, ausgelagert aus
+    /// `rebuildWackelkandidatenList(from:)`, damit die Anzeige-Zahl auf
+    /// dem CTA (`practiceListCTA` in `LernstatusView`) und die
+    /// tatsächliche Item-Zahl der gebauten Liste garantiert
+    /// übereinstimmen (User-Report: „Zum Üben 5 + Im Aufbau 63 = 68"
+    /// stand auf dem Button, aber das Popup meldete „58 Wörtern" — die
+    /// rohe Wackelkandidaten-Zahl zählt jeden Eintrag, unabhängig davon,
+    /// ob er später durch den Filter fällt).
+    static func usableWackelkandidatenItems(from statuses: [ItemLearningStatus]) -> [VocabularyItem] {
         var seen = Set<String>()
         var items: [VocabularyItem] = []
 
@@ -79,6 +86,12 @@ extension VocabularyListStore {
             )
         }
 
+        return items
+    }
+
+    @discardableResult
+    func rebuildWackelkandidatenList(from statuses: [ItemLearningStatus]) -> UUID? {
+        let items = Self.usableWackelkandidatenItems(from: statuses)
         guard !items.isEmpty else { return nil }
 
         if let index = customLists.firstIndex(where: { $0.id == Self.wackelkandidatenListID }) {
