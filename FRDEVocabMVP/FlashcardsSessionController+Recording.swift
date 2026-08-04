@@ -67,6 +67,18 @@ extension FlashcardsSessionController {
               speechController.authorizationStatus != .restricted else { return }
         guard !showingTypedAnswerInput, !isFlashcardFlipped else { return }
         guard !speechController.isRecording else { return }
+        // **Bugfix 2026-08-04** — zusätzlicher, expliziter Schutz gegen
+        // Auto-Restart, solange noch „Falsch 😕" angezeigt wird (User-
+        // Report: Mikro fängt nach einer falschen Antwort an zu
+        // wackeln/pulsieren, alterniert dabei mit dem „Falsch"-Zustand —
+        // deutet auf einen Auto-Relisten-Trigger hin, der zu früh feuert,
+        // während die Karte eigentlich auf „Weiter"-Tap wartet). Der
+        // bestehende `!isFlashcardFlipped`-Guard SOLLTE das schon decken
+        // (beide werden im selben Wrong-Branch gesetzt), aber dieser
+        // zweite, unabhängige Check bleibt auch dann wirksam, falls
+        // `isFlashcardFlipped` durch einen anderen Pfad zwischenzeitlich
+        // zurückgesetzt wird, während die Antwort noch aussteht.
+        guard lastResult?.label.hasPrefix("Falsch") != true, !isAwaitingContinueAfterWrong else { return }
 
         shouldEvaluateAfterStop = true
         dismissTypedAnswerFocus()

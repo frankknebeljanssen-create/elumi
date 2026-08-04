@@ -77,13 +77,29 @@ extension FlashcardsView {
                     let was = interaction.wasSpeakerSpeaking
                     interaction.wasSpeakerSpeaking = isSpeaking
                     if was, !isSpeaking, sessionStore.hasActiveSession, interaction.currentFlashCard != nil {
-                        interaction.beginAutomaticListeningIfNeeded(
-                            sessionStore: sessionStore,
-                            speechController: speechController,
-                            speaker: speaker,
-                            areSoundsEnabled: feedbackPlayer.areSoundsEnabled,
-                            dismissTypedAnswerFocus: { dismissTypedAnswerFocus() }
-                        )
+                        // **Bugfix 2026-08-04** — kleine Gnadenfrist, bevor das
+                        // Mikro nach der Sprachausgabe zu lauschen beginnt
+                        // (User-Report: Mikro-Button „wackelt" wiederholt und
+                        // alterniert mit „Falsch" nach falscher Antwort —
+                        // `speaker.isSpeaking` kann knapp VOR dem tatsächlichen
+                        // Ende der Audio-Ausgabe auf `false` kippen; ohne
+                        // Puffer hört das Mikro dann den Rest der eigenen
+                        // TTS-Stimme mit, erkennt sie fälschlich als falsche
+                        // Antwort, was den Zyklus erneut anstößt). 250 ms sind
+                        // unter der Wahrnehmungsschwelle für „reagiert sofort",
+                        // aber genug Puffer für den Audio-Session-Übergang.
+                        let cardAtSchedule = interaction.currentFlashCard?.id
+                        Task { @MainActor in
+                            try? await Task.sleep(nanoseconds: 250_000_000)
+                            guard interaction.currentFlashCard?.id == cardAtSchedule else { return }
+                            interaction.beginAutomaticListeningIfNeeded(
+                                sessionStore: sessionStore,
+                                speechController: speechController,
+                                speaker: speaker,
+                                areSoundsEnabled: feedbackPlayer.areSoundsEnabled,
+                                dismissTypedAnswerFocus: { dismissTypedAnswerFocus() }
+                            )
+                        }
                     }
                 }
                 .onChange(of: feedbackPlayer.areSoundsEnabled) { _, isEnabled in
