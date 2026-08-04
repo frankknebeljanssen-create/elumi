@@ -277,34 +277,6 @@ struct SettingsView: View {
             }
             .buttonStyle(.plain)
 
-            // **Tipps erneut anzeigen** (2026-06-09) — setzt den
-            // `HintStore` zurück, damit alle dismissible Erstnutzer-
-            // Hints wieder erscheinen. Nicht-destruktiv (nur UI-State,
-            // keine Lerndaten), daher ohne Bestätigungs-Alert — anders
-            // als die Reset-Cards weiter unten.
-            Button {
-                HintStore.shared.resetAll()
-            } label: {
-                HStack(spacing: 12) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Tipps erneut anzeigen")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                        Text("Setzt die App-Hinweise zurück")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer(minLength: 0)
-                    Image(systemName: "lightbulb.circle.fill")
-                        .font(.system(size: 36, weight: .bold))
-                        .foregroundStyle(sectionStyle.accent)
-                        .frame(width: 56, height: 56)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(18)
-                .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
-            }
-            .buttonStyle(.plain)
-
             speedRoundDurationCard
 
             dictionaryStatsCard
@@ -315,17 +287,15 @@ struct SettingsView: View {
 
             scanSmartRegionCard
 
-            // **Credits zurücksetzen** (User-Revision 2026-04-22):
-            // eigenständige Card, weil es die einzige reine User-
-            // Aktion in diesem Block ist (alles andere wandert in die
-            // Developer-Section darunter).
-            gameStateResetCard
-
             // **Developer-Section** — ausklappbare Gruppe mit Entwickler-
-            // nahen Reglern: Icon-Stil-Wahl, Spiel-Events-Testmodus,
-            // Custom-Listen-Löschen und (im DEBUG-Build) dem
-            // Entwicklungs-Spielstand-Reset. Nicht mehr einzeln im
-            // Haupt-Flow — wird bei Bedarf aufgeklappt.
+            // nahen Reglern: Spiel-Events-Testmodus, Custom-Listen-
+            // Löschen, Credits zurücksetzen, Tipps erneut anzeigen und
+            // (im DEBUG-Build) dem Entwicklungs-Spielstand-Reset. Nicht
+            // mehr einzeln im Haupt-Flow — wird bei Bedarf aufgeklappt.
+            // **2026-06-09**: „Credits zurücksetzen" + „Tipps erneut
+            // anzeigen" aus dem Haupt-Flow hierher verschoben — beides
+            // sind Tester-/Entwickler-Aktionen, keine alltäglichen
+            // User-Settings.
             developerSection
 
             Spacer(minLength: 0)
@@ -633,8 +603,15 @@ struct SettingsView: View {
 
     /// Kollabierbare Gruppe mit Entwickler-nahen Reglern. Default
     /// collapsed — expandiert auf Tap-Header. Enthält (in dieser
-    /// Reihenfolge): Icon-Stil → Spiel-Events-Test → Meine Listen
-    /// löschen → (DEBUG) Entwicklungs-Spielstand-Reset.
+    /// Reihenfolge): Spiel-Events-Test → Meine Listen löschen → Credits
+    /// zurücksetzen → Tipps erneut anzeigen → (DEBUG) Entwicklungs-
+    /// Spielstand-Reset.
+    ///
+    /// **Alle Cards in dieser Section** (inkl. Header) nutzen den
+    /// `appCardBackground(tint:)`-Overload mit `developerAccent` statt
+    /// `sectionStyle` — ein einheitliches Slate-Grau, das sich klar von
+    /// den Modul-Farben der übrigen Settings-Cards absetzt, damit auf
+    /// einen Blick erkennbar ist: alles hier ist Developer-Kram.
     private var developerSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Button {
@@ -645,7 +622,7 @@ struct SettingsView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "wrench.and.screwdriver.fill")
                         .font(.system(size: 22, weight: .bold))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .foregroundStyle(AppTheme.Colors.developerAccent)
                         .frame(width: 36, height: 36)
 
                     VStack(alignment: .leading, spacing: 4) {
@@ -654,7 +631,7 @@ struct SettingsView: View {
                             .foregroundStyle(AppTheme.Colors.textPrimary)
                         Text(isDeveloperExpanded
                              ? "Regler für Tester:innen & Entwicklung"
-                             : "Icon-Stil, Spiel-Events, Lernlisten-Reset")
+                             : "Spiel-Events, Listen-Reset, Credits, Tipps")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
@@ -664,12 +641,12 @@ struct SettingsView: View {
 
                     Image(systemName: "chevron.down")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .foregroundStyle(AppTheme.Colors.developerAccent)
                         .rotationEffect(.degrees(isDeveloperExpanded ? 180 : 0))
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(18)
-                .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
+                .appCardBackground(tint: AppTheme.Colors.developerAccent)
             }
             .buttonStyle(.plain)
 
@@ -677,6 +654,8 @@ struct SettingsView: View {
                 VStack(spacing: 14) {
                     testModusArcadeCard
                     customListsResetCard
+                    gameStateResetCard
+                    hintsResetCard
                     #if DEBUG
                     devResetCard
                     #endif
@@ -684,6 +663,38 @@ struct SettingsView: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
+    }
+
+    /// **Tipps erneut anzeigen** (2026-06-09) — setzt den `HintStore`
+    /// zurück, damit alle dismissible Erstnutzer-Hints wieder
+    /// erscheinen. Nicht-destruktiv (nur UI-State, keine Lerndaten),
+    /// daher ohne Bestätigungs-Alert — anders als die Reset-Cards
+    /// daneben. In die Developer-Section verschoben (vorher im
+    /// Haupt-Flow) — reine Tester-Aktion.
+    private var hintsResetCard: some View {
+        Button {
+            HintStore.shared.resetAll()
+        } label: {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Tipps erneut anzeigen")
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                    Text("Setzt die App-Hinweise zurück")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "lightbulb.circle.fill")
+                    .font(.system(size: 36, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.developerAccent)
+                    .frame(width: 56, height: 56)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(18)
+            .appCardBackground(tint: AppTheme.Colors.developerAccent)
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - User-sichtbare Resets
@@ -719,7 +730,7 @@ struct SettingsView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(18)
-            .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
+            .appCardBackground(tint: AppTheme.Colors.developerAccent)
         }
         .buttonStyle(.plain)
         .alert("Credits zurücksetzen?", isPresented: $isShowingGameStateResetAlert) {
@@ -764,7 +775,7 @@ struct SettingsView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(18)
-            .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
+            .appCardBackground(tint: AppTheme.Colors.developerAccent)
         }
         .buttonStyle(.plain)
         .alert("Meine Lernlisten löschen?", isPresented: $isShowingListsResetAlert) {
@@ -890,7 +901,7 @@ struct SettingsView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
-        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
+        .appCardBackground(tint: AppTheme.Colors.developerAccent)
         .alert("Spielstand zurücksetzen?", isPresented: $isShowingDevResetAlert) {
             Button("Abbrechen", role: .cancel) { }
             Button("Zurücksetzen", role: .destructive) {
@@ -996,7 +1007,7 @@ struct SettingsView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
-        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
+        .appCardBackground(tint: AppTheme.Colors.developerAccent)
     }
 
     /// Toggle-Button für den Testmodus: persistiert den Flag in

@@ -80,6 +80,32 @@ extension View {
         )
     }
 
+    /// Farb-Overload von `appCardBackground` für Stellen, die keinen
+    /// `AppSectionStyle` haben, sondern direkt einen Akzent-`Color`
+    /// wollen — z. B. die Developer-Section (`AppTheme.Colors.
+    /// developerAccent`), die bewusst außerhalb der Modul-Farbfamilie
+    /// liegt. Identisches Rendering wie die `AppSectionStyle`-Variante.
+    func appCardBackground(tint: Color, intensity: Double = AppTheme.CardIntensity.soft, cornerRadius: CGFloat = AppTheme.Radius.lg) -> some View {
+        background {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(AppTheme.Colors.surface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .stroke(tint.opacity(0.45), lineWidth: 1)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(tint.opacity(intensity))
+                )
+        }
+        .shadow(
+            color: AppTheme.Shadow.card.color,
+            radius: AppTheme.Shadow.card.radius,
+            x: AppTheme.Shadow.card.x,
+            y: AppTheme.Shadow.card.y
+        )
+    }
+
     func appChipBackground(_ style: AppSectionStyle, intensity: Double = AppTheme.CardIntensity.medium, cornerRadius: CGFloat = AppTheme.Radius.md) -> some View {
         background {
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)

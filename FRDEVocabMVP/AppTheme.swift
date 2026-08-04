@@ -110,6 +110,11 @@ enum AppTheme {
         static let moduleLists = Color(hex: "#57B8C9")           // Listen — Teal
         static let moduleScan = Color(hex: "#EF6C50")            // Scan — Coral
         static let moduleAccents = Color(hex: "#F43F5E")         // Akzente — Rose (distinct from Vocab-Pink und Hearts-Red, passt thematisch zu „Akzenten")
+        /// **Developer-Section-Akzent** (2026-06-09) — kühles Slate-Grau,
+        /// bewusst außerhalb der Modul-Farbfamilie, damit alle Cards in
+        /// `SettingsView.developerSection` auf einen Blick als „Developer-
+        /// Zeug" erkennbar sind (nicht mit einem Lernmodul verwechselbar).
+        static let developerAccent = Color(hex: "#64748B")       // Developer — Slate
         static let moduleArcade = elumiPinkDeep                  // Arcade — Pink
         // Hearts (Leben) bekommt einen eigenen Slot und hängt nicht mehr
         // am `error`-Token. So können Error-Semantik und Hearts-Modul
