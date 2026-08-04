@@ -47,12 +47,17 @@ enum FeedbackConfig {
     /// Wie lange ein Streak-Toast sichtbar bleibt, bevor er fade-out
     /// geht. Klein-bis-groß gestaffelt, damit größere Events mehr Raum
     /// zum Wirken bekommen.
+    /// **2026-06-09** — Jede Stufe +0.5 s (User-Feedback: „fliegt oben
+    /// nur kurz rein und wieder raus"). Ein Toast steht damit lange
+    /// genug, um ihn im Blickwinkel zu erfassen, ohne den Lernfluss
+    /// aufzuhalten — die Einblendung selbst kostet schon ~0.4 s, die
+    /// vorher von der Standzeit abging.
     static func toastVisibleDuration(for tier: StreakTier) -> TimeInterval {
         switch tier {
-        case .small:     return 1.2
-        case .medium:    return 1.8
-        case .large:     return 2.2
-        case .milestone: return 2.6
+        case .small:     return 1.7
+        case .medium:    return 2.3
+        case .large:     return 2.7
+        case .milestone: return 3.1
         }
     }
 

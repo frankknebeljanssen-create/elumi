@@ -26,6 +26,10 @@ final class GamificationFeedbackPresenter: ObservableObject {
     /// Antwort einen neuen Trigger auslöst, auch wenn zwei direkt
     /// hintereinander kommen.
     @Published var successPulseTrigger: Int = 0
+
+    /// Zähler für den Würmchen-Tick — feuert beim Beantworten, nicht
+    /// beim Weiterschalten. Siehe `noteWormEarned()`.
+    @Published var wormEarnedTrigger: Int = 0
     @Published var wrongPulseTrigger: Int = 0
 
     // MARK: - Event-Modelle
@@ -54,6 +58,19 @@ final class GamificationFeedbackPresenter: ObservableObject {
     /// Views selbst binden sich per `.onChange`.
     func noteSuccessPulse() {
         successPulseTrigger &+= 1
+    }
+
+    /// **2026-06-09** — Eigener Trigger für den Würmchen-Tick, bewusst
+    /// getrennt von `successPulseTrigger`.
+    ///
+    /// Grund: `successPulseTrigger` feuert aus `streak.recordAnswer(...)`
+    /// heraus, das im Quiz erst in `completeCurrentQuestion` läuft — also
+    /// genau dann, wenn schon zur nächsten Frage geschaltet wird. Das
+    /// Würmchen tauchte dadurch zeitgleich mit der neuen Aufgabe auf und
+    /// der Belohnungsmoment ging verloren. Dieser Trigger wird direkt
+    /// beim Beantworten gefeuert.
+    func noteWormEarned() {
+        wormEarnedTrigger &+= 1
     }
 
     func noteWrongPulse() {
@@ -213,18 +230,20 @@ struct WuermchenTickOverlay: View {
                 WuermchenTickGlyph(id: tick.id)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        // **Modul 5 Fix (2026-05-23)** — tiefer (140 statt 70): liegt unter
-        // der Count-Bar UND unter dem Modul-Titel („Quiz"/„Vokabeln"), nicht
-        // mehr darüber. Weiterhin klar getrennt vom Serien-Toast (ganz oben).
-        .padding(.top, 140)
+        // **2026-06-09** — Bildschirmmitte statt oberer Rand (User-Spec).
+        // Dort ruht der Blick während der Aufgabe, der Tick wird also
+        // gesehen statt am Rand übersehen. Er steigt von hier aus auf und
+        // blendet aus; der Serien-Toast bleibt oben, beide bleiben
+        // dadurch klar getrennt.
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .allowsHitTesting(false)
-        .onChange(of: presenter.successPulseTrigger) { _, _ in
+        .onChange(of: presenter.wormEarnedTrigger) { _, _ in
             let tick = Tick()
             ticks.append(tick)
             // Nach Ablauf der Animation wieder entfernen (Cleanup gegen
             // unbegrenztes Array-Wachstum bei schneller Antwort-Kadenz).
-            // **Politur 2026-05-23** — länger (1.7 s > Gesamt-Animation ~1.5 s).
+            // Muss über der Gesamt-Animationsdauer liegen (0.35 s Halt +
+            // 1.15 s Aufstieg = 1.5 s).
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.7) {
                 ticks.removeAll { $0.id == tick.id }
             }
@@ -242,29 +261,57 @@ private struct WuermchenTickGlyph: View {
     @State private var offsetY: CGFloat = 0
 
     var body: some View {
-        // **Modul 5 Politur (2026-05-23)** — größer (30 → 46), damit der
-        // Würmchen-Tick als Belohnung wahrnehmbar ist.
-        ElumiSnackIcon(.wuermchen, size: 46)
-            .scaleEffect(scale)
-            .opacity(opacity)
-            .offset(y: offsetY)
-            .onAppear {
-                // Belohnender Pop-In: kräftiger Spring mit Overshoot
-                // (0.3 → ~1.1 → 1.0), Opacity schnell rein.
-                withAnimation(.easeOut(duration: 0.18)) {
-                    opacity = 1.0
-                }
-                withAnimation(.spring(response: 0.34, dampingFraction: 0.5)) {
-                    scale = 1.0
-                }
-                // Längeres, sanftes Aufsteigen + Ausblenden (~1.1 s nach
-                // kurzem Halt → Gesamt ~1.5 s). Kleiner Aufstieg (-18), damit
-                // der größere Glyph nicht in den Titel-Bereich wandert.
-                withAnimation(.easeInOut(duration: 1.1).delay(0.4)) {
-                    offsetY = -18
-                    opacity = 0.0
-                }
+        // **2026-06-09** — 46 → 88 pt (User-Feedback „viel zu klein").
+        // Der Tick ist die sichtbare Belohnung pro richtiger Antwort und
+        // erscheint jetzt mittig, wo Platz für diese Größe ist.
+        //
+        // Dazu eine kurze Beschriftung: ohne sie war nur ein Icon zu
+        // sehen, ohne Aussage darüber, dass gerade etwas verdient wurde.
+        VStack(spacing: 10) {
+            ElumiSnackIcon(.wuermchen, size: 88)
+            Text("Würmchen verdient!")
+                .font(.system(size: 20, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+                .shadow(color: .black.opacity(0.35), radius: 6, x: 0, y: 2)
+        }
+        .scaleEffect(scale)
+        .opacity(opacity)
+        .offset(y: offsetY)
+        .onAppear {
+            // Belohnender Pop-In: kräftiger Spring mit Overshoot
+            // (0.3 → ~1.1 → 1.0), Opacity schnell rein.
+            withAnimation(.easeOut(duration: 0.18)) {
+                opacity = 1.0
             }
+            withAnimation(.spring(response: 0.34, dampingFraction: 0.5)) {
+                scale = 1.0
+            }
+            // **2026-06-09** — Wegschwimmen statt Wegblitzen: 1.15 s
+            // Aufstieg über 150 pt nach 0.35 s Halt. Vorher war die
+            // Strecke so kurz, dass die Ausblendung schon nach wenigen
+            // Millimetern durch war und die Bewegung nicht als solche
+            // gelesen wurde.
+            //
+            // Die Gesamtdauer (~1.5 s) ist bewusst auf das Fenster bis
+            // zur nächsten Frage abgestimmt (1.7–1.9 s, siehe
+            // `scheduleAdvance` im Quiz). Länger wäre schöner, würde aber
+            // JEDE richtige Antwort bremsen — das Würmchen gibt es pro
+            // richtiger Antwort, nicht nur gelegentlich.
+            withAnimation(.easeInOut(duration: 1.15).delay(0.35)) {
+                offsetY = -150
+            }
+            // Ausblenden bewusst SPÄTER und kürzer als die Bewegung —
+            // so schwimmt das Würmchen erst sichtbar ein Stück weg und
+            // löst sich dann auf, statt sofort zu verblassen.
+            withAnimation(.easeIn(duration: 0.6).delay(0.9)) {
+                opacity = 0.0
+            }
+            // Leichtes Kleinerwerden auf dem Weg — verstärkt den
+            // Eindruck, dass es sich nach hinten entfernt.
+            withAnimation(.easeInOut(duration: 1.15).delay(0.35)) {
+                scale = 0.72
+            }
+        }
     }
 }
 
@@ -336,52 +383,58 @@ private struct StreakMomentCard: View {
     }
 
     // Größen-Progression — kleine Events bleiben kompakt, große wirken.
+    //
+    // **2026-06-09** — Alle Stufen rund 1,6× vergrößert (User-Feedback:
+    // „kaum sichtbar"). Der Toast liegt am oberen Rand außerhalb des
+    // Blickzentrums, das beim Lernen auf der Aufgabe ruht — bei 14 pt
+    // Titel wurde er schlicht überlesen. Die Tier-Abstufung bleibt
+    // proportional erhalten, große Serien wirken weiterhin stärker.
     private var iconSize: CGFloat {
         switch moment.tier {
-        case .small:     return 14
-        case .medium:    return 18
-        case .large:     return 22
-        case .milestone: return 22
+        case .small:     return 22
+        case .medium:    return 28
+        case .large:     return 34
+        case .milestone: return 34
         }
     }
 
     private var titleSize: CGFloat {
         switch moment.tier {
-        case .small:     return 14
-        case .medium:    return 18
-        case .large:     return 22
-        case .milestone: return 22
+        case .small:     return 22
+        case .medium:    return 28
+        case .large:     return 34
+        case .milestone: return 34
         }
     }
 
     private var subtitleSize: CGFloat {
         switch moment.tier {
-        case .small:     return 11
-        case .medium:    return 12
-        case .large:     return 13
-        case .milestone: return 13
+        case .small:     return 16
+        case .medium:    return 18
+        case .large:     return 20
+        case .milestone: return 20
         }
     }
 
     private var spacing: CGFloat {
-        moment.tier == .small ? 8 : 12
+        moment.tier == .small ? 12 : 16
     }
 
     private var horizontalPadding: CGFloat {
-        moment.tier == .small ? 14 : 20
+        moment.tier == .small ? 22 : 30
     }
 
     private var verticalPadding: CGFloat {
         switch moment.tier {
-        case .small:     return 10
-        case .medium:    return 14
-        case .large:     return 18
-        case .milestone: return 18
+        case .small:     return 16
+        case .medium:    return 22
+        case .large:     return 28
+        case .milestone: return 28
         }
     }
 
     private var cornerRadius: CGFloat {
-        moment.tier == .small ? 14 : 18
+        moment.tier == .small ? 20 : 26
     }
 
     private var shadowOpacity: Double {
