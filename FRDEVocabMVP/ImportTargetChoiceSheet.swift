@@ -22,59 +22,67 @@ struct ImportTargetChoiceSheet: View {
     var onSaveAsDraft: (() -> Void)? = nil
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 18) {
-                summary
-                    .padding(.top, 8)
-
-                choiceCard(
-                    icon: "square.and.pencil",
-                    title: "In neue Lernliste importieren",
-                    subtitle: "Eine frische Lernliste mit eigenem Namen anlegen.",
-                    action: {
-                        dismiss()
-                        // Defer: damit Sheet-Dismiss-Animation nicht mit
-                        // dem nächsten UI-Trigger kollidiert.
-                        DispatchQueue.main.async { onChooseNewList() }
-                    }
-                )
-
-                choiceCard(
-                    icon: "tray.and.arrow.down",
-                    title: "Zu bestehender Lernliste hinzufügen",
-                    subtitle: "Auswahl aus deinen vorhandenen Lernlisten — Duplikate werden übersprungen.",
-                    action: {
-                        dismiss()
-                        DispatchQueue.main.async { onChooseExistingList() }
-                    }
-                )
-
-                // **Phase B (2026-05-20)** — dritter Pfad: als Entwurf sichern
-                // (nur wenn `onSaveAsDraft` gesetzt — Phase D v2).
-                if let onSaveAsDraft {
-                    choiceCard(
-                        icon: "tray.full",
-                        title: "Als Entwurf speichern",
-                        subtitle: "Scan sichern und später fertig bearbeiten",
-                        action: {
-                            dismiss()
-                            DispatchQueue.main.async { onSaveAsDraft() }
-                        }
-                    )
-                }
-
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 20)
-            .navigationTitle("Wohin importieren?")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+        VStack(spacing: 18) {
+            // **2026-06-09** — „Abbrechen" jetzt auf eigener Zeile über
+            // dem Titel statt in derselben Nav-Bar-Zeile (User-Feedback:
+            // wirkte zu gedrängt). Ersetzt NavigationStack + System-
+            // Toolbar durch ein einfaches VStack-Header-Layout.
+            VStack(spacing: 10) {
+                HStack {
                     Button("Abbrechen") { dismiss() }
+                        .buttonStyle(.plain)
+                        .font(AppTheme.Typography.body)
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                    Spacer(minLength: 0)
                 }
+                Text("Wohin speichern?")
+                    .font(AppTheme.Typography.cardTitle)
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
             }
+            .padding(.top, 8)
+
+            summary
+
+            choiceCard(
+                icon: "square.and.pencil",
+                title: "In neue Lernliste speichern",
+                subtitle: "Eine frische Lernliste mit eigenem Namen anlegen.",
+                action: {
+                    dismiss()
+                    // Defer: damit Sheet-Dismiss-Animation nicht mit
+                    // dem nächsten UI-Trigger kollidiert.
+                    DispatchQueue.main.async { onChooseNewList() }
+                }
+            )
+
+            choiceCard(
+                icon: "tray.and.arrow.down",
+                title: "Zu bestehender Lernliste hinzufügen",
+                subtitle: "Auswahl aus deinen vorhandenen Lernlisten — Duplikate werden übersprungen.",
+                action: {
+                    dismiss()
+                    DispatchQueue.main.async { onChooseExistingList() }
+                }
+            )
+
+            // **Phase B (2026-05-20)** — dritter Pfad: als Entwurf sichern
+            // (nur wenn `onSaveAsDraft` gesetzt — Phase D v2).
+            if let onSaveAsDraft {
+                choiceCard(
+                    icon: "tray.full",
+                    title: "Als Entwurf speichern",
+                    subtitle: "Scan sichern und später fertig bearbeiten",
+                    action: {
+                        dismiss()
+                        DispatchQueue.main.async { onSaveAsDraft() }
+                    }
+                )
+            }
+
+            Spacer()
         }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 20)
     }
 
     private var summary: some View {

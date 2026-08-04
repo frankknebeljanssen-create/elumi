@@ -33,6 +33,17 @@ extension ScanImportView {
         let pairs = previewPairs
         guard !pairs.isEmpty else { return }
         pendingImportItems = collectImportableItems()
+        #if DEBUG
+        // **2026-06-09** — Diagnose für „0 Einträge bereit zum Import"
+        // trotz zuvor geprüfter Vokabeln (User-Bugreport). Ohne Repro
+        // bislang nicht sicher lokalisierbar zwischen isImportable-Flag
+        // und Factory-Normalisierung — dieser Log zeigt beim nächsten
+        // Auftreten exakt, an welcher Stufe die Zahl auf 0 fällt.
+        let importableFlagCount = pairs.filter(\.isImportable).count
+        if pendingImportItems.isEmpty && !pairs.isEmpty {
+            appDebugLog("⚠️ [ImportTargetChoice] 0 pendingImportItems trotz \(pairs.count) previewPairs (davon \(importableFlagCount) isImportable=true) — Factory hat alle verworfen oder isImportable-Flag ist überall false.")
+        }
+        #endif
         isShowingImportTargetChoice = true
     }
 
