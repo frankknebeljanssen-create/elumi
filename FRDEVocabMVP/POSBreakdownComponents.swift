@@ -107,6 +107,8 @@ struct POSBreakdownLine: View {
             switch k {
             case .noun:
                 if stats.uniqueNounCount > 0 {
+                    // Nomen ist im Deutschen invariant — kein Singular/
+                    // Plural-Unterschied nötig.
                     out.append(Part(kind: .noun, text: "\(stats.uniqueNounCount) Nomen", color: baseColor))
                 }
             case .verb:
@@ -115,20 +117,31 @@ struct POSBreakdownLine: View {
                     // Signal für „trainierbare Wortart" — alle anderen
                     // bleiben im Sekundär-Grau, bekommen aber dieselbe
                     // Unterstreichung im Tap-State.
-                    out.append(Part(kind: .verb, text: "\(stats.uniqueVerbCount) Verben", color: verbColor))
+                    let label = stats.uniqueVerbCount == 1 ? "Verb" : "Verben"
+                    out.append(Part(kind: .verb, text: "\(stats.uniqueVerbCount) \(label)", color: verbColor))
                 }
             case .adjective:
                 if stats.uniqueAdjectiveCount > 0 {
-                    let label = layout == .twoLines ? "Adjektive" : "Adj."
+                    // Abkürzung „Adj." bleibt für Singular und Plural
+                    // gleich — nur das ausgeschriebene Wort braucht die
+                    // Singular-Form bei Count 1.
+                    let label = layout == .twoLines
+                        ? (stats.uniqueAdjectiveCount == 1 ? "Adjektiv" : "Adjektive")
+                        : "Adj."
                     out.append(Part(kind: .adjective, text: "\(stats.uniqueAdjectiveCount) \(label)", color: baseColor))
                 }
             case .adverb:
                 if stats.uniqueAdverbCount > 0 {
-                    out.append(Part(kind: .adverb, text: "\(stats.uniqueAdverbCount) Adverbien", color: baseColor))
+                    let label = stats.uniqueAdverbCount == 1 ? "Adverb" : "Adverbien"
+                    out.append(Part(kind: .adverb, text: "\(stats.uniqueAdverbCount) \(label)", color: baseColor))
                 }
             case .interjection:
                 if stats.uniqueInterjectionCount > 0 {
-                    let label = layout == .twoLines ? "Interjektionen" : "Interj."
+                    // Abkürzung „Interj." bleibt für Singular und Plural
+                    // gleich, analog zu „Adj.".
+                    let label = layout == .twoLines
+                        ? (stats.uniqueInterjectionCount == 1 ? "Interjektion" : "Interjektionen")
+                        : "Interj."
                     out.append(Part(kind: .interjection, text: "\(stats.uniqueInterjectionCount) \(label)", color: baseColor))
                 }
             }

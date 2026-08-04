@@ -225,7 +225,7 @@ extension ScanImportView {
                         beginImportTargetChoiceOrDraft()
                     }
                 } label: {
-                    Label("Jetzt importieren", systemImage: "square.and.arrow.down.fill")
+                    Label("Als Lernliste speichern", systemImage: "square.and.arrow.down.fill")
                         .font(AppTheme.Typography.button)
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 52)
@@ -408,13 +408,17 @@ extension ScanImportView {
             // Word class breakdown — 2-zeilig pills
             HStack(spacing: 10) {
                 if nounCount > 0 {
+                    // Nomen ist im Deutschen invariant — kein Singular/
+                    // Plural-Unterschied nötig.
                     wordClassBadge(count: nounCount, label: "Nomen", color: AppTheme.Colors.moduleNomen)
                 }
                 if verbCount > 0 {
-                    wordClassBadge(count: verbCount, label: "Verben", color: AppTheme.Colors.moduleVerbs)
+                    // **2026-06-09** — Singular/Plural-Fix: bei genau
+                    // 1 Verb muss es „Verb" heißen, nicht „Verben".
+                    wordClassBadge(count: verbCount, label: verbCount == 1 ? "Verb" : "Verben", color: AppTheme.Colors.moduleVerbs)
                 }
                 if adjCount > 0 {
-                    wordClassBadge(count: adjCount, label: "Adjektive", color: AppTheme.Colors.moduleQuiz)
+                    wordClassBadge(count: adjCount, label: adjCount == 1 ? "Adjektiv" : "Adjektive", color: AppTheme.Colors.moduleQuiz)
                 }
                 if otherCount > 0 {
                     wordClassBadge(count: otherCount, label: "Andere", color: AppTheme.Colors.textSecondary)

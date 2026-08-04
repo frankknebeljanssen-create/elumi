@@ -98,7 +98,9 @@ struct FreierTextSummaryView: View {
     private var wordClassBadges: some View {
         let badges: [(String, Int, Color)] = [
             ("Nomen", result.nomen.count, AppTheme.Colors.moduleNomen),
-            ("Verben", result.verben.count, AppTheme.Colors.moduleVerbs),
+            // **2026-06-09** — Singular/Plural-Fix: bei genau 1 Verb
+            // muss es „Verb" heißen, nicht „Verben".
+            (result.verben.count == 1 ? "Verb" : "Verben", result.verben.count, AppTheme.Colors.moduleVerbs),
             ("Adj.", result.adjektive.count, AppTheme.Colors.moduleQuiz),
             ("Adv.", result.adverbien.count, AppTheme.Colors.modulePractice),
             ("Pron.", result.pronomen.count, AppTheme.Colors.textSecondary),
