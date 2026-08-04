@@ -1,13 +1,361 @@
 {
+  "abdomen": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "abeille": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "aboiement": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "abonnement": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "abreuvoir": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "abri": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "abri-bus": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "abricot": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "abricotier": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "absence": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "acacia": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "acajou": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "accent": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "accessoire": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "accompagnatrice": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "accord": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "accrochage": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "accueil": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "accès": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "accélérateur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "achat": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "achillée": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "acore": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "acte": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "acteur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "activité": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "actrice": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "adaptateur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
   "addition": {
     "confidence": 1.0,
     "gender": "f"
+  },
+  "adjectif": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "administration": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "admiration": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "ado": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "adolescence": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "adoucissant": {
+    "confidence": 1.0,
+    "gender": "m"
   },
   "adresse": {
     "confidence": 1.0,
     "gender": "f"
   },
+  "adventice": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "adverbe": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "affectation": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "affection": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "affiche": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "affluent": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "affogato": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "agace": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "agacement": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "agate": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "agave": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "agenda": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "agent": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "agglomération": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "agitateur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "agneau": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "agouti": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "agrafe": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "agrume": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "aide": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "aigle": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "aigremoine": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "aiguillon": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ail": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ailante": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "aile": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "aine": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "air": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "aire": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "airelle": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "ajvar": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "alarme": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "album": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "alerte": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "aliment": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "allemand": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "aller": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "allergie": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "alligator": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "allume-gaz": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "allure": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "allée": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "alpaga": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "amande": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "amandier": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "amandon": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "amanite": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "amarante": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "amaretto": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "amaryllis": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "ambre": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ambulance": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
   "ami": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "amidon": {
     "confidence": 1.0,
     "gender": "m"
   },
@@ -19,33 +367,461 @@
     "confidence": 1.0,
     "gender": "f"
   },
+  "amortisseur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ampoule": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "amélioration": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "anaconda": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "analyse": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "anatomie": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "anchois": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "aneth": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "angine": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "anglais": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "angoisse": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "anguille": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "animal": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "animateur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "animatrice": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
   "anniversaire": {
     "confidence": 1.0,
     "gender": "m"
+  },
+  "annotation": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "annulation": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "année": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "anorak": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "anti-cernes": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "antibiotique": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "antilope": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "antimoine": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "antiseptique": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "antivol": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "antonyme": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "aplat": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "appareil": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "apparence": {
+    "confidence": 1.0,
+    "gender": "f"
   },
   "appartement": {
     "confidence": 1.0,
     "gender": "m"
   },
+  "appel": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "application": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "apprentissage": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "approche": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "apprêt": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "appât": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "appétit": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "après": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "après-midi": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "après-shampoing": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "apéritif": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "aquarelle": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "aquarium": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "araignée": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
   "arbre": {
     "confidence": 1.0,
     "gender": "m"
+  },
+  "arc-en-ciel": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ardoise": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "argent": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "argon": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "arme": {
+    "confidence": 1.0,
+    "gender": "f"
   },
   "armoire": {
     "confidence": 1.0,
     "gender": "f"
   },
+  "arrivée": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "arrêt": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "arsenic": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "artichaut": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "article": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "articulation": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "artisan": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "arts": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "aréole": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "ascenseur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "asperge": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "aspirateur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "aspirine": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "assiette": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "assistance": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "assistant": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "assistante": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "assurance": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "asthme": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "astuce": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "astéroïde": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "atelier": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "atlas": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "atome": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "attente": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "attention": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "attestation": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "attirance": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "attitude": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "atèle": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "auberge": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "aubergine": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "aubépine": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "audace": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "audioguide": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "audition": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "auteur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "autocollant": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
   "automne": {
     "confidence": 1.0,
     "gender": "m"
   },
+  "autonomie": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "autorisation": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "autoroute": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "autrice": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "autruche": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "auvent": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "avant-plan": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "avantage": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "avenue": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "avion": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "avis": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "avocat": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "avocate": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "avoir": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "aéroport": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ballerines": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
   "baskets": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "batons": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "bottes": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "bottines": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "boucles": {
     "confidence": 1.0,
     "gender": "f"
   },
   "chaussettes": {
     "confidence": 1.0,
     "gender": "f"
+  },
+  "chaussons": {
+    "confidence": 1.0,
+    "gender": "m"
   },
   "chaussures": {
     "confidence": 1.0,
@@ -55,15 +831,323 @@
     "confidence": 1.0,
     "gender": "m"
   },
+  "ciseaux": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "clés": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "couverts": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "cuissardes": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "céréales": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "derbies": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
   "eau": {
     "confidence": 1.0,
     "gender": "f"
+  },
+  "ecg": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "echauffement": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "eclairage": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ecouteurs": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ecran": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "eczéma": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "edition": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "effet": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "effets": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "efficacité": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "effort": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "egouttoir": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "email": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "emballage": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "embarquement": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "embarras": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "embouteillage": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "emission": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "emmental": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "emplacement": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "emploi": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "empreinte": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "empâtement": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "enceinte": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "enclos": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "encre": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "encrier": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "endive": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "endomètre": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "enduit": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "enfant": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "engagement": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "enlumineur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ennui": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "enregistrement": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "enseigne": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "enseignement": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "enthousiasme": {
+    "confidence": 1.0,
+    "gender": "m"
   },
   "entraînement": {
     "confidence": 1.0,
     "gender": "m"
   },
+  "entrebailleur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "entretien": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "entrée": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "enveloppe": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "envie": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
   "environnement": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "episode": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "eponge": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "erreur": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "escalator": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "escale": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "escalier": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "escalope": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "escargot": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "escarpins": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "espace": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "espagnol": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "esplanade": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "espoir": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "espresso": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "espèce": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "esquisse": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "essai": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "essayage": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "essoreuse": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "essuie-glace": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "est": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "estime": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "estomac": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "estragon": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "estuaire": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "etagere": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "etirement": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "euro": {
     "confidence": 1.0,
     "gender": "m"
   },
@@ -71,7 +1155,75 @@
     "confidence": 1.0,
     "gender": "m"
   },
+  "exception": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "excursion": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "exemple": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
   "exercice": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "exigence": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "explication": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "exposition": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "exposé": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "expression": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "expédition": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "expérience": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "externat": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "extincteur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "eyeliner": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "flocons": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "frais": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "frites": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "fruits": {
     "confidence": 1.0,
     "gender": "m"
   },
@@ -79,11 +1231,51 @@
     "confidence": 1.0,
     "gender": "m"
   },
+  "habitant": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "habitante": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "habitude": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "haricots": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
   "herbe": {
     "confidence": 1.0,
     "gender": "f"
   },
+  "heure": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "histoire": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "historique": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
   "hiver": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "honnêteté": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "horaire": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "horizon": {
     "confidence": 1.0,
     "gender": "m"
   },
@@ -91,15 +1283,395 @@
     "confidence": 1.0,
     "gender": "f"
   },
+  "horodateur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "huile": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "humeur": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
   "humour": {
     "confidence": 1.0,
     "gender": "m"
+  },
+  "hygiène": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "hébergement": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "hôpital": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "hôtel": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ibuprofène": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "iceberg": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "icône": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "identifiant": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "identité": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "idée": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "if": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "illustration": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "immeuble": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "impact": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "impasse": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "impatience": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "impermeable": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "imperméable": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "impolitesse": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "impression": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "imprimante": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "incendie": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "inconvénient": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "incubateur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "indication": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "indice": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "indium": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "infection": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "infertilité": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "infinitif": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "infirmerie": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "infirmier": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "infirmière": {
+    "confidence": 1.0,
+    "gender": "f"
   },
   "information": {
     "confidence": 1.0,
     "gender": "f"
   },
+  "informatique": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "infrastructure": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "infusion": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "ingrédient": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "inhalateur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "initiative": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "injection": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "injustice": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "inquiétude": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "inscription": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "insecte": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "inspection": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "installation": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "instant": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "institution": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "instrument": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "intensité": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "intention": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "intercalaire": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "intercalaires": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "interdiction": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "internat": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "internet": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "interrogation": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "interrogatoire": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "interrupteur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "interruption": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "intersection": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "intervention": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "interview": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "intestin": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "intoxication": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "inventaire": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "invitation": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "iode": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "isthme": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "itinéraire": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "legumes": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "lentilles": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "lunettes": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "légumes": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "mathématiques": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "mitaines": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "mocassins": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
   "mois": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "mèches": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "nuggets": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "oasis": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "objectif": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "objet": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "obligation": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "observation": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "obsession": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "occasion": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "océan": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "odeur": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "officier": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "offre": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "oie": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "oignon": {
     "confidence": 1.0,
     "gender": "m"
   },
@@ -107,7 +1679,75 @@
     "confidence": 1.0,
     "gender": "m"
   },
+  "oisillon": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "okapi": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "olivier": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ombre": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "omelette": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
   "oncle": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "onde": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "onduleur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "onglet": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "onion": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "opacité": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "ophtalmologue": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "opinion": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "opossum": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "option": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "opération": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "or": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "orage": {
     "confidence": 1.0,
     "gender": "m"
   },
@@ -115,11 +1755,163 @@
     "confidence": 1.0,
     "gender": "f"
   },
+  "orbite": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "orchestre": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "orchidée": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
   "ordinateur": {
     "confidence": 1.0,
     "gender": "m"
   },
+  "ordonnance": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "oreille": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "oreiller": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "organisation": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "organiseur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "orgue": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "orientation": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "origine": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "orignal": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ormeau": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ornithorynque": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "orthographe": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "os": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "oseille": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "otarie": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "otite": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "ouest": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ourlet": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ours": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "oursin": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "outil": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ouverture": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "ouvre-bouteille": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ouvre-boîte": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ouvre-lettres": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ovaire": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ovale": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ovocyte": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ovule": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "oxygène": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "palmes": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
   "parents": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "plaquettes": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "pommes": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "potatoes": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "protege-tibias": {
     "confidence": 1.0,
     "gender": "m"
   },
@@ -127,19 +1919,247 @@
     "confidence": 1.0,
     "gender": "f"
   },
+  "raquettes": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "rideaux": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "réseaux": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "résultats": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "sabots": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "sandales": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
   "semaine": {
     "confidence": 1.0,
     "gender": "f"
+  },
+  "tongs": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "tâches": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "ukulélé": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "uniforme": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "univers": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "université": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "uranium": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "urgence": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "usage": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "ustensile": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "utérus": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "vacances": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "yaourt": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "yeux": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "âne": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "écaille": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "échalote": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "échange": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "échantillon": {
+    "confidence": 1.0,
+    "gender": "m"
   },
   "écharpe": {
     "confidence": 1.0,
     "gender": "f"
   },
+  "échec": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "échecs": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "échelle": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "échidné": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "échographie": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "échéance": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "éclair": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "éclairage": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "éclaircie": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "éclipse": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "écogeste": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
   "école": {
     "confidence": 1.0,
     "gender": "f"
   },
+  "économie": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "écorce": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "écoute": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "écouteur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
   "écouteurs": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "écran": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "écrevisse": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "écrou": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "écuelle": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "écureuil": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "écurie": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "édredon": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "éducation": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "église": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "égouttoir": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "élan": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "élastique": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "électeur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "électrice": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "électrocardiogramme": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "électromécanicien": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "électron": {
     "confidence": 1.0,
     "gender": "m"
   },
@@ -147,20 +2167,164 @@
     "confidence": 1.0,
     "gender": "m"
   },
+  "élément": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "éléphant": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "émission": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "émotion": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "énergie": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "épaule": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "épervier": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "épice": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "épinard": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "épingle": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "épisode": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "épluche-légumes": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "éplucheur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "éponge": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "éprouvette": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "équerre": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "équilibre": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
   "équipe": {
     "confidence": 1.0,
     "gender": "f"
+  },
+  "érable": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "établissement": {
+    "confidence": 1.0,
+    "gender": "m"
   },
   "étagère": {
     "confidence": 1.0,
     "gender": "f"
   },
+  "étain": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "étalage": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "étang": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "étape": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "étendoir": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "étiquette": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "étoile": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "étourneau": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "étude": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "étudiant": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "étudiante": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "étui": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
   "été": {
     "confidence": 1.0,
     "gender": "m"
   },
+  "évaluation": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "évier": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "événement": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "île": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
   "œuf": {
     "confidence": 1.0,
     "gender": "m"
+  },
+  "œuvre": {
+    "confidence": 1.0,
+    "gender": "f"
   }
 }
