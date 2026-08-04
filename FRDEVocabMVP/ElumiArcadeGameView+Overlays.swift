@@ -637,13 +637,18 @@ extension ElumiArcadeGameView {
 
                 // Verbleibende Leben als Punktreihe — auf einen Blick
                 // ablesbar, ohne den Zähler oben suchen zu müssen.
-                HStack(spacing: 10) {
+                // Dieselben Mini-Elumis wie in der Kopfzeile oben
+                // rechts — der Spieler liest hier also genau das
+                // Zeichen, das er ohnehin schon kennt.
+                HStack(spacing: 6) {
                     ForEach(0..<maxMisses, id: \.self) { index in
-                        Circle()
-                            .fill(index < remaining
-                                  ? AppTheme.Colors.elumiPink
-                                  : Color.white.opacity(0.22))
-                            .frame(width: 16, height: 16)
+                        Image("SplashCharacter")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 34, height: 34)
+                            .clipShape(Circle())
+                            .saturation(index < remaining ? 1.0 : 0.0)
+                            .opacity(index < remaining ? 1.0 : 0.35)
                     }
                 }
 
