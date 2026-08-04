@@ -56,10 +56,42 @@ final class QuizSessionController: ObservableObject {
     /// MergeRequest gleich der aktuellen ist; ohne `lernjahrMax`-Komponente
     /// würde ein Filter-Wechsel (gleiche Listen + gleiche Direction)
     /// fälschlich als „nichts zu tun" durchgewinkt → Stale Pool.
+    ///
+    /// **Bugfix 2026-08-05** — `itemFingerprint` ergänzt (User-Report:
+    /// Quiz mit „Meine Wackelkandidaten" fragte über viele Durchgänge
+    /// hinweg immer wieder dieselben ~40 Wörter ab, der Rest der Liste
+    /// tauchte nie auf). Ursache: „Meine Wackelkandidaten" behält beim
+    /// Neu-Bauen (`rebuildWackelkandidatenList`) dieselbe UUID, auch
+    /// wenn sich der komplette Inhalt ändert (Wörter fallen raus,
+    /// andere kommen rein). Der bisherige Vergleich nur über
+    /// `listIDs` erkannte das nicht — „gleiche Liste" hieß fälschlich
+    /// „gleicher Inhalt", `refreshMergedItemsIfNeeded` übersprang den
+    /// Rebuild und das Quiz zog aus einem eingefrorenen, veralteten
+    /// Kandidaten-Pool vom allerersten Aufruf.
+    ///
+    /// `itemFingerprint` hasht Listen-ID + Item-Anzahl + alle Item-IDs.
+    /// Da `rebuildWackelkandidatenList` (und jede andere Content-
+    /// Änderung) neue `VocabularyItem`s mit frischen UUIDs erzeugt,
+    /// ändert sich der Fingerprint zuverlässig bei jeder inhaltlichen
+    /// Änderung — auch wenn Listen-ID, Direction und Lernjahr gleich
+    /// bleiben.
     struct MergeRequest: Equatable {
         let listIDs: [UUID]
         let direction: Direction
         let lernjahrMax: Int?
+        let itemFingerprint: Int
+
+        static func fingerprint(for lists: [VocabularyList]) -> Int {
+            var hasher = Hasher()
+            for list in lists {
+                hasher.combine(list.id)
+                hasher.combine(list.items.count)
+                for item in list.items {
+                    hasher.combine(item.id)
+                }
+            }
+            return hasher.finalize()
+        }
     }
 
     /// **Stufe 5 Schritt 2 (2026-04-30)**: Read-Pfad routet jetzt über

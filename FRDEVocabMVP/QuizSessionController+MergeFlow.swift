@@ -34,7 +34,8 @@ extension QuizSessionController {
         let request = MergeRequest(
             listIDs: selectedLists.map(\.id),
             direction: direction,
-            lernjahrMax: lernjahrMax
+            lernjahrMax: lernjahrMax,
+            itemFingerprint: MergeRequest.fingerprint(for: selectedLists)
         )
 
         if !force, request == lastMergedItemsRequest {
