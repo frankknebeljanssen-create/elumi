@@ -68,20 +68,15 @@ struct FlashcardsView: View {
     /// `.navigationDestination` sitzt in `flashcardsBodyContent`.
     @State var flashcardsListPickerActive: Bool = false
 
-    /// **Karteikarten Pre-Screen-Pop-up (2026-05-09)** — Sichtbarkeit
-    /// des Pre-Screen-Modals (Slot-Style nachgebaut), das KARTEN-Slider
-    /// + SCHWIERIGKEIT-Buttons vor dem eigentlichen Setup-Screen zeigt.
-    /// Auto-Trigger via `.onAppear` (gated über `hasAutoTriggeredAmountPopup`),
-    /// manueller Re-Trigger via Tap auf die Mengen-Anzeige-Card im
-    /// Setup-Body.
+    /// **Karteikarten Mengen-Pop-up** — Sichtbarkeit des Modals mit
+    /// KARTEN-Slider + SCHWIERIGKEIT-Buttons.
+    ///
+    /// **2026-06-09** — Öffnet sich NUR noch über den Tap auf die
+    /// MENGE-Card im Setup. Der frühere Auto-Trigger beim Öffnen ist
+    /// entfallen (User-Spec): Er stellte Einsteigern eine Frage, deren
+    /// Default („alle Karten") ohnehin fast immer passt, und derselbe
+    /// Dialog war über die Card ein zweites Mal erreichbar.
     @State var isShowingAmountPopup: Bool = false
-    /// Verhindert dass das Pre-Screen-Pop-up bei jedem `.onAppear`-Cycle
-    /// erneut auto-feuert (z. B. nach Sheet-Cancel). Auto-Trigger feuert
-    /// genau einmal pro Navigation-Push; danach nur noch manuelle Tap-
-    /// Trigger über die Mengen-Anzeige-Card. Reset passiert automatisch
-    /// wenn FlashcardsView neu instanziiert wird (jeder Push erstellt
-    /// frisches @State).
-    @State var hasAutoTriggeredAmountPopup: Bool = false
 
     // MARK: - Persönlicher Trainingsmodus (Phase 8)
     //

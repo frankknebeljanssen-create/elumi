@@ -449,28 +449,14 @@ extension FlashcardsView {
             }
         )
         .background(AppTheme.Colors.background.ignoresSafeArea())
-        // **Pre-Screen-Pop-up Auto-Trigger 2026-05-09** — bei jedem
-        // Karteikarten-Tap auf Home schiebt der NavigationStack eine
-        // frische `FlashcardsView`-Instanz; deren `@State` (inklusive
-        // `hasAutoTriggeredAmountPopup`) startet bei false.
-        // `.onAppear` feuert beim ersten Render — wenn nicht-Slot-
-        // launched (`launchContext == nil`), Setup gerade aktiv ist
-        // und der Auto-Trigger noch nicht gefeuert hat, öffnet sich
-        // das Pre-Screen-Pop-up automatisch. User kann durchtappen
-        // (1-Tap-Weiter) oder Werte ändern.
-        //
-        // Slot-launched Karteikarten (`launchContext != nil`):
-        // Pop-up wird NICHT auto-getriggert — Slot-Setup hat seine
-        // eigene Pre-Screen-Logic über `setupModalOverlay` in
-        // `ElumiTabView` und übergibt fertige Werte; Karteikarten-
-        // Setup wird in der Regel direkt übersprungen.
-        .onAppear {
-            guard !hasAutoTriggeredAmountPopup else { return }
-            guard launchContext == nil else { return }
-            guard setup.isShowingSetup else { return }
-            isShowingAmountPopup = true
-            hasAutoTriggeredAmountPopup = true
-        }
+        // **2026-06-09** — Auto-Trigger entfernt (User-Spec). Der
+        // Einstieg führt jetzt direkt auf den Setup-Screen; Menge und
+        // Schwierigkeit stehen dort in der MENGE-Card und lassen sich
+        // per Tap ändern. Vorher war dasselbe Pop-up zweimal im Weg:
+        // einmal ungefragt beim Öffnen, einmal über die Card — für
+        // Einsteiger ein Zusatzschritt ohne Mehrwert, weil der
+        // Default („alle Karten", auf Session-Cap begrenzt) in aller
+        // Regel passt.
         .sheet(isPresented: $setup.showingStackComposer) {
             FlashcardStackComposerSheet(
                 style: sectionStyle,
@@ -637,13 +623,16 @@ extension FlashcardsView {
     var flashcardsAmountSummaryCard: some View {
         let cardCount = setup.selectedCardCount
         let displayCount: String = (cardCount <= 0) ? "Alle Karten" : "\(cardCount) Karten"
+        // **2026-06-09** — Multiplikator mit anzeigen (User-Spec):
+        // „Normal" allein sagt nicht, wie oft eine Karte richtig
+        // beantwortet werden muss, bis sie aus dem Stapel fällt.
         let thresholdLabel: String = {
             switch setup.masteryThreshold {
-            case 1: return "Easy"
-            case 2: return "Normal"
-            case 3: return "Hart"
-            case 4: return "Brutal"
-            default: return "Normal"
+            case 1: return "Easy (1x)"
+            case 2: return "Normal (2x)"
+            case 3: return "Hart (3x)"
+            case 4: return "Brutal (4x)"
+            default: return "Normal (2x)"
             }
         }()
 

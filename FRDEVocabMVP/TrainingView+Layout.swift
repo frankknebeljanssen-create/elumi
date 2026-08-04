@@ -767,7 +767,7 @@ extension TrainingView {
             parts.append("+\(estimate.expectedXP) XP")
         }
         if let minutes = estimate.estimatedMinutes {
-            parts.append("~\(minutes) min")
+            parts.append("ca. \(minutes) min")
         }
         if let credits = estimate.estimatedCreditsText {
             parts.append("\(credits)")

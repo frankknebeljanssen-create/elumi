@@ -276,7 +276,7 @@ struct SessionGamificationBar: View {
                             .font(AppTheme.Typography.button)
                             .foregroundStyle(AppTheme.Colors.textSecondary)
 
-                        Text("~\(minutes) min")
+                        Text("ca. \(minutes) min")
                             .font(AppTheme.Typography.button)
                             .foregroundStyle(AppTheme.Colors.textSecondary)
                             .monospacedDigit()
