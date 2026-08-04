@@ -1,0 +1,166 @@
+{
+  "addition": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "adresse": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "ami": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "amie": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "amitié": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "anniversaire": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "appartement": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "arbre": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "armoire": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "automne": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "baskets": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "chaussettes": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "chaussures": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "cheveux": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "eau": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "entraînement": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "environnement": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "examen": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "exercice": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "gants": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "herbe": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "hiver": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "horloge": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "humour": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "information": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "mois": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "oiseau": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "oncle": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "orange": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "ordinateur": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "parents": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "pâtes": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "semaine": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "écharpe": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "école": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "écouteurs": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "élève": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "équipe": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "étagère": {
+    "confidence": 1.0,
+    "gender": "f"
+  },
+  "été": {
+    "confidence": 1.0,
+    "gender": "m"
+  },
+  "œuf": {
+    "confidence": 1.0,
+    "gender": "m"
+  }
+}

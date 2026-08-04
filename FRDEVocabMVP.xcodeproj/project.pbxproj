@@ -31,6 +31,7 @@
 		535BC11A38424C789F12B637 /* Sounds/elumi_saugend.wav in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDD993CDA84C048277CCF7 /* Sounds/elumi_saugend.wav */; };
 		54A069E941A24FAA8F5763B6 /* Sounds/elumi_gameover.wav in Resources */ = {isa = PBXBuildFile; fileRef = 6DC3E67A0E5B47A6A21D7589 /* Sounds/elumi_gameover.wav */; };
 		55916C8754034661BBD48F46 /* FRDEMasterLexicon.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */; };
+		FEDEA20800000000000099003 /* gender_ai_overrides.json in Resources */ = {isa = PBXBuildFile; fileRef = FEDEA20800000000000099004 /* gender_ai_overrides.json */; };
 		58A13D20DB064DC3A1CFBDDD /* Sounds/elumi_tentacle_sting.wav in Resources */ = {isa = PBXBuildFile; fileRef = 14D6AA0E2F7547C58EFD2C7B /* Sounds/elumi_tentacle_sting.wav */; };
 		616E2C714CE745070CD98CBB /* AppBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77D1F5E4FBCC08EBB9C7AFB9 /* AppBackButton.swift */; };
 		637BA521C77B4EC8B8FB9AAC /* DailyChallengeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C3FB95BD334EE18408771B /* DailyChallengeStore.swift */; };
@@ -596,6 +597,7 @@
 		FEDEA20600000000000028001 /* VocabularyKnownBadEntriesMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20600000000000028002 /* VocabularyKnownBadEntriesMigration.swift */; };
 		FEDEA20700000000000029001 /* FrenchGenderHeuristicRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20700000000000029002 /* FrenchGenderHeuristicRules.swift */; };
 		FEDEA20800000000000030001 /* FrenchGenderResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20800000000000030002 /* FrenchGenderResolver.swift */; };
+		FEDEA20800000000000099001 /* FrenchSpokenArticle.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20800000000000099002 /* FrenchSpokenArticle.swift */; };
 		FEDEA20900000000000031001 /* VocabularyListMergePlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA20900000000000031002 /* VocabularyListMergePlan.swift */; };
 		FEDEA210000000000000011 /* AccentsSessionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA210000000000000012 /* AccentsSessionHeader.swift */; };
 		FEDEA21000000000000032001 /* ImportTargetChoiceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDEA21000000000000032002 /* ImportTargetChoiceSheet.swift */; };
@@ -1043,6 +1045,7 @@
 		D7E48C7D56DE47BA8A612FB2 /* HomeDailyFocusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeDailyFocusCard.swift; path = FRDEVocabMVP/HomeDailyFocusCard.swift; sourceTree = "<group>"; };
 		DADBA6D5B4FF4413839CBF0D /* Sounds/elumi_shieldactivate.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_shieldactivate.wav; sourceTree = "<group>"; };
 		DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = FRDEMasterLexicon.sqlite; sourceTree = "<group>"; };
+		FEDEA20800000000000099004 /* gender_ai_overrides.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = gender_ai_overrides.json; sourceTree = "<group>"; };
 		ED6E2620B526439EA130ADE9 /* Sounds/elumi_jellyfish_ambient.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_jellyfish_ambient.wav; sourceTree = "<group>"; };
 		F1C01A111A111A111A111111 /* GamificationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamificationConfig.swift; sourceTree = "<group>"; };
 		F244E2378E0C4DF89CC561E1 /* ProgressHubComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProgressHubComponents.swift; path = FRDEVocabMVP/ProgressHubComponents.swift; sourceTree = "<group>"; };
@@ -1207,6 +1210,7 @@
 		FEDEA20600000000000028002 /* VocabularyKnownBadEntriesMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyKnownBadEntriesMigration.swift; sourceTree = "<group>"; };
 		FEDEA20700000000000029002 /* FrenchGenderHeuristicRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrenchGenderHeuristicRules.swift; sourceTree = "<group>"; };
 		FEDEA20800000000000030002 /* FrenchGenderResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrenchGenderResolver.swift; sourceTree = "<group>"; };
+		FEDEA20800000000000099002 /* FrenchSpokenArticle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrenchSpokenArticle.swift; sourceTree = "<group>"; };
 		FEDEA20900000000000031002 /* VocabularyListMergePlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyListMergePlan.swift; sourceTree = "<group>"; };
 		FEDEA210000000000000012 /* AccentsSessionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccentsSessionHeader.swift; sourceTree = "<group>"; };
 		FEDEA21000000000000032002 /* ImportTargetChoiceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportTargetChoiceSheet.swift; sourceTree = "<group>"; };
@@ -1777,6 +1781,7 @@
 				A00000000000000000000091 /* FRDEKnowledgePool.tsv */,
 				A00000000000000000000093 /* FRDEKnowledgePool.sqlite */,
 				DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */,
+				FEDEA20800000000000099004 /* gender_ai_overrides.json */,
 				F1C01A111A111A111A111111 /* GamificationConfig.swift */,
 				F2C01A111A111A111A111111 /* LearningSession.swift */,
 				F3C01A111A111A111A111111 /* ProgressStore.swift */,
@@ -1832,6 +1837,7 @@
 				FEDEA20600000000000028002 /* VocabularyKnownBadEntriesMigration.swift */,
 				FEDEA20700000000000029002 /* FrenchGenderHeuristicRules.swift */,
 				FEDEA20800000000000030002 /* FrenchGenderResolver.swift */,
+				FEDEA20800000000000099002 /* FrenchSpokenArticle.swift */,
 				FEDEA20900000000000031002 /* VocabularyListMergePlan.swift */,
 				FEDEA21000000000000032002 /* ImportTargetChoiceSheet.swift */,
 				FEDEA21100000000000033002 /* ExistingListPickerSheet.swift */,
@@ -1931,6 +1937,7 @@
 				A00000000000000000000090 /* FRDEKnowledgePool.tsv in Resources */,
 				A00000000000000000000092 /* FRDEKnowledgePool.sqlite in Resources */,
 				55916C8754034661BBD48F46 /* FRDEMasterLexicon.sqlite in Resources */,
+				FEDEA20800000000000099003 /* gender_ai_overrides.json in Resources */,
 				F43B1C0A2F877A000094BA73 /* VerbNounPairs.tsv in Resources */,
 				F43B1C0E2F878B000094BA73 /* FillBlankSentences.tsv in Resources */,
 				A92FD19A63604A98AC7A62D8 /* Sounds/elumi_bgm_fischfang.wav in Resources */,
@@ -2517,6 +2524,7 @@
 				FEDEA20600000000000028001 /* VocabularyKnownBadEntriesMigration.swift in Sources */,
 				FEDEA20700000000000029001 /* FrenchGenderHeuristicRules.swift in Sources */,
 				FEDEA20800000000000030001 /* FrenchGenderResolver.swift in Sources */,
+				FEDEA20800000000000099001 /* FrenchSpokenArticle.swift in Sources */,
 				FEDEA20900000000000031001 /* VocabularyListMergePlan.swift in Sources */,
 				FEDEA21000000000000032001 /* ImportTargetChoiceSheet.swift in Sources */,
 				FEDEA21100000000000033001 /* ExistingListPickerSheet.swift in Sources */,

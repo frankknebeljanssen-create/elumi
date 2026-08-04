@@ -122,20 +122,40 @@ def extract_core(lemma_fr):
 
 BATCH_SYSTEM_PROMPT = """Du bist ein französischer Sprachexperte. Bestimme für jede gegebene Nomenform das grammatikalische Genus (m oder f) plus Confidence (0.0 bis 1.0).
 
+Zu jedem Wort ist die deutsche Übersetzung aus dem Lexikon angegeben. Sie
+legt die gemeinte Bedeutung fest — nutze sie, wenn das französische Wort
+je nach Genus etwas anderes bedeutet:
+  aide  = die Hilfe (f)  /  der Helfer (m)
+  livre = das Buch (m)   /  das Pfund (f)
+  poste = die Post (f)   /  der Posten (m)
+Richte dich in solchen Fällen strikt nach der deutschen Übersetzung und
+behalte eine hohe Confidence — die Bedeutung ist ja eindeutig vorgegeben.
+
 Regeln:
 - Gib NUR valides JSON zurück, kein Fließtext.
 - Format: [{"word": "X", "gender": "m"|"f", "confidence": 0.0-1.0}]
-- Wenn das Wort mehrere Genus haben kann, nimm das häufigste und senke Confidence auf 0.6.
+- Wenn das Wort auch mit der deutschen Übersetzung mehrdeutig bleibt,
+  nimm das häufigste Genus und senke die Confidence auf 0.6.
 - Wenn du dir unsicher bist, senke die Confidence.
 - Gib die Liste IN DERSELBEN REIHENFOLGE wie die Eingabe zurück.
 - Benutze keine Artikel in der Ausgabe, nur das Wort selbst."""
 
 
-def query_batch(client, words):
-    """Ein Claude-Call für bis zu BATCH_SIZE Wörter."""
+def query_batch(client, entries):
+    """Ein Claude-Call für bis zu BATCH_SIZE Einträge.
+
+    `entries` sind die Residual-Dicts (`core` + `lemma_de`) — die deutsche
+    Übersetzung geht als Bedeutungs-Anker mit in den Prompt, weil das
+    Genus mehrdeutiger Nomen ausschließlich daran hängt (l'aide = die
+    Hilfe vs. der Helfer).
+    """
     user_message = "Bestimme Genus für diese französischen Nomen:\n\n"
-    for i, w in enumerate(words, 1):
-        user_message += f"{i}. {w}\n"
+    for i, entry in enumerate(entries, 1):
+        german = (entry.get("lemma_de") or "").strip()
+        if german:
+            user_message += f"{i}. {entry['core']}  [dt.: {german}]\n"
+        else:
+            user_message += f"{i}. {entry['core']}\n"
     user_message += "\nAntworte mit JSON-Array."
 
     response = client.messages.create(
@@ -216,11 +236,10 @@ def main():
             break
 
         batch = pending[batch_idx : batch_idx + BATCH_SIZE]
-        words = [r["core"] for r in batch]
-        print(f"Batch {batch_idx // BATCH_SIZE + 1}: {len(words)} Wörter (total bisher: {total_cost_words})")
+        print(f"Batch {batch_idx // BATCH_SIZE + 1}: {len(batch)} Wörter (total bisher: {total_cost_words})")
 
         try:
-            answers = query_batch(client, words)
+            answers = query_batch(client, batch)
         except Exception as e:
             print(f"API-Fehler: {e} — pausiere 20 s und mache weiter.")
             time.sleep(20)
@@ -240,7 +259,7 @@ def main():
         # Nach jedem Batch speichern — falls was abstürzt, haben wir den
         # bisherigen Stand schon auf Platte.
         save_overrides(existing)
-        total_cost_words += len(words)
+        total_cost_words += len(batch)
 
         # Rate-Limit-freundliche Pause
         time.sleep(1.5)

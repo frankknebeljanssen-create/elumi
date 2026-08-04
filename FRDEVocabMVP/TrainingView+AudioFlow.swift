@@ -1,6 +1,24 @@
 import SwiftUI
 
 extension TrainingView {
+    /// **2026-06-09** — Kontext-Hinweise für die Spracherkennung: die
+    /// erwartete Antwort plus ihre zulässigen Varianten. Als
+    /// `contextualStrings` gewichtet die Erkennung genau diese Wörter
+    /// hoch.
+    ///
+    /// Grund (User-Bugreport): „mai" (Monat) wurde konsistent als „my"
+    /// erkannt und dadurch als falsch gewertet — bei kurzen Homophonen
+    /// gewinnt sonst die statistisch häufigere Schreibweise.
+    var speechRecognitionContextPhrases: [String] {
+        guard let currentCard else { return [] }
+        var phrases = Set([currentCard.answer])
+        phrases.formUnion(answerVariants(
+            for: currentCard.answer,
+            answerLanguageCode: currentCard.answerLanguageCode
+        ))
+        return phrases.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    }
+
     /// **Sweep C — AnswerMode (2026-05-07)** — `force: false` (Default)
     /// → bei Vokabeln-Tap-Mode wird Auto-Speak unterdrückt (User
     /// liest/tippt). `force: true` → manueller Speaker-Tap im Tap-
@@ -28,9 +46,19 @@ extension TrainingView {
             showingTypedAnswerInput = true
             return
         }
-        appDebugLog("🔊 [Speak] ✅ speaking: \(currentCard.prompt)")
+        // **2026-06-09** — Französische Nomen werden mit Artikel
+        // vorgesprochen („le mai", „la voiture"), damit das Genus
+        // mitgelernt wird. Nur Vokabeln, nur bei sicher bekanntem
+        // Genus — Details in `FrenchSpokenArticle`.
+        let spokenPrompt = FrenchSpokenArticle.spokenText(
+            for: currentCard.prompt,
+            wordClass: currentCard.wordClass,
+            languageCode: currentCard.promptLanguageCode,
+            cardType: currentCard.category == CardType.phrases.categoryName ? .phrases : .words
+        )
+        appDebugLog("🔊 [Speak] ✅ speaking: \(spokenPrompt)")
         lastResult = nil
-        speaker.speak(text: currentCard.prompt, languageCode: currentCard.promptLanguageCode)
+        speaker.speak(text: spokenPrompt, languageCode: currentCard.promptLanguageCode)
     }
 
     func toggleRecording() {
@@ -54,7 +82,10 @@ extension TrainingView {
             typedAnswer = ""
             showingTypedAnswerInput = false
             shouldEvaluateAfterStop = true
-            speechController.startRecording(localeIdentifier: localeIdentifierForRecognition)
+            speechController.startRecording(
+                localeIdentifier: localeIdentifierForRecognition,
+                expectedPhrases: speechRecognitionContextPhrases
+            )
         }
     }
 
@@ -375,7 +406,10 @@ extension TrainingView {
         guard !recording else { return }
         appDebugLog("🎤 [AutoListen] ✅ STARTING recording")
         shouldEvaluateAfterStop = true
-        speechController.startRecording(localeIdentifier: localeIdentifierForRecognition)
+        speechController.startRecording(
+            localeIdentifier: localeIdentifierForRecognition,
+            expectedPhrases: speechRecognitionContextPhrases
+        )
     }
 
     func stopListeningForTyping() {
