@@ -392,6 +392,8 @@
 		A1B2C3D4E5F60708090A0C01 /* DailyStatsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */; };
 		A1B2C3D4E5F60708090A0D03 /* LearningGoalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0D04 /* LearningGoalStore.swift */; };
 		A1B2C3D4E5F60708090A0D01 /* LearningGoalPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0D02 /* LearningGoalPlan.swift */; };
+		A1B2C3D4E5F60708090A0F03 /* LearningGoalOnboardingView+Steps.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0F04 /* LearningGoalOnboardingView+Steps.swift */; };
+		A1B2C3D4E5F60708090A0F01 /* LearningGoalOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0F02 /* LearningGoalOnboardingView.swift */; };
 		A1B2C3D4E5F60708090A0E02 /* ItemLearningStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0E01 /* ItemLearningStatus.swift */; };
 		A1B2C3D4E5F60708090A0E04 /* ItemLearningStatusStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0E03 /* ItemLearningStatusStore.swift */; };
 		A1B2C3D4E5F60708090A0E06 /* ItemLearningStatusRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0E05 /* ItemLearningStatusRecorder.swift */; };
@@ -1012,6 +1014,8 @@
 		A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyStatsStore.swift; path = FRDEVocabMVP/DailyStatsStore.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0D04 /* LearningGoalStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearningGoalStore.swift; path = FRDEVocabMVP/LearningGoalStore.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0D02 /* LearningGoalPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearningGoalPlan.swift; path = FRDEVocabMVP/LearningGoalPlan.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0F04 /* LearningGoalOnboardingView+Steps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LearningGoalOnboardingView+Steps.swift"; path = "FRDEVocabMVP/LearningGoalOnboardingView+Steps.swift"; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0F02 /* LearningGoalOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearningGoalOnboardingView.swift; path = FRDEVocabMVP/LearningGoalOnboardingView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0E01 /* ItemLearningStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatus.swift; path = FRDEVocabMVP/ItemLearningStatus.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0E03 /* ItemLearningStatusStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatusStore.swift; path = FRDEVocabMVP/ItemLearningStatusStore.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0E05 /* ItemLearningStatusRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatusRecorder.swift; path = FRDEVocabMVP/ItemLearningStatusRecorder.swift; sourceTree = "<group>"; };
@@ -1261,6 +1265,8 @@
 				A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */,
 				A1B2C3D4E5F60708090A0D04 /* LearningGoalStore.swift */,
 				A1B2C3D4E5F60708090A0D02 /* LearningGoalPlan.swift */,
+				A1B2C3D4E5F60708090A0F04 /* LearningGoalOnboardingView+Steps.swift */,
+				A1B2C3D4E5F60708090A0F02 /* LearningGoalOnboardingView.swift */,
 				A1B2C3D4E5F60708090A0E01 /* ItemLearningStatus.swift */,
 				A1B2C3D4E5F60708090A0E03 /* ItemLearningStatusStore.swift */,
 				A1B2C3D4E5F60708090A0E05 /* ItemLearningStatusRecorder.swift */,
@@ -2252,6 +2258,8 @@
 				A1B2C3D4E5F60708090A0C01 /* DailyStatsStore.swift in Sources */,
 				A1B2C3D4E5F60708090A0D03 /* LearningGoalStore.swift in Sources */,
 				A1B2C3D4E5F60708090A0D01 /* LearningGoalPlan.swift in Sources */,
+				A1B2C3D4E5F60708090A0F03 /* LearningGoalOnboardingView+Steps.swift in Sources */,
+				A1B2C3D4E5F60708090A0F01 /* LearningGoalOnboardingView.swift in Sources */,
 				A1B2C3D4E5F60708090A0E02 /* ItemLearningStatus.swift in Sources */,
 				A1B2C3D4E5F60708090A0E04 /* ItemLearningStatusStore.swift in Sources */,
 				A1B2C3D4E5F60708090A0E06 /* ItemLearningStatusRecorder.swift in Sources */,

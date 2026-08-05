@@ -1204,7 +1204,28 @@ extension ScanImportView {
         isShowingImportCompletion = true
     }
 
+    /// **Ziel-System-Rückweg (2026-08-05)** — kam der Nutzer über das
+    /// Ziel-Onboarding hierher (Ziel wartet noch auf Vokabeln), zeigen
+    /// wir statt der acht Übungs-Kacheln einen fokussierten
+    /// "Du bist startbereit"-Screen mit genau einer Aktion. Alle
+    /// anderen Scans sehen unverändert die gewohnte
+    /// `ImportCompletionView`.
+    @ViewBuilder
     private func importCompletionScreen(context: ImportCompletionContext) -> some View {
+        if LearningGoalStore.shared.isAwaitingListAssignment {
+            OnboardingScanCompletionView(context: context) {
+                LearningGoalStore.shared.addList(context.targetListID)
+                // Signalisiert `RootContentView`, das Onboarding-Overlay
+                // erneut zu öffnen — direkt beim Feier-Screen.
+                LearningGoalStore.shared.pendingCelebrationRequested = true
+                handleCompletionSelection(nil)
+            }
+        } else {
+            standardImportCompletionScreen(context: context)
+        }
+    }
+
+    private func standardImportCompletionScreen(context: ImportCompletionContext) -> some View {
         ImportCompletionView(
             context: context,
             onTrain: {

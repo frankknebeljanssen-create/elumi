@@ -45,11 +45,19 @@ enum LearningOccasion: String, Codable, CaseIterable, Identifiable {
     var id: String { rawValue }
 
     /// Karten-Titel im Onboarding. Schülersprache, keine Fachbegriffe.
+    ///
+    /// **2026-08-05** — "steht an"/"festigen" entfernt (User-Spec): die
+    /// Frage darüber ("Was steht bei dir an?") sagt das schon, die
+    /// Wiederholung in der Karte war redundant. "Unit" → "Unité"
+    /// (korrekte französische Schreibweise, so im Schulbuch benannt).
+    /// "Vokabeln aus meinem Heft üben" → "Vokabeln üben": die Vokabeln
+    /// können ebenso gut aus einem Buch stammen, "Heft" war eine
+    /// falsche Festlegung.
     var title: String {
         switch self {
-        case .exam:        return "Schulaufgabe oder Klausur steht an"
-        case .chapter:     return "Ein Kapitel oder eine Unit üben"
-        case .notebook:    return "Vokabeln aus meinem Heft festigen"
+        case .exam:        return "Schulaufgabe oder Klausur"
+        case .chapter:     return "Ein Kapitel oder eine Unité üben"
+        case .notebook:    return "Vokabeln üben"
         case .shakyItems:  return "Meine Wackelkandidaten wegräumen"
         case .stayOnTrack: return "Einfach dranbleiben"
         }
@@ -204,12 +212,14 @@ struct LearningGoalPlan: Codable, Equatable {
     /// Label für die Rhythmus-Auswahl. **Kein Wert darf sich nach
     /// Versagen anfühlen** — 2 Tage ist ein legitimer Plan, keine
     /// Kapitulation.
+    /// **2026-08-05** — "locker" → "easy", "jeden Tag" → "Power User"
+    /// (User-Spec: jugendlicher, weniger nüchtern-beschreibend).
     static func weeklyTargetLabel(for days: Int) -> String {
         switch days {
-        case ...2: return "locker 🙂"
+        case ...2: return "easy 🙂"
         case 3:    return "solide 👍"
         case 4...5: return "ambitioniert 🔥"
-        default:   return "jeden Tag 🚀"
+        default:   return "Power User 💪"
         }
     }
 

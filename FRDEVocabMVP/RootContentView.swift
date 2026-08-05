@@ -7,6 +7,15 @@ struct ContentView: View {
     @ObservedObject private var profileStore = ProfileStore.shared
     @ObservedObject private var accountStore = AccountStore.shared
     @ObservedObject private var hintStore = HintStore.shared
+    @ObservedObject private var goalStore = LearningGoalStore.shared
+
+    /// **Ziel-Onboarding (2026-08-05)** — reiner Launch-State, analog zu
+    /// `hasDismissedWelcomeThisLaunch`. Hält das Overlay explizit offen,
+    /// nachdem der Flow selbst schon einen Plan gespeichert hat (Timing-
+    /// Grund siehe Doc-Kommentar in `LearningGoalOnboardingView`), und
+    /// wird beim regulären Abschluss bzw. beim Handoff in den Scan-Flow
+    /// zurück auf `false` gesetzt.
+    @State private var isGoalOnboardingLatched = false
 
     /// **Welcome-Screen (2026-06-09)** — pro App-Start einmal true,
     /// sobald der User den Screen weggeklickt hat. Bewusst reiner
@@ -345,8 +354,61 @@ struct ContentView: View {
                     .transition(.opacity)
                     .zIndex(1)
             }
+
+            // **Ziel-Onboarding (2026-08-05)** — liegt ÜBER Home, UNTER
+            // dem Welcome-Screen: erscheint erst, wenn Welcome durch ist
+            // und ein Account existiert (der Scan-Handoff braucht die
+            // echte `runtime`/`navigation`-Infrastruktur, die es vor
+            // Account-Anlage noch nicht gibt). Mutuell exklusiv zu
+            // Welcome über die Sichtbarkeitsbedingungen — zIndex(1)
+            // schadet trotzdem nicht.
+            if shouldShowGoalOnboarding {
+                LearningGoalOnboardingView(
+                    displayName: accountStore.currentAccount?.displayName ?? "",
+                    listStore: runtime.ensureListStoreReady(),
+                    // **Ring-Schließen-Fix (2026-08-05)**: kommt der
+                    // Nutzer aus dem Scan-Rückweg zurück, direkt beim
+                    // Feier-Screen einsteigen statt wieder bei "Was
+                    // steht bei dir an?" — Plan und Liste stehen schon.
+                    initialStep: goalStore.pendingCelebrationRequested ? .celebration : .transition,
+                    navigate: { screen in
+                        // Zielscreen wird gezielt über die dedizierte
+                        // Coordinator-Methode geöffnet (Guard gegen
+                        // Doppel-Push + instant-Transition, gleiches
+                        // Verhalten wie beim Scan-Einstieg über den
+                        // Footer). Fällt auf reinen Pfad-Push zurück,
+                        // falls dieser Onboarding-Flow künftig weitere
+                        // Screens ansteuert, für die es keine eigene
+                        // Coordinator-Methode gibt.
+                        if screen == .scan {
+                            openScanScreen()
+                        } else {
+                            navigation.navigationPath.append(screen)
+                        }
+                    },
+                    onDismissOverlay: {
+                        withAnimation(.easeOut(duration: 0.28)) {
+                            isGoalOnboardingLatched = false
+                        }
+                        goalStore.pendingCelebrationRequested = false
+                    }
+                )
+                .transition(.opacity)
+                .zIndex(1)
+                .onAppear { isGoalOnboardingLatched = true }
+            }
         }
         .onAppear {
+            // **2026-08-05, Testphase** — siehe Doc-Kommentar am Flag.
+            // Muss VOR `bootstrapDependenciesIfNeeded()` laufen, damit
+            // beim allerersten Render dieses Starts schon `plan == nil`
+            // gilt und `shouldShowGoalOnboarding` sofort korrekt greift.
+            //
+            // Der Einmal-pro-Start-Guard sitzt IM Store, nicht hier:
+            // `onAppear` feuert auch beim Rückkehren aus dem Hintergrund
+            // (z. B. nach Kamera/Fotoauswahl im Scan-Flow) und würde das
+            // Ziel sonst mitten im Onboarding löschen.
+            goalStore.resetForTestingIfNeeded()
             runtime.bootstrapDependenciesIfNeeded()
             runtime.feedbackPlayer?.playAppStart()
             // Letzte-Nutzung-Zeitstempel pflegen, sobald ein Profil da ist.
@@ -381,6 +443,34 @@ struct ContentView: View {
 
         if FeatureFlags.alwaysShowWelcomeScreen { return true }
         return !hintStore.hasSeen(WelcomeScreen.hintID)
+    }
+
+    // MARK: - Ziel-Onboarding
+
+    /// Sichtbarkeit des Ziel-Onboardings.
+    ///
+    /// Bedingungen:
+    ///   • Splash ist durch, Welcome-Screen ist (falls es erschien)
+    ///     bereits weggeklickt — kein Übereinanderstapeln zweier
+    ///     Vollbild-Intros.
+    ///   • Ein Account existiert — der Scan-Handoff braucht die echte
+    ///     Navigation, die es vor Account-Anlage noch nicht gibt.
+    ///   • `isGoalOnboardingLatched` ODER noch kein Plan gesetzt ODER
+    ///     `pendingCelebrationRequested`: Der Riegel hält den Screen
+    ///     offen, obwohl der Flow selbst schon früh (Rhythmus-Schritt)
+    ///     einen Plan speichert (siehe Doc-Kommentar in
+    ///     `LearningGoalOnboardingView`); das Celebration-Signal öffnet
+    ///     das Overlay ein zweites Mal, wenn der Nutzer aus dem
+    ///     Scan-Rückweg zurückkommt (Ring-Schließen-Fix).
+    private var shouldShowGoalOnboarding: Bool {
+        guard !navigation.shouldShowSplashOverlay,
+              !shouldShowWelcomeScreen,
+              accountStore.hasAnyAccount
+        else { return false }
+
+        return isGoalOnboardingLatched
+            || goalStore.plan == nil
+            || goalStore.pendingCelebrationRequested
     }
 
     @MainActor

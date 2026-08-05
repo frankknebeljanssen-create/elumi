@@ -229,3 +229,101 @@ struct ImportCompletionView: View {
         }
     }
 }
+
+/// **Ziel-System-Rückweg (2026-08-05)** — dedizierter Abschluss-Screen
+/// für Scans, die aus dem Ziel-Onboarding heraus gestartet wurden.
+///
+/// Ersetzt an dieser Stelle die normale `ImportCompletionView` (acht
+/// Übungs-Kacheln + "Ich übe später"). User-Report nach Gerätetest:
+/// direkt nach dem Onboarding-Scan mit acht gleichwertigen
+/// Übungsoptionen konfrontiert zu werden war die falsche nächste
+/// Aktion — "wir müssen wieder zurück ins Onboarding". Dieser Screen
+/// hat genau EINE Aktion: die Liste dem wartenden Ziel zuordnen und
+/// zurück zur Feier im Onboarding-Overlay (`RootContentView` fängt
+/// `LearningGoalStore.pendingCelebrationRequested` ab).
+///
+/// Wird nur gezeigt, wenn `LearningGoalStore.isAwaitingListAssignment`
+/// beim Erreichen des Import-Abschlusses noch `true` ist (siehe
+/// Verzweigung in `ScanImportView+Screen.importCompletionScreen`) —
+/// ganz normale Scans außerhalb des Onboardings sehen weiterhin die
+/// gewohnte `ImportCompletionView`, unverändert.
+struct OnboardingScanCompletionView: View {
+    let context: ImportCompletionContext
+    let onContinue: () -> Void
+
+    private let sectionStyle: AppSectionStyle = .scan
+    @State private var isNavigationLocked = false
+
+    var body: some View {
+        VStack(spacing: AppTheme.Spacing.xl) {
+            Spacer(minLength: AppTheme.Spacing.xxl)
+
+            mascot
+
+            VStack(spacing: 12) {
+                Text("Du bist startbereit! 🎉")
+                    .font(.system(size: 28, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.elumiPink)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text(context.summaryText)
+                    .font(.system(size: 18, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, AppTheme.Spacing.md)
+
+                // **2026-08-05** — sagt explizit, wohin es von hier
+                // geht (User-Spec: "jetzt muss aber vielleicht noch 'n
+                // Satz dazu kommen"). Ohne den Satz wirkte der Screen
+                // wie eine Sackgasse, obwohl gleich das Onboarding
+                // weiterläuft.
+                Text("Deine Vokabeln sind bei deinem Ziel gelandet. Fehlt nur noch der letzte Schritt.")
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.85))
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, AppTheme.Spacing.lg)
+                    .padding(.top, 4)
+            }
+
+            Spacer(minLength: AppTheme.Spacing.xxl)
+            Spacer(minLength: AppTheme.Spacing.xl)
+
+            Button {
+                guard !isNavigationLocked else { return }
+                isNavigationLocked = true
+                onContinue()
+            } label: {
+                Text("Let's go!")
+                    .font(.system(size: 19, weight: .black, design: .rounded))
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 56)
+            }
+            .buttonStyle(OnboardingCTAButtonStyle(color: AppTheme.Colors.cta))
+            .padding(.horizontal, AppLayout.screenPadding)
+
+            Spacer(minLength: AppTheme.Spacing.lg)
+        }
+        .frame(maxWidth: AppTheme.Layout.maxContentWidth)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .tint(sectionStyle.accent)
+        .appScreenBackground(sectionStyle)
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
+        .onAppear { isNavigationLocked = false }
+    }
+
+    private var mascot: some View {
+        ZStack {
+            Image("SplashCharacter")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 84, height: 84)
+            SplashCharacterBlinkOverlay(size: 84, startDate: .now)
+                .frame(width: 84, height: 84)
+        }
+        .shadow(color: .black.opacity(0.22), radius: 8, x: 0, y: 4)
+    }
+}

@@ -41,11 +41,28 @@ struct WelcomeScreen: View {
             // komplett auf eine iPhone-Höhe passen (User-Spec). Dafür
             // Maskottchen verkleinert, Abstände enger und der frühere
             // Abschluss-Block „Keine Angst vor Fehlern" entfernt.
+            // **2026-08-05** — Feature-Karten hinter
+            // `FeatureFlags.welcomeScreenFeatureCardsEnabled`. Ohne sie
+            // ist der Screen ein reiner Türöffner: Maskottchen,
+            // Begrüßung, weiter. Erklärt wird am Ende des
+            // Ziel-Onboardings (Modul-Screen) — begründet am Flag.
+            //
+            // Ohne Karten bekommt die Begrüßung Luft nach oben und
+            // unten (`Spacer` davor), damit sie mittig steht statt
+            // oben zu kleben.
             VStack(spacing: AppTheme.Spacing.md) {
-                mascot
-                greeting
-                featureList
-                Spacer(minLength: 0)
+                if FeatureFlags.welcomeScreenFeatureCardsEnabled {
+                    mascot
+                    greeting
+                    featureList
+                    Spacer(minLength: 0)
+                } else {
+                    Spacer(minLength: 0)
+                    mascot
+                    greeting
+                    Spacer(minLength: 0)
+                    Spacer(minLength: 0)
+                }
             }
             .padding(.horizontal, AppLayout.screenPadding)
             .padding(.top, AppTheme.Spacing.sm)
@@ -99,8 +116,16 @@ struct WelcomeScreen: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
 
-            Text("Schön, dass du da bist!\nDas hier kannst du mit mir machen:")
-                .font(.system(size: 15, weight: .medium, design: .rounded))
+            // **2026-08-05** — Der Satz kündigte die Feature-Karten an
+            // ("Das hier kannst du mit mir machen:"). Sind die
+            // ausgeblendet, zeigt er ins Leere — dann steht hier ein
+            // eigenständiger Satz, der zum nächsten Schritt überleitet.
+            Text(
+                FeatureFlags.welcomeScreenFeatureCardsEnabled
+                    ? "Schön, dass du da bist!\nDas hier kannst du mit mir machen:"
+                    : "Schön, dass du da bist!\nIch helf dir beim Französischlernen."
+            )
+                .font(.system(size: 17, weight: .medium, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textSecondary)
                 .multilineTextAlignment(.center)
                 .lineSpacing(3)

@@ -147,7 +147,35 @@ struct ScanDraftDetailView: View {
     /// Gespiegelt von `ScanImportView.importCompletionScreen` — identische 10
     /// CTAs, nur Routing über `handleSingleDraftCompletion` (eigenes „Später"-
     /// Verhalten: Completion aus, Detail bleibt offen).
+    ///
+    /// **Ziel-System-Rückweg (2026-08-05)** — dieselbe Verzweigung wie in
+    /// `ScanImportView+Screen.importCompletionScreen`. **Muss hier
+    /// gespiegelt werden**: Läuft der Scan über einen gespeicherten
+    /// Entwurf (der übliche Weg, wenn der Nutzer „Lernliste erstellen"
+    /// aus dem Entwurf heraus macht), landet er in DIESER View, nicht in
+    /// `ScanImportView` — der Rückweg ins Onboarding hätte sonst nur auf
+    /// dem direkten Scan-Pfad funktioniert (User-Report mit Screenshot:
+    /// "geht immer noch nicht zurück ins Onboarding").
+    @ViewBuilder
     private func importCompletionScreen(_ context: ImportCompletionContext) -> some View {
+        if LearningGoalStore.shared.isAwaitingListAssignment {
+            OnboardingScanCompletionView(context: context) {
+                LearningGoalStore.shared.addList(context.targetListID)
+                LearningGoalStore.shared.pendingCelebrationRequested = true
+                isShowingImportCompletion = false
+                importCompletionContext = nil
+                // Anders als beim normalen „Später" hier bewusst nach
+                // Home: der Feier-Screen des Onboardings legt sich
+                // gleich als Overlay darüber, und danach soll der
+                // Nutzer auf Home stehen — nicht zurück im Entwurf.
+                goHome()
+            }
+        } else {
+            standardImportCompletionScreen(context)
+        }
+    }
+
+    private func standardImportCompletionScreen(_ context: ImportCompletionContext) -> some View {
         ImportCompletionView(
             context: context,
             onTrain: {

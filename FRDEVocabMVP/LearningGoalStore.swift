@@ -34,6 +34,43 @@ final class LearningGoalStore: ObservableObject {
     /// „Wie lief's?"-Nachlauf und spätere Rückblicke aufgehoben.
     @Published private(set) var archivedContentGoals: [LearningGoalContent] = []
 
+    /// **Ring-Schließen-Signal (2026-08-05)** — reiner UI-Zustand, NICHT
+    /// persistiert. Wird gesetzt, wenn der Nutzer im Scan-Rückweg
+    /// (`ImportCompletionView` → "Zu deinem Ziel hinzufügen") eine
+    /// Liste zu einem wartenden Ziel hinzugefügt hat.
+    /// `RootContentView` beobachtet dieses Flag und öffnet das
+    /// Ziel-Onboarding-Overlay erneut, direkt beim Feier-Screen — sonst
+    /// würde der Nutzer nach dem Scannen kommentarlos auf Home landen,
+    /// ohne dass der Onboarding-Kreis sich je geschlossen hätte
+    /// (User-Report: "ich komm da jetzt nicht mehr hin").
+    @Published var pendingCelebrationRequested = false
+
+    /// **2026-08-05, Testphase-Guard** — stellt sicher, dass der
+    /// `FeatureFlags.alwaysResetGoalOnboardingForTesting`-Reset wirklich
+    /// nur EINMAL pro App-Start läuft.
+    ///
+    /// Ohne diesen Guard war der Reset an `RootContentView.onAppear`
+    /// gekoppelt — und das feuert erneut, wenn die App aus dem
+    /// Hintergrund zurückkehrt. Genau das passiert mitten im Scan-Flow
+    /// (Kamera bzw. Fotoauswahl blenden die App aus): Das gerade im
+    /// Onboarding gesetzte Ziel wurde dadurch gelöscht, während der
+    /// Nutzer noch scannte. Beim Import-Abschluss war
+    /// `isAwaitingListAssignment` folglich `false` und statt des
+    /// "Du bist startbereit"-Screens erschien die normale
+    /// Modul-Auswahl — der Nutzer fiel aus dem Onboarding heraus
+    /// (User-Report mit Screenshot).
+    private static var didRunTestingResetThisLaunch = false
+
+    /// Führt den Testphase-Reset genau einmal pro App-Start aus.
+    /// No-Op, sobald der Flag aus ist oder der Reset schon lief.
+    func resetForTestingIfNeeded() {
+        guard FeatureFlags.alwaysResetGoalOnboardingForTesting,
+              !Self.didRunTestingResetThisLaunch
+        else { return }
+        Self.didRunTestingResetThisLaunch = true
+        reset()
+    }
+
     /// Tages-Indizes der laufenden Woche, an denen geübt wurde.
     /// Set statt Zähler: Zwei Sessions am selben Tag sind ein Tag.
     @Published private(set) var practicedDayIndices: Set<Int> = []
@@ -151,7 +188,19 @@ final class LearningGoalStore: ObservableObject {
     /// das ab, um nach getaner Arbeit „Zu deinem Ziel hinzufügen?"
     /// anzubieten statt den Nutzer mit einer losen Liste stehenzulassen.
     var isAwaitingListAssignment: Bool {
-        plan?.content?.isAwaitingList ?? false
+        let result = plan?.content?.isAwaitingList ?? false
+        #if DEBUG
+        // Diagnose-Hilfe für den Scan-Rückweg: Dieser Wert entscheidet,
+        // ob nach dem Import der Onboarding-Abschluss oder die normale
+        // Modul-Auswahl erscheint. Bei Fehlverhalten zeigt der Log
+        // sofort, WELCHE Bedingung gekippt ist.
+        if let content = plan?.content {
+            print("🎯 [Rückweg] isAwaitingListAssignment=\(result) — occasion=\(content.occasion.rawValue), requiresList=\(content.occasion.requiresListSelection), listIDs=\(content.listIDs.count)")
+        } else {
+            print("🎯 [Rückweg] isAwaitingListAssignment=false — plan=\(plan == nil ? "nil" : "gesetzt"), content=nil")
+        }
+        #endif
+        return result
     }
 
     /// Schiebt ein abgelaufenes bzw. erledigtes Inhaltsziel ins Archiv,
