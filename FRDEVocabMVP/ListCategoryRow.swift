@@ -15,6 +15,14 @@ struct ListCategoryRow: View {
     let count: Int
     let accent: Color
     let action: () -> Void
+    /// **2026-08-05** — Markiert die Kategorie, in der gerade die aktive
+    /// Liste liegt (User-Spec: „dass man schon in diesem Obermenü sieht,
+    /// da sind Listen ausgewählt" — ohne diesen Hinweis musste man erst
+    /// jede Kategorie einzeln aufklappen, um die angehakte Liste
+    /// wiederzufinden). Default `false` — bestehende Call-Sites ohne
+    /// aktive Auswahl (z. B. `UnifiedListCategoryPicker`) bleiben
+    /// unverändert.
+    var isActive: Bool = false
 
     var body: some View {
         Button(action: action) {
@@ -36,6 +44,13 @@ struct ListCategoryRow: View {
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
 
+                if isActive {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundStyle(accent)
+                        .accessibilityLabel("Aktuelle Auswahl liegt hier")
+                }
+
                 Spacer(minLength: 0)
 
                 // Count ebenfalls +1pt (16 → 17) — skaliert mit dem Titel.
@@ -54,19 +69,35 @@ struct ListCategoryRow: View {
             // ruhiger und schneller scannbar.
             .padding(.vertical, 14)
             .frame(maxWidth: .infinity, minHeight: 70)
+            .modifier(ListRowChrome(accent: accent, isActive: isActive))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// **2026-08-05** — Geteilte Card-Chrome (Fill + Border) für alle Zeilen
+/// im Lernlisten-Screen. Extrahiert, damit „Alle Lernlisten" und „+ Neue
+/// Lernliste anlegen" optisch **identisch** zu den drei Kategorie-Zeilen
+/// werden (User-Spec: „Alle Lernlisten" wirkte doppelt so groß wie die
+/// anderen, die Seite sollte konsistenter/ausgeglichener aussehen) statt
+/// die Farben/Radien an vier Stellen einzeln zu pflegen.
+struct ListRowChrome: ViewModifier {
+    let accent: Color
+    var isActive: Bool = false
+
+    func body(content: Content) -> some View {
+        content
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(AppTheme.Colors.surface)
                     .overlay(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(accent.opacity(AppTheme.CardIntensity.whisper))
+                            .fill(accent.opacity(isActive ? AppTheme.CardIntensity.selected : AppTheme.CardIntensity.whisper))
                     )
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(AppTheme.Colors.border, lineWidth: 1)
+                    .stroke(isActive ? accent.opacity(0.6) : AppTheme.Colors.border, lineWidth: isActive ? 1.5 : 1)
             )
-        }
-        .buttonStyle(.plain)
     }
 }

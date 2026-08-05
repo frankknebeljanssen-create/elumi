@@ -62,6 +62,21 @@ extension ListsView {
         showToast("„\(createdName)“ wurde angelegt.")
     }
 
+    /// **2026-08-05** — Warnt, wenn die hier manuell gewählte Liste von der
+    /// Zielliste abweicht. Das Ziel selbst bleibt unangetastet — nur ein
+    /// Hinweis, keine Sperre.
+    ///
+    /// **2026-08-05, Korrektur** — ruft jetzt denselben globalen Hinweis
+    /// wie die Übungs-Setup-Picker (`GlobalListPickerSheet`) statt des
+    /// lokalen `showToast(...)`. Der lokale Toast war eine kleine Pille
+    /// unten am Bildschirmrand — User-Report: „erscheint viel zu klein
+    /// und unten, den sieht man kaum." Der globale Hinweis in
+    /// `RootContentView` ist bewusst groß und mittig, damit er nicht zu
+    /// übersehen ist, egal von welcher Auswahl-Stelle er kommt.
+    func warnIfDivergesFromGoalList(_ pickedID: UUID) {
+        LearningGoalStore.shared.noteManualListSelection([pickedID])
+    }
+
     func showToast(_ message: String, isSuccess: Bool = true) {
         toastDismissWorkItem?.cancel()
         toastMessage = message

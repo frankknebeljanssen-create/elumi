@@ -284,6 +284,7 @@ struct HomeView: View {
                             contentProgress: listStore.map {
                                 goalStore.contentProgress(listStore: $0)
                             } ?? nil,
+                            streakDays: currentStreak,
                             onTap: { openHomeScreen(.learningGoal) }
                         )
                         .padding(.top, 20)

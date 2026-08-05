@@ -37,7 +37,17 @@ struct LearningGoalDetailView: View {
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+            // **2026-08-05** — Spacing gestrafft (User-Spec: „oben unter
+            // dein Ziel sehr viel Luft, unten ist neues Zielsetzen halb
+            // verdeckt durch den Footer, das darf nicht scrollbar sein
+            // müssen"). `.lg` → `.sm` (analog TrophyView), Top-Padding von
+            // `contentTopPadding` (32 pt) auf `screenHeaderTopPadding`
+            // (4 pt) — der systemweite Wert für Screens mit
+            // `ScreenHeaderCard` — und Bottom-Padding von `.xxl` (32 pt)
+            // auf `.md` (16 pt), weil der Footer bereits über
+            // `safeAreaInset` reserviert wird (siehe TrophyView-Kommentar
+            // zum selben Fix).
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 ScreenHeaderCard(
                     style: sectionStyle,
                     title: "Dein Ziel",
@@ -58,8 +68,8 @@ struct LearningGoalDetailView: View {
                 }
             }
             .padding(.horizontal, AppLayout.screenPadding)
-            .padding(.top, AppLayout.contentTopPadding)
-            .padding(.bottom, AppTheme.Spacing.xxl)
+            .padding(.top, AppLayout.screenHeaderTopPadding)
+            .padding(.bottom, AppTheme.Spacing.md)
             .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .top)
         }
@@ -103,7 +113,7 @@ struct LearningGoalDetailView: View {
     // MARK: - Rhythmus
 
     private var rhythmSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             sectionTitle("Wie oft übst du?")
 
             let progress = goalStore.rhythmProgress
@@ -122,7 +132,7 @@ struct LearningGoalDetailView: View {
                     .monospacedDigit()
             }
 
-            VStack(spacing: 8) {
+            VStack(spacing: 6) {
                 ForEach(LearningGoalPlan.weeklyTargetOptions, id: \.self) { days in
                     rhythmOption(days)
                 }

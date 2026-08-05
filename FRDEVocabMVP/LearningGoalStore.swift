@@ -45,6 +45,17 @@ final class LearningGoalStore: ObservableObject {
     /// (User-Report: "ich komm da jetzt nicht mehr hin").
     @Published var pendingCelebrationRequested = false
 
+    /// **2026-08-05** — Reiner UI-Zustand (nicht persistiert). Wird
+    /// gesetzt, wenn irgendwo in der App (Übungs-Setup-Picker,
+    /// „Meine Listen") eine Liste gewählt wird, die von der Zielliste
+    /// abweicht. `RootContentView` beobachtet dieses Flag und zeigt
+    /// einen kurzen, global sichtbaren Hinweis — die Übungs-Setup-
+    /// Picker (Quiz/Training/Karteikarten) haben selbst keine eigene
+    /// Toast-Infrastruktur, „Meine Listen" schon, aber der Hinweis soll
+    /// überall gleich funktionieren, egal von wo die Auswahl kommt.
+    @Published var listDivergenceWarning: String?
+    private var listDivergenceDismissWorkItem: DispatchWorkItem?
+
     /// **2026-08-05, Testphase-Guard** — stellt sicher, dass der
     /// `FeatureFlags.alwaysResetGoalOnboardingForTesting`-Reset wirklich
     /// nur EINMAL pro App-Start läuft.
@@ -134,6 +145,7 @@ final class LearningGoalStore: ObservableObject {
     func setPlan(_ newPlan: LearningGoalPlan) {
         plan = newPlan
         persist()
+        syncGlobalSelectionWithContentGoal()
     }
 
     /// Nur den Wochenrhythmus ändern, Inhaltsziel unangetastet.
@@ -155,6 +167,7 @@ final class LearningGoalStore: ObservableObject {
         current.content = content
         plan = current
         persist()
+        syncGlobalSelectionWithContentGoal()
     }
 
     /// Setzt die Listen eines Inhaltsziels neu (Mehrfachauswahl-Screen).
@@ -164,6 +177,7 @@ final class LearningGoalStore: ObservableObject {
         current.content = content
         plan = current
         persist()
+        syncGlobalSelectionWithContentGoal()
     }
 
     /// Hängt eine Liste an ein bestehendes Inhaltsziel an, ohne die
@@ -182,6 +196,58 @@ final class LearningGoalStore: ObservableObject {
         current.content = content
         plan = current
         persist()
+        syncGlobalSelectionWithContentGoal()
+    }
+
+    /// **2026-08-05, Korrektur** — die Anlass `.shakyItems` („Meine
+    /// Wackelkandidaten wegräumen") hat bewusst KEINE `listIDs`: der
+    /// Bestand kommt dynamisch aus dem Lernstatus, nicht aus einer fest
+    /// zugeordneten Liste, damit frisch gefestigte Vokabeln automatisch
+    /// rausfallen. Für die Listen-AUSWAHL in Quiz/Training/Karteikarten
+    /// braucht es aber trotzdem eine konkrete Liste — sonst überspringt
+    /// das Onboarding zwar zurecht die Listen-Auswahl, aber Training
+    /// bleibt auf der zuvor gewählten Liste stehen (User-Report: Ziel =
+    /// Wackelkandidaten, „Vokabeln"-Übung zeigte trotzdem „Buch Seite
+    /// 76"). Die generierte Wackelkandidaten-Liste
+    /// (`VocabularyListStore.wackelkandidatenListID`) ist genau dafür da.
+    var effectiveGoalListIDs: [UUID] {
+        guard let content = plan?.content else { return [] }
+        if content.occasion == .shakyItems {
+            return [VocabularyListStore.wackelkandidatenListID]
+        }
+        return content.listIDs
+    }
+
+    /// **2026-08-05** — Macht die Zielliste(n) überall in der App zur
+    /// aktiven Auswahl (Quiz, Training, Karteikarten, …). User-Report: das
+    /// Ziel war auf „Meine Wackelkandidaten" gesetzt, Quiz zeigte aber
+    /// weiterhin „gesamter eigener Wortschatz" — Ziel-Liste und globale
+    /// Auswahl waren zwei getrennte Systeme, die nie synchronisiert
+    /// wurden.
+    private func syncGlobalSelectionWithContentGoal() {
+        let listIDs = effectiveGoalListIDs
+        guard !listIDs.isEmpty else { return }
+        VocabularyListSelectionResolver.setGlobalSelectedListIDs(Set(listIDs))
+    }
+
+    /// **2026-08-05** — Gegenstück zu `syncGlobalSelectionWithContentGoal`:
+    /// wird gerufen, wenn die globale Auswahl NICHT vom Ziel-System selbst
+    /// kommt, sondern von einem Übungs-Setup-Picker (Quiz/Training/
+    /// Karteikarten) oder „Meine Listen". Zeigt einen kurzen Hinweis,
+    /// wenn die neue Auswahl von der Zielliste abweicht — ändert am Ziel
+    /// selbst nichts, ist reine Information.
+    func noteManualListSelection(_ ids: Set<UUID>) {
+        let goalListIDs = effectiveGoalListIDs
+        guard !goalListIDs.isEmpty else { return }
+        guard ids != Set(goalListIDs) else { return }
+
+        listDivergenceDismissWorkItem?.cancel()
+        listDivergenceWarning = "Du übst gerade nicht deine Zielliste."
+        let workItem = DispatchWorkItem { [weak self] in
+            self?.listDivergenceWarning = nil
+        }
+        listDivergenceDismissWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.6, execute: workItem)
     }
 
     /// Ob gerade ein Inhaltsziel auf Vokabeln wartet. Der Scan-Flow fragt

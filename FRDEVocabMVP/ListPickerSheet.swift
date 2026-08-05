@@ -41,6 +41,15 @@ struct ListPickerSheet: View {
 
     private var displayedLists: [VocabularyList] {
         lists.sorted { lhs, rhs in
+            // **2026-08-05** — Wackelkandidaten ganz oben (User-Spec: „damit
+            // sie sofort raussticht, wenn man zehn Listen hat"). Vorrang
+            // sogar vor dem Wörterbuch-Sonderfall darunter, da sie innerhalb
+            // von „Meine Listen" (own, nicht built-in) einsortiert wird.
+            let lhsIsWackel = lhs.id == VocabularyListStore.wackelkandidatenListID
+            let rhsIsWackel = rhs.id == VocabularyListStore.wackelkandidatenListID
+            if lhsIsWackel != rhsIsWackel {
+                return lhsIsWackel
+            }
             let lhsIsDictionary = lhs.id == VocabularyListStore.dictionaryListID
             let rhsIsDictionary = rhs.id == VocabularyListStore.dictionaryListID
             if lhsIsDictionary != rhsIsDictionary {
@@ -351,8 +360,22 @@ struct ListPickerSheet: View {
     /// `.frame(minHeight:)` hält alle Karten gleich hoch, unabhängig
     /// davon, wie viele Zeilen Beschreibung/wie viele Icons eine
     /// konkrete Liste braucht.
+    /// **2026-08-05** — Die Wackelkandidaten-Liste ist speziell: sie wird
+    /// automatisch aus dem Lernstatus gebaut und bei jedem Öffnen
+    /// überschrieben (`rebuildWackelkandidatenList`). User-Spec: „die ist
+    /// speziell, die kann nicht gelöscht werden … kann man auch nicht
+    /// umbenennen, weil die ja automatisch generiert wird. Und ich würde
+    /// auch das Plus und das Auge direkt rauslassen." Löschen/Umbenennen/
+    /// Zusammenführen/Ansehen ergeben für eine Liste, die sich beim
+    /// nächsten Rebuild ohnehin wieder überschreibt, keinen Sinn — bzw.
+    /// „Ansehen" (Auge) und „Zusammenführen" (Plus) verwirren hier nur.
+    private func isWackelkandidatenList(_ list: VocabularyList) -> Bool {
+        list.id == VocabularyListStore.wackelkandidatenListID
+    }
+
     private func regularListRow(_ list: VocabularyList) -> some View {
-        Button {
+        let isWackel = isWackelkandidatenList(list)
+        return Button {
             localSelectedID = list.id
         } label: {
             VStack(alignment: .leading, spacing: 8) {
@@ -378,6 +401,12 @@ struct ListPickerSheet: View {
                 // Aufstellung). `lineLimit(2)` deckelt nach oben,
                 // `frame(height:)` reserviert den Platz auch, wenn nur
                 // eine Zeile tatsächlich Inhalt hat.
+                // **2026-08-05** — Built-in-Listen (Lernstand/Themen) zeigen
+                // nur die eine „N Einträge"-Zeile, keine mehrzeilige
+                // Wortart-Aufstellung. Die feste 32pt-Reservierung war fürs
+                // Wortart-Layout gedacht (siehe Doku oben) und machte diese
+                // Cards unnötig groß (User-Spec: „die brauchen nicht so
+                // groß sein, weil da viel weniger Info drin ist").
                 Group {
                     if !list.isBuiltIn {
                         wordClassBreakdownText(for: list, showsTotalCount: showsTotalCount)
@@ -389,7 +418,7 @@ struct ListPickerSheet: View {
                 }
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .frame(height: 32, alignment: .topLeading)
+                .frame(height: list.isBuiltIn ? 16 : 32, alignment: .topLeading)
 
                 // Zeile 3: Editier-Icons — nur für eigene (nicht built-in) Listen.
                 //
@@ -400,7 +429,10 @@ struct ListPickerSheet: View {
                 // dahinter macht sie optisch als „andere Art von
                 // Aktion" erkennbar statt als vierten gleichrangigen
                 // Icon-Button in derselben Reihe.
-                if !list.isBuiltIn {
+                // Wackelkandidaten: keine Editier-Icons — weder Umbenennen
+                // noch Ansehen noch Zusammenführen noch Löschen (siehe Doc
+                // an `isWackelkandidatenList`).
+                if !list.isBuiltIn && !isWackel {
                     HStack(spacing: 4) {
                         if onRename != nil {
                             Button {
@@ -457,15 +489,28 @@ struct ListPickerSheet: View {
                         }
                         .buttonStyle(.plain)
                     }
+                } else if isWackel {
+                    // Kleiner Hinweis statt der Icon-Reihe — macht den
+                    // Sonderstatus sichtbar statt die Zeile einfach leer
+                    // wirken zu lassen.
+                    Text("Wird automatisch aktualisiert")
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 14)
-            .frame(minHeight: 144)
-            .appCardBackground(style, intensity: list.id == currentSelectedID ? AppTheme.CardIntensity.selected : AppTheme.CardIntensity.whisper, cornerRadius: 14)
-            .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(list.id == currentSelectedID ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
+            .padding(.vertical, list.isBuiltIn ? 10 : 14)
+            // Built-in-Listen (Lernstand/Themen) brauchen keine 144pt —
+            // sie haben weder Wortart-Aufstellung noch Editier-Icon-Zeile,
+            // nur Titel + eine Zeile. Kompakter macht „Nach Lernstand"/
+            // „Nach Themen" wieder gut scrollbar (User-Spec 2026-08-05).
+            .frame(minHeight: list.isBuiltIn ? 64 : 144)
+            .modifier(
+                RegularListRowChrome(
+                    isWackel: isWackel,
+                    isSelected: list.id == currentSelectedID,
+                    style: style
+                )
             )
         }
         .buttonStyle(.plain)
@@ -725,6 +770,40 @@ struct ListPickerSheet: View {
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
             }
+        }
+    }
+}
+
+/// **2026-08-05** — Card-Chrome für `regularListRow`, ausgelagert damit
+/// die Wackelkandidaten-Liste einen eigenen Akzent bekommt (User-Spec:
+/// „visuell abgehoben, andere Farbe"). Amber statt der Modul-Akzentfarbe,
+/// weil die Farbe schon an anderer Stelle (Streak-Flamme, Quiz) für
+/// „hier ist etwas, das Aufmerksamkeit braucht" steht — passt zu einer
+/// Liste aus Vokabeln, die noch nicht sitzen.
+private struct RegularListRowChrome: ViewModifier {
+    let isWackel: Bool
+    let isSelected: Bool
+    let style: AppSectionStyle
+
+    func body(content: Content) -> some View {
+        if isWackel {
+            content
+                .appCardBackground(
+                    tint: AppTheme.Colors.moduleQuiz,
+                    intensity: isSelected ? AppTheme.CardIntensity.selected : 0.14,
+                    cornerRadius: 14
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(AppTheme.Colors.moduleQuiz.opacity(isSelected ? 0.85 : 0.55), lineWidth: 1.5)
+                )
+        } else {
+            content
+                .appCardBackground(style, intensity: isSelected ? AppTheme.CardIntensity.selected : AppTheme.CardIntensity.whisper, cornerRadius: 14)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(isSelected ? style.accent.opacity(0.5) : Color.clear, lineWidth: 1.5)
+                )
         }
     }
 }

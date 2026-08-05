@@ -45,14 +45,18 @@ struct LeaChatHomeCard: View {
 
     var body: some View {
         Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 6) {
-                preTitleRow
-                contentRow
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(height: 86)
+            // **2026-08-05** — LIVE-Zeile ist von OBEN nach RECHTS
+            // gewandert (User-Spec). Vorher stand sie als eigene Zeile
+            // über dem Inhalt und machte die Card höher als Training,
+            // Quiz und Daily Drop — sie war als einzige nicht auf
+            // 72 pt mitgezogen worden. Rechts sitzt sie jetzt an
+            // derselben Stelle wie die „Neu heute"-Pille beim Daily
+            // Drop, wodurch die vier Cards konsistent aussehen.
+            contentRow
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(height: 72)
             // Glas-Chrome — identisch für beide States, kein Ternary.
             .background(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
@@ -71,26 +75,35 @@ struct LeaChatHomeCard: View {
         }
     }
 
-    // MARK: - Pre-Title-Row
+    // MARK: - LIVE-Pille (rechts)
 
-    private var preTitleRow: some View {
-        HStack(spacing: 6) {
-            Circle()
-                .fill(AppTheme.Colors.success)
-                .frame(width: 7, height: 7)
-            // **2026-06-09** — „LIVE CHAT" → „LIVE". Der Titel darunter
-            // heißt bereits „Live-Chat"; das Wort stand also doppelt auf
-            // derselben Card. Oben zählt nur die Statusaussage — der
-            // grüne Punkt plus „LIVE" sagt: Léa ist gerade erreichbar.
-            Text("LIVE")
-                .font(.system(size: 11, weight: .bold, design: .rounded))
-                .tracking(1.0)
-                .foregroundStyle(AppTheme.Colors.success)
-            Spacer(minLength: 0)
+    /// **2026-08-05** — ersetzt die frühere `preTitleRow` über dem
+    /// Inhalt. Als Pille rechts kostet der Status keine eigene Zeile
+    /// mehr, wodurch die Card dieselbe Höhe hat wie Training, Quiz und
+    /// Daily Drop. Form bewusst wie die „Neu heute"-Pille beim Daily
+    /// Drop, damit rechts auf allen Cards dieselbe Sprache steht.
+    ///
+    /// Der grüne Punkt plus „LIVE" sagt: Léa ist gerade erreichbar.
+    private var livePill: some View {
+        VStack(alignment: .trailing, spacing: 3) {
+            HStack(spacing: 5) {
+                Circle()
+                    .fill(AppTheme.Colors.success)
+                    .frame(width: 6, height: 6)
+                Text("LIVE")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .tracking(0.8)
+                    .foregroundStyle(AppTheme.Colors.success)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Capsule().fill(AppTheme.Colors.success.opacity(0.16)))
+            .overlay(Capsule().stroke(AppTheme.Colors.success.opacity(0.35), lineWidth: 1))
+
             // Zeitstempel — nur wenn Léa schon geantwortet hat.
             if let timestamp = lastLeaMessage?.timestamp {
                 Text(Self.timeFormatter.string(from: timestamp))
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .font(.system(size: 10, weight: .medium, design: .rounded))
                     .foregroundStyle(Color.white.opacity(0.4))
             }
         }
@@ -126,6 +139,8 @@ struct LeaChatHomeCard: View {
             }
 
             Spacer(minLength: 0)
+
+            livePill
         }
     }
 

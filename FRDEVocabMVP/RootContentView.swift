@@ -398,6 +398,62 @@ struct ContentView: View {
                 .zIndex(1)
                 .onAppear { isGoalOnboardingLatched = true }
             }
+
+            // **Ziel-Abweich-Hinweis (2026-08-05)** — die Übungs-Setup-
+            // Picker (Quiz/Training/Karteikarten via `GlobalListPickerSheet`)
+            // haben keine eigene Toast-Infrastruktur wie „Meine Listen".
+            // Der Hinweis muss aber genau dort sichtbar sein, wo der User
+            // gerade die abweichende Liste gewählt hat — also global, egal
+            // welcher Screen gerade oben liegt.
+            //
+            // **2026-08-05, Korrektur** — erste Version war eine kleine
+            // Pille oben am Rand (User-Report: „erscheint viel zu klein
+            // und unten, den sieht man kaum" — die alte lokale Toast-
+            // Variante in „Meine Listen" saß unten, diese globale oben,
+            // beide zu unauffällig). Jetzt eine große, mittige Karte im
+            // selben Popup-Stil wie `NewGoalConfirmSheet` — nicht zu
+            // übersehen, aber `allowsHitTesting(false)`, weil sie sich
+            // von selbst wieder ausblendet und nichts bestätigt werden muss.
+            if let warning = goalStore.listDivergenceWarning {
+                VStack(spacing: 12) {
+                    Text("🔀")
+                        .font(.system(size: 40))
+                    Text(warning)
+                        .font(.system(size: 19, weight: .black, design: .rounded))
+                        .foregroundStyle(.white)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text("Dein Ziel bleibt unverändert.")
+                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.85))
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.horizontal, 28)
+                .padding(.vertical, 26)
+                .frame(maxWidth: 300)
+                .background(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .fill(AppTheme.Colors.warning)
+                )
+                .shadow(color: .black.opacity(0.35), radius: 24, x: 0, y: 12)
+                .transition(.scale(scale: 0.85).combined(with: .opacity))
+                .zIndex(10)
+                .allowsHitTesting(false)
+            }
+        }
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: goalStore.listDivergenceWarning)
+        // **2026-08-05, Bug-Fix** — `LearningGoalStore.syncGlobalSelectionWithContentGoal()`
+        // schreibt nur die MULTI-Select-„globale Auswahl" (die Quiz/
+        // Training/Karteikarten lesen), aber NICHT `listStore.selectedListID`
+        // — das ältere Single-Select-Feld, das der Picker in „Meine Listen"
+        // für den Checkmark benutzt. `LearningGoalStore` kennt keinen
+        // `VocabularyListStore` (bewusst entkoppelt), darum passiert der
+        // Abgleich hier, wo beide Stores verfügbar sind. User-Report: Ziel
+        // = „Meine Wackelkandidaten", aber in „Meine Listen" stand eine
+        // andere, alte Liste angekreuzt — obwohl Quiz/Training schon
+        // korrekt die Zielliste nutzten.
+        .onChange(of: goalStore.plan) { _, _ in
+            syncSelectedListIDWithGoal()
         }
         .onAppear {
             // **2026-08-05, Testphase** — siehe Doc-Kommentar am Flag.
@@ -411,6 +467,7 @@ struct ContentView: View {
             // Ziel sonst mitten im Onboarding löschen.
             goalStore.resetForTestingIfNeeded()
             runtime.bootstrapDependenciesIfNeeded()
+            syncSelectedListIDWithGoal()
             runtime.feedbackPlayer?.playAppStart()
             // Letzte-Nutzung-Zeitstempel pflegen, sobald ein Profil da ist.
             // Robust gegen fehlendes Profil (Onboarding läuft noch) —
@@ -419,6 +476,17 @@ struct ContentView: View {
                 profileStore.touchLastActive()
             }
         }
+    }
+
+    /// Siehe Doc-Kommentar am `.onChange`-Aufruf oben. Nutzt
+    /// `effectiveGoalListIDs` (statt direkt `content.listIDs`), damit der
+    /// `.shakyItems`-Anlass („Wackelkandidaten wegräumen" ohne eigene
+    /// Listen-Auswahl) hier dieselbe generierte Wackelkandidaten-Liste
+    /// bekommt wie die globale Auswahl — sonst blieb „Meine Listen" bei
+    /// einer alten, manuell gewählten Liste hängen (User-Report).
+    private func syncSelectedListIDWithGoal() {
+        guard let firstID = goalStore.effectiveGoalListIDs.first else { return }
+        runtime.listStore?.selectedListID = firstID
     }
 
     // MARK: - Welcome-Screen

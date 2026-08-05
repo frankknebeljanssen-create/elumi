@@ -171,6 +171,7 @@ struct GlobalListPickerSheet: View {
 
             Button {
                 VocabularyListSelectionResolver.setGlobalSelectedListIDs(selectedIDs)
+                LearningGoalStore.shared.noteManualListSelection(selectedIDs)
                 UserDefaults.standard.set(localLernjahrMax, forKey: appLernjahrMaxKey)
                 #if DEBUG
                 appDebugLog("📋 [Lernjahr] persist max=\(localLernjahrMax)")

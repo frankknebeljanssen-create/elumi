@@ -24,6 +24,7 @@ extension ListsView {
                         // Quiz las davon nicht. Jetzt: zusätzlich in
                         // den globalen Slot.
                         VocabularyListSelectionResolver.setGlobalSelectedListIDs([pickedID])
+                        warnIfDivergesFromGoalList(pickedID)
                         showingListPicker = false
                     },
                     onDelete: { deletedList in
@@ -70,6 +71,7 @@ extension ListsView {
                         // Siehe Doc oben (zwei `.sheet`-Trigger, gleiche
                         // Semantik — Listen-Tab schreibt globalen Slot).
                         VocabularyListSelectionResolver.setGlobalSelectedListIDs([pickedID])
+                        warnIfDivergesFromGoalList(pickedID)
                         listPickerFilter = nil
                     },
                     onDelete: { deletedList in

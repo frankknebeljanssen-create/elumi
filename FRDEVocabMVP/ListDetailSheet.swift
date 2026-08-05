@@ -53,7 +53,10 @@ struct ListDetailSheet: View {
                         .lineLimit(2)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                    if !list.isBuiltIn, let onRename {
+                    // Wackelkandidaten ausgenommen — automatisch generiert,
+                    // Umbenennen ergibt hier keinen Sinn (siehe
+                    // `ListPickerSheet.isWackelkandidatenList`).
+                    if !list.isBuiltIn, list.id != VocabularyListStore.wackelkandidatenListID, let onRename {
                         Button(action: onRename) {
                             Image(systemName: "pencil")
                                 .font(.system(size: 14, weight: .bold))

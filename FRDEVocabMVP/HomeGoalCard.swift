@@ -28,6 +28,12 @@ struct HomeGoalCard: View {
     /// Fortschritt des Inhaltsziels. `nil`, wenn das Ziel keinen
     /// Inhaltsteil hat (reines Rhythmusziel).
     let contentProgress: ContentGoalProgress?
+    /// **2026-08-05** — Streak-Tage. Die Flamme ist aus dem Header
+    /// verschwunden, als die Ziel-Karte dessen Platz übernahm; sie ist
+    /// aber ein Symbol, das jeder sofort versteht (User-Spec), deshalb
+    /// wandert sie hierher statt ersatzlos wegzufallen. Als Chip rechts
+    /// kostet sie keine eigene Zeile.
+    let streakDays: Int
     /// Tap auf die Karte — führt zum Ziel-Detail, wo geändert wird.
     let onTap: () -> Void
 
@@ -65,6 +71,9 @@ struct HomeGoalCard: View {
 
             Spacer(minLength: 0)
 
+            // Deadline hat Vorrang vor der Flamme — bei nahem Termin
+            // ist der Countdown die dringendere Information, und zwei
+            // Chips nebeneinander würden die Zeile überladen.
             if let deadlineChip {
                 Text(deadlineChip)
                     .font(.system(size: 12, weight: .bold, design: .rounded))
@@ -72,12 +81,31 @@ struct HomeGoalCard: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
                     .background(Capsule().fill(AppTheme.Colors.cta))
+            } else if streakDays > 0 {
+                streakChip
             }
 
             Image(systemName: "chevron.right")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(AppTheme.Colors.textSecondary)
         }
+    }
+
+    /// Flamme plus Tagezahl, im selben Amber wie die frühere
+    /// Header-Pille (`streakAccent`) — der Nutzer erkennt sie wieder.
+    private var streakChip: some View {
+        HStack(spacing: 4) {
+            Text("🔥")
+                .font(.system(size: 13))
+            Text("\(streakDays)")
+                .font(.system(size: 13, weight: .black, design: .rounded))
+                .foregroundStyle(.white)
+                .monospacedDigit()
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
+        .background(Capsule().fill(AppTheme.Colors.streakAccent.opacity(0.9)))
+        .accessibilityLabel(Text("Serie: \(streakDays) \(streakDays == 1 ? "Tag" : "Tage")"))
     }
 
     /// **2026-08-05** — immer „Dein Ziel", nie der Anlass-Titel

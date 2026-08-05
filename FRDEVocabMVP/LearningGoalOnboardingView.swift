@@ -139,39 +139,42 @@ struct LearningGoalOnboardingView: View {
 
     // MARK: - Fortschritt
 
-    /// Reihenfolge und Gesamtzahl der Fragen-Schritte (ohne die
-    /// Maskottchen-Momente Übergang/Vorschau/Feier — die zählen nicht
-    /// als "Frage", der Balken soll nur echten Entscheidungsfortschritt
-    /// zeigen). Dynamisch, weil Termin/Vokabeln je nach Anlass entfallen.
+    /// **Vollständige** Schritt-Reihenfolge des aktuellen Pfads —
+    /// inklusive der Maskottchen-Momente (Übergang, Vorschau, Module,
+    /// Feier).
     ///
-    /// `hasVocabQuestion`/`selectLists`/`scanPrompt` zählen als EIN
-    /// Balken-Schritt — welcher der drei gerade aktiv ist, hängt von
-    /// der Ja/Nein-Antwort ab; der Balken soll deshalb nicht
-    /// zurückspringen, sobald die Antwort feststeht.
-    private var questionSteps: [Step] {
-        var steps: [Step] = [.occasion]
+    /// **2026-08-05, Bug-Fix:** Vorher zählte der Balken nur die
+    /// „Frage"-Schritte. Bei einem reinen Rhythmusziel („Einfach
+    /// dranbleiben") gab es davon nur zwei — der Balken stand also
+    /// schon bei „Wie oft schaffst du das?" auf voll, obwohl noch drei
+    /// Screens folgten (User-Report). Jetzt läuft er über den ganzen
+    /// Weg und ist exakt beim Plan-Screen am Ende voll.
+    ///
+    /// Dynamisch, weil Termin- und Vokabel-Schritte je nach Anlass
+    /// entfallen.
+    private var allSteps: [Step] {
+        var steps: [Step] = [.transition, .occasion]
         if occasion?.requiresDeadline == true { steps.append(.deadline) }
         steps.append(.rhythm)
+        steps.append(.preview)
         if occasion?.requiresListSelection == true {
-            switch currentStep {
-            case .selectLists: steps.append(.selectLists)
-            case .scanPrompt: steps.append(.scanPrompt)
-            default: steps.append(.hasVocabQuestion)
-            }
+            steps.append(.hasVocabQuestion)
+            // Genau EINER der beiden Zweige wird gezeigt — welcher,
+            // entscheidet die Ja/Nein-Antwort. Der Platz ist immer
+            // reserviert, damit der Balken beim Antworten nicht
+            // springt (die Gesamtzahl bleibt gleich, nur der Inhalt
+            // des Slots wechselt).
+            steps.append(hasVocabAlready == true ? .selectLists : .scanPrompt)
         }
+        steps.append(.modules)
+        steps.append(.celebration)
         return steps
     }
 
+    /// 0 beim Übergangs-Screen, exakt 1.0 beim Plan-Screen.
     private var progressFraction: Double {
-        guard let index = questionSteps.firstIndex(of: currentStep) else {
-            // Maskottchen-Momente: Übergang zeigt leeren Balken, Vorschau/
-            // Feier zeigen den zuletzt erreichten Stand (voll bzw. fast voll).
-            switch currentStep {
-            case .transition: return 0
-            default: return 1
-            }
-        }
-        return Double(index + 1) / Double(questionSteps.count)
+        guard let index = allSteps.firstIndex(of: currentStep) else { return 0 }
+        return Double(index) / Double(max(1, allSteps.count - 1))
     }
 
     private var progressHeader: some View {

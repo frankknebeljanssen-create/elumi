@@ -26,42 +26,46 @@ extension ListsView {
         }
     }
 
-    // MARK: - Alle Listen (große Card)
+    // MARK: - Alle Listen
 
+    /// **2026-08-05** — von einer eigenständigen Hero-Card (54pt-Icon,
+    /// eigener Titel-Font, eigenes Padding) auf dieselbe Zeilen-Optik wie
+    /// die drei Kategorie-Zeilen umgebaut (User-Spec: „Alle Lernlisten
+    /// ist doppelt so groß wie alle anderen, ein bisschen überdimensioniert
+    /// … macht das die Seite ausgeglichener"). Man sucht in der Praxis fast
+    /// immer gezielt in einer Unterkategorie — „Alle Lernlisten" ist nur
+    /// der Überblick und braucht keine visuelle Sonderstellung mehr.
+    /// Nutzt dieselbe `ListRowChrome` wie `ListCategoryRow`, damit alle
+    /// vier Zeilen (Alle/Meine/Lernstand/Themen) exakt gleich aussehen.
     var allListsCard: some View {
         Button {
             showingListPicker = true
         } label: {
-            VStack(spacing: 8) {
+            HStack(spacing: 12) {
                 // Home-Listen-Icon — identisch zur Listen-Kachel auf dem
                 // Home-Screen und zu den „Ausgewählte Listen"-Cards in den
-                // Session-Setups. Ein Icon für „Listen" durch die ganze App.
-                // Icon auf 54 pt — weiter gewachsen gegenüber 48, damit die
-                // Hero-Card optisch dominanter bleibt als die Kategorie-
-                // Cards darunter.
-                HomeModuleIconView(icon: .listen, size: 54)
+                // Session-Setups. Auf 46pt runtergezogen, damit es mit den
+                // Kategorie-Icons auf einer Höhe liegt.
+                HomeModuleIconView(icon: .listen, size: 46)
 
-                // Titel +1 pt (22 → 23) — kräftigere Hierarchie gegenüber
-                // den Kategorie-Cards (deren Titel 17 → 18 mitgewachsen
-                // sind).
                 Text("Alle Lernlisten")
-                    .font(.system(size: 23, weight: .black, design: .rounded))
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
 
-                // Count-Text mit der Card mitgewachsen (14 → 15) — bleibt
-                // sekundär, aber nicht mehr winzig gegenüber dem größeren
-                // Titel.
-                Text(countLabel(listStore.allLists.count, singular: "Lernliste", plural: "Lernlisten"))
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                Spacer(minLength: 0)
+
+                Text("\(listStore.allLists.count)")
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .foregroundStyle(sectionStyle.accent)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
-            .frame(maxWidth: .infinity)
-            // **Polish 2026-05-10** — Card flacher (~10%): vertical
-            // padding 20 → 14. Nähert die Card-Höhe an die Kategorie-
-            // Cards an und kompaktiert den Listen-Screen ohne den
-            // Hero-Charakter zu verlieren.
+            .padding(.horizontal, 18)
             .padding(.vertical, 14)
-            .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
+            .frame(maxWidth: .infinity, minHeight: 70)
+            .modifier(ListRowChrome(accent: sectionStyle.accent))
         }
         .buttonStyle(.plain)
     }
@@ -79,7 +83,8 @@ extension ListsView {
                 listsCategoryRow(
                     title: "Meine Lernlisten",
                     iconAsset: "ListIconEigene",
-                    count: ownLists.count
+                    count: ownLists.count,
+                    isActive: ownLists.contains(where: { $0.id == listStore.selectedListID })
                 ) {
                     listPickerFilter = .own
                 }
@@ -90,7 +95,8 @@ extension ListsView {
                 listsCategoryRow(
                     title: "Nach Lernstand",
                     iconAsset: "ListIconNiveau",
-                    count: levelLists.count
+                    count: levelLists.count,
+                    isActive: levelLists.contains(where: { $0.id == listStore.selectedListID })
                 ) {
                     listPickerFilter = .level
                 }
@@ -101,7 +107,8 @@ extension ListsView {
                 listsCategoryRow(
                     title: "Nach Themen",
                     iconAsset: "ListIconThemen",
-                    count: topicLists.count
+                    count: topicLists.count,
+                    isActive: topicLists.contains(where: { $0.id == listStore.selectedListID })
                 ) {
                     listPickerFilter = .topic
                 }
@@ -113,18 +120,25 @@ extension ListsView {
         title: String,
         iconAsset: String,
         count: Int,
+        isActive: Bool = false,
         action: @escaping () -> Void
     ) -> some View {
         // **Extrahiert (2026-05-22)** — die „Meine Listen"-Optik lebt jetzt
         // in der geteilten `ListCategoryRow`-Komponente (Listenpicker-
         // Vereinheitlichung). ListsView reicht nur die Sektionsfarbe herein;
         // die drei Aufrufseiten bleiben unverändert, das Rendering 1:1.
+        //
+        // **2026-08-05** — `isActive` markiert, in welcher Kategorie die
+        // aktuell ausgewählte Liste (`listStore.selectedListID`) liegt
+        // (User-Spec: Übersicht, ohne jede Kategorie einzeln aufklappen
+        // zu müssen).
         ListCategoryRow(
             title: title,
             iconAsset: iconAsset,
             count: count,
             accent: sectionStyle.accent,
-            action: action
+            action: action,
+            isActive: isActive
         )
     }
 
@@ -141,6 +155,12 @@ extension ListsView {
         }
     }
 
+    /// **2026-08-05** — Kopfzeile von „Icon oben, Text drunter" auf
+    /// dieselbe Zeilen-Optik wie die drei Kategorie-Zeilen umgebaut
+    /// (User-Spec, gleicher Anlass wie `allListsCard`). Das alte SVG-Icon
+    /// wirkte laut User "'n bisschen zu klein" für eine CTA — ein klarer,
+    /// gefüllter Plus-Kreis (SF Symbol) ist prominenter und lesbarer als
+    /// Icon-Ersatz, ohne die Zeile aufzublähen.
     var createListSection: some View {
         VStack(spacing: 12) {
             Button {
@@ -148,34 +168,26 @@ extension ListsView {
                     showingCreateListForm.toggle()
                 }
             } label: {
-                VStack(spacing: 8) {
-                    // Expandiert → Chevron-Up (klar als „schließen" lesbar).
-                    // Collapsed → neues SVG-Icon für „neue Liste", damit die
-                    // CTA-Ansicht visuell zur Listen-Welt gehört.
-                    if showingCreateListForm {
-                        Image(systemName: "chevron.up.circle.fill")
-                            .font(.system(size: 42, weight: .bold))
-                            .foregroundStyle(sectionStyle.accent)
-                    } else {
-                        // Icon synchron zum Alle-Listen-Icon gewachsen
-                        // (48 → 54), damit beide Hero-Icons auf dem Screen
-                        // dieselbe Gewichtung haben.
-                        Image("ListIconNeueListe")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 54, height: 54)
-                    }
-                    // **Naming-Sweep 2026-05-06** — „Neue Liste
-                    // anlegen" → „+ Neue Liste". Plus-Icon im Text
-                    // betont das Hinzufügen-Pattern.
-                    Text("+ Neue Lernliste anlegen")
-                        .font(.system(size: 14, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                HStack(spacing: 12) {
+                    // Expandiert → Chevron-up (klar als „schließen" lesbar).
+                    // Collapsed → gefüllter Plus-Kreis, betont das
+                    // Hinzufügen-Pattern deutlicher als das vorherige,
+                    // kleinteilige SVG-Icon.
+                    Image(systemName: showingCreateListForm ? "chevron.up.circle.fill" : "plus.circle.fill")
+                        .font(.system(size: 30, weight: .bold))
+                        .foregroundStyle(sectionStyle.accent)
+                        .frame(width: 46, height: 46)
+
+                    Text("Neue Lernliste anlegen")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+
+                    Spacer(minLength: 0)
                 }
-                .frame(maxWidth: .infinity)
-                // **Polish 2026-05-10** — flacher (~10%): inner
-                // vertical padding 6 → 4.
-                .padding(.vertical, 4)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 14)
+                .frame(maxWidth: .infinity, minHeight: 70)
+                .modifier(ListRowChrome(accent: sectionStyle.accent))
             }
             .buttonStyle(.plain)
 
@@ -205,12 +217,16 @@ extension ListsView {
                             ? 0.55 : 1.0
                     )
                 }
+                .padding(14)
+                .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        // **Polish 2026-05-10** — Card flacher (~10%): outer padding
-        // 16 → 14. Synchron zum allListsCard + Kategorie-Card-Sweep.
-        .padding(14)
-        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
+        // **2026-08-05** — kein äußerer Card-Wrapper mehr um die ganze
+        // Section: der Toggle-Button trägt jetzt selbst die
+        // Zeilen-Chrome (`ListRowChrome`, wie die drei Kategorie-Zeilen).
+        // Ein zusätzlicher äußerer Rahmen hätte eine Card-in-Card-Optik
+        // erzeugt. Das aufgeklappte Formular bekommt stattdessen seine
+        // eigene, kleinere Card (siehe oben).
     }
 }

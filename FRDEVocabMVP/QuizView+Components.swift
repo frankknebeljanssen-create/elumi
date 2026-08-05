@@ -47,10 +47,12 @@ var quizSetupScreen: some View {
             )
         },
         optionsContent: {
-            // **Naming-Sweep 2026-05-06** — „ANZAHL FRAGEN" →
-            // „FRAGEN". Die Chip-Auswahl mit den Zahlen erklärt
-            // sich selbst, „Anzahl" war Beamten-Sprache.
-            SessionOptionGroupCard(title: "FRAGEN") {
+            // **2026-08-05** — „FRAGEN" → „ANZAHL DER FRAGEN" (User-Spec,
+            // Korrektur zum vorherigen Versuch mit eingeblendeter Zahl:
+            // wörtlich der Titel „ANZAHL DER FRAGEN", keine Live-Zahl im
+            // Titel). Die frühere Kürzung auf „FRAGEN" (Naming-Sweep
+            // 2026-05-06) wird damit rückgängig gemacht.
+            SessionOptionGroupCard(title: "ANZAHL DER FRAGEN") {
                 OptionChipGrid(
                     options: QuizQuestionCountOption.allCases,
                     title: { $0.title },
