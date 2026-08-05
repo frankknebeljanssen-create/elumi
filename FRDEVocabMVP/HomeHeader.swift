@@ -34,6 +34,15 @@ struct HomeHeader: View {
     /// Home soll ohne Scrollen auskommen (User-Spec).
     var showsStreakPill: Bool = true
 
+    /// **Elumi-Hilfe (2026-08-05)** — Tap aufs Maskottchen öffnet die
+    /// kontextbezogene Hilfe (User-Idee: "wenn man das antippt, dann
+    /// kommt Elumi"). Bis hierher war der Axolotl reine Deko, obwohl er
+    /// die einzige immer sichtbare freie Fläche im Header ist.
+    ///
+    /// Ohne Closure bleibt er wie bisher nicht tappbar (Backward-Compat
+    /// für Preview-Hosts) und das Fragezeichen-Abzeichen entfällt.
+    var onMascotTap: (() -> Void)? = nil
+
     /// 48 → 42 pt (−12 %): User-Wunsch „Axolotl darf nicht stärker
     /// wirken als die Hero-Cards".
     private static let mascotSize: CGFloat = 42
@@ -82,6 +91,40 @@ struct HomeHeader: View {
             .accessibilityLabel(Text("Streak: \(streakDays) \(streakDays == 1 ? "Tag" : "Tage")"))
     }
 
+    /// Maskottchen samt Blinzeln. Das Fragezeichen-Abzeichen ist die
+    /// **einzige** Werbung für die Hilfe: ein ruhiges, dauerhaftes
+    /// Signal, dass hier etwas antippbar ist. Bewusst kein einmaliger
+    /// Erklär-Hinweis, kein Popup, kein Pulsieren. NN/g formuliert
+    /// genau diese Trennung: die Existenz der Hilfe sichtbar machen,
+    /// aber den Inhalt erst zeigen, wenn danach gefragt wird.
+    private var mascot: some View {
+        ZStack(alignment: .bottomTrailing) {
+            ZStack {
+                Image(mascotImageName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: Self.mascotSize, height: Self.mascotSize)
+                SplashCharacterBlinkOverlay(
+                    size: Self.mascotSize,
+                    startDate: blinkStartDate
+                )
+                .frame(width: Self.mascotSize, height: Self.mascotSize)
+            }
+
+            if onMascotTap != nil {
+                Image(systemName: "questionmark")
+                    .font(.system(size: 9, weight: .black))
+                    .foregroundStyle(.white)
+                    .frame(width: 17, height: 17)
+                    .background(Circle().fill(AppTheme.Colors.elumiBlue))
+                    .overlay(Circle().stroke(AppTheme.Colors.background, lineWidth: 1.5))
+                    .offset(x: 2, y: 1)
+            }
+        }
+        .frame(width: Self.mascotSize, height: Self.mascotSize)
+        .contentShape(Rectangle())
+    }
+
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
             VStack(alignment: .leading, spacing: 14) {
@@ -126,16 +169,14 @@ struct HomeHeader: View {
 
             Spacer(minLength: 0)
 
-            ZStack {
-                Image(mascotImageName)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: Self.mascotSize, height: Self.mascotSize)
-                SplashCharacterBlinkOverlay(
-                    size: Self.mascotSize,
-                    startDate: blinkStartDate
-                )
-                .frame(width: Self.mascotSize, height: Self.mascotSize)
+            Group {
+                if let onMascotTap {
+                    Button(action: onMascotTap) { mascot }
+                        .buttonStyle(AppCardPressStyle())
+                        .accessibilityLabel("Elumi fragen")
+                } else {
+                    mascot
+                }
             }
             // Rechte Kante bündig mit Hero-Grid. `y: -2` zieht den
             // Mascot minimal über die Salut-Baseline — ohne den alten

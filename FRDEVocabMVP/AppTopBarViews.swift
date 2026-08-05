@@ -50,6 +50,18 @@ struct ModuleHeaderCard: View {
     /// Size des Switches, wird vertikal mit dem Back-Button
     /// zentriert.
     var showsDirectionToggle: Bool = false
+    /// **Elumi-Hilfe (2026-08-05)** — wenn gesetzt, sitzt rechts in der
+    /// Back-Row das Elumi-Abzeichen mit Fragezeichen und öffnet die
+    /// kontextbezogene Hilfe.
+    ///
+    /// **Warum hier und nicht in `AppTopBar`:** `AppTopBar` wird gar
+    /// nicht gerendert. Der `topBar`-Parameter von `appLocalChrome`
+    /// (`AppChromeSupport.swift`) wird in keinem Zweig aufgerufen, alle
+    /// 23 Aufrufe laufen ins Leere — deshalb war oben rechts auf
+    /// Training und Karteikarten nichts zu sehen (User-Report
+    /// 2026-08-05). Diese Card hier ist der Header, den die Modul-
+    /// Screens tatsächlich zeichnen.
+    var onHelp: (() -> Void)? = nil
     /// **Compact-Mode (2026-05-07)** — verkleinert Icon-Frame (64 → 48),
     /// Title-Font (24 → 20 pt) und Vertical-Padding (12 → 8 pt) für
     /// Screens die Header-Card-Höhe sparen müssen (z. B. Slot-Screen,
@@ -70,6 +82,7 @@ struct ModuleHeaderCard: View {
         accent: Color,
         onBack: (() -> Void)? = nil,
         showsDirectionToggle: Bool = false,
+        onHelp: (() -> Void)? = nil,
         compact: Bool = false
     ) {
         self.icon = icon
@@ -79,6 +92,7 @@ struct ModuleHeaderCard: View {
         self.accent = accent
         self.onBack = onBack
         self.showsDirectionToggle = showsDirectionToggle
+        self.onHelp = onHelp
         self.compact = compact
     }
 
@@ -88,6 +102,7 @@ struct ModuleHeaderCard: View {
         accent: Color,
         onBack: (() -> Void)? = nil,
         showsDirectionToggle: Bool = false,
+        onHelp: (() -> Void)? = nil,
         compact: Bool = false
     ) {
         self.icon = nil
@@ -97,6 +112,7 @@ struct ModuleHeaderCard: View {
         self.accent = accent
         self.onBack = onBack
         self.showsDirectionToggle = showsDirectionToggle
+        self.onHelp = onHelp
         self.compact = compact
     }
 
@@ -111,6 +127,7 @@ struct ModuleHeaderCard: View {
         accent: Color,
         onBack: (() -> Void)? = nil,
         showsDirectionToggle: Bool = false,
+        onHelp: (() -> Void)? = nil,
         compact: Bool = false
     ) {
         self.icon = nil
@@ -120,26 +137,29 @@ struct ModuleHeaderCard: View {
         self.accent = accent
         self.onBack = onBack
         self.showsDirectionToggle = showsDirectionToggle
+        self.onHelp = onHelp
         self.compact = compact
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if let onBack {
-                HStack(alignment: .center, spacing: 0) {
-                    AppBackButton(action: onBack, tint: accent)
-                    Spacer()
+            // **2026-08-05** — vorher zwei getrennte Zweige (mit Back /
+            // ohne Back aber mit Toggle). Mit dem Hilfe-Abzeichen als
+            // drittem möglichen Element wären das vier Kombinationen
+            // gewesen; eine Zeile, die alle drei Slots optional füllt,
+            // bleibt lesbar und verhält sich in allen Fällen gleich.
+            if onBack != nil || showsDirectionToggle || onHelp != nil {
+                HStack(alignment: .center, spacing: 8) {
+                    if let onBack {
+                        AppBackButton(action: onBack, tint: accent)
+                    }
+                    Spacer(minLength: 0)
                     if showsDirectionToggle {
                         LanguageDirectionSwitch(size: .compact)
                     }
-                }
-            } else if showsDirectionToggle {
-                // Sonderfall: kein Back, aber Toggle gewünscht —
-                // rechtsbündig, damit die Card-Kante mit der
-                // Modul-Card übereinstimmt.
-                HStack {
-                    Spacer()
-                    LanguageDirectionSwitch(size: .compact)
+                    if let onHelp {
+                        ElumiHelpBadge(action: onHelp)
+                    }
                 }
             }
             coloredCard
@@ -240,6 +260,12 @@ struct ScreenHeaderCard: View {
     /// Zeile umbrechen statt zu verkürzen. Default `false` — alle
     /// bestehenden Call-Sites mit kurzen Titeln bleiben unverändert.
     var allowsMultilineTitle: Bool = false
+    /// **Elumi-Hilfe (2026-08-05)** — Hilfe-Abzeichen im Trailing-Slot.
+    /// Hat Vorrang vor `systemImage`: ein Screen, der beides setzt, will
+    /// den Hilfe-Einstieg, das dekorative Icon ist verzichtbar. Der
+    /// 44-pt-Platzhalter für zentrierte Titel entfällt dann automatisch,
+    /// weil das Abzeichen selbst dieselbe Mindestbreite hat.
+    var onHelp: (() -> Void)? = nil
 
     private var titleParts: [String] {
         subtitle.isEmpty ? [title] : [title, subtitle]
@@ -317,7 +343,9 @@ struct ScreenHeaderCard: View {
 
     @ViewBuilder
     private var trailingSlot: some View {
-        if let systemImage {
+        if let onHelp {
+            ElumiHelpBadge(action: onHelp, size: 32)
+        } else if let systemImage {
             ZStack {
                 Circle()
                     .fill(style.accent.opacity(0.12))

@@ -869,6 +869,7 @@ struct ElumiTabView: View {
                     title: "Daily Drop",
                     accent: sectionStyle.accent,
                     onBack: { dismiss() },
+                    onHelp: { ElumiHelpPresenter.shared.show(.dailyDrop) },
                     compact: true
                 )
 

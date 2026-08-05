@@ -253,7 +253,12 @@ struct HomeView: View {
                         // Bei gesetztem Ziel übernimmt die Ziel-Karte
                         // darunter die Fortschritts-Anzeige — siehe
                         // `HomeHeader.showsStreakPill`.
-                        showsStreakPill: goalStore.plan == nil
+                        showsStreakPill: goalStore.plan == nil,
+                        // **Elumi-Hilfe (2026-08-05)** — User-Idee: "wenn
+                        // man das antippt, dann kommt Elumi". Öffnet die
+                        // kontextbezogene Hilfe; Textkatalog und die
+                        // Design-Begründung stehen in `ElumiHelp.swift`.
+                        onMascotTap: { ElumiHelpPresenter.shared.show(.home) }
                     )
                     .appEntryTransition()
 
@@ -340,6 +345,10 @@ struct HomeView: View {
             }
         }
         .appLocalChrome(enabled: !usesGlobalChrome) {
+            // **2026-08-05** — `AppTopBar` wird nicht gerendert: der
+            // `topBar`-Parameter von `appLocalChrome` wird in keinem
+            // Zweig aufgerufen. Der Hilfe-Einstieg sitzt deshalb im
+            // Header, den dieser Screen wirklich zeichnet.
             AppTopBar(onInfo: openInfo, onAccount: openAccount)
                 .padding(.horizontal, AppLayout.screenPadding)
                 .padding(.top, AppLayout.topBarInsetTop)

@@ -200,7 +200,8 @@ extension FlashcardsView {
                     title: "Karteikarten",
                     accent: sectionStyle.accent,
                     onBack: onBack,
-                    showsDirectionToggle: true
+                    showsDirectionToggle: true,
+                    onHelp: { ElumiHelpPresenter.shared.show(.flashcards) }
                 )
             } else {
                 // Session-Modus (aktives Lernen): kompakter Text-Header,

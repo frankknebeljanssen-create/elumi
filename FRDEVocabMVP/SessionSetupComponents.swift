@@ -81,19 +81,25 @@ struct SessionSetupHeader: View {
     /// FR-DE-Richtungs-Toggle rechts neben dem Back-Button — spart die
     /// dedizierte Direction-Row im Body.
     let showsDirectionToggle: Bool
+    /// **Elumi-Hilfe (2026-08-05)** — Thema für den Hilfe-Knopf rechts in
+    /// der Back-Row. `nil` = kein Knopf. Nur der Modul-Icon-Pfad zeigt
+    /// ihn; der Text-Fallback-Header darunter hat keinen passenden Slot.
+    let helpTopic: ElumiHelpTopic?
 
     init(
         title: String,
         accent: Color = AppTheme.Colors.primary,
         onBack: @escaping () -> Void,
         moduleIcon: HomeModuleIcon? = nil,
-        showsDirectionToggle: Bool = false
+        showsDirectionToggle: Bool = false,
+        helpTopic: ElumiHelpTopic? = nil
     ) {
         self.title = title
         self.accent = accent
         self.onBack = onBack
         self.moduleIcon = moduleIcon
         self.showsDirectionToggle = showsDirectionToggle
+        self.helpTopic = helpTopic
     }
 
     var body: some View {
@@ -108,7 +114,10 @@ struct SessionSetupHeader: View {
                     title: title,
                     accent: accent,
                     onBack: onBack,
-                    showsDirectionToggle: showsDirectionToggle
+                    showsDirectionToggle: showsDirectionToggle,
+                    onHelp: helpTopic.map { topic in
+                        { ElumiHelpPresenter.shared.show(topic) }
+                    }
                 )
             } else {
                 // Fallback: klassischer ZStack mit zentriertem Text-

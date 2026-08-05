@@ -142,7 +142,8 @@ struct LexiconView: View {
                     systemImage: "book.closed.fill",
                     title: "Wörterbuch",
                     accent: sectionStyle.accent,
-                    onBack: { dismiss() }
+                    onBack: { dismiss() },
+                    onHelp: { ElumiHelpPresenter.shared.show(.lexicon) }
                 )
                 // Etwas mehr Luft zwischen Modul-Header-Card und
                 // Content/Sticky-Search darunter (User-Request

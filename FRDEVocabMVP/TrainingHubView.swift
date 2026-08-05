@@ -66,6 +66,12 @@ struct TrainingHubView: View {
                 // zu Quiz/KK/Setup-Screens.
                 AppBackButton(action: { dismiss() }, tint: AppTheme.Colors.elumiPink)
                 Spacer(minLength: 0)
+                // **Elumi-Hilfe (2026-08-05)** — dieser Screen hatte gar
+                // keinen Hilfe-Einstieg, obwohl hier die Frage "welchen
+                // Modus nehm ich?" am dringendsten ist. Eigener Header
+                // (kein `ModuleHeaderCard`), deshalb das Abzeichen hier
+                // direkt in die Chevron-Zeile.
+                ElumiHelpBadge(action: { ElumiHelpPresenter.shared.show(.training) })
             }
             .padding(.horizontal, AppLayout.screenPadding)
 

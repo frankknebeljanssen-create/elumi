@@ -401,6 +401,7 @@ extension TrainingView {
             showsGamificationBar: !isVocabMode && launchContext?.chainContext == nil,
             moduleIcon: moduleIconForMode,
             showsDirectionToggle: true,
+            helpTopic: .training,
             gamificationBarHintText: trainingGamificationHintText,
             onBack: { dismiss() },
             onStart: {

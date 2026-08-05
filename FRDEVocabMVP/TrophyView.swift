@@ -70,7 +70,8 @@ struct TrophyView: View {
                     systemImage: "trophy.fill",
                     title: "Fortschritt",
                     accent: sectionStyle.accent,
-                    onBack: { dismiss() }
+                    onBack: { dismiss() },
+                    onHelp: { ElumiHelpPresenter.shared.show(.progress) }
                 )
                 heroProgressCard
                 // **Ziel-System (2026-08-05)** — zweite Heimat des

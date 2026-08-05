@@ -78,7 +78,8 @@ struct GameHubView: View {
                     systemImage: "gamecontroller.fill",
                     title: "Spielen",
                     accent: sectionStyle.accent,
-                    onBack: { dismiss() }
+                    onBack: { dismiss() },
+                    onHelp: { ElumiHelpPresenter.shared.show(.games) }
                 )
                 heroBlock
                 // Zwei gleichwertige Start-Buttons (Elumi + Word Runner)

@@ -365,6 +365,7 @@ struct AccentsEntryView: View {
             showsDirection: false,
             showsGamificationBar: false,
             moduleIcon: .akzente,
+            helpTopic: .accents,
             onBack: {
                 // **A3 Smoke-Fix (2026-05-06)** — durchgängig
                 // `dismiss()` für Slide-Animation. Im Chain-Mode war

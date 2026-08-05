@@ -159,7 +159,8 @@ struct LernstatusView: View {
             systemImage: nil,
             onBack: { dismiss() },
             centeredTitle: true,
-            allowsMultilineTitle: true
+            allowsMultilineTitle: true,
+            onHelp: { ElumiHelpPresenter.shared.show(.progress) }
         )
     }
 

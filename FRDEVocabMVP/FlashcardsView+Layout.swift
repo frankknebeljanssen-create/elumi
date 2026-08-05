@@ -390,6 +390,7 @@ extension FlashcardsView {
             showsGamificationBar: launchContext?.chainContext == nil,
             moduleIcon: .karteikarten,
             showsDirectionToggle: true,
+            helpTopic: .flashcards,
             onBack: { handleBackNavigation() },
             onStart: { startFlashcardsFromSetup(autoplayPrompt: true) },
             contextContent: {

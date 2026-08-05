@@ -27,6 +27,7 @@ var quizSetupScreen: some View {
         showsGamificationBar: launchContext?.chainContext == nil,
         moduleIcon: .quiz,
         showsDirectionToggle: true,
+        helpTopic: .quiz,
         onBack: { handleBackNavigation() },
         onStart: { startQuiz() },
         contextContent: {

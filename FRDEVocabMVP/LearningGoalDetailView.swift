@@ -54,7 +54,8 @@ struct LearningGoalDetailView: View {
                     subtitle: "",
                     systemImage: nil,
                     onBack: { dismiss() },
-                    centeredTitle: true
+                    centeredTitle: true,
+                    onHelp: { ElumiHelpPresenter.shared.show(.goal) }
                 )
 
                 if goalStore.plan == nil {

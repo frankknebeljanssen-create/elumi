@@ -41,9 +41,15 @@ final class HintStore: ObservableObject {
     /// dazukommt** — sonst gilt der neue Tipp für die Anzeige als nicht
     /// existent. Der Katalog beeinflusst ausschließlich diese Anzeige;
     /// ob ein einzelner Hint erscheint, hängt allein an `hasSeen(_:)`.
+    ///
+    /// **Bug-Fix 2026-08-05** — `"home_intro"` stand hier, hatte aber seit
+    /// der Einführung des Willkommensscreens keinen `hintBubble(id:)`-
+    /// Aufruf mehr (siehe Kommentar in `HomeView`). Da die ID also nie
+    /// als gesehen markiert werden konnte, blieb `hasPendingHints`
+    /// dauerhaft `true`: die Einstellungen meldeten für immer mindestens
+    /// „1 Tipp offen" und das Lämpchen wurde nie grau. Eintrag entfernt.
     static let allHintIDs: Set<String> = [
         "daily_drop_intro",
-        "home_intro",
         "lea_chat_intro",
         "lists_intro",
         "progress_intro",

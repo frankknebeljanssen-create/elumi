@@ -8,6 +8,7 @@ struct ContentView: View {
     @ObservedObject private var accountStore = AccountStore.shared
     @ObservedObject private var hintStore = HintStore.shared
     @ObservedObject private var goalStore = LearningGoalStore.shared
+    @ObservedObject private var helpPresenter = ElumiHelpPresenter.shared
 
     /// **Ziel-Onboarding (2026-08-05)** — reiner Launch-State, analog zu
     /// `hasDismissedWelcomeThisLaunch`. Hält das Overlay explizit offen,
@@ -442,6 +443,41 @@ struct ContentView: View {
             }
         }
         .animation(.spring(response: 0.35, dampingFraction: 0.8), value: goalStore.listDivergenceWarning)
+        // **Elumi-Hilfe (2026-08-05)** — liegt zentral hier, nicht in den
+        // einzelnen Screens. Ein Screen ruft nur
+        // `ElumiHelpPresenter.shared.show(.quiz)` und braucht dafür weder
+        // eigenen State noch eine Sheet-Deklaration; außerdem funktioniert
+        // der Aufruf so auch aus Sheets heraus. Konzept und Textkatalog:
+        // `ElumiHelp.swift`.
+        .sheet(item: $helpPresenter.activeTopic) { topic in
+            ElumiHelpSheet(
+                topic: topic,
+                onNavigate: { screen in
+                    helpPresenter.dismiss()
+                    // Settle-Delay wie überall in dieser App beim Wechsel
+                    // Sheet → Navigation: sonst verschluckt der Sheet-
+                    // Dismiss den Push.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        // Gleiches Muster wie im Ziel-Onboarding oben: der
+                        // Scan hat eine eigene Coordinator-Methode (Guard
+                        // gegen Doppel-Push), alles andere geht als
+                        // regulärer Pfad-Push.
+                        if screen == .scan {
+                            openScanScreen()
+                        } else if navigation.navigationPath.last != screen {
+                            navigation.navigationPath.append(screen)
+                        }
+                    }
+                },
+                onOpenInfo: {
+                    helpPresenter.dismiss()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        navigation.openInfoScreen()
+                    }
+                },
+                onClose: { helpPresenter.dismiss() }
+            )
+        }
         // **2026-08-05, Bug-Fix** — `LearningGoalStore.syncGlobalSelectionWithContentGoal()`
         // schreibt nur die MULTI-Select-„globale Auswahl" (die Quiz/
         // Training/Karteikarten lesen), aber NICHT `listStore.selectedListID`

@@ -126,7 +126,8 @@ struct SettingsView: View {
                 subtitle: "",
                 systemImage: nil,
                 onBack: { dismiss() },
-                centeredTitle: true
+                centeredTitle: true,
+                onHelp: { ElumiHelpPresenter.shared.show(.settings) }
             )
 
             // **Mein Konto** — jetzt als erste Card in der Settings-
@@ -262,6 +263,8 @@ struct SettingsView: View {
                 .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
             }
             .buttonStyle(.plain)
+
+            languageDirectionCard
 
             Button {
                 openInfo()
@@ -528,6 +531,39 @@ struct SettingsView: View {
     /// vorhandener Auswahl wird diese **nicht** überschrieben — der
     /// User-Workflow „mal eben ausschalten und wieder ein" verliert
     /// keine Wahl.
+    /// **Lernrichtung (2026-08-05)** — zweiter Zugang zu derselben
+    /// Einstellung, die auch in jedem Übungs-Setup oben rechts sitzt.
+    ///
+    /// **Bewusst zusätzlich statt stattdessen** (User-Entscheidung): Im
+    /// Setup steht der Schalter genau dort, wo die Entscheidung fällt.
+    /// Wer für eine Klassenarbeit von Deutsch nach Französisch übt,
+    /// findet ihn dort ohne Umweg. Hier in den Einstellungen ist er für
+    /// alle, die ihn im Setup übersehen oder grundsätzlich einstellen
+    /// wollen.
+    ///
+    /// Beide Instanzen sind automatisch synchron, weil
+    /// `LanguageDirectionSwitch` über `@AppStorage(appDirectionKey)`
+    /// direkt auf denselben gespeicherten Wert schreibt. Es gibt keinen
+    /// zweiten Zustand, der auseinanderlaufen könnte.
+    private var languageDirectionCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Lernrichtung")
+                .font(.system(size: 17, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+
+            Text("Legt fest, ob du vom Französischen ins Deutsche übst oder umgekehrt. Du kannst sie auch direkt in jeder Übung umstellen.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            LanguageDirectionSwitch(size: .regular)
+                .frame(maxWidth: .infinity)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
+    }
+
     private var globalListSelectionCard: some View {
         @AppStorage(appUseGlobalListSelectionKey) var useGlobal: Bool = true
 

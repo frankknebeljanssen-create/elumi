@@ -63,6 +63,9 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
     /// automatisch ausgeblendet — der Switch lebt dann oben rechts
     /// neben dem Back-Button.
     var showsDirectionToggle: Bool = false
+    /// **Elumi-Hilfe (2026-08-05)** — Hilfe-Thema für den Knopf im
+    /// Header. `nil` = kein Knopf.
+    var helpTopic: ElumiHelpTopic? = nil
     @ViewBuilder let contextContent: () -> ContextContent
     @ViewBuilder let optionsContent: () -> OptionsContent
 
@@ -79,6 +82,7 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
         showsGamificationBar: Bool = true,
         moduleIcon: HomeModuleIcon? = nil,
         showsDirectionToggle: Bool = false,
+        helpTopic: ElumiHelpTopic? = nil,
         gamificationBarHintText: String? = nil,
         onBack: @escaping () -> Void,
         onStart: @escaping () -> Void,
@@ -97,6 +101,7 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
         self.showsGamificationBar = showsGamificationBar
         self.moduleIcon = moduleIcon
         self.showsDirectionToggle = showsDirectionToggle
+        self.helpTopic = helpTopic
         self.gamificationBarHintText = gamificationBarHintText
         self.onBack = onBack
         self.onStart = onStart
@@ -111,7 +116,8 @@ struct SessionSetupScreen<ContextContent: View, OptionsContent: View>: View {
                 accent: accent,
                 onBack: onBack,
                 moduleIcon: moduleIcon,
-                showsDirectionToggle: showsDirectionToggle
+                showsDirectionToggle: showsDirectionToggle,
+                helpTopic: helpTopic
             )
 
             ScrollView(showsIndicators: false) {

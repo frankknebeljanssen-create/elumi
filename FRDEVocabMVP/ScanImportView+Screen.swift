@@ -657,7 +657,8 @@ extension ScanImportView {
                         } else {
                             dismiss()
                         }
-                    }
+                    },
+                    onHelp: { ElumiHelpPresenter.shared.show(.scan) }
                 )
 
                 // Separater „Zurück"-Button raus (User-Spec): der

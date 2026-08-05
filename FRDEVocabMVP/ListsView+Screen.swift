@@ -13,7 +13,8 @@ extension ListsView {
                 icon: .listen,
                 title: "Lernlisten",
                 accent: sectionStyle.accent,
-                onBack: { dismiss() }
+                onBack: { dismiss() },
+                onHelp: { ElumiHelpPresenter.shared.show(.lists) }
             )
 
             allListsCard

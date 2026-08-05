@@ -285,7 +285,21 @@ struct LearningGoalOnboardingView: View {
             Spacer(minLength: AppTheme.Spacing.xxl)
             Spacer(minLength: AppTheme.Spacing.xl)
 
-            primaryButton("Los geht's") { advance() }
+            // **2026-08-05** — "Los geht's" → "Bin dabei!" (User-Spec:
+            // "wir haben beim Onboarding zweimal Los geht's als CTA").
+            // Der Willkommensscreen direkt davor sagt schon "Los geht's!",
+            // und der Abschluss-Screen sagt "Jetzt geht's los" — dreimal
+            // dieselbe Formel in einem Durchlauf.
+            //
+            // Geändert wird bewusst DIESER, nicht der Abschluss: dort
+            // zahlt der Satz tatsächlich ein, weil es danach wirklich
+            // losgeht. Hier ist es nur die Zustimmung zu Elumis "Fangen
+            // wir mit deinem Ziel an" — eine Antwort passt besser als
+            // ein Startruf. Nicht wörtlich "Ich bin bereit" (User-
+            // Vorschlag), weil das zwei Schritte später schon der
+            // CTA des Plan-Screens ist; dann stünde die Dopplung nur an
+            // anderer Stelle.
+            primaryButton("Bin dabei!") { advance() }
         }
         .frame(maxWidth: .infinity)
         .frame(minHeight: 500)

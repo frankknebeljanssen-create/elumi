@@ -28,13 +28,23 @@ struct InfoView: View {
                 // Systemweiter Header: Back-Chevron links, Titel mittig.
                 // Der frühere separate „Zurück"-Button unter dem Header
                 // ist entfallen — der Back-Chevron im Header ersetzt ihn.
+                // **2026-08-05** — Titel "Info" → "Alles über die App"
+                // (User-Spec). Der Screen wird jetzt hauptsächlich über
+                // die Fußzeile der Elumi-Hilfe erreicht, wo der Link
+                // genauso heißt. Vorher landete man auf einer Karte
+                // namens "Info", was nicht zum angetippten Text passte.
+                //
+                // `allowsMultilineTitle` verhindert, dass der längere
+                // Titel per Ellipsis gekürzt wird (App-Regel: nirgends
+                // Text abschneiden).
                 ScreenHeaderCard(
                     style: sectionStyle,
-                    title: "Info",
+                    title: "Alles über die App",
                     subtitle: "",
                     systemImage: nil,
                     onBack: { dismiss() },
-                    centeredTitle: true
+                    centeredTitle: true,
+                    allowsMultilineTitle: true
                 )
 
                 colorInfoCard(
@@ -44,7 +54,11 @@ struct InfoView: View {
                     lines: [
                         "Arbeite einen Stapel Karte für Karte ab.",
                         "Falsche Karten bleiben im Stapel.",
-                        "Tippe auf die Karte um die Lösung zu sehen."
+                        "Tippe auf die Karte, um die Lösung zu sehen.",
+                        // **2026-08-05** — die wichtigste Regel fehlte:
+                        // selbst aufdecken zählt als „nicht gekonnt"
+                        // (`FlashcardsSessionController+Interaction`).
+                        "Wer selbst aufdeckt, bekommt die Karte nochmal."
                     ]
                 )
 
@@ -55,7 +69,7 @@ struct InfoView: View {
                     lines: [
                         "Französische Nomen und ihre Übersetzung üben.",
                         "la ville → die Stadt, le chat → die Katze.",
-                        "Fokus auf Wortschatz und Bedeutung."
+                        "Du übst, was die Wörter heißen."
                     ]
                 )
 
@@ -64,9 +78,9 @@ struct InfoView: View {
                     icon: "textformat.abc.dottedunderline",
                     tint: AppTheme.Colors.moduleArticles,
                     lines: [
-                        "le, la, l', les — den richtigen Artikel üben.",
+                        "Übe den richtigen Artikel: le, la, l', les.",
                         "Nur Nomen werden abgefragt.",
-                        "Perfekt für Genus-Training!"
+                        "So merkst du dir, ob ein Wort le oder la ist."
                     ]
                 )
 
@@ -76,8 +90,11 @@ struct InfoView: View {
                     tint: AppTheme.Colors.moduleVerbs,
                     lines: [
                         "Französische Verben und ihre Übersetzungen.",
-                        "Fokus auf die wichtigsten Verben.",
-                        "Sprechen oder Tippen — du entscheidest."
+                        "Du übst die Verben, die du am meisten brauchst.",
+                        // **2026-08-05** — stand hier falsch: Sprechen und
+                        // Tippen sind im Verben-Modus aktiv gesperrt
+                        // (`TrainingView+AudioFlow`), es läuft als Auswahl.
+                        "Du wählst aus vier Antworten die richtige."
                     ]
                 )
 
@@ -87,8 +104,10 @@ struct InfoView: View {
                     tint: AppTheme.Colors.moduleVerbforms,
                     lines: [
                         "Konjugation französischer Verben üben.",
-                        "je vais, tu vas, il va — alle Formen trainieren.",
-                        "Kommt bald — Konjugationsdaten werden aufgebaut."
+                        "Trainiere alle Formen: je vais, tu vas, il va.",
+                        // **2026-08-05** — stand hier „Kommt bald", obwohl das Modul
+                        // vier Zeitformen fertig kann (`VerbformsEngine`).
+                        "Präsens, Imparfait, Futur und Passé composé."
                     ]
                 )
 
@@ -98,11 +117,13 @@ struct InfoView: View {
                     tint: AppTheme.Colors.moduleVocabulary,
                     lines: [
                         "Alle Vokabeln aus deinen Lernlisten üben.",
-                        "Sprechen oder Tippen — du entscheidest.",
-                        // Dauer kommt aus der globalen Settings-Einstellung —
-                        // Info-Zeile bleibt damit automatisch korrekt, wenn
-                        // der User die Dauer auf 20/30/60 s stellt.
-                        "\(SpeedRoundTerminology.name): \(SpeedRoundSettings.currentLabel) Countdown!"
+                        "Sprechen oder Tippen? Du entscheidest.",
+                        // **2026-08-05** — hier stand der Speed-Modus. Den
+                        // gibt es in genau diesem Modul nicht mehr (siehe
+                        // `TrainingView+Layout`: „Vokabeln hat kein Speed
+                        // Round mehr"), nur noch bei Nomen, Artikel,
+                        // Verben, Verbformen und Akzenten.
+                        "Alle Wortarten gemischt in einer Runde."
                     ]
                 )
 
@@ -112,8 +133,8 @@ struct InfoView: View {
                     tint: AppTheme.Colors.moduleQuiz,
                     lines: [
                         "Multiple Choice, Paare finden, Tippen, Lückentext.",
-                        "Wähle 5 bis 30 Fragen pro Runde.",
-                        "Ergebnis am Ende mit Auswertung."
+                        "Wähle 5, 10, 15, 20, 25 oder 30 Fragen.",
+                        "Am Ende siehst du, wie gut du warst."
                     ]
                 )
 
@@ -122,9 +143,16 @@ struct InfoView: View {
                     icon: "camera.viewfinder",
                     tint: AppTheme.Colors.moduleScan,
                     lines: [
-                        "Fotografiere eine Vokabel-Seite.",
-                        "KI erkennt Vokabelpaare automatisch.",
-                        "Prüfen, importieren, direkt loslegen."
+                        "Fotografiere eine Seite mit Vokabeln, eine pro Durchgang.",
+                        "Du kannst auch ein Bild aus deinen Fotos nehmen.",
+                        // **2026-08-05** — ehrlicher Hinweis (User-
+                        // Entscheidung). „KI erkennt automatisch" klang
+                        // so, als liefe das auf dem Handy; tatsächlich
+                        // geht das Bild an einen Dienst im Netz
+                        // (`ClaudeHaikuScanAIClient`). Ersetzt keine
+                        // Datenschutzerklärung, die fehlt der App noch.
+                        "Dein Foto wird kurz an unseren Lese-Dienst geschickt.",
+                        "Du prüfst alles, speicherst es und übst sofort."
                     ]
                 )
 
@@ -133,9 +161,13 @@ struct InfoView: View {
                     icon: "list.bullet.rectangle.fill",
                     tint: AppTheme.Colors.moduleLists,
                     lines: [
-                        "Meine Lernlisten anlegen und verwalten.",
-                        "Wörterbuch zeigt alle gelernten Vokabeln.",
-                        "Einträge bearbeiten und löschen."
+                        "Du legst eigene Lernlisten an.",
+                        // **2026-08-05** — stand: „zeigt alle gelernten
+                        // Vokabeln". Doppelt falsch: das Lexikon kennt
+                        // den Lernstand gar nicht, und ohne Sucheingabe
+                        // zeigt es überhaupt nichts.
+                        "Im Wörterbuch schlägst du jedes Wort nach.",
+                        "In deinen Listen kannst du Wörter ändern und löschen."
                     ]
                 )
 
@@ -235,10 +267,13 @@ struct InfoView: View {
 
             // Abschnitt 1 — Einstieg (max. 2 Zeilen, sehr einfach)
             VStack(alignment: .leading, spacing: 4) {
-                Text("In den Spielen lernst du und wirst immer besser.")
+                // **2026-08-05** — stand: „In den Spielen lernst du".
+                // Gilt nur für Word Runner; das Elumi-Spiel hat keinen
+                // Vokabelinhalt und vergibt kein XP.
+                Text("Spiele sind deine Belohnung fürs Lernen.")
                     .font(.system(size: 14, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
-                Text("Dabei sammelst du XP und bekommst Spiele.")
+                Text("Beim Üben sammelst du XP und bekommst Spiele.")
                     .font(.system(size: 14, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
@@ -248,9 +283,9 @@ struct InfoView: View {
                 emoji: "⭐",
                 title: "XP",
                 lines: [
-                    "XP bekommst du für richtige Antworten.",
+                    "XP bekommst du fürs Üben, vor allem für richtige Antworten.",
                     "Je mehr XP du hast, desto höher steigst du im Level.",
-                    "XP zeigen, wie gut du bist."
+                    "XP zeigen, wie viel du schon geübt hast."
                 ]
             )
 
@@ -260,8 +295,10 @@ struct InfoView: View {
                 title: "Spiele",
                 lines: [
                     "Spiele bekommst du durch Lernen.",
-                    "Du kannst sie im Arcade-Spiel einsetzen.",
-                    "Ein Spiel ist ein Versuch im Arcade."
+                    // **2026-08-05** — „Arcade" ist im Code nur der Name
+                    // des Elumi-Spiels, nicht das Dach über beiden.
+                    "Mit einem Spiel startest du eine Runde.",
+                    "Du hast dabei vier Leben."
                 ]
             )
 
@@ -279,7 +316,7 @@ struct InfoView: View {
 
             // Abschnitt 5 — Die Spiele (beide je 1 Zeile, sehr einfach)
             VStack(alignment: .leading, spacing: 10) {
-                Text("Die Spiele")
+                Text("Das kannst du spielen")
                     .font(.system(size: 15, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                 gamesProgressGameLine(
