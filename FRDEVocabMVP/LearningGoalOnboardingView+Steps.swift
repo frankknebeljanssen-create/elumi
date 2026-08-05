@@ -227,33 +227,35 @@ extension LearningGoalOnboardingView {
     /// größer, gelb und bekommt den kräftigeren Auftritt.
     var previewIsWow: Bool { weeklyTarget >= 5 }
 
-    /// **2026-08-05, zweite Runde** — Auftritt des Vorschau-Titels in
-    /// drei Stufen statt einer (User-Spec: "evtl. nochmal kleiner und
-    /// größer werden lassen, Animation also einen Tick länger"):
-    /// klein → über die Zielgröße hinaus → kurz darunter → auf 1.0.
-    /// Das liest sich als „bäm … und sitzt" statt als einmaliges
-    /// Aufploppen.
+    /// **2026-08-05, dritte Runde — Zittern behoben.**
     ///
-    /// Wie beim Auswahl-Blinken bewusst als endliche, fest terminierte
-    /// Kette gebaut — keine Wiederholungskurve, die hängenbleiben kann.
+    /// Vorher liefen drei Animationen hintereinander (klein → über die
+    /// Zielgröße → darunter → auf 1.0), jede per `DispatchQueue`
+    /// gestartet. Zwei davon waren Federn. Eine Feder, die mitten im
+    /// Flug von der nächsten Animation überschrieben wird, hat an dieser
+    /// Stelle einen Geschwindigkeitssprung — genau das war das Zittern,
+    /// das der Nutzer gesehen hat ("das ist unruhig, wenn's kleiner und
+    /// wieder größer wird").
+    ///
+    /// Jetzt macht das **eine einzige, schwach gedämpfte Feder**. Das
+    /// Überschwingen und das Zurückschwingen entstehen von selbst aus
+    /// der Physik, sind dadurch stetig und damit glatt. Nebenbei fällt
+    /// die ganze Timing-Kette weg.
+    ///
+    /// `dampingFraction` steuert, wie stark es nachschwingt: 0.42 gibt
+    /// ein deutliches Wippen für die WOW-Fassung, 0.62 ein dezenteres
+    /// für die normalen Werte.
     private func runPreviewHeadlineAnimation() {
-        let overshoot: CGFloat = previewIsWow ? 1.18 : 1.08
-        let dip: CGFloat = previewIsWow ? 0.93 : 0.97
-
         previewHeadlineScale = previewIsWow ? 0.55 : 0.85
 
-        withAnimation(.spring(response: 0.34, dampingFraction: 0.55).delay(0.05)) {
-            previewHeadlineScale = overshoot
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.42) {
-            withAnimation(.easeInOut(duration: 0.20)) {
-                previewHeadlineScale = dip
-            }
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.64) {
-            withAnimation(.spring(response: 0.34, dampingFraction: 0.62)) {
-                previewHeadlineScale = 1.0
-            }
+        withAnimation(
+            .spring(
+                response: previewIsWow ? 0.55 : 0.45,
+                dampingFraction: previewIsWow ? 0.42 : 0.62
+            )
+            .delay(0.05)
+        ) {
+            previewHeadlineScale = 1.0
         }
     }
 

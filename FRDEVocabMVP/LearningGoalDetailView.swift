@@ -80,17 +80,23 @@ struct LearningGoalDetailView: View {
                 onSettings: { openSettings() }
             )
         }
-        .alert("Neues Ziel setzen?", isPresented: $isShowingResetConfirm) {
-            Button("Abbrechen", role: .cancel) { }
-            Button("Neues Ziel") {
-                // Plan löschen → `RootContentView.shouldShowGoalOnboarding`
-                // greift und legt das Onboarding-Overlay wieder über die
-                // App. Kein zweiter Satz Auswahl-Screens nötig.
-                goalStore.reset()
-                goHome()
-            }
-        } message: {
-            Text("Du gehst die Fragen noch einmal durch. Dein bisheriger Wochenfortschritt geht dabei verloren.")
+        // **2026-08-05** — eigenes Sheet statt `.alert(...)` (User-Spec:
+        // "bitte nie keine grauen Popups, nicht mehr, das sieht aus wie
+        // eine Geschäftsapp"). System-Alerts sind fix grau/weiß und
+        // nicht themebar. Gleiches Muster wie `SectionInfoSheet` und
+        // `WackelkandidatenConfirmationSheet` im Lernstatus.
+        .sheet(isPresented: $isShowingResetConfirm) {
+            NewGoalConfirmSheet(
+                onConfirm: {
+                    isShowingResetConfirm = false
+                    // Plan löschen → `RootContentView.shouldShowGoalOnboarding`
+                    // greift und legt das Onboarding-Overlay wieder über
+                    // die App. Kein zweiter Satz Auswahl-Screens nötig.
+                    goalStore.reset()
+                    goHome()
+                },
+                onCancel: { isShowingResetConfirm = false }
+            )
         }
     }
 
@@ -270,4 +276,62 @@ struct LearningGoalDetailView: View {
     }
 
     private var accentGreen: Color { AppTheme.Colors.moduleNomen }
+}
+
+/// **2026-08-05** — Bestätigung im Elumi-Design statt System-Alert.
+/// Der graue iOS-Alert ist nicht themebar und bricht die Bildsprache
+/// („sieht aus wie eine Geschäftsapp"). Aufbau bewusst identisch zu den
+/// anderen Popups der App: Icon-Kreis, Titel, Erklärtext, Aktion,
+/// unauffälliger Abbruch darunter.
+private struct NewGoalConfirmSheet: View {
+    let onConfirm: () -> Void
+    let onCancel: () -> Void
+
+    var body: some View {
+        VStack(spacing: 18) {
+            Spacer(minLength: 24)
+
+            ZStack {
+                Circle()
+                    .fill(AppTheme.Colors.cta.opacity(0.18))
+                    .frame(width: 84, height: 84)
+                Text("🎯")
+                    .font(.system(size: 38))
+            }
+
+            VStack(spacing: 8) {
+                Text("Neues Ziel setzen?")
+                    .font(.system(size: 24, weight: .black, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+
+                Text("Du gehst die Fragen noch einmal durch. Dein Wochenfortschritt fängt dabei von vorne an.")
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.horizontal, 28)
+
+            Button(action: onConfirm) {
+                Text("Neues Ziel")
+                    .font(.system(size: 17, weight: .black, design: .rounded))
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 52)
+            }
+            .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
+            .padding(.horizontal, 24)
+            .padding(.top, 4)
+
+            Button("Doch nicht") { onCancel() }
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+
+            Spacer(minLength: 20)
+        }
+        .padding(.top, 12)
+        .frame(maxWidth: .infinity)
+        .background(AppTheme.Colors.background)
+        .presentationDetents([.height(400)])
+        .presentationDragIndicator(.visible)
+    }
 }

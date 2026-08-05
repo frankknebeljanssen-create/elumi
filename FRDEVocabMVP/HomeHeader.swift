@@ -22,6 +22,18 @@ struct HomeHeader: View {
     var onStreakTap: (() -> Void)? = nil
     var mascotImageName: String = "SplashCharacter"
 
+    /// **2026-08-05** — Streak-Pille ausblenden, wenn die Ziel-Karte
+    /// direkt darunter denselben Sachverhalt schon zeigt.
+    ///
+    /// Die Pille sagt „🔥 3 Tage", die Ziel-Karte sagt „Noch 2 Tage
+    /// diese Woche" — zweimal Wochenfortschritt in unterschiedlicher
+    /// Form, direkt untereinander. Ohne Ziel bleibt die Pille wie
+    /// bisher, dann ist sie die einzige Fortschritts-Anzeige oben.
+    ///
+    /// Spart nebenbei rund 40 pt Höhe, ohne etwas zu verkleinern —
+    /// Home soll ohne Scrollen auskommen (User-Spec).
+    var showsStreakPill: Bool = true
+
     /// 48 → 42 pt (−12 %): User-Wunsch „Axolotl darf nicht stärker
     /// wirken als die Hero-Cards".
     private static let mascotSize: CGFloat = 42
@@ -100,13 +112,15 @@ struct HomeHeader: View {
                 // (User-Feedback). Tap navigiert zum Trophy/
                 // Fortschritt-Screen via `onStreakTap`-Closure. Ohne
                 // Closure bleibt sie statisch (Backward-Compat).
-                if let onStreakTap {
-                    Button(action: onStreakTap) {
+                if showsStreakPill {
+                    if let onStreakTap {
+                        Button(action: onStreakTap) {
+                            streakPill
+                        }
+                        .buttonStyle(.plain)
+                    } else {
                         streakPill
                     }
-                    .buttonStyle(.plain)
-                } else {
-                    streakPill
                 }
             }
 

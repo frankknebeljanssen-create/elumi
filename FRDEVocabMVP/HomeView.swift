@@ -97,16 +97,16 @@ struct HomeView: View {
                 title: "Training",
                 subtitle: "Karteikarten, Vokabeln & Spezial",
                 accent: AppTheme.Colors.moduleVocabulary,
-                height: 86,
+                height: 72,
                 titleSize: 19,
                 showsChevron: true,
                 cornerRadius: 22,
                 horizontalPadding: 16,
-                verticalPadding: 12,
-                iconFrameSize: 52,
+                verticalPadding: 10,
+                iconFrameSize: 44,
                 icon: {
                     Image(systemName: "graduationcap.fill")
-                        .font(.system(size: 30, weight: .bold))
+                        .font(.system(size: 26, weight: .bold))
                         .foregroundStyle(.white)
                 },
                 onTap: { openHomeScreen(.trainingHub) }
@@ -118,14 +118,14 @@ struct HomeView: View {
                 title: "Quiz",
                 subtitle: "Teste dich!",
                 accent: AppTheme.Colors.moduleQuiz,
-                height: 86,
+                height: 72,
                 titleSize: 19,
                 showsChevron: true,
                 cornerRadius: 22,
                 horizontalPadding: 16,
-                verticalPadding: 12,
-                iconFrameSize: 52,
-                icon: { HomeModuleIconView(icon: .quiz, size: 44, glyphTint: .white) },
+                verticalPadding: 10,
+                iconFrameSize: 44,
+                icon: { HomeModuleIconView(icon: .quiz, size: 38, glyphTint: .white) },
                 onTap: { openHomeScreen(.quiz(nil)) }
             )
 
@@ -145,18 +145,18 @@ struct HomeView: View {
                 title: "Daily Drop",
                 subtitle: "Heute schon gecheckt?",
                 accent: AppTheme.Colors.elumiPinkDeep,
-                height: 86,
+                height: 72,
                 titleSize: 19,
                 showsChevron: true,
                 cornerRadius: 22,
                 horizontalPadding: 16,
-                verticalPadding: 12,
-                iconFrameSize: 52,
+                verticalPadding: 10,
+                iconFrameSize: 44,
                 icon: {
                     // **Polish 2026-05-07** — Sparkles-SF-Symbol durch
                     // programmatische 3-Karten-Stack-Illustration
                     // ersetzt (siehe `DailyDropStackedCardsIcon`).
-                    DailyDropStackedCardsIcon(size: 40)
+                    DailyDropStackedCardsIcon(size: 34)
                 },
                 onTap: { openHomeScreen(.elumi) }
             )
@@ -195,7 +195,7 @@ struct HomeView: View {
                 // mit dem Titel im Scan-Modus selbst.
                 title: "Vokabeln\nscannen",
                 accent: AppTheme.Colors.moduleScan,
-                height: 76,
+                height: 64,
                 // **2026-06-09** — Beide Tools-Cards mit festem, gleichem
                 // Titel-Grad. Vorher stand auf beiden der Default 17 pt,
                 // aber „Lernlisten" ist länger und wurde per
@@ -217,7 +217,7 @@ struct HomeView: View {
                 // die eigenen Listen dahinter stecken.
                 title: "Alle\nLernlisten",
                 accent: AppTheme.Colors.moduleLists,
-                height: 76,
+                height: 64,
                 titleSize: 15,
                 titleLineLimit: 2,
                 icon: { HomeModuleIconView(icon: .listen, size: 48, glyphTint: AppTheme.Colors.moduleLists) },
@@ -249,7 +249,11 @@ struct HomeView: View {
                         // (User-Feedback „Pill tappable, führt zum
                         // Pokal"). Routing über die existierende
                         // `openHomeScreen`-Closure.
-                        onStreakTap: { openHomeScreen(.trophy) }
+                        onStreakTap: { openHomeScreen(.trophy) },
+                        // Bei gesetztem Ziel übernimmt die Ziel-Karte
+                        // darunter die Fortschritts-Anzeige — siehe
+                        // `HomeHeader.showsStreakPill`.
+                        showsStreakPill: goalStore.plan == nil
                     )
                     .appEntryTransition()
 

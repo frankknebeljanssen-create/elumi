@@ -80,9 +80,12 @@ struct HomeGoalCard: View {
         }
     }
 
-    private var titleText: String {
-        plan.content?.displayTitle ?? "Dein Wochenziel"
-    }
+    /// **2026-08-05** — immer „Dein Ziel", nie der Anlass-Titel
+    /// (User-Spec: "das muss dann dein Ziel heißen, weil das führt auf
+    /// dein Ziel"). Vorher stand hier z. B. „Ein Kapitel oder eine
+    /// Unité üben", was wie eine weitere Übungs-Karte aussah statt wie
+    /// der Einstieg ins Ziel. Der Anlass steht ja im Detail-Screen.
+    private var titleText: String { "Dein Ziel" }
 
     /// Countdown nur bei naher Deadline (≤ 7 Tage). Weiter entfernte
     /// Termine erzeugen nur Dauer-Druck ohne Handlungsrelevanz.
