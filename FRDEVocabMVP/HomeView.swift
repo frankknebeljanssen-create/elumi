@@ -27,6 +27,13 @@ import SwiftUI
 struct HomeView: View {
     @Environment(\.appUsesGlobalChrome) private var usesGlobalChrome
     @ObservedObject var feedbackPlayer: FeedbackPlayer
+    /// **Ziel-System (2026-08-05)** — treibt die Ziel-Karte oben.
+    /// Singleton, deshalb hier direkt beobachtet statt durchgereicht.
+    @ObservedObject private var goalStore = LearningGoalStore.shared
+    /// Für den Inhalts-Fortschritt der Ziel-Karte. Optional, weil der
+    /// Store beim allerersten Home-Render noch nicht bereitstehen muss —
+    /// die Karte zeigt dann nur den Wochenrhythmus.
+    var listStore: VocabularyListStore? = nil
     let openScreen: (AppScreen) -> Void
     let openSettings: () -> Void
     let openInfo: () -> Void
@@ -257,11 +264,33 @@ struct HomeView: View {
                     // Drop). Karteikarten ist als Auswahl-Option in den
                     // Training-Hub gewandert (nicht mehr als eigene
                     // Home-Card).
+                    // **Ziel-Karte (2026-08-05)** — sitzt in der Lücke
+                    // zwischen Header und Modul-Karten. Nur sichtbar,
+                    // wenn ein Ziel gesetzt ist; ohne Ziel bleibt Home
+                    // exakt wie vorher.
+                    //
+                    // Das ist die Heimat des Lernziels in der laufenden
+                    // App: Fortschritt sehen UND per Tap ändern. Ohne
+                    // sie war das Onboarding-Versprechen ("du kannst
+                    // dein Ziel jederzeit ändern") nicht einlösbar.
+                    if let plan = goalStore.plan {
+                        HomeGoalCard(
+                            plan: plan,
+                            rhythm: goalStore.rhythmProgress,
+                            contentProgress: listStore.map {
+                                goalStore.contentProgress(listStore: $0)
+                            } ?? nil,
+                            onTap: { openHomeScreen(.learningGoal) }
+                        )
+                        .padding(.top, 20)
+                        .appEntryTransition(delay: 0.05)
+                    }
+
                     wideMethodCards
                         // **2026-06-09** — Top-Padding 24 → 44 pt
                         // (User-Spec „Cards etwas runter, mehr Abstand
                         // zur Streak-Card").
-                        .padding(.top, 44)
+                        .padding(.top, goalStore.plan == nil ? 44 : 20)
                         .appEntryTransition(delay: 0.1)
                         // Bottom-Padding 8 pt — Atemluft nach der
                         // letzten Method-Card. Die Tools-Row (Scannen/

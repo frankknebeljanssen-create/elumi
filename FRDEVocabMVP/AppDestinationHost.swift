@@ -43,6 +43,13 @@ struct AppDestinationHost: View {
             quizDestination(launchContext: launchContext)
         case .hearts:
             heartsDestination
+        case .learningGoal:
+            LearningGoalDetailView(
+                feedbackPlayer: feedbackPlayer,
+                listStore: runtime.ensureListStoreReady(),
+                goHome: goHome,
+                openSettings: openSettings
+            )
         case .lernstatus:
             LernstatusView(
                 feedbackPlayer: feedbackPlayer,

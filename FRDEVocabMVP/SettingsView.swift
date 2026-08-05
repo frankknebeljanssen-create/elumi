@@ -141,7 +141,7 @@ struct SettingsView: View {
                         // „Vorname und Profil" und zum visuellen
                         // Avatar-Pattern).
                         Text("Mein Profil")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .font(.system(size: 17, weight: .bold, design: .rounded))
                         Text("Vorname und Profil")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
@@ -153,7 +153,7 @@ struct SettingsView: View {
                     ElumiIconView(icon: .meinKonto, size: 56)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(18)
+                .padding(14)
                 .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
             }
             .buttonStyle(.plain)
@@ -173,7 +173,7 @@ struct SettingsView: View {
                         // Accounts" → „Account wechseln" (klare
                         // Aktion: Multi-User-Switcher öffnen).
                         Text("Account wechseln")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .font(.system(size: 17, weight: .bold, design: .rounded))
                         Text(accountSwitcherSubline)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
@@ -197,7 +197,7 @@ struct SettingsView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(18)
+                .padding(14)
                 .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
             }
             .buttonStyle(.plain)
@@ -217,7 +217,7 @@ struct SettingsView: View {
                     // den Zustand). Subtitle gekürzt: „Startsound
                     // und Feedback-Töne" → „Effekte und Töne".
                     Text("Sound")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
                     Text("Effekte und Töne")
                         .font(.system(size: 13, weight: .medium, design: .rounded))
                         .foregroundStyle(.secondary)
@@ -245,7 +245,7 @@ struct SettingsView: View {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Stimme")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .font(.system(size: 17, weight: .bold, design: .rounded))
                         Text(voiceSettingsSubline)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
@@ -258,7 +258,7 @@ struct SettingsView: View {
                         .frame(width: 56, height: 56)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(18)
+                .padding(14)
                 .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
             }
             .buttonStyle(.plain)
@@ -274,7 +274,7 @@ struct SettingsView: View {
                         // bürokratisches Info-Sammelbecken).
                         // Subtitle bleibt unverändert.
                         Text("Tipps zur App")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .font(.system(size: 17, weight: .bold, design: .rounded))
                         Text("Hilfe und Hinweise zur App")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
@@ -286,7 +286,7 @@ struct SettingsView: View {
                     ElumiIconView(icon: .info, size: 56)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(18)
+                .padding(14)
                 .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
             }
             .buttonStyle(.plain)
@@ -379,7 +379,7 @@ struct SettingsView: View {
                     // Modus?" (Tippfehler „Moduss" raus, klare
                     // Frage statt Beamten-Ankündigung).
                     Text("Speed-Dauer")
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                     Text("Wie lange läuft Speed-Modus?")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -422,7 +422,7 @@ struct SettingsView: View {
             .pickerStyle(.segmented)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(18)
+        .padding(14)
         .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 
@@ -441,7 +441,7 @@ struct SettingsView: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Text enger zuschneiden")
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                     Text("Scan: Freier Text")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -461,7 +461,7 @@ struct SettingsView: View {
             Toggle(isOn: $scanSmartRegionCropEnabled) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(scanSmartRegionCropEnabled ? "Zuschneiden aktiv" : "Ganzes Foto behalten")
-                        .font(.system(size: 18, weight: .semibold, design: .rounded))
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
                     Text(
                         scanSmartRegionCropEnabled
                             ? "Schneidet Poster-/Packungs-Fotos auf den erkannten Textbereich."
@@ -475,7 +475,7 @@ struct SettingsView: View {
             .tint(sectionStyle.accent)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(18)
+        .padding(14)
         .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
     }
 
@@ -487,7 +487,7 @@ struct SettingsView: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Wörterbuch")
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                     if dictionaryStats.total > 0 {
                         Text("\(dictionaryStats.total.formatted(.number.locale(Locale(identifier: "de_DE")))) Einträge")
                             .font(.subheadline)
@@ -506,7 +506,7 @@ struct SettingsView: View {
                 ElumiIconView(icon: .woerterbuch, size: 56)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(18)
+            .padding(14)
             .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
         }
         .buttonStyle(.plain)
@@ -537,7 +537,7 @@ struct SettingsView: View {
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(AppTheme.Colors.elumiBlue)
                 Text("Globale Lernlisten-Auswahl")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
             }
             Text("Wenn aktiv, nutzen Karteikarten, Quiz, Training und Word Runner dieselbe Lernlisten-Auswahl. Wenn aus, behält jedes Modul seine eigene. Akzente und persönliche Stapel sind unabhängig.")
@@ -592,7 +592,7 @@ struct SettingsView: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Elumi Spiel")
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                     Text("Spielregeln & Icons")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -604,7 +604,7 @@ struct SettingsView: View {
                 ElumiIconView(icon: .elumiSpiel, size: 56)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(18)
+            .padding(14)
             .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.soft)
         }
         .buttonStyle(.plain)
@@ -635,13 +635,13 @@ struct SettingsView: View {
             } label: {
                 HStack(spacing: 12) {
                     Image(systemName: "wrench.and.screwdriver.fill")
-                        .font(.system(size: 22, weight: .bold))
+                        .font(.system(size: 19, weight: .bold))
                         .foregroundStyle(AppTheme.Colors.developerAccent)
                         .frame(width: 36, height: 36)
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Developer")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .font(.system(size: 17, weight: .bold, design: .rounded))
                             .foregroundStyle(AppTheme.Colors.textPrimary)
                         Text(isDeveloperExpanded
                              ? "Regler für Tester:innen & Entwicklung"
@@ -659,7 +659,7 @@ struct SettingsView: View {
                         .rotationEffect(.degrees(isDeveloperExpanded ? 180 : 0))
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(18)
+                .padding(14)
                 .appCardBackground(tint: AppTheme.Colors.developerAccent)
             }
             .buttonStyle(.plain)
@@ -701,7 +701,7 @@ struct SettingsView: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Tipps erneut anzeigen")
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                     Text(hasPending
                          ? "\(openCount) von \(HintStore.allHintIDs.count) Tipps offen"
@@ -725,7 +725,7 @@ struct SettingsView: View {
                     .animation(.easeInOut(duration: 0.22), value: hasPending)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(18)
+            .padding(14)
             .appCardBackground(tint: hasPending
                                ? AppTheme.Colors.success
                                : AppTheme.Colors.developerAccent)
@@ -754,7 +754,7 @@ struct SettingsView: View {
         } label: {
             HStack(spacing: 12) {
                 Text("Credits zurücksetzen")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
 
                 Spacer(minLength: 0)
@@ -765,7 +765,7 @@ struct SettingsView: View {
                     .frame(width: 56, height: 56)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(18)
+            .padding(14)
             .appCardBackground(tint: AppTheme.Colors.developerAccent)
         }
         .buttonStyle(.plain)
@@ -793,7 +793,7 @@ struct SettingsView: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Meine Lernlisten löschen")
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                     Text("Entfernt alle selbst angelegten Lernlisten. Nicht rückgängig zu machen.")
                         .font(.subheadline)
@@ -810,7 +810,7 @@ struct SettingsView: View {
                     .frame(width: 56, height: 56)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(18)
+            .padding(14)
             .appCardBackground(tint: AppTheme.Colors.developerAccent)
         }
         .buttonStyle(.plain)
@@ -956,7 +956,7 @@ struct SettingsView: View {
             // Reset-Block
             VStack(alignment: .leading, spacing: 4) {
                 Text("Spielstand zurücksetzen")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
                 Text("XP, Streak, Credits, Highscore, Tages-Challenge und Sammelwerte (Würmer, Wasserfloh, Algenkugel) auf Ausgangszustand. Profil und Custom-Lernlisten bleiben erhalten.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -966,7 +966,7 @@ struct SettingsView: View {
                 isShowingDevResetAlert = true
             } label: {
                 Text("Jetzt zurücksetzen")
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: 44)
@@ -982,10 +982,10 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
                     Text("Spiele manuell setzen")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
                     Spacer(minLength: 0)
                     Text("\(devSpiele)")
-                        .font(.system(size: 20, weight: .black, design: .rounded))
+                        .font(.system(size: 17, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.cta)
                         .monospacedDigit()
                 }
@@ -1013,7 +1013,7 @@ struct SettingsView: View {
             // wird).
             VStack(alignment: .leading, spacing: 8) {
                 Text("XP manuell setzen")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
                 HStack(spacing: 6) {
                     ForEach([0, 100, 500, 1000, 2500, 5000], id: \.self) { xp in
                         Button {
@@ -1051,7 +1051,7 @@ struct SettingsView: View {
             // Live-Statuszeile mit.
             VStack(alignment: .leading, spacing: 8) {
                 Text("Ziel-System testen")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
 
                 devGoalStatusBox
 
@@ -1090,7 +1090,7 @@ struct SettingsView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(18)
+        .padding(14)
         .appCardBackground(tint: AppTheme.Colors.developerAccent)
         .alert("Spielstand zurücksetzen?", isPresented: $isShowingDevResetAlert) {
             Button("Abbrechen", role: .cancel) { }
@@ -1162,7 +1162,7 @@ struct SettingsView: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text("Spiel-Events ausprobieren")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
                 Text("Wähle, welches Event beim nächsten Spielstart direkt erscheinen soll. Für Tester und Neugierige. Mehrere gleichzeitig möglich.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -1196,7 +1196,7 @@ struct SettingsView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(18)
+        .padding(14)
         .appCardBackground(tint: AppTheme.Colors.developerAccent)
     }
 
@@ -1227,7 +1227,7 @@ struct SettingsView: View {
                     .font(.system(size: 11, weight: .semibold, design: .rounded))
                     .foregroundStyle(isQueued ? AppTheme.Colors.success : AppTheme.Colors.textSecondary)
                 Image(systemName: isQueued ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.system(size: 15, weight: .bold))
                     .foregroundStyle(isQueued ? AppTheme.Colors.success : AppTheme.Colors.textSecondary)
             }
             .padding(.horizontal, 12)
@@ -1466,7 +1466,7 @@ private struct ArcadeRulesDetailSheet: View {
     private func section<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .font(.system(size: 15, weight: .bold, design: .rounded))
                 .foregroundStyle(sectionStyle.accent)
             VStack(alignment: .leading, spacing: 6) {
                 content()
@@ -1552,11 +1552,11 @@ private struct DictionaryStatsDetailSheet: View {
             // Total
             HStack {
                 Text("Gesamt")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                 Spacer()
                 Text("\(stats.total.formatted(.number.locale(Locale(identifier: "de_DE"))))")
-                    .font(.system(size: 22, weight: .black, design: .rounded))
+                    .font(.system(size: 19, weight: .black, design: .rounded))
                     .foregroundStyle(sectionStyle.accent)
                     .monospacedDigit()
             }
@@ -1570,11 +1570,11 @@ private struct DictionaryStatsDetailSheet: View {
                     ForEach(stats.breakdown) { entry in
                         HStack {
                             Text(entry.label)
-                                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                .font(.system(size: 14, weight: .semibold, design: .rounded))
                                 .foregroundStyle(AppTheme.Colors.textPrimary)
                             Spacer()
                             Text(entry.count.formatted(.number.locale(Locale(identifier: "de_DE"))))
-                                .font(.system(size: 15, weight: .bold, design: .rounded))
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
                                 .foregroundStyle(sectionStyle.accent)
                                 .monospacedDigit()
                         }

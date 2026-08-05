@@ -119,6 +119,7 @@ struct ContentView: View {
                     NavigationStack(path: navigationPathBinding) {
                     HomeView(
                         feedbackPlayer: feedbackPlayer,
+                        listStore: runtime.listStore,
                         openScreen: { openScreenWhenReady($0) },
                         openSettings: { openSettingsScreen() },
                         openInfo: { openInfoScreen() },

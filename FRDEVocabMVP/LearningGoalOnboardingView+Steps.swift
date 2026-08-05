@@ -517,43 +517,55 @@ extension LearningGoalOnboardingView {
             // weiter unten sind").
             Spacer(minLength: AppTheme.Spacing.lg)
 
+            // **2026-08-05** — Icons sind exakt die vom Home-Screen
+            // (User-Spec: "die Icons müssen exakt die Icons aus dem Main
+            // Screen sein"). Emoji-Platzhalter raus; hier stehen jetzt
+            // dieselben Komponenten wie in `HomeView.wideMethodCards` —
+            // `graduationcap.fill` für Training, `HomeModuleIconView`
+            // fürs Quiz, `DailyDropStackedCardsIcon` für den Drop.
+            // Dadurch erkennt der Nutzer die Karten auf Home sofort
+            // wieder; das ist der ganze Zweck dieses Screens.
             VStack(spacing: 10) {
-                // **2026-08-05** — "für Französisch" ergänzt (User-Spec:
-                // "wir haben nirgendwo in der App irgendwo das Wort
-                // Französisch"). Steht bewusst im ersten und wichtigsten
-                // Modul, damit klar ist, worum es überhaupt geht.
                 moduleRow(
-                    emoji: "🎓",
                     title: "Training",
                     subtitle: "Karteikarten, Vokabeln und Spezial-Übungen für Französisch",
                     tint: AppTheme.Colors.moduleVocabulary
-                )
+                ) {
+                    Image(systemName: "graduationcap.fill")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundStyle(.white)
+                }
                 // **2026-08-05, Faktenfehler behoben** — vorher stand
                 // hier "mit Punkten und Herzen". Herzen gibt es im Quiz
                 // nicht; gesammelt werden Würmchen und XP.
                 moduleRow(
-                    emoji: "❓",
                     title: "Quiz",
                     subtitle: "Teste dich und sammle Würmchen und XP",
                     tint: AppTheme.Colors.moduleQuiz
-                )
+                ) {
+                    HomeModuleIconView(icon: .quiz, size: 38, glyphTint: .white)
+                }
                 if FeatureFlags.leaChatEnabled {
                     moduleRow(
-                        emoji: "💬",
                         title: "Léa-Chat",
                         subtitle: "Schreib auf Französisch mit Léa",
                         tint: AppTheme.Colors.elumiMint
-                    )
+                    ) {
+                        Image(systemName: "bubble.left.and.bubble.right.fill")
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundStyle(.white)
+                    }
                 }
                 // **2026-08-05** — konkreter formuliert: der Daily Drop
                 // ist eine Slot-Maschine, an der man selbst dreht.
                 // "Überraschungs-Übung" verschwieg die Interaktion.
                 moduleRow(
-                    emoji: "🎰",
                     title: "Daily Drop",
                     subtitle: "Einmal am Tag am Rad drehen und deine Übung erspielen",
                     tint: AppTheme.Colors.elumiPinkDeep
-                )
+                ) {
+                    DailyDropStackedCardsIcon(size: 36)
+                }
             }
 
             // **2026-08-05** — größer, zentriert und in Grün (User-Spec:
@@ -573,13 +585,22 @@ extension LearningGoalOnboardingView {
         }
     }
 
-    private func moduleRow(emoji: String, title: String, subtitle: String, tint: Color) -> some View {
+    /// Icon kommt als ViewBuilder herein, damit jede Zeile exakt das
+    /// Home-Icon ihres Moduls rendern kann (SF-Symbol, Asset-Icon oder
+    /// programmatische Illustration) statt eines Emoji-Ersatzes.
+    private func moduleRow<Icon: View>(
+        title: String,
+        subtitle: String,
+        tint: Color,
+        @ViewBuilder icon: () -> Icon
+    ) -> some View {
         HStack(spacing: AppTheme.Spacing.md) {
             ZStack {
+                // Gefüllter Akzent-Chip wie auf den Home-Karten, damit
+                // die weißen Icons denselben Kontrast haben wie dort.
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(tint.opacity(0.20))
-                Text(emoji)
-                    .font(.system(size: 24))
+                    .fill(tint)
+                icon()
             }
             .frame(width: 48, height: 48)
 

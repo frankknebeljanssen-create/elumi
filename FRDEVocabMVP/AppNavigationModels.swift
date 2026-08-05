@@ -7,6 +7,11 @@ enum AppScreen: Hashable {
     case quiz(QuizLaunchContext?)
     case hearts      // Progress Hub (Fortschritt) — reached via Home Board tap
     case lernstatus  // Lernstatus-Detail (cross-modular per-Vokabel) — reached via HomeLernstatusCard tap
+    /// **Ziel-Detail (2026-08-05)** — Wochenrhythmus ändern, Inhaltsziel
+    /// einsehen, neues Ziel setzen. Erreichbar über die Ziel-Karte auf
+    /// Home und den Eintrag im Fortschritt-Screen. Löst das Versprechen
+    /// aus dem Onboarding ein ("du kannst dein Ziel jederzeit ändern").
+    case learningGoal
     case gameHub     // Game Hub (Reward + Spiel-Start) — reached via Footer-Snack
     case arcade(autoStart: Bool)  // Das eigentliche Spiel — Start-Overlay oder Direkt-Start
     /// **Word Runner** — Phase 7.5: jetzt als echte Navigation-Destination

@@ -38,6 +38,7 @@ struct TrophyView: View {
     @AppStorage(appElumiXPKey) private var collectedXP = 0
 
     @ObservedObject private var itemLearningStatusStore = ItemLearningStatusStore.shared
+    @ObservedObject private var goalStore = LearningGoalStore.shared
 
     /// **2026-08-05** — Treibt das Wackelkandidaten-Bestätigungs-Popup direkt
     /// von der Fortschritt-Seite aus (User-Spec: der „Wackelkandidaten
@@ -72,6 +73,14 @@ struct TrophyView: View {
                     onBack: { dismiss() }
                 )
                 heroProgressCard
+                // **Ziel-System (2026-08-05)** — zweite Heimat des
+                // Lernziels neben der Home-Karte. Hier gehört es
+                // thematisch hin, weil Streak, Level und Abzeichen
+                // schon auf diesem Screen wohnen. Nur sichtbar, wenn
+                // ein Ziel gesetzt ist.
+                if goalStore.plan != nil {
+                    goalCard
+                }
                 streakCard
                 lernstatusCard
                 achievementsCard
@@ -386,6 +395,67 @@ struct TrophyView: View {
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .appSetupCardBackground()
+    }
+
+    // MARK: - Ziel-Card
+
+    /// **Ziel-System (2026-08-05)** — kompakte Fassung der Home-Karte.
+    /// Führt auf denselben Detail-Screen, auf dem das Ziel geändert wird.
+    private var goalCard: some View {
+        Button {
+            navigate(.learningGoal)
+        } label: {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(goalStore.plan?.content?.displayTitle ?? "Dein Wochenziel")
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                }
+
+                let progress = goalStore.rhythmProgress
+                HStack(spacing: 6) {
+                    // Gewinn-Framing, nie Verlust — siehe
+                    // `HomeGoalCard`-Dateikommentar.
+                    Text(progress.isReached
+                         ? "Wochenziel geschafft! 🎉"
+                         : (progress.remainingDays == 1
+                            ? "Noch 1 Tag diese Woche"
+                            : "Noch \(progress.remainingDays) Tage diese Woche"))
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(progress.isReached
+                                         ? AppTheme.Colors.moduleNomen
+                                         : AppTheme.Colors.textSecondary)
+                    Spacer(minLength: 0)
+                    Text("\(progress.practicedDays)/\(progress.targetDays)")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .monospacedDigit()
+                }
+
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(AppTheme.Colors.textSecondary.opacity(0.18))
+                        Capsule()
+                            .fill(progress.isReached
+                                  ? AppTheme.Colors.moduleNomen
+                                  : sectionStyle.accent)
+                            .frame(width: geo.size.width * progress.fraction)
+                    }
+                }
+                .frame(height: 7)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .appSetupCardBackground()
+        }
+        .buttonStyle(AppCardPressStyle())
     }
 
     private func lernstatusColumn(icon: String, tint: Color, label: String, value: Int) -> some View {

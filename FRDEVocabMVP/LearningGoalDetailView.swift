@@ -1,0 +1,273 @@
+import SwiftUI
+
+// LearningGoalDetailView.swift
+// **Ziel-System Phase 3 (2026-08-05)** — der Screen, auf dem das Ziel
+// tatsächlich geändert wird.
+//
+// Löst das Versprechen aus dem Onboarding ein ("Keine Sorge, du kannst
+// dein Ziel jederzeit ändern!"). Vorher gab es dafür keine Oberfläche —
+// das Ziel war nur über die Dev-Card erreichbar.
+//
+// **Aufteilung der beiden Ebenen** (siehe `LearningGoalPlan`):
+//   • Der **Wochenrhythmus** wird hier direkt geändert. Das ist die
+//     Stellschraube, die man realistisch öfter anfasst ("5 Tage war zu
+//     viel").
+//   • Das **Inhaltsziel** wird nicht hier zusammengeklickt, sondern über
+//     "Neues Ziel setzen" — das löscht den Plan, wodurch das
+//     Onboarding-Overlay wieder erscheint (`shouldShowGoalOnboarding`
+//     prüft auf `plan == nil`). So gibt es die Anlass-/Termin-/Listen-
+//     Auswahl genau EINMAL im Code statt zweimal.
+//
+// Rhythmus-Änderung kostet bewusst keinen Fortschritt: `updateWeeklyTarget`
+// lässt die bereits geübten Tage stehen. Wer mitten in der Woche von 5
+// auf 3 geht, soll nicht bei null landen.
+struct LearningGoalDetailView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.appUsesGlobalChrome) private var usesGlobalChrome
+
+    @ObservedObject var feedbackPlayer: FeedbackPlayer
+    @ObservedObject var listStore: VocabularyListStore
+    @ObservedObject private var goalStore = LearningGoalStore.shared
+    let goHome: () -> Void
+    let openSettings: () -> Void
+
+    @State private var isShowingResetConfirm = false
+
+    private let sectionStyle: AppSectionStyle = .home
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+                ScreenHeaderCard(
+                    style: sectionStyle,
+                    title: "Dein Ziel",
+                    subtitle: "",
+                    systemImage: nil,
+                    onBack: { dismiss() },
+                    centeredTitle: true
+                )
+
+                if goalStore.plan == nil {
+                    emptyState
+                } else {
+                    rhythmSection
+                    if let content = goalStore.plan?.content {
+                        contentSection(content)
+                    }
+                    newGoalButton
+                }
+            }
+            .padding(.horizontal, AppLayout.screenPadding)
+            .padding(.top, AppLayout.contentTopPadding)
+            .padding(.bottom, AppTheme.Spacing.xxl)
+            .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .top)
+        }
+        .tint(sectionStyle.accent)
+        .appScreenBackground(sectionStyle)
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
+        .appLocalChrome(enabled: !usesGlobalChrome) {
+            AppTopBar(onBack: { dismiss() }, onInfo: nil)
+                .padding(.horizontal, AppLayout.screenPadding)
+                .padding(.top, AppLayout.topBarInsetTop)
+        } bottomBar: {
+            AppBottomBar(
+                feedbackPlayer: feedbackPlayer,
+                onHome: { goHome() },
+                onFavorite: nil,
+                onScan: nil,
+                onSettings: { openSettings() }
+            )
+        }
+        .alert("Neues Ziel setzen?", isPresented: $isShowingResetConfirm) {
+            Button("Abbrechen", role: .cancel) { }
+            Button("Neues Ziel") {
+                // Plan löschen → `RootContentView.shouldShowGoalOnboarding`
+                // greift und legt das Onboarding-Overlay wieder über die
+                // App. Kein zweiter Satz Auswahl-Screens nötig.
+                goalStore.reset()
+                goHome()
+            }
+        } message: {
+            Text("Du gehst die Fragen noch einmal durch. Dein bisheriger Wochenfortschritt geht dabei verloren.")
+        }
+    }
+
+    // MARK: - Rhythmus
+
+    private var rhythmSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionTitle("Wie oft übst du?")
+
+            let progress = goalStore.rhythmProgress
+            HStack(spacing: 8) {
+                Text(progress.isReached
+                     ? "Diese Woche geschafft! 🎉"
+                     : (progress.remainingDays == 1
+                        ? "Noch 1 Tag diese Woche"
+                        : "Noch \(progress.remainingDays) Tage diese Woche"))
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundStyle(progress.isReached ? accentGreen : AppTheme.Colors.textPrimary)
+                Spacer(minLength: 0)
+                Text("\(progress.practicedDays)/\(progress.targetDays)")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .monospacedDigit()
+            }
+
+            VStack(spacing: 8) {
+                ForEach(LearningGoalPlan.weeklyTargetOptions, id: \.self) { days in
+                    rhythmOption(days)
+                }
+            }
+
+            Text("Ändern kostet dich nichts. Deine bereits geübten Tage bleiben stehen.")
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .appSetupCardBackground()
+    }
+
+    private func rhythmOption(_ days: Int) -> some View {
+        let isSelected = goalStore.plan?.weeklyTargetDays == days
+        return Button {
+            feedbackPlayer.playListAction()
+            goalStore.updateWeeklyTarget(days)
+        } label: {
+            HStack(spacing: 12) {
+                Text("\(days)")
+                    .font(.system(size: 22, weight: .black, design: .rounded))
+                    .foregroundStyle(isSelected ? accentGreen : AppTheme.Colors.textPrimary)
+                    .frame(width: 30)
+                    .monospacedDigit()
+
+                Text(days == 1 ? "Tag die Woche" : "Tage die Woche")
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+
+                Spacer(minLength: 0)
+
+                Text(LearningGoalPlan.weeklyTargetLabel(for: days))
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(accentGreen)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
+                    .fill(AppTheme.Colors.secondarySurface)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
+                    .stroke(isSelected ? accentGreen : Color.clear, lineWidth: 2)
+            )
+        }
+        .buttonStyle(AppCardPressStyle())
+    }
+
+    // MARK: - Inhaltsziel
+
+    private func contentSection(_ content: LearningGoalContent) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionTitle("Was du dir vorgenommen hast")
+
+            HStack(spacing: 12) {
+                Text(content.occasion.emoji)
+                    .font(.system(size: 28))
+                    .frame(width: 38)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(content.displayTitle)
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if let days = content.daysRemaining() {
+                        Text(days < 0
+                             ? "Termin war vor \(-days) Tag(en)"
+                             : (days == 0 ? "Heute!" : "Noch \(days) Tag(e)"))
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                    }
+                }
+                Spacer(minLength: 0)
+            }
+
+            if content.isAwaitingList {
+                Text("Diesem Ziel fehlen noch die Vokabeln.")
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.error)
+            } else if let progress = goalStore.contentProgress(listStore: listStore),
+                      !progress.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 6) {
+                        Text("\(progress.strongCount) von \(progress.totalCount) sitzen")
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                            .monospacedDigit()
+                        Spacer(minLength: 0)
+                        Text("\(Int(progress.fraction * 100)) %")
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .foregroundStyle(accentGreen)
+                            .monospacedDigit()
+                    }
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Capsule().fill(AppTheme.Colors.textSecondary.opacity(0.18))
+                            Capsule()
+                                .fill(accentGreen)
+                                .frame(width: geo.size.width * progress.fraction)
+                        }
+                    }
+                    .frame(height: 7)
+                }
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .appSetupCardBackground()
+    }
+
+    // MARK: - Bausteine
+
+    private var newGoalButton: some View {
+        Button {
+            isShowingResetConfirm = true
+        } label: {
+            Text("Neues Ziel setzen")
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 48)
+        }
+        .buttonStyle(AppSecondaryButtonStyle(tint: AppTheme.Colors.textPrimary))
+    }
+
+    private var emptyState: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Du hast noch kein Ziel")
+                .font(.system(size: 18, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+            Text("Starte die App neu, dann führt dich Elumi durch die Zielauswahl.")
+                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .appSetupCardBackground()
+    }
+
+    private func sectionTitle(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: 17, weight: .black, design: .rounded))
+            .foregroundStyle(AppTheme.Colors.textPrimary)
+    }
+
+    private var accentGreen: Color { AppTheme.Colors.moduleNomen }
+}
