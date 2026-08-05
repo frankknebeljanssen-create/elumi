@@ -28,6 +28,7 @@ struct TrophyView: View {
     @Environment(\.appUsesGlobalChrome) private var usesGlobalChrome
 
     @ObservedObject var feedbackPlayer: FeedbackPlayer
+    @ObservedObject var listStore: VocabularyListStore
     let goHome: () -> Void
     let openSettings: () -> Void
     let openInfo: () -> Void
@@ -37,6 +38,13 @@ struct TrophyView: View {
     @AppStorage(appElumiXPKey) private var collectedXP = 0
 
     @ObservedObject private var itemLearningStatusStore = ItemLearningStatusStore.shared
+
+    /// **2026-08-05** — Treibt das Wackelkandidaten-Bestätigungs-Popup direkt
+    /// von der Fortschritt-Seite aus (User-Spec: der „Wackelkandidaten
+    /// üben"-CTA soll sofort üben, nicht erst zum Lernstatus-Screen
+    /// navigieren, der denselben CTA nochmal zeigt). Gleicher Sheet-Typ wie
+    /// `LernstatusView`.
+    @State private var practiceConfirmation: WackelkandidatenConfirmation?
 
     private let sectionStyle: AppSectionStyle = .home
 
@@ -115,6 +123,38 @@ struct TrophyView: View {
             So wächst deine Serie und du merkst dir mehr.
             """
         )
+        .sheet(item: $practiceConfirmation) { confirmation in
+            WackelkandidatenConfirmationSheet(
+                count: confirmation.count,
+                onStartFlashcards: {
+                    practiceConfirmation = nil
+                    navigate(.flashcards(FlashcardLaunchContext(preferredListID: confirmation.listID)))
+                },
+                onStartQuiz: {
+                    practiceConfirmation = nil
+                    navigate(.quiz(QuizLaunchContext(preferredListID: confirmation.listID)))
+                },
+                onStartTraining: {
+                    practiceConfirmation = nil
+                    navigate(.train(TrainingLaunchContext(preferredListID: confirmation.listID, preferredMode: .vocabulary)))
+                },
+                onDismiss: {
+                    practiceConfirmation = nil
+                }
+            )
+        }
+    }
+
+    /// Baut/aktualisiert die Liste „Meine Wackelkandidaten" aus dem
+    /// aktuellen Lernstatus und öffnet direkt das Übungsart-Popup — ohne
+    /// Umweg über den „Was du schon kannst"-Detailscreen. Identische Logik
+    /// zu `LernstatusView.buildAndPracticeWackelkandidaten()`.
+    private func buildAndPracticeWackelkandidaten() {
+        let weakItems = itemLearningStatusStore.wackelkandidatenItems
+        guard let listID = listStore.rebuildWackelkandidatenList(from: weakItems) else { return }
+        let actualCount = listStore.customList(with: listID)?.items.count ?? weakItems.count
+        feedbackPlayer.playListAction()
+        practiceConfirmation = WackelkandidatenConfirmation(listID: listID, count: actualCount)
     }
 
     // MARK: - Section 1: Hero Progress (Level + Progressbar + XP-Ziel)
@@ -256,9 +296,16 @@ struct TrophyView: View {
     private var lernstatusCard: some View {
         let strong = itemLearningStatusStore.strongItems.count
         let needsWork = itemLearningStatusStore.needsWorkItems.count
-        let learning = itemLearningStatusStore.learningItems.count
-        let sparse = itemLearningStatusStore.sparseItems.count
-        let trained = needsWork + learning + sparse
+        // **2026-08-05** — Gefilterte/deduplizierte Zahl statt der rohen
+        // Summe (User-Report: Spalte zeigte „33 wackeln noch", das Popup
+        // danach „23 Wörtern" — dieselbe Diskrepanz, die für den CTA in
+        // `LernstatusView` schon mal gefixt wurde. `rebuildWackelkandidatenList`
+        // filtert Einträge ohne beide Sprachseiten und Duplikate raus;
+        // diese Spalte muss dieselbe Zahl zeigen, die am Ende tatsächlich
+        // in der Übungsliste landet.
+        let trained = VocabularyListStore.usableWackelkandidatenItems(
+            from: itemLearningStatusStore.wackelkandidatenItems
+        ).count
 
         return VStack(alignment: .leading, spacing: 10) {
             Button {
@@ -294,37 +341,42 @@ struct TrophyView: View {
 
             // **Üben-CTA** — gezielt auf `needsWorkItems` (die Vokabeln
             // mit der niedrigsten Trefferquote), nicht auf die breitere
-            // „Wackelt noch"-Summe oben. Das deckt sich mit der „Zum
-            // Üben"-Sektion im Lernstatus-Detail, zu der dieser Button
-            // führt — dieselbe Zahl, derselbe Bestand.
+            // „Wackelt noch"-Summe oben. Dieselbe Zahl, derselbe Bestand
+            // wie die „Zum Üben"-Sektion im „Was du schon kannst"-Detail.
+            //
+            // **2026-08-05** — Tap baut die Liste jetzt direkt und öffnet
+            // das Übungsart-Popup, statt zum Detailscreen zu navigieren
+            // (User-Spec: „üben" stand zweimal da UND der Klick landete
+            // auf einer Status-Seite statt sofort zu üben). Der Chevron
+            // ersetzt die vorherige zweite „Üben"-Capsule als Tap-Hinweis.
             if needsWork > 0 {
                 Button {
-                    navigate(.lernstatus)
+                    buildAndPracticeWackelkandidaten()
                 } label: {
                     HStack(spacing: 10) {
                         Image(systemName: "bolt.fill")
                             .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(Color(hex: "#F59E0B"))
+                        // **2026-08-05** — „üben" → „jetzt üben" (User-Spec).
                         Text("Wackelkandidaten jetzt üben")
                             .font(.system(size: 14, weight: .semibold, design: .rounded))
                             .foregroundStyle(AppTheme.Colors.textPrimary)
                         Spacer(minLength: 0)
-                        Text("Üben")
-                            .font(.system(size: 13, weight: .bold, design: .rounded))
-                            .foregroundStyle(.black)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Capsule().fill(Color(hex: "#F59E0B")))
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(Color(hex: "#F59E0B"))
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 10)
                     .background(
+                        // **2026-08-05** — Füllung 0.14 → 0.24 (User-Spec:
+                        // „sollte ein bisschen heller sein").
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .fill(Color(hex: "#F59E0B").opacity(0.14))
+                            .fill(Color(hex: "#F59E0B").opacity(0.24))
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(Color(hex: "#F59E0B").opacity(0.35), lineWidth: 1)
+                            .stroke(Color(hex: "#F59E0B").opacity(0.45), lineWidth: 1)
                     )
                 }
                 .buttonStyle(AppCardPressStyle())

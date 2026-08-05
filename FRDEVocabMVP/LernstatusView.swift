@@ -145,34 +145,22 @@ struct LernstatusView: View {
 
     /// Systemkonformer Header analog zu ListsView / SettingsView /
     /// AccentsEntryView: Back-Chevron links, Titel mittig, kein Icon
-    /// rechts. Der subtile Untertext (Tracking-Zusammenfassung) bleibt
-    /// darunter sichtbar — er ist Kontext, keine Nav-Struktur.
+    /// rechts.
+    ///
+    /// **2026-08-05** — Untertext-Zeile entfernt (User-Spec: „brauchen wir
+    /// nicht"). `allowsMultilineTitle: true`, weil der Titel „Was du schon
+    /// kannst" bei `lineLimit(1)` mit „…" abgeschnitten wurde — App-Regel:
+    /// nirgends wird Text per Ellipsis gekürzt.
     private var header: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            ScreenHeaderCard(
-                style: sectionStyle,
-                title: "Lernstatus",
-                subtitle: "",
-                systemImage: nil,
-                onBack: { dismiss() },
-                centeredTitle: true
-            )
-
-            Text(headerSubtitle)
-                .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-                .lineLimit(2)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var headerSubtitle: String {
-        let total = statusStore.totalTracked
-        if total == 0 {
-            return "Noch nichts getrackt — spiel ein paar Runden, dann siehst du hier deinen Fortschritt."
-        }
-        return "Was du schon kannst — und was noch etwas Übung braucht."
+        ScreenHeaderCard(
+            style: sectionStyle,
+            title: "Was du schon kannst",
+            subtitle: "",
+            systemImage: nil,
+            onBack: { dismiss() },
+            centeredTitle: true,
+            allowsMultilineTitle: true
+        )
     }
 
     // MARK: - Übungsliste-CTA („Meine Wackelkandidaten")
@@ -225,12 +213,14 @@ struct LernstatusView: View {
                     .frame(width: 52, height: 52)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Diese Wörter jetzt üben")
+                        Text("Diese Vokabeln jetzt üben")
                             .font(.system(size: 17, weight: .black, design: .rounded))
                             .foregroundStyle(.black)
-                        Text(count == 1
-                             ? "Baut aus deinem 1 Wackelkandidaten eine Übungsliste."
-                             : "Baut aus deinen \(count) Wackelkandidaten eine Übungsliste.")
+                        // **2026-08-05** — Zahl entfernt (User-Spec): sie
+                        // stand auch schon in der Spalte „wackelt noch"
+                        // auf der Fortschritt-Seite und in der Sektion
+                        // „Zum Üben"/„Im Aufbau" oben — hier redundant.
+                        Text("Baut aus deinen Wackelkandidaten eine Übungsliste.")
                             .font(.system(size: 12, weight: .medium, design: .rounded))
                             .foregroundStyle(.black.opacity(0.65))
                             .lineLimit(2)
@@ -652,7 +642,12 @@ private struct SectionInfoSheet: View {
 
 /// Trägerobjekt für das Bestätigungs-Popup nach dem Bauen von „Meine
 /// Wackelkandidaten" — `Identifiable`, damit `.sheet(item:)` greift.
-private struct WackelkandidatenConfirmation: Identifiable {
+///
+/// **2026-08-05** — Nicht mehr `private`: Der „Wackelkandidaten üben"-CTA
+/// auf der Fortschritt-Seite (`TrophyView`) baut die Liste jetzt direkt
+/// und öffnet dasselbe Popup, statt erst auf den Lernstatus-Screen zu
+/// navigieren. Beide Screens teilen sich Typ + Sheet.
+struct WackelkandidatenConfirmation: Identifiable {
     let id = UUID()
     let listID: UUID
     let count: Int
@@ -664,7 +659,7 @@ private struct WackelkandidatenConfirmation: Identifiable {
 /// bietet dann bewusst **drei** gleichwertige Übungswege an, statt den
 /// User automatisch in eine davon zu schieben — der Sprung direkt in
 /// die Karteikarten fühlte sich laut Feedback zu abrupt an.
-private struct WackelkandidatenConfirmationSheet: View {
+struct WackelkandidatenConfirmationSheet: View {
     let count: Int
     let onStartFlashcards: () -> Void
     let onStartQuiz: () -> Void
@@ -697,8 +692,8 @@ private struct WackelkandidatenConfirmationSheet: View {
                 // „darf nicht abgekürzt werden"). In Kombination mit dem
                 // festen `.large`-Detent unten ist immer genug Höhe da.
                 Text(count == 1
-                     ? "„Meine Wackelkandidaten\" wurde mit 1 Wort gefüllt."
-                     : "„Meine Wackelkandidaten\" wurde mit \(count) Wörtern gefüllt.")
+                     ? "„Meine Wackelkandidaten\" wurde mit 1 Vokabel gefüllt."
+                     : "„Meine Wackelkandidaten\" wurde mit \(count) Vokabeln gefüllt.")
                     .font(.system(size: 15, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .multilineTextAlignment(.center)

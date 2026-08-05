@@ -183,6 +183,7 @@ struct AppDestinationHost: View {
             // Card; Detail lebt hier.
             TrophyView(
                 feedbackPlayer: feedbackPlayer,
+                listStore: runtime.ensureListStoreReady(),
                 goHome: goHome,
                 openSettings: openSettings,
                 openInfo: openInfo,

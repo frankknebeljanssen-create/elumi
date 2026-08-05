@@ -234,6 +234,12 @@ struct ScreenHeaderCard: View {
     /// Asset selbst bringt seine Farbe mit; wir zeichnen es in einer
     /// quadratischen 30×30-Bounding-Box.
     var leadingModuleIcon: HomeModuleIcon? = nil
+    /// **2026-08-05** — Für längere Screen-Titel, die bei `lineLimit(1)`
+    /// mit „…" abgeschnitten würden (App-Regel: **nirgends** wird Text
+    /// per Ellipsis gekürzt). Bei `true` darf der Titel auf eine zweite
+    /// Zeile umbrechen statt zu verkürzen. Default `false` — alle
+    /// bestehenden Call-Sites mit kurzen Titeln bleiben unverändert.
+    var allowsMultilineTitle: Bool = false
 
     private var titleParts: [String] {
         subtitle.isEmpty ? [title] : [title, subtitle]
@@ -251,7 +257,7 @@ struct ScreenHeaderCard: View {
                 Text(title)
                     .font(AppTheme.Typography.screenTitle)
                     .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .lineLimit(1)
+                    .lineLimit(allowsMultilineTitle ? 2 : 1)
                     .minimumScaleFactor(0.85)
                     .multilineTextAlignment(centeredTitle ? .center : .leading)
 

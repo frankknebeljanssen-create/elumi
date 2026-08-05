@@ -63,13 +63,17 @@ struct HomeLernstatusCard: View {
                 // Beide Zeilen claimen damit ihre natürliche Breite;
                 // überschüssiger Platz geht an den Spacer zwischen
                 // Titel und Pills.
+                // **2026-08-05** — „Dein"/„Lernstatus" → „Was du"/„schon
+                // kannst" (User-Spec): der Tap führt auf den gleichnamigen
+                // Detailscreen — vorher hieß die Card „Lernstatus", der
+                // Screen dahinter aber anders betitelt.
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("Dein")
+                    Text("Was du")
                         .font(.system(size: 17, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .lineLimit(1)
                         .fixedSize(horizontal: true, vertical: false)
-                    Text("Lernstatus")
+                    Text("schon kannst")
                         .font(.system(size: 17, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .lineLimit(1)
