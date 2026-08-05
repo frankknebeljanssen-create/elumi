@@ -5,6 +5,10 @@ struct SettingsView: View {
     @Environment(\.appUsesGlobalChrome) private var usesGlobalChrome
     @Environment(\.appOpenAccountAction) private var openAccountAction
     @ObservedObject var feedbackPlayer: FeedbackPlayer
+    /// **2026-08-05** — für den Ziel-System-Testblock der Dev-Card: der
+    /// Inhalts-Fortschritt rechnet gegen eine echte Vokabelliste. Gleiches
+    /// Durchreich-Muster wie bei `TrophyView` / `LernstatusView`.
+    @ObservedObject var listStore: VocabularyListStore
     let goHome: () -> Void
     let openInfo: () -> Void
     private let sectionStyle: AppSectionStyle = .home
@@ -15,6 +19,12 @@ struct SettingsView: View {
     /// Gate für das Multi-Account-Switcher-Sheet. Zeigt `AccountSwitcherSheet`.
     @State private var isShowingAccountSwitcher: Bool = false
     @ObservedObject private var accountStore = AccountStore.shared
+    /// **2026-08-05** — Ziel-System-Testblock der Dev-Card. `@ObservedObject`
+    /// ist hier der Punkt: Ohne die Beobachtung würde ein Tap auf
+    /// „Ziel: 3 Tage" den Store zwar ändern, die Card aber nicht neu
+    /// zeichnen — der Button bliebe ungefärbt und es sähe aus, als wäre
+    /// nichts passiert.
+    @ObservedObject private var goalStore = LearningGoalStore.shared
     /// Für das Zustands-Lämpchen auf der „Tipps erneut anzeigen"-Card —
     /// die Farbe muss sich ändern, sobald Tipps gesehen oder
     /// zurückgesetzt wurden.
@@ -825,6 +835,108 @@ struct SettingsView: View {
     /// (direkt Credits setzen, 0…5) und XP-Setter (0 / 100 / 500 / 1000
     /// / 2500 / 5000) zum schnellen Reproduzieren von Progress-Zuständen
     /// ohne komplette Lernsessions durchzuspielen.
+    /// Kompakter Button im Dev-Card-Stil — gleiche Optik wie die
+    /// XP-Setter-Buttons darüber, damit der Block nicht aus der Card fällt.
+    ///
+    /// `isActive` färbt den Button ein, wenn der zugehörige Zustand
+    /// gerade gesetzt ist. Ohne diese Rückmeldung sieht ein Tap aus, als
+    /// wäre nichts passiert — die Wirkung lag bisher nur in der Konsole.
+    private func devGoalButton(
+        _ title: String,
+        isActive: Bool = false,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundStyle(isActive ? .black : AppTheme.Colors.textPrimary)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 32)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(isActive ? AppTheme.Colors.cta : AppTheme.Colors.secondarySurface)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .stroke(AppTheme.Colors.cta, lineWidth: isActive ? 0 : 1)
+                        .opacity(isActive ? 0 : 0.35)
+                )
+        }
+        .buttonStyle(.plain)
+        .animation(.easeOut(duration: 0.15), value: isActive)
+    }
+
+    /// Live-Statuszeile des Ziel-Systems. Liest direkt aus dem Store, ist
+    /// also nach jedem Tap sofort aktuell — das ist der eigentliche
+    /// Verifikations-Punkt für Phase 1.
+    @ViewBuilder
+    private var devGoalStatusBox: some View {
+        let rhythm = goalStore.rhythmProgress
+        VStack(alignment: .leading, spacing: 4) {
+            if goalStore.plan == nil {
+                Text("Kein Ziel gesetzt")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(.secondary)
+            } else {
+                HStack(spacing: 6) {
+                    Text("Woche: \(rhythm.practicedDays)/\(rhythm.targetDays) Tage")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .monospacedDigit()
+                    if rhythm.isReached {
+                        Text("✅")
+                    }
+                    Spacer(minLength: 0)
+                }
+
+                // Der Balken ist hier nur Testhilfe — die echte Anzeige
+                // bekommt später ihre eigene Gestaltung.
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(AppTheme.Colors.textSecondary.opacity(0.2))
+                        Capsule()
+                            .fill(AppTheme.Colors.cta)
+                            .frame(width: geo.size.width * rhythm.fraction)
+                    }
+                }
+                .frame(height: 6)
+
+                if let content = goalStore.plan?.content {
+                    Text(content.displayTitle)
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+
+                    if content.isAwaitingList {
+                        Text("⚠️ Noch keine Liste zugeordnet")
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.error)
+                    } else if let progress = goalStore.contentProgress(listStore: listStore) {
+                        Text(progress.isEmpty
+                             ? "Bestand leer"
+                             : "\(progress.strongCount)/\(progress.totalCount) sitzen · \(Int(progress.fraction * 100)) %")
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+
+                    if let days = content.daysRemaining() {
+                        Text(days < 0
+                             ? "⏰ Termin war vor \(-days) Tag(en)"
+                             : "Termin: noch \(days) Tag(e)")
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(AppTheme.Colors.secondarySurface.opacity(0.6))
+        )
+    }
+
     private var devResetCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Klar sichtbare „Entwicklung"-Markierung als roter Capsule-Badge,
@@ -921,6 +1033,58 @@ struct SettingsView: View {
                     }
                 }
                 Text("Setzt XP auf den Zielwert. Level und Level-Up-Credits werden neu berechnet.")
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundStyle(.secondary)
+            }
+
+            Divider()
+                .padding(.vertical, 4)
+
+            // **Ziel-System (2026-08-05)** — Verifikations-Block, solange
+            // die Onboarding-Screens noch nicht stehen.
+            //
+            // Zeigt den Zustand **direkt in der Card** statt nur in der
+            // Konsole: Beim Testen am echten Gerät ist der Xcode-Log
+            // unpraktisch, und ein Button ohne sichtbare Reaktion lässt
+            // einen im Unklaren, ob überhaupt etwas passiert ist.
+            // Aktive Buttons sind eingefärbt, darunter läuft eine
+            // Live-Statuszeile mit.
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Ziel-System testen")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+
+                devGoalStatusBox
+
+                HStack(spacing: 6) {
+                    devGoalButton(
+                        "Ziel: 3 Tage",
+                        isActive: goalStore.plan != nil && goalStore.plan?.content == nil
+                    ) {
+                        LearningGoalStore.shared.debugSeedGoal(weeklyTargetDays: 3)
+                    }
+                    devGoalButton(
+                        "+ Schulaufgabe",
+                        isActive: goalStore.plan?.content?.occasion == .exam
+                    ) {
+                        LearningGoalStore.shared.debugSeedGoal(
+                            weeklyTargetDays: 3,
+                            occasion: .exam,
+                            listIDs: [listStore.selectedListID],
+                            deadlineInDays: 5
+                        )
+                    }
+                }
+
+                HStack(spacing: 6) {
+                    devGoalButton("+1 Tag geübt") {
+                        LearningGoalStore.shared.debugAddPracticedDays(1)
+                    }
+                    devGoalButton("Ziel löschen") {
+                        LearningGoalStore.shared.reset()
+                    }
+                }
+
+                Text("„+ Schulaufgabe\" hängt das Inhaltsziel an die aktuell ausgewählte Liste mit Termin in 5 Tagen. Details zusätzlich in der Konsole (Filter „🎯\").")
                     .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(.secondary)
             }

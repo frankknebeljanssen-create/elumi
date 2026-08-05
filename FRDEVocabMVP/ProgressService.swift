@@ -136,6 +136,21 @@ final class ProgressService {
         let sessionActions = session.correctCount + session.wrongCount
         DailyStatsStore.shared.recordSession(actionsCount: sessionActions)
 
+        // 4b) **Ziel-System (2026-08-05)** — heutigen Tag als „geübt" für
+        //     das Wochenziel buchen. Bewusst hier und nirgendwo sonst:
+        //     dieselbe zentrale Stelle, durch die alle vier Module laufen,
+        //     damit kein Modul seinen eigenen Buchungspfad bekommt.
+        //
+        //     Idempotent — zwei Sessions am selben Tag zählen als EIN Tag.
+        //     Das ist der Kern eines Rhythmusziels: Es soll Regelmäßigkeit
+        //     belohnen, nicht einen einzelnen fleißigen Nachmittag.
+        //
+        //     Guard auf `sessionActions > 0`: Eine abgebrochene Session
+        //     ohne eine einzige beantwortete Frage ist kein geübter Tag.
+        if sessionActions > 0 {
+            LearningGoalStore.shared.recordPracticeToday()
+        }
+
         // 5) Daily Challenge fortschreiben. Wenn dadurch das Tagesziel
         //    erreicht wurde, bekommen wir Reward-XP + Credit zurück und
         //    der Streak wird (einmal pro Tag) vom Store hochgezogen.

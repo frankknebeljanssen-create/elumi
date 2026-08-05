@@ -97,6 +97,14 @@ enum AccountScopedKeys {
         appLearnerProfileKey,
         appOnboardingCompletedKey,
         appDailyChallengeKey,
+        // Ziel-System (2026-08-05) — jeder Account hat sein eigenes Ziel
+        // und seinen eigenen Wochenfortschritt. Ohne diese Registrierung
+        // würden Geschwister sich im Familien-Modus dasselbe Wochenziel
+        // teilen.
+        appLearningGoalPlanKey,
+        appLearningGoalArchiveKey,
+        appLearningGoalPracticedDaysKey,
+        appLearningGoalWeekIndexKey,
         // Zusätzliche User-Daten (Phase E.5) — Swap-Pattern greift
         // für diese Keys: beim Account-Switch werden sie zwischen
         // Global-Slot (wo `@AppStorage` liest) und Account-Namespace
@@ -366,6 +374,11 @@ final class AccountStore: ObservableObject {
     ///      Initialen, Session-End) lesen ProfileStore.
     private func applyPostSwitchSideEffects() {
         ProgressStore.shared.reloadForCurrentAccount()
+        // **Ziel-System (2026-08-05)** — Singleton wie ProgressStore, muss
+        // deshalb direkt reloaden statt über die Notification. Ohne das
+        // würde nach einem Account-Wechsel weiterhin das Ziel des vorigen
+        // Kindes im Balken stehen.
+        LearningGoalStore.shared.load()
         // **Wichtig**: `syncProfileStoreFromActiveAccount` läuft NICHT
         // hier. Die Notification unten triggert den `ProfileStore.
         // reloadForCurrentAccount()`, der das Profil frisch aus dem

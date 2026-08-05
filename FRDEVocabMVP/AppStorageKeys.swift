@@ -24,6 +24,17 @@ let appAccountsMigratedKey = "elumi.accounts.migrated.v1"
 // extra Flag, sondern über `dayIndex`-Vergleich beim App-Start.
 let appDailyChallengeKey = "elumi.daily.challenge.v1"
 
+// MARK: - Ziel-System (2026-08-05)
+// Selbstgesetztes Lernziel aus dem Onboarding, persistiert im
+// `LearningGoalStore`. Vier Keys statt einem Codable-Blob, weil der
+// Wochenfortschritt viel häufiger geschrieben wird als der Plan selbst —
+// so muss nicht bei jedem geübten Tag das ganze Ziel neu serialisiert
+// werden.
+let appLearningGoalPlanKey = "elumi.goal.plan.v1"
+let appLearningGoalArchiveKey = "elumi.goal.archive.v1"
+let appLearningGoalPracticedDaysKey = "elumi.goal.practicedDays.v1"
+let appLearningGoalWeekIndexKey = "elumi.goal.weekIndex.v1"
+
 let appQuizHeartsKey = "myVoc.quiz.hearts.v1"
 let appElumiWaterflohKey = "elumi.gamification.wasserfloh.v1"
 let appElumiAlgenkugelKey = "elumi.gamification.algenkugel.v1"

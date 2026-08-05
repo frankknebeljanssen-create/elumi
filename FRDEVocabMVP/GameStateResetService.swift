@@ -43,6 +43,13 @@ enum GameStateResetService {
         DailyStatsStore.shared.reset()
         DailyChallengeStore.shared.reset()
 
+        // **Ziel-System (2026-08-05)** — nur der Wochenfortschritt fällt,
+        // das gesetzte Ziel bleibt stehen. Begründung analog zu Profil und
+        // Vorname weiter unten: Der Plan ist ein Nutzerdatum, die geübten
+        // Tage sind Spielstand. Ein „Spielstand zurücksetzen" soll den
+        // Nutzer nicht zurück ins Onboarding zwingen.
+        LearningGoalStore.shared.resetWeeklyProgress()
+
         // 3) Standalone-@AppStorage-Keys direkt leeren.
         let defaults = UserDefaults.standard
         defaults.set(0, forKey: appQuizHeartsKey)

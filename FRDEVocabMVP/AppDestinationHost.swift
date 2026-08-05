@@ -108,6 +108,7 @@ struct AppDestinationHost: View {
         case .settings:
             SettingsView(
                 feedbackPlayer: feedbackPlayer,
+                listStore: runtime.ensureListStoreReady(),
                 goHome: goHome,
                 openInfo: openInfo
             )

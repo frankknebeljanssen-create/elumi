@@ -390,6 +390,8 @@
 		A00000000000000000000776 /* GermanNounCapitalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000777 /* GermanNounCapitalization.swift */; };
 		A00000000000000000000778 /* VocabularyListSelectionResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000779 /* VocabularyListSelectionResolver.swift */; };
 		A1B2C3D4E5F60708090A0C01 /* DailyStatsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */; };
+		A1B2C3D4E5F60708090A0D03 /* LearningGoalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0D04 /* LearningGoalStore.swift */; };
+		A1B2C3D4E5F60708090A0D01 /* LearningGoalPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0D02 /* LearningGoalPlan.swift */; };
 		A1B2C3D4E5F60708090A0E02 /* ItemLearningStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0E01 /* ItemLearningStatus.swift */; };
 		A1B2C3D4E5F60708090A0E04 /* ItemLearningStatusStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0E03 /* ItemLearningStatusStore.swift */; };
 		A1B2C3D4E5F60708090A0E06 /* ItemLearningStatusRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0E05 /* ItemLearningStatusRecorder.swift */; };
@@ -1008,6 +1010,8 @@
 		A00000000000000000000777 /* GermanNounCapitalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GermanNounCapitalization.swift; sourceTree = "<group>"; };
 		A00000000000000000000779 /* VocabularyListSelectionResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyListSelectionResolver.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyStatsStore.swift; path = FRDEVocabMVP/DailyStatsStore.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0D04 /* LearningGoalStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearningGoalStore.swift; path = FRDEVocabMVP/LearningGoalStore.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0D02 /* LearningGoalPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearningGoalPlan.swift; path = FRDEVocabMVP/LearningGoalPlan.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0E01 /* ItemLearningStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatus.swift; path = FRDEVocabMVP/ItemLearningStatus.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0E03 /* ItemLearningStatusStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatusStore.swift; path = FRDEVocabMVP/ItemLearningStatusStore.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0E05 /* ItemLearningStatusRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatusRecorder.swift; path = FRDEVocabMVP/ItemLearningStatusRecorder.swift; sourceTree = "<group>"; };
@@ -1255,6 +1259,8 @@
 				6FEDD84AF0BD7AE57209A819 /* HomeHeader.swift */,
 				D7E48C7D56DE47BA8A612FB2 /* HomeDailyFocusCard.swift */,
 				A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */,
+				A1B2C3D4E5F60708090A0D04 /* LearningGoalStore.swift */,
+				A1B2C3D4E5F60708090A0D02 /* LearningGoalPlan.swift */,
 				A1B2C3D4E5F60708090A0E01 /* ItemLearningStatus.swift */,
 				A1B2C3D4E5F60708090A0E03 /* ItemLearningStatusStore.swift */,
 				A1B2C3D4E5F60708090A0E05 /* ItemLearningStatusRecorder.swift */,
@@ -2244,6 +2250,8 @@
 				A5E02C81EAD95B48BD32C1C4 /* HomeHeader.swift in Sources */,
 				F430601DADA83D05822596D0 /* HomeDailyFocusCard.swift in Sources */,
 				A1B2C3D4E5F60708090A0C01 /* DailyStatsStore.swift in Sources */,
+				A1B2C3D4E5F60708090A0D03 /* LearningGoalStore.swift in Sources */,
+				A1B2C3D4E5F60708090A0D01 /* LearningGoalPlan.swift in Sources */,
 				A1B2C3D4E5F60708090A0E02 /* ItemLearningStatus.swift in Sources */,
 				A1B2C3D4E5F60708090A0E04 /* ItemLearningStatusStore.swift in Sources */,
 				A1B2C3D4E5F60708090A0E06 /* ItemLearningStatusRecorder.swift in Sources */,
