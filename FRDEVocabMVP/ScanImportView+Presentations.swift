@@ -239,7 +239,11 @@ extension ScanImportView {
                         saveAsDraft()
                     }
                 )
-                .presentationDetents([.medium])
+                // **2026-08-06** — `[.medium]` allein war zu niedrig für die drei
+                // Auswahl-Karten; oben wurde das "Abbrechen" abgeschnitten
+                // (User-Report). `.large` als zweite Stufe lässt die Sheet
+                // aufziehen, die `ScrollView` im Sheet sichert den Rest ab.
+                .presentationDetents([.medium, .large])
             }
             // **2026-04-23**: Namensabfrage für „neue Liste".
             // Wird nach dem ImportTargetChoiceSheet präsentiert,

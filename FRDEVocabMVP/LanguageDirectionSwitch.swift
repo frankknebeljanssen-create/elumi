@@ -43,33 +43,50 @@ struct LanguageDirectionSwitch: View {
         let spec = spec(for: size)
 
         Button(action: toggle) {
-            // Ein einziges Asset pro Richtung — FR→DE nutzt `IconLanguageToggle`
-            // (FR-Flagge links, blau), DE→FR nutzt `IconLanguageToggleReverse`
-            // (DE-Flagge links, gold). Beide Icons enthalten bereits die beiden
-            // Flaggen + die bidirektionalen Pfeile — die frühere manuelle
-            // Komposition (zwei `StraightFlagBadge` + SF-Symbol dazwischen) ist
-            // dadurch entfallen. `.id(…)` triggert beim Richtungswechsel eine
-            // saubere Image-Transition, analog zum alten `.id(code)`-Pattern.
+            // **2026-08-06, Redesign** — vorher zwei statische PNG-Assets
+            // (`IconLanguageToggle` / `IconLanguageToggleReverse`, je die
+            // Flaggen + einen gelb-schwarzen Pfeil fest eingebrannt).
+            // User-Kritik: „passt gar nicht mehr zum Look der App … das
+            // sieht 'n bisschen komisch aus", und zusätzlich saß der
+            // Schalter im Modul-Header sichtbar höher als der Zurück-
+            // Pfeil und das Elumi-Abzeichen daneben — weil ein
+            // rechteckiges Asset mit fester Höhe nie exakt so zentriert
+            // ist wie ein reiner SwiftUI-Chip.
             //
-            // **User-Fix (Phase 7.6+)**: Bewusst `Image("...")` ohne
-            // `appIcon:`-Resolver — damit greift hier *nicht* der globale
-            // A/B-Icon-Set-Switch, der Flaggen-Switcher bleibt immer auf
-            // dem Original-A-Set-Asset.
-            Image(isFrToDE ? "IconLanguageToggle" : "IconLanguageToggleReverse")
-                .resizable()
-                .scaledToFit()
-                .frame(height: spec.iconHeight)
-                .scaleEffect(isPressed ? 0.9 : 1.0)
-                .id(isFrToDE ? "icon-fr-de" : "icon-de-fr")
-                .padding(.horizontal, spec.horizontalPadding)
-                .padding(.vertical, spec.verticalPadding)
-                .frame(maxWidth: spec.expandsWidth ? .infinity : nil)
-                // Kein Background, kein Border — das Icon steht nackt auf
-                // dem darunterliegenden Screen-/Card-Hintergrund, ohne eigene
-                // Mini-Card darum. `padding`/`frame` bleiben als Touch-Target
-                // und für das Zentrieren erhalten.
-                .contentShape(Rectangle())
-                .animation(.easeOut(duration: 0.12), value: isPressed)
+            // Jetzt komplett aus Code gebaut: dieselben `StraightFlagBadge`-
+            // Bausteine, die auch anderswo in der App Flaggen zeichnen,
+            // plus ein schlichtes SF-Symbol-Pfeilchen, in einer Kapsel im
+            // selben Stil wie die übrigen Chips (`secondarySurface` +
+            // Border) — dadurch zentriert es sich von selbst exakt wie
+            // jeder andere Button in der Zeile, kein Asset-Offset mehr
+            // möglich.
+            HStack(spacing: spec.innerSpacing) {
+                StraightFlagBadge(
+                    countryCode: isFrToDE ? "FR" : "DE",
+                    width: spec.flagWidth,
+                    height: spec.flagHeight
+                )
+                Image(systemName: "arrow.right")
+                    .font(.system(size: spec.arrowSize, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                StraightFlagBadge(
+                    countryCode: isFrToDE ? "DE" : "FR",
+                    width: spec.flagWidth,
+                    height: spec.flagHeight
+                )
+            }
+            .scaleEffect(isPressed ? 0.9 : 1.0)
+            .padding(.horizontal, spec.horizontalPadding)
+            .padding(.vertical, spec.verticalPadding)
+            .frame(maxWidth: spec.expandsWidth ? .infinity : nil)
+            .background(
+                Capsule().fill(AppTheme.Colors.secondarySurface)
+            )
+            .overlay(
+                Capsule().stroke(AppTheme.Colors.border, lineWidth: 1)
+            )
+            .contentShape(Rectangle())
+            .animation(.easeOut(duration: 0.12), value: isPressed)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(
@@ -120,37 +137,37 @@ struct LanguageDirectionSwitch: View {
     private func spec(for size: Size) -> Spec {
         switch size {
         case .regular:
-            // **UX-Polish 2026-05-02 (User-Spec)**: iconHeight 20 → 40 pt.
-            // User-Befund: die Home-Flaggen waren zu klein, kaum sichtbar
-            // und schwer zu treffen. Verdoppelt — gleiche Optik
-            // (getrimmtes 96×44-Asset, gleiche Padding-Verhältnisse), nur
-            // doppelt so groß. Tap-Target wird damit von ~28 pt (mit
-            // Padding) auf ~48 pt (Apple-Mindest-Tap-Target erreicht).
+            // Home-Variante: volle Breite, größte Präsenz.
             return Spec(
-                iconHeight: 40,
+                flagWidth: 30,
+                flagHeight: 20,
+                arrowSize: 15,
+                innerSpacing: 8,
                 horizontalPadding: 16,
-                verticalPadding: 4,
+                verticalPadding: 11,
                 expandsWidth: true
             )
         case .compact:
-            // **UX-Polish 2026-05-02 (User-Spec)**: iconHeight 32 → 64 pt.
-            // Setup-Variante mit, war zu klein um die Sprachrichtung
-            // klar als Setup-Setting zu kommunizieren. Verdoppelt analog
-            // zu .regular — Asset-Optik und Tap-Target unverändert in
-            // der Form, nur Größe.
+            // Setup-/Header-Variante — sitzt neben Zurück-Pfeil bzw.
+            // Elumi-Abzeichen; Höhe bewusst nah an deren ~34-44 pt
+            // gehalten, damit alle drei in der Back-Row gleich wirken.
             return Spec(
-                iconHeight: 64,
-                horizontalPadding: 12,
-                verticalPadding: 2,
+                flagWidth: 22,
+                flagHeight: 16,
+                arrowSize: 12,
+                innerSpacing: 6,
+                horizontalPadding: 10,
+                verticalPadding: 9,
                 expandsWidth: false
             )
         }
     }
 
     private struct Spec {
-        /// Feste Rendering-Höhe des Assets. Breite ergibt sich automatisch
-        /// (`.scaledToFit()` auf einem 96×96-Frame).
-        let iconHeight: CGFloat
+        let flagWidth: CGFloat
+        let flagHeight: CGFloat
+        let arrowSize: CGFloat
+        let innerSpacing: CGFloat
         let horizontalPadding: CGFloat
         let verticalPadding: CGFloat
         /// `true` → die Komponente spannt auf die verfügbare Breite (Home).

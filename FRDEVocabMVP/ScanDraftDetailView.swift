@@ -108,7 +108,11 @@ struct ScanDraftDetailView: View {
                     }
                 }
             )
-            .presentationDetents([.medium])
+            // **2026-08-06** — `[.medium]` allein war zu niedrig für die drei
+            // Auswahl-Karten; oben wurde das "Abbrechen" abgeschnitten
+            // (User-Report). `.large` als zweite Stufe lässt die Sheet
+            // aufziehen, die `ScrollView` im Sheet sichert den Rest ab.
+            .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $isShowingExistingListPicker) {
             if let listStore {

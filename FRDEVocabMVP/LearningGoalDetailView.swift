@@ -65,6 +65,12 @@ struct LearningGoalDetailView: View {
                     if let content = goalStore.plan?.content {
                         contentSection(content)
                     }
+                    // **2026-08-06** — eigener Abstand nach oben (User-
+                    // Spec: "'n bisschen absetzen"), damit der Button
+                    // nicht wie eine vierte, gleichrangige Zeile direkt
+                    // an den Inhaltsziel-Block anschließt, sondern klar
+                    // als eigene, andersartige Aktion danach kommt.
+                    Spacer(minLength: AppTheme.Spacing.sm)
                     newGoalButton
                 }
             }
@@ -252,6 +258,11 @@ struct LearningGoalDetailView: View {
 
     // MARK: - Bausteine
 
+    /// **2026-08-06** — Farbe von neutralem `textPrimary` auf `warning`
+    /// (Amber) gewechselt (User-Spec: "farbig noch anders kennzeichnen").
+    /// Signalisiert "das ist eine andere Art von Aktion als der Rest
+    /// dieses Screens" — passend, weil sie den Rhythmus zurücksetzt und
+    /// erneut durchs Onboarding führt, nicht bloß eine Einstellung ändert.
     private var newGoalButton: some View {
         Button {
             isShowingResetConfirm = true
@@ -261,7 +272,7 @@ struct LearningGoalDetailView: View {
                 .frame(maxWidth: .infinity)
                 .frame(minHeight: 48)
         }
-        .buttonStyle(AppSecondaryButtonStyle(tint: AppTheme.Colors.textPrimary))
+        .buttonStyle(AppSecondaryButtonStyle(tint: AppTheme.Colors.warning))
     }
 
     private var emptyState: some View {

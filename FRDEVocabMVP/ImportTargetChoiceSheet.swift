@@ -21,7 +21,19 @@ struct ImportTargetChoiceSheet: View {
     var onSaveAsDraft: (() -> Void)? = nil
 
     var body: some View {
-        VStack(spacing: 18) {
+        // **2026-08-06, Bug-Fix** — Inhalt in eine `ScrollView` gelegt
+        // (User-Report: "das Abbrechen ist abgeschnitten, man kann's
+        // nicht mal anklicken").
+        //
+        // Ursache: Drei Auswahl-Karten plus Kopfzeile brauchen mehr Höhe,
+        // als `.presentationDetents([.medium])` hergibt. Ein `VStack` in
+        // einer Sheet fester Höhe kann nicht scrollen — der überstehende
+        // Teil wurde oben abgeschnitten, samt Tap-Fläche des Abbrechen-
+        // Buttons. Mit `ScrollView` ist jeder Eintrag erreichbar,
+        // unabhängig von Gerätegröße, Textgröße und davon, ob die dritte
+        // Karte ("Als Entwurf speichern") gerade eingeblendet ist.
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 18) {
             // **2026-06-09** — „Abbrechen" jetzt auf eigener Zeile über
             // dem Titel statt in derselben Nav-Bar-Zeile (User-Feedback:
             // wirkte zu gedrängt). Ersetzt NavigationStack + System-
@@ -32,13 +44,18 @@ struct ImportTargetChoiceSheet: View {
                         .buttonStyle(.plain)
                         .font(AppTheme.Typography.body)
                         .foregroundStyle(AppTheme.Colors.textSecondary)
+                        // Volle 44-pt-Tap-Höhe (Apple-Mindestmaß) statt
+                        // nur der Textzeile — der Button war vorher auch
+                        // ohne Beschnitt knapp zu treffen.
+                        .frame(minHeight: 44, alignment: .leading)
+                        .contentShape(Rectangle())
                     Spacer(minLength: 0)
                 }
                 Text("Wie speichern?")
                     .font(AppTheme.Typography.cardTitle)
                     .foregroundStyle(AppTheme.Colors.textPrimary)
             }
-            .padding(.top, 8)
+            .padding(.top, 12)
 
             // **2026-06-09** — Zusammenfassungszeile entfernt (User-Spec).
             // Sie nannte eine Zahl, die an dieser Stelle nichts entscheidet
@@ -82,11 +99,10 @@ struct ImportTargetChoiceSheet: View {
                     }
                 )
             }
-
-            Spacer()
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 24)
         }
-        .padding(.horizontal, 20)
-        .padding(.bottom, 20)
     }
 
     private func choiceCard(

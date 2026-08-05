@@ -103,6 +103,12 @@ struct LearningGoalOnboardingView: View {
     @State var weeklyTarget: Int = LearningGoalPlan.defaultWeeklyTargetDays
     @State var hasVocabAlready: Bool?
     @State var selectedListIDs: Set<UUID> = []
+    /// **2026-08-06** — Auf-/zuklappen der "Nach Lernstand"/"Nach Themen"-
+    /// Gruppen in `selectListsStep`. Beide starten eingeklappt, damit die
+    /// fertigen Listen nicht sofort eine lange Wand aus Zeilen zeigen,
+    /// wenn der Nutzer nur seine eigenen Listen braucht.
+    @State var isLevelGroupExpanded: Bool = false
+    @State var isTopicGroupExpanded: Bool = false
 
     /// Zähler für das Auswahl-Blinken (siehe
     /// `OnboardingSelectionFlashModifier`). Steigt bei jedem Tap; die
@@ -123,13 +129,40 @@ struct LearningGoalOnboardingView: View {
                     .padding(.horizontal, AppLayout.screenPadding)
                     .padding(.top, AppTheme.Spacing.sm)
 
-                ScrollView(showsIndicators: false) {
+                // **2026-08-06** — `selectListsStep` bringt seit den
+                // auf-/zuklappbaren "Nach Lernstand"/"Nach Themen"-
+                // Gruppen sein eigenes internes Scrollen mit und hält den
+                // "Fertig"-Button selbst fest unten (User-Report: man
+                // musste erst ganz nach unten scrollen, um ihn zu
+                // erreichen, nachdem man z. B. den Grundwortschatz weiter
+                // oben angehakt hatte).
+                //
+                // `.occasion` (5 Karten) und `.rhythm` (4 Karten)
+                // bekommen dasselbe Muster aus demselben Grund, den der
+                // User genau benannt hat: "Wie oft schaffst du das?" hat
+                // eine Karte weniger als "Was steht bei dir an?" davor,
+                // dadurch saß der "Passt!"-Button spürbar höher als das
+                // "Weiter" auf dem Screen davor — der Finger musste sich
+                // neu orientieren. Mit fester Button-Position auf beiden
+                // Screens bleibt er exakt an derselben Stelle, unabhängig
+                // von der Kartenzahl. Für alle anderen Schritte bleibt
+                // die gemeinsame äußere `ScrollView`.
+                if currentStep == .selectLists || currentStep == .occasion || currentStep == .rhythm {
                     stepContent
                         .padding(.horizontal, AppLayout.screenPadding)
                         .padding(.top, AppTheme.Spacing.lg)
-                        .padding(.bottom, AppTheme.Spacing.xxl)
+                        .padding(.bottom, AppTheme.Spacing.lg)
                         .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
-                        .frame(maxWidth: .infinity)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ScrollView(showsIndicators: false) {
+                        stepContent
+                            .padding(.horizontal, AppLayout.screenPadding)
+                            .padding(.top, AppTheme.Spacing.lg)
+                            .padding(.bottom, AppTheme.Spacing.xxl)
+                            .frame(maxWidth: AppTheme.Layout.maxContentWidth, alignment: .leading)
+                            .frame(maxWidth: .infinity)
+                    }
                 }
             }
         }
@@ -165,6 +198,16 @@ struct LearningGoalOnboardingView: View {
             // springt (die Gesamtzahl bleibt gleich, nur der Inhalt
             // des Slots wechselt).
             steps.append(hasVocabAlready == true ? .selectLists : .scanPrompt)
+        } else if occasion == .stayOnTrack {
+            // **2026-08-06** — User-Report: „Einfach dranbleiben" hatte
+            // gar keine Listenauswahl; die App startete unbemerkt mit dem
+            // Grundwortschatz A1 (`VocabularyListSelectionResolver.
+            // defaultGlobalSelectionListID`), ohne dass der Nutzer das je
+            // gesehen hätte. Kein Ja/Nein-Umweg nötig wie bei den anderen
+            // Anlässen — ohne konkretes Vorhaben gibt es keine
+            // „Scannen oder schon da?"-Frage, nur eine direkte Auswahl
+            // mit sinnvoller Vorbelegung.
+            steps.append(.selectLists)
         }
         steps.append(.modules)
         steps.append(.celebration)
@@ -204,8 +247,13 @@ struct LearningGoalOnboardingView: View {
         .frame(height: 34)
     }
 
+    // **2026-08-06** — Feier-Screen war bisher als „Bookend" ohne
+    // Zurück-Button gedacht, genau wie der Übergangs-Screen ganz am
+    // Anfang. User-Report: das wirkte wie eine Sackgasse, er wollte auch
+    // von hier noch mal zurück können. Nur der allererste Screen bleibt
+    // ohne Zurück — davor gibt es nichts, wohin man zurückkönnte.
     private var canGoBack: Bool {
-        currentStep != .transition && currentStep != .celebration
+        currentStep != .transition
     }
 
     // MARK: - Schritt-Inhalt
@@ -345,9 +393,14 @@ struct LearningGoalOnboardingView: View {
 
             goalSummaryCard
 
+            // **2026-08-06** — Grün statt Grau (User-Spec: "wieder grün
+            // machen"), dieselbe Akzentfarbe wie der Rhythmus-Schritt und
+            // der Grundwortschatz-Hinweis in `selectListsStep` — eine
+            // durchgehende "das ist positiv/beruhigend"-Farbe im
+            // Onboarding statt einer neu erfundenen.
             Text("Keine Sorge, du kannst dein Ziel jederzeit ändern!")
-                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.moduleNomen)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity)
@@ -366,41 +419,57 @@ struct LearningGoalOnboardingView: View {
     }
 
     /// Kompakte Ziel-Zusammenfassung: Anlass, Rhythmus, Bestand.
-    /// Nutzt dieselben Card-Bausteine wie der Rest des Onboardings.
+    ///
+    /// **2026-08-06** — vorher drei Zeilen auf einem gemeinsamen
+    /// Hintergrund, nur durch dünne `Divider` getrennt (User-Spec: "die
+    /// sollten 'n bisschen mehr voneinander getrennt sein"). Jetzt trägt
+    /// jede Zeile ihre eigene Card mit sichtbarem Zwischenraum — bleibt
+    /// als Gruppe erkennbar (gleicher Radius, gleicher Rhythmus), liest
+    /// sich aber als drei einzelne Fakten statt als eine durchgehende
+    /// Tabelle.
     private var goalSummaryCard: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 8) {
             summaryRow(
                 emoji: occasion?.emoji ?? "🙂",
                 label: "Dein Ziel",
                 value: occasion?.title ?? "Einfach dranbleiben"
             )
-            summaryDivider
             summaryRow(
                 emoji: "📅",
                 label: "Dein Rhythmus",
                 value: "\(weeklyTarget) Tage die Woche"
             )
-            if occasion?.requiresListSelection == true {
-                summaryDivider
+            // **2026-08-06, Bug-Fix** — diese Zeile war an
+            // `requiresListSelection` gekoppelt und zeigte sich deshalb
+            // nie bei "Einfach dranbleiben" — obwohl der Nutzer dort seit
+            // der Erweiterung von `selectListsStep` genauso eine Liste
+            // auswählt (User-Report: "warum nur noch zwei von den
+            // dreien?"). Zweite Bedingung ergänzt, eigenes Label, weil es
+            // hier kein Inhaltsziel ist, sondern nur die Start-Liste.
+            if occasion?.requiresListSelection == true || (occasion == .stayOnTrack && !selectedListIDs.isEmpty) {
                 summaryRow(
                     emoji: "📚",
-                    label: "Deine Vokabeln",
+                    label: occasion?.requiresListSelection == true ? "Deine Vokabeln" : "Du übst",
                     value: vocabSummaryValue
                 )
             }
         }
-        .padding(.vertical, 4)
         .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: AppTheme.Radius.xl, style: .continuous)
-                .fill(AppTheme.Colors.secondarySurface)
-        )
     }
 
     private var vocabSummaryValue: String {
         let assignedCount = goalStore.plan?.content?.listIDs.count ?? 0
         let total = max(selectedListIDs.count, assignedCount)
         if total == 0 { return "Holen wir später" }
+        // **2026-08-06** — bei genau einer Liste den Namen zeigen statt
+        // nur "1 Liste". Zahlt sich besonders bei "Einfach dranbleiben"
+        // aus, wo der Grundwortschatz vorausgewählt ist — der Nutzer
+        // soll hier sehen, WAS genau vorausgewählt wurde, nicht nur DASS
+        // etwas gewählt ist.
+        if total == 1, let id = selectedListIDs.first ?? goalStore.plan?.content?.listIDs.first,
+           let list = listStore.customList(with: id) {
+            return list.name
+        }
         return total == 1 ? "1 Liste" : "\(total) Listen"
     }
 
@@ -430,12 +499,12 @@ struct LearningGoalOnboardingView: View {
         }
         .padding(.horizontal, AppTheme.Spacing.md)
         .padding(.vertical, 15)
-    }
-
-    private var summaryDivider: some View {
-        Divider()
-            .background(AppTheme.Colors.border.opacity(0.4))
-            .padding(.horizontal, AppTheme.Spacing.md)
+        // **2026-08-06** — eigene Card statt gemeinsamer Hintergrund +
+        // Divider (siehe Doc an `goalSummaryCard`).
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.Radius.xl, style: .continuous)
+                .fill(AppTheme.Colors.secondarySurface)
+        )
     }
 
     // MARK: - Gemeinsame Bausteine
@@ -527,7 +596,13 @@ struct LearningGoalOnboardingView: View {
             persistPlan()
             currentStep = .preview
         case .preview:
-            currentStep = (occasion?.requiresListSelection == true) ? .hasVocabQuestion : .modules
+            if occasion?.requiresListSelection == true {
+                currentStep = .hasVocabQuestion
+            } else if occasion == .stayOnTrack {
+                currentStep = .selectLists
+            } else {
+                currentStep = .modules
+            }
         case .hasVocabQuestion:
             currentStep = (hasVocabAlready == true) ? .selectLists : .scanPrompt
         case .selectLists:
@@ -546,8 +621,10 @@ struct LearningGoalOnboardingView: View {
 
     private func goBack() {
         switch currentStep {
-        case .transition, .celebration:
+        case .transition:
             break
+        case .celebration:
+            currentStep = .modules
         case .occasion:
             currentStep = .transition
         case .deadline:
@@ -558,11 +635,15 @@ struct LearningGoalOnboardingView: View {
             currentStep = .rhythm
         case .hasVocabQuestion:
             currentStep = .preview
-        case .selectLists, .scanPrompt:
+        case .selectLists:
+            currentStep = (occasion?.requiresListSelection == true) ? .hasVocabQuestion : .preview
+        case .scanPrompt:
             currentStep = .hasVocabQuestion
         case .modules:
             if occasion?.requiresListSelection == true {
                 currentStep = (hasVocabAlready == true) ? .selectLists : .scanPrompt
+            } else if occasion == .stayOnTrack {
+                currentStep = .selectLists
             } else {
                 currentStep = .preview
             }
@@ -591,7 +672,22 @@ struct LearningGoalOnboardingView: View {
     /// Blick auf Home frei.
     func completeOnboarding() {
         if !selectedListIDs.isEmpty {
-            goalStore.setLists(Array(selectedListIDs))
+            if occasion?.requiresListSelection == true {
+                goalStore.setLists(Array(selectedListIDs))
+            } else {
+                // **2026-08-06** — „Einfach dranbleiben" bekommt bewusst
+                // KEIN Inhaltsziel (reines Rhythmusziel, siehe
+                // `LearningOccasion.requiresListSelection`) — die
+                // Auswahl hier legt nur fest, welche Liste beim ersten
+                // Training/Quiz aktiv ist, statt es dem Zufall (bzw. dem
+                // App-Default Grundwortschatz) zu überlassen.
+                // `goalStore.setLists` würde hier still verpuffen, weil
+                // sie einen bestehenden `content` voraussetzt.
+                VocabularyListSelectionResolver.setGlobalSelectedListIDs(selectedListIDs)
+                if let firstID = selectedListIDs.first {
+                    listStore.selectedListID = firstID
+                }
+            }
         }
         onDismissOverlay()
     }

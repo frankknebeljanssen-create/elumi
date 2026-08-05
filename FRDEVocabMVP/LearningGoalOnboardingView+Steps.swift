@@ -16,21 +16,34 @@ extension LearningGoalOnboardingView {
 
     // MARK: - 2. Anlass
 
+    /// **2026-08-06, Layout-Fix** — Kopf und CTA fest, nur die Karten
+    /// scrollen (siehe Doc-Kommentar in `LearningGoalOnboardingView.
+    /// body`). Grund: dieser Screen hat 5 Karten, der Rhythmus-Screen
+    /// danach nur 4 — im alten, frei mitscrollenden Layout saß "Weiter"
+    /// deshalb spürbar tiefer als "Passt!" auf dem nächsten Screen
+    /// (User-Report: "dann kann man den Finger drauf lassen oder weiß,
+    /// wo's ist"). Mit fester Position ist das für beide identisch.
     var occasionStep: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: AppTheme.Spacing.md) {
                 compactMascot()
                 questionTitle("Was steht bei dir an?")
             }
+            .padding(.bottom, AppTheme.Spacing.lg)
 
-            VStack(spacing: 12) {
-                ForEach(LearningOccasion.allCases) { candidate in
-                    occasionCard(candidate)
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 12) {
+                    ForEach(LearningOccasion.allCases) { candidate in
+                        occasionCard(candidate)
+                    }
                 }
+                .padding(.bottom, AppTheme.Spacing.md)
             }
 
             primaryButton("Weiter", isEnabled: occasion != nil) { advance() }
+                .padding(.top, AppTheme.Spacing.md)
         }
+        .frame(maxHeight: .infinity)
     }
 
     private func occasionCard(_ candidate: LearningOccasion) -> some View {
@@ -113,21 +126,30 @@ extension LearningGoalOnboardingView {
 
     // MARK: - 4. Rhythmus
 
+    /// **2026-08-06, Layout-Fix** — siehe Doc-Kommentar an `occasionStep`,
+    /// gleicher Grund: feste Kopf-/CTA-Position, unabhängig von der
+    /// Kartenzahl (hier 4 statt 5).
     var rhythmStep: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: AppTheme.Spacing.md) {
                 compactMascot()
                 questionTitle("Wie oft schaffst du das?")
             }
+            .padding(.bottom, AppTheme.Spacing.lg)
 
-            VStack(spacing: 12) {
-                ForEach(LearningGoalPlan.weeklyTargetOptions, id: \.self) { days in
-                    rhythmCard(days)
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 12) {
+                    ForEach(LearningGoalPlan.weeklyTargetOptions, id: \.self) { days in
+                        rhythmCard(days)
+                    }
                 }
+                .padding(.bottom, AppTheme.Spacing.md)
             }
 
             primaryButton("Passt!") { advance() }
+                .padding(.top, AppTheme.Spacing.md)
         }
+        .frame(maxHeight: .infinity)
     }
 
     private func rhythmCard(_ days: Int) -> some View {
@@ -369,14 +391,55 @@ extension LearningGoalOnboardingView {
 
     // MARK: - 7a. Listen wählen (bei "Ja")
 
+    /// **2026-08-06** — Nur bei „Einfach dranbleiben" gedacht: bei den
+    /// anderen Anlässen (Schulaufgabe/Kapitel/Vokabeln üben) hat der
+    /// Nutzer gerade "Ja, hab ich schon" beantwortet — dort wäre eine
+    /// automatische Vorauswahl unpassend, er soll aktiv wählen. Ohne
+    /// konkreten Anlass ist der Grundwortschatz A1 (der App-weite
+    /// Standard, `VocabularyListSelectionResolver.
+    /// defaultGlobalSelectionListID`) eine sinnvolle Vorbelegung — der
+    /// Nutzer sieht sie jetzt und kann sie bewusst ändern, statt dass
+    /// sie unsichtbar im Hintergrund greift (User-Report).
+    private func preselectDefaultListIfNeeded() {
+        guard occasion == .stayOnTrack, selectedListIDs.isEmpty else { return }
+        selectedListIDs.insert(VocabularyListSelectionResolver.defaultGlobalSelectionListID)
+    }
+
+    /// **2026-08-06, Layout-Fix** — anders als die übrigen Schritte NICHT
+    /// mehr in die gemeinsame äußere `ScrollView` eingehängt (siehe
+    /// `LearningGoalOnboardingView.body`). Grund: Mit den zwei
+    /// aufklappbaren Gruppen kann der Inhalt hier lang werden — User-
+    /// Report: nach dem Ankreuzen des Grundwortschatz musste man erst
+    /// ganz nach unten scrollen, um den "Fertig"-Button überhaupt zu
+    /// erreichen. Jetzt scrollt **nur** die Listen-Fläche in der Mitte,
+    /// Kopf und Button stehen fest.
     var selectListsStep: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: AppTheme.Spacing.md) {
                 compactMascot()
-                questionTitle("Wähle eine oder mehrere Listen")
+                // **2026-08-06** — „Listen" → „Lernlisten" (User-Spec:
+                // Wording-Konstanz mit `ListPickerSheet`/
+                // `GlobalListPickerSheet`, die denselben Satz benutzen).
+                questionTitle("Wähle eine oder mehrere Lernlisten")
+            }
+            .padding(.bottom, AppTheme.Spacing.md)
+
+            // **2026-08-06** — nur beim reinen Rhythmusziel: die anderen
+            // Anlässe fragen vorher schon "Hast du die Vokabeln schon?",
+            // hier fehlt dieser Kontext, deshalb der kurze Hinweis, warum
+            // schon etwas angehakt ist. Grün statt der sonstigen Pink-
+            // Töne dieses Schritts (User-Spec: "damit wir da 'n bisschen
+            // Unterschied haben") — dieselbe Akzentfarbe wie der
+            // Rhythmus-Schritt (`stepAccentColor`), keine neu erfundene.
+            if occasion == .stayOnTrack {
+                Text("Wir haben den Grundwortschatz schon für dich angehakt. Passt das, oder willst du etwas anderes üben?")
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.moduleNomen)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.bottom, AppTheme.Spacing.md)
             }
 
-            if ownLists.isEmpty {
+            if ownLists.isEmpty && builtInLists.isEmpty {
                 // Sicherheitsnetz: sollte selten vorkommen (Nutzer hat
                 // "Ja" gesagt, aber tatsächlich keine eigene Liste) —
                 // bietet trotzdem einen Weg weiter, statt in einer
@@ -388,22 +451,113 @@ extension LearningGoalOnboardingView {
                     scanLinkButton
                 }
             } else {
-                VStack(spacing: 10) {
-                    ForEach(ownLists) { list in
-                        listRow(list)
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                        if !ownLists.isEmpty {
+                            VStack(alignment: .leading, spacing: 10) {
+                                selectListsSectionHeader("Meine eigenen Lernlisten")
+                                ForEach(ownLists) { list in
+                                    listRow(list)
+                                }
+                            }
+                        }
+
+                        // **2026-08-06** — bisher zeigte dieser Schritt NUR
+                        // eigene (gescannte/angelegte) Listen. User-Report:
+                        // bei "Ja, hab ich schon" wollte er den Grundwortschatz
+                        // der App auswählen können, nicht nur seine eigenen
+                        // Scans. Fertige Listen jetzt als eigene Sektion.
+                        //
+                        // **2026-08-06, Nachschlag** — in "Nach Lernstand" und
+                        // "Nach Themen" aufgeteilt, beide aufklappbar (User-
+                        // Spec: "sonst ist die Liste so ewig lang, wenn man
+                        // sie gar nicht braucht"). Gleiches Zusammenklapp-
+                        // Prinzip wie die Kategorie-Karten in "Meine Listen".
+                        if !StandardVocabularyLoader.levelLists.isEmpty {
+                            collapsibleListGroup(
+                                title: "Nach Lernstand",
+                                lists: StandardVocabularyLoader.levelLists,
+                                isExpanded: $isLevelGroupExpanded
+                            )
+                        }
+                        if !StandardVocabularyLoader.topicLists.isEmpty {
+                            collapsibleListGroup(
+                                title: "Nach Themen",
+                                lists: StandardVocabularyLoader.topicLists,
+                                isExpanded: $isTopicGroupExpanded
+                            )
+                        }
                     }
+                    .padding(.bottom, AppTheme.Spacing.md)
                 }
             }
 
             primaryButton("Fertig", isEnabled: !selectedListIDs.isEmpty) { advance() }
+                .padding(.top, AppTheme.Spacing.md)
+        }
+        .frame(maxHeight: .infinity)
+        .onAppear { preselectDefaultListIfNeeded() }
+    }
+
+    private func selectListsSectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.system(size: 13, weight: .bold, design: .rounded))
+            .tracking(0.6)
+            .textCase(.uppercase)
+            .foregroundStyle(AppTheme.Colors.textSecondary)
+    }
+
+    /// Auf-/zuklappbare Gruppe innerhalb der Lernlisten-Auswahl. Eine
+    /// vorausgewählte Liste hält ihre Gruppe automatisch offen — sonst
+    /// könnte der Grundwortschatz-Vorschlag bei "Einfach dranbleiben"
+    /// hinter einer eingeklappten Sektion verschwinden.
+    private func collapsibleListGroup(
+        title: String,
+        lists: [VocabularyList],
+        isExpanded: Binding<Bool>
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    isExpanded.wrappedValue.toggle()
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    selectListsSectionHeader(title)
+                    Spacer(minLength: 0)
+                    Image(systemName: isExpanded.wrappedValue ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            if isExpanded.wrappedValue {
+                VStack(spacing: 10) {
+                    ForEach(lists) { list in
+                        listRow(list)
+                    }
+                }
+            }
+        }
+        .onAppear {
+            if lists.contains(where: { selectedListIDs.contains($0.id) }) {
+                isExpanded.wrappedValue = true
+            }
         }
     }
 
-    /// Eigene, nutzererstellte Listen — bewusst nicht die volle
-    /// eingebaute Themenwelt hier hineingequetscht (die hat eigene,
-    /// größere Auswahl-UI in "Meine Listen").
+    /// Eigene, nutzererstellte Listen.
     private var ownLists: [VocabularyList] {
         listStore.customLists.filter { !$0.isBuiltIn }
+    }
+
+    /// Fertige Listen der App insgesamt — nur noch für die
+    /// Leer-Zustand-Prüfung gebraucht, das Rendering selbst läuft über
+    /// `collapsibleListGroup` mit `levelLists`/`topicLists` getrennt.
+    private var builtInLists: [VocabularyList] {
+        StandardVocabularyLoader.levelLists + StandardVocabularyLoader.topicLists
     }
 
     private func listRow(_ list: VocabularyList) -> some View {

@@ -214,12 +214,21 @@ struct LearningGoalPlan: Codable, Equatable {
     /// Kapitulation.
     /// **2026-08-05** — "locker" → "easy", "jeden Tag" → "Power User"
     /// (User-Spec: jugendlicher, weniger nüchtern-beschreibend).
+    /// **2026-08-06** — "ambitioniert" → "STARK" (User-Spec: "ist für
+    /// die Kids nicht gut" — klingt nach Schulnoten-Anspruch statt nach
+    /// Zuspruch). "solide" → "COOL" (User-Spec, nach kurzem Hin und Her:
+    /// "Easy, Cool, Stark und Power User"). Alle vier jetzt
+    /// großgeschrieben mit Ausrufezeichen, konsistent mit "POWER USER"
+    /// (User-Spec: "ich würde sie alle großschreiben").
+    /// **2026-08-06, Korrektur** — Ausrufezeichen bei allen vier war zu
+    /// viel (User-Spec: "das ist zu viel"). Nur bei den beiden stärkeren
+    /// Stufen behalten, wo der Ausruf-Charakter tatsächlich passt.
     static func weeklyTargetLabel(for days: Int) -> String {
         switch days {
-        case ...2: return "easy 🙂"
-        case 3:    return "solide 👍"
-        case 4...5: return "ambitioniert 🔥"
-        default:   return "Power User 💪"
+        case ...2: return "EASY 🙂"
+        case 3:    return "COOL 👍"
+        case 4...5: return "STARK! 🔥"
+        default:   return "POWER USER! 💪"
         }
     }
 
