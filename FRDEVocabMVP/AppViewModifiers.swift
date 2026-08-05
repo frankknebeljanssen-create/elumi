@@ -79,12 +79,40 @@ private struct ListeningPulseModifier: ViewModifier {
             }
             .shadow(color: isActive ? tint.opacity(isPulsing ? 0.7 : 0.2) : .clear,
                     radius: isPulsing ? 16 : 6)
-            .animation(.easeInOut(duration: 0.65).repeatForever(autoreverses: true),
-                       value: isPulsing)
-            .onAppear { if isActive { isPulsing = true } }
+            // **2026-08-05 Bugfix** — `.animation(.repeatForever(...), value:)`
+            // bindet dieselbe nie-endende Kurve an BEIDE Richtungen des
+            // Übergangs, auch ans Ausschalten. Nach mindestens einem
+            // Start/Stopp-Zyklus (ab der 2. Karte im Sprachmodus, wenn der
+            // Auto-Zuhören-Zyklus erstmals durchläuft) blieb dadurch eine
+            // verwaiste, sich selbst fortsetzende Animation auf der
+            // Mikro-Karte hängen — sichtbar als endloses Wackeln, das mit
+            // dem „Falsch"-Text alterniert, obwohl `isActive`/`isRecording`
+            // längst korrekt `false` war (User-Report). Fix: kein
+            // implizites `.animation(value:)` mehr; Start und Stopp laufen
+            // jetzt als zwei explizite `withAnimation`-Transaktionen mit
+            // unterschiedlichen Kurven — die kurze, nicht-wiederholende
+            // Stopp-Kurve löst die laufende Dauerschleife sauber ab, statt
+            // sie unbeendet weiterlaufen zu lassen.
+            .onAppear { if isActive { startPulsing() } }
             .onChange(of: isActive) { _, active in
-                isPulsing = active
+                if active {
+                    startPulsing()
+                } else {
+                    stopPulsing()
+                }
             }
+    }
+
+    private func startPulsing() {
+        withAnimation(.easeInOut(duration: 0.65).repeatForever(autoreverses: true)) {
+            isPulsing = true
+        }
+    }
+
+    private func stopPulsing() {
+        withAnimation(.easeOut(duration: 0.2)) {
+            isPulsing = false
+        }
     }
 }
 
