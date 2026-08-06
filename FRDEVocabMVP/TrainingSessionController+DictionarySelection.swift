@@ -70,7 +70,17 @@ extension TrainingSessionController {
         let allAvailable = availableTrainingLists(from: listStore, selectedAppDirection: selectedAppDirection, launchContext: launchContext)
         let selectedLists: [VocabularyList]
         if !selectedTrainingListIDs.isEmpty {
-            selectedLists = allAvailable.filter { selectedTrainingListIDs.contains($0.id) }
+            // **2026-08-06** — Verwaiste IDs abfangen: Seit dem Niveau-
+            // Neuzuschnitt gibt es keine C1/C2-Lernlisten mehr. Eine noch
+            // gespeicherte C2-Auswahlträfe hier auf keine Liste und
+            // ergäbe einen leeren Pool („Keine Karten") ohne Erklärung.
+            // `prunedSelectedListIDs` fällt in dem Fall auf den
+            // A1-Grundwortschatz zurück.
+            let usableIDs = VocabularyListSelectionResolver.prunedSelectedListIDs(
+                selectedTrainingListIDs,
+                knownListIDs: Set(allAvailable.map(\.id))
+            )
+            selectedLists = allAvailable.filter { usableIDs.contains($0.id) }
         } else if let single = selectedTrainingList(from: listStore, selectedAppDirection: selectedAppDirection, launchContext: launchContext) {
             selectedLists = [single]
         } else {

@@ -395,6 +395,8 @@
 		A1B2C3D4E5F60708090A0F07 /* LearningGoalDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0F08 /* LearningGoalDetailView.swift */; };
 		A1B2C3D4E5F60708090A0F05 /* HomeGoalCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0F06 /* HomeGoalCard.swift */; };
 		A1B2C3D4E5F60708090A1101 /* ElumiHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A1102 /* ElumiHelp.swift */; };
+		A1B2C3D4E5F60708090A1201 /* DailyWrapUp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A1202 /* DailyWrapUp.swift */; };
+		A1B2C3D4E5F60708090A1203 /* DailyWrapUpSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A1204 /* DailyWrapUpSheet.swift */; };
 		A1B2C3D4E5F60708090A1103 /* ElumiHelpSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A1104 /* ElumiHelpSheet.swift */; };
 		A1B2C3D4E5F60708090A0F03 /* LearningGoalOnboardingView+Steps.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0F04 /* LearningGoalOnboardingView+Steps.swift */; };
 		A1B2C3D4E5F60708090A0F01 /* LearningGoalOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60708090A0F02 /* LearningGoalOnboardingView.swift */; };
@@ -1021,6 +1023,8 @@
 		A1B2C3D4E5F60708090A0F08 /* LearningGoalDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearningGoalDetailView.swift; path = FRDEVocabMVP/LearningGoalDetailView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0F06 /* HomeGoalCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeGoalCard.swift; path = FRDEVocabMVP/HomeGoalCard.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A1102 /* ElumiHelp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElumiHelp.swift; path = FRDEVocabMVP/ElumiHelp.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A1202 /* DailyWrapUp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyWrapUp.swift; path = FRDEVocabMVP/DailyWrapUp.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A1204 /* DailyWrapUpSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyWrapUpSheet.swift; path = FRDEVocabMVP/DailyWrapUpSheet.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A1104 /* ElumiHelpSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElumiHelpSheet.swift; path = FRDEVocabMVP/ElumiHelpSheet.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0F04 /* LearningGoalOnboardingView+Steps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LearningGoalOnboardingView+Steps.swift"; path = "FRDEVocabMVP/LearningGoalOnboardingView+Steps.swift"; sourceTree = "<group>"; };
 		A1B2C3D4E5F60708090A0F02 /* LearningGoalOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearningGoalOnboardingView.swift; path = FRDEVocabMVP/LearningGoalOnboardingView.swift; sourceTree = "<group>"; };
@@ -1276,6 +1280,8 @@
 				A1B2C3D4E5F60708090A0F08 /* LearningGoalDetailView.swift */,
 				A1B2C3D4E5F60708090A0F06 /* HomeGoalCard.swift */,
 				A1B2C3D4E5F60708090A1102 /* ElumiHelp.swift */,
+				A1B2C3D4E5F60708090A1202 /* DailyWrapUp.swift */,
+				A1B2C3D4E5F60708090A1204 /* DailyWrapUpSheet.swift */,
 				A1B2C3D4E5F60708090A1104 /* ElumiHelpSheet.swift */,
 				A1B2C3D4E5F60708090A0F04 /* LearningGoalOnboardingView+Steps.swift */,
 				A1B2C3D4E5F60708090A0F02 /* LearningGoalOnboardingView.swift */,
@@ -2273,6 +2279,8 @@
 				A1B2C3D4E5F60708090A0F07 /* LearningGoalDetailView.swift in Sources */,
 				A1B2C3D4E5F60708090A0F05 /* HomeGoalCard.swift in Sources */,
 				A1B2C3D4E5F60708090A1101 /* ElumiHelp.swift in Sources */,
+				A1B2C3D4E5F60708090A1201 /* DailyWrapUp.swift in Sources */,
+				A1B2C3D4E5F60708090A1203 /* DailyWrapUpSheet.swift in Sources */,
 				A1B2C3D4E5F60708090A1103 /* ElumiHelpSheet.swift in Sources */,
 				A1B2C3D4E5F60708090A0F03 /* LearningGoalOnboardingView+Steps.swift in Sources */,
 				A1B2C3D4E5F60708090A0F01 /* LearningGoalOnboardingView.swift in Sources */,

@@ -36,27 +36,106 @@ struct HomeGoalCard: View {
     let streakDays: Int
     /// Tap auf die Karte — führt zum Ziel-Detail, wo geändert wird.
     let onTap: () -> Void
+    /// **Tagesabschluss (2026-08-06)** — öffnet „Fertig für heute".
+    ///
+    /// **Warum hier und nicht im Footer** (User-Entscheidung): Der
+    /// Abschluss gehört thematisch zum Ziel — er bestätigt genau den
+    /// Fortschritt, den diese Karte anzeigt. Der Footer hat zudem schon
+    /// fünf Einträge (dieselbe Begründung wie oben zur Platzierung der
+    /// Karte selbst).
+    let onWrapUp: () -> Void
 
     private let sectionStyle: AppSectionStyle = .home
 
+    /// **2026-08-06** — Die Karte ist nicht mehr EIN großer Button:
+    /// Der obere Teil führt weiterhin ins Ziel-Detail, die Zeile unten
+    /// öffnet den Tagesabschluss. Verschachtelte Buttons sind in SwiftUI
+    /// unzuverlässig, deshalb zwei getrennte Buttons in einem gemeinsamen
+    /// Karten-Hintergrund statt eines Buttons mit Extra-Tap-Bereich.
     var body: some View {
-        Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 12) {
-                header
-                rhythmProgressBar
-                if let contentLine {
-                    Text(contentLine)
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
+        VStack(alignment: .leading, spacing: 0) {
+            Button(action: onTap) {
+                VStack(alignment: .leading, spacing: 12) {
+                    header
+                    rhythmProgressBar
+                    if let contentLine {
+                        Text(contentLine)
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .appSetupCardBackground()
+            .buttonStyle(AppCardPressStyle())
+
+            wrapUpRow
         }
-        .buttonStyle(AppCardPressStyle())
+        .padding(.horizontal, 14)
+        // **2026-08-06** — 12 → 14 pt (User-Spec: "wir haben nach unten
+        // vor Vokabeln scannen und alle Lernlisten noch 'n bisschen
+        // Platz... die Karte könnte man noch vergrößern"). Bewusst
+        // minimal, nicht auf Kosten der Cards darunter.
+        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .appSetupCardBackground()
+    }
+
+    /// Der Ausstieg. Bewusst zurückhaltend gesetzt — er ist ein Angebot,
+    /// keine Aufforderung, und darf mit den Übungs-Karten darunter nicht
+    /// um Aufmerksamkeit konkurrieren.
+    private var wrapUpRow: some View {
+        VStack(spacing: 0) {
+            Divider()
+                .background(AppTheme.Colors.border.opacity(0.4))
+                .padding(.top, 12)
+
+            // **2026-08-06** — User-Spec: "seh noch nicht, wo ich den
+            // Tagesabschluss eingebe" + "würd das größer machen" + "kein
+            // Mondzeichen, sondern sowas wie beim Autorennen, so 'ne
+            // Flagge". Von 12/13pt auf 15/15pt, Mond → Zielflagge
+            // (`flag.checkered`) — passt besser zum "geschafft"-Moment
+            // als der Schlafenszeit-Mond, den man leicht mit "die App
+            // schläft jetzt" verwechseln könnte.
+            // **2026-08-06, zweite Runde** — User-Spec: "das ist so
+            // einfach nur weiß geschrieben wie die anderen Sachen in der
+            // Karte, man sieht's noch nicht genau... müsste 'n bisschen
+            // visuell auffälliger sein, ich will aber die Main-Seite
+            // nicht zuballern". Antwort: keine zusätzliche Fläche und
+            // keine zweite Karte — stattdessen bekommt genau diese Zeile
+            // eine eigene, abgesetzte Pille mit Amber-Ton (dieselbe
+            // `warning`-Farbe wie "Neues Ziel setzen" im Ziel-Detail).
+            // Sie hebt sich vom weißen Karten-Text ab, bleibt aber
+            // kleiner und ruhiger als die Übungs-Karten darunter.
+            Button(action: onWrapUp) {
+                HStack(spacing: 8) {
+                    Image(systemName: "flag.checkered")
+                        .font(.system(size: 15, weight: .bold))
+                    Text("Fertig für heute")
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .semibold))
+                        .opacity(0.7)
+                }
+                .foregroundStyle(AppTheme.Colors.warning)
+                .padding(.horizontal, 12)
+                .frame(minHeight: 44)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                        .fill(AppTheme.Colors.warning.opacity(0.12))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                        .stroke(AppTheme.Colors.warning.opacity(0.45), lineWidth: 1.5)
+                )
+                .padding(.top, 12)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(AppCardPressStyle())
+        }
     }
 
     // MARK: - Kopfzeile

@@ -19,6 +19,14 @@ FRDEVocabMVP/OpenAIConfig.plist
 # Claude Code session data (lokal, niemals committed)
 .claude/
 
+# Bauzeit-Daten (2026-08-06) — Arbeitsdateien für die Niveau-Zuordnung.
+# Enthält u. a. Lexique 3 (lexique.org), lizenziert unter CC BY-SA 4.0.
+# Die ShareAlike-Klausel würde auf alles durchschlagen, was wir damit
+# weitergeben — deshalb bleibt Lexique aus dem Repo UND aus dem
+# App-Bundle. Nur zur Bauzeit verwenden (siehe tools/lexique_frequency.py).
+# Wiederherstellen mit: python3 tools/lexique_frequency.py --download
+/build-data/
+
 # DB-Backups vor Migrationen — bleiben außerhalb Repo
 # (jeweils ~62 MB, im ~/Dropbox/VocabMVP-DB-Backups/ Folder)
 FRDEVocabMVP/FRDEMasterLexicon_pre_*.sqlite

@@ -148,8 +148,22 @@ struct VocabularyItem: Identifiable, Codable, Equatable {
     }
 
     func card(for direction: Direction) -> FlashCard {
+        // **2026-08-06** — Artikel-Anreicherung vorgeschaltet, damit
+        // Karteikarten und Training dieselbe Quelle nutzen wie das Quiz
+        // (User-Spec: französische Nomen immer mit Artikel).
+        //
+        // `frenchStudyCardDisplayText` bringt zwar eine eigene
+        // Artikel-Logik mit, die aber an einem Genus-Lookup über den
+        // Knowledge-Pool hängt und mehrere Bedingungen erfüllen muss
+        // (beide Seiten exakt ein Wort, Nomen-Evidenz). `displayFrench`
+        // geht stattdessen über die `wordClass` des Eintrags und das
+        // DB-Genus. Beides zusammen deckt mehr Fälle ab als jedes
+        // einzeln — und doppelt kann es nicht werden, weil die
+        // nachgelagerte Logik per `leadingFrenchArticle(in:) == nil`
+        // prüft, ob schon ein Artikel steht.
+        let enrichedFrench = FrenchLemmaFormatter.displayFrench(for: self)
         let studyFrench = frenchStudyCardDisplayText(
-            french,
+            enrichedFrench,
             matchingGerman: german,
             cardType: cardType,
             sourceLanguage: sourceLanguage

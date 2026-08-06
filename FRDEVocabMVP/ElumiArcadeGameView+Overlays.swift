@@ -501,7 +501,7 @@ extension ElumiArcadeGameView {
                     if let goHome { goHome() } else { dismiss() }
                 }
             },
-            secondaryCTALabel: "Zur Startseite",
+            secondaryCTALabel: "Zurück zur Startseite",
             onSecondaryCTA: {
                 exitArcadeSilently()
                 dismiss()

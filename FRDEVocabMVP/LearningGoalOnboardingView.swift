@@ -87,7 +87,7 @@ struct LearningGoalOnboardingView: View {
     /// "Vokabeln zuordnen" (Listen wählen ODER scannen ODER später,
     /// alles auf einem Screen) wurde durch User-Feedback in drei
     /// eigene Schritte aufgeteilt: erst eine reine Ja/Nein-Frage
-    /// ("Hast du die Vokabeln schon in der App?"), danach je nach
+    /// ("Hast du deine eigenen Vokabeln schon in der App?"), danach je nach
     /// Antwort entweder der Listen-Picker oder ein eigener,
     /// dedizierter Scan-Einstiegs-Screen. Klarer als ein Screen mit
     /// drei gleichzeitigen Optionen.
@@ -308,7 +308,16 @@ struct LearningGoalOnboardingView: View {
             // begründen**. Der Nutzer soll wissen, was jetzt kommt und
             // warum es sich lohnt — statt ein zweites Mal begrüßt zu
             // werden. Begrüßt wird genau einmal, im Welcome-Screen.
-            VStack(spacing: 14) {
+            // **2026-08-06** — User-Spec: die drei Sätze brauchen je eine
+            // Zeile Abstand voneinander (14 → 24), und der Screen darf
+            // emotionaler sein: die Zielflagge über der Überschrift macht
+            // sofort sichtbar, worum es geht — Elumi bleibt darüber
+            // stehen, weil er die App durchgehend brandet.
+            VStack(spacing: 24) {
+                Image(systemName: "flag.checkered")
+                    .font(.system(size: 34, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.elumiPink)
+
                 Text("Fangen wir mit deinem Ziel an, \(displayName).")
                     .font(.system(size: 28, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)

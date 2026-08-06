@@ -461,7 +461,7 @@ struct TrainingChainCompleteSummaryView: View {
             Button {
                 onGoHome()
             } label: {
-                Text("Zur Startseite")
+                Text("Zurück zur Startseite")
                     .font(.system(size: 16, weight: .bold, design: .rounded))
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: 46)

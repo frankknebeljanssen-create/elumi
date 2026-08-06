@@ -254,6 +254,22 @@ struct LearningGoalDetailView: View {
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .appSetupCardBackground()
+        // **2026-08-06** — Grüner Rand + leichte Grün-Füllung (User-Spec:
+        // "das kommt aus dem Onboarding und geht da 'n bisschen unter").
+        // Vorher trug diese Card denselben neutralen Rahmen wie
+        // `rhythmSection` direkt darüber — nichts unterschied "was du dir
+        // vorgenommen hast" (Anlass aus dem Onboarding) vom Rhythmus
+        // (der hier direkt geändert wird). Dieselbe Akzentfarbe wie im
+        // Onboarding selbst (`accentGreen` = `moduleNomen`), keine neu
+        // erfundene.
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
+                .stroke(accentGreen.opacity(0.5), lineWidth: 1.5)
+        )
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
+                .fill(accentGreen.opacity(0.08))
+        )
     }
 
     // MARK: - Bausteine

@@ -109,6 +109,14 @@ struct AccentsSessionView: View {
                 content
                 Spacer()
                 footer
+                // **2026-08-06** — Ausstieg mit Ergebnis, an derselben
+                // Stelle wie in Training und Karteikarten (User-Spec:
+                // "bei allen Übungstypen... direkt über dem Footer").
+                if !engine.isFinished {
+                    endAccentsEarlyButton
+                        .padding(.horizontal, AppLayout.screenPadding)
+                        .padding(.bottom, AppTheme.Spacing.sm)
+                }
                 bottomBar
             }
         }
@@ -558,6 +566,49 @@ struct AccentsSessionView: View {
     }
 
     // MARK: - Bottom Bar (systemkonform)
+
+    /// **2026-08-06** — Ausstieg mit Ergebnis, gleiche Optik und Position
+    /// wie in Training und Karteikarten (siehe `endTrainingEarlyButton`
+    /// in `TrainingView+Layout.swift`).
+    ///
+    /// `forceFinishFromChainTimer()` ist trotz des Namens die generische
+    /// „Session jetzt beenden"-Mutation der Engine — dasselbe, was der
+    /// Chain-Timer-Cutoff auslöst. Der bestehende
+    /// `onChange(of: engine.isFinished)` weiter oben übernimmt danach
+    /// alles Weitere (TTS stoppen, Payload bilden, Result-Screen zeigen).
+    private var endAccentsEarlyButton: some View {
+        Button {
+            // Ohne beantwortete Aufgabe gäbe es nichts zu zeigen. Die
+            // Engine führt keinen `wrongCount` (nur `correctCount` als
+            // gefilterte Ableitung), deshalb der Index als Maß für
+            // "schon was gemacht".
+            guard engine.currentIndex > 0 else {
+                onClose()
+                return
+            }
+            engine.forceFinishFromChainTimer()
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "flag.checkered")
+                    .font(.system(size: 15, weight: .bold))
+                Text("Für jetzt beenden")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+            }
+            .foregroundStyle(AppTheme.Colors.textSecondary)
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 48)
+            .background(
+                RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                    .fill(AppTheme.Colors.secondarySurface)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                    .stroke(AppTheme.Colors.border, lineWidth: 1)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(AppCardPressStyle())
+    }
 
     private var bottomBar: some View {
         AppBottomBar(

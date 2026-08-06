@@ -53,7 +53,11 @@ extension QuizView {
                     // ist es deaktiviert (kein Check ohne Inhalt) — dadurch
                     // bleibt „Weiter" gedimmt, bis etwas eingegeben + geprüft
                     // wurde (User-Spec 2.12).
-                    if !(isCountChainStep && quizAwaitingWeiter) {
+                    // **2026-08-06** — gilt jetzt auch im normalen Quiz:
+                    // nach einer falschen Antwort wartet der Screen dort
+                    // ebenfalls auf „Weiter" (siehe `submitTyping`), und
+                    // „Überprüfen" wäre daneben doppelt belegt.
+                    if !quizAwaitingWeiter {
                         let trimmedEmpty = typingInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                         Button {
                             submitTyping(for: question)
@@ -155,6 +159,17 @@ extension QuizView {
                                 .font(AppTheme.Typography.body)
                                 .foregroundStyle(matchingTextColor(for: pair.id))
                                 .multilineTextAlignment(.center)
+                                // **2026-08-06** — lange Komposita brachen
+                                // mitten im Wort um, im schlimmsten Fall mit
+                                // einem einzelnen Buchstaben auf der letzten
+                                // Zeile („Restauranteingan / g.", User-
+                                // Screenshot). Statt zu brechen darf der
+                                // Text jetzt schrumpfen; drei Zeilen sind
+                                // die Obergrenze, danach greift die
+                                // Verkleinerung.
+                                .lineLimit(3)
+                                .minimumScaleFactor(0.55)
+                                .allowsTightening(true)
                                 .frame(maxWidth: .infinity, minHeight: 72)
                                 .padding(.horizontal, AppTheme.Spacing.sm)
                                 .background(matchingBackground(for: pair.id))
@@ -202,6 +217,10 @@ extension QuizView {
                                 .font(AppTheme.Typography.body)
                                 .foregroundStyle(matchingTextColor(for: pair.id, isAnswerSide: true))
                                 .multilineTextAlignment(.center)
+                                // Siehe Begründung auf der Prompt-Seite oben.
+                                .lineLimit(3)
+                                .minimumScaleFactor(0.55)
+                                .allowsTightening(true)
                                 .frame(maxWidth: .infinity, minHeight: 72)
                                 .padding(.horizontal, AppTheme.Spacing.sm)
                                 .background(matchingBackground(for: pair.id, isAnswerSide: true))
@@ -243,14 +262,33 @@ extension QuizView {
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
 
-                // Sentence with blank
-                fillBlanksSentenceView(question)
+                // Satz mit Lücke plus deutsche Entsprechung als ein Block.
+                //
+                // **2026-08-06** — Der deutsche Satz ist hier keine
+                // Fußnote, sondern die Entscheidungsgrundlage: Ob „le"
+                // oder „la" in die Lücke gehört, erschließt sich oft erst
+                // aus ihm. Er stand aber klein und weit abgesetzt
+                // darunter und wurde überlesen.
+                //
+                // Zwei Schritte, beide nach User-Spec: erst 13 → 15 pt,
+                // dann 15 → 17 pt („noch mal ein p größer... eigentlich
+                // so groß wie der französische Satz"). 17 statt 18 pt
+                // hält den französischen Satz als Aufgabe weiterhin
+                // vorne, ohne den deutschen zur Nebensache zu machen.
+                //
+                // Zusätzlich eigenes, engeres `VStack` statt des
+                // Card-Abstands (`Spacing.md`): die beiden Sätze gehören
+                // zusammen und stehen jetzt als Paar dicht beieinander
+                // („ein bisschen höher rauf, also näher an den
+                // französischen").
+                VStack(spacing: 6) {
+                    fillBlanksSentenceView(question)
 
-                // Translation hint
-                Text(question.translationHint)
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .frame(maxWidth: .infinity, alignment: .center)
+                    Text(question.translationHint)
+                        .font(.system(size: 17, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
 
                 // Options 2×2
                 let columns = [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)]

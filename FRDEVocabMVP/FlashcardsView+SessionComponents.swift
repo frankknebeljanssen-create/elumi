@@ -18,7 +18,7 @@ extension FlashcardsView {
         let isChain = chain != nil
         let primaryLabel: String = isChain
             ? (nextStepTitle.map { "Weiter zu \($0)" } ?? "Training abschließen")
-            : "Nächste Runde"
+            : "Noch eine Runde"
         return SessionSummaryView(
             outcome: outcome,
             progress: ProgressStore.shared.progress,
@@ -36,7 +36,7 @@ extension FlashcardsView {
             // Gleiche Aktion wie bisher (`handleBackNavigation` → dismiss).
             // Chain: nil — kein „Zur Startseite" mitten in der Kette (analog
             // Quiz/Training).
-            secondaryCTALabel: isChain ? nil : "Zur Startseite",
+            secondaryCTALabel: isChain ? nil : "Zurück zur Startseite",
             onSecondaryCTA: isChain ? nil : { handleBackNavigation() },
             primaryCTAPulses: isChain,
             hidesDetailedStats: isChain,

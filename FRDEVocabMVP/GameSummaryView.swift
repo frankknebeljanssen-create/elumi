@@ -83,7 +83,7 @@ struct GameSummaryView<IconContent: View>: View {
         primaryCTAEnabled: Bool = true,
         primaryCTAHint: String? = nil,
         onPrimaryCTA: @escaping () -> Void,
-        secondaryCTALabel: String = "Zur Startseite",
+        secondaryCTALabel: String = "Zurück zur Startseite",
         onSecondaryCTA: @escaping () -> Void,
         @ViewBuilder icon: () -> IconContent
     ) {

@@ -334,14 +334,17 @@ extension LearningGoalOnboardingView {
 
             compactMascot()
 
-            questionTitle("Hast du die Vokabeln schon in der App?")
+            // **2026-08-06** — „die Vokabeln" → „deine eigenen Vokabeln"
+            // (User-Spec). Die App bringt Grundwortschatz und Themen
+            // mit; „die Vokabeln" konnte man deshalb mit „ja, es sind
+            // ja welche drin" beantworten. Gefragt ist aber, ob der
+            // Nutzer SEINEN eigenen Stoff schon eingescannt hat.
+            // **2026-08-06** — Erklärsatz darunter entfernt (User-Spec):
+            // "Egal ob eigene Liste oder schon gescannt..." brachte nichts,
+            // die Frage steht für sich — Nein hilft weiter, Ja führt direkt
+            // zur Listenauswahl.
+            questionTitle("Hast du deine eigenen Vokabeln schon in der App?")
                 .multilineTextAlignment(.center)
-
-            Text("Egal ob eigene Liste oder schon gescannt. Hauptsache, sie sind schon da.")
-                .font(.system(size: 17, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: 12) {
                 yesNoCard(title: "Ja", emoji: "👍", isSelected: hasVocabAlready == true) {
@@ -562,6 +565,12 @@ extension LearningGoalOnboardingView {
 
     private func listRow(_ list: VocabularyList) -> some View {
         let isSelected = selectedListIDs.contains(list.id)
+        // **2026-08-06** — Wackelkandidaten bekommt hier denselben Akzent
+        // (moduleQuiz) wie in `ListPickerSheet`/„Meine Lernlisten" (User-
+        // Spec: „gleicher Farbcode, dass man das wiedererkennt"). Vorher
+        // sah die Liste im Onboarding aus wie jede andere.
+        let isWackel = list.id == VocabularyListStore.wackelkandidatenListID
+        let wackelAccent = AppTheme.Colors.moduleQuiz
         return Button {
             if isSelected {
                 selectedListIDs.remove(list.id)
@@ -572,7 +581,7 @@ extension LearningGoalOnboardingView {
             HStack(spacing: AppTheme.Spacing.md) {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 22))
-                    .foregroundStyle(isSelected ? sectionAccent.accent : AppTheme.Colors.textSecondary.opacity(0.4))
+                    .foregroundStyle(isSelected ? (isWackel ? wackelAccent : sectionAccent.accent) : AppTheme.Colors.textSecondary.opacity(0.4))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(list.name)
@@ -590,11 +599,14 @@ extension LearningGoalOnboardingView {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
-                    .fill(AppTheme.Colors.secondarySurface)
+                    .fill(isWackel ? wackelAccent.opacity(isSelected ? 0.24 : 0.14) : AppTheme.Colors.secondarySurface)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
-                    .stroke(isSelected ? sectionAccent.accent : Color.clear, lineWidth: 2)
+                    .stroke(
+                        isWackel ? wackelAccent.opacity(isSelected ? 0.85 : 0.55) : (isSelected ? sectionAccent.accent : Color.clear),
+                        lineWidth: isWackel ? 1.5 : 2
+                    )
             )
         }
         .buttonStyle(OnboardingCardBounceStyle())

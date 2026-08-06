@@ -141,6 +141,7 @@ extension TrainingView {
     }
 
     func handleTrainingRecordingPulseChange(_ isRecording: Bool) {
+        isMicPulseActive = isRecording
     }
 
     func handleTrainingSpeakerTransition(from wasSpeaking: Bool, to isSpeaking: Bool) {

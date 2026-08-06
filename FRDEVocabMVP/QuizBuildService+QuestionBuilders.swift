@@ -95,13 +95,30 @@ extension QuizBuildService {
         )
         guard !distractors.isEmpty else { return nil }
 
-        let options = Array(([correctCandidate.answer] + distractors.map(\.answer)).shuffled())
+        // **2026-08-06** — Schlusspunkt bei allen Optionen entfernen
+        // (User-Report: zu „Je cherche." standen „nächste Woche",
+        // „bar bezahlen", „ich suche" und „Ich heiße." zur Auswahl —
+        // nur eine Option trug einen Punkt).
+        //
+        // Gleiche Klasse von Fehler wie das Fragezeichen weiter unten in
+        // `bestDistractors`: Interpunktion, die nur an einer Option
+        // hängt, macht sie erkennbar, ohne dass man die Vokabel können
+        // muss. Fragezeichen bleiben unangetastet — dort sorgt der
+        // Satzart-Abgleich dafür, dass alle vier Optionen dieselbe Form
+        // haben, und das Zeichen trägt dort echte Bedeutung.
+        let answerLang = correctCandidate.answerLanguageCode
+        let correctAnswer = Self.normalizedQuizOption(correctCandidate.answer, languageCode: answerLang)
+        let options = Array(
+            ([correctAnswer] + distractors.map {
+                Self.normalizedQuizOption($0.answer, languageCode: answerLang)
+            }).shuffled()
+        )
         usedPromptKeys[correctCandidate.promptKey, default: 0] += 1
 
         return (
             QuizMultipleChoiceQuestion(
                 prompt: correctCandidate.prompt,
-                correctAnswer: correctCandidate.answer,
+                correctAnswer: correctAnswer,
                 options: options,
                 category: correctCandidate.category
             ),
@@ -124,8 +141,19 @@ extension QuizBuildService {
         guard targetPairCount >= 2 else { return nil }
 
         let selectedCandidates = Array(available.shuffled().prefix(targetPairCount))
+        // **2026-08-06** — Schlusspunkt auf beiden Seiten entfernen
+        // (User-Report: „Je crois que." / „Ich glaube, dass." trugen
+        // einen Punkt, „mille"/„tausend" und „propre"/„sauber" nicht).
+        //
+        // Beim Paare-Finden ist das kein Verräter wie beim Multiple
+        // Choice, aber eine sichtbare Unruhe: acht Kacheln nebeneinander,
+        // zwei davon mit Punkt. Gleiche Behandlung wie dort, damit alle
+        // Kacheln gleich aussehen.
         let pairs = selectedCandidates.map {
-            QuizMatchingPair(prompt: $0.prompt, answer: $0.answer)
+            QuizMatchingPair(
+                prompt: Self.normalizedQuizOption($0.prompt, languageCode: $0.promptLanguageCode),
+                answer: Self.normalizedQuizOption($0.answer, languageCode: $0.answerLanguageCode)
+            )
         }
 
         let answerKeys = Set(selectedCandidates.map { $0.answerKey })
@@ -257,7 +285,20 @@ extension QuizBuildService {
         var candidates: [QuizCandidate] = []
 
         for item in items {
-            let frenchRaw = item.french.trimmingCharacters(in: .whitespacesAndNewlines)
+            // **2026-08-06** — Französische Nomen tragen im Quiz jetzt
+            // ihren Artikel (User-Spec: "im Quiz müssen französische
+            // Nomen immer mit dem Artikel stehen, zum Beispiel Pizza, da
+            // muss stehen la Pizza ... oder l'aéroport").
+            //
+            // Ohne Artikel ist eine Vokabel unvollständig gelernt: im
+            // Französischen gehört das Genus zum Wort, und man sieht es
+            // ihm nicht an. `displayFrench(for:)` gab es dafür längst,
+            // sie hing bisher aber nur an der Listen-Detailansicht — das
+            // Quiz las `item.french` roh. Die Funktion ergänzt nur bei
+            // Einzelwort-Nomen und lässt einen schon vorhandenen Artikel
+            // unangetastet, Phrasen und Verben bleiben unverändert.
+            let frenchRaw = FrenchLemmaFormatter.displayFrench(for: item)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
             let germanRaw = item.german.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !frenchRaw.isEmpty, !germanRaw.isEmpty else { continue }
 
@@ -371,17 +412,76 @@ extension QuizBuildService {
         return sorted.first
     }
 
+    /// Entfernt einen abschließenden Punkt. Siehe Begründung in
+    /// `makeMultipleChoiceQuestion`.
+    ///
+    /// Nur der einzelne Schlusspunkt — Auslassungspunkte („…", „...")
+    /// bleiben stehen, die sind Teil der Aussage und nicht bloß
+    /// Satzschluss.
+    static func strippingTerminalPeriod(_ text: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.hasSuffix("."), !trimmed.hasSuffix("..") else { return trimmed }
+        return String(trimmed.dropLast()).trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Punkt entfernen **und** die Groß-/Kleinschreibung neu bestimmen.
+    ///
+    /// **2026-08-06** — Der Großbuchstabe am Anfang war die zweite Hälfte
+    /// desselben Problems wie der Punkt (User-Report: „Ich heiße." stand
+    /// zwischen „nächste Woche", „bar bezahlen", „ich suche"). Er
+    /// entsteht nicht aus den Daten, sondern aus der Satzanfang-Regel in
+    /// `TextNormalizationEngine`: Wo ein Schlusszeichen steht, wird das
+    /// erste Wort großgeschrieben. Nimmt man nur den Punkt weg, bleibt
+    /// das große „Ich" als schwächerer Verräter übrig.
+    ///
+    /// Deshalb nach dem Kürzen einmal neu durch die Engine: ohne
+    /// Schlusszeichen greift die Satzanfang-Regel nicht mehr, „Ich
+    /// heiße" wird zu „ich heiße" — während Nomen („Bibliothek",
+    /// „die Bibliothek") großgeschrieben bleiben, weil die Engine
+    /// Funktionswörter und Nomen auseinanderhält. Genau dafür ist sie
+    /// da; hier wird nichts nachgebaut.
+    ///
+    /// Nur für Deutsch — französische Antworten haben andere Regeln und
+    /// laufen unverändert durch.
+    static func normalizedQuizOption(_ text: String, languageCode: String) -> String {
+        let stripped = strippingTerminalPeriod(text)
+        guard languageCode == "de-DE" else { return stripped }
+        return TextNormalizationEngine.normalize(stripped, language: .german)
+    }
+
+    /// Ob ein Antworttext eine Frage ist. Grundlage für den Satzart-
+    /// Abgleich in `bestDistractors` — siehe Begründung dort.
+    ///
+    /// Bewusst nur am Fragezeichen festgemacht, nicht an Fragewörtern:
+    /// „Wo ist der Bahnhof" ohne Zeichen ist im Datenbestand genauso
+    /// eine Aussage-Schreibweise wie „Das ist gut", und eine
+    /// Heuristik über Fragewörter würde bei Nebensätzen („Ich weiß, wo
+    /// er ist") falsch anschlagen. Das sichtbare Zeichen ist genau das,
+    /// was die Antwort verraten hat.
+    static func isQuestionForm(_ text: String) -> Bool {
+        text.trimmingCharacters(in: .whitespacesAndNewlines).hasSuffix("?")
+    }
+
     static func bestDistractors(
         for correctCandidate: QuizCandidate,
         in candidates: [QuizCandidate],
         usedCandidateIDs: Set<String>
     ) -> [QuizCandidate] {
+        // **2026-08-06, Bug-Fix** — Satzart muss übereinstimmen
+        // (User-Report: Frage „C'est elle ?", darunter drei Antworten mit
+        // Punkt und genau eine mit Fragezeichen — „da ist ja schon
+        // offensichtlich, was die richtige Antwort ist"). Eine
+        // Übersetzungsaufgabe darf sich nicht über die Interpunktion
+        // verraten; wer die Vokabel nicht kann, soll trotzdem raten
+        // müssen.
+        let correctIsQuestion = Self.isQuestionForm(correctCandidate.answer)
         let exactStructurePool = candidates.filter {
             $0.id != correctCandidate.id &&
             !usedCandidateIDs.contains($0.id) &&
             $0.answerKey != correctCandidate.answerKey &&
             $0.category == correctCandidate.category &&
-            $0.isPhrase == correctCandidate.isPhrase
+            $0.isPhrase == correctCandidate.isPhrase &&
+            Self.isQuestionForm($0.answer) == correctIsQuestion
         }
 
         // Level-Gating: aus dem strukturell passenden Pool zuerst die
@@ -401,11 +501,25 @@ extension QuizBuildService {
             levelMatchedPool = []
         }
 
+        // **2026-08-06** — Letzte Stufe war bisher `candidates` (alles).
+        // Damit hätte der Satzart-Filter oben nichts genützt, sobald zu
+        // wenige strukturgleiche Kandidaten übrig sind: die Frage-/
+        // Aussage-Mischung wäre über den Fallback zurückgekommen. Jetzt
+        // eine Zwischenstufe, die nur die Satzart erzwingt, und erst
+        // ganz zuletzt der ungefilterte Pool.
+        let questionMatchedPool = candidates.filter {
+            $0.id != correctCandidate.id &&
+            $0.answerKey != correctCandidate.answerKey &&
+            Self.isQuestionForm($0.answer) == correctIsQuestion
+        }
+
         let scoringPool: [QuizCandidate]
         if levelMatchedPool.count >= 3 {
             scoringPool = levelMatchedPool
         } else if exactStructurePool.count >= 3 {
             scoringPool = exactStructurePool
+        } else if questionMatchedPool.count >= 3 {
+            scoringPool = questionMatchedPool
         } else {
             scoringPool = candidates
         }

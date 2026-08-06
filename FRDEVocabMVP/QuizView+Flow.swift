@@ -62,14 +62,20 @@ extension QuizView {
             GamificationFeedbackPresenter.shared.noteWormEarned()
         }
 
-        if isCountChainStep {
+        // **2026-08-06, User-Spec** — bei einer FALSCHEN Antwort kein
+        // Auto-Advance mehr: "sehr kurz wird das richtige gezeigt, hier
+        // sollte evtl. ein 'Weiter'-CTA kommen, damit man die richtige
+        // Lösung ansehen und sich merken kann". Die 0.95 s reichten nicht,
+        // um eine unbekannte Lösung zu lesen. Richtige Antworten laufen
+        // unverändert automatisch weiter — dort gibt es nichts nachzulesen.
+        if isCountChainStep || !isCorrect {
             quizPendingCorrect = isCorrect
             quizAwaitingWeiter = true
         } else {
             // Bei richtiger Antwort etwas länger stehen lassen, damit der
             // Würmchen-Tick sichtbar zu Ende läuft, bevor die nächste
             // Frage kommt.
-            scheduleAdvance(after: isCorrect ? 1.7 : 0.95) {
+            scheduleAdvance(after: 1.7) {
                 completeCurrentQuestion(correct: isCorrect)
             }
         }
@@ -123,12 +129,13 @@ extension QuizView {
             GamificationFeedbackPresenter.shared.noteWormEarned()
         }
 
-        // Count-Modus: Feedback halten bis „Weiter" (siehe submitMultipleChoice).
-        if isCountChainStep {
+        // Count-Modus ODER falsche Antwort: Feedback halten bis „Weiter"
+        // (siehe Begründung in `submitMultipleChoice`).
+        if isCountChainStep || !isCorrect {
             quizPendingCorrect = isCorrect
             quizAwaitingWeiter = true
         } else {
-            scheduleAdvance(after: isCorrect ? 1.9 : 1.2) {
+            scheduleAdvance(after: 1.9) {
                 completeCurrentQuestion(correct: isCorrect)
             }
         }

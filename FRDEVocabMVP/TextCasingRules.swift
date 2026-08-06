@@ -297,7 +297,16 @@ enum TextNormalizationEngine {
                 } else {
                     // Kompositum-Disambiguierung: bekanntes Nomen → groß,
                     // sonst Adjektiv/Modifier-Annahme → klein.
-                    if StandardVocabularyLoader.germanNounSet.contains(lowerStem) {
+                    //
+                    // **Bug-Fix 2026-08-06** — Gegen-Check gegen
+                    // `isKnownGermanAdjectiveForm`: einige Adjektive (v. a.
+                    // Farben) sind substantivierbar und landen deshalb
+                    // AUCH in `germanNounSet` (via „im Grünen" o. ä.). Ohne
+                    // den Gegen-Check kapitalisierte das die viel häufigere
+                    // attributive Verwendung fälschlich groß, z. B.
+                    // „einen Grünen Salat" statt „einen grünen Salat".
+                    if StandardVocabularyLoader.germanNounSet.contains(lowerStem),
+                       !StandardVocabularyLoader.isKnownGermanAdjectiveForm(lowerStem) {
                         return capitalizeFirstLetter(lower)
                     }
                     // **2026-06-09** — War das Wort in der Quelle groß,

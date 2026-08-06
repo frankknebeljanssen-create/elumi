@@ -219,7 +219,13 @@ extension TrainingView {
                 }
             }
 
-            Spacer(minLength: AppTheme.Spacing.sm)
+            // **2026-08-06** — vorher ein `Spacer(minLength:)`, der die
+            // Übersetzungs-Card ans untere Screen-Ende drückte
+            // (User-Spec: "nicht ganz unten platzieren, sondern direkt
+            // unter die Artikel, dass die oben dranhängt"). Unten steht
+            // jetzt der "Für jetzt beenden"-CTA allein — mit dem Spacer
+            // hätten sich beide dieselbe Zone geteilt.
+            Spacer().frame(height: AppTheme.Spacing.xs)
 
             // Translation hint button — always visible
             if let item = session.currentTrainingItem {
@@ -386,7 +392,7 @@ extension TrainingView {
                             // verdeckte den Zuhör-Zustand, sobald die
                             // nächste Aufnahme startete (User-Report: Ohr
                             // fehlt in Vokabeln).
-                            if isSpeechRecording {
+                            if isMicPulseActive {
                             ZStack {
                                 Circle()
                                     .fill(Color.white.opacity(0.22))
@@ -419,7 +425,7 @@ extension TrainingView {
                     // (siehe `appListeningPulse`). Ersetzt den alten
                     // Rahmen-Puls, der an `isMicPulseVisible` hing und
                     // bei 28 % Weiß praktisch unsichtbar war.
-                    .appListeningPulse(isActive: isSpeechRecording)
+                    .appListeningPulse(isActive: isMicPulseActive)
                     .disabled(!session.hasStartedTraining || currentCard == nil || !isAudioModeEnabled || !canUseSpeechRecognition)
                     .opacity(!session.hasStartedTraining || currentCard == nil || !isAudioModeEnabled || !canUseSpeechRecognition ? 0.45 : 1)
 

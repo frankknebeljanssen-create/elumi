@@ -54,6 +54,9 @@ struct HomeView: View {
 
     private let sectionStyle: AppSectionStyle = .home
     @State private var isHomeNavigationLocked = false
+    /// **Tagesabschluss (2026-08-06)** — „Fertig für heute", ausgelöst
+    /// aus der Ziel-Karte.
+    @State private var isShowingWrapUp = false
 
     @ObservedObject private var profileStore = ProfileStore.shared
 
@@ -290,7 +293,8 @@ struct HomeView: View {
                                 goalStore.contentProgress(listStore: $0)
                             } ?? nil,
                             streakDays: currentStreak,
-                            onTap: { openHomeScreen(.learningGoal) }
+                            onTap: { openHomeScreen(.learningGoal) },
+                            onWrapUp: { isShowingWrapUp = true }
                         )
                         .padding(.top, 20)
                         .appEntryTransition(delay: 0.05)
@@ -320,6 +324,18 @@ struct HomeView: View {
         .appScreenBackground(sectionStyle)
         .dismissKeyboardOnTap()
         .toolbar(.hidden, for: .navigationBar)
+        // **Tagesabschluss (2026-08-06)** — siehe `DailyWrapUp.swift`
+        // für Konzept und Begründung.
+        .sheet(isPresented: $isShowingWrapUp) {
+            DailyWrapUpSheet(
+                actionsToday: DailyStatsStore.shared.actionsToday,
+                didPracticeToday: goalStore.practicedDayIndices
+                    .contains(GamificationConfig.currentDayIndex),
+                rhythm: goalStore.rhythmProgress,
+                streakDays: currentStreak,
+                onClose: { isShowingWrapUp = false }
+            )
+        }
         // **2026-06-09** — Scannen/Listen sind jetzt FIX unten am
         // Footer verankert (User-Spec „keine relativen Positionen"),
         // nicht mehr im Scroll-Flow relativ zu den Method-Cards.

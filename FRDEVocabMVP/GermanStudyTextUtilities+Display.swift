@@ -118,12 +118,19 @@ func visibleQuizPromptText(_ text: String, category: String) -> String {
     return sourceDisplayText(text, sourceLanguage: .french)
 }
 
+/// **2026-08-06** — auch hier der Schlusspunkt zuletzt weg, aus
+/// demselben Grund wie in `visibleQuizPairTexts`: Die beiden
+/// Display-Funktionen darunter ergänzen fehlende Satzzeichen selbst,
+/// wodurch ein beim Bauen der Frage entfernter Punkt wieder auftauchte.
+/// Betrifft die Antwortoptionen im Multiple Choice, wo ein einzelner
+/// Punkt die richtige Option verraten hat.
 func visibleQuizAnswerText(_ text: String, category: String) -> String {
     let cardType = quizCardType(for: category)
-    if looksLikeGermanDisplayText(text) {
-        return germanDisplayText(text, cardType: cardType)
-    }
-    return sourceDisplayText(text, sourceLanguage: .french)
+    let isGerman = looksLikeGermanDisplayText(text)
+    let displayed = isGerman
+        ? germanDisplayText(text, cardType: cardType)
+        : sourceDisplayText(text, sourceLanguage: .french)
+    return strippingQuizTerminalPeriod(displayed, isGerman: isGerman)
 }
 
 /// **2026-06-09** — Anzeige eines zusammengehörenden Paars (Frage +
@@ -170,10 +177,64 @@ func visibleQuizPairTexts(
     // Paar-Synchronisierung kann eine Seite aber ein Satzzeichen NEU
     // bekommen haben (Frage gewinnt vor Aussage). Deshalb hier noch
     // einmal — idempotent, aber notwendig für genau diesen Fall.
+    //
+    // **2026-08-06** — Schlusspunkt zuletzt entfernen (User-Report:
+    // „Se connecter." / „Sich einloggen." trugen weiterhin Punkte,
+    // andere Kacheln nicht).
+    //
+    // Das Kürzen sitzt bewusst HIER am Ende und nicht beim Bauen der
+    // Frage: `germanDisplayText`/`sourceDisplayText` oben ergänzen
+    // fehlende Satzzeichen selbst („preserve + infer"), und
+    // `synchronizedPairTerminalSentencePunctuation` gleicht sie
+    // zwischen beiden Seiten an. Ein früher entfernter Punkt kam auf
+    // diesem Weg wieder zurück — genau das war der Fehler.
+    //
+    // Fragezeichen bleiben: die Synchronisierung sorgt dort dafür, dass
+    // beide Seiten dieselbe Satzart tragen, und das Zeichen ist Teil
+    // der Aussage.
     return (
-        capitalizingSentenceStartIfTerminated(syncedPrompt),
-        capitalizingSentenceStartIfTerminated(syncedAnswer)
+        strippingQuizTerminalPeriod(
+            capitalizingSentenceStartIfTerminated(syncedPrompt),
+            isGerman: promptIsGerman
+        ),
+        strippingQuizTerminalPeriod(
+            capitalizingSentenceStartIfTerminated(syncedAnswer),
+            isGerman: !promptIsGerman
+        )
     )
+}
+
+/// Entfernt einen einzelnen Schlusspunkt für die Quiz-Anzeige **und**
+/// nimmt die Großschreibung zurück, die nur wegen dieses Punktes
+/// entstanden ist.
+///
+/// **2026-08-06** — Beides hängt zusammen (User-Screenshot: „Wütend.",
+/// „En colère.", „L'élève."). Die Anzeige-Kette oben setzt zuerst ein
+/// Satzendzeichen und schreibt dann wegen dieses Zeichens den
+/// Satzanfang groß. Entfernt man nur den Punkt, bleibt ein
+/// großgeschriebenes Adjektiv stehen — „Wütend" statt „wütend".
+///
+/// Die Rücknahme greift **nur bei Einzelwörtern**, und für Deutsch nur,
+/// wenn das Wort kein bekanntes Nomen ist. Mehrwortige Einträge bleiben
+/// unangetastet: dort steht der Großbuchstabe typischerweise an einem
+/// echten Satzanfang oder an einem Nomen mit Artikel („der Schüler"),
+/// und eine Automatik könnte dort mehr kaputt machen als reparieren.
+func strippingQuizTerminalPeriod(_ text: String, isGerman: Bool = true) -> String {
+    let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard trimmed.hasSuffix("."), !trimmed.hasSuffix("..") else { return trimmed }
+    let stripped = String(trimmed.dropLast()).trimmingCharacters(in: .whitespacesAndNewlines)
+
+    guard !stripped.contains(" "),
+          let first = stripped.first,
+          first.isUppercase
+    else { return stripped }
+
+    // Deutsche Nomen bleiben groß — das ist keine Satzanfang-
+    // Großschreibung, sondern die richtige Schreibung des Wortes.
+    if isGerman, StandardVocabularyLoader.germanNounSet.contains(stripped.lowercased()) {
+        return stripped
+    }
+    return stripped.prefix(1).lowercased() + stripped.dropFirst()
 }
 
 func canonicalGermanQuizText(

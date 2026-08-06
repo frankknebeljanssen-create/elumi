@@ -194,7 +194,13 @@ var quizSessionScreen: some View {
         // am Quiz-Ende `isShowingResult = true` →
         // `handleQuizResultVisibilityChange` → `chainAdvance` zum nächsten
         // Modul/Chain-Ende.
-        if isCountChainStep {
+        // **2026-08-06** — zusätzlich außerhalb des Count-Modus sichtbar,
+        // sobald `quizAwaitingWeiter` gesetzt ist: das passiert seit heute
+        // auch nach einer falschen Antwort im normalen Quiz (User-Spec:
+        // "damit man die richtige Lösung ansehen und sich merken kann").
+        // Im Count-Modus bleibt er wie bisher permanent stehen (gedimmt,
+        // bis geprüft wurde).
+        if isCountChainStep || quizAwaitingWeiter {
             Button {
                 completeCurrentQuestion(correct: quizPendingCorrect ?? false)
             } label: {
@@ -233,7 +239,7 @@ var quizResultScreen: some View {
     let isChain = chain != nil
     let primaryLabel: String = isChain
         ? (nextStepTitle.map { "Weiter zu \($0)" } ?? "Training abschließen")
-        : "Nächste Runde"
+        : "Noch eine Runde"
     return VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
         // **Session-Header (2026-05-22)** — Chevron + „Quiz"-Titel, wie
         // KK (`flashcardSessionHeader`) / Verbformen (`trainingSessionCompact-
@@ -280,7 +286,7 @@ var quizResultScreen: some View {
                     resetQuizToSetup()
                 }
             },
-            secondaryCTALabel: isChain ? nil : "Zur Startseite",
+            secondaryCTALabel: isChain ? nil : "Zurück zur Startseite",
             onSecondaryCTA: isChain ? nil : {
                 dismissToHome()
             },

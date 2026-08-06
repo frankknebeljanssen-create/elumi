@@ -35,6 +35,13 @@ let appLearningGoalArchiveKey = "elumi.goal.archive.v1"
 let appLearningGoalPracticedDaysKey = "elumi.goal.practicedDays.v1"
 let appLearningGoalWeekIndexKey = "elumi.goal.weekIndex.v1"
 
+// **Tagesabschluss (2026-08-06)** — „Fertig für heute". `wrapUpDayKey`
+// hält den Tages-Index des letzten Abschlusses (damit derselbe Tag nicht
+// zweimal gefeiert wird), `reminderSlotKey` die im Wenn-Dann-Schritt
+// gewählte Tageszeit für die morgige Erinnerung.
+let appDailyWrapUpDayKey = "elumi.wrapUp.lastDay.v1"
+let appDailyWrapUpReminderSlotKey = "elumi.wrapUp.reminderSlot.v1"
+
 let appQuizHeartsKey = "myVoc.quiz.hearts.v1"
 let appElumiWaterflohKey = "elumi.gamification.wasserfloh.v1"
 let appElumiAlgenkugelKey = "elumi.gamification.algenkugel.v1"

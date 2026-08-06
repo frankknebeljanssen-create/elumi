@@ -59,6 +59,24 @@ enum FeatureFlags {
     /// Karten unverändert zurück.
     static let welcomeScreenFeatureCardsEnabled = false
 
+    /// **2026-08-06** — Abzeichen-Karte auf dem Fortschritt-Screen
+    /// ausgeblendet.
+    ///
+    /// Hintergrund (User-Spec): Der Screen trug fünf Blöcke — Level,
+    /// Ziel, Serie, Lernstatus, Abzeichen — plus drei Chevrons, die an
+    /// drei verschiedene Orte führten. "Selbst für mich, der mit der App
+    /// jeden Tag arbeitet, ist das unübersichtlich."
+    ///
+    /// Die Abzeichen sind der am wenigsten handlungsrelevante Teil:
+    /// Sie zeigen Vergangenes, führen nirgends hin, und solange es nur
+    /// wenige gibt, ist die Karte überwiegend leer. Level, Serie und
+    /// Ziel beantworten dagegen alle "wo stehe ich gerade".
+    ///
+    /// Der Code bleibt vollständig erhalten: `true` setzen bringt die
+    /// Karte unverändert zurück, sobald es genug Abzeichen gibt, dass
+    /// sie sich lohnt.
+    static let progressAchievementsCardEnabled = false
+
     /// **2026-06-09** — Lernjahr-Auswahl für die Demo ausgeblendet.
     /// Der Grundwortschatz A1 ist damit nur noch als Ganzes an- und
     /// abwählbar; die „LJ 1-3"-Pills verschwinden app-weit.

@@ -258,7 +258,7 @@ struct AccentsEntryView: View {
                 if isChain {
                     return nextStepTitle.map { "Weiter zu \($0)" } ?? "Training abschließen"
                 }
-                return result.mode == .speedRound ? "Noch eine Runde" : "Nächste Runde"
+                return result.mode == .speedRound ? "Noch eine Runde" : "Noch eine Runde"
             }()
             // **Full-Screen-Background-Wrapper (2026-05-02)** —
             // `SessionSummaryView` ist eine Card ohne eigenen Full-
@@ -289,7 +289,7 @@ struct AccentsEntryView: View {
                                 }
                             }
                         },
-                        secondaryCTALabel: isChain ? nil : "Zur Startseite",
+                        secondaryCTALabel: isChain ? nil : "Zurück zur Startseite",
                         onSecondaryCTA: isChain ? nil : {
                             showingResult = nil
                             goHome()

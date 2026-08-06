@@ -389,20 +389,18 @@ struct SessionSummaryView: View {
                     isHero: outcome.creditsFromStreakMilestone > 0 && !outcome.leveledUp,
                     animationDelay: FeedbackTiming.rewardChipStagger[2]
                 )
-            } else if showsStreakActive {
-                // „Streak bleibt aktiv" — Anti-Verlustmoment: die Kette ist
-                // heute bereits gesichert, die Session ist ein Zusatz. Dezent
-                // gefärbt (nicht hero), damit der Chip die Wahrnehmung nicht
-                // stiehlt, aber den User in der Gewohnheit bestärkt.
-                rewardChip(
-                    icon: "flame",
-                    title: "\(progress.currentStreak) Tage Streak aktiv",
-                    subtitle: "Heute bereits gesichert",
-                    color: Color(hex: "#FF9F40"),
-                    isHero: false,
-                    animationDelay: FeedbackTiming.rewardChipStagger[2]
-                )
             }
+            // **2026-08-06** — Der frühere „N Tage Streak aktiv / Heute
+            // bereits gesichert"-Chip ist entfallen (User-Spec: "das ist
+            // irgendwie komisch formuliert, beziehungsweise weiß ich
+            // nicht, ob wir das brauchen").
+            //
+            // Er erschien bei JEDER weiteren Übung desselben Tages und
+            // meldete dabei nichts Neues — die Serie war ja schon
+            // gesichert. Der Chip darüber bleibt: der feuert nur, wenn
+            // die Serie tatsächlich gewachsen ist, und das ist eine
+            // echte Nachricht. `showsStreakActive` steuert weiterhin,
+            // ob der Belohnungsblock überhaupt gezeigt wird.
             if outcome.creditsFromXP > 0 {
                 // Gleiches Wortschatz-Mapping wie beim Level-Up-Chip:
                 // „Credits" → „Spiele" (Singular/Plural), Icon auf
@@ -597,7 +595,7 @@ struct SessionSummaryView: View {
             if let primary = onPrimaryCTA {
                 VStack(spacing: 8) {
                     Button(action: primary) {
-                        Text(primaryCTALabel ?? "Nächste Runde")
+                        Text(primaryCTALabel ?? "Noch eine Runde")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))

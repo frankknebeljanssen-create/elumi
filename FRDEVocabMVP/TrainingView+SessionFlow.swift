@@ -52,6 +52,56 @@ extension TrainingView {
         }
     }
 
+    /// **2026-08-06** — treibt `endTrainingEarlyButton` (in
+    /// `TrainingView+Layout.swift`, beide Session-Screens). Ohne
+    /// Fortschritt (0 Antworten) gäbe es nichts zu zeigen — dann direkt
+    /// raus. Sonst: für die vier Session-Modi genau das, was der
+    /// Zurück-Chevron ohnehin schon tut (`handleTopBarBack()`, bereits
+    /// erprobt, inkl. Chain-Sonderfall). Verbformen hat keinen
+    /// gleichwertigen Weg über sein Back — dort wird die Session
+    /// stattdessen manuell auf "fertig" gesetzt, `verbformsResultScreen`
+    /// übernimmt Reward-Vergabe + Anzeige selbst (`.onAppear`).
+    func endTrainingEarly() {
+        if isVerbformsMode {
+            guard verbformsSession.sessionCorrectCount + verbformsSession.sessionWrongCount > 0 else {
+                dismiss()
+                return
+            }
+            verbformsSession.stopSpeedRoundTimer()
+            verbformsCountdownTask?.cancel()
+            verbformsCountdownTask = nil
+            verbformsCountdownPhase = nil
+            runtimeSpeaker?.stop()
+            speechController?.stopRecording()
+            verbformsSession.isActive = false
+            verbformsSession.isFinished = true
+        } else {
+            guard session.sessionCorrectCount + session.sessionWrongCount > 0 else {
+                dismiss()
+                return
+            }
+            // **2026-08-06, Bug-Fix** — User-Report: "Für jetzt beenden"
+            // im Artikel-Modus landete auf der Artikel-Hauptseite statt
+            // im Ergebnis-Screen. Ursache: `handleTopBarBack()` verlässt
+            // sich allein darauf, dass `awardTrainingXPIfNeeded()` ein
+            // Outcome setzt — das tut sie aber nicht, wenn der Reward in
+            // dieser Session schon einmal vergeben wurde
+            // (`sessionRewardConsumed`, z. B. nach einer abgeschlossenen
+            // Runde). Dann bleibt `trainingSessionOutcome` nil, die
+            // View-Branch fällt auf `session.isShowingSetup` zurück und
+            // der User sieht statt seines Ergebnisses das Setup.
+            // Gleicher defensiver Fallback wie in
+            // `forceTrainingDoneFromChainTimer()`: Ergebnis-Screen
+            // garantieren, danach erst aufräumen.
+            cancelPendingFeedback()
+            awardTrainingXPIfNeeded()
+            if trainingSessionOutcome == nil {
+                trainingSessionOutcome = .empty
+            }
+            handleTopBarBack()
+        }
+    }
+
     func dismissTraining() {
         awardTrainingXPIfNeeded()
         resetTrainingSession()

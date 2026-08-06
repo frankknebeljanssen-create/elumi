@@ -164,7 +164,11 @@ struct WelcomeScreen: View {
     /// den großen Schriftsatz wie die anderen Seiten, das wirkt son
     /// bisschen klein"). Ohne die Feature-Karten ist der Platz da.
     private var greeting: some View {
-        VStack(spacing: 6) {
+        // **2026-08-06** — User-Spec: mehr Luft zwischen den drei Zeilen
+        // ("ein bisschen mehr Abstand zur nächsten Zeile", "das muss von
+        // 'Ich bin Elumi' abgesetzt werden, mir ist das zu eng dran") und
+        // die Subline zwei Punkt größer.
+        VStack(spacing: 12) {
             Text("Salut! 👋")
                 .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textSecondary)
@@ -185,11 +189,11 @@ struct WelcomeScreen: View {
                     ? "Schön, dass du da bist!\nDas hier kannst du mit mir machen:"
                     : "Schön, dass du da bist!\nIch helf dir beim Französischlernen."
             )
-                .font(.system(size: 17, weight: .medium, design: .rounded))
+                .font(.system(size: 19, weight: .medium, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textSecondary)
                 .multilineTextAlignment(.center)
-                .lineSpacing(3)
-                .padding(.top, 2)
+                .lineSpacing(4)
+                .padding(.top, 8)
         }
         .frame(maxWidth: .infinity)
     }

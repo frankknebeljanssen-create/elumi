@@ -163,7 +163,10 @@ extension FlashcardsView {
         // 1.524 (= ursprünglich 1.548) — eine 6,5 %-Steigerung sowohl
         // in Breite als auch Höhe. `flashcardFaceHeight` muss parallel
         // angepasst werden (FlashcardsView.swift).
-        .frame(width: 320, height: 210)
+        // **2026-08-06** — 320×210 → 284×186 (Ratio bleibt ~1.527).
+        // Siehe Begründung an `flashcardFaceHeight` in FlashcardsView.swift:
+        // schafft Platz für den "Für jetzt beenden"-CTA unten.
+        .frame(width: 284, height: 186)
         // Sanfter Schatten — Mastered-Karten kriegen einen leicht
         // wärmeren Ton, damit der Sieg auch unterbewusst ankommt.
         .shadow(
@@ -206,9 +209,16 @@ extension FlashcardsView {
             } else {
                 // Session-Modus (aktives Lernen): kompakter Text-Header,
                 // kein Card-Block — der Lerninhalt soll Fläche bekommen.
+                //
+                // **2026-08-06** — Titel 28 → 22 pt (User-Spec: "oben den
+                // Header vertikal etwas kleiner machen"), zusammen mit
+                // der kleineren Karte schafft das den Platz für den
+                // "Für jetzt beenden"-CTA unten. Gilt NUR für den
+                // Session-Modus; der Setup-Screen darüber behält seine
+                // farbige `ModuleHeaderCard` unverändert.
                 ZStack {
                     Text("Karteikarten")
-                        .font(.system(size: 28, weight: .black, design: .rounded))
+                        .font(.system(size: 22, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .center)
 

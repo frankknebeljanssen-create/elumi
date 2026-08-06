@@ -108,6 +108,30 @@ enum VocabularyListSelectionResolver {
         return ids.isEmpty ? nil : Set(ids)
     }
 
+    /// **2026-08-06** — Entfernt IDs eingebauter Listen, die es nicht
+    /// mehr gibt.
+    ///
+    /// Anlass: Mit dem Niveau-Neuzuschnitt entfallen die Lernlisten C1
+    /// und C2 (siehe `StandardVocabularyLoader.learnableLevels`). Wer
+    /// eine davon ausgewählt hatte, behielt die UUID in seinen
+    /// UserDefaults — sie löst dann gegen keine Liste mehr auf. Die
+    /// Aufrufer filtern ihre verfügbaren Listen gegen dieses Set
+    /// (`allAvailable.filter { selectedIDs.contains($0.id) }`), bekämen
+    /// also eine **leere Auswahl** und damit einen leeren Übungspool —
+    /// ohne erkennbaren Grund für den Nutzer.
+    ///
+    /// Bewusst konservativ: Nur IDs, die zu **keiner** bekannten Liste
+    /// gehören (weder eingebaut noch eigen), fliegen raus. Bleibt danach
+    /// nichts übrig, greift der A1-Default. Eigene Listen des Nutzers
+    /// werden nie angefasst.
+    static func prunedSelectedListIDs(
+        _ ids: Set<UUID>,
+        knownListIDs: Set<UUID>
+    ) -> Set<UUID> {
+        let survivors = ids.intersection(knownListIDs)
+        return survivors.isEmpty ? [defaultGlobalSelectionListID] : survivors
+    }
+
     /// Schreibt die globale Listen-Auswahl. Wird vom Settings-Toggle-
     /// Initial-Default (Stufe 1) und ab Stufe 2 von den Modul-Picker-
     /// Update-Pfaden aufgerufen.

@@ -38,21 +38,26 @@ extension QuizSessionController {
                     usedCandidateIDs: &comboCandidateIDs,
                     usedQuestionSignatures: &comboSignatures
                 ) {
-                    let idx = min(4, generatedQuestions.count)
-                    generatedQuestions.insert(combo, at: idx)
+                    // **2026-08-06, Bug-Fix** — vorher `insert`, wodurch
+                    // die Runde LÄNGER wurde als gewählt (User-Report:
+                    // "ich hab ein Quiz mit fünf Fragen gemacht... jetzt
+                    // sind's sechs"). Der Nutzer wählt oben ausdrücklich
+                    // eine Anzahl; die darf die App nicht stillschweigend
+                    // überschreiten. Ersetzen statt einfügen behält die
+                    // Abwechslung und hält die Zahl exakt ein.
+                    let idx = min(4, generatedQuestions.count - 1)
+                    generatedQuestions[idx] = combo
                 }
 
-                // Fill-in-Blank: insert every ~4 questions
+                // Lückentext etwa alle 4 Fragen — ebenfalls ersetzend
+                // statt einfügend, siehe Begründung beim Word-Combo oben.
                 let fillBlankInterval = 4
-                var insertedFillBlanks = 0
                 for pos in stride(from: 2, to: generatedQuestions.count, by: fillBlankInterval) {
                     if let fillBlank = QuizBuildService.nextFillBlanksQuestion(
                         items: items,
                         usedSignatures: &comboSignatures
                     ) {
-                        let idx = min(pos + insertedFillBlanks, generatedQuestions.count)
-                        generatedQuestions.insert(fillBlank, at: idx)
-                        insertedFillBlanks += 1
+                        generatedQuestions[pos] = fillBlank
                     }
                 }
             }

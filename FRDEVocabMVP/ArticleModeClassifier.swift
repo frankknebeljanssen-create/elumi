@@ -215,6 +215,33 @@ enum ArticleModeClassifier {
         let itemBaseWordClass = StandardVocabularyLoader.resolvedWordClass(forItem: item)
         let coreWordClass = StandardVocabularyLoader.wordClass(for: core)
 
+        // Harter Veto (2026-08-06, Bug-Fix): Wenn der Kern selbst im
+        // Master-Lexikon eindeutig als Nicht-Nomen geführt wird (allen
+        // voran Adjektive), sticht das JEDE andere Nomen-Quelle — auch
+        // ein `item.wordClass == "noun"`, das aus fehlerhaften
+        // Scan-Import-/List-Daten stammen kann. User-Screenshot: „vide"
+        // (Adjektiv, DB-bestätigt) erschien im Artikel-Modus mit
+        // le/la/l'/les zur Auswahl — sinnlos, weil ein Adjektiv keinen
+        // Artikel hat. Ohne diesen Veto gewann `listMarkedAsNoun` allein
+        // durch ein falsch gesetztes Item-Flag.
+        let knownNonNounCoreClasses: Set<String> = [
+            "adjective", "adverb", "verb", "interjection",
+            "pronoun", "preposition", "conjunction", "determiner", "numeral"
+        ]
+        if let coreClass = coreWordClass, knownNonNounCoreClasses.contains(coreClass) {
+            return ArticleExerciseTarget(
+                texteSourceVisible: raw,
+                noyauLexical: core,
+                lemme: core,
+                categoriePrincipale: .autre,
+                genre: .indetermine,
+                commenceParVoyelleOuHMuet: false,
+                reponseAttendueArticle: nil,
+                estValidePourExerciceArticle: false,
+                rejectionReason: .rejectedNotNoun
+            )
+        }
+
         let listMarkedAsNoun = itemBaseWordClass == "noun"
         let coreMarkedAsNoun = coreWordClass == "noun"
         let acceptedViaLeadingMarker = coreExtraction.leading != .none

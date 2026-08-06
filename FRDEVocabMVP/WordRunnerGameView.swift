@@ -2922,7 +2922,7 @@ struct WordRunnerGameView: View {
             primaryCTALabel: "Noch eine Runde",
             primaryCTAIcon: "arrow.clockwise",
             onPrimaryCTA: { startRun() },
-            secondaryCTALabel: "Zur Startseite",
+            secondaryCTALabel: "Zurück zur Startseite",
             onSecondaryCTA: {
                 music.fadeOut(over: 0.3)
                 game.stop()

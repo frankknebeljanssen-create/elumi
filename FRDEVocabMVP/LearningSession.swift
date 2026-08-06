@@ -126,7 +126,7 @@ struct LearningSession: Equatable {
     ///     die Sekundenzahl kommt dynamisch aus `SpeedRoundSettings`,
     ///     damit die Headline zur global konfigurierten Dauer passt)
     ///   • Quiz/Training/Verbformen → „X von Y richtig"
-    ///   • Fallback bei 0 Versuchen → „Session geschafft" (analog zum
+    ///   • Fallback bei 0 Versuchen → „Dein Ergebnis" (analog zum
     ///     bisherigen Default der Summary-View)
     var resultHeadline: String {
         let total = correctCount + wrongCount
@@ -137,7 +137,12 @@ struct LearningSession: Equatable {
                     ? "1 Karte gemeistert"
                     : "\(masteredCardCount) Karten gemeistert"
             }
-            if total == 0 { return "Session geschafft" }
+            // **2026-08-06, Bug-Fix** — vorher „Session geschafft", auch
+            // wenn keine einzige Aufgabe beantwortet wurde (User-Report:
+            // Übung ohne Antwort beendet, Screen sagte trotzdem
+            // „Session geschafft" — "das ist ja falsch"). Geschafft ist
+            // nur, was auch gemacht wurde.
+            if total == 0 { return "Dein Ergebnis" }
             return "\(correctCount) von \(total) richtig"
         case .speedRound:
             // Dynamische Sekundenzahl aus der globalen Settings-Einstellung.
@@ -150,7 +155,12 @@ struct LearningSession: Equatable {
                 ? "1 Treffer in \(seconds)s"
                 : "\(correctCount) Treffer in \(seconds)s"
         case .quiz, .training, .verbforms, .accents:
-            if total == 0 { return "Session geschafft" }
+            // **2026-08-06, Bug-Fix** — vorher „Session geschafft", auch
+            // wenn keine einzige Aufgabe beantwortet wurde (User-Report:
+            // Übung ohne Antwort beendet, Screen sagte trotzdem
+            // „Session geschafft" — "das ist ja falsch"). Geschafft ist
+            // nur, was auch gemacht wurde.
+            if total == 0 { return "Dein Ergebnis" }
             return "\(correctCount) von \(total) richtig"
         case .wordRunner:
             // Word-Runner-Headline: „richtige Antworten" ist für den

@@ -139,7 +139,7 @@ extension TrainingView {
             let isChain = chain != nil
             let primaryLabel: String = isChain
                 ? (nextStepTitle.map { "Weiter zu \($0)" } ?? "Training abschließen")
-                : "Nächste Runde"
+                : "Noch eine Runde"
             SessionSummaryView(
                 outcome: outcome,
                 progress: progressStore.progress,
@@ -151,7 +151,7 @@ extension TrainingView {
                         trainingSessionOutcome = nil
                     }
                 },
-                secondaryCTALabel: isChain ? nil : "Zur Startseite",
+                secondaryCTALabel: isChain ? nil : "Zurück zur Startseite",
                 onSecondaryCTA: isChain ? nil : {
                     dismissToHome()
                 },
@@ -339,6 +339,15 @@ extension TrainingView {
             }
 
             Spacer(minLength: 0)
+
+            // **2026-08-06** — User-Spec: "in allen Übungen unten 'n
+            // Button... dass man rauskommt mit einem Ergebnisscreen...
+            // an der gleichen Stelle". Deckt Vokabeln/Nomen/Artikel/
+            // Verben ab (gemeinsamer Screen); Verbformen bekommt dieselbe
+            // Zeile in `verbformsSessionScreen`.
+            if session.hasStartedTraining, !session.isShowingRoundComplete {
+                endTrainingEarlyButton
+            }
         }
         .padding(.horizontal, AppLayout.screenPadding)
         // **2026-05-08 Padding-Cleanup** — `footerHeight + insetBottom + lg`
@@ -346,6 +355,59 @@ extension TrainingView {
         .padding(.bottom, AppTheme.Spacing.lg)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    /// **2026-08-06** — Sauberer Ausstieg mit Ergebnis-Screen statt des
+    /// bisherigen nackten `dismiss()` am Zurück-Chevron (User-Report:
+    /// "nicht intuitiv, auf Zurück zu klicken"). Nutzt exakt den
+    /// bestehenden Reward-Mechanismus, der bisher nur am regulären
+    /// Runden-Ende griff — `awardTrainingXPIfNeeded()`/
+    /// `awardVerbformsXPIfNeeded()` berechnen aus den schon gesammelten
+    /// `sessionCorrectCount`/`sessionWrongCount` ganz normal eine
+    /// `SessionRewardOutcome`, dieselbe `SessionSummaryView` wie am
+    /// natürlichen Rundenende erscheint dadurch automatisch.
+    ///
+    /// **Keine Wiederaufnahme in dieser Version** (User-Entscheidung):
+    /// `awardTrainingXPIfNeeded()` löscht den Resume-Snapshot explizit,
+    /// die nächste Runde startet also frisch. Wer stattdessen einfach
+    /// wegnavigiert (App-Wechsel, System-Zurück-Geste), profitiert
+    /// weiterhin vom bestehenden, unsichtbaren Resume-Snapshot — dieser
+    /// Button ist der bewusste "ich bin fertig, gib mir mein Ergebnis"-
+    /// Weg, kein Ersatz dafür.
+    /// **2026-08-06, zweite Runde** — vorher eine nackte graue Textzeile
+    /// (User-Spec: "sieht irgendwie sonst so klein aus... würde den auch
+    /// in eine Card packen... mit 'nem Icon symbolisieren, zum Beispiel
+    /// eine Zielflagge"). Jetzt eine echte Card mit Zielflagge — dieselbe
+    /// `flag.checkered`, die auch der Tagesabschluss auf Home trägt,
+    /// damit "hier höre ich auf" app-weit dasselbe Zeichen hat.
+    ///
+    /// Bewusst `secondarySurface` statt einer Akzentfarbe: der Button
+    /// soll auffindbar sein, aber nicht mit den Antwort-Buttons darüber
+    /// um Aufmerksamkeit konkurrieren.
+    var endTrainingEarlyButton: some View {
+        Button {
+            endTrainingEarly()
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "flag.checkered")
+                    .font(.system(size: 15, weight: .bold))
+                Text("Für jetzt beenden")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+            }
+            .foregroundStyle(AppTheme.Colors.textSecondary)
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 48)
+            .background(
+                RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                    .fill(AppTheme.Colors.secondarySurface)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                    .stroke(AppTheme.Colors.border, lineWidth: 1)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(AppCardPressStyle())
     }
 
     var trainingSetupScreen: some View {
@@ -1506,6 +1568,15 @@ extension TrainingView {
             }
 
             Spacer(minLength: 0)
+
+            // **2026-08-06** — siehe Doc an `endTrainingEarlyButton` in
+            // `trainingSessionScreen`. Verbformen hat eine eigene, nicht
+            // geteilte Session-Struktur (`verbformsSession` statt
+            // `session`), deshalb eine zweite, an dieselbe Stelle
+            // gesetzte Zeile statt Wiederverwendung.
+            if verbformsSession.isActive, !verbformsSession.isShowingRoundComplete {
+                endTrainingEarlyButton
+            }
         }
         .padding(.horizontal, AppLayout.screenPadding)
         // **2026-05-08 Padding-Cleanup** — `footerHeight + insetBottom + 16`
@@ -2027,7 +2098,7 @@ extension TrainingView {
             let isChain = chain != nil
             let primaryLabel: String = isChain
                 ? (nextStepTitle.map { "Weiter zu \($0)" } ?? "Training abschließen")
-                : "Nächste Runde"
+                : "Noch eine Runde"
             SessionSummaryView(
                 outcome: verbformsOutcome,
                 progress: progressStore.progress,
@@ -2040,7 +2111,7 @@ extension TrainingView {
                         verbformsSession.reset()
                     }
                 },
-                secondaryCTALabel: isChain ? nil : "Zur Startseite",
+                secondaryCTALabel: isChain ? nil : "Zurück zur Startseite",
                 onSecondaryCTA: isChain ? nil : {
                     dismissToHome()
                 },

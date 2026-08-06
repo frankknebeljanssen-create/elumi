@@ -144,7 +144,16 @@ struct FlashcardsView: View {
         // **Karteikarten-Design Phase 8.4** (User-Revision „etwas größer"):
         // 320×210 pt — gleiche Ratio (~1.524), 6,5 % größer. Container-
         // Höhe für den Flip-ZStack + umliegende Layout-Berechnungen.
-        210
+        //
+        // **2026-08-06** — 210 → 186 pt. Zusammen mit dem kompakteren
+        // Session-Header schafft das den Platz für den „Für jetzt
+        // beenden"-CTA unten (User-Spec: "bei Karteikarten fehlt's mir
+        // noch... Platz schaffen, indem wir oben den Header vertikal
+        // etwas kleiner machen, eventuell die Karte vertikal ein
+        // bisschen kleiner"). Die Kartenbreite in
+        // `FlashcardsView+Components.swift:166` muss parallel mitgeführt
+        // werden, damit die Ratio stimmt.
+        186
     }
 
     var recordingSymbolName: String {

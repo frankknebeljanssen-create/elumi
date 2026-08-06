@@ -105,6 +105,11 @@ enum AccountScopedKeys {
         appLearningGoalArchiveKey,
         appLearningGoalPracticedDaysKey,
         appLearningGoalWeekIndexKey,
+        // Tagesabschluss (2026-08-06) — pro Account, aus demselben Grund
+        // wie das Lernziel darüber: Geschwister im Familien-Modus sollen
+        // sich weder den Abschluss-Tag noch die Erinnerungszeit teilen.
+        appDailyWrapUpDayKey,
+        appDailyWrapUpReminderSlotKey,
         // Zusätzliche User-Daten (Phase E.5) — Swap-Pattern greift
         // für diese Keys: beim Account-Switch werden sie zwischen
         // Global-Slot (wo `@AppStorage` liest) und Account-Namespace
@@ -379,6 +384,10 @@ final class AccountStore: ObservableObject {
         // würde nach einem Account-Wechsel weiterhin das Ziel des vorigen
         // Kindes im Balken stehen.
         LearningGoalStore.shared.load()
+        // Dito für den Tagesabschluss (2026-08-06) — sonst behielte der
+        // neue Account den Abschluss-Status und die Erinnerungszeit des
+        // vorigen.
+        DailyWrapUpStore.shared.load()
         // **Wichtig**: `syncProfileStoreFromActiveAccount` läuft NICHT
         // hier. Die Notification unten triggert den `ProfileStore.
         // reloadForCurrentAccount()`, der das Profil frisch aus dem

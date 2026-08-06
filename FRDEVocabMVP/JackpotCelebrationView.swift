@@ -263,13 +263,13 @@ struct JackpotCelebrationView: View {
             Button {
                 onGoHome()
             } label: {
-                Text("Zur Startseite")
+                Text("Zurück zur Startseite")
                     .font(.system(size: 16, weight: .semibold, design: .rounded))
                     .foregroundStyle(.white.opacity(0.85))
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: 44)
             }
-            .accessibilityLabel(Text("Zur Startseite"))
+            .accessibilityLabel(Text("Zurück zur Startseite"))
             .accessibilityHint(Text("Schließt die Feier und kehrt zum Home-Tab zurück"))
         }
         .opacity(ctasVisible ? 1 : 0)

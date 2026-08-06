@@ -145,7 +145,16 @@ struct QuizView: View {
     }
 
     var selectedQuizLists: [VocabularyList] {
-        availableQuizLists.filter { session.selectedListIDs.contains($0.id) }
+        // **2026-08-06** — verwaiste IDs abfangen (entfallene C1/C2-
+        // Lernlisten); siehe `VocabularyListSelectionResolver.
+        // prunedSelectedListIDs`. Ohne das ergäbe eine alte C2-Auswahl
+        // eine leere Liste und damit ein nicht startbares Quiz.
+        guard !session.selectedListIDs.isEmpty else { return [] }
+        let usableIDs = VocabularyListSelectionResolver.prunedSelectedListIDs(
+            session.selectedListIDs,
+            knownListIDs: Set(availableQuizLists.map(\.id))
+        )
+        return availableQuizLists.filter { usableIDs.contains($0.id) }
     }
 
     var canStartQuiz: Bool {

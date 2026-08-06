@@ -9,6 +9,22 @@ func answerVariants(for normalizedText: String, answerLanguageCode: String) -> S
             variants.formUnion(germanGenderAnswerVariants(for: alternative))
             variants.formUnion(germanSynonymVariants(for: alternative))
             variants.formUnion(germanNumberVariants(for: alternative))
+            variants.formUnion(germanDirectionalVariants(for: alternative))
+        }
+    }
+
+    // **2026-08-06** — Gegenstück zu `germanGenderAnswerVariants` für die
+    // französische Seite.
+    //
+    // Nötig geworden, weil französische Nomen seit heute mit Artikel
+    // angezeigt werden („la pizza" statt „pizza", User-Spec). Ohne diese
+    // Toleranz wäre ein getipptes „pizza" plötzlich falsch, obwohl die
+    // Vokabel gesessen hat — die Anzeige-Änderung hätte die Bewertung
+    // verschärft. Der Artikel wird gezeigt und mitgelernt, aber beim
+    // Tippen nicht erzwungen.
+    if answerLanguageCode == "fr-FR" {
+        for alternative in Array(variants) {
+            variants.formUnion(frenchArticleAnswerVariants(for: alternative))
         }
     }
 
@@ -18,10 +34,47 @@ func answerVariants(for normalizedText: String, answerLanguageCode: String) -> S
     }.filter { !$0.isEmpty })
 }
 
+/// Akzeptierte Schreibweisen einer französischen Antwort mit Blick auf den
+/// Artikel: „la pizza" gilt auch als „pizza", „l'aéroport" auch als
+/// „aéroport". Siehe Begründung in `answerVariants`.
+///
+/// Nur die Richtung „Artikel weglassen" — die Gegenrichtung (bare → mit
+/// Artikel) bräuchte das Genus, das an dieser Stelle nicht vorliegt. Die
+/// erwartete Antwort trägt den Artikel ohnehin, damit ist der Fall
+/// abgedeckt.
+func frenchArticleAnswerVariants(for normalizedText: String) -> Set<String> {
+    var variants: Set<String> = [normalizedText]
+    let lower = normalizedText.lowercased()
+
+    // Elidierte Formen zuerst prüfen — „l'aéroport" hat kein Leerzeichen
+    // und würde von der Wort-Prüfung unten nicht erfasst.
+    for prefix in ["l'", "l\u{2019}", "d'", "d\u{2019}"] where lower.hasPrefix(prefix) {
+        let bare = String(normalizedText.dropFirst(prefix.count))
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        if !bare.isEmpty { variants.insert(bare) }
+    }
+
+    let separated: Set<String> = ["le", "la", "les", "un", "une", "des", "du", "de"]
+    let words = normalizedText.split(separator: " ").map(String.init)
+    if words.count > 1, let first = words.first, separated.contains(first.lowercased()) {
+        let bare = words.dropFirst().joined(separator: " ")
+        if !bare.isEmpty { variants.insert(bare) }
+    }
+
+    return variants
+}
+
 func splitAnswerAlternatives(from normalizedText: String) -> [String] {
+    // **Bug-Fix 2026-08-06** — `;` fehlte als Trenner. Die DB nutzt „;"
+    // durchgängig als Synonym-Trenner zwischen mehreren Übersetzungen
+    // eines Eintrags (z. B. „da; dort" für „là"). Ohne diesen Split
+    // wurde „da; dort" als EIN literaler Antworttext behandelt — eine
+    // getippte Antwort „da" allein galt dann fälschlich als falsch
+    // (User-Report).
     let collapsedSeparators = normalizedText
         .replacingOccurrences(of: #"\s+(?:oder|bzw)\s+"#, with: "|", options: .regularExpression)
         .replacingOccurrences(of: #"\s*\/\s*"#, with: "|", options: .regularExpression)
+        .replacingOccurrences(of: #"\s*;\s*"#, with: "|", options: .regularExpression)
         .replacingOccurrences(of: #"\s*\|\s*"#, with: "|", options: .regularExpression)
 
     return collapsedSeparators
@@ -88,6 +141,57 @@ private let germanSynonymGroups: [[String]] = [
     ["sofort", "gleich"],
     ["vielleicht", "eventuell"]
 ]
+
+/// **2026-08-06** — Richtungsangaben, die im Deutschen gleichwertig sind.
+///
+/// User-Report: „aller à la bibliothèque" mit „zur Bibliothek gehen"
+/// beantwortet, gewertet als falsch, erwartet war „in die Bibliothek
+/// gehen". Beides ist korrektes Deutsch — im Französischen steht dafür
+/// dasselbe `à la`, eine Unterscheidung existiert dort gar nicht. Wer
+/// die Vokabel kann, darf nicht an der deutschen Präposition scheitern.
+///
+/// **Bewusst übergenerierend.** Ob nach „zum" ein „in den" (maskulin)
+/// oder „ins" (neutrum) gehört, verrät der String allein nicht — also
+/// werden beide Varianten erzeugt. Das kann grammatisch unsinnige
+/// Formen ergeben („zur Berge"), die aber niemand eintippt: Der einzige
+/// Effekt wäre ein Fehl-Akzept, und dafür müsste die falsche Antwort
+/// exakt so eine Form treffen. Der umgekehrte Fehler — eine richtige
+/// Antwort abzulehnen — wiegt hier deutlich schwerer.
+func germanDirectionalVariants(for normalizedText: String) -> Set<String> {
+    // Jede Zeile: gleichwertige Richtungs-Wendungen. Alle Mitglieder
+    // einer Gruppe werden gegeneinander ausgetauscht.
+    let groups: [[String]] = [
+        ["in die", "zur", "auf die", "an die"],
+        ["in den", "zum", "auf den", "an den"],
+        ["ins", "zum", "in das"],
+        ["zu der", "zur"],
+        ["zu dem", "zum"],
+        ["nach hause", "heim"]
+    ]
+
+    var variants: Set<String> = []
+    for group in groups {
+        for member in group where containsWholeWordWithFollowingWord(member, in: normalizedText) {
+            for replacement in group where replacement != member {
+                if let substituted = replacingWholeWordPhrase(
+                    member, with: replacement, in: normalizedText
+                ) {
+                    variants.insert(substituted)
+                }
+            }
+        }
+    }
+    return variants
+}
+
+/// Wie `containsWholeWordPhrase`, verlangt aber zusätzlich ein
+/// folgendes Wort. Verhindert, dass eine Wendung am Satzende
+/// ausgetauscht wird, wo sie gar keine Richtungsangabe mehr ist
+/// („ich gehe rein" bliebe ohne Nomen dahinter unberührt).
+private func containsWholeWordWithFollowingWord(_ phrase: String, in text: String) -> Bool {
+    let pattern = "\\b\(NSRegularExpression.escapedPattern(for: phrase))\\b\\s+\\S"
+    return text.range(of: pattern, options: .regularExpression) != nil
+}
 
 func germanSynonymVariants(for normalizedText: String) -> Set<String> {
     var variants: Set<String> = []

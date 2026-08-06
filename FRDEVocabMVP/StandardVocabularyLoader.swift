@@ -121,6 +121,41 @@ enum StandardVocabularyLoader {
         return set
     }()
 
+    /// Grundformen deutscher Adjektive (Einzelwort-Lemmata aus Einträgen mit
+    /// `word_class == "adjective"`), lowercased. Genutzt als Gegen-Check zu
+    /// `germanNounSet` — manche Adjektive (v. a. Farben: „grün", „blau" …)
+    /// sind im Deutschen **substantivierbar** („die Auszeit im Grünen") und
+    /// tauchen deshalb auch als großgeschriebenes Token in einem echten
+    /// Nomen-Eintrag auf, was sie in `germanNounSet` landen lässt. Ohne
+    /// diesen Gegen-Check kapitalisiert `TextNormalizationEngine` dann auch
+    /// die viel häufigere attributive Verwendung fälschlich groß —
+    /// **Bug-Fix 2026-08-06** (User-Screenshot: „Ich nehme einen Grünen
+    /// Salat." statt „einen grünen Salat.").
+    static let germanAdjectiveStems: Set<String> = {
+        var set: Set<String> = []
+        for entry in allEntries where entry.wordClass == "adjective" {
+            let trimmed = entry.target.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            guard !trimmed.isEmpty, !trimmed.contains(" ") else { continue }
+            set.insert(trimmed)
+        }
+        return set
+    }()
+
+    /// Ja, wenn `token` (Grundform ODER eine gängige adjektivische
+    /// Flexionsform davon) als deutsches Adjektiv bekannt ist. Deckt die
+    /// schwache/starke Deklinationsendungen ab (-e/-en/-em/-er/-es), z. B.
+    /// „grünen" → Stamm „grün".
+    static func isKnownGermanAdjectiveForm(_ token: String) -> Bool {
+        let lower = token.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !lower.isEmpty else { return false }
+        if germanAdjectiveStems.contains(lower) { return true }
+        for suffix in ["en", "em", "er", "es", "e"] where lower.hasSuffix(suffix) && lower.count > suffix.count + 1 {
+            let stem = String(lower.dropLast(suffix.count))
+            if germanAdjectiveStems.contains(stem) { return true }
+        }
+        return false
+    }
+
     /// Lookup-Tabelle Französisch-Lemma → Genus (Roh-String aus DB: „m",
     /// „f", gelegentlich auch leere Einträge = keine Aussage). Wird vom
     /// `ArticleModeClassifier` als schnellster Weg genutzt, um für einen
@@ -235,6 +270,14 @@ enum StandardVocabularyLoader {
         return topics.sorted().filter { $0 != "Allgemein" } + ["Allgemein"]
     }
 
+    /// Alle Niveau-Tags, die in der DB **vorkommen** — inklusive C1/C2.
+    ///
+    /// Nicht zu verwechseln mit `learnableLevels`: Das sind die Stufen,
+    /// die als Lernliste angeboten werden (A1–B2, siehe Begründung
+    /// dort). C-Einträge existieren weiterhin im Lexikon, sie bekommen
+    /// nur keine eigene Lernliste mehr. Wer über Niveaus **filtert**,
+    /// braucht diese vollständige Liste; wer Lernlisten **baut**,
+    /// braucht `learnableLevels`.
     static var allLevels: [String] {
         ["A1", "A2", "B1", "B2", "C1", "C2"]
     }
@@ -595,13 +638,18 @@ enum StandardVocabularyLoader {
 
     // MARK: - Pre-built VocabularyLists for the list picker
 
+    /// **2026-08-06** — Namen an die kumulative Logik angepasst: Die
+    /// Stufen bauen aufeinander auf („bis A2" enthält A1), deshalb ist
+    /// „bis" ehrlicher als die alten Stufen-Etiketten „Mittelstufe"/
+    /// „Oberstufe", die einen isolierten Block suggerierten. Der
+    /// GER-Buchstabe bleibt vorn, weil Schüler ihn aus dem Unterricht
+    /// und von DELF kennen. C1/C2 stehen nicht mehr drin — siehe
+    /// `learnableLevels`.
     private static let levelNames: [String: String] = [
         "A1": "A1 Grundwortschatz",
-        "A2": "A2 Aufbauwortschatz",
-        "B1": "B1 Mittelstufe",
-        "B2": "B2 Oberstufe",
-        "C1": "C1 Fortgeschritten",
-        "C2": "C2 Experte"
+        "A2": "A2 Aufbauwortschatz (mit A1)",
+        "B1": "B1 Mittelstufe (mit A1–A2)",
+        "B2": "B2 Oberstufe (mit A1–B1)"
     ]
 
     static let allInOneList: VocabularyList = VocabularyList(
@@ -647,6 +695,30 @@ enum StandardVocabularyLoader {
         return lists
     }()
 
+    /// Die Niveaustufen, die als **Lernlisten** angeboten werden.
+    ///
+    /// **2026-08-06, Neuzuschnitt (User-Spec + Recherche)** — endet
+    /// bewusst bei B2. Zwei Gründe, beide von außen belegbar:
+    ///
+    ///   • **Schulziel**: Die KMK-Bildungsstandards setzen B1 zum
+    ///     mittleren Abschluss und B2 zum Abitur an (Beschlüsse
+    ///     04.12.2003 bzw. 18.10.2012). Oberhalb B2 gibt es für unsere
+    ///     Zielgruppe kein Lernziel mehr.
+    ///   • **Es gibt gar kein C-Wortinventar**: Die offiziellen
+    ///     Europarat-Referenzbände für Französisch („Niveau A1/A2/B1/B2
+    ///     pour le français", Beacco et al.) führen für C1/C2 keine
+    ///     Wortlisten mehr, nur noch konzeptuelle Beschreibungen. Eine
+    ///     „C2-Liste" könnte man also gar nicht fachlich begründen.
+    ///
+    /// Was bisher als C1/C2 getaggt war, war faktisch der Schwanz der
+    /// Import-Reihenfolge (`frequency_rank` ist KEINE Korpusfrequenz,
+    /// sondern die Reihenfolge des Bulk-Imports — siehe Doku an
+    /// `Entry.frequencyRank`). Deshalb standen dort Wörter wie
+    /// „kalfatern", „bevatern" und „Albert-Paradiesvogel". Diese
+    /// Einträge bleiben über das **Lexikon** und `allInOneList`
+    /// nachschlagbar — sie verschwinden nur aus „Nach Lernstand".
+    private static let learnableLevels = ["A1", "A2", "B1", "B2"]
+
     static let levelLists: [VocabularyList] = {
         var lists: [VocabularyList] = []
         let levelUUIDs: [String: UUID] = [
@@ -654,15 +726,26 @@ enum StandardVocabularyLoader {
             "A2": UUID(uuidString: "F1E1EEE1-A200-4000-A000-000000000002")!,
             "B1": UUID(uuidString: "F1E1EEE1-B100-4000-A000-000000000003")!,
             "B2": UUID(uuidString: "F1E1EEE1-B200-4000-A000-000000000004")!,
-            "C1": UUID(uuidString: "F1E1EEE1-C100-4000-A000-000000000005")!,
-            "C2": UUID(uuidString: "F1E1EEE1-C200-4000-A000-000000000006")!,
         ]
-        for level in ["A1", "A2", "B1", "B2", "C1", "C2"] {
-            let levelItems = items(for: level)
+        for (index, level) in learnableLevels.enumerated() {
+            // **Kumulativ (2026-08-06, User-Spec)** — „A2 muss A1
+            // enthalten, B1 muss A1+A2 enthalten". Das ist auch die
+            // fachliche Konvention: Gespeichert wird pro Wort GENAU EIN
+            // Niveau (die Stufe, auf der es eingeführt wird — so machen
+            // es Beacco/RLD, CEFRLex und Duolingo), angezeigt wird
+            // kumulativ (so machen es die Goethe-Wortlisten und die
+            // Schulwortschätze von Klett/PONS). Die B1-Wortliste des
+            // Goethe-Instituts etwa enthält A1 und A2 vollständig.
+            //
+            // Vorher war jede Stufe ein isolierter Block — wer B1 wählte,
+            // übte den A1-Grundwortschatz nicht mit, obwohl er selbst-
+            // verständlich dazugehört.
+            let includedLevels = Set(learnableLevels.prefix(index + 1))
+            let levelItems = items(forLevels: includedLevels)
             guard !levelItems.isEmpty else { continue }
-            // **Stufe 1 (2026-04-28)**: A1-Liste bekommt Lernjahr-
-            // Children + cumulativeChildren=true. Andere Levels bleiben
-            // klassisch flach (children=nil, cumulative=false).
+            // A1-Liste bekommt zusätzlich Lernjahr-Children
+            // (Stufe 1, 2026-04-28); Cumulative-Slicing dieser Children
+            // passiert im `VocabularyListSelectionResolver`.
             let isA1 = (level == "A1")
             lists.append(VocabularyList(
                 id: levelUUIDs[level]!,
@@ -893,6 +976,23 @@ enum StandardVocabularyLoader {
             // Drei neue Spalten (lernjahr/confidence/schulrelevanz) sind
             // nur für A1-Einträge befüllt (DB-Migration vom 2026-04-28).
             // Bei NULL-Werten (alle non-A1) → lernjahr=nil, conf=""=rel.
+            //
+            // ⚠️ **`frequency_rank` ist KEINE Korpusfrequenz** (Befund
+            // 2026-08-06). Die Spalte enthält die **Reihenfolge des
+            // Bulk-Imports**: Rang 1–25 sind lückenlos Verben, ab 146
+            // beginnen die Adjektive, ab 194 die Adverbien, und ab 2268
+            // stehen thematisch gruppierte Nomen (Familie, Wohnen …).
+            // Ein Wort mit hohem Rang ist also nicht selten, sondern nur
+            // spät importiert — gemessen an echter Korpusfrequenz
+            // (Lexique 3) sind C1/C2 sogar minimal HÄUFIGER als B2.
+            //
+            // Das `ORDER BY` unten ist daher eine **stabile, aber
+            // inhaltlich bedeutungslose** Sortierung. Sie bleibt drin,
+            // weil `items(for:)` & Co. über den Index auf `allEntries`
+            // zugreifen und die Reihenfolge deshalb deterministisch sein
+            // muss — nicht, weil sie „die häufigsten zuerst" liefert.
+            // Wer echte Frequenz braucht, muss sie erst beschaffen
+            // (z. B. Lexique 3) und als eigene Spalte einziehen.
             let sql = """
                 SELECT lemma_fr, lemma_de, word_class, gender_fr, level, is_phrase, frequency_rank, topic,
                        lernjahr, confidence, schulrelevanz

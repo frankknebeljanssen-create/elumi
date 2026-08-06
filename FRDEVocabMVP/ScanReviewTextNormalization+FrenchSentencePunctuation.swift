@@ -83,7 +83,17 @@ func shouldDisplayFrenchQuestionMark(original: String, cleaned: String) -> Bool 
     let firstThreeWords = normalizedWords.prefix(3).joined(separator: " ")
     let compact = compactLookupKey(cleaned)
 
-    if singleWordQuestionStarts.contains(firstWord) ||
+    // **2026-08-06, Bug-Fix** — `singleWordQuestionStarts` meint
+    // „Frage, die mit diesem Wort BEGINNT", nicht „Text, der nur aus
+    // diesem Wort besteht". Ohne die Längenprüfung bekam die
+    // Vokabel „que" ein Fragezeichen und stand im Quiz als „Que ?"
+    // (User-Screenshot) — als wäre eine Frage gestellt, obwohl nur
+    // ein Wort übersetzt werden soll. Betrifft genauso „qui", „quel",
+    // „comment", „où": alles gängige Einzelvokabeln.
+    let startsQuestionSentence =
+        normalizedWords.count > 1 && singleWordQuestionStarts.contains(firstWord)
+
+    if startsQuestionSentence ||
         multiWordQuestionStarts.contains(firstTwoWords) ||
         multiWordQuestionStarts.contains(firstThreeWords) ||
         shortQuestionPhrases.contains(firstTwoWords) ||

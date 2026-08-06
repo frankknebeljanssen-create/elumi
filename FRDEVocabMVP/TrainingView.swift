@@ -103,6 +103,21 @@ struct TrainingView: View {
     @State var isPreparingAudioDependencies = false
     @State var wasSpeakerSpeaking = false
     @State var wasRecording = false
+    /// **2026-08-06, Bug-Fix** — treibt den Mikrofon-Puls
+    /// (`appListeningPulse`). Vorher las der Puls-Aufruf direkt
+    /// `isSpeechRecording`, eine reine `computed property` auf
+    /// `runtimeSpeechController?.isRecording` — ein `let`, kein
+    /// `@ObservedObject`. Karteikarten hält den Controller dagegen
+    /// direkt als `@ObservedObject`, weshalb dort jede `isRecording`-
+    /// Änderung automatisch neu rendert. In Training gab es zwar schon
+    /// eine `.onReceive`-Bridge auf `$isRecording` (siehe
+    /// `TrainingView+Layout`), aber `handleTrainingRecordingPulseChange`
+    /// — die genau dafür gedacht war — war eine leere Hülle ohne Body
+    /// (User-Report: „das Mikrofon blinkt in Training nicht, in
+    /// Karteikarten schon"). Dieser State-Wert wird jetzt dort gesetzt
+    /// und treibt den Puls, statt der nie aktualisierten computed
+    /// property.
+    @State var isMicPulseActive = false
     @State var articleAnswer: String?
     @State var articleLocked = false
     @State var showingArticleTranslation = false

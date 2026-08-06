@@ -340,6 +340,16 @@ extension FlashcardsView {
                         flashcardSelfRatingActions
                             .padding(.horizontal, flashcardSessionCardInset)
                     }
+
+                    // **2026-08-06** — Ausstieg mit Ergebnis, an derselben
+                    // Position wie in allen Trainings-Modi (User-Spec:
+                    // "bei Karteikarten fehlt's mir noch"). Nur während
+                    // laufender Session — auf der Abschluss-Card wäre er
+                    // sinnlos, dort steht schon das Ergebnis.
+                    Spacer(minLength: AppTheme.Spacing.sm)
+
+                    endFlashcardsEarlyButton
+                        .padding(.horizontal, flashcardSessionCardInset)
                 }
             }
         }
@@ -352,6 +362,48 @@ extension FlashcardsView {
         .padding(.bottom, flashcardBottomBarSpacing + AppTheme.Spacing.sm)
         .frame(maxWidth: AppTheme.Layout.maxContentWidth, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    /// **2026-08-06** — Gegenstück zu `endTrainingEarlyButton` in
+    /// `TrainingView+Layout.swift`: gleiche Optik, gleiche Position,
+    /// gleiche Zielflagge. Karteikarten hat eine eigene View-Hierarchie,
+    /// deshalb eine zweite Definition statt Wiederverwendung.
+    ///
+    /// `markCurrentSessionDoneFromChainTimer()` ist trotz des Namens die
+    /// generische „Session jetzt beenden"-Mutation im Store (setzt
+    /// `isCompleted`, räumt die aktuelle Karte ab) — genau das, was der
+    /// Chain-Timer-Cutoff schon nutzt. Dadurch läuft der reguläre
+    /// Abschluss-Pfad an: `flashcardCompletionCard` erscheint,
+    /// `consumeFlashcardSessionReward()` vergibt XP.
+    var endFlashcardsEarlyButton: some View {
+        Button {
+            guard sessionStore.session != nil else {
+                returnToFlashcardSetup()
+                return
+            }
+            speechController.stopRecording()
+            sessionStore.markCurrentSessionDoneFromChainTimer()
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "flag.checkered")
+                    .font(.system(size: 15, weight: .bold))
+                Text("Für jetzt beenden")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+            }
+            .foregroundStyle(AppTheme.Colors.textSecondary)
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 48)
+            .background(
+                RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                    .fill(AppTheme.Colors.secondarySurface)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                    .stroke(AppTheme.Colors.border, lineWidth: 1)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(AppCardPressStyle())
     }
 
     var flashcardSetupScreen: some View {

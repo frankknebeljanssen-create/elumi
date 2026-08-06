@@ -82,9 +82,23 @@ struct TrophyView: View {
                 if goalStore.plan != nil {
                     goalCard
                 }
-                streakCard
                 lernstatusCard
-                achievementsCard
+                // **2026-08-06, Vereinfachung** (User-Spec: "da ist zu
+                // viel drin... selbst für mich unübersichtlich"). Vorher
+                // fünf Blöcke: Level, Ziel, Streak, Lernstatus,
+                // Abzeichen.
+                //
+                //   • `streakCard` ist entfallen — die Serie sitzt jetzt
+                //     als Chip in `heroProgressCard` (Level und Serie
+                //     beantworten dieselbe Frage).
+                //   • `achievementsCard` ist hinter einem Flag versteckt.
+                //     Solange es wenige Abzeichen gibt, kostet die Karte
+                //     mehr Aufmerksamkeit als sie liefert. Code bleibt
+                //     unverändert stehen — Flag auf `true` bringt sie
+                //     zurück.
+                if FeatureFlags.progressAchievementsCardEnabled {
+                    achievementsCard
+                }
                 // Word-Runner-Start-Card entfernt — das Spiel sitzt
                 // jetzt zentral im Spielen-Screen (GameHub), Doppel-
                 // Einstieg auf Fortschritt war redundant.
@@ -189,6 +203,27 @@ struct TrophyView: View {
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                 }
                 Spacer(minLength: 0)
+
+                // **2026-08-06** — Streak als Chip statt eigener Karte
+                // (User-Spec: "da ist zu viel drin... müssen das
+                // vereinfachen"). Level und Serie sind beide "wie weit
+                // bin ich insgesamt" — sie gehören zusammen und
+                // brauchten keine zwei Blöcke. Gleiche Chip-Form wie in
+                // `HomeGoalCard`, damit der Nutzer sie wiedererkennt.
+                if currentStreak > 0 {
+                    HStack(spacing: 4) {
+                        Text("🔥")
+                            .font(.system(size: 13))
+                        Text("\(currentStreak)")
+                            .font(.system(size: 13, weight: .black, design: .rounded))
+                            .foregroundStyle(.white)
+                            .monospacedDigit()
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Capsule().fill(AppTheme.Colors.streakAccent.opacity(0.9)))
+                    .accessibilityLabel(Text("Serie: \(currentStreak) \(currentStreak == 1 ? "Tag" : "Tage")"))
+                }
             }
 
             progressBar(progress: progress)
@@ -407,8 +442,16 @@ struct TrophyView: View {
             navigate(.learningGoal)
         } label: {
             VStack(alignment: .leading, spacing: 10) {
+                // **2026-08-06** — Titel ist jetzt immer "Dein Ziel",
+                // der Anlass steht als Unterzeile darunter (User-Spec:
+                // "dann kommt 'Ein Kapitel oder eine Unité üben' — was
+                // ist das? Ist das das Ziel? Dann muss das auch als Ziel
+                // sichtbar sein"). Dieselbe Korrektur wie auf Home in
+                // `HomeGoalCard.titleText`, die hier nachgezogen wurde:
+                // der Anlass-Titel las sich wie eine weitere Übungs-
+                // Karte, nicht wie der Einstieg ins Ziel.
                 HStack(alignment: .firstTextBaseline) {
-                    Text(goalStore.plan?.content?.displayTitle ?? "Dein Wochenziel")
+                    Text("Dein Ziel")
                         .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .lineLimit(1)
@@ -417,6 +460,14 @@ struct TrophyView: View {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
+                }
+
+                if let occasionTitle = goalStore.plan?.content?.displayTitle {
+                    Text(occasionTitle)
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
 
                 let progress = goalStore.rhythmProgress
