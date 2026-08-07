@@ -8,7 +8,29 @@ enum StandardVocabularyLoader {
         let sourceDisplay: String
         let target: String
         let cardType: CardType
+        /// Rohes Niveau-Tag aus dem ursprünglichen Import (A1…C2).
+        ///
+        /// **Nicht für Lernlisten benutzen** — dafür gibt es
+        /// `learnLevel`. Diese Spalte speist die Schwierigkeits-Logik
+        /// (`MCDistractorFilter`, `vocabularyLevel(for:)`) und die
+        /// Wörterbuch-Gruppierung; sie stammt aber aus dem Bulk-Import
+        /// und ist als Lernstufe unbrauchbar (Befund 2026-08-06).
         let level: String          // A1, A2, B1, B2, C1, C2
+
+        /// **Kuratiertes Lern-Niveau** (A1/A2/B1/B2) oder leer.
+        ///
+        /// Vergeben von `tools/assign_learn_levels.py` aus vier
+        /// Kriterien: kuratiertes A1 als Anker, Korpusfrequenz
+        /// (Lexique 3), Wortart-Abgleich gegen Homographen, und für
+        /// Wendungen das Niveau ihres schwersten Bestandteils plus eine
+        /// Stufe. Leer heißt „gehört in kein Lernpaket" — der Eintrag
+        /// bleibt über Wörterbuch und Themenlisten erreichbar.
+        ///
+        /// 4.866 von 56.367 Einträgen tragen ein Lern-Niveau. Das
+        /// entspricht den fachlichen Zielgrößen (Beacco/RLD kumuliert
+        /// 5.518; Klett Schulwortschatz A1–B2 „ca. 5000 Wörter und
+        /// Wendungen") — der große Rest ist Wörterbuch, kein Lernstoff.
+        let learnLevel: String
         let wordClass: String      // noun, verb, adjective, adverb, etc.
         let gender: String         // m, f, or empty
         let topic: String          // Essen & Trinken, Familie & Freunde, etc.
@@ -37,6 +59,7 @@ enum StandardVocabularyLoader {
             target: String,
             cardType: CardType,
             level: String,
+            learnLevel: String = "",
             wordClass: String,
             gender: String,
             topic: String,
@@ -51,6 +74,7 @@ enum StandardVocabularyLoader {
             self.target = target
             self.cardType = cardType
             self.level = level
+            self.learnLevel = learnLevel
             self.wordClass = wordClass
             self.gender = gender
             self.topic = topic
@@ -250,6 +274,20 @@ enum StandardVocabularyLoader {
     static func items(forLevels levels: Set<String>) -> [VocabularyItem] {
         vocabularyItems.enumerated().compactMap { index, item in
             levels.contains(allEntries[index].level) ? item : nil
+        }
+    }
+
+    /// Items für ein oder mehrere **Lern-Niveaus** (`learnLevel`).
+    ///
+    /// Bewusst getrennt von `items(forLevels:)`: Das ist die Grundlage
+    /// der Lernlisten, während `level` weiter die Schwierigkeits- und
+    /// Wörterbuch-Logik speist. Einträge ohne Lern-Niveau (leerer
+    /// String) tauchen hier nie auf — siehe `Entry.learnLevel`.
+    static func items(forLearnLevels levels: Set<String>) -> [VocabularyItem] {
+        vocabularyItems.enumerated().compactMap { index, item in
+            let learnLevel = allEntries[index].learnLevel
+            guard !learnLevel.isEmpty else { return nil }
+            return levels.contains(learnLevel) ? item : nil
         }
     }
 
@@ -741,7 +779,12 @@ enum StandardVocabularyLoader {
             // übte den A1-Grundwortschatz nicht mit, obwohl er selbst-
             // verständlich dazugehört.
             let includedLevels = Set(learnableLevels.prefix(index + 1))
-            let levelItems = items(forLevels: includedLevels)
+            // **2026-08-06** — `learnLevel` statt `level`: Die alte
+            // Spalte stammt aus dem Bulk-Import und war als Lernstufe
+            // unbrauchbar (B1 enthielt 31.615 Einträge, darunter
+            // maschinell erzeugte Konstrukte). Die neue Zuordnung
+            // stammt aus `tools/assign_learn_levels.py`.
+            let levelItems = items(forLearnLevels: includedLevels)
             guard !levelItems.isEmpty else { continue }
             // A1-Liste bekommt zusätzlich Lernjahr-Children
             // (Stufe 1, 2026-04-28); Cumulative-Slicing dieser Children
@@ -995,7 +1038,7 @@ enum StandardVocabularyLoader {
             // (z. B. Lexique 3) und als eigene Spalte einziehen.
             let sql = """
                 SELECT lemma_fr, lemma_de, word_class, gender_fr, level, is_phrase, frequency_rank, topic,
-                       lernjahr, confidence, schulrelevanz
+                       lernjahr, confidence, schulrelevanz, learn_level
                 FROM entries
                 ORDER BY frequency_rank ASC
                 """
@@ -1027,12 +1070,15 @@ enum StandardVocabularyLoader {
                 }()
                 let confidence = sqlite3_column_text(stmt, 9).map { String(cString: $0) } ?? ""
                 let schulrelevanz = sqlite3_column_text(stmt, 10).map { String(cString: $0) } ?? ""
+                // NULL (= kein Lernpaket) kommt hier als "" an.
+                let learnLevel = sqlite3_column_text(stmt, 11).map { String(cString: $0) } ?? ""
 
                 entries.append(Entry(
                     sourceDisplay: lemmaFr,
                     target: lemmaDe,
                     cardType: isPhrase == 1 ? .phrases : .words,
                     level: level,
+                    learnLevel: learnLevel,
                     wordClass: wordClass,
                     gender: genderFr,
                     topic: topic,
