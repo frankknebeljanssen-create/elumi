@@ -190,21 +190,15 @@ enum FrenchGenderResolver {
             }
         }
 
-        // Schritt 2b: Morphologie-Heuristik auf dem Hauptnomen.
-        // Bei Plural-Bareword versuchen wir die Heuristik auf dem
-        // Singular-Stem, weil Endungs-Regeln auf Singular-Formen basieren.
-        let heuristicTarget = (detectedNumber == .plural) ? singularStem(of: core) : core
-        if let heuristic = FrenchGenderHeuristicRules.predict(for: heuristicTarget) {
-            let article = articleFor(gender: heuristic.gender, core: core, number: detectedNumber)
-            return ResolvedGender(
-                gender: heuristic.gender,
-                source: .heuristic,
-                confidence: heuristic.confidence,
-                number: detectedNumber,
-                normalizedLemma: rebuildLemma(article: article, core: core, tail: remainingTail)
-            )
-        }
-
+        // **Heuristik-Stufe entfernt (2026-08-07)**: Alle Nomen im
+        // Master-Lexikon haben jetzt ein echtes `gender_fr` aus der DB
+        // (Genus-Vervollständigungs-Durchlauf, ~1950 Wörter). Die
+        // Endungs-Heuristik (`FrenchGenderHeuristicRules`) hätte hier nur
+        // noch geraten — genau das wollte der User nicht. Verbleibende
+        // Fälle ohne Genus sind ausschließlich die bewusst artikellosen
+        // Nomen (Monate, Eigennamen), die schon oben über
+        // `isArticlelessFrenchNoun` abgefangen werden.
+        //
         // Fallback: Genus konnte nicht bestimmt werden.
         // Aber: wenn Number = plural erkannt wurde, **setzen wir trotzdem
         // „les" als Artikel** (User-Spec: Plurale dürfen NIE „l'" kriegen).
