@@ -19,9 +19,55 @@ struct LexiconView: View {
     /// darüber — beide Filter wirken zusammen (Logik-AND). Default `.all`,
     /// damit das Wörterbuch per Default das volle Ergebnisset zeigt.
     @State private var wordClassFilter: WordClassFilter = .all
+    /// Dritte Filter-Achse: Lern-Niveau. User-Wunsch 2026-08-06 —
+    /// „dass ich nachgucken kann, was ist denn im A1-Grundwortschatz,
+    /// was ist denn in B1". Wirkt zusammen mit Richtung und Wortart
+    /// (Logik-AND).
+    @State private var levelFilter: LevelFilter = .all
 
     enum LexiconFilterMode: String, CaseIterable {
         case both, frenchToGerman, germanToFrench
+    }
+
+    /// Niveau-Filter für die Ergebnisliste.
+    ///
+    /// Bezugsgröße ist das **Lern-Niveau** (`Entry.learnLevel`), nicht
+    /// das alte `level` — nur ersteres bestimmt seit dem Neuzuschnitt
+    /// vom 2026-08-06, was in einer Lernliste steht. Die Stufen sind
+    /// hier bewusst **nicht kumulativ**: Wer „B1" wählt, will wissen,
+    /// was auf B1 dazukommt, nicht nochmal den ganzen A1-Wortschatz
+    /// sehen. (Die Lernlisten selbst sind kumulativ — dort geht es um
+    /// „was muss ich können", hier um „wo gehört das hin".)
+    enum LevelFilter: String, CaseIterable, Identifiable {
+        case all, a1, a2, b1, b2, xp
+
+        var id: String { rawValue }
+
+        /// Passender `learnLevel`-Wert, `nil` für „Alle".
+        var learnLevel: String? {
+            switch self {
+            case .all: return nil
+            case .a1: return "A1"
+            case .a2: return "A2"
+            case .b1: return "B1"
+            case .b2: return "B2"
+            case .xp: return "XP"
+            }
+        }
+
+        var title: String {
+            switch self {
+            case .all: return "Alle"
+            case .a1: return "A1"
+            case .a2: return "A2"
+            case .b1: return "B1"
+            case .b2: return "B2"
+            // Kein GER-Etikett — siehe `StandardVocabularyLoader.
+            // learnableLevels`: für Wortschatz jenseits B2 gibt es kein
+            // belegbares C1/C2-Referenzinventar.
+            case .xp: return "XP"
+            }
+        }
     }
 
     /// Wortart-Filter für die Ergebnisliste. Die Kategorien mappen wir aus
@@ -106,23 +152,41 @@ struct LexiconView: View {
         // Wortart filtern wir über den vorhandenen `lexiconWordClassMarker`
         // — so ist die Klassifikation synchron zu dem, was auch im
         // Detail-Sheet als Label angezeigt wird.
-        guard wordClassFilter != .all else { return directionFiltered }
-        return directionFiltered.filter { entry in
-            let marker = model.lexiconWordClassMarker(for: entry)
-            switch wordClassFilter {
-            case .all:
-                return true
-            case .nouns:
-                return marker == .noun
-            case .verbs:
-                return marker == .verb
-            case .others:
-                // Alles, was nicht eindeutig Nomen oder Verb ist — inkl.
-                // Adjektive, Phrasen und unklassifizierte Einträge. So
-                // verschwindet nichts aus der Suche, auch wenn wir die
-                // Wortart nicht eindeutig bestimmen können.
-                return marker != .noun && marker != .verb
+        let wordClassFiltered: [PreparedLexiconEntry]
+        if wordClassFilter == .all {
+            wordClassFiltered = directionFiltered
+        } else {
+            wordClassFiltered = directionFiltered.filter { entry in
+                let marker = model.lexiconWordClassMarker(for: entry)
+                switch wordClassFilter {
+                case .all:
+                    return true
+                case .nouns:
+                    return marker == .noun
+                case .verbs:
+                    return marker == .verb
+                case .others:
+                    // Alles, was nicht eindeutig Nomen oder Verb ist — inkl.
+                    // Adjektive, Phrasen und unklassifizierte Einträge. So
+                    // verschwindet nichts aus der Suche, auch wenn wir die
+                    // Wortart nicht eindeutig bestimmen können.
+                    return marker != .noun && marker != .verb
+                }
             }
+        }
+
+        // Dritte Achse: Lern-Niveau.
+        //
+        // `learnLevelMap` ist über den FRANZÖSISCHEN Begriff indiziert.
+        // Bei Einträgen der deutschen Seite (`displayCountryCode == "DE"`)
+        // steht das Französische aber in `targetText`, nicht in
+        // `sourceText` — deshalb beide Seiten befragen, statt nur eine.
+        // Ohne das wäre der Filter für die halbe Trefferliste wirkungslos.
+        guard let wanted = levelFilter.learnLevel else { return wordClassFiltered }
+        return wordClassFiltered.filter { entry in
+            let level = StandardVocabularyLoader.learnLevel(for: entry.sourceText)
+                ?? StandardVocabularyLoader.learnLevel(for: entry.targetText)
+            return level == wanted
         }
     }
 
@@ -344,6 +408,10 @@ struct LexiconView: View {
             // zeigen wir es" (FR/DE) ist die darauffolgende Konfiguration.
             wordClassFilterRow
 
+            // Niveau-Filter darunter — dieselbe Chip-Optik, damit die
+            // drei Filterzeilen als eine Einheit lesbar bleiben.
+            levelFilterRow
+
             lexiconDirectionCard
         }
         .frame(maxWidth: .infinity, alignment: .top)
@@ -377,6 +445,37 @@ struct LexiconView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Wortart-Filter \(option.title)")
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 4)
+        .padding(.vertical, 8)
+        .appCardBackground(sectionStyle, intensity: AppTheme.CardIntensity.medium, cornerRadius: AppLayout.largeCardCornerRadius)
+    }
+
+    /// Chip-Zeile Alle / A1 / A2 / B1 / B2 — gleiche Maße und
+    /// Card-Umrahmung wie `wordClassFilterRow`, damit die Filterzeilen
+    /// im Sticky-Header denselben Rhythmus behalten.
+    private var levelFilterRow: some View {
+        HStack(spacing: 8) {
+            ForEach(LevelFilter.allCases) { option in
+                let isSelected = levelFilter == option
+                Button {
+                    withAnimation(.easeInOut(duration: 0.12)) {
+                        levelFilter = option
+                    }
+                } label: {
+                    Text(option.title)
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 44)
+                        .foregroundStyle(isSelected ? .white : AppTheme.Colors.textPrimary)
+                        .background(isSelected ? sectionStyle.accent : AppTheme.Colors.secondarySurface)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Niveau-Filter \(option.title)")
                 .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
         }

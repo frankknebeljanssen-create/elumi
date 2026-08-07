@@ -76,13 +76,28 @@ BACKUP = "/tmp/FRDEMasterLexicon.before_learn_levels.sqlite"
 
 # Schwellen in Vorkommen pro Million (siehe Modul-Doc, Punkt 3).
 #
-# Kalibriert am kumulativen Endstand: 4.866 Wörter und Wendungen bis B2 —
-# das trifft die Vergleichsgrößen (Beacco/RLD kumuliert 5.518; Klett
-# „Thematischer Schulwortschatz A1–B2: ca. 5000 Wörter und Wendungen").
-# Naheliegendere, niedrigere Schwellen ergaben 10.418 — mehr als doppelt
-# so viel wie fachlich vertretbar.
-BANDS = [("A1", 200.0), ("A2", 100.0), ("B1", 45.0), ("B2", 18.0)]
-ORDER = ["A1", "A2", "B1", "B2"]
+# A1–B1 kalibriert am kumulativen Endstand: das traf mit den ersten drei
+# Schwellen bereits Beacco/RLD (A1 827/1.442/2.776 kumuliert) und Milton.
+#
+# **2026-08-07, B2 nachjustiert** — User-Report: bei nur +1.378 Wörtern
+# sah B2 „dünn" aus. Berechtigt: Beacco/RLD bringt für B2 +2.742 dazu,
+# wir nur gut halb so viel. Schwelle 18 → 10 gesenkt (bringt ~600
+# zusätzliche Einträge). Wortart-Filter (Regel 2, Homographen-Schutz)
+# bleibt unverändert und hält bei der neuen, niedrigeren Schwelle
+# weiterhin dieselben Homographen draußen (`un`, `sur`, `fait`, `en` …
+# geprüft) — die Vergrößerung bringt also mehr Substanz, keinen neuen
+# Datenmüll.
+BANDS = [("A1", 200.0), ("A2", 100.0), ("B1", 45.0), ("B2", 10.0), ("XP", 4.0)]
+ORDER = ["A1", "A2", "B1", "B2", "XP"]
+
+# `XP` statt `C1`: bewusst KEIN GER-Etikett. Die offiziellen Europarat-
+# Referenzbände für Französisch („Niveau A1/A2/B1/B2 pour le français")
+# hören bei B2 auf — für C1/C2 gibt es kein Wortinventar, das eine
+# Zuordnung begründen könnte. Ein Frequenzband unterhalb B2 als „C1" zu
+# labeln wäre wieder eine unbelegte Setzung, nur diesmal mit
+# amtlich klingendem Namen. „XP — Über den Schulstoff hinaus" sagt
+# ehrlich, was es ist: mehr Wörter für alle, die weiterüben wollen,
+# ohne einen Anspruch zu erheben, den wir nicht einlösen können.
 
 # Aus wie geläufigen Wörtern darf eine Wendung höchstens bestehen, damit
 # sie ins Lernpaket kommt? Eine Wendung aus lauter B1/B2-Wörtern ist kein
@@ -219,9 +234,11 @@ def main() -> int:
     print(f"  {'wegen Wortart verworfen':24} {pos_conflict:6}")
     print()
     print(f"{'Stufe':6} {'neu':>7} {'kumulativ':>10} {'Zielgröße':>11}")
-    targets = {"A1": 950, "A2": 1500, "B1": 2700, "B2": 5000}
+    # Zielgrößen sind Vergleichswerte aus Beacco/RLD (kumuliert), keine
+    # Vorgabe — XP hat keinen offiziellen Referenzwert (siehe Modul-Doc).
+    targets = {"A1": "827", "A2": "1.442", "B1": "2.776", "B2": "5.518", "XP": "—"}
     for level in ORDER:
-        print(f"{level:6} {counts[level]:7} {cumulative[level]:10} {targets[level]:11}")
+        print(f"{level:6} {counts[level]:7} {cumulative[level]:10} {targets[level]:>11}")
     print(f"\nOhne Lernpaket (bleiben im Wörterbuch): "
           f"{len(rows) - len(assigned)} von {len(rows)}")
 

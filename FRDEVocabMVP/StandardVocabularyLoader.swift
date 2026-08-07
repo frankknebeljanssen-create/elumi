@@ -411,6 +411,45 @@ enum StandardVocabularyLoader {
         return map
     }()
 
+    /// Nachschlagetabelle Französisch-Term → **Lern-Niveau**.
+    ///
+    /// Aufgebaut wie `wordClassMap` (voller Schlüssel, artikel-befreit,
+    /// akzentfrei), damit ein Lexikon-Eintrag unabhängig von seiner
+    /// Schreibweise gefunden wird — „la maison", „maison" und „maison"
+    /// ohne Akzente treffen denselben Eintrag.
+    ///
+    /// Speist den Niveau-Filter im Wörterbuch (`LexiconView`). Nur
+    /// Einträge MIT Lern-Niveau landen hier; wer nicht drinsteht,
+    /// gehört in kein Lernpaket (siehe `Entry.learnLevel`).
+    static let learnLevelMap: [String: String] = {
+        var map: [String: String] = [:]
+        for entry in allEntries where !entry.learnLevel.isEmpty {
+            let key = entry.sourceDisplay.lowercased()
+            map[key] = entry.learnLevel
+            let stripped = strippedArticle(key)
+            if stripped != key {
+                map[stripped] = entry.learnLevel
+                let accentStripped = stripDiacritics(stripped)
+                if accentStripped != stripped { map[accentStripped] = entry.learnLevel }
+            }
+            let accentStripped = stripDiacritics(key)
+            if accentStripped != key { map[accentStripped] = entry.learnLevel }
+        }
+        return map
+    }()
+
+    /// Lern-Niveau eines französischen Begriffs, oder `nil` wenn er in
+    /// keinem Lernpaket steht.
+    static func learnLevel(for frenchText: String) -> String? {
+        let key = frenchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        if let level = learnLevelMap[key] { return level }
+        let stripped = strippedArticle(key)
+        if stripped != key, let level = learnLevelMap[stripped] { return level }
+        let accentStripped = stripDiacritics(key)
+        if accentStripped != key, let level = learnLevelMap[accentStripped] { return level }
+        return nil
+    }
+
     /// Inflection form → word class map (lazy loaded from SQLite forms table)
     static let inflectionWordClassMap: [String: String] = {
         var map: [String: String] = [:]
@@ -687,7 +726,9 @@ enum StandardVocabularyLoader {
         "A1": "A1 Grundwortschatz",
         "A2": "A2 Aufbauwortschatz (mit A1)",
         "B1": "B1 Mittelstufe (mit A1–A2)",
-        "B2": "B2 Oberstufe (mit A1–B1)"
+        "B2": "B2 Oberstufe (mit A1–B1)",
+        // Kein GER-Buchstabe — siehe Begründung an `learnableLevels`.
+        "XP": "Über den Schulstoff hinaus (mit A1–B2)"
     ]
 
     static let allInOneList: VocabularyList = VocabularyList(
@@ -735,27 +776,36 @@ enum StandardVocabularyLoader {
 
     /// Die Niveaustufen, die als **Lernlisten** angeboten werden.
     ///
-    /// **2026-08-06, Neuzuschnitt (User-Spec + Recherche)** — endet
-    /// bewusst bei B2. Zwei Gründe, beide von außen belegbar:
+    /// **2026-08-06, Neuzuschnitt (User-Spec + Recherche)**. Zwei Gründe
+    /// dafür, hier hart bei B2 (dem GER-Etikett) zu stoppen:
     ///
     ///   • **Schulziel**: Die KMK-Bildungsstandards setzen B1 zum
     ///     mittleren Abschluss und B2 zum Abitur an (Beschlüsse
     ///     04.12.2003 bzw. 18.10.2012). Oberhalb B2 gibt es für unsere
-    ///     Zielgruppe kein Lernziel mehr.
+    ///     Zielgruppe kein GER-Lernziel mehr.
     ///   • **Es gibt gar kein C-Wortinventar**: Die offiziellen
     ///     Europarat-Referenzbände für Französisch („Niveau A1/A2/B1/B2
     ///     pour le français", Beacco et al.) führen für C1/C2 keine
-    ///     Wortlisten mehr, nur noch konzeptuelle Beschreibungen. Eine
-    ///     „C2-Liste" könnte man also gar nicht fachlich begründen.
+    ///     Wortlisten mehr, nur noch konzeptuelle Beschreibungen. Ein
+    ///     Frequenzband als „C1"/„C2" zu labeln wäre eine unbelegte
+    ///     Setzung mit amtlich klingendem Namen.
     ///
-    /// Was bisher als C1/C2 getaggt war, war faktisch der Schwanz der
+    /// **2026-08-07** — für Wortschatz JENSEITS von B2 gibt es trotzdem
+    /// eine fünfte Stufe: `XP` „Über den Schulstoff hinaus" (User-Wunsch:
+    /// „sieht dünn aus, können wir noch was drauflegen"). Bewusst KEIN
+    /// GER-Etikett — sagt ehrlich, was es ist, statt einen Anspruch
+    /// („C1") vorzutäuschen, den wir nicht einlösen können.
+    ///
+    /// Was früher als C1/C2 getaggt war, war faktisch der Schwanz der
     /// Import-Reihenfolge (`frequency_rank` ist KEINE Korpusfrequenz,
-    /// sondern die Reihenfolge des Bulk-Imports — siehe Doku an
-    /// `Entry.frequencyRank`). Deshalb standen dort Wörter wie
-    /// „kalfatern", „bevatern" und „Albert-Paradiesvogel". Diese
-    /// Einträge bleiben über das **Lexikon** und `allInOneList`
-    /// nachschlagbar — sie verschwinden nur aus „Nach Lernstand".
-    private static let learnableLevels = ["A1", "A2", "B1", "B2"]
+    /// sondern die Reihenfolge des Bulk-Imports — siehe Doku an der
+    /// SQL-Abfrage in `loadEntries()`). Deshalb standen dort Wörter wie
+    /// „kalfatern", „bevatern" und „Albert-Paradiesvogel" — nichts davon
+    /// ist in `XP`, das über echte Korpusfrequenz (Lexique 3) + Wortart-
+    /// Abgleich zugeordnet wird (`tools/assign_learn_levels.py`). Der
+    /// alte C1/C2-Bestand bleibt über Lexikon und `allInOneList`
+    /// nachschlagbar, nur eben nicht mehr als eigene Lernliste.
+    private static let learnableLevels = ["A1", "A2", "B1", "B2", "XP"]
 
     static let levelLists: [VocabularyList] = {
         var lists: [VocabularyList] = []
@@ -764,6 +814,9 @@ enum StandardVocabularyLoader {
             "A2": UUID(uuidString: "F1E1EEE1-A200-4000-A000-000000000002")!,
             "B1": UUID(uuidString: "F1E1EEE1-B100-4000-A000-000000000003")!,
             "B2": UUID(uuidString: "F1E1EEE1-B200-4000-A000-000000000004")!,
+            // Kein L/J/X/P — wäre kein gültiges Hex (siehe Kommentar an
+            // `lernjahrChildLists`).
+            "XP": UUID(uuidString: "F1E1EEE1-9900-4000-A000-000000000005")!,
         ]
         for (index, level) in learnableLevels.enumerated() {
             // **Kumulativ (2026-08-06, User-Spec)** — „A2 muss A1
