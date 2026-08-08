@@ -17,6 +17,15 @@ extension QuizView {
 
                 if let correctAnswer = typingShowCorrectAnswer {
                     VStack(spacing: 4) {
+                        // **User-Report 2026-08-08** — vorher stand hier nur
+                        // die richtige Antwort in Grün, ohne explizites
+                        // „Falsch"-Label. Das ließ sich mit einer Bestätigung
+                        // verwechseln („man meint man habe es irgendwie
+                        // richtig"). Jetzt steht unmissverständlich „Falsch"
+                        // in Orange über der Lösung.
+                        Text("Falsch")
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.warning)
                         Text("Richtige Antwort:")
                             .font(AppTheme.Typography.caption)
                             .foregroundStyle(AppTheme.Colors.textSecondary)
@@ -32,6 +41,12 @@ extension QuizView {
                     // AppInputField (wie KK). Quiz-Eigenheit: zentrierter Text
                     // (`alignment: .center`). Der frühere Accent-Border entfällt
                     // zugunsten des einheitlichen cream-Borders.
+                    if typingWasCorrect {
+                        Text("Richtig!")
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.success)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
                     AppInputField(
                         placeholder: "Antwort eingeben",
                         text: $typingInput,

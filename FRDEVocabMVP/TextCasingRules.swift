@@ -99,7 +99,7 @@ enum TextNormalizationEngine {
         "tut", "tun", "tust",
         "gibt", "gibst", "geben",
         "nimmt", "nimmst", "nehmen",
-        "schl\u{00E4}ft", "schlaeft", "schlafen",
+        "schl\u{00E4}ft", "schlaeft",
         "wird", "wirst", "werden", "werdet",
         "wurde", "wurden", "w\u{00FC}rde", "wurde",
         // Pronomen (ohne H\u{00F6}flichkeits-sie/ihr)
