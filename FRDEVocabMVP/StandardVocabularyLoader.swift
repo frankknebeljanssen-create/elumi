@@ -894,8 +894,7 @@ enum StandardVocabularyLoader {
     ///     `genderSource = .explicitArticle` (DB hat meist aus Artikel
     ///     abgeleitet)
     ///   • Wenn `gender_fr` leer → `FrenchGenderResolver.resolve`
-    ///     aufrufen mit Plural-Singular-Lookup und optionalen KI-
-    ///     Overrides
+    ///     aufrufen mit Plural-Singular-Lookup
     ///   • Ergebnis: Entry mit gefülltem `gender`, normalisiertem
     ///     `sourceDisplay` (inkl. Artikel), `genderSource` und
     ///     `genderConfidence`
@@ -912,11 +911,10 @@ enum StandardVocabularyLoader {
         // Map Core → Genus ableiten, damit wir bei „les X" nachschlagen
         // können.
         let singularGenderMap = buildSingularGenderMap(raw)
-        let aiOverrides = loadAIGenderOverrides()
 
         var resolved: [Entry] = []
         resolved.reserveCapacity(raw.count)
-        var counts = (explicitArticle: 0, dbLookup: 0, heuristic: 0, aiOverride: 0, unknown: 0, alreadyFilled: 0)
+        var counts = (explicitArticle: 0, dbLookup: 0, heuristic: 0, unknown: 0, alreadyFilled: 0)
 
         for entry in raw {
             guard entry.wordClass == "noun" else {
@@ -935,15 +933,13 @@ enum StandardVocabularyLoader {
                 rawLemma: entry.sourceDisplay,
                 pluralLookup: { core in
                     singularGenderMap[core.lowercased()]
-                },
-                aiOverrides: aiOverrides
+                }
             )
 
             switch resolution.source {
             case .explicitArticle: counts.explicitArticle += 1
             case .dbLookup:        counts.dbLookup += 1
             case .heuristic:       counts.heuristic += 1
-            case .aiOverride:      counts.aiOverride += 1
             case .unknown:         counts.unknown += 1
             }
 
@@ -980,7 +976,6 @@ enum StandardVocabularyLoader {
            explicit art:  \(counts.explicitArticle)
            DB-Lookup:     \(counts.dbLookup)
            heuristic:     \(counts.heuristic)
-           ai-override:   \(counts.aiOverride)
            unknown:       \(counts.unknown)
         """)
         #endif
@@ -1016,54 +1011,6 @@ enum StandardVocabularyLoader {
             }
         }
         return map
-    }
-
-    /// Lädt optionale KI-Genus-Overrides aus einer Bundle-Ressource
-    /// (`gender_ai_overrides.json`). Format:
-    ///
-    /// ```json
-    /// {
-    ///   "eau":   { "gender": "f", "confidence": 0.99 },
-    ///   "homme": { "gender": "m", "confidence": 0.99 }
-    /// }
-    /// ```
-    ///
-    /// Wird von Phase 2 (Python-Pipeline `tools/gender_ai_resolver.py`)
-    /// generiert. Wenn die Datei nicht im Bundle liegt, läuft die
-    /// Pipeline ohne KI-Anteil — Heuristik + Plural-Lookup bleiben aktiv.
-    private static func loadAIGenderOverrides() -> [String: (gender: FrenchGenderHeuristicRules.Gender, confidence: Double)]? {
-        guard let url = Bundle.main.url(forResource: "gender_ai_overrides", withExtension: "json") else {
-            return nil
-        }
-        do {
-            let data = try Data(contentsOf: url)
-            struct RawOverride: Decodable {
-                let gender: String
-                let confidence: Double
-            }
-            let raw = try JSONDecoder().decode([String: RawOverride].self, from: data)
-            var parsed: [String: (gender: FrenchGenderHeuristicRules.Gender, confidence: Double)] = [:]
-            for (key, value) in raw {
-                let gender: FrenchGenderHeuristicRules.Gender? = {
-                    switch value.gender.lowercased() {
-                    case "m", "masculine": return .masculine
-                    case "f", "feminine":  return .feminine
-                    default: return nil
-                    }
-                }()
-                guard let g = gender else { continue }
-                parsed[key.lowercased()] = (g, value.confidence)
-            }
-            #if DEBUG
-            appDebugLog("🔤 [GenderResolver] \(parsed.count) KI-Overrides geladen aus Bundle.")
-            #endif
-            return parsed.isEmpty ? nil : parsed
-        } catch {
-            #if DEBUG
-            appDebugLog("🔤 [GenderResolver] Fehler beim Laden von gender_ai_overrides.json: \(error)")
-            #endif
-            return nil
-        }
     }
 
     private static func loadEntries() -> [Entry] {

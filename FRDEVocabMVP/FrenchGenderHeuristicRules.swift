@@ -13,8 +13,8 @@ import Foundation
 /// die ohnehin nie ein Genus brauchen.
 ///
 /// Der `Gender`-Typ selbst bleibt bestehen — er ist der gemeinsame Werttyp
-/// für `gender_fr`-Werte aus der DB und für `gender_ai_overrides.json`
-/// (siehe `FrenchGenderResolver.swift`, `StandardVocabularyLoader.swift`).
+/// für `gender_fr`-Werte aus der DB (siehe `FrenchGenderResolver.swift`,
+/// `StandardVocabularyLoader.swift`).
 enum FrenchGenderHeuristicRules {
     enum Gender: String, Equatable {
         case masculine = "m"

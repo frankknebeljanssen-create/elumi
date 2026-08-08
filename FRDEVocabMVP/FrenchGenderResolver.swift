@@ -28,12 +28,6 @@ import Foundation
 /// └─────────────────────────────────────┘
 ///    │
 ///    ▼
-/// ┌─────────────────────────────────────┐
-/// │ Schritt 2c: KI-Fallback             │──> Offline, Python-Skript
-/// │  (separat, als Build-Step)          │    schreibt Overrides-JSON
-/// └─────────────────────────────────────┘
-///    │
-///    ▼
 /// Output: ResolvedGender {
 ///   gender, article, source, confidence,
 ///   normalizedLemmaWithArticle, number
@@ -45,7 +39,6 @@ enum FrenchGenderSource: String, Codable, Equatable {
     case explicitArticle    // Artikel war im Input enthalten (le/la/un/une)
     case dbLookup           // aus Plural-Singular-Lookup oder Hauptnomen-Lookup
     case heuristic          // Endungs-Regel
-    case aiOverride         // Offline-KI-Pipeline (Phase 2)
     case unknown            // nichts greift — Residual für KI-Pipeline
 }
 
@@ -76,8 +69,7 @@ enum FrenchGenderResolver {
     /// Kann `nil` sein, dann wird Schritt 2a übersprungen.
     static func resolve(
         rawLemma: String,
-        pluralLookup: ((String) -> FrenchGenderHeuristicRules.Gender?)? = nil,
-        aiOverrides: [String: (gender: FrenchGenderHeuristicRules.Gender, confidence: Double)]? = nil
+        pluralLookup: ((String) -> FrenchGenderHeuristicRules.Gender?)? = nil
     ) -> ResolvedGender {
         let trimmed = rawLemma.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
@@ -141,23 +133,6 @@ enum FrenchGenderResolver {
                 number: detectedNumber,
                 normalizedLemma: trimmed
             )
-        }
-
-        // Schritt 2a — KI-Overrides (Phase 2) haben höchste Priorität.
-        // Wir erlauben sie vor Schritt 2b, weil eine dedizierte KI-Antwort
-        // zuverlässiger ist als die Endungs-Heuristik.
-        if let overrides = aiOverrides {
-            let lookupKey = core.lowercased()
-            if let ai = overrides[lookupKey] {
-                let article = articleFor(gender: ai.gender, core: core, number: detectedNumber)
-                return ResolvedGender(
-                    gender: ai.gender,
-                    source: .aiOverride,
-                    confidence: ai.confidence,
-                    number: detectedNumber,
-                    normalizedLemma: rebuildLemma(article: article, core: core, tail: remainingTail)
-                )
-            }
         }
 
         // Schritt 2a (DB): Plural-Sonderfall
