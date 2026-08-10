@@ -365,6 +365,47 @@
   }
   .module-card p { font-size: 13.5px; margin: 8px 0 0; }
 
+  /* ============ FLOW STEPS (Scan-Import) ============ */
+  .flow-steps {
+    list-style: none;
+    counter-reset: flow;
+    padding: 0;
+    margin: 20px 0;
+    max-width: 68ch;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .flow-steps li {
+    counter-increment: flow;
+    position: relative;
+    padding: 14px 18px 14px 56px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: 14.5px;
+    color: var(--ink-dim);
+  }
+  .flow-steps li::before {
+    content: counter(flow);
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    background: var(--mint);
+    color: var(--midnight);
+    font-family: var(--data);
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .flow-steps li strong { color: var(--ink); }
+
   /* ============ CALLOUTS / CARDS ============ */
   .principle {
     background: var(--panel);
@@ -569,7 +610,25 @@
   .section-nav .next { text-align: right; align-items: flex-end; }
 
   /* diagram */
-  .diagram-wrap { margin: 20px 0; padding: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow-x: auto; }
+  .diagram-wrap {
+    margin: 20px 0;
+    padding: 20px 8px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow-x: auto;
+  }
+  /* Mermaid skaliert seine SVG sonst auf die Containerbreite herunter,
+     wodurch Text bei diagrammen mit mehreren Reihen winzig wird. Feste
+     Mindestbreite erzwingt lesbare Größe; überschüssige Breite scrollt
+     horizontal statt zu schrumpfen. */
+  .diagram-wrap svg {
+    min-width: 760px;
+    width: auto !important;
+    height: auto !important;
+    display: block;
+    margin: 0 auto;
+  }
 </style>
 
 <div class="scrim" id="scrim"></div>
@@ -592,6 +651,7 @@
     <nav class="toc" id="toc">
       <div class="toc-label">Inhalt</div>
       <button class="toc-btn" data-target="overview">Übersicht<span class="desc">Was Elumi ist, in Zahlen</span></button>
+      <button class="toc-btn" data-target="scan">Scan-Import<span class="desc">Der eigentliche Unterschied</span></button>
       <button class="toc-btn" data-target="didaktik">Didaktik<span class="desc">Warum es so gelehrt wird</span></button>
       <button class="toc-btn" data-target="architektur">Architektur<span class="desc">Wie das System zusammenhängt</span></button>
       <button class="toc-btn" data-target="technik">Technik<span class="desc">Stack, Daten, Pipeline</span></button>
@@ -606,10 +666,20 @@
     <!-- ============ OVERVIEW ============ -->
     <section class="section" id="sec-overview" data-order="0">
       <div class="section-inner">
+        <div class="principle">
+          <div class="k">In Kürze</div>
+          <p>Schüler lernen Vokabeln nicht schlecht wegen der Vokabeln — sondern weil das Abschreiben in Karteikarten vorher zu viel Reibung erzeugt. Elumi macht daraus ein Foto: abfotografieren, KI liest aus, sofort übbar. Dahinter ein selbst kuratiertes 17.229-Wörter-Lexikon und ein Lernsystem, das auf echter Lernpsychologie basiert (verteiltes Üben, aktives Abrufen), nicht auf Bauchgefühl. Gebaut von einer Person in 4,5 Monaten, 698 Commits.</p>
+        </div>
+
         <div class="hero">
           <p class="eyebrow">Elumi</p>
-          <h1 class="hero-headline">Französisch lernen,<br>ohne dass die App<br><span class="accent">rät</span>, was <span class="accent2">stimmt</span>.</h1>
-          <p class="hero-lede">Elumi ist eine iOS-App, die Schüler:innen zwischen 10 und 17 Jahren Französisch-Vokabular beibringt — Deutsch↔Französisch, vier Übungsmodi, ein eigenes Master-Lexikon statt eines API-Wrappers um ein fremdes Wörterbuch. Gebaut von einer Person, mit Claude Code als Engineering-Partner, über 698 Commits seit dem 28. März 2026.</p>
+          <h1 class="hero-headline">Ein Foto vom Vokabelheft.<br>Die App macht den <span class="accent2">Rest</span> — <br>keine Karteikarte von <span class="accent">Hand</span>.</h1>
+          <p class="hero-lede">Elumi ist eine iOS-App für Schüler:innen zwischen 10 und 17 Jahren, die Französisch-Vokabular aus dem eigenen Lernalltag übbar macht: Vokabelheft, Lehrbuchseite, Plakat oder Zeitschrift abfotografieren, KI liest die Wörter heraus, fertig ist die Lernliste. Dazu ein eigenes, redaktionell kuratiertes Master-Lexikon statt eines API-Wrappers um ein fremdes Wörterbuch. Gebaut von einer Person, mit Claude Code als Engineering-Partner, über 698 Commits seit dem 28. März 2026.</p>
+        </div>
+
+        <div class="principle">
+          <div class="k">Das eigentliche Problem ist nicht das Vokabellernen — es ist alles davor.</div>
+          <p>Vokabeln aus Heft oder Buch von Hand auf Karteikarten zu übertragen, ist die klassische Methode — und genau da hört es für die meisten Schüler schon auf. Nicht, weil die Vokabeln zu schwer wären, sondern weil das Abschreiben selbst lästig ist: Bevor überhaupt geübt werden kann, steht erst eine Fleißarbeit im Weg. Diese Hürde entscheidet oft, ob ein Schüler überhaupt anfängt. Elumi ersetzt das Abschreiben durch ein Foto — Vokabelheft, Buchseite, Mitschrift fotografieren, und in Sekunden steht eine fertige, übbare Liste bereit.</p>
         </div>
 
         <div class="stat-strip">
@@ -620,7 +690,7 @@
         </div>
 
         <h3 class="h">Was die App tut</h3>
-        <p>Ein Schüler wählt ein Lernziel — eine Klassenarbeit, ein Schulbuch-Kapitel, oder einfach „dranbleiben" — und übt in kurzen täglichen Runden. Die Vokabeln kommen nicht aus einer generischen Wortliste, sondern aus einem selbst kuratierten Lexikon mit Genus, Aussprache, Beispielsätzen und Flexionsformen pro Eintrag. Fortschritt wird pro Vokabel getrackt (sitzt / wackelt noch), nicht nur pro Session.</p>
+        <p>Ein Schüler wählt ein Lernziel — eine Klassenarbeit, ein Schulbuch-Kapitel, oder einfach „dranbleiben" — und übt in kurzen täglichen Runden. Fortschritt wird pro Vokabel getrackt (sitzt / wackelt noch), nicht nur pro Session. Woher der Lernstoff kommt, ist dabei der eigentliche Unterschied zu jeder anderen Vokabel-App — dazu gleich mehr im nächsten Abschnitt.</p>
 
         <h3 class="h">Die sieben Module</h3>
         <div class="modules">
@@ -656,13 +726,63 @@
 
         <div class="section-nav">
           <span></span>
+          <button class="next" data-goto="scan"><span class="lbl">Weiter</span>Scan-Import →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SCAN-IMPORT ============ -->
+    <section class="section" id="sec-scan" data-order="1">
+      <div class="section-inner">
+        <p class="eyebrow">Scan-Import</p>
+        <h2 class="title">Der Lernstoff kommt nicht aus der App —<br>er kommt aus dem eigenen Alltag.</h2>
+        <p class="lede">Das ist der eigentliche Unterschied zu jeder anderen Vokabel-App: Ein Schüler muss keine Karteikarten von Hand schreiben. Ein Foto reicht — vom Vokabelheft, einer Lehrbuchseite, einer handschriftlichen Mitschrift, sogar von einem Plakat in der Stadt oder einer Zeitschrift. Elumi liest die Vokabeln heraus und baut daraus eine eigene, sofort übbare Lernliste.</p>
+
+        <h3 class="h">Der Weg vom Foto zur Übung</h3>
+        <ol class="flow-steps">
+          <li><strong>Fotografieren.</strong> Kamera mit automatischer Rechteck-Erkennung, oder ein Foto aus der Galerie wählen. Auch mehrere Seiten möglich — jede wird einzeln geprüft, keine Blind-Stapelverarbeitung, die im Hintergrund etwas falsch macht.</li>
+          <li><strong>Auslesen.</strong> Erst ein schneller lokaler Texterkennungs-Durchlauf auf dem Gerät. Reicht dessen Qualität nicht (bei handschriftlichen Notizen oder unscharfen Fotos fast nie), schickt die App das <strong>Foto selbst</strong> an zwei KI-Modelle parallel — nicht nur den erkannten Text, sondern das Bild direkt, damit Layout und Handschrift nicht verloren gehen.</li>
+          <li><strong>Prüfen.</strong> Jedes erkannte Wortpaar landet in einer editierbaren Vorschau, einzeln an- oder abwählbar. Nichts wird automatisch übernommen, ohne dass der Schüler es gesehen hat.</li>
+          <li><strong>Speichern.</strong> Als neue Liste oder in eine bestehende eingefügt (bei Namenskollisionen mit Konflikt-Abgleich) — oder erstmal nur als Entwurf unter „Meine Scans" für später.</li>
+        </ol>
+
+        <h3 class="h">Was die KI dabei genau tut</h3>
+        <p>Zwei Modelle prüfen sich gegenseitig: <strong>Claude Haiku 4.5</strong> extrahiert zuerst, <strong>Claude Sonnet 4.5</strong> läuft parallel als zweite Meinung mit, und die App führt beide Ergebnisse zusammen — dieselbe Doppel-Analyse-Logik, mit der auch die restliche Lexikon-Arbeit in diesem Projekt abgesichert wird. Die lokale Texterkennung liefert dabei nur unterstützenden Kontext, nicht das Endergebnis.</p>
+        <p>Das Extraktions-Modell folgt einem festen Regelwerk, keiner freien Interpretation: französische Elisionen korrekt behandeln (l'ami/l'amie bleibt ein Wort, nicht zwei), Genus-Paare sauber trennen (le copain/la copine → zwei Einträge), deutsche Großschreibung korrekt setzen, Wortart zuordnen — und eine explizite Anti-Halluzinations-Regel: lieber ein Wort auslassen, als eines zu erfinden, das auf dem Foto gar nicht stand.</p>
+
+        <h3 class="h">Danach ist es eine ganz normale Liste</h3>
+        <p>Eine gescannte Liste ist im Code <strong>strukturell identisch</strong> mit einer eingebauten Liste — beide sind derselbe <span class="mono">VocabularyList</span>-Typ und laufen durch dieselbe Sammlung, aus der Quiz, Karteikarten, Training und Word Runner ihre Aufgaben ziehen. Kein Sonderpfad, keine Zweitklassigkeit. Listen wachsen mit jedem weiteren Scan, lassen sich frei benennen und nach Datum, Thema oder Stand ordnen — und mehrere Listen (auch mehrere Scan-Entwürfe auf einmal) lassen sich zu einer neuen, deduplizierten Liste zusammenführen. Aus „mein Vokabelheft" und „Kapitel 4 im Lehrbuch" wird auf Wunsch eine gemeinsame Übungsliste.</p>
+
+        <div class="principle">
+          <div class="k">Ehrlich gesagt: Qualitätssicherung funktioniert hier anders</div>
+          <p>Das fest eingebaute Lexikon (17.229 Wörter) ist von Hand kuratiert und wiederholt geprüft — siehe Übersicht. Für gescannte Inhalte gibt es das nicht: Ein automatischer Abgleich prüft jedes erkannte Wortpaar gegen genau dieses kuratierte Lexikon und markiert verdächtige Übersetzungen, aber die letzte Instanz ist die eigene Prüfung des Schülers in der Vorschau. Das ist die ehrliche Grenze zwischen „redaktionell geprüft" und „algorithmisch abgesichert plus Nutzer-Bestätigung" — beides hat seinen Platz, aber es ist nicht dasselbe Qualitätsniveau, und das Dossier verwischt das bewusst nicht.</p>
+        </div>
+
+        <h3 class="h">Die zweite Säule: Grund- und Aufbauwortschatz zum Nachschlagen</h3>
+        <p>Wer noch nichts gescannt hat, startet trotzdem nicht bei null. Das eingebaute Lexikon ist als <strong>Wörterbuch</strong> durchsuchbar (alle 17.229 Wörter) und zusätzlich in fünf aufeinander aufbauenden Lernstufen strukturiert — jede folgende Stufe enthält automatisch alle vorherigen:</p>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Stufe</th><th>Bezeichnung in der App</th><th class="num">Wörter</th></tr></thead>
+            <tbody>
+              <tr><td>A1</td><td>Grundwortschatz</td><td class="num">1.170</td></tr>
+              <tr><td>A2</td><td>Aufbauwortschatz (mit A1)</td><td class="num">990</td></tr>
+              <tr><td>B1</td><td>Mittelstufe (mit A1–A2)</td><td class="num">1.037</td></tr>
+              <tr><td>B2</td><td>Oberstufe (mit A1–B1)</td><td class="num">2.602</td></tr>
+              <tr class="peak"><td>XP</td><td>Über den Schulstoff hinaus (mit A1–B2)</td><td class="num">2.231</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Eigene Scan-Listen und dieser eingebaute Grund-/Aufbauwortschatz lassen sich genauso kombinieren wie zwei Scan-Listen untereinander — für den Schüler ist es am Ende eine einzige, wachsende Sammlung.</p>
+
+        <div class="section-nav">
+          <button data-goto="overview"><span class="lbl">Zurück</span>← Übersicht</button>
           <button class="next" data-goto="didaktik"><span class="lbl">Weiter</span>Didaktik →</button>
         </div>
       </div>
     </section>
 
     <!-- ============ DIDAKTIK ============ -->
-    <section class="section" id="sec-didaktik" data-order="1">
+    <section class="section" id="sec-didaktik" data-order="2">
       <div class="section-inner">
         <p class="eyebrow">Didaktik</p>
         <h2 class="title">Jede Mechanik hat eine Quelle,<br>nicht nur eine Meinung.</h2>
@@ -740,14 +860,14 @@
         </div>
 
         <div class="section-nav">
-          <button data-goto="overview"><span class="lbl">Zurück</span>← Übersicht</button>
+          <button data-goto="scan"><span class="lbl">Zurück</span>← Scan-Import</button>
           <button class="next" data-goto="architektur"><span class="lbl">Weiter</span>Architektur →</button>
         </div>
       </div>
     </section>
 
     <!-- ============ ARCHITEKTUR ============ -->
-    <section class="section" id="sec-architektur" data-order="2">
+    <section class="section" id="sec-architektur" data-order="3">
       <div class="section-inner">
         <p class="eyebrow">Architektur</p>
         <h2 class="title">Ein Store pro Zuständigkeit,<br>keiner rechnet doppelt.</h2>
@@ -755,20 +875,22 @@
 
         <div class="diagram-wrap">
 <pre class="mermaid">
-flowchart LR
-    DB[("FRDEMasterLexicon.sqlite<br/>17.229 Einträge")] --> Loader["StandardVocabularyLoader"]
-    Loader --> Gender["FrenchGenderResolver<br/>3-Stufen-Pipeline"]
-    Loader --> Casing["TextCasingRules<br/>DE/FR-Großschreibung"]
+flowchart TB
+    DB[("FRDEMasterLexicon.sqlite\n17.229 Einträge")] --> Loader["StandardVocabularyLoader"]
+    Loader --> Gender["FrenchGenderResolver\n3-Stufen-Pipeline"]
+    Loader --> Casing["TextCasingRules\nDE/FR-Großschreibung"]
     Gender --> Stores
     Casing --> Stores
     subgraph Stores["Zentrale Stores"]
-        Progress["ProgressStore<br/>XP · Streak · Credits"]
-        Goal["LearningGoalStore<br/>Tagesziel · Inhaltsziel"]
-        Status["ItemLearningStatusStore<br/>sitzt / wackelt"]
+        direction LR
+        Progress["ProgressStore\nXP · Streak · Credits"]
+        Goal["LearningGoalStore\nTagesziel · Inhaltsziel"]
+        Status["ItemLearningStatusStore\nsitzt / wackelt"]
         Lists["VocabularyListStore"]
     end
     Stores --> Modules
     subgraph Modules["Lernmodule"]
+        direction LR
         FC["Karteikarten"]
         QZ["Quiz"]
         TR["Training-Hub"]
@@ -813,7 +935,7 @@ flowchart LR
     </section>
 
     <!-- ============ TECHNIK ============ -->
-    <section class="section" id="sec-technik" data-order="3">
+    <section class="section" id="sec-technik" data-order="4">
       <div class="section-inner">
         <p class="eyebrow">Technik</p>
         <h2 class="title">SwiftUI, eine SQLite-Datei,<br>keine fremde Infrastruktur.</h2>
@@ -851,6 +973,11 @@ flowchart LR
 
         <p><span class="mono">entries.learn_level</span> ist die kuratierte Lernstufe (A1–B2, plus „XP" für Stoff über den Schulstoff hinaus) — bewusst getrennt von der rohen <span class="mono">level</span>-Spalte aus dem Bulk-Import, die nur für Schwierigkeits-/Distraktor-Logik dient, nicht als Lernlisten-Kriterium taugt. Die Zuordnung stammt aus einem eigenen Skript (<span class="mono">tools/assign_learn_levels.py</span>), das vier Kriterien kombiniert: eine kuratierte A1-Ankerliste, Korpusfrequenz (Lexique 3), Wortart-Abgleich gegen Homographen, und bei Mehrwort-Phrasen das Niveau der schwersten Komponente plus eine Stufe.</p>
 
+        <div class="principle">
+          <div class="k">Herkunft der Daten</div>
+          <p>Das Lexikon kombiniert offene lexikalische Quellen (u.a. Dbnary, Wikidata Lexemes) mit umfangreicher redaktioneller Kuration und Korpus-Abgleich (Lexique 3) — keine automatisierte Übernahme aus kommerziellen Wörterbüchern. Einzelwort-Übersetzungen sind grundsätzlich nicht schutzfähig; vor einer kommerziellen Veröffentlichung ist trotzdem eine rechtliche Prüfung der Provenienz-Kette vorgesehen.</p>
+        </div>
+
         <h3 class="h">Die drei zentralen Text-Pipelines</h3>
 
         <h4 class="sub">StandardVocabularyLoader</h4>
@@ -873,7 +1000,7 @@ flowchart LR
     </section>
 
     <!-- ============ PRINZIPIEN ============ -->
-    <section class="section" id="sec-prinzipien" data-order="4">
+    <section class="section" id="sec-prinzipien" data-order="5">
       <div class="section-inner">
         <p class="eyebrow">Arbeitsweise</p>
         <h2 class="title">Vier Regeln, die sich<br>durchs ganze Projekt ziehen.</h2>
@@ -902,6 +1029,11 @@ flowchart LR
         <h3 class="h">Verifikations-Disziplin</h3>
         <p>Jede Code-Änderung wird gegen einen echten Hintergrund-Build verifiziert, bevor sie als fertig gilt — IDE-Diagnostik allein gilt nicht als Nachweis (sie zeigt nach Datei-Umschreibungen zuverlässig veraltete Fehlalarme). Jede Datenbank-Änderung bekommt vorher ein Backup und wird danach mit <span class="mono">PRAGMA integrity_check</span> geprüft. Commits erst nach explizitem Go, Push erst nach zweitem, separatem Go.</p>
 
+        <div class="principle">
+          <div class="k">Warum eine Person und was das bedeutet</div>
+          <p>Elumi ist bewusst von einer Person gebaut, um Produktentscheidungen ohne Koordinationsverlust schnell zu treffen — sichtbar an der Geschwindigkeit (698 Commits in 4,5 Monaten) und an der Konsistenz der Architektur-Prinzipien. Für den nächsten Schritt ist der Aufbau eines kleinen Teams eingeplant, nicht die Fortsetzung als Ein-Personen-Projekt.</p>
+        </div>
+
         <div class="section-nav">
           <button data-goto="technik"><span class="lbl">Zurück</span>← Technik</button>
           <span></span>
@@ -914,7 +1046,7 @@ flowchart LR
 
 <script>
 (function () {
-  const sections = ['overview', 'didaktik', 'architektur', 'technik', 'prinzipien'];
+  const sections = ['overview', 'scan', 'didaktik', 'architektur', 'technik', 'prinzipien'];
   const tocBtns = document.querySelectorAll('.toc-btn');
   const sidebar = document.getElementById('sidebar');
   const scrim = document.getElementById('scrim');
