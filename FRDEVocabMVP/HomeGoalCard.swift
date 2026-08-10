@@ -24,9 +24,9 @@ import SwiftUI
 // sondern zum kompletten Abbruch.
 struct HomeGoalCard: View {
     let plan: LearningGoalPlan
-    let rhythm: WeeklyRhythmProgress
+    let daily: DailyGoalProgress
     /// Fortschritt des Inhaltsziels. `nil`, wenn das Ziel keinen
-    /// Inhaltsteil hat (reines Rhythmusziel).
+    /// Inhaltsteil hat (reines Tagesziel).
     let contentProgress: ContentGoalProgress?
     /// **2026-08-05** — Streak-Tage. Die Flamme ist aus dem Header
     /// verschwunden, als die Ziel-Karte dessen Platz übernahm; sie ist
@@ -34,6 +34,13 @@ struct HomeGoalCard: View {
     /// wandert sie hierher statt ersatzlos wegzufallen. Als Chip rechts
     /// kostet sie keine eigene Zeile.
     let streakDays: Int
+    /// **2026-08-08** — wie viele Streak-Joker diesen Monat noch übrig
+    /// sind. Nur sichtbar, wenn ein Streak läuft UND mindestens einer
+    /// verbraucht ist — sonst wäre die Zahl beim Start ("2 von 2") pure
+    /// Zusatz-Information ohne Nutzen. Sichtbarkeit ist hier bewusst
+    /// Teil des Wirkmechanismus (Sharif & Shu 2017): der Joker motiviert,
+    /// WEIL man seine Knappheit sieht.
+    let jokersRemaining: Int
     /// Tap auf die Karte — führt zum Ziel-Detail, wo geändert wird.
     let onTap: () -> Void
     /// **Tagesabschluss (2026-08-06)** — öffnet „Fertig für heute".
@@ -57,7 +64,7 @@ struct HomeGoalCard: View {
             Button(action: onTap) {
                 VStack(alignment: .leading, spacing: 12) {
                     header
-                    rhythmProgressBar
+                    dailyProgressBar
                     if let contentLine {
                         Text(contentLine)
                             .font(.system(size: 13, weight: .medium, design: .rounded))
@@ -172,6 +179,12 @@ struct HomeGoalCard: View {
 
     /// Flamme plus Tagezahl, im selben Amber wie die frühere
     /// Header-Pille (`streakAccent`) — der Nutzer erkennt sie wieder.
+    ///
+    /// **2026-08-08** — zeigt zusätzlich die Joker-Anzahl, aber NUR wenn
+    /// diesen Monat schon einer verbraucht wurde (`jokersRemaining <
+    /// StreakJokerStore.maxPerMonth`). Bei vollem Kontingent wäre die
+    /// Zahl reine Zusatz-Info ohne Handlungsrelevanz; sie wird erst
+    /// interessant, sobald die Knappheit spürbar wird.
     private var streakChip: some View {
         HStack(spacing: 4) {
             Text("🔥")
@@ -180,11 +193,16 @@ struct HomeGoalCard: View {
                 .font(.system(size: 13, weight: .black, design: .rounded))
                 .foregroundStyle(.white)
                 .monospacedDigit()
+            if jokersRemaining < StreakJokerStore.maxPerMonth {
+                Text("· \(jokersRemaining) 🛟")
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.85))
+            }
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 3)
         .background(Capsule().fill(AppTheme.Colors.streakAccent.opacity(0.9)))
-        .accessibilityLabel(Text("Serie: \(streakDays) \(streakDays == 1 ? "Tag" : "Tage")"))
+        .accessibilityLabel(Text("Serie: \(streakDays) \(streakDays == 1 ? "Tag" : "Tage"), \(jokersRemaining) Joker übrig"))
     }
 
     /// **2026-08-05** — immer „Dein Ziel", nie der Anlass-Titel
@@ -205,16 +223,16 @@ struct HomeGoalCard: View {
         }
     }
 
-    // MARK: - Rhythmus
+    // MARK: - Tagesziel
 
-    private var rhythmProgressBar: some View {
+    private var dailyProgressBar: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
-                Text(rhythmHeadline)
+                Text(dailyHeadline)
                     .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundStyle(rhythm.isReached ? AppTheme.Colors.moduleNomen : AppTheme.Colors.textPrimary)
+                    .foregroundStyle(daily.isReached ? AppTheme.Colors.moduleNomen : AppTheme.Colors.textPrimary)
                 Spacer(minLength: 0)
-                Text("\(rhythm.practicedDays)/\(rhythm.targetDays)")
+                Text("\(daily.doneItems)/\(daily.targetItems)")
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .monospacedDigit()
@@ -225,8 +243,8 @@ struct HomeGoalCard: View {
                     Capsule()
                         .fill(AppTheme.Colors.textSecondary.opacity(0.18))
                     Capsule()
-                        .fill(rhythm.isReached ? AppTheme.Colors.moduleNomen : sectionStyle.accent)
-                        .frame(width: geo.size.width * rhythm.fraction)
+                        .fill(daily.isReached ? AppTheme.Colors.moduleNomen : sectionStyle.accent)
+                        .frame(width: geo.size.width * daily.fraction)
                 }
             }
             .frame(height: 7)
@@ -234,14 +252,14 @@ struct HomeGoalCard: View {
     }
 
     /// **Gewinn-Framing**, siehe Datei-Kommentar oben.
-    private var rhythmHeadline: String {
-        if rhythm.isReached {
-            return "Wochenziel geschafft! 🎉"
+    private var dailyHeadline: String {
+        if daily.isReached {
+            return "Tagesziel geschafft! 🎉"
         }
-        let remaining = rhythm.remainingDays
+        let remaining = daily.remainingItems
         return remaining == 1
-            ? "Noch 1 Tag diese Woche"
-            : "Noch \(remaining) Tage diese Woche"
+            ? "Noch 1 Vokabel heute"
+            : "Noch \(remaining) Vokabeln heute"
     }
 
     // MARK: - Inhaltsziel

@@ -2,10 +2,12 @@ import Foundation
 import SwiftUI
 
 // LearningGoalStore.swift
-// **Ziel-System (2026-08-05)** — Persistenz + Fortschritts-Berechnung.
+// **Ziel-System (2026-08-05, Umbau 2026-08-08)** — Persistenz +
+// Fortschritts-Berechnung.
 //
 // Rolle im System (Abgrenzung zu den Nachbar-Stores):
-//   • `ProgressStore`           → XP / Level / Credits / Streak
+//   • `ProgressStore`           → XP / Level / Credits / Streak /
+//     Tages-Zähler (`todayCorrectCount`) — die Zahlenbasis
 //   • `DailyStatsStore`         → Tages-Feedback (wie viel heute?)
 //   • `ItemLearningStatusStore` → pro Vokabel: sitzt / wackelt
 //   • **`LearningGoalStore`**   → **das selbstgesetzte Ziel** und wie weit
@@ -13,14 +15,14 @@ import SwiftUI
 //
 // **Bewusst keine eigene Lernerfolgs-Buchführung.** Der Inhalts-Fortschritt
 // wird bei jedem Zugriff aus `ItemLearningStatusStore` + `VocabularyListStore`
-// abgeleitet. Nur zwei Dinge werden hier wirklich gespeichert: der Plan
-// selbst und an welchen Tagen geübt wurde.
+// abgeleitet, der Tagesziel-Fortschritt aus `ProgressStore.todayCorrectCount`
+// (demselben Zähler, der auch den Streak triggert). Hier wird nur der
+// Plan selbst gespeichert — kein zweiter Tages-Zähler mehr.
 //
-// **Wochen-Rhythmus:** Die Woche beginnt Montag und folgt demselben
-// 6-Uhr-Rollover wie Streak und DailyStats (`GamificationConfig.currentDayIndex`),
-// damit „heute" überall in der App dasselbe bedeutet. Ein Schüler, der um
-// 1 Uhr nachts noch übt, bucht das auf den Vortag — so wie er es selbst
-// empfinden würde.
+// **2026-08-08** — die frühere wochenbasierte Rhythmus-Rechnung
+// (`practicedDayIndices`, `weekIndex`) ist entfallen: Ein Wochenziel und
+// ein Tagesziel in EINEM Store zu führen war die Doppelgleisigkeit, die
+// der Umbau auflösen sollte (siehe `LearningGoalPlan.swift`-Kommentar).
 @MainActor
 final class LearningGoalStore: ObservableObject {
     static let shared = LearningGoalStore()
@@ -82,14 +84,6 @@ final class LearningGoalStore: ObservableObject {
         reset()
     }
 
-    /// Tages-Indizes der laufenden Woche, an denen geübt wurde.
-    /// Set statt Zähler: Zwei Sessions am selben Tag sind ein Tag.
-    @Published private(set) var practicedDayIndices: Set<Int> = []
-
-    /// Wochen-Index, zu dem `practicedDayIndices` gehört. Weicht er vom
-    /// aktuellen ab, gilt die Woche als frisch.
-    @Published private(set) var weekIndex: Int = LearningGoalStore.currentWeekIndex
-
     // MARK: - Keys
 
     private var planKey: String {
@@ -98,42 +92,11 @@ final class LearningGoalStore: ObservableObject {
     private var archiveKey: String {
         AccountStore.shared.namespacedKey(appLearningGoalArchiveKey)
     }
-    private var practicedDaysKey: String {
-        AccountStore.shared.namespacedKey(appLearningGoalPracticedDaysKey)
-    }
-    private var weekKey: String {
-        AccountStore.shared.namespacedKey(appLearningGoalWeekIndexKey)
-    }
 
     // MARK: - Init
 
     init() {
         load()
-        refreshForCurrentWeekIfNeeded()
-    }
-
-    // MARK: - Wochen-Rechnung
-
-    /// Fortlaufender Wochen-Index, Montag als Wochenstart.
-    ///
-    /// `currentDayIndex` 0 entspricht dem 1.1.1970 (ein Donnerstag), daher
-    /// der Versatz von 4 Tagen: `dayIndex % 7 == 4` ist ein Montag.
-    static var currentWeekIndex: Int {
-        weekIndex(forDay: GamificationConfig.currentDayIndex)
-    }
-
-    static func weekIndex(forDay dayIndex: Int) -> Int {
-        floorDiv(dayIndex - mondayOffset, 7)
-    }
-
-    private static let mondayOffset = 4
-
-    /// Abrundende Division, die auch bei negativen Werten korrekt ist —
-    /// Swifts `/` schneidet Richtung Null ab und würde vor 1970 eine
-    /// Woche verschieben.
-    private static func floorDiv(_ lhs: Int, _ rhs: Int) -> Int {
-        let q = lhs / rhs
-        return (lhs % rhs < 0) ? q - 1 : q
     }
 
     // MARK: - Ziel setzen / ändern
@@ -148,10 +111,10 @@ final class LearningGoalStore: ObservableObject {
         syncGlobalSelectionWithContentGoal()
     }
 
-    /// Nur den Wochenrhythmus ändern, Inhaltsziel unangetastet.
-    func updateWeeklyTarget(_ days: Int) {
+    /// Nur das Tagesziel ändern, Inhaltsziel unangetastet.
+    func updateDailyTarget(minutes: Int) {
         guard var current = plan else { return }
-        current.weeklyTargetDays = LearningGoalPlan.clampWeeklyTarget(days)
+        current.dailyTargetMinutes = LearningGoalPlan.clampDailyTargetMinutes(minutes)
         plan = current
         persist()
     }
@@ -270,7 +233,7 @@ final class LearningGoalStore: ObservableObject {
     }
 
     /// Schiebt ein abgelaufenes bzw. erledigtes Inhaltsziel ins Archiv,
-    /// ohne es als „gescheitert" zu markieren. Das Rhythmusziel bleibt
+    /// ohne es als „gescheitert" zu markieren. Das Tagesziel bleibt
     /// bestehen — der Nutzer fällt also nie in einen ziellosen Zustand.
     func archiveContentGoal() {
         guard var current = plan, let content = current.content else { return }
@@ -280,50 +243,21 @@ final class LearningGoalStore: ObservableObject {
         persist()
     }
 
-    // MARK: - Aktivität buchen
-
-    /// Markiert heute als „geübt". Wird zentral am Session-Ende gerufen —
-    /// idempotent, mehrfaches Aufrufen am selben Tag zählt einmal.
-    func recordPracticeToday() {
-        refreshForCurrentWeekIfNeeded()
-        let today = GamificationConfig.currentDayIndex
-        guard !practicedDayIndices.contains(today) else {
-            #if DEBUG
-            print("🎯 [Ziel] Heute (\(today)) war schon gebucht — Woche bleibt bei \(practicedDayIndices.count)/\(rhythmProgress.targetDays)")
-            #endif
-            return
-        }
-        practicedDayIndices.insert(today)
-        persist()
-        #if DEBUG
-        let p = rhythmProgress
-        print("🎯 [Ziel] Tag \(today) gebucht → Woche \(p.practicedDays)/\(p.targetDays)"
-              + (p.isReached ? " ✅ Wochenziel erreicht!" : " (noch \(p.remainingDays))"))
-        #endif
-    }
-
-    /// Idempotenter Wochen-Rollover. Öffentlich, damit Screens beim
-    /// Erscheinen synchronisieren können, falls die App über einen
-    /// Wochenwechsel hinweg im Hintergrund lag.
-    func refreshForCurrentWeekIfNeeded() {
-        let current = Self.currentWeekIndex
-        guard current != weekIndex else { return }
-        weekIndex = current
-        practicedDayIndices = []
-        persist()
-    }
-
     // MARK: - Fortschritt
 
-    /// Fortschritt des Rhythmusziels in der laufenden Woche.
-    /// Ohne Plan wird der Default-Rhythmus angenommen, damit die UI immer
+    /// Fortschritt des Tagesziels heute. Liest `ProgressStore.todayCorrectCount`
+    /// — denselben Zähler, der auch den Streak triggert. Kein eigener
+    /// Buchungsaufruf nötig: `ProgressService.record(session:)` schreibt
+    /// diesen Zähler bereits für den Streak fort, das Tagesziel liest nur
+    /// mit. Ohne Plan wird das Default-Ziel angenommen, damit die UI immer
     /// eine sinnvolle Zahl bekommt.
-    var rhythmProgress: WeeklyRhythmProgress {
-        let target = plan?.weeklyTargetDays ?? LearningGoalPlan.defaultWeeklyTargetDays
-        return WeeklyRhythmProgress(
-            practicedDays: practicedDayIndices.count,
-            targetDays: target
-        )
+    var dailyProgress: DailyGoalProgress {
+        let minutes = plan?.dailyTargetMinutes ?? LearningGoalPlan.defaultDailyTargetMinutes
+        let target = LearningGoalPlan.dailyTargetItems(forMinutes: minutes)
+        let today = GamificationConfig.currentDayIndex
+        let store = ProgressStore.shared
+        let done = store.progress.todayCorrectDayIndex == today ? store.progress.todayCorrectCount : 0
+        return DailyGoalProgress(doneItems: done, targetItems: target)
     }
 
     /// Fortschritt des Inhaltsziels — vollständig abgeleitet, nichts
@@ -394,28 +328,19 @@ final class LearningGoalStore: ObservableObject {
 
     // MARK: - Reset
 
-    /// Löscht **nur** den Wochenfortschritt, lässt das Ziel selbst stehen.
-    ///
-    /// Das ist der Pfad für „Spielstand zurücksetzen": Der Plan ist ein
-    /// Nutzerdatum wie Profil und Vorname (die dort ebenfalls verschont
-    /// bleiben), die geübten Tage sind Spielstand wie Streak und
-    /// Tages-Counter. Wer seinen Spielstand zurücksetzt, will nicht
-    /// nebenbei sein Lernziel verlieren und das Onboarding neu machen.
-    func resetWeeklyProgress() {
-        practicedDayIndices = []
-        weekIndex = Self.currentWeekIndex
-        persist()
-    }
-
     /// Setzt das **gesamte** Ziel-System zurück, inklusive Plan und
     /// Archiv. Nur für den destruktiven Pfad (Account löschen / alle
     /// Nutzerdaten verwerfen) — nach diesem Aufruf hat der Nutzer kein
     /// Ziel mehr und muss die Ziel-Auswahl erneut durchlaufen.
+    ///
+    /// **2026-08-08** — der frühere `resetWeeklyProgress()` (Pfad für
+    /// „Spielstand zurücksetzen", Ziel bleibt stehen) ist entfallen: der
+    /// Tagesziel-Fortschritt lebt jetzt komplett in `ProgressStore`
+    /// (`todayCorrectCount`), dessen eigener Reset (`GameStateResetService`)
+    /// das bereits mit abdeckt — keine zweite Stelle mehr nötig.
     func reset() {
         plan = nil
         archivedContentGoals = []
-        practicedDayIndices = []
-        weekIndex = Self.currentWeekIndex
         persist()
     }
 
@@ -439,10 +364,6 @@ final class LearningGoalStore: ObservableObject {
         } else {
             archivedContentGoals = []
         }
-
-        weekIndex = defaults.object(forKey: weekKey) as? Int ?? Self.currentWeekIndex
-        let stored = defaults.array(forKey: practicedDaysKey) as? [Int] ?? []
-        practicedDayIndices = Set(stored)
     }
 
     private func persist() {
@@ -459,9 +380,6 @@ final class LearningGoalStore: ObservableObject {
         } else if let data = try? JSONEncoder().encode(archivedContentGoals) {
             defaults.set(data, forKey: archiveKey)
         }
-
-        defaults.set(weekIndex, forKey: weekKey)
-        defaults.set(Array(practicedDayIndices), forKey: practicedDaysKey)
     }
 }
 
@@ -480,7 +398,7 @@ extension LearningGoalStore {
     /// Inhaltsziel im „wartet noch auf Vokabeln"-Zustand, was ebenfalls
     /// ein prüfenswerter Fall ist.
     func debugSeedGoal(
-        weeklyTargetDays: Int = 3,
+        dailyTargetMinutes: Int = 10,
         occasion: LearningOccasion? = nil,
         listIDs: [UUID] = [],
         deadlineInDays: Int? = nil
@@ -494,19 +412,22 @@ extension LearningGoalStore {
                 }
             )
         }
-        setPlan(LearningGoalPlan(weeklyTargetDays: weeklyTargetDays, content: content))
+        setPlan(LearningGoalPlan(dailyTargetMinutes: dailyTargetMinutes, content: content))
         debugDumpState()
     }
 
-    /// Bucht künstlich zurückliegende Tage der laufenden Woche, um den
-    /// Balken ohne echtes Üben zu füllen.
-    func debugAddPracticedDays(_ count: Int) {
-        refreshForCurrentWeekIfNeeded()
+    /// Füllt den heutigen Tagesziel-Balken künstlich, ohne echtes Üben —
+    /// bucht direkt in `ProgressStore.todayCorrectCount` (derselbe Zähler,
+    /// den auch der Streak liest).
+    func debugAddTodayCorrect(_ count: Int) {
         let today = GamificationConfig.currentDayIndex
-        for offset in 0..<max(0, count) {
-            practicedDayIndices.insert(today - offset)
+        ProgressStore.shared.mutate { p in
+            if p.todayCorrectDayIndex != today {
+                p.todayCorrectDayIndex = today
+                p.todayCorrectCount = 0
+            }
+            p.todayCorrectCount += max(0, count)
         }
-        persist()
         debugDumpState()
     }
 
@@ -516,15 +437,14 @@ extension LearningGoalStore {
         print("──────── 🎯 Ziel-Status ────────")
         guard let plan else {
             print("  Kein Ziel gesetzt (Onboarding noch nicht durchlaufen).")
-            print("  Rhythmus-Default greift: \(rhythmProgress.practicedDays)/\(rhythmProgress.targetDays)")
+            print("  Tagesziel-Default greift: \(dailyProgress.doneItems)/\(dailyProgress.targetItems)")
             print("────────────────────────────────")
             return
         }
 
-        let r = rhythmProgress
-        print("  Woche #\(weekIndex) — geübt an \(r.practicedDays) von \(r.targetDays) Tagen"
-              + (r.isReached ? "  ✅" : "  (noch \(r.remainingDays))"))
-        print("  Gebuchte Tages-Indizes: \(practicedDayIndices.sorted())")
+        let d = dailyProgress
+        print("  Heute: \(d.doneItems) von \(d.targetItems) Vokabeln"
+              + (d.isReached ? "  ✅" : "  (noch \(d.remainingItems))"))
 
         if let content = plan.content {
             print("  Inhaltsziel: \(content.displayTitle)  [\(content.occasion.rawValue)]")
@@ -541,7 +461,7 @@ extension LearningGoalStore {
                 print("    (listStore nicht übergeben — Inhalts-Fortschritt nicht berechnet)")
             }
         } else {
-            print("  Kein Inhaltsziel — reines Rhythmusziel.")
+            print("  Kein Inhaltsziel — reines Tagesziel.")
         }
         print("  Archiv: \(archivedContentGoals.count) abgeschlossene(s) Ziel(e)")
         print("────────────────────────────────")

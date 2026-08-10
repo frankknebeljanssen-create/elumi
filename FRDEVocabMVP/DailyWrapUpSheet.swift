@@ -11,10 +11,10 @@ import SwiftUI
 struct DailyWrapUpSheet: View {
     /// Wie viele Aufgaben heute bearbeitet wurden (`DailyStatsStore`).
     let actionsToday: Int
-    /// Ob der heutige Tag schon aufs Wochenziel gebucht ist.
+    /// Ob heute schon etwas Korrektes beantwortet wurde.
     let didPracticeToday: Bool
-    /// Wochenfortschritt für die Zeile darunter.
-    let rhythm: WeeklyRhythmProgress
+    /// Tagesziel-Fortschritt für die Zeile darunter.
+    let daily: DailyGoalProgress
     let streakDays: Int
     let onClose: () -> Void
 
@@ -161,7 +161,7 @@ struct DailyWrapUpSheet: View {
     /// Lob, obwohl in dieser Runde nichts passiert ist.
     ///
     /// Richtige Bezugsgröße ist deshalb nicht "hat er überhaupt etwas
-    /// getan", sondern "**zählt der heutige Tag fürs Wochenziel**"
+    /// getan", sondern "**zählt der heutige Tag fürs Tagesziel**"
     /// (`didPracticeToday` — gesetzt erst ab dem Session-Minimum, siehe
     /// `GamificationConfig.SessionMinimum`). Nur dann ist Lob verdient.
     /// Darunter: aufmunternde Rückfrage statt Applaus — und derselbe
@@ -177,7 +177,7 @@ struct DailyWrapUpSheet: View {
     private var headline: String {
         if didNothingToday { return "Schon Schluss? 🤨" }
         if needsMoreToday { return "Schon fertig? 🤔" }
-        if rhythm.isReached { return "Wochenziel geschafft! 🎉" }
+        if daily.isReached { return "Tagesziel geschafft! 🎉" }
         return "Stark gemacht!"
     }
 
@@ -188,13 +188,13 @@ struct DailyWrapUpSheet: View {
         if needsMoreToday {
             return "Für heute hat's noch nicht ganz gereicht — eine kurze Runde, und der Tag zählt."
         }
-        if rhythm.isReached {
-            return "Du hast diese Woche alles geschafft, was du dir vorgenommen hast."
+        if daily.isReached {
+            return "Du hast heute alles geschafft, was du dir vorgenommen hast."
         }
-        let remaining = rhythm.remainingDays
+        let remaining = daily.remainingItems
         return remaining == 1
-            ? "Noch 1 Tag diese Woche, dann steht dein Wochenziel."
-            : "Noch \(remaining) Tage diese Woche, dann steht dein Wochenziel."
+            ? "Noch 1 Vokabel, dann steht dein Tagesziel."
+            : "Noch \(remaining) Vokabeln, dann steht dein Tagesziel."
     }
 
     private var summaryCard: some View {
@@ -206,8 +206,8 @@ struct DailyWrapUpSheet: View {
             )
             summaryRow(
                 emoji: didPracticeToday ? "✅" : "⏳",
-                label: "Dein Wochenziel",
-                value: "\(rhythm.practicedDays) von \(rhythm.targetDays) Tagen"
+                label: "Dein Tagesziel",
+                value: "\(daily.doneItems) von \(daily.targetItems) Vokabeln"
             )
             if streakDays > 0 {
                 summaryRow(

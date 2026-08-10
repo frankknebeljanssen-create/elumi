@@ -43,12 +43,14 @@ enum GameStateResetService {
         DailyStatsStore.shared.reset()
         DailyChallengeStore.shared.reset()
 
-        // **Ziel-System (2026-08-05)** — nur der Wochenfortschritt fällt,
-        // das gesetzte Ziel bleibt stehen. Begründung analog zu Profil und
-        // Vorname weiter unten: Der Plan ist ein Nutzerdatum, die geübten
-        // Tage sind Spielstand. Ein „Spielstand zurücksetzen" soll den
-        // Nutzer nicht zurück ins Onboarding zwingen.
-        LearningGoalStore.shared.resetWeeklyProgress()
+        // **Ziel-System (2026-08-08)** — der Tagesziel-Fortschritt lebt
+        // jetzt in `UserProgress.todayCorrectCount` (siehe `ProgressStore`
+        // oben) und ist damit schon zurückgesetzt. Das gesetzte Ziel
+        // selbst bleibt stehen — Begründung analog zu Profil und Vorname
+        // weiter unten: der Plan ist ein Nutzerdatum, kein Spielstand.
+        // Ein „Spielstand zurücksetzen" soll den Nutzer nicht zurück ins
+        // Onboarding zwingen. Streak-Joker sind ebenfalls Spielstand.
+        StreakJokerStore.shared.reset()
 
         // 3) Standalone-@AppStorage-Keys direkt leeren.
         let defaults = UserDefaults.standard

@@ -9,18 +9,18 @@ import SwiftUI
 // das Ziel war nur über die Dev-Card erreichbar.
 //
 // **Aufteilung der beiden Ebenen** (siehe `LearningGoalPlan`):
-//   • Der **Wochenrhythmus** wird hier direkt geändert. Das ist die
-//     Stellschraube, die man realistisch öfter anfasst ("5 Tage war zu
-//     viel").
+//   • Das **Tagesziel** wird hier direkt geändert. Das ist die
+//     Stellschraube, die man realistisch öfter anfasst ("20 Minuten war
+//     zu viel").
 //   • Das **Inhaltsziel** wird nicht hier zusammengeklickt, sondern über
 //     "Neues Ziel setzen" — das löscht den Plan, wodurch das
 //     Onboarding-Overlay wieder erscheint (`shouldShowGoalOnboarding`
 //     prüft auf `plan == nil`). So gibt es die Anlass-/Termin-/Listen-
 //     Auswahl genau EINMAL im Code statt zweimal.
 //
-// Rhythmus-Änderung kostet bewusst keinen Fortschritt: `updateWeeklyTarget`
-// lässt die bereits geübten Tage stehen. Wer mitten in der Woche von 5
-// auf 3 geht, soll nicht bei null landen.
+// Tagesziel-Änderung kostet bewusst keinen Fortschritt: `updateDailyTarget`
+// lässt den heutigen Zähler unangetastet. Wer mittags von 20 auf 10
+// Minuten geht, soll nicht bei null landen.
 struct LearningGoalDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.appUsesGlobalChrome) private var usesGlobalChrome
@@ -117,35 +117,35 @@ struct LearningGoalDetailView: View {
         }
     }
 
-    // MARK: - Rhythmus
+    // MARK: - Tagesziel
 
     private var rhythmSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionTitle("Wie oft übst du?")
+            sectionTitle("Wie viel Zeit hast du am Tag?")
 
-            let progress = goalStore.rhythmProgress
+            let progress = goalStore.dailyProgress
             HStack(spacing: 8) {
                 Text(progress.isReached
-                     ? "Diese Woche geschafft! 🎉"
-                     : (progress.remainingDays == 1
-                        ? "Noch 1 Tag diese Woche"
-                        : "Noch \(progress.remainingDays) Tage diese Woche"))
+                     ? "Heute geschafft! 🎉"
+                     : (progress.remainingItems == 1
+                        ? "Noch 1 Vokabel heute"
+                        : "Noch \(progress.remainingItems) Vokabeln heute"))
                     .font(.system(size: 15, weight: .bold, design: .rounded))
                     .foregroundStyle(progress.isReached ? accentGreen : AppTheme.Colors.textPrimary)
                 Spacer(minLength: 0)
-                Text("\(progress.practicedDays)/\(progress.targetDays)")
+                Text("\(progress.doneItems)/\(progress.targetItems)")
                     .font(.system(size: 15, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                     .monospacedDigit()
             }
 
             VStack(spacing: 6) {
-                ForEach(LearningGoalPlan.weeklyTargetOptions, id: \.self) { days in
-                    rhythmOption(days)
+                ForEach(LearningGoalPlan.dailyTargetMinuteOptions, id: \.self) { minutes in
+                    rhythmOption(minutes)
                 }
             }
 
-            Text("Ändern kostet dich nichts. Deine bereits geübten Tage bleiben stehen.")
+            Text("Ändern kostet dich nichts. Dein heutiger Fortschritt bleibt stehen.")
                 .font(.system(size: 13, weight: .medium, design: .rounded))
                 .foregroundStyle(AppTheme.Colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -156,26 +156,26 @@ struct LearningGoalDetailView: View {
         .appSetupCardBackground()
     }
 
-    private func rhythmOption(_ days: Int) -> some View {
-        let isSelected = goalStore.plan?.weeklyTargetDays == days
+    private func rhythmOption(_ minutes: Int) -> some View {
+        let isSelected = goalStore.plan?.dailyTargetMinutes == minutes
         return Button {
             feedbackPlayer.playListAction()
-            goalStore.updateWeeklyTarget(days)
+            goalStore.updateDailyTarget(minutes: minutes)
         } label: {
             HStack(spacing: 12) {
-                Text("\(days)")
+                Text("\(minutes)")
                     .font(.system(size: 22, weight: .black, design: .rounded))
                     .foregroundStyle(isSelected ? accentGreen : AppTheme.Colors.textPrimary)
                     .frame(width: 30)
                     .monospacedDigit()
 
-                Text(days == 1 ? "Tag die Woche" : "Tage die Woche")
+                Text("Minuten am Tag")
                     .font(.system(size: 15, weight: .semibold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
 
                 Spacer(minLength: 0)
 
-                Text(LearningGoalPlan.weeklyTargetLabel(for: days))
+                Text(LearningGoalPlan.dailyTargetLabel(for: minutes))
                     .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundStyle(accentGreen)
             }

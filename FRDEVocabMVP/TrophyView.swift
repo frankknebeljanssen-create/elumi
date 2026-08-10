@@ -470,21 +470,21 @@ struct TrophyView: View {
                         .minimumScaleFactor(0.8)
                 }
 
-                let progress = goalStore.rhythmProgress
+                let progress = goalStore.dailyProgress
                 HStack(spacing: 6) {
                     // Gewinn-Framing, nie Verlust — siehe
                     // `HomeGoalCard`-Dateikommentar.
                     Text(progress.isReached
-                         ? "Wochenziel geschafft! 🎉"
-                         : (progress.remainingDays == 1
-                            ? "Noch 1 Tag diese Woche"
-                            : "Noch \(progress.remainingDays) Tage diese Woche"))
+                         ? "Tagesziel geschafft! 🎉"
+                         : (progress.remainingItems == 1
+                            ? "Noch 1 Vokabel heute"
+                            : "Noch \(progress.remainingItems) Vokabeln heute"))
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(progress.isReached
                                          ? AppTheme.Colors.moduleNomen
                                          : AppTheme.Colors.textSecondary)
                     Spacer(minLength: 0)
-                    Text("\(progress.practicedDays)/\(progress.targetDays)")
+                    Text("\(progress.doneItems)/\(progress.targetItems)")
                         .font(.system(size: 14, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                         .monospacedDigit()

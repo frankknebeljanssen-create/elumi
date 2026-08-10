@@ -30,9 +30,10 @@ struct HomeView: View {
     /// **Ziel-System (2026-08-05)** — treibt die Ziel-Karte oben.
     /// Singleton, deshalb hier direkt beobachtet statt durchgereicht.
     @ObservedObject private var goalStore = LearningGoalStore.shared
+    @ObservedObject private var jokerStore = StreakJokerStore.shared
     /// Für den Inhalts-Fortschritt der Ziel-Karte. Optional, weil der
     /// Store beim allerersten Home-Render noch nicht bereitstehen muss —
-    /// die Karte zeigt dann nur den Wochenrhythmus.
+    /// die Karte zeigt dann nur das Tagesziel.
     var listStore: VocabularyListStore? = nil
     let openScreen: (AppScreen) -> Void
     let openSettings: () -> Void
@@ -288,11 +289,12 @@ struct HomeView: View {
                     if let plan = goalStore.plan {
                         HomeGoalCard(
                             plan: plan,
-                            rhythm: goalStore.rhythmProgress,
+                            daily: goalStore.dailyProgress,
                             contentProgress: listStore.map {
                                 goalStore.contentProgress(listStore: $0)
                             } ?? nil,
                             streakDays: currentStreak,
+                            jokersRemaining: jokerStore.jokersRemaining,
                             onTap: { openHomeScreen(.learningGoal) },
                             onWrapUp: { isShowingWrapUp = true }
                         )
@@ -329,9 +331,9 @@ struct HomeView: View {
         .sheet(isPresented: $isShowingWrapUp) {
             DailyWrapUpSheet(
                 actionsToday: DailyStatsStore.shared.actionsToday,
-                didPracticeToday: goalStore.practicedDayIndices
-                    .contains(GamificationConfig.currentDayIndex),
-                rhythm: goalStore.rhythmProgress,
+                didPracticeToday: ProgressStore.shared.progress.todayCorrectDayIndex
+                    == GamificationConfig.currentDayIndex,
+                daily: goalStore.dailyProgress,
                 streakDays: currentStreak,
                 onClose: { isShowingWrapUp = false }
             )

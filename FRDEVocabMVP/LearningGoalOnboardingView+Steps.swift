@@ -124,8 +124,17 @@ extension LearningGoalOnboardingView {
         }
     }
 
-    // MARK: - 4. Rhythmus
+    // MARK: - 4. Tagesziel
 
+    /// **2026-08-08, Umbau von Wochentagen auf Minuten/Tag** — Recherche
+    /// zur Lernwissenschaft (ein Tag Lernabstand ist bei Schulkindern
+    /// optimal, siehe `LearningGoalPlan.swift`-Kommentar) hat die alte
+    /// "wie viele Tage die Woche"-Frage abgelöst: Vokabeln lernt man am
+    /// besten, indem man sie täglich wiederholt, auch in kurzen Sessions.
+    /// Deshalb fragt der Schritt nicht mehr "wie oft", sondern "wie viel
+    /// Zeit am Tag" — die Einheit, in der ein Schüler seinen Nachmittag
+    /// tatsächlich plant.
+    ///
     /// **2026-08-06, Layout-Fix** — siehe Doc-Kommentar an `occasionStep`,
     /// gleicher Grund: feste Kopf-/CTA-Position, unabhängig von der
     /// Kartenzahl (hier 4 statt 5).
@@ -133,14 +142,24 @@ extension LearningGoalOnboardingView {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: AppTheme.Spacing.md) {
                 compactMascot()
-                questionTitle("Wie oft schaffst du das?")
+                questionTitle("Wie viel Zeit hast du am Tag?")
             }
-            .padding(.bottom, AppTheme.Spacing.lg)
+            .padding(.bottom, AppTheme.Spacing.sm)
+
+            // **User-Spec (2026-08-08)**: die Onboarding-Botschaft soll
+            // direkt sagen, WARUM täglich gefragt wird — nicht nur die
+            // Frage stellen. Kurz und in Schülersprache, keine Studien-
+            // Zahlen (die gehören ins Recherche-Briefing, nicht in die App).
+            Text("Am besten lernst du Vokabeln, wenn du jeden Tag eine kleine Runde machst — auch fünf Minuten reichen.")
+                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.bottom, AppTheme.Spacing.lg)
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 12) {
-                    ForEach(LearningGoalPlan.weeklyTargetOptions, id: \.self) { days in
-                        rhythmCard(days)
+                    ForEach(LearningGoalPlan.dailyTargetMinuteOptions, id: \.self) { minutes in
+                        rhythmCard(minutes)
                     }
                 }
                 .padding(.bottom, AppTheme.Spacing.md)
@@ -152,20 +171,20 @@ extension LearningGoalOnboardingView {
         .frame(maxHeight: .infinity)
     }
 
-    private func rhythmCard(_ days: Int) -> some View {
-        let isSelected = weeklyTarget == days
+    private func rhythmCard(_ minutes: Int) -> some View {
+        let isSelected = dailyTargetMinutes == minutes
         return Button {
-            weeklyTarget = days
+            dailyTargetMinutes = minutes
             selectionTick += 1
         } label: {
             HStack(spacing: AppTheme.Spacing.md) {
-                Text("\(days)")
+                Text("\(minutes)")
                     .font(.system(size: 28, weight: .black, design: .rounded))
                     .foregroundStyle(isSelected ? accentGreen : AppTheme.Colors.textPrimary)
                     .frame(width: 38)
                     .monospacedDigit()
 
-                Text(days == 1 ? "Tag die Woche" : "Tage die Woche")
+                Text("Minuten am Tag")
                     .font(.system(size: 17, weight: .semibold, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
 
@@ -175,7 +194,7 @@ extension LearningGoalOnboardingView {
                 // Worte easy, ambitioniert und so weiter in der Farbe,
                 // mit einem Grün, das man gut lesen kann"). Emerald ist
                 // auf der dunklen Card kontraststark genug.
-                Text(LearningGoalPlan.weeklyTargetLabel(for: days))
+                Text(LearningGoalPlan.dailyTargetLabel(for: minutes))
                     .font(.system(size: 16, weight: .bold, design: .rounded))
                     .foregroundStyle(accentGreen)
             }
@@ -245,9 +264,9 @@ extension LearningGoalOnboardingView {
         .frame(minHeight: 440)
     }
 
-    /// Ab 5 Tagen gilt die Wahl als „ambitioniert" — der Titel wird
+    /// Ab 15 Minuten gilt die Wahl als „ambitioniert" — der Titel wird
     /// größer, gelb und bekommt den kräftigeren Auftritt.
-    var previewIsWow: Bool { weeklyTarget >= 5 }
+    var previewIsWow: Bool { dailyTargetMinutes >= 15 }
 
     /// **2026-08-05, dritte Runde — Zittern behoben.**
     ///
@@ -281,15 +300,15 @@ extension LearningGoalOnboardingView {
         }
     }
 
-    /// **2026-08-05** — Headline reagiert jetzt auf die gewählte Menge
-    /// (User-Spec: "bei 7 Tage die Woche muss danach ein WOW kommen").
+    /// **2026-08-05** — Headline reagiert auf die gewählte Menge
+    /// (User-Spec: "bei einer starken Wahl muss danach ein WOW kommen").
     /// Vorher stand bei jeder Wahl derselbe Satz, was die ambitionierte
-    /// Entscheidung entwertete.
+    /// Entscheidung entwertete. **2026-08-08** — auf Minuten umgestellt.
     private var previewHeadline: String {
-        switch weeklyTarget {
-        case 7:      return "Wow, 7 Tage die Woche!"
-        case 5...6:  return "Stark, \(weeklyTarget) Tage die Woche!"
-        default:     return "\(weeklyTarget) Tage die Woche. Das packst du!"
+        switch dailyTargetMinutes {
+        case 20:     return "Wow, 20 Minuten am Tag!"
+        case 15:     return "Stark, \(dailyTargetMinutes) Minuten am Tag!"
+        default:     return "\(dailyTargetMinutes) Minuten am Tag. Das packst du!"
         }
     }
 
@@ -297,13 +316,13 @@ extension LearningGoalOnboardingView {
     /// fest. Motivierender Ausblick statt Statistik, analog zur
     /// YAZIO-Referenz — aber Elumi-Maskottchen statt Graph.
     ///
-    /// **2026-08-05** — zweigeteilt: Bei hohem Wochenziel geht die
+    /// **2026-08-05** — zweigeteilt: Bei hohem Tagesziel geht die
     /// Anerkennung der Menge vor (User-Spec "so geht's richtig
     /// vorwärts"), erst darunter greift der anlassbezogene Text.
     /// Formulierungen bewusst in Schülersprache — "dein Kopf wird
     /// freier" war Erwachsenensprech und ist raus.
     private var previewSubtitle: String {
-        if weeklyTarget >= 5 {
+        if dailyTargetMinutes >= 15 {
             return "So geht's richtig vorwärts! Damit ziehst du dein Ziel locker durch."
         }
         switch occasion {

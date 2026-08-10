@@ -59,6 +59,15 @@ final class StreakJokerStore: ObservableObject {
         load()
     }
 
+    /// Setzt den Joker-Verbrauch zurück — Teil von „Spielstand
+    /// zurücksetzen" (`GameStateResetService`), da Joker Spielstand sind,
+    /// kein Nutzerdatum.
+    func reset() {
+        monthKey = Self.currentMonthKey()
+        usedThisMonth = 0
+        persist()
+    }
+
     private static func currentMonthKey(reference: Date = Date()) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM"

@@ -907,7 +907,7 @@ struct SettingsView: View {
     /// Verifikations-Punkt für Phase 1.
     @ViewBuilder
     private var devGoalStatusBox: some View {
-        let rhythm = goalStore.rhythmProgress
+        let daily = goalStore.dailyProgress
         VStack(alignment: .leading, spacing: 4) {
             if goalStore.plan == nil {
                 Text("Kein Ziel gesetzt")
@@ -915,11 +915,11 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             } else {
                 HStack(spacing: 6) {
-                    Text("Woche: \(rhythm.practicedDays)/\(rhythm.targetDays) Tage")
+                    Text("Heute: \(daily.doneItems)/\(daily.targetItems) Vokabeln")
                         .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .monospacedDigit()
-                    if rhythm.isReached {
+                    if daily.isReached {
                         Text("✅")
                     }
                     Spacer(minLength: 0)
@@ -932,7 +932,7 @@ struct SettingsView: View {
                         Capsule().fill(AppTheme.Colors.textSecondary.opacity(0.2))
                         Capsule()
                             .fill(AppTheme.Colors.cta)
-                            .frame(width: geo.size.width * rhythm.fraction)
+                            .frame(width: geo.size.width * daily.fraction)
                     }
                 }
                 .frame(height: 6)
@@ -1093,17 +1093,17 @@ struct SettingsView: View {
 
                 HStack(spacing: 6) {
                     devGoalButton(
-                        "Ziel: 3 Tage",
+                        "Ziel: 10 Min",
                         isActive: goalStore.plan != nil && goalStore.plan?.content == nil
                     ) {
-                        LearningGoalStore.shared.debugSeedGoal(weeklyTargetDays: 3)
+                        LearningGoalStore.shared.debugSeedGoal(dailyTargetMinutes: 10)
                     }
                     devGoalButton(
                         "+ Schulaufgabe",
                         isActive: goalStore.plan?.content?.occasion == .exam
                     ) {
                         LearningGoalStore.shared.debugSeedGoal(
-                            weeklyTargetDays: 3,
+                            dailyTargetMinutes: 10,
                             occasion: .exam,
                             listIDs: [listStore.selectedListID],
                             deadlineInDays: 5
@@ -1112,8 +1112,8 @@ struct SettingsView: View {
                 }
 
                 HStack(spacing: 6) {
-                    devGoalButton("+1 Tag geübt") {
-                        LearningGoalStore.shared.debugAddPracticedDays(1)
+                    devGoalButton("+5 heute richtig") {
+                        LearningGoalStore.shared.debugAddTodayCorrect(5)
                     }
                     devGoalButton("Ziel löschen") {
                         LearningGoalStore.shared.reset()

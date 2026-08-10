@@ -100,7 +100,7 @@ struct LearningGoalOnboardingView: View {
     @State var currentStep: Step
     @State var occasion: LearningOccasion?
     @State var deadline: Date = Calendar.current.date(byAdding: .day, value: 7, to: .now) ?? .now
-    @State var weeklyTarget: Int = LearningGoalPlan.defaultWeeklyTargetDays
+    @State var dailyTargetMinutes: Int = LearningGoalPlan.defaultDailyTargetMinutes
     @State var hasVocabAlready: Bool?
     @State var selectedListIDs: Set<UUID> = []
     /// **2026-08-06** — Auf-/zuklappen der "Nach Lernstand"/"Nach Themen"-
@@ -445,8 +445,8 @@ struct LearningGoalOnboardingView: View {
             )
             summaryRow(
                 emoji: "📅",
-                label: "Dein Rhythmus",
-                value: "\(weeklyTarget) Tage die Woche"
+                label: "Dein Tagesziel",
+                value: "\(dailyTargetMinutes) Minuten am Tag"
             )
             // **2026-08-06, Bug-Fix** — diese Zeile war an
             // `requiresListSelection` gekoppelt und zeigte sich deshalb
@@ -673,7 +673,7 @@ struct LearningGoalOnboardingView: View {
         } else {
             content = nil
         }
-        goalStore.setPlan(LearningGoalPlan(weeklyTargetDays: weeklyTarget, content: content))
+        goalStore.setPlan(LearningGoalPlan(dailyTargetMinutes: dailyTargetMinutes, content: content))
     }
 
     /// Regulärer Abschluss über den Feier-Screen: übernimmt eine im

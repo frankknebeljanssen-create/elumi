@@ -1,25 +1,39 @@
 import Foundation
 
 // LearningGoalPlan.swift
-// **Ziel-System (2026-08-05)** — das Modell hinter „Was steht bei dir an?"
+// **Ziel-System (2026-08-05, Umbau 2026-08-08)** — das Modell hinter
+// „Was steht bei dir an?"
 //
 // Zwei Ebenen, bewusst getrennt, weil sie mechanisch verschieden sind:
 //
-//   • **Rhythmusziel** (`weeklyTargetDays`) — hat JEDER Nutzer, ist Pflicht
-//     im Onboarding. Kein Ende, resettet wöchentlich. Fortschritt =
-//     geübte Tage / Zielzahl.
+//   • **Tagesziel** (`dailyTargetMinutes`) — hat JEDER Nutzer, ist Pflicht
+//     im Onboarding. Kein Ende, resettet täglich. Fortschritt = heute
+//     korrekt beantwortete Vokabeln / abgeleitetes Tagespensum.
 //   • **Inhaltsziel** (`content`) — optional. Hat einen Bestand (Liste) und
 //     optional eine Deadline. Endlich und abschließbar. Fortschritt =
 //     starke Vokabeln / Gesamt.
 //
 // Der Versuch, beides in EINE Zahl zu pressen, macht beides
 // unverständlich — deshalb rechnen sie getrennt und werden auch getrennt
-// angezeigt (Rhythmus im Chrome/Home-Balken, Inhalt als eigene Karte).
+// angezeigt (Tagesziel im Chrome/Home-Balken, Inhalt als eigene Karte).
+//
+// **2026-08-08, Umbau von Wochentagen auf Minuten/Tag** — Recherche zu
+// Lernwissenschaft (Küpper-Tetzel et al. 2014: ein Tag Lernabstand ist
+// bei Schulkindern optimal) und Zielforschung (Sharif & Shu 2017: ein
+// hartes Tagesziel MIT begrenzten Jokern schlägt sowohl ein hartes als
+// auch ein weiches Wochenziel) hat die alte "wie viele Tage die Woche"-
+// Frage abgelöst. Onboarding fragt jetzt nach Minuten (die Einheit, in
+// der ein Schüler seinen Nachmittag plant), intern wird daraus ein
+// Vokabel-Pensum abgeleitet — siehe `dailyTargetItems(forMinutes:)`.
+// Minuten sind bewusst NICHT die Zählgröße (leicht zu erschummeln durch
+// Trödeln, bestraft schnelle Lernende) — gezählt werden korrekte
+// Antworten, genau wie beim Streak (`GamificationConfig.streakMiniSessionThreshold`).
 //
 // **Kein neues Tracking**: Der Inhalts-Fortschritt wird vollständig aus
 // `ItemLearningStatusStore` abgeleitet (welche Vokabel ist `.strong`),
-// der Rhythmus-Fortschritt aus einem schlanken Tages-Set. Es gibt keine
-// zweite Buchführung über Lernerfolge.
+// der Tagesziel-Fortschritt aus `ProgressStore.todayCorrectCount` — dem
+// ohnehin für den Streak geführten Tageszähler. Es gibt keine zweite
+// Buchführung über Lernerfolge.
 
 // MARK: - Anlass
 
@@ -170,13 +184,15 @@ struct LearningGoalContent: Codable, Equatable {
 
 // MARK: - Gesamt-Plan
 
-/// Das vollständige Ziel eines Nutzers: Pflicht-Rhythmus plus optionaler
+/// Das vollständige Ziel eines Nutzers: Pflicht-Tagesziel plus optionaler
 /// Inhalt.
 struct LearningGoalPlan: Codable, Equatable {
-    /// Wie viele Tage pro Woche geübt werden soll. Pflichtwert — jeder
-    /// Nutzer verlässt das Onboarding mit einem davon, damit der
-    /// Fortschritt nie einen leeren Zustand zeigen muss.
-    var weeklyTargetDays: Int
+    /// Wie viele Minuten pro Tag Zeit sind. Pflichtwert — jeder Nutzer
+    /// verlässt das Onboarding mit einem davon, damit der Fortschritt nie
+    /// einen leeren Zustand zeigen muss. Ist die im Interface gezeigte
+    /// Einheit; intern zählt `dailyTargetItems(forMinutes:)` — siehe
+    /// Datei-Kommentar oben.
+    var dailyTargetMinutes: Int
 
     /// Optionaler endlicher Teil. `nil` bei „Einfach dranbleiben".
     var content: LearningGoalContent?
@@ -186,63 +202,86 @@ struct LearningGoalPlan: Codable, Equatable {
     var createdAt: Date
 
     init(
-        weeklyTargetDays: Int,
+        dailyTargetMinutes: Int,
         content: LearningGoalContent? = nil,
         createdAt: Date = Date()
     ) {
-        self.weeklyTargetDays = Self.clampWeeklyTarget(weeklyTargetDays)
+        self.dailyTargetMinutes = Self.clampDailyTargetMinutes(dailyTargetMinutes)
         self.content = content
         self.createdAt = createdAt
     }
 
-    // MARK: Rhythmus-Optionen
+    // MARK: Tagesziel-Optionen
 
     /// Auswahlwerte im Onboarding. Bewusst nur vier — mehr Auswahl macht
-    /// die Entscheidung schwerer, nicht besser.
-    static let weeklyTargetOptions: [Int] = [2, 3, 5, 7]
+    /// die Entscheidung schwerer, nicht besser. Angelehnt an Duolingos
+    /// vier Tagesziel-Stufen (5/10/15/20 Min.).
+    static let dailyTargetMinuteOptions: [Int] = [5, 10, 15, 20]
 
     /// Vorgabe, wenn nichts gewählt wurde. „Solide" statt „ambitioniert" —
-    /// ein zu hoher Startwert produziert in Woche 1 ein Misserfolgserlebnis.
-    static let defaultWeeklyTargetDays = 3
+    /// ein zu hoher Startwert produziert am ersten Tag ein Misserfolgserlebnis.
+    static let defaultDailyTargetMinutes = 10
 
-    static func clampWeeklyTarget(_ value: Int) -> Int {
-        min(max(value, 1), 7)
+    static func clampDailyTargetMinutes(_ value: Int) -> Int {
+        min(max(value, 5), 20)
     }
 
-    /// Label für die Rhythmus-Auswahl. **Kein Wert darf sich nach
-    /// Versagen anfühlen** — 2 Tage ist ein legitimer Plan, keine
+    /// **Kalibrierungs-Platzhalter** — es liegen noch keine echten
+    /// Sitzungsdaten vor, um Minuten↔Items empirisch zu kalibrieren
+    /// (siehe Recherche-Briefing 2026-08-08: "einmal an echten
+    /// Sitzungsdaten kalibrieren, nicht raten"). Bis dahin ein
+    /// begründeter Startwert: ~2 Items/Minute (lesen, antworten,
+    /// Feedback abwarten — grob 30 s pro Vokabel im Schnitt über alle
+    /// vier Module). Diese Funktion ist die EINE Stelle, die später
+    /// durch die kalibrierte Formel ersetzt wird.
+    static func dailyTargetItems(forMinutes minutes: Int) -> Int {
+        minutes * 2
+    }
+
+    /// Label für die Tagesziel-Auswahl. **Kein Wert darf sich nach
+    /// Versagen anfühlen** — 5 Minuten ist ein legitimer Plan, keine
     /// Kapitulation.
-    /// **2026-08-05** — "locker" → "easy", "jeden Tag" → "Power User"
-    /// (User-Spec: jugendlicher, weniger nüchtern-beschreibend).
-    /// **2026-08-06** — "ambitioniert" → "STARK" (User-Spec: "ist für
-    /// die Kids nicht gut" — klingt nach Schulnoten-Anspruch statt nach
-    /// Zuspruch). "solide" → "COOL" (User-Spec, nach kurzem Hin und Her:
-    /// "Easy, Cool, Stark und Power User"). Alle vier jetzt
-    /// großgeschrieben mit Ausrufezeichen, konsistent mit "POWER USER"
-    /// (User-Spec: "ich würde sie alle großschreiben").
-    /// **2026-08-06, Korrektur** — Ausrufezeichen bei allen vier war zu
-    /// viel (User-Spec: "das ist zu viel"). Nur bei den beiden stärkeren
-    /// Stufen behalten, wo der Ausruf-Charakter tatsächlich passt.
-    static func weeklyTargetLabel(for days: Int) -> String {
-        switch days {
-        case ...2: return "EASY 🙂"
-        case 3:    return "COOL 👍"
-        case 4...5: return "STARK! 🔥"
-        default:   return "POWER USER! 💪"
+    /// **2026-08-05/06** — Ton-Historie: "locker"→"easy", "solide"→"COOL",
+    /// "ambitioniert"→"STARK" (klang nach Schulnoten-Anspruch), Ausrufe-
+    /// zeichen nur bei den zwei stärkeren Stufen. Beibehalten beim Umbau
+    /// auf Minuten — der Ton hat sich bewährt, nur die Einheit ändert sich.
+    static func dailyTargetLabel(for minutes: Int) -> String {
+        switch minutes {
+        case ...5:  return "EASY 🙂"
+        case 10:    return "COOL 👍"
+        case 15:    return "STARK! 🔥"
+        default:    return "POWER USER! 💪"
         }
     }
 
     // MARK: Codable-Robustheit
 
     enum CodingKeys: String, CodingKey {
-        case weeklyTargetDays, content, createdAt
+        case dailyTargetMinutes, content, createdAt
+    }
+
+    /// Nur für den Migrations-Read in `init(from:)` — bewusst NICHT Teil
+    /// von `CodingKeys`, sonst verlangt der Compiler eine gleichnamige
+    /// gespeicherte Property und die `Encodable`-Synthese bricht.
+    private enum LegacyCodingKeys: String, CodingKey {
+        case weeklyTargetDays
     }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        let rawTarget = try c.decodeIfPresent(Int.self, forKey: .weeklyTargetDays)
-            ?? Self.defaultWeeklyTargetDays
-        weeklyTargetDays = Self.clampWeeklyTarget(rawTarget)
+        if let minutes = try c.decodeIfPresent(Int.self, forKey: .dailyTargetMinutes) {
+            dailyTargetMinutes = Self.clampDailyTargetMinutes(minutes)
+        } else if let legacy = try? decoder.container(keyedBy: LegacyCodingKeys.self),
+                  let legacyDays = try legacy.decodeIfPresent(Int.self, forKey: .weeklyTargetDays) {
+            // **Migration (2026-08-08)** — bestehende Pläne kannten nur
+            // Wochentage. Grobe Übersetzung auf einen plausiblen
+            // Minuten-Startwert, damit niemand durch den Umbau
+            // kommentarlos zurück ins Onboarding fällt: mehr gewählte
+            // Wochentage ↔ mehr Ambition ↔ mehr Minuten.
+            dailyTargetMinutes = legacyDays >= 6 ? 15 : (legacyDays >= 4 ? 10 : 5)
+        } else {
+            dailyTargetMinutes = Self.defaultDailyTargetMinutes
+        }
         content = try c.decodeIfPresent(LearningGoalContent.self, forKey: .content)
         createdAt = try c.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
     }
@@ -250,22 +289,25 @@ struct LearningGoalPlan: Codable, Equatable {
 
 // MARK: - Fortschritts-Werte
 
-/// Fortschritt des Rhythmusziels in der laufenden Woche.
-struct WeeklyRhythmProgress: Equatable {
-    let practicedDays: Int
-    let targetDays: Int
+/// Fortschritt des Tagesziels — heute korrekt beantwortete Vokabeln
+/// gegen das abgeleitete Tagespensum. Liest `ProgressStore.todayCorrectCount`,
+/// denselben Zähler, der auch den Streak triggert — keine zweite
+/// Buchführung.
+struct DailyGoalProgress: Equatable {
+    let doneItems: Int
+    let targetItems: Int
 
     /// 0…1, gedeckelt — mehr üben als geplant füllt den Balken nicht
     /// über den Rand, sondern erreicht ihn.
     var fraction: Double {
-        guard targetDays > 0 else { return 0 }
-        return min(Double(practicedDays) / Double(targetDays), 1.0)
+        guard targetItems > 0 else { return 0 }
+        return min(Double(doneItems) / Double(targetItems), 1.0)
     }
 
-    var isReached: Bool { practicedDays >= targetDays }
+    var isReached: Bool { doneItems >= targetItems }
 
-    /// Noch offene Tage bis zum Wochenziel. 0, wenn erreicht.
-    var remainingDays: Int { max(0, targetDays - practicedDays) }
+    /// Noch offene Vokabeln bis zum Tagesziel. 0, wenn erreicht.
+    var remainingItems: Int { max(0, targetItems - doneItems) }
 }
 
 /// Fortschritt eines Inhaltsziels — abgeleitet, nie persistiert.
