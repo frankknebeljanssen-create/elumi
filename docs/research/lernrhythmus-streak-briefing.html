@@ -1,0 +1,580 @@
+<title>Täglich lernen statt X-mal pro Woche — Evidenz und Umbauplan für Elumi</title>
+<style>
+  :root {
+    --ground:      #F3F6F9;
+    --surface:     #FFFFFF;
+    --surface-alt: #E9EFF5;
+    --ink:         #081A2B;
+    --ink-dim:     #55677D;
+    --line:        #D3DEE8;
+    --mint:        #0F7D62;
+    --amber:       #9A6C22;
+    --rose:        #B9426F;
+    --mint-wash:   #E2F2ED;
+    --amber-wash:  #F7EEDC;
+    --rose-wash:   #F9E6ED;
+
+    --display: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --body:    system-ui, -apple-system, "Segoe UI", "Helvetica Neue", sans-serif;
+    --data:    ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground:      #081A2B;
+      --surface:     #0E2438;
+      --surface-alt: #132C42;
+      --ink:         #EAF1F6;
+      --ink-dim:     #93AABE;
+      --line:        #1E3B54;
+      --mint:        #45D6B4;
+      --amber:       #FFD166;
+      --rose:        #FF8FA3;
+      --mint-wash:   #0F3A33;
+      --amber-wash:  #3A2E14;
+      --rose-wash:   #3A1D28;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #081A2B;
+    --surface:     #0E2438;
+    --surface-alt: #132C42;
+    --ink:         #EAF1F6;
+    --ink-dim:     #93AABE;
+    --line:        #1E3B54;
+    --mint:        #45D6B4;
+    --amber:       #FFD166;
+    --rose:        #FF8FA3;
+    --mint-wash:   #0F3A33;
+    --amber-wash:  #3A2E14;
+    --rose-wash:   #3A1D28;
+  }
+
+  :root[data-theme="light"] {
+    --ground:      #F3F6F9;
+    --surface:     #FFFFFF;
+    --surface-alt: #E9EFF5;
+    --ink:         #081A2B;
+    --ink-dim:     #55677D;
+    --line:        #D3DEE8;
+    --mint:        #0F7D62;
+    --amber:       #9A6C22;
+    --rose:        #B9426F;
+    --mint-wash:   #E2F2ED;
+    --amber-wash:  #F7EEDC;
+    --rose-wash:   #F9E6ED;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: clamp(2rem, 6vw, 4.5rem) clamp(1.1rem, 4vw, 2rem) 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  .eyebrow {
+    font-family: var(--data);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin: 0;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(2rem, 5.5vw, 2.9rem);
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin: 0.6rem 0 0;
+  }
+
+  .standfirst {
+    font-size: 1.12rem;
+    color: var(--ink-dim);
+    max-width: 62ch;
+    margin: 1rem 0 0;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 0 0 0.2rem;
+    padding-top: 1.4rem;
+    border-top: 2px solid var(--ink);
+  }
+
+  h3 {
+    font-family: var(--display);
+    font-size: 1.1rem;
+    font-weight: 650;
+    margin: 1.8rem 0 0.4rem;
+    text-wrap: balance;
+  }
+
+  section { display: flex; flex-direction: column; }
+  section > * { margin-top: 0; }
+  p { margin: 0.9rem 0 0; max-width: 68ch; }
+  ul, ol { margin: 0.9rem 0 0; padding-left: 1.3rem; max-width: 68ch; }
+  li { margin-top: 0.45rem; }
+  strong { font-weight: 650; }
+
+  a { color: var(--mint); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, .tier:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+
+  code, .mono { font-family: var(--data); font-size: 0.85em; }
+  code {
+    background: var(--surface-alt);
+    padding: 0.12em 0.38em;
+    border-radius: 4px;
+  }
+
+  /* Verdict panel */
+  .verdicts {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .verdict {
+    display: grid;
+    grid-template-columns: 7px 1fr;
+    border-bottom: 1px solid var(--line);
+  }
+  .verdict:last-child { border-bottom: 0; }
+  .verdict-bar { background: var(--mint); }
+  .verdict.partial .verdict-bar { background: var(--amber); }
+  .verdict.against .verdict-bar { background: var(--rose); }
+  .verdict-body { padding: 1.05rem 1.2rem; }
+  .verdict-label {
+    font-family: var(--data);
+    font-size: 0.66rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--mint);
+    display: block;
+  }
+  .verdict.partial .verdict-label { color: var(--amber); }
+  .verdict.against .verdict-label { color: var(--rose); }
+  .verdict-claim {
+    font-family: var(--display);
+    font-weight: 650;
+    font-size: 1.03rem;
+    margin: 0.3rem 0 0;
+    text-wrap: balance;
+  }
+  .verdict-note { margin: 0.35rem 0 0; font-size: 0.95rem; color: var(--ink-dim); max-width: 62ch; }
+
+  /* Evidence tier chips */
+  .tier {
+    display: inline-block;
+    font-family: var(--data);
+    font-size: 0.64rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.18em 0.55em;
+    border-radius: 3px;
+    vertical-align: 0.14em;
+    white-space: nowrap;
+  }
+  .tier.hard  { background: var(--mint-wash);  color: var(--mint); }
+  .tier.soft  { background: var(--amber-wash); color: var(--amber); }
+  .tier.myth  { background: var(--rose-wash);  color: var(--rose); }
+
+  /* Tables */
+  .scroller { overflow-x: auto; margin-top: 1.1rem; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 460px;
+    font-size: 0.93rem;
+  }
+  caption {
+    text-align: left;
+    font-size: 0.84rem;
+    color: var(--ink-dim);
+    padding-bottom: 0.55rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.5rem 0.7rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--data);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    font-weight: 500;
+    border-bottom: 1px solid var(--ink);
+  }
+  td.num, th.num { text-align: right; font-family: var(--data); font-variant-numeric: tabular-nums; }
+  tr.peak td { background: var(--mint-wash); font-weight: 600; }
+
+  /* Callout */
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--amber);
+    border-radius: 0 8px 8px 0;
+    padding: 1rem 1.2rem;
+    margin-top: 1.3rem;
+  }
+  .callout p { margin-top: 0; }
+  .callout p + p { margin-top: 0.7rem; }
+  .callout-head {
+    font-family: var(--display);
+    font-weight: 650;
+    font-size: 0.95rem;
+  }
+
+  /* Build steps */
+  .steps { list-style: none; padding: 0; margin: 1.2rem 0 0; display: flex; flex-direction: column; gap: 0.9rem; }
+  .step {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 1rem 1.15rem;
+  }
+  .step-head {
+    font-family: var(--display);
+    font-weight: 650;
+    font-size: 1rem;
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+  .step-scope {
+    font-family: var(--data);
+    font-size: 0.64rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 0.12em 0.45em;
+  }
+  .step p { margin-top: 0.5rem; font-size: 0.96rem; }
+  .files { font-family: var(--data); font-size: 0.78rem; color: var(--ink-dim); margin-top: 0.55rem; }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding-top: 1.4rem;
+    color: var(--ink-dim);
+    font-size: 0.9rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Elumi · Produktentscheidung · August 2026</p>
+  <h1>Täglich lernen statt X-mal pro Woche</h1>
+  <p class="standfirst">Frank schlägt vor, das Zielsystem umzubauen: nicht mehr „wie viele Tage pro Woche“, sondern „wie viele Minuten pro Tag“ — mit Streak. Drei Rechercheläufe zu Lernwissenschaft, App-Mechanik und Jugendschutz. Kurzfassung: Der Vorschlag ist im Kern richtig, in einem Punkt muss er korrigiert werden, und die frühere Empfehlung dieses Projekts (Wochenziel) ist damit überholt.</p>
+</header>
+
+<section>
+  <h2>Kurzurteil</h2>
+  <p>Drei Teile des Vorschlags, drei unterschiedliche Antworten.</p>
+
+  <div class="verdicts">
+    <div class="verdict">
+      <div class="verdict-bar"></div>
+      <div class="verdict-body">
+        <span class="verdict-label">Bestätigt</span>
+        <p class="verdict-claim">„Vokabeln lernt man, indem man jeden Tag eine kleine Session macht.“</p>
+        <p class="verdict-note">Für genau den Zeithorizont, in dem Schüler:innen leben — Vokabeltest in ein bis drei Wochen — ist ein Ein-Tages-Abstand tatsächlich das Optimum. Das ist an deutschen Sechstklässlern mit deutsch-englischen Vokabelpaaren direkt gemessen worden.</p>
+      </div>
+    </div>
+    <div class="verdict partial">
+      <div class="verdict-bar"></div>
+      <div class="verdict-body">
+        <span class="verdict-label">Präzisieren</span>
+        <p class="verdict-claim">„Es wird gefragt, wie viele Minuten pro Tag — und die App kontrolliert das.“</p>
+        <p class="verdict-note">Minuten sind der richtige <em>Anker</em> in der Ansprache, aber die schlechtere <em>Zählgröße</em>. Duolingo zeigt Minuten und zählt Punkte — bewusst, nachdem reine Zeitmessung als Metrik verworfen wurde. Elumi zählt in der Daily Challenge ohnehin schon Antworten.</p>
+      </div>
+    </div>
+    <div class="verdict against">
+      <div class="verdict-bar"></div>
+      <div class="verdict-body">
+        <span class="verdict-label">Gegenläufig zur Evidenz</span>
+        <p class="verdict-claim">„Der Streak darf nicht abreißen.“</p>
+        <p class="verdict-note">Als Motivationsbeschreibung stimmt das — als Mechanik ist die unerbittliche Variante messbar <em>schwächer</em> als die verzeihende. Ein Tagesziel mit begrenzten Jokern schlägt sowohl das harte als auch das weiche Ziel. Verzeihen ist hier kein Kompromiss, sondern die wirksamere Bauweise.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Warum täglich stimmt</h2>
+
+  <p>Verteiltes Üben ist eines der am besten belegten Ergebnisse der Lernpsychologie. <span class="tier hard">hart belegt</span> Die Referenz-Metaanalyse von Cepeda und Kollegen (2006) wertet 839 Messungen aus 317 Experimenten aus — bei <em>identischer</em> Gesamtlernzeit:</p>
+
+  <div class="scroller">
+    <table>
+      <caption>Anteil korrekt erinnerter Inhalte, massiert gegenüber verteilt. Cepeda et al. 2006, <span class="mono">Psychological Bulletin</span>.</caption>
+      <thead>
+        <tr><th>Wie lange danach getestet</th><th class="num">Massiert</th><th class="num">Verteilt</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1 Tag</td><td class="num">32,9 %</td><td class="num">43,0 %</td></tr>
+        <tr><td>2–7 Tage</td><td class="num">31,1 %</td><td class="num">45,4 %</td></tr>
+        <tr class="peak"><td>8–30 Tage</td><td class="num">32,8 %</td><td class="num">62,2 %</td></tr>
+        <tr><td>ab 31 Tagen</td><td class="num">17,0 %</td><td class="num">39,0 %</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Der entscheidende Punkt für uns ist aber nicht <em>ob</em> verteilt, sondern <em>wie eng</em>. Und hier gibt es eine Studie, die kaum besser passen könnte.</p>
+
+  <h3>Die Studie, die fast unsere Zielgruppe ist</h3>
+  <p>Küpper-Tetzel, Erdfelder und Dickhäuser (2014) haben ein Feldexperiment in <strong>deutschen Schulklassen</strong> durchgeführt: 65 Sechstklässler, Durchschnittsalter 11,45 Jahre, <strong>26 deutsch-englische Vokabelpaare</strong>, echter Englischunterricht. Getestet wurde nach einer bzw. nach fünf Wochen, bei Lernabständen von 0, 1 oder 10 Tagen.</p>
+  <ul>
+    <li><strong>Test nach 7 Tagen:</strong> Ein-Tages-Abstand optimal — 35 % besser als massiert, im Schnitt <strong>neun Vokabeln mehr</strong>. Der Zehn-Tages-Abstand war deutlich schlechter.</li>
+    <li><strong>Test nach 35 Tagen:</strong> Ein Tag und zehn Tage beide gut.</li>
+  </ul>
+  <p>Bemerkenswert: Bei Erwachsenen wäre für ein Fünf-Wochen-Ziel ein Abstand von elf Tagen optimal gewesen. Bei den Kindern blieb der Ein-Tages-Abstand auch dort vorn. Die Autoren vermuten, dass <strong>der optimale Abstand bei jüngeren Lernenden kürzer liegt</strong> <span class="tier soft">plausibel, eine Studie</span> — und fordern selbst Replikation. Die Effektstärken sind für eine Feldstichprobe dieser Größe verdächtig hoch, also vorsichtig lesen. Die Richtung deckt sich aber mit einer Laborstudie zu Vokabellernen (Cepeda et al. 2009), wo bei einem Test zehn Tage später ebenfalls <strong>ein Tag</strong> optimal war.</p>
+
+  <div class="callout">
+    <p class="callout-head">Die brauchbare Faustregel</p>
+    <p>Ein bis sieben Tage Abstand waren in der Vokabelstudie statistisch nicht unterscheidbar. Klar schlechter war nur <em>„sofort nochmal“</em>. Und die Kurve ist asymmetrisch: zu lange Abstände kosten flach, zu kurze steil. Im Zweifel also lieber später wieder abfragen als früher.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Der Haken: optimal heißt nicht bestrafenswert</h2>
+
+  <p>Hier liegt die eigentliche Spannung des ganzen Themas, und sie ist scharf zu benennen:</p>
+
+  <p><strong>Tägliches Üben ist das pädagogisch richtige Ziel. Ein reißender Tages-Streak ist die motivational falsche Durchsetzung dieses Ziels.</strong></p>
+
+  <p>Die Gewohnheitsforschung ist dazu eindeutig. Lally et al. (2010) begleiteten 96 Menschen über 84 Tage beim Aufbau einer neuen Alltagsgewohnheit. Ergebnis: Automatisierung nach im Median 66 Tagen — und <strong>das Verpassen einer einzelnen Gelegenheit beeinträchtigte die Gewohnheitsbildung nicht messbar.</strong> <span class="tier hard">belegt</span></p>
+
+  <p>Ein Streak behandelt einen ausgelassenen Tag als Totalverlust. Die Forschung sagt, er ist praktisch folgenlos. Der Schaden entsteht also nicht durch den verpassten Tag — er entsteht durch die Reaktion der App darauf.</p>
+
+  <h3>Was stattdessen funktioniert</h3>
+  <p>Sharif und Shu (2017, <span class="mono">Journal of Marketing Research</span>) haben genau das untersucht: hartes Ziel gegen weiches Ziel gegen <em>hartes Ziel mit begrenzten Jokern</em>.</p>
+
+  <div class="scroller">
+    <table>
+      <caption>Rückkehrquote am Tag nach einem verpassten Ziel. Feldversuch mit Schrittzähler, über 270 Studierende, ein Monat.</caption>
+      <thead>
+        <tr><th>Zielrahmen</th><th class="num">Wieder dabei</th></tr>
+      </thead>
+      <tbody>
+        <tr class="peak"><td>Hartes Ziel <strong>mit Jokern</strong> (wöchentlich)</td><td class="num">55 %</td></tr>
+        <tr><td>Hartes Ziel mit Jokern (monatlich)</td><td class="num">47 %</td></tr>
+        <tr><td>Weiches Ziel (z. B. 5 von 7 Tagen)</td><td class="num">44 %</td></tr>
+        <tr><td>Hartes Ziel ohne Joker</td><td class="num">37 %</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Zusätzlich erreichte die Joker-Gruppe ihr Ziel bis zu <strong>40 % häufiger</strong> als die beiden anderen — sie schlug also nicht nur das harte, sondern auch das weiche Ziel.</p>
+
+  <p>Der Mechanismus ist der interessante Teil: <strong>Der Joker wirkt, weil er knapp ist.</strong> Man will ihn nicht verbrauchen, das hält die Motivation oben. Gleichzeitig verhindert seine bloße Existenz, dass ein Fehltag als persönliches Scheitern verbucht wird. Das Ziel gilt subjektiv als erreichbarer <em>und</em> wertvoller zugleich.</p>
+
+  <p>Das passt zu einem zweiten Befund: Beshears, Milkman und Kollegen (2021, <span class="mono">Management Science</span>) bezahlten 2.508 Mitarbeitende fürs Sporttreiben — eine Gruppe nur in einem festen Zeitfenster, die andere zu beliebiger Zeit. Die <strong>starre Gruppe trainierte weniger</strong>, während der Studie und erst recht danach.</p>
+
+  <div class="callout">
+    <p class="callout-head">Warum das die frühere Empfehlung ablöst</p>
+    <p>In diesem Projekt kam eine frühere Recherche zum Schluss „Wochenziel statt Tages-Streak“, gestützt auf genau die Flexibilitäts-Forschung oben. Das war nicht falsch, aber unvollständig: Sharif und Shu zeigen, dass das <em>weiche</em> Ziel (= Wochenziel) nur unwesentlich besser abschneidet als das harte. Gewonnen hat die dritte Option, die damals nicht auf dem Tisch lag — <strong>Tagesziel mit eingebauten Jokern</strong>. Frank liegt mit „täglich“ also richtig; die Korrektur betrifft nur die Härte.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Minuten oder Aufgaben?</h2>
+
+  <p>Das ist der eine Punkt, an dem ich vom Vorschlag abweiche.</p>
+
+  <p>Duolingo hat drei Metrik-Generationen durchlaufen und Zeit zweimal verworfen. Heute gilt intern eine gewichtete Größe, weil rohe Minuten zu schwach waren. Der Satz aus ihrem Engineering-Blog: <em>die Anzahl abgeschlossener Lektionen war der stärkste Prädiktor für Lernzuwächse.</em> In der Oberfläche stehen trotzdem Minuten — die vier Tagesziel-Stufen heißen „5 / 10 / 15 / 20 Minuten“, dahinter liegen 10 / 20 / 30 / 50 Punkte.</p>
+
+  <p>Unabhängig bestätigt: Sudina und Plonsky (2024) begleiteten 287 Duolingo-Lernende sechs Monate lang mit echten Sprachtests. Gesamtminuten korrelierten mit schriftlichen, aber <strong>nicht</strong> mit mündlichen Fortschritten. Die verlässlicheren Prädiktoren waren <strong>Häufigkeit und Stofffortschritt</strong>, nicht Dauer.</p>
+
+  <h3>Dazu die praktische Seite</h3>
+  <ul>
+    <li>Minuten belohnen Trödeln. „App liegen lassen“ ist bei Elf- bis Siebzehnjährigen die naheliegendste Umgehung, und sie ist technisch kaum sauber abzufangen.</li>
+    <li>Minuten bestrafen die Schnellen — wer eine Vokabel sicher kann, braucht weniger Zeit und wird dafür schlechter bewertet.</li>
+    <li>Aufgaben-Zählung lässt sich gegen Hetzen absichern: nur <strong>korrekte Erstversuche</strong> zählen, und was zählt, kommt aus der Wiederholungs-Fälligkeit, nicht aus der Laune des Nutzers.</li>
+  </ul>
+
+  <p><strong>Empfehlung:</strong> Im Onboarding nach Minuten fragen — das ist die Einheit, in der ein Schüler seinen Nachmittag plant. Intern in ein Vokabel-Pensum übersetzen und dieses zählen. Die Umrechnung einmal an echten Sitzungsdaten kalibrieren, nicht raten.</p>
+</section>
+
+<section>
+  <h2>Wie lang soll eine Session sein?</h2>
+
+  <p>Hier muss ich dich enttäuschen: <span class="tier myth">keine Evidenz</span></p>
+
+  <p>Es gibt <strong>keine Studie</strong>, die die Sitzungsdauer beim Vokabellernen als eigene Variable variiert und ein Optimum ermittelt — weder bei Jugendlichen noch bei Erwachsenen. Alle kursierenden 10-, 15- oder 20-Minuten-Empfehlungen stammen aus Ratgeberliteratur.</p>
+
+  <p>Auch der oft bemühte Unterbau dafür trägt nicht. Die „Aufmerksamkeitsspanne bricht nach 10–15 Minuten ein“-Regel geht im Kern auf <strong>eine einzige Publikation von 1978</strong> zurück, die Aufmerksamkeit kaum thematisiert (Bradbury 2016). Die „8 Sekunden“-Zahl stammt aus einem Microsoft-Marketingreport ohne belegbare Quelle. Die Faustregel „2–5 Minuten pro Lebensjahr“ hat keine Primärevidenz.</p>
+
+  <p>Was es gibt, ist ein guter Näherungswert: Belardi et al. (2021) ließen 79 Personen 48 Wortpaare lernen, <strong>Gesamtzeit konstant 80 Minuten</strong>:</p>
+
+  <div class="scroller">
+    <table>
+      <caption>Behaltensleistung bei identischer Gesamtlernzeit, Test zwei Tage später.</caption>
+      <thead>
+        <tr><th>Aufteilung der 80 Minuten</th><th class="num">Behalten</th></tr>
+      </thead>
+      <tbody>
+        <tr class="peak"><td>4 × 20 Minuten an vier Terminen</td><td class="num">77,2 %</td></tr>
+        <tr><td>2 × 40 Minuten</td><td class="num">59,1 %</td></tr>
+        <tr><td>1 × 80 Minuten</td><td class="num">52,5 %</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Fast 25 Prozentpunkte allein durch Aufteilung. Aber Vorsicht beim Lesen: Das zeigt, dass 20-Minuten-Blöcke <em>funktionieren</em> — nicht, dass sie optimal sind. Gegen 10 Minuten wurde nie getestet.</p>
+
+  <p><strong>Konsequenz für uns:</strong> Wir dürfen 5/10/15/20 Minuten anbieten. Wir dürfen es nur nicht als wissenschaftlich hergeleitet verkaufen. Es ist eine Gewohnheits- und Motivationsentscheidung — eine völlig legitime.</p>
+</section>
+
+<section>
+  <h2>Die Onboarding-Botschaft, die du wolltest</h2>
+
+  <p>Dein Punkt, dass im Onboarding stehen muss „Vokabeln lernt man am besten täglich, auch in kurzen Einheiten“, ist nicht nur nett — er korrigiert eine dokumentierte Fehlwahrnehmung.</p>
+
+  <p>Kornell (2009) ließ Menschen mit digitalen Karteikarten lernen, einmal verteilt und einmal geballt:</p>
+  <ul>
+    <li>Verteiltes Lernen war für <strong>90 %</strong> der Teilnehmenden effektiver.</li>
+    <li><strong>72 %</strong> glaubten hinterher, das <em>geballte</em> Lernen habe besser funktioniert.</li>
+    <li>Tatsächlicher Vorsprung des verteilten Lernens: <strong>+31 Prozentpunkte</strong>. Vorhergesagt hatten sie <strong>−14</strong>.</li>
+  </ul>
+
+  <p>Eine Diskrepanz von 45 Prozentpunkten zwischen Realität und Selbsteinschätzung. Der Grund: Verteiltes Lernen <em>fühlt sich schlechter an</em>, weil man in der Sitzung mehr Fehler macht.</p>
+
+  <p>Das hat eine direkte Folge über das Onboarding hinaus: Wenn Elumi eine Vokabel später nochmal abfragt, obwohl der Schüler sie „doch schon konnte“, wird das als Zeitverschwendung erlebt — obwohl es genau der Wirkmechanismus ist. <strong>Sichtbarer Fortschritt über längere Zeiträume</strong>, nicht nur Sitzungsergebnisse, ist deshalb kein Gamification-Beiwerk, sondern die Gegenmaßnahme gegen diese Fehlwahrnehmung.</p>
+</section>
+
+<section>
+  <h2>Was der Jugendschutz dazu sagt</h2>
+
+  <p>Kurz, weil die Lage klarer ist, als sie klingt.</p>
+
+  <ul>
+    <li><strong>EU-Leitlinien zum Minderjährigenschutz (Juli 2025)</strong> nennen Streaks <em>wörtlich</em> als Feature, das für Minderjährige standardmäßig deaktiviert gehört. <strong>Elumi fällt formal nicht darunter</strong> — die Regel gilt für Plattformen mit nutzergenerierten Inhalten. Sie ist aber der Maßstab, an dem eine Schule oder ein Journalist uns messen würde.</li>
+    <li><strong>Digital Fairness Act:</strong> Wird B2C-Apps erfassen, adressiert explizit Gamification und Reward-Loops mit Fokus auf Minderjährige. Vorschlag Ende 2026 erwartet, Anwendung realistisch 2029. Was wir heute bauen, sollte das überleben.</li>
+    <li><strong>DSGVO Art. 8:</strong> Deutschland hat die Altersgrenze bei <strong>16</strong> belassen. Das trifft unsere Zielgruppe mitten ins Herz. Solange Streak-Daten lokal auf dem Gerät bleiben und Push rein lokal geplant wird, ist das weitgehend entschärft — Cloud-Profile und Analytics wären es nicht.</li>
+    <li><strong>Neuer JMStV (seit Dezember 2025):</strong> verankert erstmals den Schutz der <em>psychischen Integrität</em> und vor <em>Ausnutzung von Unerfahrenheit</em>. Kein akutes Risiko für eine Lern-App, aber die Norm, an der sich ein Vorwurf festmachen ließe.</li>
+  </ul>
+
+  <div class="callout">
+    <p class="callout-head">Die eine rote Linie</p>
+    <p>Duolingo hat selbst dokumentiert, dass <strong>schuldbasierte Ansprache messbar besser konvertiert</strong> — „Du hast Duo traurig gemacht“ schlägt die Alternativen. Genau deshalb ist es bei Elfjährigen die Grenze, die wir nicht überschreiten. Und: Wer den Joker <em>verkauft</em>, monetarisiert Angst bei Minderjährigen. Unsere Joker sind kostenlos.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Umbauplan für Elumi</h2>
+
+  <p>Zwei Dinge vorweg aus dem Code-Bestand: Elumi hat heute <strong>zwei parallele Systeme</strong>, die dasselbe wollen — das Wochenziel aus dem Onboarding und einen echten Tages-Streak mit Meilensteinen bei 3/7/14/30 Tagen, der über die Daily Challenge hochgezählt wird. Der Umbau löst diese Doppelgleisigkeit auf. Und: <strong>Minuten werden bisher nirgends erfasst</strong>, <code>LearningSession</code> kennt nur richtig/falsch/Combo.</p>
+
+  <ol class="steps">
+    <li class="step">
+      <div class="step-head">Onboarding-Frage umstellen <span class="step-scope">UI + Modell</span></div>
+      <p>„Wie oft schaffst du das?“ (2/3/5/7 Tage) wird zu „Wie viel Zeit hast du am Tag?“ mit vier Stufen — 5 / 10 / 15 / 20 Minuten. Davor ein Satz, der die Kornell-Fehlwahrnehmung adressiert: kurz und täglich schlägt selten und lang.</p>
+      <p class="files">LearningGoalOnboardingView+Steps.swift · LearningGoalPlan.swift</p>
+    </li>
+
+    <li class="step">
+      <div class="step-head">Minuten in ein Vokabel-Pensum übersetzen <span class="step-scope">Kern</span></div>
+      <p><code>weeklyTargetDays</code> weicht einem <code>dailyTargetItems</code>. Gezählt werden korrekte Erstversuche. Die Umrechnung Minuten → Pensum einmal an echten Sitzungsdaten kalibrieren; bis dahin ein begründeter Startwert, klar als solcher markiert.</p>
+      <p class="files">LearningGoalPlan.swift · LearningGoalStore.swift · LearningSession.swift</p>
+    </li>
+
+    <li class="step">
+      <div class="step-head">Streak vom Tagesziel entkoppeln <span class="step-scope">Kern</span></div>
+      <p>Der wichtigste Einzelschritt. <strong>Eine</strong> abgeschlossene Mini-Session hält den Streak — das Tagesziel ist ein separater, ambitionierterer Ring daneben. Duolingo hat mit genau dieser Entkopplung 3,3 % Retention gewonnen und die Fallhöhe drastisch gesenkt. Der bestehende Streak wandert von der Daily Challenge in den zentralen Session-Abschluss.</p>
+      <p class="files">DailyChallengeStore.swift · ProgressService.swift</p>
+    </li>
+
+    <li class="step">
+      <div class="step-head">Joker einführen — begrenzt, sichtbar, kostenlos <span class="step-scope">Neu</span></div>
+      <p>Zwei pro Monat, im Streak-Anzeiger dauerhaft mitgezählt („2 Joker übrig“). Werden automatisch eingelöst. Nicht kaufbar, nicht gegen Werbung. Die Sichtbarkeit <em>ist</em> der Wirkmechanismus — ein unsichtbares Sicherheitsnetz motiviert nicht.</p>
+      <p class="files">neu: StreakJokerStore.swift · ProgressStore.swift</p>
+    </li>
+
+    <li class="step">
+      <div class="step-head">Kein Mitternachts-Abriss <span class="step-scope">Kern</span></div>
+      <p>Tageswechsel auf 4 Uhr morgens legen. Kostet nichts und nimmt die dokumentierten Panik-Momente kurz vor Mitternacht komplett heraus.</p>
+      <p class="files">GamificationConfig.swift — <code>currentDayIndex</code></p>
+    </li>
+
+    <li class="step">
+      <div class="step-head">Klausur-Modus ausbauen <span class="step-scope">Erweiterung</span></div>
+      <p><code>LearningOccasion.exam</code> mit Deadline gibt es schon. Neu: aus Vokabelmenge und Resttagen ein Tagespensum ableiten und einen Countdown zeigen. Das ist die Lücke, die keine große App sauber füllt — Busuu kommt am nächsten. Für eine Schüler-App ist es der naheliegendste Differenzierungspunkt.</p>
+      <p class="files">LearningGoalPlan.swift · HomeGoalCard.swift · LearningGoalDetailView.swift</p>
+    </li>
+
+    <li class="step">
+      <div class="step-head">Sprache des Rückwegs <span class="step-scope">Copy</span></div>
+      <p>Nach einem Fehltag: Rückkehr feiern, Abwesenheit nicht kommentieren. Kein trauriges Maskottchen, keine Schuldzuweisung. Belegt: Wer den Bruch <em>sich selbst</em> zuschreibt, bricht eher ganz ab — wer ihn den Umständen zuschreibt, kommt zurück. Und ein Satz, der fachlich sogar stimmt: ein verpasster Tag kostet keinen Lernfortschritt.</p>
+      <p class="files">ElumiHelp.swift · DailyWrapUpSheet.swift</p>
+    </li>
+
+    <li class="step">
+      <div class="step-head">Tagesziel schließt sichtbar ab <span class="step-scope">UI</span></div>
+      <p>Erreicht heißt „fertig für heute“, nicht endlos weiterzählen. Für die Lernwirkung ist mehr am Stück nicht überlegen, und ein sichtbarer Schlusspunkt ist bei Minderjährigen ausdrücklich empfohlene Praxis.</p>
+      <p class="files">DailyWrapUpSheet.swift · HomeGoalCard.swift</p>
+    </li>
+  </ol>
+</section>
+
+<section>
+  <h2>Was ich nicht empfehle</h2>
+  <ul>
+    <li><strong>Ranglisten und Ligen.</strong> Punkte und Abzeichen gehen in der Zweitsprach-Forschung mit <em>weniger</em> Angst und mehr Selbstvertrauen einher — Wettbewerbselemente mit dem Gegenteil. Bei Zehn- bis Siebzehnjährigen mit Notendruck ist das kein Detail.</li>
+    <li><strong>Streak-Verlust als Reset auf null.</strong> Besser ein Rückfall auf einen Zwischenstand oder ein langsam sinkender Zähler. Direkt gegen den Ach-scheiß-drauf-Effekt gerichtet.</li>
+    <li><strong>Push kurz vor Ablauf.</strong> „Noch 12 Minuten, dann ist dein Streak weg“ um 23:48 Uhr ist exakt das, was die EU-Leitlinien als Dringlichkeits-Cue adressieren.</li>
+    <li><strong>Engagement als interne Erfolgsmetrik.</strong> Wenn wir Nutzungsdauer messen, driftet das Design zwangsläufig Richtung Zwang. Die Zielgröße muss Behaltensleistung nach zwei Wochen sein — die haben wir über den Lernstatus bereits.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Offene Entscheidungen</h2>
+  <ol>
+    <li><strong>Wie viele Joker und in welchem Zeitraum?</strong> Zwei pro Monat ist mein Vorschlag, angelehnt an die Studienlage. Weniger wirkt strenger, mehr entwertet sie.</li>
+    <li><strong>Was ist die Mini-Session, die den Streak hält?</strong> Eine Karte reicht sicher nicht, das ganze Tagesziel ist zu viel. Vorschlag: fünf korrekte Antworten.</li>
+    <li><strong>Bleibt das Wochenziel als zweite Ebene bestehen</strong> oder verschwindet es ganz? Ich tendiere zu ganz weg — zwei Zielsysteme nebeneinander waren schon bisher das Problem.</li>
+    <li><strong>Streak für die Jüngsten standardmäßig aus?</strong> Wäre die regulatorisch sauberste Variante. Setzt voraus, dass wir das Alter kennen — tun wir das?</li>
+  </ol>
+</section>
+
+<footer>
+  <p>Recherchestand August 2026. Kernquellen: Cepeda et al. 2006 (<span class="mono">Psychological Bulletin</span>) · Küpper-Tetzel, Erdfelder &amp; Dickhäuser 2014 (<span class="mono">Instructional Science</span>) · Sharif &amp; Shu 2017 (<span class="mono">Journal of Marketing Research</span>) · Beshears et al. 2021 (<span class="mono">Management Science</span>) · Lally et al. 2010 (<span class="mono">European Journal of Social Psychology</span>) · Kornell 2009 (<span class="mono">Applied Cognitive Psychology</span>) · Sudina &amp; Plonsky 2024 (<span class="mono">Journal of Second Language Studies</span>) · Belardi et al. 2021 (<span class="mono">Frontiers in Psychology</span>) · EU-Leitlinien Art. 28 (4) DSA, Juli 2025.</p>
+  <p>Duolingo-Zahlen stammen aus dem Unternehmensblog, sind nicht unabhängig repliziert und messen Nutzung, nicht Lernerfolg. Als Beleg für Mechanik-Entscheidungen brauchbar, als Beleg für Lernwirkung nicht.</p>
+</footer>
+
+</div>

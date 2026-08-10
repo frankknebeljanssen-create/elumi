@@ -1,0 +1,1030 @@
+<meta charset="UTF-8">
+<title>Elumi — Wie und warum es gebaut ist</title>
+<style>
+  :root {
+    --midnight: #081A2B;
+    --navy: #0D1826;
+    --panel: #112336;
+    --panel-raised: #16304A;
+    --line: rgba(180, 205, 225, 0.12);
+    --line-strong: rgba(180, 205, 225, 0.22);
+    --ink: #EFF5FA;
+    --ink-dim: #93AEC4;
+    --ink-faint: #5E7A90;
+    --pink: #FF4D80;
+    --pink-deep: #C93567;
+    --mint: #2EC4A9;
+    --mint-deep: #1C8F7B;
+    --amber: #FFD166;
+    --amber-deep: #B8832F;
+    --cream: #FFF0F3;
+    --display: ui-rounded, "SF Pro Rounded", "Segoe UI Rounded", system-ui, sans-serif;
+    --body: -apple-system, "SF Pro Text", system-ui, "Segoe UI", sans-serif;
+    --data: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--midnight);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection { background: var(--pink); color: var(--midnight); }
+
+  a { color: var(--mint); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover { color: var(--pink); }
+  :focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 3px; }
+
+  code, .mono { font-family: var(--data); }
+
+  h1, h2, h3, h4 { font-family: var(--display); text-wrap: balance; margin: 0; }
+
+  p { max-width: 66ch; }
+
+  /* ============ SHELL ============ */
+  .shell {
+    display: grid;
+    grid-template-columns: 268px 1fr;
+    min-height: 100vh;
+  }
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: 1fr; }
+  }
+
+  /* ============ SIDEBAR ============ */
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    background: var(--navy);
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    padding: 22px 16px 16px;
+    gap: 22px;
+    overflow-y: auto;
+  }
+  @media (max-width: 860px) {
+    .sidebar {
+      position: fixed;
+      inset: 0 20% 0 0;
+      z-index: 40;
+      transform: translateX(-100%);
+      transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+      box-shadow: 40px 0 60px rgba(0,0,0,0.4);
+    }
+    .sidebar.open { transform: translateX(0); }
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 4px 10px;
+  }
+  .brand-mark {
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .brand-mark span { color: var(--pink); }
+  .brand-sub {
+    font-family: var(--data);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+  }
+
+  .pulse-strip {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 12px 14px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    margin: 0 2px;
+  }
+  .pulse-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 12px;
+  }
+  .pulse-row .k { color: var(--ink-faint); }
+  .pulse-row .v {
+    font-family: var(--data);
+    font-variant-numeric: tabular-nums;
+    color: var(--mint);
+    font-weight: 600;
+  }
+
+  nav.toc {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+  .toc-label {
+    font-family: var(--data);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 6px 12px 2px;
+  }
+  .toc-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 9px 14px;
+    cursor: pointer;
+    font-family: var(--display);
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--ink-dim);
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .toc-btn .desc {
+    font-family: var(--body);
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--ink-faint);
+  }
+  .toc-btn:hover { background: var(--panel); color: var(--ink); }
+  .toc-btn.active {
+    background: linear-gradient(135deg, var(--pink), var(--pink-deep));
+    color: white;
+    border-color: transparent;
+  }
+  .toc-btn.active .desc { color: rgba(255,255,255,0.75); }
+
+  .sidebar-foot {
+    font-family: var(--data);
+    font-size: 10.5px;
+    color: var(--ink-faint);
+    padding: 10px 12px 2px;
+    border-top: 1px solid var(--line);
+  }
+
+  .menu-toggle {
+    display: none;
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 50;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    background: var(--panel-raised);
+    border: 1px solid var(--line-strong);
+    color: var(--ink);
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  @media (max-width: 860px) { .menu-toggle { display: flex; } }
+  .scrim {
+    display: none;
+    position: fixed; inset: 0; z-index: 39;
+    background: rgba(3,10,18,0.6);
+  }
+  .scrim.show { display: block; }
+
+  /* ============ MAIN ============ */
+  main {
+    min-width: 0;
+    padding: 0;
+  }
+  .section { display: none; }
+  .section.active { display: block; animation: rise 0.35s ease both; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .section.active { animation: none; }
+  }
+
+  .section-inner {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 64px 32px 120px;
+  }
+  @media (max-width: 860px) {
+    .section-inner { padding: 84px 20px 100px; }
+  }
+
+  .eyebrow {
+    font-family: var(--data);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mint);
+    margin: 0 0 14px;
+  }
+
+  .section h2.title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+
+  .lede {
+    font-size: 19px;
+    color: var(--ink-dim);
+    max-width: 62ch;
+    margin: 18px 0 0;
+  }
+
+  h3.h {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 56px 0 14px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  h3.h:first-of-type { border-top: none; padding-top: 0; }
+
+  h4.sub {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 26px 0 8px;
+  }
+
+  .section p, .section li { color: var(--ink-dim); }
+  .section strong { color: var(--ink); font-weight: 650; }
+  .section ul, .section ol { padding-left: 1.25em; max-width: 64ch; }
+  .section li { margin: 6px 0; }
+
+  /* ============ HERO (overview) ============ */
+  .hero {
+    padding: 40px 0 8px;
+  }
+  .hero-headline {
+    font-size: clamp(2.4rem, 6.5vw, 4.4rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 0.98;
+    text-wrap: balance;
+  }
+  .hero-headline .accent { color: var(--pink); }
+  .hero-headline .accent2 { color: var(--mint); }
+  .hero-lede {
+    font-size: 20px;
+    color: var(--ink-dim);
+    max-width: 58ch;
+    margin: 22px 0 0;
+  }
+
+  .stat-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 44px 0 8px;
+  }
+  @media (max-width: 640px) {
+    .stat-strip { grid-template-columns: repeat(2, 1fr); }
+  }
+  .stat {
+    background: var(--panel);
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .stat .n {
+    font-family: var(--data);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--amber);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .l {
+    font-size: 12.5px;
+    color: var(--ink-faint);
+  }
+
+  /* module cards */
+  .modules {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 18px;
+  }
+  @media (max-width: 640px) { .modules { grid-template-columns: 1fr; } }
+  .module-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .module-card.dim { opacity: 0.6; }
+  .module-card .name {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 16px;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .module-card .tag {
+    font-family: var(--data);
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--panel-raised);
+    color: var(--ink-faint);
+    padding: 2px 7px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+  }
+  .module-card p { font-size: 13.5px; margin: 8px 0 0; }
+
+  /* ============ CALLOUTS / CARDS ============ */
+  .principle {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--mint);
+    border-radius: 0 12px 12px 0;
+    padding: 18px 22px;
+    margin: 18px 0;
+  }
+  .principle .k {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--mint);
+  }
+  .principle p { margin: 8px 0 0; font-size: 14.5px; }
+
+  .quote {
+    border-left: 3px solid var(--pink);
+    padding: 4px 0 4px 22px;
+    margin: 26px 0;
+    font-family: var(--display);
+    font-size: 1.15rem;
+    font-weight: 650;
+    color: var(--ink);
+    font-style: normal;
+  }
+  .quote cite {
+    display: block;
+    font-family: var(--data);
+    font-size: 12px;
+    font-style: normal;
+    color: var(--ink-faint);
+    margin-top: 8px;
+  }
+
+  /* ============ EVIDENCE TIER TAGS ============ */
+  .tier {
+    display: inline-block;
+    font-family: var(--data);
+    font-size: 10px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+    vertical-align: 0.1em;
+    white-space: nowrap;
+  }
+  .tier.solid { background: rgba(46,196,169,0.15); color: var(--mint); }
+  .tier.thin  { background: rgba(255,209,102,0.15); color: var(--amber); }
+
+  /* ============ TABLES ============ */
+  .tbl-wrap { overflow-x: auto; margin: 18px 0; border: 1px solid var(--line); border-radius: 12px; }
+  table { border-collapse: collapse; width: 100%; min-width: 480px; font-size: 13.5px; }
+  caption { text-align: left; caption-side: top; padding: 12px 16px 0; font-size: 12.5px; color: var(--ink-faint); }
+  th, td { text-align: left; padding: 10px 16px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink-dim); }
+  th {
+    font-family: var(--data);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+    background: var(--panel);
+  }
+  tr:last-child td { border-bottom: none; }
+  td.num, th.num { text-align: right; font-family: var(--data); font-variant-numeric: tabular-nums; }
+  tr.peak td { background: rgba(46,196,169,0.06); }
+  td strong { color: var(--ink); }
+
+  /* ============ STORE / MODULE GRID ============ */
+  .store-grid { display: flex; flex-direction: column; gap: 10px; margin: 18px 0; }
+  .store-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 18px;
+    padding: 14px 18px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  @media (max-width: 640px) { .store-row { grid-template-columns: 1fr; gap: 4px; } }
+  .store-row .name { font-family: var(--data); font-weight: 700; color: var(--pink); font-size: 13.5px; }
+  .store-row p { margin: 0; font-size: 13.5px; }
+
+  /* ============ SOURCES ============ */
+  .sources { display: flex; flex-direction: column; gap: 10px; margin: 18px 0; }
+  .source {
+    font-size: 13.5px;
+    padding: 12px 16px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .source .cite { color: var(--ink); font-weight: 600; }
+  .source .note { color: var(--ink-faint); font-size: 12.5px; margin-top: 4px; }
+
+  /* ============ GENDER DEMO WIDGET ============ */
+  .demo {
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    border-radius: 16px;
+    padding: 24px 24px 22px;
+    margin: 22px 0 30px;
+  }
+  .demo-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .demo-title { font-family: var(--display); font-weight: 800; font-size: 15px; color: var(--ink); }
+  .demo-words { display: flex; gap: 8px; flex-wrap: wrap; }
+  .demo-word-btn {
+    font-family: var(--data);
+    font-size: 13px;
+    background: var(--panel-raised);
+    color: var(--ink-dim);
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    padding: 6px 13px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .demo-word-btn:hover { border-color: var(--mint); color: var(--ink); }
+  .demo-word-btn.active { background: var(--mint); color: var(--midnight); border-color: var(--mint); font-weight: 700; }
+
+  .demo-pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 20px;
+  }
+  .demo-stage {
+    display: grid;
+    grid-template-columns: 26px 140px 1fr;
+    gap: 14px;
+    align-items: start;
+    padding: 12px 4px;
+    border-left: 2px solid var(--line-strong);
+    padding-left: 18px;
+    margin-left: 12px;
+    position: relative;
+    opacity: 0.35;
+    transition: opacity 0.25s ease;
+  }
+  @media (max-width: 560px) {
+    .demo-stage { grid-template-columns: 26px 1fr; }
+    .demo-stage .stage-result { grid-column: 2; }
+  }
+  .demo-stage::before {
+    content: "";
+    position: absolute;
+    left: -7px; top: 16px;
+    width: 12px; height: 12px;
+    border-radius: 999px;
+    background: var(--navy);
+    border: 2px solid var(--line-strong);
+  }
+  .demo-stage.hit {
+    opacity: 1;
+  }
+  .demo-stage.hit::before { background: var(--mint); border-color: var(--mint); }
+  .demo-stage .stage-no { font-family: var(--data); font-size: 11px; color: var(--ink-faint); padding-top: 2px; }
+  .demo-stage .stage-name { font-family: var(--display); font-weight: 700; font-size: 13.5px; color: var(--ink); }
+  .demo-stage .stage-detail { font-size: 12.5px; color: var(--ink-faint); }
+  .demo-stage.hit .stage-detail { color: var(--ink-dim); }
+  .demo-result {
+    margin-top: 18px;
+    padding: 14px 18px;
+    background: var(--panel-raised);
+    border-radius: 10px;
+    font-family: var(--data);
+    font-size: 14px;
+    color: var(--mint);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .demo-result .conf { color: var(--ink-faint); font-size: 12px; }
+
+  /* ============ FOOTER NAV (prev/next) ============ */
+  .section-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+  }
+  .section-nav button {
+    font-family: var(--body);
+    font-size: 13.5px;
+    color: var(--ink-dim);
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 0;
+  }
+  .section-nav button:hover { color: var(--pink); }
+  .section-nav .lbl { font-family: var(--data); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); }
+  .section-nav .next { text-align: right; align-items: flex-end; }
+
+  /* diagram */
+  .diagram-wrap { margin: 20px 0; padding: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow-x: auto; }
+</style>
+
+<div class="scrim" id="scrim"></div>
+<button class="menu-toggle" id="menuToggle" aria-label="Menü öffnen">☰</button>
+
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <span class="brand-mark">elu<span>mi</span></span>
+    </div>
+    <div class="brand-sub" style="margin-top:-16px; padding-left: 10px;">Produkt- &amp; Technik-Dossier</div>
+
+    <div class="pulse-strip">
+      <div class="pulse-row"><span class="k">Wörter</span><span class="v">17.229</span></div>
+      <div class="pulse-row"><span class="k">Beispielsätze</span><span class="v">28.926</span></div>
+      <div class="pulse-row"><span class="k">Flexionsformen</span><span class="v">207.956</span></div>
+      <div class="pulse-row"><span class="k">Commits</span><span class="v">698</span></div>
+    </div>
+
+    <nav class="toc" id="toc">
+      <div class="toc-label">Inhalt</div>
+      <button class="toc-btn" data-target="overview">Übersicht<span class="desc">Was Elumi ist, in Zahlen</span></button>
+      <button class="toc-btn" data-target="didaktik">Didaktik<span class="desc">Warum es so gelehrt wird</span></button>
+      <button class="toc-btn" data-target="architektur">Architektur<span class="desc">Wie das System zusammenhängt</span></button>
+      <button class="toc-btn" data-target="technik">Technik<span class="desc">Stack, Daten, Pipeline</span></button>
+      <button class="toc-btn" data-target="prinzipien">Arbeitsweise<span class="desc">Wie entschieden wird</span></button>
+    </nav>
+
+    <div class="sidebar-foot">Stand 10.08.2026 · feature/lea-chat-mvp</div>
+  </aside>
+
+  <main>
+
+    <!-- ============ OVERVIEW ============ -->
+    <section class="section" id="sec-overview" data-order="0">
+      <div class="section-inner">
+        <div class="hero">
+          <p class="eyebrow">Elumi</p>
+          <h1 class="hero-headline">Französisch lernen,<br>ohne dass die App<br><span class="accent">rät</span>, was <span class="accent2">stimmt</span>.</h1>
+          <p class="hero-lede">Elumi ist eine iOS-App, die Schüler:innen zwischen 10 und 17 Jahren Französisch-Vokabular beibringt — Deutsch↔Französisch, vier Übungsmodi, ein eigenes Master-Lexikon statt eines API-Wrappers um ein fremdes Wörterbuch. Gebaut von einer Person, mit Claude Code als Engineering-Partner, über 698 Commits seit dem 28. März 2026.</p>
+        </div>
+
+        <div class="stat-strip">
+          <div class="stat"><div class="n">17.229</div><div class="l">kuratierte Wörter im eigenen Lexikon</div></div>
+          <div class="stat"><div class="n">207.956</div><div class="l">konjugierte/flektierte Wortformen</div></div>
+          <div class="stat"><div class="n">28.926</div><div class="l">geprüfte Beispielsätze FR↔DE</div></div>
+          <div class="stat"><div class="n">133.071</div><div class="l">Zeilen Swift-Code, 557 Dateien</div></div>
+        </div>
+
+        <h3 class="h">Was die App tut</h3>
+        <p>Ein Schüler wählt ein Lernziel — eine Klassenarbeit, ein Schulbuch-Kapitel, oder einfach „dranbleiben" — und übt in kurzen täglichen Runden. Die Vokabeln kommen nicht aus einer generischen Wortliste, sondern aus einem selbst kuratierten Lexikon mit Genus, Aussprache, Beispielsätzen und Flexionsformen pro Eintrag. Fortschritt wird pro Vokabel getrackt (sitzt / wackelt noch), nicht nur pro Session.</p>
+
+        <h3 class="h">Die sieben Module</h3>
+        <div class="modules">
+          <div class="module-card">
+            <div class="name">Karteikarten</div>
+            <p>Klassisches Spaced-Repetition-Format, wahlweise getippt oder gesprochen beantwortet. Unterstützt eigene Karten-Stapel.</p>
+          </div>
+          <div class="module-card">
+            <div class="name">Quiz</div>
+            <p>Multiple-Choice mit eigener Fortschritts-Zählung — Würmchen, Herzen, XP direkt im Modul sichtbar.</p>
+          </div>
+          <div class="module-card">
+            <div class="name">Training-Hub</div>
+            <p>Ein Einstieg, fünf Modi: Vokabeln, Nomen, Verben, Artikel, Verbformen — bündelt, was früher fünf einzelne Home-Kacheln waren.</p>
+          </div>
+          <div class="module-card">
+            <div class="name">Verbformen</div>
+            <p>Konjugations-Drill über alle Zeitformen, Multiple-Choice oder Eintippen, inklusive Speed-Round.</p>
+          </div>
+          <div class="module-card">
+            <div class="name">Akzente</div>
+            <p>Übt é/è/ê/ç gezielt — mit einem persistenten „Confidence"-Modell, das Inhalte nach Schwäche priorisiert.</p>
+          </div>
+          <div class="module-card">
+            <div class="name">Word Runner</div>
+            <p>Arcade-Runner: Vokabeln als Hindernisse in scrollenden Spuren, Canvas-gerendert. Die umfangreichste einzelne Datei im Projekt (4.312 Zeilen).</p>
+          </div>
+          <div class="module-card dim">
+            <div class="name">Léa-Chat <span class="tag">in Arbeit</span></div>
+            <p>Konversationsübung im Chat-Format, WhatsApp-artige Oberfläche. Aktuell hinter einem Feature-Flag pausiert (Backend-Fehler).</p>
+          </div>
+        </div>
+
+        <div class="section-nav">
+          <span></span>
+          <button class="next" data-goto="didaktik"><span class="lbl">Weiter</span>Didaktik →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DIDAKTIK ============ -->
+    <section class="section" id="sec-didaktik" data-order="1">
+      <div class="section-inner">
+        <p class="eyebrow">Didaktik</p>
+        <h2 class="title">Jede Mechanik hat eine Quelle,<br>nicht nur eine Meinung.</h2>
+        <p class="lede">Elumis Lernmechanik ist nicht aus Bauchgefühl entstanden. Drei Bereiche der Lernpsychologie tragen die Kernentscheidungen — verteiltes Üben, aktives Abrufen, und wie ein Streak-System gebaut sein muss, damit es dem Lernen dient statt ihm zu schaden.</p>
+
+        <h3 class="h">1. Verteiltes Üben statt Pauken</h3>
+        <p>Die best belegte Erkenntnis der Lernpsychologie: dieselbe Lernzeit, über mehrere Tage verteilt statt an einem Stück, verdoppelt bei längeren Behaltensintervallen fast die Abrufleistung. Cepeda et al. (2006) werteten <strong>839 Messungen aus 317 Experimenten</strong> aus:</p>
+
+        <div class="tbl-wrap">
+          <table>
+            <caption>Anteil korrekt erinnerter Inhalte, massiert vs. verteilt gelernt (Cepeda et al. 2006)</caption>
+            <thead><tr><th>Test nach</th><th class="num">Massiert</th><th class="num">Verteilt</th></tr></thead>
+            <tbody>
+              <tr><td>1 Tag</td><td class="num">32,9 %</td><td class="num">43,0 %</td></tr>
+              <tr class="peak"><td>8–30 Tage</td><td class="num">32,8 %</td><td class="num">62,2 %</td></tr>
+              <tr><td>ab 31 Tagen</td><td class="num">17,0 %</td><td class="num">39,0 %</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Für Elumis Zielgruppe gibt es eine noch direktere Studie: Küpper-Tetzel, Erdfelder &amp; Dickhäuser (2014) haben das <strong>in deutschen Schulklassen</strong> gemessen — 65 Sechstklässler, deutsch-englische Vokabelpaare, echter Unterricht. Bei einem Test nach einer Woche war ein <strong>Ein-Tages-Lernabstand optimal</strong>: 35 % besser als massiertes Lernen, neun Vokabeln mehr im Schnitt. Das ist die Begründung dafür, dass Elumis Zielsystem auf tägliche Kurz-Sessions setzt statt auf lange Wochenend-Marathons.</p>
+
+        <h3 class="h">2. Aktives Abrufen statt Wiedererkennen</h3>
+        <p>Der zweite tragende Pfeiler: eine Vokabel abzurufen (Karteikarte umdrehen, Lücke füllen) festigt sie stärker als sie nur nochmal zu lesen. Rowland (2014) fasst <strong>159 Studien</strong> zusammen — 81 % der Vergleiche fielen zugunsten des aktiven Abrufens aus. Dunlosky et al. (2013) prüften zehn gängige Lerntechniken für die Öffentlichkeit; nur zwei bekamen die Note „hohe Nützlichkeit": <strong>Testen</strong> und <strong>verteiltes Üben</strong> — exakt die zwei Prinzipien, auf denen Elumis vier Kernmodule aufbauen. Zusammenfassen, Markieren und Wiederlesen — die intuitiveren Methoden — landeten bei „niedrig".</p>
+
+        <div class="principle">
+          <div class="k">Warum das für Elumis Design zählt</div>
+          <p>Kornell (2009) fand einen Wahrnehmungsfehler, der direkt gegen intuitives App-Design arbeitet: Verteiltes Lernen war für 90 % der Testpersonen nachweislich besser (+31 Prozentpunkte) — aber 72 % hielten <em>gepauktes</em> Lernen im Nachhinein für effektiver. Verteiltes Lernen fühlt sich schlechter an, weil es anstrengender ist. Deshalb zeigt Elumi sichtbaren Fortschritt über Zeiträume, nicht nur Session-Ergebnisse — sonst wirkt die richtige Methode wie die falsche.</p>
+        </div>
+
+        <h3 class="h">3. Das Streak-System — verzeihend statt hart</h3>
+        <p>Die jüngste Design-Entscheidung (August 2026): der tägliche Streak sollte ursprünglich strikt sein — ein verpasster Tag, alles auf null. Die Recherche dazu drehte diese Annahme um.</p>
+
+        <p>Lally et al. (2010) begleiteten 96 Menschen 84 Tage beim Aufbau einer neuen Gewohnheit: Automatisierung nach im Median <strong>66 Tagen</strong>, und ein einzelner verpasster Tag <strong>beeinträchtigte die Gewohnheitsbildung nicht messbar</strong>. Ein Streak, der einen Fehltag als Totalverlust behandelt, bestraft also etwas, das gar keinen Schaden anrichtet.</p>
+
+        <p>Die stärkste Einzelstudie zur Gegenlösung: Sharif &amp; Shu (2017, <em>Journal of Marketing Research</em>) verglichen ein hartes Ziel, ein weiches Ziel, und ein hartes Ziel <strong>mit einer knappen, kostenlosen Reserve</strong> (Joker-Tage):</p>
+
+        <div class="tbl-wrap">
+          <table>
+            <caption>Rückkehrquote am Tag nach einem verpassten Ziel (Sharif &amp; Shu 2017, Feldversuch)</caption>
+            <thead><tr><th>Zielrahmen</th><th class="num">Rückkehrquote</th></tr></thead>
+            <tbody>
+              <tr class="peak"><td>Hartes Ziel <strong>mit Jokern</strong></td><td class="num">55 %</td></tr>
+              <tr><td>Weiches Ziel (z. B. 5 von 7 Tagen)</td><td class="num">44 %</td></tr>
+              <tr><td>Hartes Ziel ohne Joker</td><td class="num">37 %</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Der Joker wirkt, <em>weil</em> er knapp ist — man will ihn nicht verbrauchen, das hält die Motivation hoch. Gleichzeitig verhindert seine bloße Existenz, dass ein Fehltag als Scheitern verbucht wird. Elumi übernimmt dieses Modell direkt: <strong>2 kostenlose Joker pro Kalendermonat</strong>, sichtbar mitgezählt, nicht kaufbar — Käuflichkeit würde bedeuten, Angst bei Minderjährigen zu monetarisieren.</p>
+
+        <div class="quote">
+          „Ein hartes Tagesziel mit Jokern schlägt sowohl das harte als auch das weiche Ziel — Verzeihen ist hier kein Kompromiss, sondern die wirksamere Bauweise."
+          <cite>Zusammenfassung der Sharif-&amp;-Shu-Befunde, angewendet auf Elumis Streak-Redesign, 08/2026</cite>
+        </div>
+
+        <p>Ergänzend hat Duolingo Streak und Tagesziel <strong>entkoppelt</strong> (eine Mini-Session hält den Streak, das Tagesziel ist ein separater, ambitionierterer Ring) und maß dabei +3,3 % Retention. Elumi übernimmt dasselbe Prinzip: <strong>5 korrekt beantwortete Aufgaben</strong> reichen für den Streak, unabhängig vom größeren Tagesziel.</p>
+
+        <h4 class="sub">Was bewusst nicht übernommen wurde</h4>
+        <ul>
+          <li><strong>Ranglisten/Ligen</strong> — eine Übersicht zu Gamification und Fremdsprachenangst ordnet Punkte/Abzeichen als angst<em>senkend</em> ein, Wettbewerbselemente dagegen als angst<em>erhöhend</em>. Bei Zehn- bis Siebzehnjährigen mit Notendruck ist das kein Detail.</li>
+          <li><strong>Schuldbasierte Copy</strong> — Duolingo hat selbst dokumentiert, dass Formulierungen wie „du hast Duo traurig gemacht" messbar besser konvertieren. Genau deshalb sind sie bei Minderjährigen die rote Linie, die Elumi nicht überschreitet.</li>
+          <li><strong>Minuten als Zählgröße</strong> — Minuten stehen in der Onboarding-Oberfläche (5/10/15/20 Min. als Erwartungsanker), gezählt werden aber korrekte Antworten. Reine Zeitmessung belohnt Trödeln und bestraft schnelle Lernende; Duolingo hat sie deshalb intern durch eine Aufgaben-Metrik ersetzt.</li>
+        </ul>
+
+        <h3 class="h">Quellen</h3>
+        <div class="sources">
+          <div class="source"><span class="cite">Cepeda, Pashler, Vul, Wixted &amp; Rohrer (2006)</span> — Distributed Practice in Verbal Recall Tasks. <em>Psychological Bulletin</em>, 132(3), 354–380.<div class="note">Meta-Analyse, 317 Experimente.</div></div>
+          <div class="source"><span class="cite">Küpper-Tetzel, Erdfelder &amp; Dickhäuser (2014)</span> — The lag effect in secondary school classrooms. <em>Instructional Science</em>, 42(3), 373–388.<div class="note">Feldexperiment, deutsche 6. Klasse, N=65.</div></div>
+          <div class="source"><span class="cite">Rowland (2014)</span> — The Effect of Testing versus Restudy on Retention. <em>Psychological Bulletin</em>, 140(6), 1432–1463.<div class="note">Meta-Analyse, 159 Studien.</div></div>
+          <div class="source"><span class="cite">Dunlosky, Rawson, Marsh, Nathan &amp; Willingham (2013)</span> — Improving Students' Learning With Effective Learning Techniques. <em>Psychological Science in the Public Interest</em>, 14(1), 4–58.</div>
+          <div class="source"><span class="cite">Kornell (2009)</span> — Optimising learning using flashcards: Spacing is more effective than cramming. <em>Applied Cognitive Psychology</em>, 23(9), 1297–1317.</div>
+          <div class="source"><span class="cite">Lally, van Jaarsveld, Potts &amp; Wardle (2010)</span> — How are habits formed: Modelling habit formation in the real world. <em>European Journal of Social Psychology</em>, 40(6), 998–1009.</div>
+          <div class="source"><span class="cite">Sharif &amp; Shu (2017)</span> — The Benefits of Emergency Reserves: Greater Preference and Persistence for Goals That Have Slack with a Cost. <em>Journal of Marketing Research</em>, 54(3), 495–509.</div>
+        </div>
+
+        <div class="section-nav">
+          <button data-goto="overview"><span class="lbl">Zurück</span>← Übersicht</button>
+          <button class="next" data-goto="architektur"><span class="lbl">Weiter</span>Architektur →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ARCHITEKTUR ============ -->
+    <section class="section" id="sec-architektur" data-order="2">
+      <div class="section-inner">
+        <p class="eyebrow">Architektur</p>
+        <h2 class="title">Ein Store pro Zuständigkeit,<br>keiner rechnet doppelt.</h2>
+        <p class="lede">Elumi hat kein zentrales „God Object". Neun fokussierte, beobachtbare Stores tragen je eine klar abgegrenzte Zuständigkeit — jeder ist Single Source of Truth für genau seinen Ausschnitt, keiner führt eine zweite Buchhaltung über Daten, die woanders schon leben.</p>
+
+        <div class="diagram-wrap">
+<pre class="mermaid">
+flowchart LR
+    DB[("FRDEMasterLexicon.sqlite<br/>17.229 Einträge")] --> Loader["StandardVocabularyLoader"]
+    Loader --> Gender["FrenchGenderResolver<br/>3-Stufen-Pipeline"]
+    Loader --> Casing["TextCasingRules<br/>DE/FR-Großschreibung"]
+    Gender --> Stores
+    Casing --> Stores
+    subgraph Stores["Zentrale Stores"]
+        Progress["ProgressStore<br/>XP · Streak · Credits"]
+        Goal["LearningGoalStore<br/>Tagesziel · Inhaltsziel"]
+        Status["ItemLearningStatusStore<br/>sitzt / wackelt"]
+        Lists["VocabularyListStore"]
+    end
+    Stores --> Modules
+    subgraph Modules["Lernmodule"]
+        FC["Karteikarten"]
+        QZ["Quiz"]
+        TR["Training-Hub"]
+        VF["Verbformen"]
+    end
+</pre>
+        </div>
+
+        <h3 class="h">Die neun Stores</h3>
+        <div class="store-grid">
+          <div class="store-row"><div class="name">ProgressStore</div><p>XP, Credits, Streak — persistierte „Single Source of Truth". Hält zusätzlich den täglichen Korrekt-Zähler, der sowohl den Streak als auch das Tagesziel speist.</p></div>
+          <div class="store-row"><div class="name">LearningGoalStore</div><p>Das selbstgesetzte Lernziel. Führt bewusst keine eigene Fortschritts-Buchhaltung — Inhalts-Fortschritt kommt aus <span class="mono">ItemLearningStatusStore</span>, Tagesziel-Fortschritt aus <span class="mono">ProgressStore</span>.</p></div>
+          <div class="store-row"><div class="name">ItemLearningStatusStore</div><p>Modul-übergreifender Meisterschafts-Tracker pro Vokabel. Schlüsselt über einen kanonisierten Text-Key, nicht über UUID — die wird pro Init neu vergeben.</p></div>
+          <div class="store-row"><div class="name">VocabularyListStore</div><p>Eigene Listen, eingebaute Listen, Auswahl-Status — CRUD und Persistenz für alles, was ein Nutzer übt.</p></div>
+          <div class="store-row"><div class="name">DailyChallengeStore</div><p>Tägliche Zusatzaufgabe: Generierung/Rotation nach Tages-Index, Fortschritt, Reward-Vergabe über <span class="mono">ProgressStore</span> — <strong>kein</strong> Streak-Trigger mehr seit dem August-Umbau.</p></div>
+          <div class="store-row"><div class="name">DailyStatsStore</div><p>Reines Tages-Feedback („wie viel heute?") für die Home-Karte. Bewusst kein Zielsystem — nur Rückmeldung.</p></div>
+          <div class="store-row"><div class="name">StreakJokerStore</div><p>2 kostenlose Joker/Monat als Streak-Sicherheitsnetz. Begrenzt und nicht kaufbar — die Knappheit selbst ist der Wirkmechanismus (siehe Didaktik).</p></div>
+          <div class="store-row"><div class="name">ProfileStore</div><p>Aktives Lernerprofil — Name, Ziel, Avatar. On-Device in V1, mit vorgesehenem Migrationspfad zu Keychain + Cloud-Sync.</p></div>
+          <div class="store-row"><div class="name">AccountStore</div><p>Mehrere Profile auf einem Gerät (z. B. Geschwister auf einem Familien-iPad). Leichtgewichtige Identität, kein Login, kein Server.</p></div>
+        </div>
+
+        <h3 class="h">Genus-Auflösung als Beispiel — eine echte Pipeline, kein Lookup</h3>
+        <p>Französische Nomen brauchen ein Genus (le/la), damit ein Satz überhaupt korrekt aussieht. Elumi löst das über eine dreistufige, deterministische Pipeline — probier sie an einem echten Wort aus:</p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <div class="demo-title">FrenchGenderResolver — live durchgeklickt</div>
+            <div class="demo-words" id="demoWords"></div>
+          </div>
+          <div class="demo-pipeline" id="demoPipeline"></div>
+          <div class="demo-result" id="demoResult"></div>
+        </div>
+
+        <h4 class="sub">Warum das die Heuristik-Stufe verloren hat</h4>
+        <p>Bis August 2026 gab es eine vierte Stufe: eine Endungs-Heuristik, die bei fehlendem Genus riet (z. B. „endet auf -e → feminin", nur 62 % Sicherheit). Sie produzierte reale Fehler wie „la septembre". Sobald alle ~17.200 Nomen im Lexikon ein echtes, recherchiertes Genus aus der Datenbank hatten, wurde die Rate-Stufe ersatzlos entfernt — nicht abgeschwächt, sondern gestrichen. Das ist das wiederkehrende Muster im ganzen Projekt: <strong>eine Heuristik ist ein Platzhalter für fehlende Daten, kein Feature.</strong></p>
+
+        <div class="section-nav">
+          <button data-goto="didaktik"><span class="lbl">Zurück</span>← Didaktik</button>
+          <button class="next" data-goto="technik"><span class="lbl">Weiter</span>Technik →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TECHNIK ============ -->
+    <section class="section" id="sec-technik" data-order="3">
+      <div class="section-inner">
+        <p class="eyebrow">Technik</p>
+        <h2 class="title">SwiftUI, eine SQLite-Datei,<br>keine fremde Infrastruktur.</h2>
+        <p class="lede">Elumi läuft komplett lokal. Kein Backend für den Lernstoff, kein ORM zwischen App und Datenbank — direkter Zugriff auf eine selbst kuratierte SQLite-Datei über die C-API.</p>
+
+        <div class="tbl-wrap">
+          <table>
+            <caption>Stack im Überblick</caption>
+            <tbody>
+              <tr><td><strong>UI</strong></td><td>SwiftUI, durchgängig (284 von 557 Dateien importieren es)</td></tr>
+              <tr><td><strong>Persistenz Lexikon</strong></td><td>SQLite3, rohe C-API — kein Wrapper, keine ORM-Schicht</td></tr>
+              <tr><td><strong>Persistenz Nutzerdaten</strong></td><td>UserDefaults + Codable/JSON, pro Store gekapselt</td></tr>
+              <tr><td><strong>SwiftData</strong></td><td>Nur 5 Dateien — ausschließlich das (aktuell pausierte) Léa-Chat-Feature</td></tr>
+              <tr><td><strong>CoreData</strong></td><td>Nicht verwendet</td></tr>
+              <tr><td><strong>Ziel-Plattform</strong></td><td>iOS 17.0+</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="h">Das Lexikon in Zahlen</h3>
+        <div class="tbl-wrap">
+          <table>
+            <caption>FRDEMasterLexicon.sqlite (24 MB), sechs Tabellen</caption>
+            <thead><tr><th>Tabelle</th><th class="num">Zeilen</th><th>Inhalt</th></tr></thead>
+            <tbody>
+              <tr><td><span class="mono">entries</span></td><td class="num">17.229</td><td>Nomen, Verben, Adjektive, Phrasen — mit Genus, Wortart, Lernlevel</td></tr>
+              <tr><td><span class="mono">forms</span></td><td class="num">207.956</td><td>Konjugierte/flektierte Formen pro Eintrag</td></tr>
+              <tr><td><span class="mono">examples</span></td><td class="num">28.926</td><td>Geprüfte Beispielsatz-Paare FR/DE</td></tr>
+              <tr><td><span class="mono">senses</span></td><td class="num">18.679</td><td>Bedeutungsvarianten</td></tr>
+              <tr><td><span class="mono">relations</span></td><td class="num">7.237</td><td>Wortbeziehungen (Synonyme, Ableitungen)</td></tr>
+              <tr><td><span class="mono">pronunciations</span></td><td class="num">3.035</td><td>Ausspracheinformationen</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p><span class="mono">entries.learn_level</span> ist die kuratierte Lernstufe (A1–B2, plus „XP" für Stoff über den Schulstoff hinaus) — bewusst getrennt von der rohen <span class="mono">level</span>-Spalte aus dem Bulk-Import, die nur für Schwierigkeits-/Distraktor-Logik dient, nicht als Lernlisten-Kriterium taugt. Die Zuordnung stammt aus einem eigenen Skript (<span class="mono">tools/assign_learn_levels.py</span>), das vier Kriterien kombiniert: eine kuratierte A1-Ankerliste, Korpusfrequenz (Lexique 3), Wortart-Abgleich gegen Homographen, und bei Mehrwort-Phrasen das Niveau der schwersten Komponente plus eine Stufe.</p>
+
+        <h3 class="h">Die drei zentralen Text-Pipelines</h3>
+
+        <h4 class="sub">StandardVocabularyLoader</h4>
+        <p>Der einzige Lade-Pfad für sämtliches App-Vokabular — 1.109 Zeilen, liest direkt per <span class="mono">SQLite3</span>-C-API. Nach dem Laden läuft einmal pro App-Start ein Nachbearbeitungs-Durchgang, der jedes Nomen ohne Genus durch die Genus-Pipeline schickt (siehe Architektur-Sektion).</p>
+
+        <h4 class="sub">FrenchGenderResolver</h4>
+        <p>Dreistufige, deterministische Pipeline: expliziter Artikel im Text → DB-interner Plural/Singular- bzw. Hauptnomen-Lookup → Endungs-Heuristik (inzwischen entfernt, siehe Architektur). Jedes Ergebnis trägt Quelle, Konfidenz, grammatische Zahl und ein normalisiertes Lemma mit angehängtem Artikel.</p>
+
+        <h4 class="sub">TextCasingRules</h4>
+        <p>Die einzige Quelle für Groß-/Kleinschreibung app-weit — jeder bestehende Anzeige-Pfad (Scan-Import, Listen, Lexikon, Quiz) läuft hier durch. Bewusst konservativ und deterministisch, ohne Wörterbuch-Abfrage oder Raten: Deutsch großschreibt das Token nach Artikel oder verschmolzener Präposition+Artikel (im/am/beim/zum/…) sowie die Höflichkeitsform (Sie/Ihnen/Ihr); Französisch behält nur bereits großgeschriebene Nicht-Artikel-Tokens bei.</p>
+
+        <h3 class="h">Entwicklungsprozess</h3>
+        <p>698 Commits zwischen dem 28. März und dem 10. August 2026 — rund 4,5 Monate, im Schnitt 5 Commits pro Tag. Jede Code-Änderung läuft vor dem Commit durch einen echten <span class="mono">xcodebuild</span>-Durchlauf (nicht nur IDE-Diagnostik, die zuverlässig Fehlalarme wirft), Datenbank-Änderungen werden vor jedem Schreibvorgang gesichert und mit <span class="mono">PRAGMA integrity_check</span> verifiziert.</p>
+
+        <div class="section-nav">
+          <button data-goto="architektur"><span class="lbl">Zurück</span>← Architektur</button>
+          <button class="next" data-goto="prinzipien"><span class="lbl">Weiter</span>Arbeitsweise →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PRINZIPIEN ============ -->
+    <section class="section" id="sec-prinzipien" data-order="4">
+      <div class="section-inner">
+        <p class="eyebrow">Arbeitsweise</p>
+        <h2 class="title">Vier Regeln, die sich<br>durchs ganze Projekt ziehen.</h2>
+        <p class="lede">Kein Styleguide-Dokument hat das vorgeschrieben — diese Prinzipien haben sich aus wiederholten, echten Bugs herauskristallisiert und werden seither bei jeder Änderung geprüft.</p>
+
+        <div class="principle">
+          <div class="k">1. Kein Raten, wenn Daten vollständig sind</div>
+          <p>Die Genus-Heuristik (siehe Architektur) ist das Leitbeispiel: eine Rate-Regel mit 62 % Trefferquote wurde nicht optimiert, sondern komplett entfernt, sobald die zugrunde liegenden Daten vollständig recherchiert waren. Dieselbe Denkweise leitete den August-Umbau der Immer-klein-Wortliste in <span class="mono">TextCasingRules</span> — ein Wort, das versehentlich in einer Heuristik-Liste landete, verhinderte korrekte Großschreibung in einem legitimen Fall.</p>
+        </div>
+
+        <div class="principle">
+          <div class="k">2. Quellschreibweise schlägt Vermutung</div>
+          <p>Wo immer die App zwischen „was in den Daten steht" und „was eine Regel vermutet" wählen muss, gewinnt die Datenquelle. Angewendet auf Komposita-Erkennung (<span class="mono">die Haustür</span> blieb fälschlich klein, bis die Regel korrigiert wurde), auf die Höflichkeitsform „Sie" (wurde blind großgeschrieben, unabhängig vom Kontext), und auf Adjektiv-vor-Nomen-Konstruktionen.</p>
+        </div>
+
+        <div class="principle">
+          <div class="k">3. Zentrale Lösung statt Pflaster</div>
+          <p>Bei jeder Änderung: Gibt es die Regel schon woanders? Entsteht gerade eine zweite Quelle für dieselbe Information? Die neun Stores (siehe Architektur) sind das Ergebnis dieser Disziplin — jede Zuständigkeit hat genau einen Ort. Als der Tagesziel-Fortschritt umgebaut wurde, wanderte er nicht in eine neue eigene Zählung, sondern in den ohnehin für den Streak geführten Zähler in <span class="mono">ProgressStore</span>.</p>
+        </div>
+
+        <div class="principle">
+          <div class="k">4. Löschen statt reparieren, wenn Daten unbelegbar sind</div>
+          <p>Unpassende Lexikon-Einträge (Tippfehler-Duplikate, unbelegbare Fachbegriffe, thematisch falsch zugeordnete Wörter) werden nicht behelfsmäßig korrigiert, sondern restlos entfernt — inklusive aller abhängigen Zeilen in Nebentabellen, immer mit Backup und Integritätsprüfung davor.</p>
+        </div>
+
+        <h3 class="h">Verifikations-Disziplin</h3>
+        <p>Jede Code-Änderung wird gegen einen echten Hintergrund-Build verifiziert, bevor sie als fertig gilt — IDE-Diagnostik allein gilt nicht als Nachweis (sie zeigt nach Datei-Umschreibungen zuverlässig veraltete Fehlalarme). Jede Datenbank-Änderung bekommt vorher ein Backup und wird danach mit <span class="mono">PRAGMA integrity_check</span> geprüft. Commits erst nach explizitem Go, Push erst nach zweitem, separatem Go.</p>
+
+        <div class="section-nav">
+          <button data-goto="technik"><span class="lbl">Zurück</span>← Technik</button>
+          <span></span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function () {
+  const sections = ['overview', 'didaktik', 'architektur', 'technik', 'prinzipien'];
+  const tocBtns = document.querySelectorAll('.toc-btn');
+  const sidebar = document.getElementById('sidebar');
+  const scrim = document.getElementById('scrim');
+  const menuToggle = document.getElementById('menuToggle');
+
+  function show(id) {
+    if (!sections.includes(id)) id = 'overview';
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById('sec-' + id);
+    if (target) target.classList.add('active');
+    tocBtns.forEach(b => b.classList.toggle('active', b.dataset.target === id));
+    closeMenu();
+    const main = document.querySelector('main');
+    if (main) main.scrollTop = 0;
+    window.scrollTo(0, 0);
+  }
+
+  function openMenu() { sidebar.classList.add('open'); scrim.classList.add('show'); }
+  function closeMenu() { sidebar.classList.remove('open'); scrim.classList.remove('show'); }
+
+  menuToggle.addEventListener('click', () => {
+    sidebar.classList.contains('open') ? closeMenu() : openMenu();
+  });
+  scrim.addEventListener('click', closeMenu);
+
+  tocBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.target;
+      history.replaceState(null, '', '#' + id);
+      show(id);
+    });
+  });
+
+  document.querySelectorAll('[data-goto]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.goto;
+      history.replaceState(null, '', '#' + id);
+      show(id);
+    });
+  });
+
+  window.addEventListener('hashchange', () => {
+    show(location.hash.replace('#', ''));
+  });
+
+  show(location.hash.replace('#', '') || 'overview');
+
+  // ===== Gender-resolver demo =====
+  const DEMO_WORDS = [
+    {
+      word: 'le livre',
+      hit: 0,
+      stages: [
+        { name: 'Artikel-Extraktion', detail: '„le" steht explizit im Text → maskulin, Konfidenz 1.0', result: true },
+        { name: 'DB-Lookup', detail: 'übersprungen — Stufe 1 hat schon entschieden', result: false },
+        { name: 'Fallback', detail: 'nicht erreicht', result: false }
+      ],
+      final: { gender: 'maskulin (le)', source: 'explicitArticle', conf: 'Konfidenz 1.00' }
+    },
+    {
+      word: 'amis',
+      hit: 1,
+      stages: [
+        { name: 'Artikel-Extraktion', detail: 'kein Artikel im Text — weiter zu Stufe 2', result: false },
+        { name: 'DB-Lookup (Plural→Singular)', detail: '„amis" → Singular-Stamm „ami" → in DB als maskulin bekannt', result: true },
+        { name: 'Fallback', detail: 'nicht erreicht', result: false }
+      ],
+      final: { gender: 'maskulin, Plural erkannt → „les amis"', source: 'dbLookup', conf: 'Konfidenz 0.92' }
+    },
+    {
+      word: 'septembre',
+      hit: 2,
+      stages: [
+        { name: 'Artikel-Extraktion', detail: 'kein Artikel im Text — weiter zu Stufe 2', result: false },
+        { name: 'DB-Lookup', detail: 'kein Treffer, aber: Monatsname erkannt (isArticlelessFrenchNoun)', result: true },
+        { name: 'Bewusst kein Genus', detail: 'Monate stehen im Französischen artikellos („en septembre") — die frühere Heuristik hätte hier „la septembre" geraten (User-Bug 2026-06-09). Jetzt: korrekt kein Genus statt falschem Genus.', result: true, special: true }
+      ],
+      final: { gender: 'kein Genus (korrekt — artikelloses Nomen)', source: 'isArticlelessFrenchNoun', conf: 'kein Raten' }
+    }
+  ];
+
+  const wordsEl = document.getElementById('demoWords');
+  const pipelineEl = document.getElementById('demoPipeline');
+  const resultEl = document.getElementById('demoResult');
+
+  function renderDemo(idx) {
+    const d = DEMO_WORDS[idx];
+    document.querySelectorAll('.demo-word-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+    pipelineEl.innerHTML = '';
+    d.stages.forEach((st, i) => {
+      const row = document.createElement('div');
+      row.className = 'demo-stage' + (st.result ? ' hit' : '');
+      row.innerHTML =
+        '<div class="stage-no">' + (i + 1) + '</div>' +
+        '<div class="stage-name">' + st.name + '</div>' +
+        '<div class="stage-detail stage-result">' + st.detail + '</div>';
+      pipelineEl.appendChild(row);
+    });
+    resultEl.innerHTML =
+      '<span>→ <strong>' + d.final.gender + '</strong> · Quelle: ' + d.final.source + '</span>' +
+      '<span class="conf">' + d.final.conf + '</span>';
+  }
+
+  DEMO_WORDS.forEach((d, i) => {
+    const b = document.createElement('button');
+    b.className = 'demo-word-btn';
+    b.textContent = d.word;
+    b.addEventListener('click', () => renderDemo(i));
+    wordsEl.appendChild(b);
+  });
+  renderDemo(0);
+})();
+</script>
