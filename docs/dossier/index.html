@@ -691,6 +691,7 @@
       <div class="toc-label">Inhalt</div>
       <button class="toc-btn" data-target="overview">Übersicht<span class="desc">Was Elumi ist, in Zahlen</span></button>
       <button class="toc-btn" data-target="scan">Scan-Import<span class="desc">Der eigentliche Unterschied</span></button>
+      <button class="toc-btn" data-target="spiele">Spiele<span class="desc">Zwei Prototypen, in Testphase</span></button>
       <button class="toc-btn" data-target="didaktik">Didaktik<span class="desc">Warum es so gelehrt wird</span></button>
       <button class="toc-btn" data-target="architektur">Architektur<span class="desc">Wie das System zusammenhängt</span></button>
       <button class="toc-btn" data-target="technik">Technik<span class="desc">Stack, Daten, Pipeline</span></button>
@@ -735,7 +736,7 @@
         </div>
         <p>Ein Schüler wählt ein Lernziel — eine Klassenarbeit, ein Schulbuch-Kapitel, oder einfach „dranbleiben" — und übt in kurzen täglichen Runden. Fortschritt wird pro Vokabel getrackt (sitzt / wackelt noch), nicht nur pro Session. Woher der Lernstoff kommt, ist dabei der eigentliche Unterschied zu jeder anderen Vokabel-App — dazu gleich mehr im nächsten Abschnitt.</p>
 
-        <h3 class="h">Die sieben Module</h3>
+        <h3 class="h">Die sechs Module</h3>
         <div class="modules">
           <div class="module-card">
             <div class="name">Karteikarten</div>
@@ -758,10 +759,6 @@
             <p>Übt é/è/ê/ç gezielt. Pro Akzenttyp läuft ein <strong>Confidence-Wert</strong> (0–1) mit, den ein persistenter Store nach jeder Session per gleitendem Durchschnitt nachführt — viele richtige Antworten heben ihn, Fehler senken ihn. Vor jeder neuen Runde gewichtet die App die Aufgabenauswahl gegenläufig zu diesem Wert: Akzenttypen mit niedriger Confidence bekommen mehr Wiederholungen, sichere sitzen kurz aus. Kein ML-Modell, sondern eine klare Regel mit Gedächtnis — genügt, um sich spürbar auf Schwächen einzustellen.</p>
           </div>
           <div class="module-card">
-            <div class="name">Word Runner</div>
-            <p>Arcade-Runner: Vokabeln als Hindernisse in scrollenden Spuren, Canvas-gerendert. Die umfangreichste einzelne Datei im Projekt (4.312 Zeilen). Gespielt wird mit <strong>Credits</strong>, nicht auf Zuruf: Lernen (250 XP = 1 Spiel), die Tagesaufgabe, ein gehaltener Streak und Level-Aufstiege füllen ein Guthaben, das sich gegen Runden eintauschen lässt — das Spielen ist die Belohnung fürs Üben, nicht dessen Ersatz.</p>
-          </div>
-          <div class="module-card">
             <div class="name">Léa-Chat <span class="tag">pausiert</span></div>
             <p>Ein echter Konversationspartner zum Üben, kein Skript: Léa ist an die Anthropic-API angebunden, Antworten werden Token für Token gestreamt und erscheinen live in einer WhatsApp-artigen Chat-Oberfläche (inkl. blinkendem Cursor während des Tippens). Der Chatverlauf bleibt geräteweit über SwiftData erhalten. Das Feature hat funktioniert und ist fürs Vorzeigen einsatzbereit — aktuell nur wegen eines Backend-Fehlers hinter einem Feature-Flag pausiert, kein Konzeptproblem.</p>
           </div>
@@ -779,14 +776,6 @@
           <div class="shot-col">
             <div class="phone-frame"><img src="screenshots/trophy.png" alt="Fortschritt-Screen: Level, Tagesziel, sitzt/wackelt-Zählung"></div>
             <p class="shot-caption">Fortschritt — Level, Ziel, XP</p>
-          </div>
-          <div class="shot-col">
-            <div class="phone-frame"><img src="screenshots/spielen_hub.png" alt="Spielen-Hub: Credits-Guthaben, Zugang zu Elumi Game und Word Runner"></div>
-            <p class="shot-caption">Spielen-Hub — XP wird zu Credits</p>
-          </div>
-          <div class="shot-col">
-            <div class="phone-frame"><img src="screenshots/wordrunner.png" alt="Word Runner: laufendes Spiel, Vokabel-Lücke mit drei Antwortschildern in der Spur"></div>
-            <p class="shot-caption">Word Runner — laufende Runde</p>
           </div>
         </div>
 
@@ -846,13 +835,49 @@
 
         <div class="section-nav">
           <button data-goto="overview"><span class="lbl">Zurück</span>← Übersicht</button>
+          <button class="next" data-goto="spiele"><span class="lbl">Weiter</span>Spiele →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SPIELE ============ -->
+    <section class="section" id="sec-spiele" data-order="2">
+      <div class="section-inner">
+        <p class="eyebrow">Spiele</p>
+        <h2 class="title">Spielen ist die Belohnung fürs Üben —<br>nicht Teil der Übung selbst.</h2>
+        <p class="lede">Bewusst getrennt vom Lernbereich: Karteikarten, Quiz und Training sind die Arbeit, die den Wortschatz aufbaut. Die Spiele sind das, was man sich mit dieser Arbeit verdient — gekauft mit <span class="mono">Credits</span>, die aus Lernen, Tagesaufgabe, Streak und Level-Aufstiegen entstehen. Deshalb ein eigenes Kapitel statt einer Zeile bei den Übungsmodulen.</p>
+
+        <div class="principle">
+          <div class="k">Testphase — noch nicht final</div>
+          <p>Aktuell existieren zwei Spiel-Prototypen, <span class="mono">Elumi Game</span> und <span class="mono">Word Runner</span>. Es ist noch offen, ob am Ende beide bleiben, nur eines, oder beide in überarbeiteter Form — das wird gerade evaluiert. Beide sind spielbar, aber nicht fertig: Die Verknüpfung zu den tatsächlichen Lerninhalten (welche Vokabeln konkret auftauchen, wie stark das Spielergebnis auf den Fortschritt zurückwirkt) soll noch enger werden. Das ist bewusst offener Entwicklungsstand, kein Feature, das als abgeschlossen zu verstehen ist.</p>
+        </div>
+
+        <h3 class="h">Wie man ans Spielen kommt</h3>
+        <p>Spiele kosten <span class="mono">Credits</span>, kein separates Guthaben, das man kaufen könnte — man verdient sie sich ausschließlich durchs Lernen: 250 XP ergeben einen Credit, dazu kommen die tägliche Aufgabe, ein gehaltener Streak und Level-Aufstiege als Bonus. Eine Runde kostet einen Credit und gibt vier Leben. Die Reihenfolge ist damit immer dieselbe: erst üben, dann spielen — nicht umgekehrt.</p>
+
+        <h3 class="h">Word Runner</h3>
+        <p>Arcade-Runner: Vokabeln als Hindernisse in scrollenden Spuren, Canvas-gerendert. Die umfangreichste einzelne Datei im Projekt (4.312 Zeilen). Der Spieler steuert eine Spur und muss die Schilder mit der richtigen Antwort treffen, während der Vokabel-Lückensatz oben eingeblendet bleibt.</p>
+
+        <div class="shot-row">
+          <div class="shot-col">
+            <div class="phone-frame"><img src="screenshots/spielen_hub.png" alt="Spielen-Hub: Credits-Guthaben, Zugang zu Elumi Game und Word Runner"></div>
+            <p class="shot-caption">Spielen-Hub — Credits-Guthaben</p>
+          </div>
+          <div class="shot-col">
+            <div class="phone-frame"><img src="screenshots/wordrunner.png" alt="Word Runner: laufendes Spiel, Vokabel-Lücke mit drei Antwortschildern in der Spur"></div>
+            <p class="shot-caption">Word Runner — laufende Runde</p>
+          </div>
+        </div>
+
+        <div class="section-nav">
+          <button data-goto="scan"><span class="lbl">Zurück</span>← Scan-Import</button>
           <button class="next" data-goto="didaktik"><span class="lbl">Weiter</span>Didaktik →</button>
         </div>
       </div>
     </section>
 
     <!-- ============ DIDAKTIK ============ -->
-    <section class="section" id="sec-didaktik" data-order="2">
+    <section class="section" id="sec-didaktik" data-order="3">
       <div class="section-inner">
         <p class="eyebrow">Didaktik</p>
         <h2 class="title">Jede Mechanik hat eine Quelle,<br>nicht nur eine Meinung.</h2>
@@ -930,14 +955,14 @@
         </div>
 
         <div class="section-nav">
-          <button data-goto="scan"><span class="lbl">Zurück</span>← Scan-Import</button>
+          <button data-goto="spiele"><span class="lbl">Zurück</span>← Spiele</button>
           <button class="next" data-goto="architektur"><span class="lbl">Weiter</span>Architektur →</button>
         </div>
       </div>
     </section>
 
     <!-- ============ ARCHITEKTUR ============ -->
-    <section class="section" id="sec-architektur" data-order="3">
+    <section class="section" id="sec-architektur" data-order="4">
       <div class="section-inner">
         <p class="eyebrow">Architektur</p>
         <h2 class="title">Ein Store pro Zuständigkeit,<br>keiner rechnet doppelt.</h2>
@@ -1005,7 +1030,7 @@ flowchart TB
     </section>
 
     <!-- ============ TECHNIK ============ -->
-    <section class="section" id="sec-technik" data-order="4">
+    <section class="section" id="sec-technik" data-order="5">
       <div class="section-inner">
         <p class="eyebrow">Technik</p>
         <h2 class="title">SwiftUI, eine SQLite-Datei,<br>keine fremde Infrastruktur.</h2>
@@ -1070,7 +1095,7 @@ flowchart TB
     </section>
 
     <!-- ============ PRINZIPIEN ============ -->
-    <section class="section" id="sec-prinzipien" data-order="5">
+    <section class="section" id="sec-prinzipien" data-order="6">
       <div class="section-inner">
         <p class="eyebrow">Arbeitsweise</p>
         <h2 class="title">Vier Regeln, die sich<br>durchs ganze Projekt ziehen.</h2>
@@ -1116,7 +1141,7 @@ flowchart TB
 
 <script>
 (function () {
-  const sections = ['overview', 'scan', 'didaktik', 'architektur', 'technik', 'prinzipien'];
+  const sections = ['overview', 'scan', 'spiele', 'didaktik', 'architektur', 'technik', 'prinzipien'];
   const tocBtns = document.querySelectorAll('.toc-btn');
   const sidebar = document.getElementById('sidebar');
   const scrim = document.getElementById('scrim');
