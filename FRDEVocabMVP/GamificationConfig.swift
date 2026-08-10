@@ -201,6 +201,18 @@ enum GamificationConfig {
 
     // MARK: - Streak
 
+    /// **Mini-Session-Schwelle (2026-08-08)** — so viele korrekt
+    /// beantwortete Aufgaben an einem Tag reichen, um den Streak zu
+    /// halten, UNABHÄNGIG davon, ob die (größere) Daily Challenge erfüllt
+    /// wurde. Vorher war die volle Tagesaufgabe (z. B. 15 Fragen oder eine
+    /// Speed Round) der einzige Streak-Trigger — das koppelte zwei
+    /// mechanisch verschiedene Dinge (Tagesziel und Gewohnheit) aneinander.
+    ///
+    /// Evidenzgrundlage: Duolingo hat Streak und Tagesziel entkoppelt
+    /// (eine Mini-Lektion hält den Streak, das Tagesziel läuft separat)
+    /// und maß dadurch +3,3 % Retention. Siehe auch `StreakJokerStore`.
+    static let streakMiniSessionThreshold = 5
+
     /// Streak-Multiplikator je nach erreichten Streak-Tagen. Nicht für XP
     /// genutzt (XP bleibt fair pro Antwort), sondern für die Visualisierung
     /// und ggf. spätere Bonus-Mechaniken.

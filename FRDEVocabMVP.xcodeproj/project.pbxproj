@@ -35,6 +35,7 @@
 		58A13D20DB064DC3A1CFBDDD /* Sounds/elumi_tentacle_sting.wav in Resources */ = {isa = PBXBuildFile; fileRef = 14D6AA0E2F7547C58EFD2C7B /* Sounds/elumi_tentacle_sting.wav */; };
 		616E2C714CE745070CD98CBB /* AppBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77D1F5E4FBCC08EBB9C7AFB9 /* AppBackButton.swift */; };
 		637BA521C77B4EC8B8FB9AAC /* DailyChallengeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C3FB95BD334EE18408771B /* DailyChallengeStore.swift */; };
+		384061755FDF45708CBB5F67 /* StreakJokerStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BD6CE973FC74612A17D9290 /* StreakJokerStore.swift */; };
 		6A9A9076F4D245A9AF3530F5 /* Sounds/elumi_levelup.wav in Resources */ = {isa = PBXBuildFile; fileRef = 6D35D1BF6D2D4C5093A40F4E /* Sounds/elumi_levelup.wav */; };
 		721DFC0B52424F55A89930EB /* SessionSetupComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C5A4B8C09644DDA8E9DC8B5 /* SessionSetupComponents.swift */; };
 		729A713080B546A1B10C5ACA /* Sounds/elumi_toggle.wav in Resources */ = {isa = PBXBuildFile; fileRef = 32C43DE8F494458D929C4AE1 /* Sounds/elumi_toggle.wav */; };
@@ -651,6 +652,7 @@
 		4C1FD5616CFA427DBAB4CE9D /* LexiconTextUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LexiconTextUtility.swift; sourceTree = "<group>"; };
 		51677781801E491EAEA0C07A /* Sounds/elumi_saugloop.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_saugloop.wav; sourceTree = "<group>"; };
 		54C3FB95BD334EE18408771B /* DailyChallengeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyChallengeStore.swift; path = FRDEVocabMVP/DailyChallengeStore.swift; sourceTree = "<group>"; };
+		1BD6CE973FC74612A17D9290 /* StreakJokerStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StreakJokerStore.swift; path = FRDEVocabMVP/StreakJokerStore.swift; sourceTree = "<group>"; };
 		550C14FD7EDE4E0C8426E5C0 /* Sounds/elumi_powerupspawn.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_powerupspawn.wav; sourceTree = "<group>"; };
 		5F6AA0B1D09C4B26B5544537 /* Sounds/elumi_roundclear.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_roundclear.wav; sourceTree = "<group>"; };
 		6D35D1BF6D2D4C5093A40F4E /* Sounds/elumi_levelup.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_levelup.wav; sourceTree = "<group>"; };
@@ -1392,6 +1394,7 @@
 				765EA90FF65349C1ADBD8D70 /* VariableRewardEngine.swift */,
 				CA4DE9771408424DBF4CA080 /* FeedbackTiming.swift */,
 				54C3FB95BD334EE18408771B /* DailyChallengeStore.swift */,
+				1BD6CE973FC74612A17D9290 /* StreakJokerStore.swift */,
 				B2D8AABD1A084A80A03C7C97 /* DailyChallenge.swift */,
 				3AF0AA02FEF444D2BD481B5B /* GameHubView.swift */,
 				F244E2378E0C4DF89CC561E1 /* ProgressHubComponents.swift */,
@@ -2384,6 +2387,7 @@
 				4FC0AFE2020E42DF8ADBDC59 /* VariableRewardEngine.swift in Sources */,
 				7FCB5FF760B64B1BB8AAFCCE /* FeedbackTiming.swift in Sources */,
 				637BA521C77B4EC8B8FB9AAC /* DailyChallengeStore.swift in Sources */,
+				384061755FDF45708CBB5F67 /* StreakJokerStore.swift in Sources */,
 				2CE2689FA4E34BCB9A22FCA9 /* DailyChallenge.swift in Sources */,
 				CE67839CC59144FDBF5F565C /* GameHubView.swift in Sources */,
 				081CA03EE10F4E52B6653A75 /* ProgressHubComponents.swift in Sources */,

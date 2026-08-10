@@ -24,6 +24,15 @@ struct UserProgress: Codable, Equatable {
     /// nicht jedes Mal wenn die Streak 7 berührt.
     var awardedStreakMilestones: Set<Int> = []
 
+    /// **Mini-Session-Streak (2026-08-08)** — Day-Index, für den
+    /// `todayCorrectCount` zählt. Weicht er vom aktuellen Tag ab, ist der
+    /// Zähler aus einem Vortag und muss vor der nächsten Buchung auf 0.
+    var todayCorrectDayIndex: Int = -1
+    /// Wie viele Aufgaben heute schon korrekt beantwortet wurden — Basis
+    /// für den entkoppelten Streak-Trigger (siehe
+    /// `GamificationConfig.streakMiniSessionThreshold`).
+    var todayCorrectCount: Int = 0
+
     var level: Int { GamificationConfig.level(forXP: totalXP) }
     var levelProgress: Double { GamificationConfig.progressTowardNextLevel(totalXP: totalXP) }
 
@@ -70,6 +79,12 @@ final class ProgressStore: ObservableObject {
     private var awardedMilestonesKey: String {
         AccountStore.shared.namespacedKey("elumi.gamification.awardedStreakMilestones.v1")
     }
+    private var todayCorrectDayKey: String {
+        AccountStore.shared.namespacedKey("elumi.gamification.todayCorrectDay.v1")
+    }
+    private var todayCorrectCountKey: String {
+        AccountStore.shared.namespacedKey("elumi.gamification.todayCorrectCount.v1")
+    }
 
     init() {
         self.progress = Self.loadSnapshot()
@@ -96,6 +111,8 @@ final class ProgressStore: ObservableObject {
            let arr = try? JSONDecoder().decode([Int].self, from: data) {
             loaded.awardedStreakMilestones = Set(arr)
         }
+        loaded.todayCorrectDayIndex = defaults.object(forKey: scope.namespacedKey("elumi.gamification.todayCorrectDay.v1")) as? Int ?? -1
+        loaded.todayCorrectCount = defaults.integer(forKey: scope.namespacedKey("elumi.gamification.todayCorrectCount.v1"))
         return loaded
     }
 
@@ -128,6 +145,8 @@ final class ProgressStore: ObservableObject {
         if let data = try? JSONEncoder().encode(Array(snapshot.awardedStreakMilestones)) {
             defaults.set(data, forKey: awardedMilestonesKey)
         }
+        defaults.set(snapshot.todayCorrectDayIndex, forKey: todayCorrectDayKey)
+        defaults.set(snapshot.todayCorrectCount, forKey: todayCorrectCountKey)
 
         // **Bare-Key Mirror** (2026-05-09) — wenn ein Account aktiv ist
         // (`AccountStore.currentAccountID != nil`), divergieren die
@@ -148,5 +167,82 @@ final class ProgressStore: ObservableObject {
         defaults.set(snapshot.arcadeCredits, forKey: appArcadeCreditsKey)
         defaults.set(snapshot.currentStreak, forKey: appElumiCurrentStreakKey)
         defaults.set(snapshot.bestStreak, forKey: appElumiBestStreakKey)
+    }
+}
+
+// MARK: - Streak (entkoppelt vom Tagesziel, 2026-08-08)
+
+/// Ergebnis eines Streak-Vergabe-Versuchs. `advanced == false` heißt: heute
+/// war schon gebucht, es ist nichts passiert (idempotent).
+struct StreakAdvanceOutcome: Equatable {
+    let advanced: Bool
+    let newStreak: Int
+    let milestoneCredits: Int
+    /// Wie viele Joker-Tage verbraucht wurden, um die Lücke zu überbrücken.
+    /// 0 im Normalfall (nahtlose Fortsetzung oder frischer Start).
+    let jokersConsumed: Int
+}
+
+extension ProgressStore {
+    /// Rückt den Streak für `today` vor — **einmal pro Tag**, unabhängig
+    /// davon, WELCHE Session-Aktivität es war. Ersetzt den bisherigen
+    /// Trigger über die volle Daily Challenge (siehe
+    /// `DailyChallengeStore`): Aufrufer ist jetzt `ProgressService`, sobald
+    /// `GamificationConfig.streakMiniSessionThreshold` an korrekten
+    /// Antworten heute erreicht ist.
+    ///
+    /// **Joker-Logik**: Liegt zwischen dem letzten gebuchten Tag und heute
+    /// eine Lücke, wird zuerst versucht, sie mit `StreakJokerStore` zu
+    /// überbrücken (ein Joker deckt genau einen versäumten Tag). Reicht
+    /// das Kontingent nicht, startet der Streak bei 1 neu — kein
+    /// Teil-Verbrauch, kein stilles Clamping.
+    @discardableResult
+    func advanceStreakIfNeeded(today: Int) -> StreakAdvanceOutcome {
+        guard progress.lastSessionDayIndex != today else {
+            return StreakAdvanceOutcome(
+                advanced: false,
+                newStreak: progress.currentStreak,
+                milestoneCredits: 0,
+                jokersConsumed: 0
+            )
+        }
+
+        var milestoneCredits = 0
+        var jokersConsumed = 0
+
+        mutate { p in
+            let gap = today - p.lastSessionDayIndex
+            if p.lastSessionDayIndex < 0 {
+                p.currentStreak = 1
+            } else if gap == 1 {
+                p.currentStreak += 1
+            } else {
+                let missedDays = gap - 1
+                let available = StreakJokerStore.shared.jokersRemaining
+                if missedDays <= available {
+                    StreakJokerStore.shared.consume(missedDays)
+                    jokersConsumed = missedDays
+                    p.currentStreak += 1
+                } else {
+                    p.currentStreak = 1
+                }
+            }
+            p.bestStreak = max(p.bestStreak, p.currentStreak)
+            p.lastSessionDayIndex = today
+
+            if let bonus = GamificationConfig.creditsForStreakMilestones[p.currentStreak],
+               !p.awardedStreakMilestones.contains(p.currentStreak) {
+                p.arcadeCredits += bonus
+                p.awardedStreakMilestones.insert(p.currentStreak)
+                milestoneCredits = bonus
+            }
+        }
+
+        return StreakAdvanceOutcome(
+            advanced: true,
+            newStreak: progress.currentStreak,
+            milestoneCredits: milestoneCredits,
+            jokersConsumed: jokersConsumed
+        )
     }
 }

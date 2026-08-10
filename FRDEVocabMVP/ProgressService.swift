@@ -152,13 +152,42 @@ final class ProgressService {
         }
 
         // 5) Daily Challenge fortschreiben. Wenn dadurch das Tagesziel
-        //    erreicht wurde, bekommen wir Reward-XP + Credit zurück und
-        //    der Streak wird (einmal pro Tag) vom Store hochgezogen.
+        //    erreicht wurde, bekommen wir Reward-XP + Credit zurück.
+        //    **2026-08-08** — löst NICHT mehr den Streak aus, siehe (5b).
         let dailyOutcome = DailyChallengeStore.shared.recordSession(session)
         let dailyBonusXP = dailyOutcome?.xpAwarded ?? 0
         let creditsFromDailyChallenge = dailyOutcome?.creditsAwarded ?? 0
-        let creditsFromStreakMilestone = dailyOutcome?.creditsFromStreakMilestone ?? 0
-        let streakIncreasedToday = dailyOutcome?.streakAdvanced ?? false
+
+        // 5b) **Streak-Mini-Session (2026-08-08)** — der Streak ist vom
+        //     vollen Tagesziel entkoppelt: `streakMiniSessionThreshold`
+        //     korrekt beantwortete Aufgaben an einem Tag reichen, egal aus
+        //     welchem Modul und egal ob die Daily Challenge (oben) schon
+        //     erfüllt ist. Grund: ein starres "volles Tagesziel oder
+        //     nichts" bestraft genau die kurzen Sessions, die laut
+        //     Gewohnheitsforschung den Streak eigentlich tragen sollen.
+        //     Der Tages-Zähler lebt in `ProgressStore` (persistiert,
+        //     account-scoped) und wird bei Tageswechsel zurückgesetzt.
+        let today = Self.currentDayIndex
+        if store.progress.todayCorrectDayIndex != today {
+            store.mutate { p in
+                p.todayCorrectDayIndex = today
+                p.todayCorrectCount = 0
+            }
+        }
+        let correctBeforeThisSession = store.progress.todayCorrectCount
+        let correctAfterThisSession = correctBeforeThisSession + session.correctCount
+        store.mutate { p in p.todayCorrectCount = correctAfterThisSession }
+
+        var streakOutcome = StreakAdvanceOutcome(
+            advanced: false, newStreak: store.progress.currentStreak,
+            milestoneCredits: 0, jokersConsumed: 0
+        )
+        let threshold = GamificationConfig.streakMiniSessionThreshold
+        if correctBeforeThisSession < threshold, correctAfterThisSession >= threshold {
+            streakOutcome = store.advanceStreakIfNeeded(today: today)
+        }
+        let creditsFromStreakMilestone = streakOutcome.milestoneCredits
+        let streakIncreasedToday = streakOutcome.advanced
 
         // 6) Variable Reward rollen (Phase 7). Seltenes Glücksmoment,
         //    Wahrscheinlichkeiten zentral in `VariableRewardEngine`.

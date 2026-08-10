@@ -13,8 +13,13 @@ import SwiftUI
 ///   • Fortschritts-Aktualisierung beim Session-Abschluss
 ///   • Reward-Vergabe (XP + Credit) über `ProgressStore` — **nicht** parallel
 ///     über eigene Zähler, damit Credits/XP weiterhin an *einer* Stelle leben
-///   • Streak-Advancement (da ab Phase 5 nur die Challenge einen Tag als
-///     „erfüllt" markiert — nicht mehr jede beliebige Session)
+///
+/// **2026-08-08** — rückt den Streak NICHT mehr vor. Das ist jetzt
+/// entkoppelt: `ProgressService.record(session:)` triggert den Streak
+/// direkt über `ProgressStore.advanceStreakIfNeeded`, sobald an einem Tag
+/// `GamificationConfig.streakMiniSessionThreshold` korrekte Antworten
+/// erreicht sind — unabhängig davon, ob die (größere) Daily Challenge
+/// hier fertig wird. Siehe `StreakJokerStore` für die Begründung.
 ///
 /// Persistenz: einzelnes Codable-JSON in UserDefaults, analog zum Muster
 /// von `ProfileStore` / `ProgressStore`. Beim App-Start wird über den
@@ -147,60 +152,34 @@ final class DailyChallengeStore: ObservableObject {
         )
     }
 
-    // MARK: - Reward + Streak
+    // MARK: - Reward
 
-    /// Rewarded + Streak-Update in einem atomaren `ProgressStore.mutate`.
-    /// **Kein** paralleler Credit-/XP-Zähler — die zentralen Stores bleiben
-    /// Single Source of Truth.
+    /// Schüttet den Challenge-Reward aus. **Kein** paralleler Credit-/
+    /// XP-Zähler — der zentrale Store bleibt Single Source of Truth.
+    ///
+    /// **2026-08-08** — rückt NICHT mehr den Streak vor. Der Streak ist
+    /// vom vollen Tagesziel entkoppelt: er wird jetzt zentral in
+    /// `ProgressService.record(session:)` über `ProgressStore.advanceStreakIfNeeded`
+    /// getriggert, sobald `GamificationConfig.streakMiniSessionThreshold`
+    /// korrekte Antworten an einem Tag erreicht sind — unabhängig davon,
+    /// ob (und wann) die größere Daily Challenge hier fertig wird.
     private func awardCompletionReward(for challenge: DailyChallenge) -> DailyChallengeCompletionOutcome {
         let today = GamificationConfig.currentDayIndex
         let store = ProgressStore.shared
 
-        var streakAdvanced = false
-        var newStreak = store.progress.currentStreak
-        var milestoneCredits = 0
-
         store.mutate { p in
-            // 1) Reward ausschütten
             p.totalXP += challenge.reward.xp
             p.arcadeCredits += challenge.reward.credits
-
-            // 2) Daily-Bonus-Marker setzen — damit das bestehende
-            //    `isDailyBonusAvailable` konsistent auf „heute erledigt"
-            //    kippt (UI-Komponenten, die noch darauf lesen, bleiben ohne
-            //    Umbau korrekt).
+            // Daily-Bonus-Marker setzen — damit das bestehende
+            // `isDailyBonusAvailable` konsistent auf „heute erledigt"
+            // kippt (UI-Komponenten, die noch darauf lesen, bleiben ohne
+            // Umbau korrekt).
             p.lastDailyBonusDayIndex = today
-
-            // 3) Streak vorrücken — nur wenn heute noch nicht passiert.
-            //    Ab Phase 5 ist die Challenge der *einzige* Streak-Trigger.
-            if p.lastSessionDayIndex != today {
-                let gap = today - p.lastSessionDayIndex
-                if p.lastSessionDayIndex < 0 || gap > 1 {
-                    p.currentStreak = 1
-                } else if gap == 1 {
-                    p.currentStreak += 1
-                }
-                p.bestStreak = max(p.bestStreak, p.currentStreak)
-                p.lastSessionDayIndex = today
-                streakAdvanced = true
-                newStreak = p.currentStreak
-
-                // 4) Streak-Milestone-Credits (einmalig 3/7/14/30).
-                if let bonus = GamificationConfig.creditsForStreakMilestones[p.currentStreak],
-                   !p.awardedStreakMilestones.contains(p.currentStreak) {
-                    p.arcadeCredits += bonus
-                    p.awardedStreakMilestones.insert(p.currentStreak)
-                    milestoneCredits = bonus
-                }
-            }
         }
 
         return DailyChallengeCompletionOutcome(
             xpAwarded: challenge.reward.xp,
-            creditsAwarded: challenge.reward.credits,
-            streakAdvanced: streakAdvanced,
-            newStreak: newStreak,
-            creditsFromStreakMilestone: milestoneCredits
+            creditsAwarded: challenge.reward.credits
         )
     }
 

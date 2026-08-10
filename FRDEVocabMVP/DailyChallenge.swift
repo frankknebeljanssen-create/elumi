@@ -105,13 +105,15 @@ struct DailyChallengeReward: Codable, Equatable {
 }
 
 /// Outcome, das der Store zurückgibt, wenn die Challenge **in diesem Call**
-/// abgeschlossen wurde. Trägt die vergebenen Werte sowie Streak-Info, damit
-/// das aufrufende `ProgressService` sie in sein `SessionRewardOutcome` falten
-/// und die UI (SessionSummary) sie sofort anzeigen kann.
+/// abgeschlossen wurde. Trägt die vergebenen Werte, damit das aufrufende
+/// `ProgressService` sie in sein `SessionRewardOutcome` falten und die UI
+/// (SessionSummary) sie sofort anzeigen kann.
+///
+/// **2026-08-08** — trägt bewusst KEINE Streak-Info mehr. Der Streak ist
+/// vom vollen Tagesziel entkoppelt (siehe `GamificationConfig.streakMiniSessionThreshold`,
+/// `ProgressStore.advanceStreakIfNeeded`) — die Daily Challenge ist nur
+/// noch eine von mehreren Belohnungsquellen, kein Streak-Gate mehr.
 struct DailyChallengeCompletionOutcome: Equatable {
     let xpAwarded: Int
     let creditsAwarded: Int
-    let streakAdvanced: Bool
-    let newStreak: Int
-    let creditsFromStreakMilestone: Int
 }
