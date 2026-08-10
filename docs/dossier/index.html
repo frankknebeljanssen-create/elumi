@@ -642,15 +642,15 @@
           </div>
           <div class="module-card">
             <div class="name">Akzente</div>
-            <p>Übt é/è/ê/ç gezielt — mit einem persistenten „Confidence"-Modell, das Inhalte nach Schwäche priorisiert.</p>
+            <p>Übt é/è/ê/ç gezielt. Pro Akzenttyp läuft ein <strong>Confidence-Wert</strong> (0–1) mit, den ein persistenter Store nach jeder Session per gleitendem Durchschnitt nachführt — viele richtige Antworten heben ihn, Fehler senken ihn. Vor jeder neuen Runde gewichtet die App die Aufgabenauswahl gegenläufig zu diesem Wert: Akzenttypen mit niedriger Confidence bekommen mehr Wiederholungen, sichere sitzen kurz aus. Kein ML-Modell, sondern eine klare Regel mit Gedächtnis — genügt, um sich spürbar auf Schwächen einzustellen.</p>
           </div>
           <div class="module-card">
             <div class="name">Word Runner</div>
             <p>Arcade-Runner: Vokabeln als Hindernisse in scrollenden Spuren, Canvas-gerendert. Die umfangreichste einzelne Datei im Projekt (4.312 Zeilen).</p>
           </div>
-          <div class="module-card dim">
-            <div class="name">Léa-Chat <span class="tag">in Arbeit</span></div>
-            <p>Konversationsübung im Chat-Format, WhatsApp-artige Oberfläche. Aktuell hinter einem Feature-Flag pausiert (Backend-Fehler).</p>
+          <div class="module-card">
+            <div class="name">Léa-Chat <span class="tag">pausiert</span></div>
+            <p>Ein echter Konversationspartner zum Üben, kein Skript: Léa ist an die Anthropic-API angebunden, Antworten werden Token für Token gestreamt und erscheinen live in einer WhatsApp-artigen Chat-Oberfläche (inkl. blinkendem Cursor während des Tippens). Der Chatverlauf bleibt geräteweit über SwiftData erhalten. Das Feature hat funktioniert und ist fürs Vorzeigen einsatzbereit — aktuell nur wegen eines Backend-Fehlers hinter einem Feature-Flag pausiert, kein Konzeptproblem.</p>
           </div>
         </div>
 
