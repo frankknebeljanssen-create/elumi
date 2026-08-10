@@ -365,6 +365,45 @@
   }
   .module-card p { font-size: 13.5px; margin: 8px 0 0; }
 
+  /* ============ SCREENSHOTS (phone frame) ============ */
+  .phone-frame {
+    display: inline-block;
+    padding: 9px;
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    border-radius: 34px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+  }
+  .phone-frame img {
+    display: block;
+    width: 100%;
+    max-width: 260px;
+    border-radius: 25px;
+  }
+  .shot-caption {
+    margin: 10px 0 0;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .shot-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
+    align-items: flex-start;
+    justify-content: center;
+    margin: 24px 0;
+  }
+  .shot-col { text-align: center; }
+  .shot-float {
+    float: right;
+    margin: 4px 0 20px 28px;
+    text-align: center;
+  }
+  @media (max-width: 720px) {
+    .shot-float { float: none; margin: 20px auto; display: block; }
+  }
+
   /* ============ FLOW STEPS (Scan-Import) ============ */
   .flow-steps {
     list-style: none;
@@ -668,7 +707,7 @@
       <div class="section-inner">
         <div class="principle">
           <div class="k">In Kürze</div>
-          <p>Schüler lernen Vokabeln nicht schlecht wegen der Vokabeln — sondern weil das Abschreiben in Karteikarten vorher zu viel Reibung erzeugt. Elumi macht daraus ein Foto: abfotografieren, KI liest aus, sofort übbar. Dahinter ein selbst kuratiertes 17.229-Wörter-Lexikon und ein Lernsystem, das auf echter Lernpsychologie basiert (verteiltes Üben, aktives Abrufen), nicht auf Bauchgefühl. Gebaut von einer Person in 4,5 Monaten, 698 Commits.</p>
+          <p>Schüler lernen Vokabeln nicht schlecht wegen der Vokabeln — sondern weil das Abschreiben in Karteikarten vorher zu viel Reibung erzeugt. Elumi macht daraus ein Foto: abfotografieren, KI liest aus, sofort übbar. Dahinter ein selbst kuratiertes 17.229-Wörter-Lexikon und ein Lernsystem, das auf echter Lernpsychologie basiert (verteiltes Üben, aktives Abrufen). Gebaut von einer Person in 4,5 Monaten, 698 Commits.</p>
         </div>
 
         <div class="hero">
@@ -690,9 +729,23 @@
         </div>
 
         <h3 class="h">Was die App tut</h3>
+        <div class="shot-float">
+          <div class="phone-frame"><img src="screenshots/home.png" alt="Elumi Home-Screen: Tagesziel, Module Training/Quiz/Live-Chat/Daily Drop"></div>
+          <p class="shot-caption">Home-Screen</p>
+        </div>
         <p>Ein Schüler wählt ein Lernziel — eine Klassenarbeit, ein Schulbuch-Kapitel, oder einfach „dranbleiben" — und übt in kurzen täglichen Runden. Fortschritt wird pro Vokabel getrackt (sitzt / wackelt noch), nicht nur pro Session. Woher der Lernstoff kommt, ist dabei der eigentliche Unterschied zu jeder anderen Vokabel-App — dazu gleich mehr im nächsten Abschnitt.</p>
 
         <h3 class="h">Die sieben Module</h3>
+        <div class="shot-row">
+          <div class="shot-col">
+            <div class="phone-frame"><img src="screenshots/quiz.png" alt="Quiz-Modul: laufende Frage mit Multiple-Choice-Antworten"></div>
+            <p class="shot-caption">Quiz — laufende Übung</p>
+          </div>
+          <div class="shot-col">
+            <div class="phone-frame"><img src="screenshots/trophy.png" alt="Fortschritt-Screen: Level, Tagesziel, sitzt/wackelt-Zählung"></div>
+            <p class="shot-caption">Fortschritt — Level, Ziel, XP</p>
+          </div>
+        </div>
         <div class="modules">
           <div class="module-card">
             <div class="name">Karteikarten</div>
@@ -735,10 +788,14 @@
     <section class="section" id="sec-scan" data-order="1">
       <div class="section-inner">
         <p class="eyebrow">Scan-Import</p>
-        <h2 class="title">Der Lernstoff kommt nicht aus der App —<br>er kommt aus dem eigenen Alltag.</h2>
+        <h2 class="title">Der Lernstoff kommt nicht aus der App —<br>er kommt <span style="color: var(--pink);">aus dem eigenen Alltag</span>.</h2>
         <p class="lede">Das ist der eigentliche Unterschied zu jeder anderen Vokabel-App: Ein Schüler muss keine Karteikarten von Hand schreiben. Ein Foto reicht — vom Vokabelheft, einer Lehrbuchseite, einer handschriftlichen Mitschrift, sogar von einem Plakat in der Stadt oder einer Zeitschrift. Elumi liest die Vokabeln heraus und baut daraus eine eigene, sofort übbare Lernliste.</p>
 
         <h3 class="h">Der Weg vom Foto zur Übung</h3>
+        <div class="shot-float">
+          <div class="phone-frame"><img src="screenshots/scan_review.png" alt="Scan-Review: erkannte Vokabelpaare aus einem fotografierten Vokabelheft, einzeln bearbeitbar"></div>
+          <p class="shot-caption">Schritt 3 — Prüfen</p>
+        </div>
         <ol class="flow-steps">
           <li><strong>Fotografieren.</strong> Kamera mit automatischer Rechteck-Erkennung, oder ein Foto aus der Galerie wählen. Auch mehrere Seiten möglich — jede wird einzeln geprüft, keine Blind-Stapelverarbeitung, die im Hintergrund etwas falsch macht.</li>
           <li><strong>Auslesen.</strong> Erst ein schneller lokaler Texterkennungs-Durchlauf auf dem Gerät. Reicht dessen Qualität nicht (bei handschriftlichen Notizen oder unscharfen Fotos fast nie), schickt die App das <strong>Foto selbst</strong> an zwei KI-Modelle parallel — nicht nur den erkannten Text, sondern das Bild direkt, damit Layout und Handschrift nicht verloren gehen.</li>
@@ -786,7 +843,7 @@
       <div class="section-inner">
         <p class="eyebrow">Didaktik</p>
         <h2 class="title">Jede Mechanik hat eine Quelle,<br>nicht nur eine Meinung.</h2>
-        <p class="lede">Elumis Lernmechanik ist nicht aus Bauchgefühl entstanden. Drei Bereiche der Lernpsychologie tragen die Kernentscheidungen — verteiltes Üben, aktives Abrufen, und wie ein Streak-System gebaut sein muss, damit es dem Lernen dient statt ihm zu schaden.</p>
+        <p class="lede">Drei Bereiche der Lernpsychologie tragen die Kernentscheidungen — verteiltes Üben, aktives Abrufen, und wie ein Streak-System gebaut sein muss, damit es dem Lernen dient statt ihm zu schaden.</p>
 
         <h3 class="h">1. Verteiltes Üben statt Pauken</h3>
         <p>Die best belegte Erkenntnis der Lernpsychologie: dieselbe Lernzeit, über mehrere Tage verteilt statt an einem Stück, verdoppelt bei längeren Behaltensintervallen fast die Abrufleistung. Cepeda et al. (2006) werteten <strong>839 Messungen aus 317 Experimenten</strong> aus:</p>
@@ -816,7 +873,7 @@
         <h3 class="h">3. Das Streak-System — verzeihend statt hart</h3>
         <p>Die jüngste Design-Entscheidung (August 2026): der tägliche Streak sollte ursprünglich strikt sein — ein verpasster Tag, alles auf null. Die Recherche dazu drehte diese Annahme um.</p>
 
-        <p>Lally et al. (2010) begleiteten 96 Menschen 84 Tage beim Aufbau einer neuen Gewohnheit: Automatisierung nach im Median <strong>66 Tagen</strong>, und ein einzelner verpasster Tag <strong>beeinträchtigte die Gewohnheitsbildung nicht messbar</strong>. Ein Streak, der einen Fehltag als Totalverlust behandelt, bestraft also etwas, das gar keinen Schaden anrichtet.</p>
+        <p>Lally et al. (2010) begleiteten 96 Menschen 84 Tage beim Aufbau einer neuen Gewohnheit: Automatisierung nach im Median <strong>66 Tagen</strong>, und <strong>ein einzelner verpasster Tag beeinträchtigte die Gewohnheitsbildung nicht messbar</strong>. Ein Streak, der einen Fehltag als Totalverlust behandelt, bestraft also etwas, das gar keinen Schaden anrichtet.</p>
 
         <p>Die stärkste Einzelstudie zur Gegenlösung: Sharif &amp; Shu (2017, <em>Journal of Marketing Research</em>) verglichen ein hartes Ziel, ein weiches Ziel, und ein hartes Ziel <strong>mit einer knappen, kostenlosen Reserve</strong> (Joker-Tage):</p>
 
@@ -871,7 +928,7 @@
       <div class="section-inner">
         <p class="eyebrow">Architektur</p>
         <h2 class="title">Ein Store pro Zuständigkeit,<br>keiner rechnet doppelt.</h2>
-        <p class="lede">Elumi hat kein zentrales „God Object". Neun fokussierte, beobachtbare Stores tragen je eine klar abgegrenzte Zuständigkeit — jeder ist Single Source of Truth für genau seinen Ausschnitt, keiner führt eine zweite Buchhaltung über Daten, die woanders schon leben.</p>
+        <p class="lede">Elumi hat kein zentrales „God Object" (eine Klasse, die alles weiß und alles tut). Neun fokussierte, beobachtbare Stores tragen je eine klar abgegrenzte Zuständigkeit — jeder ist Single Source of Truth für genau seinen Ausschnitt, keiner führt eine zweite Buchhaltung über Daten, die woanders schon leben.</p>
 
         <div class="diagram-wrap">
 <pre class="mermaid">
