@@ -739,7 +739,7 @@
         </div>
         <p>Ein Schüler wählt ein Lernziel — eine Klassenarbeit, ein Schulbuch-Kapitel, oder einfach „dranbleiben" — und übt in kurzen täglichen Runden. Fortschritt wird pro Vokabel getrackt (sitzt / wackelt noch), nicht nur pro Session. Woher der Lernstoff kommt, ist dabei der eigentliche Unterschied zu jeder anderen Vokabel-App — dazu gleich mehr im nächsten Abschnitt.</p>
 
-        <h3 class="h">Die sechs Module</h3>
+        <h3 class="h">Die sieben Module</h3>
         <div class="modules">
           <div class="module-card">
             <div class="name">Karteikarten</div>
@@ -762,6 +762,10 @@
             <p>Übt é/è/ê/ç gezielt. Pro Akzenttyp läuft ein <strong>Confidence-Wert</strong> (0–1) mit, den ein persistenter Store nach jeder Session per gleitendem Durchschnitt nachführt — viele richtige Antworten heben ihn, Fehler senken ihn. Vor jeder neuen Runde gewichtet die App die Aufgabenauswahl gegenläufig zu diesem Wert: Akzenttypen mit niedriger Confidence bekommen mehr Wiederholungen, sichere sitzen kurz aus. Kein ML-Modell, sondern eine klare Regel mit Gedächtnis — genügt, um sich spürbar auf Schwächen einzustellen.</p>
           </div>
           <div class="module-card">
+            <div class="name">Daily Drop</div>
+            <p>Einmal täglich am Rad drehen: drei Walzen (Modul × Umfang × Vokabelquelle) landen zufällig auf einer Kombination, die sich direkt starten lässt — ein spielerischer Einstieg für Tage ohne klaren Lernplan.</p>
+          </div>
+          <div class="module-card">
             <div class="name">Léa-Chat <span class="tag">pausiert</span></div>
             <p>Ein echter Konversationspartner zum Üben, kein Skript: Léa ist an die Anthropic-API angebunden, Antworten werden Token für Token gestreamt und erscheinen live in einer WhatsApp-artigen Chat-Oberfläche (inkl. blinkendem Cursor während des Tippens). Der Chatverlauf bleibt geräteweit über SwiftData erhalten. Das Feature hat funktioniert und ist fürs Vorzeigen einsatzbereit — aktuell nur wegen eines Backend-Fehlers hinter einem Feature-Flag pausiert, kein Konzeptproblem.</p>
           </div>
@@ -779,6 +783,36 @@
           <div class="shot-col">
             <div class="phone-frame"><img src="screenshots/trophy.png" alt="Fortschritt-Screen: Level, Tagesziel, sitzt/wackelt-Zählung"></div>
             <p class="shot-caption">Fortschritt — Level, Ziel, XP</p>
+          </div>
+          <div class="shot-col">
+            <div class="phone-frame"><img src="screenshots/daily_drop.png" alt="Daily Drop: gedrehtes Ergebnis mit Quiz/Vokabeln/Game-Kombination"></div>
+            <p class="shot-caption">Daily Drop — gedrehtes Ergebnis</p>
+          </div>
+        </div>
+
+        <h3 class="h">Wie Lernlisten organisiert sind</h3>
+        <p>Alles, was übbar ist, läuft über denselben Lernlisten-Hub zusammen — egal ob eingebauter Wortschatz, gescannte eigene Liste oder Themenpaket. Vier Zugänge stehen nebeneinander: nach Lernstand (die fünf kumulativen Stufen A1–XP), nach Themen (30 vorsortierte Themenpakete wie Essen, Reisen, Gefühle), die eigenen Listen (Scans, manuell angelegt, plus die automatisch aktualisierte Wackelkandidaten-Liste), und die Volltextsuche im Wörterbuch quer über den gesamten Bestand.</p>
+
+        <div class="shot-row">
+          <div class="shot-col">
+            <div class="phone-frame"><img src="screenshots/lernlisten_hub.png" alt="Lernlisten-Hub: Alle Lernlisten, Meine Lernlisten, Nach Lernstand, Nach Themen"></div>
+            <p class="shot-caption">Lernlisten-Hub</p>
+          </div>
+          <div class="shot-col">
+            <div class="phone-frame"><img src="screenshots/nach_lernstand.png" alt="Wortschatz nach Lernstand: A1 bis XP, kumulativ aufeinander aufbauend"></div>
+            <p class="shot-caption">Nach Lernstand</p>
+          </div>
+          <div class="shot-col">
+            <div class="phone-frame"><img src="screenshots/nach_themen.png" alt="Wortschatz nach Themen: 30 vorsortierte Themenpakete"></div>
+            <p class="shot-caption">Nach Themen</p>
+          </div>
+          <div class="shot-col">
+            <div class="phone-frame"><img src="screenshots/meine_listen.png" alt="Meine Listen: eigene Scans, Wackelkandidaten, Zusammenführen-Option"></div>
+            <p class="shot-caption">Meine Listen — mit Zusammenführen</p>
+          </div>
+          <div class="shot-col">
+            <div class="phone-frame"><img src="screenshots/woerterbuch.png" alt="Wörterbuch: Volltextsuche mit Filtern nach Wortart, Lernstand und Richtung"></div>
+            <p class="shot-caption">Wörterbuch — Volltextsuche</p>
           </div>
         </div>
 
