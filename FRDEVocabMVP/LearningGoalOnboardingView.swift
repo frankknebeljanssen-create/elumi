@@ -333,7 +333,7 @@ struct LearningGoalOnboardingView: View {
 
                 Text("Was du übst und wie oft, richtet sich danach. Dauert nur eine Minute.")
                     .font(.system(size: 19, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .foregroundStyle(AppTheme.Colors.success)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, AppTheme.Spacing.md)

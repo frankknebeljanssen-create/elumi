@@ -11,7 +11,7 @@ final class QuizSessionController: ObservableObject {
     /// (mehrere Listen schnell antippen) kollabiert das 5–6 UserDefaults-
     /// Writes auf einen — verhindert kleine Tap-Laggs im Quiz-Setup.
     private var pendingListIDsPersist: DispatchWorkItem?
-    @Published var questionCountOption: QuizQuestionCountOption = .five
+    @Published var questionCountOption: QuizQuestionCountOption = .ten
     @Published var questions: [QuizQuestion] = []
     @Published var cachedMergedItems: [VocabularyItem] = []
     @Published var cachedCandidates: [QuizCandidate] = []
