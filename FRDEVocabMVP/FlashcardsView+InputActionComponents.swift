@@ -82,10 +82,11 @@ extension FlashcardsView {
     var flashcardSelfRatingActions: some View {
         if interaction.showingSolution {
             HStack(spacing: 10) {
-                // Reihenfolge wie Spec: „Kann ich" (grün) links,
-                // „Kann ich nicht" (rot) rechts.
-                selfRatingButton(title: "Kann ich", color: AppTheme.Colors.success, known: true)
+                // **2026-08-10** — User-Feedback: „Kann ich" muss rechts sein
+                // (positive Antwort = vorwärts = intuitiv rechts), „Kann ich
+                // nicht" links. Vorherige Reihenfolge war umgekehrt.
                 selfRatingButton(title: "Kann ich nicht", color: AppTheme.Colors.error, known: false)
+                selfRatingButton(title: "Kann ich", color: AppTheme.Colors.success, known: true)
             }
         } else {
             Text("Tippe die Karte zum Aufdecken")

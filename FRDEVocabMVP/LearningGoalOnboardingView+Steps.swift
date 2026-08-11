@@ -181,8 +181,10 @@ extension LearningGoalOnboardingView {
                 Text("\(minutes)")
                     .font(.system(size: 28, weight: .black, design: .rounded))
                     .foregroundStyle(isSelected ? accentGreen : AppTheme.Colors.textPrimary)
-                    .frame(width: 38)
                     .monospacedDigit()
+                    .lineLimit(1)
+                    .fixedSize()
+                    .frame(width: 46, alignment: .leading)
 
                 Text("Minuten am Tag")
                     .font(.system(size: 17, weight: .semibold, design: .rounded))
