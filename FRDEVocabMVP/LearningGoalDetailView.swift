@@ -166,8 +166,10 @@ struct LearningGoalDetailView: View {
                 Text("\(minutes)")
                     .font(.system(size: 22, weight: .black, design: .rounded))
                     .foregroundStyle(isSelected ? accentGreen : AppTheme.Colors.textPrimary)
-                    .frame(width: 30)
                     .monospacedDigit()
+                    .lineLimit(1)
+                    .fixedSize()
+                    .frame(width: 36, alignment: .leading)
 
                 Text("Minuten am Tag")
                     .font(.system(size: 15, weight: .semibold, design: .rounded))
