@@ -255,7 +255,7 @@
     margin: 18px 0 0;
   }
 
-  h3.h {
+  h3.h, h4.h {
     font-size: 1.5rem;
     font-weight: 800;
     margin: 56px 0 14px;
@@ -364,6 +364,21 @@
     border: 1px solid var(--line-strong);
   }
   .module-card p { font-size: 13.5px; margin: 8px 0 0; }
+  .submodes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .submodes span {
+    font-family: var(--data);
+    font-size: 10.5px;
+    background: var(--panel-raised);
+    color: var(--ink-dim);
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+  }
 
   /* ============ SCREENSHOTS (phone frame) ============ */
   .phone-frame {
@@ -739,42 +754,49 @@
         </div>
         <p>Ein Schüler wählt ein Lernziel — eine Klassenarbeit, ein Schulbuch-Kapitel, oder einfach „dranbleiben" — und übt in kurzen täglichen Runden. Fortschritt wird pro Vokabel getrackt (sitzt / wackelt noch), nicht nur pro Session. <strong>Woher der Lernstoff kommt, ist dabei der eigentliche Unterschied zu jeder anderen Vokabel-App</strong> — dazu gleich mehr im nächsten Abschnitt.</p>
 
-        <h3 class="h">Die sieben Module</h3>
+        <h3 class="h">Die vier Module</h3>
+        <p>Home ist bewusst flach gehalten: vier gleichrangige Einstiege, keine tiefe Menü-Hierarchie. Übungsvielfalt steckt bündig hinter dem Training-Hub, nicht als eigene Kacheln daneben.</p>
         <div class="modules">
           <div class="module-card">
-            <div class="name">Karteikarten</div>
-            <p>Klassisches Spaced-Repetition-Format, wahlweise getippt oder gesprochen beantwortet. Unterstützt eigene Karten-Stapel.</p>
+            <div class="name">Training-Hub</div>
+            <p>Ein Einstieg, sieben Übungsarten — bündelt, was früher sieben einzelne Home-Kacheln waren.</p>
+            <div class="submodes">
+              <span>Karteikarten</span><span>Alle Vokabeln</span><span>Nomen</span><span>Verben</span><span>Artikel</span><span>Verbformen</span><span>Akzente</span>
+            </div>
           </div>
           <div class="module-card">
             <div class="name">Quiz</div>
             <p>Multiple-Choice mit eigener Fortschritts-Zählung — Würmchen, Herzen, XP direkt im Modul sichtbar.</p>
           </div>
           <div class="module-card">
-            <div class="name">Training-Hub</div>
-            <p>Ein Einstieg, fünf Modi: Vokabeln, Nomen, Verben, Artikel, Verbformen — bündelt, was früher fünf einzelne Home-Kacheln waren.</p>
-          </div>
-          <div class="module-card">
-            <div class="name">Verbformen</div>
-            <p>Konjugations-Drill über alle Zeitformen, Multiple-Choice oder Eintippen, inklusive Speed-Round.</p>
-          </div>
-          <div class="module-card">
-            <div class="name">Akzente</div>
-            <p>Übt é/è/ê/ç gezielt und merkt sich dabei, wie sicher der Nutzer bei jedem einzelnen Akzenttyp gerade ist: Richtige Antworten erhöhen diese <strong>Sicherheit</strong>, Fehler senken sie. Bei der nächsten Runde bekommen die unsicheren Akzenttypen automatisch mehr Wiederholungen, die sicheren treten in den Hintergrund. Kein KI-Modell dahinter — nur eine einfache, dauerhaft gespeicherte Regel, die sich spürbar an die Schwächen des Nutzers anpasst.</p>
+            <div class="name">Live-Chat <span class="tag">pausiert</span></div>
+            <p>Ein echter Konversationspartner zum Üben, kein Skript: Léa ist an die Anthropic-API angebunden, Antworten werden Token für Token gestreamt und erscheinen live in einer WhatsApp-artigen Chat-Oberfläche (inkl. blinkendem Cursor während des Tippens). Der Chatverlauf bleibt geräteweit über SwiftData erhalten. Das Feature hat funktioniert und ist fürs Vorzeigen einsatzbereit — aktuell nur wegen eines Backend-Fehlers hinter einem Feature-Flag pausiert, kein Konzeptproblem.</p>
           </div>
           <div class="module-card">
             <div class="name">Daily Drop</div>
             <p>Einmal täglich am Rad drehen: drei Walzen (Modul × Umfang × Vokabelquelle) landen zufällig auf einer Kombination, die sich direkt starten lässt — ein spielerischer Einstieg für Tage ohne klaren Lernplan.</p>
           </div>
-          <div class="module-card">
-            <div class="name">Léa-Chat <span class="tag">pausiert</span></div>
-            <p>Ein echter Konversationspartner zum Üben, kein Skript: Léa ist an die Anthropic-API angebunden, Antworten werden Token für Token gestreamt und erscheinen live in einer WhatsApp-artigen Chat-Oberfläche (inkl. blinkendem Cursor während des Tippens). Der Chatverlauf bleibt geräteweit über SwiftData erhalten. Das Feature hat funktioniert und ist fürs Vorzeigen einsatzbereit — aktuell nur wegen eines Backend-Fehlers hinter einem Feature-Flag pausiert, kein Konzeptproblem.</p>
-          </div>
         </div>
+
+        <h4 class="h" style="font-size: 13px; margin-top: 30px; padding-top: 18px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-dim);">Zwei Übungsarten im Detail</h4>
+        <p>Verbformen deckt einen eigenen Konjugations-Drill über alle Zeitformen ab (Multiple-Choice oder Eintippen, inklusive Speed-Round). Akzente übt é/è/ê/ç gezielt und merkt sich dabei, wie sicher der Nutzer bei jedem einzelnen Akzenttyp gerade ist: Richtige Antworten erhöhen diese <strong>Sicherheit</strong>, Fehler senken sie. Bei der nächsten Runde bekommen die unsicheren Akzenttypen automatisch mehr Wiederholungen, die sicheren treten in den Hintergrund. Kein KI-Modell dahinter — nur eine einfache, dauerhaft gespeicherte Regel, die sich spürbar an die Schwächen des Nutzers anpasst.</p>
 
         <div class="shot-row">
           <div class="shot-col">
+            <div class="phone-frame"><img src="screenshots/training_hub.png" alt="Training-Hub: Auswahl zwischen Karteikarten, Vokabeln, Nomen, Verben, Artikel, Verbformen, Akzente"></div>
+            <p class="shot-caption">Training-Hub</p>
+          </div>
+          <div class="shot-col">
             <div class="phone-frame"><img src="screenshots/flashcards.png" alt="Karteikarten-Modul: Karte mit französischem Begriff, verdeckt bis zum Aufdecken"></div>
-            <p class="shot-caption">Karteikarten</p>
+            <p class="shot-caption">↳ Karteikarten</p>
+          </div>
+          <div class="shot-col">
+            <div class="phone-frame"><img src="screenshots/verbformen_setup.png" alt="Verbformen-Modul: Zeitform-Auswahl, Präsens/Imparfait/Futur/Passé composé"></div>
+            <p class="shot-caption">↳ Verbformen</p>
+          </div>
+          <div class="shot-col">
+            <div class="phone-frame"><img src="screenshots/akzente_running.png" alt="Akzente-Modul: laufende Übung, richtige Schreibweise aus vier Varianten wählen"></div>
+            <p class="shot-caption">↳ Akzente</p>
           </div>
           <div class="shot-col">
             <div class="phone-frame"><img src="screenshots/quiz.png" alt="Quiz-Modul: laufende Frage mit Multiple-Choice-Antworten"></div>
@@ -785,25 +807,13 @@
             <p class="shot-caption">Fortschritt — Level, Ziel, XP</p>
           </div>
           <div class="shot-col">
-            <div class="phone-frame"><img src="screenshots/training_hub.png" alt="Training-Hub: Auswahl zwischen Karteikarten, Vokabeln, Nomen, Verben, Artikel, Verbformen, Akzente"></div>
-            <p class="shot-caption">Training-Hub</p>
-          </div>
-          <div class="shot-col">
-            <div class="phone-frame"><img src="screenshots/verbformen_setup.png" alt="Verbformen-Modul: Zeitform-Auswahl, Präsens/Imparfait/Futur/Passé composé"></div>
-            <p class="shot-caption">Verbformen</p>
-          </div>
-          <div class="shot-col">
-            <div class="phone-frame"><img src="screenshots/akzente_running.png" alt="Akzente-Modul: laufende Übung, richtige Schreibweise aus vier Varianten wählen"></div>
-            <p class="shot-caption">Akzente — laufende Übung</p>
-          </div>
-          <div class="shot-col">
             <div class="phone-frame"><img src="screenshots/daily_drop.png" alt="Daily Drop: gedrehtes Ergebnis mit Quiz/Vokabeln/Game-Kombination"></div>
-            <p class="shot-caption">Daily Drop — gedrehtes Ergebnis</p>
+            <p class="shot-caption">Daily Drop</p>
           </div>
         </div>
 
         <h3 class="h">Wie Lernlisten organisiert sind</h3>
-        <p>Alles, was übbar ist, läuft über denselben Lernlisten-Hub zusammen — egal ob eingebauter Wortschatz, gescannte eigene Liste oder Themenpaket. Vier Zugänge stehen nebeneinander: nach Lernstand (die fünf kumulativen Stufen A1–XP), nach Themen (30 vorsortierte Themenpakete wie Essen, Reisen, Gefühle), die eigenen Listen (Scans, manuell angelegt, plus die automatisch aktualisierte Wackelkandidaten-Liste), und die Volltextsuche im Wörterbuch quer über den gesamten Bestand.</p>
+        <p>Alles, was übbar ist, läuft über denselben Lernlisten-Hub zusammen — egal ob eingebauter Wortschatz, gescannte eigene Liste oder Themenpaket. Vier Zugänge stehen nebeneinander: nach Lernstand (die fünf kumulativen Stufen A1–XP), nach Themen (30 vorsortierte Themenpakete wie Essen, Reisen, Gefühle), und die eigenen Listen (Scans, manuell angelegt, plus die automatisch aktualisierte Wackelkandidaten-Liste).</p>
 
         <div class="shot-row">
           <div class="shot-col">
@@ -822,10 +832,14 @@
             <div class="phone-frame"><img src="screenshots/meine_listen.png" alt="Meine Listen: eigene Scans, Wackelkandidaten, Zusammenführen-Option"></div>
             <p class="shot-caption">Meine Listen — mit Zusammenführen</p>
           </div>
-          <div class="shot-col">
-            <div class="phone-frame"><img src="screenshots/woerterbuch.png" alt="Wörterbuch: Volltextsuche mit Filtern nach Wortart, Lernstand und Richtung"></div>
-            <p class="shot-caption">Wörterbuch — Volltextsuche</p>
-          </div>
+        </div>
+
+        <h4 class="h" style="font-size: 13px; margin-top: 30px; padding-top: 18px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-dim);">Wörterbuch</h4>
+        <p>Die Volltextsuche quer über den gesamten Bestand — eingebauter Wortschatz und eigene Listen gemeinsam, mit Filtern nach Wortart, Lernstand und Richtung.</p>
+
+        <div class="shot-float">
+          <div class="phone-frame"><img src="screenshots/woerterbuch.png" alt="Wörterbuch: Volltextsuche mit Filtern nach Wortart, Lernstand und Richtung"></div>
+          <p class="shot-caption">Wörterbuch — Volltextsuche</p>
         </div>
 
         <div class="section-nav">
