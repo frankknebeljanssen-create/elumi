@@ -119,7 +119,7 @@ struct HomeGoalCard: View {
                 HStack(spacing: 8) {
                     Image(systemName: "flag.checkered")
                         .font(.system(size: 15, weight: .bold))
-                    Text("Fertig für heute")
+                    Text("Für heute bin ich fertig")
                         .font(.system(size: 15, weight: .bold, design: .rounded))
                     Spacer(minLength: 0)
                     Image(systemName: "chevron.right")
