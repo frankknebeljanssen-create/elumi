@@ -96,7 +96,7 @@ struct HomeGoalCard: View {
         VStack(spacing: 0) {
             Divider()
                 .background(AppTheme.Colors.border.opacity(0.4))
-                .padding(.top, 12)
+                .padding(.top, 8)
 
             // **2026-08-06** — User-Spec: "seh noch nicht, wo ich den
             // Tagesabschluss eingebe" + "würd das größer machen" + "kein
@@ -138,7 +138,7 @@ struct HomeGoalCard: View {
                     RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
                         .stroke(AppTheme.Colors.warning.opacity(0.45), lineWidth: 1.5)
                 )
-                .padding(.top, 12)
+                .padding(.top, 8)
                 .contentShape(Rectangle())
             }
             .buttonStyle(AppCardPressStyle())
