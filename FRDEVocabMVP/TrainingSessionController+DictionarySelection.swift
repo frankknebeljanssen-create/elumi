@@ -76,11 +76,37 @@ extension TrainingSessionController {
             // ergäbe einen leeren Pool („Keine Karten") ohne Erklärung.
             // `prunedSelectedListIDs` fällt in dem Fall auf den
             // A1-Grundwortschatz zurück.
+            //
+            // **Bugfix 2026-08-05** — Auflösungs-Menge ≠ Picker-Menge
+            // (User-Report: „in Artikel üben kommen Vokabeln, die gar
+            // nicht in der angewählten Liste waren"). `availableTraining
+            // Lists` lässt in allen Nicht-Vokabel-Modi bewusst das
+            // „Komplette Wörterbuch" aus der AUSWAHL weg — dieselbe
+            // Menge diente hier aber auch zum AUFLÖSEN der bereits
+            // getroffenen Auswahl. Wer also das Wörterbuch (oder eine
+            // andere hier nicht angebotene Liste) gewählt hatte, dessen
+            // ID überlebte das Pruning nicht und wurde still durch den
+            // A1-Grundwortschatz ersetzt: fremde Vokabeln, ohne Hinweis.
+            // Jetzt wird gegen ALLE real existierenden Listen aufgelöst;
+            // der Fallback greift nur noch bei wirklich verwaisten IDs.
+            var resolvableLists = allAvailable
+            let knownIDs = Set(allAvailable.map(\.id))
+            for list in listStore.allLists where !knownIDs.contains(list.id) {
+                resolvableLists.append(list)
+            }
+            if !resolvableLists.contains(where: { $0.id == StandardVocabularyLoader.allInOneList.id }) {
+                resolvableLists.append(StandardVocabularyLoader.allInOneList)
+            }
+            if let dictionaryList = dictionaryTrainingList(),
+               !resolvableLists.contains(where: { $0.id == dictionaryList.id }) {
+                resolvableLists.append(dictionaryList)
+            }
+
             let usableIDs = VocabularyListSelectionResolver.prunedSelectedListIDs(
                 selectedTrainingListIDs,
-                knownListIDs: Set(allAvailable.map(\.id))
+                knownListIDs: Set(resolvableLists.map(\.id))
             )
-            selectedLists = allAvailable.filter { usableIDs.contains($0.id) }
+            selectedLists = resolvableLists.filter { usableIDs.contains($0.id) }
         } else if let single = selectedTrainingList(from: listStore, selectedAppDirection: selectedAppDirection, launchContext: launchContext) {
             selectedLists = [single]
         } else {

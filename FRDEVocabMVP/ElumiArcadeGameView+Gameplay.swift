@@ -708,6 +708,19 @@ extension ElumiArcadeGameView {
             let now = Date()
             lifeLostPauseStartedAt = now
             lifeLostPauseUntil = now.addingTimeInterval(lifeLostPauseDuration)
+
+            // **2026-08-05** — Spielfeld wird geleert, nicht nur
+            // eingefroren (User-Spec: „der Screen muss frei sein und
+            // erst wieder Objekte kommen, nachdem der Bereit-Drop weg
+            // ist"). Vorher blieben die fallenden Figuren stehen und
+            // waren durch das halbtransparente Overlay weiter sichtbar
+            // — die Zäsur wirkte dadurch nicht wie ein sauberer
+            // Neustart, sondern wie ein Standbild mit Text davor.
+            // Nach der Pause spawnt der Game-Loop ohnehin frisch nach.
+            activeSnacks.removeAll()
+            activeTentacles.removeAll()
+            activeFish.removeAll()
+            ambientSeaCreature = nil
         }
 
         // Scale-Zucker mit Bounce: kurz hart schrumpfen, dann mit
@@ -1023,9 +1036,14 @@ extension ElumiArcadeGameView {
         guard gameSize != .zero else { return }
 
         // **2026-06-09** — Während der Zäsur steht das Spielfeld still:
-        // keine Bewegung, kein Spawn, keine Kollision. Der Game-Clock
-        // wird nicht weitergedreht, damit Snacks nach dem Fortsetzen
-        // dort weiterlaufen, wo sie standen, statt zu springen.
+        // keine Bewegung, kein Spawn, keine Kollision.
+        //
+        // **2026-08-05** — Das Feld ist während der Zäsur zusätzlich
+        // leer: `triggerLifeLossVisual()` räumt Snacks, Tentakel, Fische
+        // und die Ambient-Kreatur ab, sobald die Pause beginnt. Der
+        // Game-Clock bleibt trotzdem angehalten, damit nach dem
+        // Fortsetzen kein aufgestautes Zeit-Delta auf einmal
+        // durchschlägt (siehe `lastFrameDate`-Reset unten).
         if isInLifeLostPause(at: now) { return }
         if lifeLostPauseUntil != nil {
             // Zäsur gerade abgelaufen → aufräumen und normal weiter.
