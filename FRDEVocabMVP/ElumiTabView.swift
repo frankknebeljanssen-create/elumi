@@ -1818,20 +1818,26 @@ struct ElumiTabView: View {
     ///
     /// Algorithmus:
     ///   1. Pro Reel Elumi-Roll (unabhängig wie vorher).
-    ///   2. Für Nicht-Elumi-Reels aus dem jeweiligen Pool wählen,
-    ///      aber nur aus den Modulen, die in diesem Spin **noch
-    ///      nicht** verwendet wurden.
-    ///   3. Wenn alle Pool-Module schon belegt sind (Edge-Case bei
-    ///      stark überlappenden Pools), fallen wir auf den vollen
-    ///      Pool zurück — dann kann es theoretisch Doubletten geben.
-    ///      Mit den aktuellen Pools (Reel 1/2/3 haben je 4 Module
-    ///      aus einem Satz von 8 und überlappen nur partiell) tritt
-    ///      das in der Praxis nie auf.
+    ///   2. Der Daily-Drop-Pool hat nur zwei eindeutige Module, aber es
+    ///      gibt drei Walzen — mindestens eine Walze muss also immer
+    ///      Elumi zeigen. **Welche** das ist, wird ausgewürfelt.
+    ///   3. Die verbleibenden Modul-Walzen bekommen je ein noch nicht
+    ///      belegtes Modul aus ihrem Pool.
+    ///
+    /// **Positions-Fix (2026-09-03)** — User-Report: „das Elumi kommt
+    /// immer im rechten Slot". Ursache war die alte Links-nach-rechts-
+    /// Schleife: Reel 0 und 1 griffen die beiden verfügbaren Module ab,
+    /// für Reel 2 blieb dann zwangsläufig nichts mehr übrig und es wurde
+    /// auf Elumi gesetzt. Damit landete Elumi in rund 70 % aller Spins
+    /// rechts, links und in der Mitte dagegen nur mit der reinen
+    /// Basis-Chance. Jetzt wird zuerst die Elumi-Maske gebildet und die
+    /// überzählige Modul-Walze **zufällig** gezogen — die Position ist
+    /// über alle drei Walzen gleichverteilt. Die Häufigkeit von Doppel-
+    /// und Dreifach-Elumi bleibt unverändert (sie hängt allein an den
+    /// Rolls aus `ElumiDropRateControllerStore`).
     private func computeSpinTargets() -> [ReelSymbol?] {
         let chance = dropRate.currentElumiChance()
         let pools = ReelSymbol.standardReelPools
-        var targets: [ReelSymbol?] = [nil, nil, nil]
-        var usedModules: Set<HomeHeroModule> = []
 
         // **Daily Drop Modul 2 (2026-05-23)** — MVP-Pool: nur Quiz +
         // Vokabeln. Rotation-ready: der `usedModules`-Filter +
@@ -1840,33 +1846,40 @@ struct ElumiTabView: View {
         // Set erweitert.
         let dailyDropModules: Set<HomeHeroModule> = [.quiz, .vokabeln]
 
-        for reelIndex in 0..<3 {
-            if dropRate.drawIsElumi(chance: chance) {
-                // Elumi — darf mehrfach. Kein Set-Eintrag.
-                targets[reelIndex] = ReelSymbol.elumi
-                continue
+        // 1) Unabhängiger Elumi-Roll pro Walze — Verteilung wie bisher.
+        var isElumi: [Bool] = (0..<3).map { _ in dropRate.drawIsElumi(chance: chance) }
+
+        // 2) Mehr Modul-Walzen als eindeutige Module → überzählige
+        //    Walzen werden zu Elumi. Zufällig gezogen, damit der Bonus
+        //    nicht systematisch an derselben Position klebt.
+        var moduleReels = (0..<3).filter { !isElumi[$0] }
+        if moduleReels.count > dailyDropModules.count {
+            let surplus = moduleReels.count - dailyDropModules.count
+            for reelIndex in moduleReels.shuffled().prefix(surplus) {
+                isElumi[reelIndex] = true
             }
-            // Pool auf die Daily-Drop-Typen beschränken.
-            let pool = pools[reelIndex].filter { symbol in
+            moduleReels = (0..<3).filter { !isElumi[$0] }
+        }
+
+        // 3) Modul-Walzen befüllen — nie zweimal dasselbe Modul im Spin.
+        var targets: [ReelSymbol?] = [nil, nil, nil]
+        var usedModules: Set<HomeHeroModule> = []
+        for reelIndex in moduleReels {
+            let candidates = pools[reelIndex].filter { symbol in
                 guard let module = symbol.homeModule else { return false }
-                return dailyDropModules.contains(module)
+                return dailyDropModules.contains(module) && !usedModules.contains(module)
             }
-            // Kandidaten = Pool-Einträge, deren Modul noch nicht belegt ist.
-            let candidates = pool.filter { symbol in
-                guard let module = symbol.homeModule else { return false }
-                return !usedModules.contains(module)
+            guard let chosen = candidates.randomElement() else { continue }
+            if let module = chosen.homeModule {
+                usedModules.insert(module)
             }
-            if let chosen = candidates.randomElement() {
-                if let module = chosen.homeModule {
-                    usedModules.insert(module)
-                }
-                targets[reelIndex] = chosen
-            } else {
-                // Daily-Drop-Pool erschöpft (nur 2 Typen, aber 3 Reels) →
-                // Rest-Reel wird Game-Bonus statt Modul-Dublette. So
-                // bleiben die `plannedSteps` eindeutig (1× Quiz + 1× Vokabel).
-                targets[reelIndex] = ReelSymbol.elumi
-            }
+            targets[reelIndex] = chosen
+        }
+
+        // 4) Alles, was keine Modul-Walze ist (inkl. Edge-Case „Pool
+        //    liefert nichts"), zeigt den Game-Bonus.
+        for reelIndex in 0..<3 where targets[reelIndex] == nil {
+            targets[reelIndex] = ReelSymbol.elumi
         }
         return targets
     }

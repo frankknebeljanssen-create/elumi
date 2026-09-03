@@ -101,7 +101,14 @@ enum AccentSessionResumeStore {
     /// damit spätere Mode-Erweiterungen hier klar greifen können.
     /// Version-Präfix `v1:` (wie Training/Quiz) ermöglicht späteren
     /// Format-Wechsel ohne inkompatible Altsnapshots fälschlich zu matchen.
+    ///
+    /// **v2 (2026-09-03)** — Präfix-Bump wegen der strikten Listen-
+    /// Bindung in `AccentContentBuilder`. Snapshots aus der Zeit davor
+    /// können mit Built-in-Wörtern aufgefüllt sein, die gar nicht in der
+    /// gewählten Liste stehen. Der neue Präfix lässt solche Altsnapshots
+    /// beim Fingerprint-Check durchfallen — sie werden verworfen und die
+    /// Runde frisch (und listenrein) aufgebaut.
     static func fingerprint(mode: AccentMode, selectedListID: UUID?) -> String {
-        "v1:\(mode.rawValue)|\(selectedListID?.uuidString ?? "<none>")"
+        "v2:\(mode.rawValue)|\(selectedListID?.uuidString ?? "<none>")"
     }
 }

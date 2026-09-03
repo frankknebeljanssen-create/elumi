@@ -4,18 +4,14 @@ import Foundation
 /// konkrete Session-Queue aus `AccentExercise`-Items.
 ///
 /// Pipeline:
-/// 1. Quellen-Wörter zusammensuchen — bevorzugt aus der Nutzer-Liste,
-///    fällt auf den Built-in-Katalog zurück, wenn zu wenig Material da ist.
+/// 1. Quellen-Wörter zusammensuchen — aus der gewählten Nutzer-Liste und
+///    **nur** aus ihr. Der Built-in-Katalog greift ausschließlich, wenn
+///    gar keine Liste gewählt ist (siehe `gatherSeeds`).
 /// 2. Pro Wort wird das Exercise-Objekt generiert — je nach Modus/Kind:
 ///    - `pickCorrectWord` → korrekte Form + 3 plausible Distraktoren
 ///    - `chooseAccent`    → Letter-Varianten für die betroffene Stelle
 /// 3. Reihenfolge gemischt, auf `sessionLength` gekürzt.
 enum AccentContentBuilder {
-
-    /// Minimale Trefferzahl aus der Nutzer-Liste, damit wir den Seed-
-    /// Fallback gar nicht erst brauchen. Darunter füllen wir mit Built-ins
-    /// auf, ohne den Nutzer zu stören.
-    private static let minListMatches = 5
 
     // MARK: - Public API
 
@@ -166,55 +162,74 @@ enum AccentContentBuilder {
 
     // MARK: - Seeds sammeln
 
-    /// Versucht, geeignete Akzent-Wörter aus der Nutzer-Liste zu finden.
-    /// „Geeignet" heißt: das Wort enthält mindestens einen der MVP-Akzente.
-    /// Wenn zu wenig zusammenkommt, füllen wir still mit Built-ins auf.
+    /// Sammelt die Akzent-Wörter für eine Session.
+    ///
+    /// **Strikte Listen-Bindung (2026-09-03)** — User-Report: „bei
+    /// Akzenten kommen Wörter, die gar nicht in der gewählten Liste
+    /// stehen". Vorher galt: Bringt die Liste weniger als 5 brauchbare
+    /// Treffer, wurde still aus dem Built-in-Katalog aufgefüllt, bis
+    /// `minSupply` erreicht war — bei einer Liste mit 3 Akzent-Wörtern
+    /// bestand die Runde also fast vollständig aus fremdem Material.
+    /// Das ist derselbe Fehler wie zuvor im Artikel-Training (stiller
+    /// A1-Fallback) und wird genauso behandelt: Ist eine Lernliste
+    /// gewählt, kommen **ausschließlich** deren Wörter dran. Reicht das
+    /// nicht für eine volle Runde, wird die Runde kürzer — aufgefüllt
+    /// wird nicht.
+    ///
+    /// Der Built-in-Katalog greift nur noch dort, wo gar keine Liste
+    /// gewählt ist (Setup-Card „Standard-Wörter").
     ///
     /// **Dedup**: Jedes Wort darf nur **einmal** in der finalen Seed-
-    /// Liste stehen. Wenn ein User-Listen-Wort auch im Built-in-Katalog
-    /// vorkommt (z. B. „école"), wird es nicht doppelt eingemischt —
-    /// sonst würde dasselbe Wort zweimal in derselben Runde abgefragt.
+    /// Liste stehen — sonst würde dasselbe Wort zweimal in derselben
+    /// Runde abgefragt.
     private static func gatherSeeds(from list: VocabularyList?, minSupply: Int = 12) -> [AccentWordCatalog.SeedEntry] {
+        guard let list else {
+            // Keine Liste gewählt → Built-in-Katalog.
+            return Array(AccentWordCatalog.mvpActive.shuffled().prefix(minSupply))
+        }
+        return listSeeds(from: list)
+    }
+
+    /// Wie viele Wörter einer Liste sich überhaupt fürs Akzent-Training
+    /// eignen. Der Setup-Screen zeigt diese Zahl an, damit vor dem Start
+    /// sichtbar ist, wie lang die Runde werden kann.
+    static func usableWordCount(in list: VocabularyList?) -> Int {
+        guard let list else { return AccentWordCatalog.mvpActive.count }
+        return listSeeds(from: list).count
+    }
+
+    /// Unterhalb dieser Anzahl lohnt sich keine Runde — der Setup-Screen
+    /// blockt den Start und sagt, woran es liegt, statt eine Zwei-Fragen-
+    /// Session zu starten oder still nichts zu tun.
+    static let minimumUsableWords = 4
+
+    /// Alle brauchbaren Akzent-Seeds einer Liste — dedupliziert, unter
+    /// Beachtung des globalen Lernjahr-Filters.
+    private static func listSeeds(from list: VocabularyList) -> [AccentWordCatalog.SeedEntry] {
         var seen: Set<String> = []
         var fromList: [AccentWordCatalog.SeedEntry] = []
 
-        if let list = list {
-            // **V1b Lernjahr-Filter (2026-04-28)** — Akzente respektiert
-            // jetzt den globalen Lernjahr-Max. Hierarchische Listen
-            // (A1 mit cumulativeChildren) liefern nur den Y_1...Y_max-
-            // Slice; klassische Listen ihre vollen items unverändert.
-            let effective = VocabularyListSelectionResolver.effectiveItems(
-                for: list,
-                lernjahrMax: VocabularyListSelectionResolver.currentLernjahrMax()
-            )
-            for item in effective {
-                let word = item.french
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-                    .lowercased()
-                guard !word.isEmpty else { continue }
-                guard let seed = makeSeedFromUserWord(word) else { continue }
-                let key = seed.correctWord.lowercased()
-                if seen.insert(key).inserted {
-                    fromList.append(seed)
-                }
+        // **V1b Lernjahr-Filter (2026-04-28)** — Akzente respektiert
+        // den globalen Lernjahr-Max. Hierarchische Listen (A1 mit
+        // cumulativeChildren) liefern nur den Y_1...Y_max-Slice;
+        // klassische Listen ihre vollen items unverändert.
+        let effective = VocabularyListSelectionResolver.effectiveItems(
+            for: list,
+            lernjahrMax: VocabularyListSelectionResolver.currentLernjahrMax()
+        )
+        for item in effective {
+            let word = item.french
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .lowercased()
+            guard !word.isEmpty else { continue }
+            guard let seed = makeSeedFromUserWord(word) else { continue }
+            let key = seed.correctWord.lowercased()
+            if seen.insert(key).inserted {
+                fromList.append(seed)
             }
         }
 
-        // Wenn die Liste genügend Treffer bringt, nutzen wir die pur.
-        if fromList.count >= minListMatches {
-            return fromList
-        }
-
-        // Built-in-Auffüllung: bereits verwendete Wörter filtern, damit
-        // kein Wort doppelt auftaucht. `minSupply` bestimmt wie viele
-        // Seeds wir mindestens am Ende haben wollen (Speed Round braucht
-        // deutlich mehr als Üben).
-        let builtInFiltered = AccentWordCatalog.mvpActive.filter { seed in
-            !seen.contains(seed.correctWord.lowercased())
-        }
-        let needed = max(0, minSupply - fromList.count)
-        let builtInSample = Array(builtInFiltered.shuffled().prefix(needed))
-        return fromList + builtInSample
+        return fromList
     }
 
     /// Versucht aus einem User-Wort (mit Akzent) ein SeedEntry zu machen.

@@ -55,6 +55,12 @@ struct AccentsEntryView: View {
     /// gesetzt; bei Route-Pop wird die View destroy't und das Flag
     /// resettet sich automatisch beim nächsten Mount.
     @State private var hasAutoStarted: Bool = false
+    /// **Strikte Listen-Bindung (2026-09-03)** — Text des Hinweises,
+    /// wenn die gewählte Liste zu wenige Wörter mit Akzent enthält.
+    /// Seit `AccentContentBuilder` nicht mehr still aus dem Built-in-
+    /// Katalog auffüllt, kann eine Liste schlicht zu dünn sein; das
+    /// muss der User sehen statt auf einen wirkungslosen CTA zu tippen.
+    @State private var tooFewWordsNotice: String? = nil
     /// Bindet die globale Speed-Round-Dauer live ins UI — Änderungen in
     /// den Settings werden auf der Setup-Card sofort sichtbar, ohne dass
     /// ein manueller Reload nötig ist. Der Wert landet auch auf dem
@@ -385,6 +391,89 @@ struct AccentsEntryView: View {
             contextContent: { listSelectorCard },
             optionsContent: { modeCards }
         )
+        .overlay { tooFewWordsOverlay }
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: tooFewWordsNotice)
+    }
+
+    // MARK: - Zu-wenig-Wörter-Hinweis
+
+    /// Formuliert den Hinweis für eine Liste, aus der sich keine
+    /// sinnvolle Akzent-Runde bauen lässt. Bewusst konkret: der User
+    /// soll sehen, **warum** es nicht losgeht, nicht nur dass es nicht
+    /// losgeht.
+    private func tooFewWordsMessage(usableWords: Int) -> String {
+        let listName = selectedList?.name ?? "Diese Liste"
+        switch usableWords {
+        case 0:
+            return "In „\(listName)\" steht kein einzelnes Wort mit é, è, ê, ç oder à."
+        case 1:
+            return "In „\(listName)\" steht nur 1 Wort mit Akzent — zu wenig für eine Runde."
+        default:
+            return "In „\(listName)\" stehen nur \(usableWords) Wörter mit Akzent — zu wenig für eine Runde."
+        }
+    }
+
+    /// Mittige Karte im Elumi-Popup-Stil (Pattern von
+    /// `NewGoalConfirmSheet` / dem Ziel-Abweich-Hinweis in
+    /// `RootContentView`), kein graues System-Alert.
+    @ViewBuilder
+    private var tooFewWordsOverlay: some View {
+        if let notice = tooFewWordsNotice {
+            ZStack {
+                Color.black.opacity(0.5)
+                    .ignoresSafeArea()
+                    .onTapGesture { tooFewWordsNotice = nil }
+
+                VStack(spacing: 12) {
+                    Text("é")
+                        .font(.system(size: 44, weight: .black, design: .rounded))
+                        .foregroundStyle(.white)
+
+                    Text("Zu wenig Akzent-Wörter")
+                        .font(.system(size: 19, weight: .black, design: .rounded))
+                        .foregroundStyle(.white)
+                        .multilineTextAlignment(.center)
+
+                    Text(notice)
+                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.9))
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Button {
+                        tooFewWordsNotice = nil
+                        listPickerActive = true
+                    } label: {
+                        Text("Andere Lernliste wählen")
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.textPrimary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(.white)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, 4)
+
+                    Button("Zurück") { tooFewWordsNotice = nil }
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.85))
+                        .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 26)
+                .frame(maxWidth: 300)
+                .background(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .fill(moduleAccentColor)
+                )
+                .shadow(color: .black.opacity(0.35), radius: 24, x: 0, y: 12)
+                .transition(.scale(scale: 0.85).combined(with: .opacity))
+            }
+            .zIndex(10)
+        }
     }
 
     // MARK: - List Selector
@@ -459,6 +548,25 @@ struct AccentsEntryView: View {
                                     .foregroundStyle(AppTheme.Colors.elumiBlue)
                             }
                             .padding(.top, 2)
+
+                            // **Strikte Listen-Bindung (2026-09-03)** —
+                            // Akzente kann nur Einzelwörter mit é/è/ê/ç/à
+                            // abfragen; aus einer Liste mit 40 Einträgen
+                            // bleiben davon oft nur eine Handvoll übrig.
+                            // Seit nicht mehr aus dem Built-in-Katalog
+                            // aufgefüllt wird, bestimmt diese Zahl die
+                            // Rundenlänge — also gehört sie sichtbar auf
+                            // die Karte, nicht erst in den Fehlerfall.
+                            let accentWords = AccentContentBuilder.usableWordCount(in: list)
+                            Text(accentWords == 1
+                                 ? "1 Wort mit Akzent"
+                                 : "\(accentWords) Wörter mit Akzent")
+                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                .foregroundStyle(
+                                    accentWords < AccentContentBuilder.minimumUsableWords
+                                    ? AppTheme.Colors.warning
+                                    : AppTheme.Colors.textSecondary
+                                )
                         } else {
                             Text("Standard-Wörter")
                                 .font(.system(size: 18, weight: .bold, design: .rounded))
@@ -672,6 +780,17 @@ struct AccentsEntryView: View {
     }
 
     private func startSession(mode: AccentMode) {
+        // **Strikte Listen-Bindung (2026-09-03)** — Akzente zieht seine
+        // Wörter jetzt ausschließlich aus der gewählten Liste. Wenn dort
+        // zu wenig Material mit Akzent steckt, sagen wir das, statt eine
+        // Mini-Runde zu starten oder (wie früher der `guard
+        // !exercises.isEmpty`) wortlos nichts zu tun.
+        let usableWords = AccentContentBuilder.usableWordCount(in: selectedList)
+        guard usableWords >= AccentContentBuilder.minimumUsableWords else {
+            tooFewWordsNotice = tooFewWordsMessage(usableWords: usableWords)
+            return
+        }
+
         switch mode {
         case .uben:
             // Üben-Modus ist resumable — erst prüfen, ob ein passender
