@@ -1099,10 +1099,22 @@ enum FrenchListStatisticsAggregator {
     ) -> ListPOSStatistics {
         guard !items.isEmpty else { return .empty }
 
-        // Stabiler Key: item-IDs (ändern sich wenn Liste bearbeitet wird)
+        // Stabiler Key: Item-IDs **und** der analysierte Text.
+        //
+        // **Fix 2026-09-03** — vorher hing der Key nur an den IDs, mit der
+        // Annahme, dass eine Bearbeitung neue IDs erzeugt. Das stimmt
+        // nicht: `VocabularyEntryEditorSheet` ändert den Eintrag an Ort
+        // und Stelle, die ID bleibt. Wer „le marché" in „il fait froid"
+        // umschrieb, sah deshalb bis zum nächsten App-Start weiter die
+        // alte Wortart-Statistik — die Liste meldete Nomen statt Verb,
+        // und Module, die auf `verbLemmas` aufbauen (Verben-Training,
+        // Verbformen, die Infinitiv-Karten aus
+        // `VerbInfinitiveSynthesizer`), sahen das neue Verb gar nicht.
+        // Der Text gehört in den Key, weil er der eigentliche Input ist.
         var hasher = Hasher()
         for item in items {
             hasher.combine(item.id)
+            hasher.combine(item.french)
         }
         hasher.combine(mode)
         hasher.combine(minimumConfidence)
