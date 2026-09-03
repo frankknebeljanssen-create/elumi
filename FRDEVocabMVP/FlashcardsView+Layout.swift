@@ -602,7 +602,14 @@ extension FlashcardsView {
                         .textCase(.uppercase)
                         .foregroundStyle(sectionStyle.accent)
 
-                    Text("Wie viele Karten und welche Schwierigkeit?")
+                    // **2026-08-05** — Frage umformuliert (User-Spec):
+                    // „Wie viele Karten" klang nach einer reinen
+                    // Zahleneingabe. Meist ist die Lernliste aber genau
+                    // das, was gelernt werden SOLL — der ganze Stapel
+                    // ist der Normalfall, die Teilmenge die bewusste
+                    // Ausnahme für sehr große Listen. Die Formulierung
+                    // stellt das jetzt als echte Wahl dar.
+                    Text("Ganzen Stapel lernen oder heute nur einen Teil?")
                         .font(.system(size: 22, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .multilineTextAlignment(.center)
@@ -717,6 +724,24 @@ extension FlashcardsView {
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
+
+                    // **2026-08-05** — Fehlbetrag sichtbar machen (User-
+                    // Report: „zwei Wörter aus der Lernliste wurden gar
+                    // nicht abgefragt"). Vorher stand hier nur „20
+                    // Karten" — dass die Lernliste 35 enthält und 15
+                    // davon heute gar nicht drankommen, war nirgends
+                    // ablesbar. Nur sichtbar, wenn tatsächlich etwas
+                    // wegfällt; beim ganzen Stapel bleibt die Card ruhig.
+                    if cardCount > 0, selectedStackCardCount > cardCount {
+                        let omitted = selectedStackCardCount - cardCount
+                        Text(omitted == 1
+                             ? "von \(selectedStackCardCount) · 1 Wort kommt heute nicht dran"
+                             : "von \(selectedStackCardCount) · \(omitted) Wörter kommen heute nicht dran")
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.warning)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
 
                 Spacer(minLength: 0)

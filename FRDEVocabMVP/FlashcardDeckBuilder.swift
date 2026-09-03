@@ -29,11 +29,29 @@ enum FlashcardDeckBuilder {
         )
     }
 
+    /// **2026-08-05** — `urgency` priorisiert die Teilmenge, wenn nicht
+    /// der ganze Stapel geübt wird (User-Report: „zwei Wörter aus der
+    /// Lernliste wurden bei Karteikarten gar nicht abgefragt").
+    ///
+    /// Vorher zog `sampledVocabularyItems` per Reservoir-Sampling rein
+    /// zufällig — keine Vokabel war dauerhaft gesperrt, aber es gab auch
+    /// keinerlei Abdeckungs-Garantie: Bei 20 von 35 Karten lag die
+    /// Chance pro Wort und Runde bei ~57 %, reiner Zufall. Wörter, die
+    /// nie gezogen wurden, tauchten folglich auch nie im Lernstatus auf
+    /// und fielen still aus dem Lernkreislauf.
+    ///
+    /// Jetzt entscheidet der Aufrufer per Closure, wie dringend ein Item
+    /// ist (kleinerer Wert = dringender, typischerweise abgeleitet aus
+    /// `ItemLearningStatusStore`: noch nie geübt vor wackelnd vor sitzt).
+    /// Innerhalb derselben Dringlichkeitsstufe wird weiterhin gemischt,
+    /// damit sich Runden nicht identisch wiederholen. Ohne Closure
+    /// bleibt es beim bisherigen Zufalls-Sampling.
     static func buildDeck(
         from lists: [VocabularyList],
         language: StudyLanguage,
         preferredCardType: CardType?,
-        maxCardCount: Int? = nil
+        maxCardCount: Int? = nil,
+        urgency: ((VocabularyItem) -> Int)? = nil
     ) -> FlashcardDeck? {
         let selectedItems: [VocabularyItem]
         if let maxCardCount, maxCardCount > 0 {
@@ -41,7 +59,8 @@ enum FlashcardDeckBuilder {
                 from: lists,
                 language: language,
                 preferredCardType: preferredCardType,
-                maxCardCount: maxCardCount
+                maxCardCount: maxCardCount,
+                urgency: urgency
             )
         } else {
             selectedItems = filteredVocabularyItems(
@@ -104,35 +123,42 @@ enum FlashcardDeckBuilder {
         from lists: [VocabularyList],
         language: StudyLanguage,
         preferredCardType: CardType?,
-        maxCardCount: Int
+        maxCardCount: Int,
+        urgency: ((VocabularyItem) -> Int)? = nil
     ) -> [VocabularyItem] {
         guard maxCardCount > 0 else { return [] }
 
-        var sample: [VocabularyItem] = []
-        sample.reserveCapacity(maxCardCount)
-        var seenCount = 0
-
-        for list in lists {
-            for item in list.items {
-                guard let matchingItem = matchingVocabularyItem(
-                    item,
+        let candidates = lists
+            .flatMap(\.items)
+            .compactMap {
+                matchingVocabularyItem(
+                    $0,
                     language: language,
                     preferredCardType: preferredCardType
-                ) else { continue }
-
-                seenCount += 1
-                if sample.count < maxCardCount {
-                    sample.append(matchingItem)
-                    continue
-                }
-
-                let replacementIndex = Int.random(in: 0..<seenCount)
-                if replacementIndex < maxCardCount {
-                    sample[replacementIndex] = matchingItem
-                }
+                )
             }
+        guard candidates.count > maxCardCount else { return candidates }
+
+        guard let urgency else {
+            // Kein Lernstatus-Kontext → wie bisher zufällig ziehen.
+            return Array(candidates.shuffled().prefix(maxCardCount))
         }
 
-        return sample
+        // Erst mischen, dann **stabil** nach Dringlichkeit sortieren:
+        // Die dringendsten Items stehen vorn, innerhalb einer Stufe
+        // bleibt die zufällige Reihenfolge aus dem Shuffle erhalten.
+        return Array(
+            candidates
+                .shuffled()
+                .enumerated()
+                .sorted { lhs, rhs in
+                    let lhsUrgency = urgency(lhs.element)
+                    let rhsUrgency = urgency(rhs.element)
+                    if lhsUrgency != rhsUrgency { return lhsUrgency < rhsUrgency }
+                    return lhs.offset < rhs.offset
+                }
+                .prefix(maxCardCount)
+                .map(\.element)
+        )
     }
 }

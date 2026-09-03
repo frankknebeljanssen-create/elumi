@@ -117,9 +117,37 @@ extension FlashcardSessionStore {
             from: filteredLists,
             language: language,
             preferredCardType: preferredCardType,
-            maxCardCount: maxCardCount
+            maxCardCount: maxCardCount,
+            urgency: Self.learningUrgency
         )
         ensureValidSession()
+    }
+
+    /// **2026-08-05** — Dringlichkeit einer Vokabel für die Teilmengen-
+    /// Auswahl (User-Report: „zwei Wörter aus der Lernliste wurden bei
+    /// Karteikarten gar nicht abgefragt"). Kleinerer Wert = kommt
+    /// zuerst dran. Greift nur, wenn NICHT der ganze Stapel geübt wird
+    /// — bei „alle Karten" ist ohnehin jede Vokabel dabei.
+    ///
+    /// Reihenfolge bewusst so: Was noch nie abgefragt wurde, hat die
+    /// höchste Priorität — genau diese Wörter fielen vorher durchs
+    /// Zufalls-Raster und tauchten dadurch nie im Lernstatus auf. Danach
+    /// das, was nachweislich wackelt, und zuletzt das, was schon sitzt.
+    static func learningUrgency(for item: VocabularyItem) -> Int {
+        let key = ItemLearningStatusStore.canonicalKey(
+            french: item.french,
+            german: item.german,
+            cardType: item.cardType
+        )
+        guard let status = ItemLearningStatusStore.shared.statuses[key] else {
+            return 0  // noch nie abgefragt
+        }
+        switch status.status {
+        case .needsWork: return 1
+        case .sparse:    return 2
+        case .learning:  return 3
+        case .strong:    return 4
+        }
     }
 
     func clearTransientCustomDeckState() {
