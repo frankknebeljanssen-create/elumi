@@ -120,9 +120,20 @@ extension TrainingSessionController {
         // Mode-Filter (vocabulary/nouns/articles/verbs/accents) greift
         // nachgelagert orthogonal.
         let lernjahrMax = VocabularyListSelectionResolver.currentLernjahrMax()
-        let allItems = selectedLists
+        let rawItems = selectedLists
             .flatMap { VocabularyListSelectionResolver.effectiveItems(for: $0, lernjahrMax: lernjahrMax) }
             .filter { $0.sourceLanguage == selectedAppDirection.sourceLanguage }
+
+        // **Infinitiv-Karten (2026-09-03)** — steht in der Liste nur
+        // „il fait froid", soll auch `faire` drankommen. Siehe
+        // `VerbInfinitiveSynthesizer`. Der Verben-Modus unten braucht das
+        // nicht (er ersetzt ohnehin durch Lemmata), die Nomen-/Artikel-
+        // Modi filtern die Verben gleich wieder raus — wirksam ist die
+        // Ergänzung also im Vokabel-Modus.
+        let allItems = VerbInfinitiveSynthesizer.augmentedWithInfinitives(
+            rawItems,
+            language: selectedAppDirection.sourceLanguage
+        )
 
         // Spezialpfad für Verben: Aus ALLEN Items (auch Phrasen) die eindeutigen
         // Verb-LEMMATA extrahieren und als synthetische Trainings-Items zurückgeben.
@@ -194,40 +205,17 @@ extension TrainingSessionController {
     /// VocabularyItems im Infinitiv zurückgeben.
     /// Beispiel: Liste hat „je ne sais pas" + „je sais" + „tu sais" + „je m'appelle"
     /// → trainiert wird `savoir` (1×) und `s'appeler` (1×) — nicht die 4 Phrasen.
+    ///
+    /// **2026-09-03** — Implementierung liegt jetzt in
+    /// `VerbInfinitiveSynthesizer`, damit Karteikarten und Quiz dieselbe
+    /// Lemma-Ableitung nutzen können. Hier bleibt nur die Weiterleitung;
+    /// der Verben-Modus **ersetzt** die Phrasen weiterhin durch ihre
+    /// Infinitive, während die anderen Module sie ergänzen.
     static func synthesizeVerbInfinitiveItems(
         from items: [VocabularyItem],
         language: StudyLanguage
     ) -> [VocabularyItem] {
-        let stats = FrenchListStatisticsAggregator.cachedStatistics(for: items)
-        var synthesized: [VocabularyItem] = []
-        // **Block C (2026-05-03)** — Defense-in-Depth gegen DB-
-        // Tagging-Drift: nur Single-Verb-Lemmas synthetisieren.
-        // Mehrwort-Einträge wie „aller voir un film", die fälschlich
-        // mit `wordClass == "verb"` getaggt sind, werden hier
-        // ausgefiltert. Reflexive Verben (`s'amuser`, `se laver`)
-        // bleiben drin — siehe `isSingleVerbLemma` Doc.
-        for lemma in stats.verbLemmas where StandardVocabularyLoader.isSingleVerbLemma(lemma) {
-            // DE-Übersetzung aus der Master-DB (z.B. savoir → wissen, s'appeler → heißen)
-            let germanRaw = SupplementalFreeDictLexicon.germanTranslation(
-                forFrenchLemma: lemma,
-                wordClassHint: "verb"
-            ) ?? ""
-            let germanClean = germanRaw
-                .components(separatedBy: ";")
-                .first?
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-                ?? germanRaw
-            guard !germanClean.isEmpty else { continue }
-            let item = VocabularyItem(
-                rawFrench: lemma,
-                rawGerman: germanClean,
-                cardType: .words,
-                sourceLanguage: language,
-                wordClass: "verb"
-            )
-            synthesized.append(item)
-        }
-        return synthesized
+        VerbInfinitiveSynthesizer.infinitiveItems(from: items, language: language)
     }
 
     nonisolated private static let frenchArticles: Set<String> = ["le", "la", "l'", "les", "un", "une", "des", "du"]

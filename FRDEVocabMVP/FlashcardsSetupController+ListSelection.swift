@@ -80,9 +80,17 @@ extension FlashcardsSetupController {
         selectedAppDirection: Direction
     ) -> Int {
         let preferredCardType = selectedSetupContent.preferredCardType
+        // **Infinitiv-Karten (2026-09-03)** — identisch zur Deck-
+        // Erzeugung in `FlashcardSessionStore.configureCustomDeck`
+        // ergänzt, sonst zeigt die MENGE-Card weniger Karten an, als der
+        // Stapel am Ende enthält.
         return selectedStackLists(from: listStore, selectedAppDirection: selectedAppDirection)
             .reduce(0) { partialResult, list in
-                partialResult + list.items.filter {
+                let items = VerbInfinitiveSynthesizer.augmentedWithInfinitives(
+                    list.items,
+                    language: selectedAppDirection.sourceLanguage
+                )
+                return partialResult + items.filter {
                     $0.sourceLanguage == selectedAppDirection.sourceLanguage &&
                     (preferredCardType == nil || $0.cardType == preferredCardType)
                 }.count

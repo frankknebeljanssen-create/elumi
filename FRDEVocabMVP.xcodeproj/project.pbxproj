@@ -518,6 +518,7 @@
 		CC15FF2100000000ABCDEF01 /* ChatErrorBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF2100000000ABCDEF02 /* ChatErrorBannerView.swift */; };
 		CC15FF2200000000ABCDEF01 /* VocabularyListStore+ChatStapel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF2200000000ABCDEF02 /* VocabularyListStore+ChatStapel.swift */; };
 		CC15FF2300000000ABCDEF01 /* VocabularyListStore+Wackelkandidaten.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF2300000000ABCDEF02 /* VocabularyListStore+Wackelkandidaten.swift */; };
+		CC15FF2400000000ABCDEF01 /* VerbInfinitiveSynthesizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF2400000000ABCDEF02 /* VerbInfinitiveSynthesizer.swift */; };
 		CC15FF0700000000ABCDEF01 /* WideCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0700000000ABCDEF02 /* WideCard.swift */; };
 		CC15FF0800000000ABCDEF01 /* TrainingHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */; };
 		CC15FF0A00000000ABCDEF01 /* TrainingHubTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */; };
@@ -1143,6 +1144,7 @@
 		CC15FF2100000000ABCDEF02 /* ChatErrorBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatErrorBannerView.swift; path = FRDEVocabMVP/ChatErrorBannerView.swift; sourceTree = "<group>"; };
 		CC15FF2200000000ABCDEF02 /* VocabularyListStore+ChatStapel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "VocabularyListStore+ChatStapel.swift"; path = "FRDEVocabMVP/VocabularyListStore+ChatStapel.swift"; sourceTree = "<group>"; };
 		CC15FF2300000000ABCDEF02 /* VocabularyListStore+Wackelkandidaten.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "VocabularyListStore+Wackelkandidaten.swift"; path = "FRDEVocabMVP/VocabularyListStore+Wackelkandidaten.swift"; sourceTree = "<group>"; };
+		CC15FF2400000000ABCDEF02 /* VerbInfinitiveSynthesizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "VerbInfinitiveSynthesizer.swift"; path = "FRDEVocabMVP/VerbInfinitiveSynthesizer.swift"; sourceTree = "<group>"; };
 		CC15FF0700000000ABCDEF02 /* WideCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WideCard.swift; path = FRDEVocabMVP/WideCard.swift; sourceTree = "<group>"; };
 		CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingHubView.swift; path = FRDEVocabMVP/TrainingHubView.swift; sourceTree = "<group>"; };
 		CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingHubTips.swift; path = FRDEVocabMVP/TrainingHubTips.swift; sourceTree = "<group>"; };
@@ -1336,6 +1338,7 @@
 				CC15FF2100000000ABCDEF02 /* ChatErrorBannerView.swift */,
 				CC15FF2200000000ABCDEF02 /* VocabularyListStore+ChatStapel.swift */,
 				CC15FF2300000000ABCDEF02 /* VocabularyListStore+Wackelkandidaten.swift */,
+				CC15FF2400000000ABCDEF02 /* VerbInfinitiveSynthesizer.swift */,
 				CC15FF0700000000ABCDEF02 /* WideCard.swift */,
 				CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */,
 				CC15FF0A00000000ABCDEF02 /* TrainingHubTips.swift */,
@@ -2334,6 +2337,7 @@
 				CC15FF2100000000ABCDEF01 /* ChatErrorBannerView.swift in Sources */,
 				CC15FF2200000000ABCDEF01 /* VocabularyListStore+ChatStapel.swift in Sources */,
 				CC15FF2300000000ABCDEF01 /* VocabularyListStore+Wackelkandidaten.swift in Sources */,
+				CC15FF2400000000ABCDEF01 /* VerbInfinitiveSynthesizer.swift in Sources */,
 				CC15FF0700000000ABCDEF01 /* WideCard.swift in Sources */,
 				CC15FF0800000000ABCDEF01 /* TrainingHubView.swift in Sources */,
 				CC15FF0A00000000ABCDEF01 /* TrainingHubTips.swift in Sources */,

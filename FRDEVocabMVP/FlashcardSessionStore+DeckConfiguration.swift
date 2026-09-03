@@ -72,9 +72,12 @@ extension FlashcardSessionStore {
             VocabularyList(
                 id: source.id,
                 name: source.name,
-                items: VocabularyListSelectionResolver.effectiveItems(
-                    for: source,
-                    lernjahrMax: lernjahrMax
+                items: VerbInfinitiveSynthesizer.augmentedWithInfinitives(
+                    VocabularyListSelectionResolver.effectiveItems(
+                        for: source,
+                        lernjahrMax: lernjahrMax
+                    ),
+                    language: .french
                 ),
                 isBuiltIn: source.isBuiltIn,
                 collectionPreset: source.collectionPreset,
@@ -99,14 +102,22 @@ extension FlashcardSessionStore {
         // einzeln applizieren, BEVOR der Builder durch die Liste
         // iteriert. Hierarchische Listen werden auf Y_max gesliced;
         // flache Listen unverändert weitergegeben.
+        // **Infinitiv-Karten (2026-09-03)** — pro Liste ergänzt, damit
+        // aus „il fait froid" auch `faire` als eigene Karte kommt. Siehe
+        // `VerbInfinitiveSynthesizer`; der Zähler auf der MENGE-Card
+        // (`FlashcardsSetupController.selectedStackCardCount`) ergänzt
+        // identisch, sonst würden Anzeige und Stapelgröße auseinanderlaufen.
         let lernjahrMax = VocabularyListSelectionResolver.currentLernjahrMax()
         let filteredLists = lists.map { source in
             VocabularyList(
                 id: source.id,
                 name: source.name,
-                items: VocabularyListSelectionResolver.effectiveItems(
-                    for: source,
-                    lernjahrMax: lernjahrMax
+                items: VerbInfinitiveSynthesizer.augmentedWithInfinitives(
+                    VocabularyListSelectionResolver.effectiveItems(
+                        for: source,
+                        lernjahrMax: lernjahrMax
+                    ),
+                    language: language
                 ),
                 isBuiltIn: source.isBuiltIn,
                 collectionPreset: source.collectionPreset,

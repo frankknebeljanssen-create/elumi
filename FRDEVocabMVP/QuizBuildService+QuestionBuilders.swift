@@ -10,6 +10,13 @@ extension QuizBuildService {
     /// in-Depth: filtert hier zusätzlich zum Cache-Layer, schützt vor
     /// künftigen Callern, die `makeMergedItems` direkt ohne Cache
     /// aufrufen.
+    ///
+    /// **Infinitiv-Karten (2026-09-03)** — nach dem Dedupe kommen die
+    /// Grundformen der vorkommenden Verben dazu, damit aus „il pleut"
+    /// auch `pleuvoir` abgefragt wird. Siehe `VerbInfinitiveSynthesizer`.
+    /// Bewusst **nach** dem Dedupe: der Synthesizer prüft selbst gegen
+    /// die bereits vorhandenen Einträge und wirft nichts weg, was der
+    /// User eingelesen hat.
     static func makeMergedItems(
         from lists: [VocabularyList],
         direction: Direction,
@@ -17,7 +24,7 @@ extension QuizBuildService {
     ) -> [VocabularyItem] {
         var seen = Set<String>()
 
-        return lists
+        let deduped = lists
             .flatMap { VocabularyListSelectionResolver.effectiveItems(for: $0, lernjahrMax: lernjahrMax) }
             .filter { $0.sourceLanguage == direction.sourceLanguage }
             .filter { item in
@@ -31,6 +38,11 @@ extension QuizBuildService {
                 seen.insert(key)
                 return true
             }
+
+        return VerbInfinitiveSynthesizer.augmentedWithInfinitives(
+            deduped,
+            language: direction.sourceLanguage
+        )
     }
 
     static func nextMultipleChoiceQuestion(
