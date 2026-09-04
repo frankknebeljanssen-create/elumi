@@ -51,7 +51,7 @@ except ImportError:
 # ---------------------------------------------------------------------------
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-DB_PATH = REPO_ROOT / "FRDEVocabMVP" / "FRDEMasterLexicon.sqlite"
+DB_PATH = REPO_ROOT / "Elumi" / "FRDEMasterLexicon.sqlite"
 RESOLUTIONS_PATH = REPO_ROOT / "tools" / "topic_ai_resolutions.json"
 BATCH_SIZE = 40
 MODEL = "claude-haiku-4-5"

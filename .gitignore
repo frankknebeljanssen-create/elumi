@@ -4,7 +4,7 @@ build/
 *.xcuserstate
 *.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/
-FRDEVocabMVP/OpenAIConfig.plist
+Elumi/OpenAIConfig.plist
 
 # Lose Design-Assets im Repo-Root (Arbeitskopien / Lieferantenpakete) —
 # sind schon als `*.imageset` in `Assets.xcassets` integriert bzw.
@@ -29,7 +29,7 @@ FRDEVocabMVP/OpenAIConfig.plist
 
 # DB-Backups vor Migrationen — bleiben außerhalb Repo
 # (jeweils ~62 MB, im ~/Dropbox/VocabMVP-DB-Backups/ Folder)
-FRDEVocabMVP/FRDEMasterLexicon_pre_*.sqlite
+Elumi/FRDEMasterLexicon_pre_*.sqlite
 
-# Stale SQLite at repo root (the real DB lives in FRDEVocabMVP/)
+# Stale SQLite at repo root (the real DB lives in Elumi/)
 /FRDEMasterLexicon.sqlite

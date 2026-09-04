@@ -21,7 +21,7 @@ import sqlite3
 import sys
 from datetime import datetime
 
-DB = "FRDEVocabMVP/FRDEMasterLexicon.sqlite"
+DB = "Elumi/FRDEMasterLexicon.sqlite"
 
 # Tabelle -> Spalten, die auf `entries.entry_id` zeigen. Zentral
 # gepflegt: Kommt eine neue Nebentabelle dazu, gehört sie hierher,

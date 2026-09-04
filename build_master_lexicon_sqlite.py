@@ -6,7 +6,7 @@ Usage:
     python3 build_master_lexicon_sqlite.py
 
 Input:  /Users/frankknebeljanssen/Documents/New project/frde_app_export/out/*.tsv
-Output: FRDEVocabMVP/FRDEMasterLexicon.sqlite
+Output: Elumi/FRDEMasterLexicon.sqlite
 
 Run this after updating the master DB export. Then rebuild the app (Shift+Cmd+K, Cmd+R).
 """
@@ -18,7 +18,7 @@ import sys
 import time
 
 EXPORT_DIR = "/Users/frankknebeljanssen/Documents/New project/frde_app_export/out"
-OUTPUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "FRDEVocabMVP", "FRDEMasterLexicon.sqlite")
+OUTPUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Elumi", "FRDEMasterLexicon.sqlite")
 
 CORE_FILES = {
     "entries": os.path.join(EXPORT_DIR, "app_entries.tsv"),

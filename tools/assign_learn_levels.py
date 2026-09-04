@@ -70,7 +70,7 @@ import sys
 from collections import Counter, defaultdict
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB = os.path.join(REPO, "FRDEVocabMVP", "FRDEMasterLexicon.sqlite")
+DB = os.path.join(REPO, "Elumi", "FRDEMasterLexicon.sqlite")
 FREQ_FILE = os.path.join(REPO, "build-data", "entry_frequency.tsv")
 BACKUP = "/tmp/FRDEMasterLexicon.before_learn_levels.sqlite"
 

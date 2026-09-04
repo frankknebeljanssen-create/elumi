@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "A00000000000000000000040"
-               BuildableName = "myVoc.app"
-               BlueprintName = "FRDEVocabMVP"
-               ReferencedContainer = "container:FRDEVocabMVP.xcodeproj">
+               BuildableName = "Elumi.app"
+               BlueprintName = "Elumi"
+               ReferencedContainer = "container:Elumi.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -46,9 +46,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A00000000000000000000040"
-            BuildableName = "myVoc.app"
-            BlueprintName = "FRDEVocabMVP"
-            ReferencedContainer = "container:FRDEVocabMVP.xcodeproj">
+            BuildableName = "Elumi.app"
+            BlueprintName = "Elumi"
+            ReferencedContainer = "container:Elumi.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -63,9 +63,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A00000000000000000000040"
-            BuildableName = "myVoc.app"
-            BlueprintName = "FRDEVocabMVP"
-            ReferencedContainer = "container:FRDEVocabMVP.xcodeproj">
+            BuildableName = "Elumi.app"
+            BlueprintName = "Elumi"
+            ReferencedContainer = "container:Elumi.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

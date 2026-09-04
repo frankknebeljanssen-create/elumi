@@ -1,7 +1,7 @@
 // ChatMessage.swift
 // **Léa-Chat MVP Schritt 1 (2026-05-10)** — SwiftData-Model für eine
 // einzelne Chat-Nachricht (User oder Léa). Persistiert lokal über die
-// SwiftData-ModelContainer-Wiring in `FRDEVocabMVPApp.swift`.
+// SwiftData-ModelContainer-Wiring in `ElumiApp.swift`.
 //
 // Schritt 1 nutzt eine einzige hardcodierte `defaultSessionID`; spätere
 // Iterationen führen Multi-Persona / Multi-Session-Logic auf demselben

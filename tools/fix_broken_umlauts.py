@@ -47,7 +47,7 @@ import sys
 from collections import Counter
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB = os.path.join(REPO, "FRDEVocabMVP", "FRDEMasterLexicon.sqlite")
+DB = os.path.join(REPO, "Elumi", "FRDEMasterLexicon.sqlite")
 BACKUP = "/tmp/FRDEMasterLexicon.before_umlauts.sqlite"
 
 WORD_RE = re.compile(r"[A-Za-zÄÖÜäöüß-]+")

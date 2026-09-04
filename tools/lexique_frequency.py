@@ -64,7 +64,7 @@ import unicodedata
 import urllib.request
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB = os.path.join(REPO, "FRDEVocabMVP", "FRDEMasterLexicon.sqlite")
+DB = os.path.join(REPO, "Elumi", "FRDEMasterLexicon.sqlite")
 BUILD_DIR = os.path.join(REPO, "build-data")
 LEXIQUE = os.path.join(BUILD_DIR, "Lexique383.tsv")
 OUT = os.path.join(BUILD_DIR, "entry_frequency.tsv")

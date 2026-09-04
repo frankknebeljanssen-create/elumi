@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 @main
-struct FRDEVocabMVPApp: App {
+struct ElumiApp: App {
     init() {
         #if DEBUG
         _ = TextNormalizationEngineSelfTest.didRun

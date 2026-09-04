@@ -50,7 +50,7 @@
 		910F1CC9A7444B38971AC68C /* Sounds/elumi_jellyfish_ambient.wav in Resources */ = {isa = PBXBuildFile; fileRef = ED6E2620B526439EA130ADE9 /* Sounds/elumi_jellyfish_ambient.wav */; };
 		9522ABC182EA4ED19082A0A4 /* Sounds/elumi_error.wav in Resources */ = {isa = PBXBuildFile; fileRef = 749B020AED184C828FDAFB6C /* Sounds/elumi_error.wav */; };
 		99AE414AD9F8468D8DF3007D /* Sounds/elumi_wrong.wav in Resources */ = {isa = PBXBuildFile; fileRef = F5A9F51ED0654E5F94E00A68 /* Sounds/elumi_wrong.wav */; };
-		A00000000000000000000001 /* FRDEVocabMVPApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000011 /* FRDEVocabMVPApp.swift */; };
+		A00000000000000000000001 /* ElumiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000011 /* ElumiApp.swift */; };
 		A00000000000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000012 /* ContentView.swift */; };
 		A00000000000000000000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000013 /* Assets.xcassets */; };
 		A00000000000000000000004 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000015 /* DesignSystem.swift */; };
@@ -448,7 +448,7 @@
 		D8F531550E0A4DF7B96CC21C /* SessionSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */; };
 		DA57C4C566AF4DB3B5CC281D /* Sounds/elumi_saugloop.wav in Resources */ = {isa = PBXBuildFile; fileRef = 51677781801E491EAEA0C07A /* Sounds/elumi_saugloop.wav */; };
 		DC356E5E6E7D471787978C2E /* Sounds/elumi_slowmoend.wav in Resources */ = {isa = PBXBuildFile; fileRef = 8469BB0E7D1B47FE81099689 /* Sounds/elumi_slowmoend.wav */; };
-		DE208FC184184208BE875D1D /* FRDEVocabMVP/ListCategoryPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10CDA22DCE1454195172B47 /* FRDEVocabMVP/ListCategoryPickerView.swift */; };
+		DE208FC184184208BE875D1D /* Elumi/ListCategoryPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10CDA22DCE1454195172B47 /* Elumi/ListCategoryPickerView.swift */; };
 		E627ACD904664767B834476C /* Sounds/elumi_listaction.wav in Resources */ = {isa = PBXBuildFile; fileRef = CCE42C2B2A954601BA1CC327 /* Sounds/elumi_listaction.wav */; };
 		EF1331233D8443888E1FAC22 /* Personalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A58F580B36740F78ED60FD0 /* Personalization.swift */; };
 		F430601DADA83D05822596D0 /* HomeDailyFocusCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7E48C7D56DE47BA8A612FB2 /* HomeDailyFocusCard.swift */; };
@@ -633,43 +633,43 @@
 		0BBDD993CDA84C048277CCF7 /* Sounds/elumi_saugend.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_saugend.wav; sourceTree = "<group>"; };
 		14D6AA0E2F7547C58EFD2C7B /* Sounds/elumi_tentacle_sting.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_tentacle_sting.wav; sourceTree = "<group>"; };
 		1607A964426A474FA6D8367C /* Sounds/elumi_cardwrong.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_cardwrong.wav; sourceTree = "<group>"; };
-		1C5A4B8C09644DDA8E9DC8B5 /* SessionSetupComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupComponents.swift; path = FRDEVocabMVP/SessionSetupComponents.swift; sourceTree = "<group>"; };
+		1C5A4B8C09644DDA8E9DC8B5 /* SessionSetupComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupComponents.swift; path = Elumi/SessionSetupComponents.swift; sourceTree = "<group>"; };
 		1EA2312346DD411E87EFE74C /* Sounds/elumi_bonusbubble.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_bonusbubble.wav; sourceTree = "<group>"; };
 		21594A50F0B744E68ED245F2 /* Sounds/elumi_quizcomplete.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_quizcomplete.wav; sourceTree = "<group>"; };
 		2E74EDA8D2904AA7A3E9F688 /* Sounds/elumi_slowmostart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_slowmostart.wav; sourceTree = "<group>"; };
 		32C43DE8F494458D929C4AE1 /* Sounds/elumi_toggle.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_toggle.wav; sourceTree = "<group>"; };
 		AA00CCC1ABCD0002AA00AA00 /* Sounds/slot_reel_click.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/slot_reel_click.wav; sourceTree = "<group>"; };
 		AA00CCC1ABCD0004AA00AA00 /* SlotAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlotAudioPlayer.swift; sourceTree = "<group>"; };
-		35F654EF57484ACA8C074FF2 /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileStore.swift; path = FRDEVocabMVP/ProfileStore.swift; sourceTree = "<group>"; };
-		3A58F580B36740F78ED60FD0 /* Personalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Personalization.swift; path = FRDEVocabMVP/Personalization.swift; sourceTree = "<group>"; };
-		3AF0AA02FEF444D2BD481B5B /* GameHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GameHubView.swift; path = FRDEVocabMVP/GameHubView.swift; sourceTree = "<group>"; };
-		3C6021AB9E4ED9043B2F3F7F /* LanguageDirectionSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LanguageDirectionSwitch.swift; path = FRDEVocabMVP/LanguageDirectionSwitch.swift; sourceTree = "<group>"; };
+		35F654EF57484ACA8C074FF2 /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileStore.swift; path = Elumi/ProfileStore.swift; sourceTree = "<group>"; };
+		3A58F580B36740F78ED60FD0 /* Personalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Personalization.swift; path = Elumi/Personalization.swift; sourceTree = "<group>"; };
+		3AF0AA02FEF444D2BD481B5B /* GameHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GameHubView.swift; path = Elumi/GameHubView.swift; sourceTree = "<group>"; };
+		3C6021AB9E4ED9043B2F3F7F /* LanguageDirectionSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LanguageDirectionSwitch.swift; path = Elumi/LanguageDirectionSwitch.swift; sourceTree = "<group>"; };
 		3CC12181E32D4557B70AA0CF /* Sounds/elumi_stackcomplete.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_stackcomplete.wav; sourceTree = "<group>"; };
 		3EC276513665498B94332747 /* Sounds/elumi_scanstart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_scanstart.wav; sourceTree = "<group>"; };
 		41F9D99E7DF54754980496C7 /* Sounds/elumi_gamestart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_gamestart.wav; sourceTree = "<group>"; };
 		427B3F68D7FB4FBFA24DBD17 /* Sounds/elumi_streak.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_streak.wav; sourceTree = "<group>"; };
-		47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupScreen.swift; path = FRDEVocabMVP/SessionSetupScreen.swift; sourceTree = "<group>"; };
+		47761F2F3B2242F0BB41EBA6 /* SessionSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupScreen.swift; path = Elumi/SessionSetupScreen.swift; sourceTree = "<group>"; };
 		4C1FD5616CFA427DBAB4CE9D /* LexiconTextUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LexiconTextUtility.swift; sourceTree = "<group>"; };
 		51677781801E491EAEA0C07A /* Sounds/elumi_saugloop.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_saugloop.wav; sourceTree = "<group>"; };
-		54C3FB95BD334EE18408771B /* DailyChallengeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyChallengeStore.swift; path = FRDEVocabMVP/DailyChallengeStore.swift; sourceTree = "<group>"; };
-		1BD6CE973FC74612A17D9290 /* StreakJokerStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StreakJokerStore.swift; path = FRDEVocabMVP/StreakJokerStore.swift; sourceTree = "<group>"; };
+		54C3FB95BD334EE18408771B /* DailyChallengeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyChallengeStore.swift; path = Elumi/DailyChallengeStore.swift; sourceTree = "<group>"; };
+		1BD6CE973FC74612A17D9290 /* StreakJokerStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StreakJokerStore.swift; path = Elumi/StreakJokerStore.swift; sourceTree = "<group>"; };
 		550C14FD7EDE4E0C8426E5C0 /* Sounds/elumi_powerupspawn.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_powerupspawn.wav; sourceTree = "<group>"; };
 		5F6AA0B1D09C4B26B5544537 /* Sounds/elumi_roundclear.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_roundclear.wav; sourceTree = "<group>"; };
 		6D35D1BF6D2D4C5093A40F4E /* Sounds/elumi_levelup.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_levelup.wav; sourceTree = "<group>"; };
 		6DC3E67A0E5B47A6A21D7589 /* Sounds/elumi_gameover.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_gameover.wav; sourceTree = "<group>"; };
-		6FEDD84AF0BD7AE57209A819 /* HomeHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeHeader.swift; path = FRDEVocabMVP/HomeHeader.swift; sourceTree = "<group>"; };
+		6FEDD84AF0BD7AE57209A819 /* HomeHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeHeader.swift; path = Elumi/HomeHeader.swift; sourceTree = "<group>"; };
 		71844DBDB0A8498D87F33E5B /* GamificationFeedbackPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamificationFeedbackPresenter.swift; sourceTree = "<group>"; };
-		7313B768D707425B9C3DA9DA /* LearnerProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearnerProfile.swift; path = FRDEVocabMVP/LearnerProfile.swift; sourceTree = "<group>"; };
+		7313B768D707425B9C3DA9DA /* LearnerProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearnerProfile.swift; path = Elumi/LearnerProfile.swift; sourceTree = "<group>"; };
 		749B020AED184C828FDAFB6C /* Sounds/elumi_error.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_error.wav; sourceTree = "<group>"; };
-		765EA90FF65349C1ADBD8D70 /* VariableRewardEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VariableRewardEngine.swift; path = FRDEVocabMVP/VariableRewardEngine.swift; sourceTree = "<group>"; };
+		765EA90FF65349C1ADBD8D70 /* VariableRewardEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VariableRewardEngine.swift; path = Elumi/VariableRewardEngine.swift; sourceTree = "<group>"; };
 		777D26688D2246308F41248B /* Sounds/elumi_combo.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_combo.wav; sourceTree = "<group>"; };
-		77D1F5E4FBCC08EBB9C7AFB9 /* AppBackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppBackButton.swift; path = FRDEVocabMVP/AppBackButton.swift; sourceTree = "<group>"; };
+		77D1F5E4FBCC08EBB9C7AFB9 /* AppBackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppBackButton.swift; path = Elumi/AppBackButton.swift; sourceTree = "<group>"; };
 		7F3CEFA2774C4CC9871729D2 /* Sounds/elumi_bgm_fischfang.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_bgm_fischfang.wav; sourceTree = "<group>"; };
 		804F29773536414EAD31D9BF /* Sounds/elumi_cardflip.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_cardflip.wav; sourceTree = "<group>"; };
-		832B8E6EB6D8482D957CF256 /* SessionSetupEstimate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupEstimate.swift; path = FRDEVocabMVP/SessionSetupEstimate.swift; sourceTree = "<group>"; };
+		832B8E6EB6D8482D957CF256 /* SessionSetupEstimate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionSetupEstimate.swift; path = Elumi/SessionSetupEstimate.swift; sourceTree = "<group>"; };
 		8469BB0E7D1B47FE81099689 /* Sounds/elumi_slowmoend.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_slowmoend.wav; sourceTree = "<group>"; };
 		8B3E6DF30BBB4EC3812B0DB2 /* Sounds/elumi_scanprocess.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_scanprocess.wav; sourceTree = "<group>"; };
-		901A6A0D6B194C198EEE6882 /* ProfileAvatarBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileAvatarBadge.swift; path = FRDEVocabMVP/ProfileAvatarBadge.swift; sourceTree = "<group>"; };
+		901A6A0D6B194C198EEE6882 /* ProfileAvatarBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileAvatarBadge.swift; path = Elumi/ProfileAvatarBadge.swift; sourceTree = "<group>"; };
 		95A777457F104E90B5FA1898 /* Sounds/elumi_cardright.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_cardright.wav; sourceTree = "<group>"; };
 		97C3C5F1DA8C491FA5BB2809 /* Sounds/elumi_correct.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_correct.wav; sourceTree = "<group>"; };
 		985C1E62789347B8A53B860F /* Sounds/elumi_snackcatch.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_snackcatch.wav; sourceTree = "<group>"; };
@@ -677,7 +677,7 @@
 		9BA6DD9690D14C3F966AECF7 /* Sounds/elumi_appstart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_appstart.wav; sourceTree = "<group>"; };
 		9D22BEAA0CCF43968F2ECD5A /* Sounds/elumi_favstar.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_favstar.wav; sourceTree = "<group>"; };
 		A00000000000000000000010 /* myVoc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = myVoc.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A00000000000000000000011 /* FRDEVocabMVPApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FRDEVocabMVPApp.swift; sourceTree = "<group>"; };
+		A00000000000000000000011 /* ElumiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElumiApp.swift; sourceTree = "<group>"; };
 		A00000000000000000000012 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A00000000000000000000013 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A00000000000000000000014 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -1018,24 +1018,24 @@
 		A00000000000000000000775 /* ElumiArcadeGameView+PlayCredits.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ElumiArcadeGameView+PlayCredits.swift"; sourceTree = "<group>"; };
 		A00000000000000000000777 /* GermanNounCapitalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GermanNounCapitalization.swift; sourceTree = "<group>"; };
 		A00000000000000000000779 /* VocabularyListSelectionResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyListSelectionResolver.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyStatsStore.swift; path = FRDEVocabMVP/DailyStatsStore.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708090A0D04 /* LearningGoalStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearningGoalStore.swift; path = FRDEVocabMVP/LearningGoalStore.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708090A0D02 /* LearningGoalPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearningGoalPlan.swift; path = FRDEVocabMVP/LearningGoalPlan.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708090A0F08 /* LearningGoalDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearningGoalDetailView.swift; path = FRDEVocabMVP/LearningGoalDetailView.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708090A0F06 /* HomeGoalCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeGoalCard.swift; path = FRDEVocabMVP/HomeGoalCard.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708090A1102 /* ElumiHelp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElumiHelp.swift; path = FRDEVocabMVP/ElumiHelp.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708090A1202 /* DailyWrapUp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyWrapUp.swift; path = FRDEVocabMVP/DailyWrapUp.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708090A1204 /* DailyWrapUpSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyWrapUpSheet.swift; path = FRDEVocabMVP/DailyWrapUpSheet.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708090A1104 /* ElumiHelpSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElumiHelpSheet.swift; path = FRDEVocabMVP/ElumiHelpSheet.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708090A0F04 /* LearningGoalOnboardingView+Steps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LearningGoalOnboardingView+Steps.swift"; path = "FRDEVocabMVP/LearningGoalOnboardingView+Steps.swift"; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708090A0F02 /* LearningGoalOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearningGoalOnboardingView.swift; path = FRDEVocabMVP/LearningGoalOnboardingView.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708090A0E01 /* ItemLearningStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatus.swift; path = FRDEVocabMVP/ItemLearningStatus.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708090A0E03 /* ItemLearningStatusStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatusStore.swift; path = FRDEVocabMVP/ItemLearningStatusStore.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708090A0E05 /* ItemLearningStatusRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatusRecorder.swift; path = FRDEVocabMVP/ItemLearningStatusRecorder.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708090A0E07 /* HomeLernstatusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeLernstatusCard.swift; path = FRDEVocabMVP/HomeLernstatusCard.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708090A0E09 /* LernstatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LernstatusView.swift; path = FRDEVocabMVP/LernstatusView.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708091C0D02 /* AppIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppIcons.swift; path = FRDEVocabMVP/AppIcons.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60708091C0D04 /* DebugResetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DebugResetService.swift; path = FRDEVocabMVP/DebugResetService.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0C02 /* DailyStatsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyStatsStore.swift; path = Elumi/DailyStatsStore.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0D04 /* LearningGoalStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearningGoalStore.swift; path = Elumi/LearningGoalStore.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0D02 /* LearningGoalPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearningGoalPlan.swift; path = Elumi/LearningGoalPlan.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0F08 /* LearningGoalDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearningGoalDetailView.swift; path = Elumi/LearningGoalDetailView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0F06 /* HomeGoalCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeGoalCard.swift; path = Elumi/HomeGoalCard.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A1102 /* ElumiHelp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElumiHelp.swift; path = Elumi/ElumiHelp.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A1202 /* DailyWrapUp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyWrapUp.swift; path = Elumi/DailyWrapUp.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A1204 /* DailyWrapUpSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyWrapUpSheet.swift; path = Elumi/DailyWrapUpSheet.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A1104 /* ElumiHelpSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElumiHelpSheet.swift; path = Elumi/ElumiHelpSheet.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0F04 /* LearningGoalOnboardingView+Steps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LearningGoalOnboardingView+Steps.swift"; path = "Elumi/LearningGoalOnboardingView+Steps.swift"; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0F02 /* LearningGoalOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LearningGoalOnboardingView.swift; path = Elumi/LearningGoalOnboardingView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0E01 /* ItemLearningStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatus.swift; path = Elumi/ItemLearningStatus.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0E03 /* ItemLearningStatusStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatusStore.swift; path = Elumi/ItemLearningStatusStore.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0E05 /* ItemLearningStatusRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ItemLearningStatusRecorder.swift; path = Elumi/ItemLearningStatusRecorder.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0E07 /* HomeLernstatusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeLernstatusCard.swift; path = Elumi/HomeLernstatusCard.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708090A0E09 /* LernstatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LernstatusView.swift; path = Elumi/LernstatusView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708091C0D02 /* AppIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppIcons.swift; path = Elumi/AppIcons.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60708091C0D04 /* DebugResetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DebugResetService.swift; path = Elumi/DebugResetService.swift; sourceTree = "<group>"; };
 		A2097A8DB27E4BDC957255A8 /* Sounds/elumi_highscore.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_highscore.wav; sourceTree = "<group>"; };
 		AA11BB22CC33DD44EE55FF67 /* SessionStreak.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStreak.swift; sourceTree = "<group>"; };
 		AA11BB22CC33DD44EE55FF69 /* SpeedRoundSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedRoundSettings.swift; sourceTree = "<group>"; };
@@ -1050,144 +1050,144 @@
 		AA11BB22CC33DD44EE55FF81 /* SpeedRoundTimerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedRoundTimerCard.swift; sourceTree = "<group>"; };
 		AA11BB22CC33DD44EE55FF83 /* GameStateResetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStateResetService.swift; sourceTree = "<group>"; };
 		AA11BB22CC33DD44EE55FF85 /* LevelProgression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelProgression.swift; sourceTree = "<group>"; };
-		AAAC0002AAAC0002AAAC0002 /* AccountStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountStore.swift; path = FRDEVocabMVP/AccountStore.swift; sourceTree = "<group>"; };
-		AAAC0004AAAC0004AAAC0004 /* AccountOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountOnboardingView.swift; path = FRDEVocabMVP/AccountOnboardingView.swift; sourceTree = "<group>"; };
-		AAAC0006AAAC0006AAAC0006 /* AccountSwitcherSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountSwitcherSheet.swift; path = FRDEVocabMVP/AccountSwitcherSheet.swift; sourceTree = "<group>"; };
-		B10CDA22DCE1454195172B47 /* FRDEVocabMVP/ListCategoryPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FRDEVocabMVP/ListCategoryPickerView.swift; sourceTree = SOURCE_ROOT; };
-		B2D8AABD1A084A80A03C7C97 /* DailyChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyChallenge.swift; path = FRDEVocabMVP/DailyChallenge.swift; sourceTree = "<group>"; };
-		B72C571C840B4169A98D8ABA /* ScanChoiceCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanChoiceCard.swift; path = FRDEVocabMVP/ScanChoiceCard.swift; sourceTree = "<group>"; };
+		AAAC0002AAAC0002AAAC0002 /* AccountStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountStore.swift; path = Elumi/AccountStore.swift; sourceTree = "<group>"; };
+		AAAC0004AAAC0004AAAC0004 /* AccountOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountOnboardingView.swift; path = Elumi/AccountOnboardingView.swift; sourceTree = "<group>"; };
+		AAAC0006AAAC0006AAAC0006 /* AccountSwitcherSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountSwitcherSheet.swift; path = Elumi/AccountSwitcherSheet.swift; sourceTree = "<group>"; };
+		B10CDA22DCE1454195172B47 /* Elumi/ListCategoryPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Elumi/ListCategoryPickerView.swift; sourceTree = SOURCE_ROOT; };
+		B2D8AABD1A084A80A03C7C97 /* DailyChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyChallenge.swift; path = Elumi/DailyChallenge.swift; sourceTree = "<group>"; };
+		B72C571C840B4169A98D8ABA /* ScanChoiceCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanChoiceCard.swift; path = Elumi/ScanChoiceCard.swift; sourceTree = "<group>"; };
 		BAC62D87FEAD413F90BCE57C /* Sounds/elumi_scandone.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_scandone.wav; sourceTree = "<group>"; };
-		C4908A2A5A962323D3A36B07 /* HomeModuleIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeModuleIcon.swift; path = FRDEVocabMVP/HomeModuleIcon.swift; sourceTree = "<group>"; };
+		C4908A2A5A962323D3A36B07 /* HomeModuleIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeModuleIcon.swift; path = Elumi/HomeModuleIcon.swift; sourceTree = "<group>"; };
 		C796DD66D33845D482971B80 /* Sounds/elumi_tentacle_drop.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_tentacle_drop.wav; sourceTree = "<group>"; };
-		C9545925434E4BCBA46071F1 /* SessionOptionsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionOptionsComponents.swift; path = FRDEVocabMVP/SessionOptionsComponents.swift; sourceTree = "<group>"; };
-		CA4DE9771408424DBF4CA080 /* FeedbackTiming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FeedbackTiming.swift; path = FRDEVocabMVP/FeedbackTiming.swift; sourceTree = "<group>"; };
+		C9545925434E4BCBA46071F1 /* SessionOptionsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SessionOptionsComponents.swift; path = Elumi/SessionOptionsComponents.swift; sourceTree = "<group>"; };
+		CA4DE9771408424DBF4CA080 /* FeedbackTiming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FeedbackTiming.swift; path = Elumi/FeedbackTiming.swift; sourceTree = "<group>"; };
 		CB93664F8123410AB10D5D2F /* Sounds/elumi_shieldabsorb.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_shieldabsorb.wav; sourceTree = "<group>"; };
 		CCE42C2B2A954601BA1CC327 /* Sounds/elumi_listaction.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_listaction.wav; sourceTree = "<group>"; };
-		CF6D48598792426F80A5D511 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingView.swift; path = FRDEVocabMVP/OnboardingView.swift; sourceTree = "<group>"; };
-		D60E8751B6404310BA69583D /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileView.swift; path = FRDEVocabMVP/ProfileView.swift; sourceTree = "<group>"; };
-		D7E48C7D56DE47BA8A612FB2 /* HomeDailyFocusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeDailyFocusCard.swift; path = FRDEVocabMVP/HomeDailyFocusCard.swift; sourceTree = "<group>"; };
+		CF6D48598792426F80A5D511 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingView.swift; path = Elumi/OnboardingView.swift; sourceTree = "<group>"; };
+		D60E8751B6404310BA69583D /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileView.swift; path = Elumi/ProfileView.swift; sourceTree = "<group>"; };
+		D7E48C7D56DE47BA8A612FB2 /* HomeDailyFocusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeDailyFocusCard.swift; path = Elumi/HomeDailyFocusCard.swift; sourceTree = "<group>"; };
 		DADBA6D5B4FF4413839CBF0D /* Sounds/elumi_shieldactivate.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_shieldactivate.wav; sourceTree = "<group>"; };
 		DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = FRDEMasterLexicon.sqlite; sourceTree = "<group>"; };
 		FEDEA20900000000000099004 /* german_finite_verbs.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = german_finite_verbs.json; sourceTree = "<group>"; };
 		ED6E2620B526439EA130ADE9 /* Sounds/elumi_jellyfish_ambient.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_jellyfish_ambient.wav; sourceTree = "<group>"; };
 		F1C01A111A111A111A111111 /* GamificationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamificationConfig.swift; sourceTree = "<group>"; };
-		F244E2378E0C4DF89CC561E1 /* ProgressHubComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProgressHubComponents.swift; path = FRDEVocabMVP/ProgressHubComponents.swift; sourceTree = "<group>"; };
+		F244E2378E0C4DF89CC561E1 /* ProgressHubComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProgressHubComponents.swift; path = Elumi/ProgressHubComponents.swift; sourceTree = "<group>"; };
 		F2C01A111A111A111A111111 /* LearningSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearningSession.swift; sourceTree = "<group>"; };
 		F2F037219E904D3680DD724E /* Sounds/elumi_tabswitch.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_tabswitch.wav; sourceTree = "<group>"; };
 		F3C01A111A111A111A111111 /* ProgressStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressStore.swift; sourceTree = "<group>"; };
-		F43B1C072F86A7BA0094BA73 /* StandardVocabularyLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StandardVocabularyLoader.swift; path = FRDEVocabMVP/StandardVocabularyLoader.swift; sourceTree = "<group>"; };
-		F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; name = VerbNounPairs.tsv; path = FRDEVocabMVP/VerbNounPairs.tsv; sourceTree = "<group>"; };
-		F43B1C0B2F877A100094BA73 /* VerbNounPairLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VerbNounPairLoader.swift; path = FRDEVocabMVP/VerbNounPairLoader.swift; sourceTree = "<group>"; };
-		F43B1C0D2F878B000094BA73 /* FillBlankSentences.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; name = FillBlankSentences.tsv; path = FRDEVocabMVP/FillBlankSentences.tsv; sourceTree = "<group>"; };
-		F43B1C0F2F878B100094BA73 /* FillBlankSentenceLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FillBlankSentenceLoader.swift; path = FRDEVocabMVP/FillBlankSentenceLoader.swift; sourceTree = "<group>"; };
-		F43B1C112F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClaudeHaikuScanAIClient.swift; path = FRDEVocabMVP/ClaudeHaikuScanAIClient.swift; sourceTree = "<group>"; };
-		F43B1C132F87C0100094BA73 /* ClaudeHaikuScanAIClient+Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ClaudeHaikuScanAIClient+Configuration.swift"; path = "FRDEVocabMVP/ClaudeHaikuScanAIClient+Configuration.swift"; sourceTree = "<group>"; };
+		F43B1C072F86A7BA0094BA73 /* StandardVocabularyLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StandardVocabularyLoader.swift; path = Elumi/StandardVocabularyLoader.swift; sourceTree = "<group>"; };
+		F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; name = VerbNounPairs.tsv; path = Elumi/VerbNounPairs.tsv; sourceTree = "<group>"; };
+		F43B1C0B2F877A100094BA73 /* VerbNounPairLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VerbNounPairLoader.swift; path = Elumi/VerbNounPairLoader.swift; sourceTree = "<group>"; };
+		F43B1C0D2F878B000094BA73 /* FillBlankSentences.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; name = FillBlankSentences.tsv; path = Elumi/FillBlankSentences.tsv; sourceTree = "<group>"; };
+		F43B1C0F2F878B100094BA73 /* FillBlankSentenceLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FillBlankSentenceLoader.swift; path = Elumi/FillBlankSentenceLoader.swift; sourceTree = "<group>"; };
+		F43B1C112F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClaudeHaikuScanAIClient.swift; path = Elumi/ClaudeHaikuScanAIClient.swift; sourceTree = "<group>"; };
+		F43B1C132F87C0100094BA73 /* ClaudeHaikuScanAIClient+Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ClaudeHaikuScanAIClient+Configuration.swift"; path = "Elumi/ClaudeHaikuScanAIClient+Configuration.swift"; sourceTree = "<group>"; };
 		F451513E2F93C391006C8818 /* File.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = File.txt; sourceTree = "<group>"; };
-		F458EECF2F8770F9009A2683 /* ArcadeCreditSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArcadeCreditSystem.swift; path = FRDEVocabMVP/ArcadeCreditSystem.swift; sourceTree = "<group>"; };
+		F458EECF2F8770F9009A2683 /* ArcadeCreditSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArcadeCreditSystem.swift; path = Elumi/ArcadeCreditSystem.swift; sourceTree = "<group>"; };
 		F4C01A111A111A111A111111 /* ProgressService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressService.swift; sourceTree = "<group>"; };
 		F5A9F51ED0654E5F94E00A68 /* Sounds/elumi_wrong.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_wrong.wav; sourceTree = "<group>"; };
 		F5C01A111A111A111A111111 /* SessionSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionSummaryView.swift; sourceTree = "<group>"; };
 		F9E9A871DD9141F488C32488 /* Sounds/elumi_saugstart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_saugstart.wav; sourceTree = "<group>"; };
 		FA00000000000000000000002 /* FrenchLinguisticAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrenchLinguisticAnalysis.swift; sourceTree = "<group>"; };
-		FE1234567890123456789002 /* WordRunnerGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerGame.swift; path = FRDEVocabMVP/WordRunnerGame.swift; sourceTree = "<group>"; };
-		FE1234567890123456789012 /* WordRunnerMusicPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerMusicPlayer.swift; path = FRDEVocabMVP/WordRunnerMusicPlayer.swift; sourceTree = "<group>"; };
+		FE1234567890123456789002 /* WordRunnerGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerGame.swift; path = Elumi/WordRunnerGame.swift; sourceTree = "<group>"; };
+		FE1234567890123456789012 /* WordRunnerMusicPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerMusicPlayer.swift; path = Elumi/WordRunnerMusicPlayer.swift; sourceTree = "<group>"; };
 		FE1234567890123456789022 /* Sounds/runner_theme_01.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/runner_theme_01.mp3; sourceTree = "<group>"; };
 		FE1234567890123456789032 /* Sounds/runner_theme_02.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/runner_theme_02.mp3; sourceTree = "<group>"; };
-		FE1234567890123456789042 /* ArcadeMusicPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArcadeMusicPlayer.swift; path = FRDEVocabMVP/ArcadeMusicPlayer.swift; sourceTree = "<group>"; };
+		FE1234567890123456789042 /* ArcadeMusicPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ArcadeMusicPlayer.swift; path = Elumi/ArcadeMusicPlayer.swift; sourceTree = "<group>"; };
 		FE1234567890123456789052 /* Sounds/arcade_theme_01.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/arcade_theme_01.mp3; sourceTree = "<group>"; };
 		FE1234567890123456789062 /* Sounds/arcade_theme_02.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/arcade_theme_02.mp3; sourceTree = "<group>"; };
 		FE1234567890123456789072 /* Sounds/fish_theme_01.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sounds/fish_theme_01.mp3; sourceTree = "<group>"; };
-		FE1234567890123456789082 /* MusicCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MusicCatalog.swift; path = FRDEVocabMVP/MusicCatalog.swift; sourceTree = "<group>"; };
-		FE1234567890123456789092 /* TrophyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrophyView.swift; path = FRDEVocabMVP/TrophyView.swift; sourceTree = "<group>"; };
-		FE12345678901234567890A2 /* UUIDExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UUIDExtensions.swift; path = FRDEVocabMVP/UUIDExtensions.swift; sourceTree = "<group>"; };
-		CC11A1AA00000000ABCDEF02 /* TrainingChainContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingChainContext.swift; path = FRDEVocabMVP/TrainingChainContext.swift; sourceTree = "<group>"; };
-		CC55AA0000000000ABCDEF02 /* TrainingChainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingChainStore.swift; path = FRDEVocabMVP/TrainingChainStore.swift; sourceTree = "<group>"; };
-		CC15FF0000000000ABCDEF02 /* GlobalListPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GlobalListPickerSheet.swift; path = FRDEVocabMVP/GlobalListPickerSheet.swift; sourceTree = "<group>"; };
-		CC15FF0100000000ABCDEF02 /* AppLernjahrPill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppLernjahrPill.swift; path = FRDEVocabMVP/AppLernjahrPill.swift; sourceTree = "<group>"; };
-		CC15FF0200000000ABCDEF02 /* SpeedRoundCountdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SpeedRoundCountdown.swift; path = FRDEVocabMVP/SpeedRoundCountdown.swift; sourceTree = "<group>"; };
-		CC15FF0300000000ABCDEF02 /* ElumiHints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElumiHints.swift; path = FRDEVocabMVP/ElumiHints.swift; sourceTree = "<group>"; };
-		CC15FF0400000000ABCDEF02 /* SectionLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SectionLabel.swift; path = FRDEVocabMVP/SectionLabel.swift; sourceTree = "<group>"; };
-		CC15FF0500000000ABCDEF02 /* MethodCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MethodCard.swift; path = FRDEVocabMVP/MethodCard.swift; sourceTree = "<group>"; };
-		CC15FF0600000000ABCDEF02 /* ModuleCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ModuleCard.swift; path = FRDEVocabMVP/ModuleCard.swift; sourceTree = "<group>"; };
-		CC15FF0E00000000ABCDEF02 /* AnswerModeSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AnswerModeSelector.swift; path = FRDEVocabMVP/AnswerModeSelector.swift; sourceTree = "<group>"; };
-		CC15FF1000000000ABCDEF02 /* ChatMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatMessage.swift; path = FRDEVocabMVP/ChatMessage.swift; sourceTree = "<group>"; };
-		D5A1130000000000000000A2 /* ScanDraftDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftDetailView.swift; path = FRDEVocabMVP/ScanDraftDetailView.swift; sourceTree = "<group>"; };
-		D5A1120000000000000000A2 /* ScanDraftsSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftsSectionView.swift; path = FRDEVocabMVP/ScanDraftsSectionView.swift; sourceTree = "<group>"; };
-		D5A1100000000000000000A2 /* ScanDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraft.swift; path = FRDEVocabMVP/ScanDraft.swift; sourceTree = "<group>"; };
-		D5A1100000000000000000B2 /* DownscaleImageHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DownscaleImageHelper.swift; path = FRDEVocabMVP/DownscaleImageHelper.swift; sourceTree = "<group>"; };
-		D5A1100000000000000000C2 /* ScanDraftImageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftImageStore.swift; path = FRDEVocabMVP/ScanDraftImageStore.swift; sourceTree = "<group>"; };
-		D5A1100000000000000000D2 /* ScanDraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftStore.swift; path = FRDEVocabMVP/ScanDraftStore.swift; sourceTree = "<group>"; };
-		D5A1140000000000000000E2 /* MultiDraftMergeFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MultiDraftMergeFlow.swift; path = FRDEVocabMVP/MultiDraftMergeFlow.swift; sourceTree = "<group>"; };
-		D5A1140000000000000000F2 /* ListMergePickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ListMergePickerSheet.swift; path = FRDEVocabMVP/ListMergePickerSheet.swift; sourceTree = "<group>"; };
-		D5A1140000000000000000F4 /* ListMergeFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ListMergeFlow.swift; path = FRDEVocabMVP/ListMergeFlow.swift; sourceTree = "<group>"; };
-		D5A1140000000000000000A2 /* ListCategoryRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ListCategoryRow.swift; path = FRDEVocabMVP/ListCategoryRow.swift; sourceTree = "<group>"; };
-		D5A1140000000000000000A4 /* UnifiedListCategoryPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UnifiedListCategoryPicker.swift; path = FRDEVocabMVP/UnifiedListCategoryPicker.swift; sourceTree = "<group>"; };
-		D5A1100000000000000000E2 /* ScanDraftStoreRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftStoreRepository.swift; path = FRDEVocabMVP/ScanDraftStoreRepository.swift; sourceTree = "<group>"; };
-		D5A1100000000000000000F2 /* ScanDraftStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftStoreTests.swift; path = FRDEVocabMVP/ScanDraftStoreTests.swift; sourceTree = "<group>"; };
-		CC15FF1100000000ABCDEF02 /* ChatPersona.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatPersona.swift; path = FRDEVocabMVP/ChatPersona.swift; sourceTree = "<group>"; };
-		CC15FF1200000000ABCDEF02 /* ChatConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatConfig.swift; path = FRDEVocabMVP/ChatConfig.swift; sourceTree = "<group>"; };
-		CC15FF1300000000ABCDEF02 /* DeviceTokenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DeviceTokenManager.swift; path = FRDEVocabMVP/DeviceTokenManager.swift; sourceTree = "<group>"; };
-		CC15FF1400000000ABCDEF02 /* ChatService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatService.swift; path = FRDEVocabMVP/ChatService.swift; sourceTree = "<group>"; };
-		CC15FF1500000000ABCDEF02 /* ChatHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatHeaderView.swift; path = FRDEVocabMVP/ChatHeaderView.swift; sourceTree = "<group>"; };
-		CC15FF1600000000ABCDEF02 /* ChatBubbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatBubbleView.swift; path = FRDEVocabMVP/ChatBubbleView.swift; sourceTree = "<group>"; };
-		CC15FF1700000000ABCDEF02 /* ChatTypingIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatTypingIndicatorView.swift; path = FRDEVocabMVP/ChatTypingIndicatorView.swift; sourceTree = "<group>"; };
-		CC15FF1800000000ABCDEF02 /* ChatInputBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatInputBar.swift; path = FRDEVocabMVP/ChatInputBar.swift; sourceTree = "<group>"; };
-		CC15FF1900000000ABCDEF02 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatView.swift; path = FRDEVocabMVP/ChatView.swift; sourceTree = "<group>"; };
-		CC15FF1A00000000ABCDEF02 /* LeaChatHomeCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LeaChatHomeCard.swift; path = FRDEVocabMVP/LeaChatHomeCard.swift; sourceTree = "<group>"; };
-		CC15FF1B00000000ABCDEF02 /* ChatMarkerParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatMarkerParser.swift; path = FRDEVocabMVP/ChatMarkerParser.swift; sourceTree = "<group>"; };
-		CC15FF1C00000000ABCDEF02 /* CorrectionCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CorrectionCardView.swift; path = FRDEVocabMVP/CorrectionCardView.swift; sourceTree = "<group>"; };
-		CC15FF1D00000000ABCDEF02 /* ChatVocabularyProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatVocabularyProvider.swift; path = FRDEVocabMVP/ChatVocabularyProvider.swift; sourceTree = "<group>"; };
-		CC15FF1E00000000ABCDEF02 /* ChatNewWordTooltipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatNewWordTooltipView.swift; path = FRDEVocabMVP/ChatNewWordTooltipView.swift; sourceTree = "<group>"; };
-		CC15FF1F00000000ABCDEF02 /* ChatTimestampLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatTimestampLabel.swift; path = FRDEVocabMVP/ChatTimestampLabel.swift; sourceTree = "<group>"; };
-		CC15FF2000000000ABCDEF02 /* ChatSessionSummarySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatSessionSummarySheet.swift; path = FRDEVocabMVP/ChatSessionSummarySheet.swift; sourceTree = "<group>"; };
-		CC15FF2100000000ABCDEF02 /* ChatErrorBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatErrorBannerView.swift; path = FRDEVocabMVP/ChatErrorBannerView.swift; sourceTree = "<group>"; };
-		CC15FF2200000000ABCDEF02 /* VocabularyListStore+ChatStapel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "VocabularyListStore+ChatStapel.swift"; path = "FRDEVocabMVP/VocabularyListStore+ChatStapel.swift"; sourceTree = "<group>"; };
-		CC15FF2300000000ABCDEF02 /* VocabularyListStore+Wackelkandidaten.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "VocabularyListStore+Wackelkandidaten.swift"; path = "FRDEVocabMVP/VocabularyListStore+Wackelkandidaten.swift"; sourceTree = "<group>"; };
-		CC15FF2400000000ABCDEF02 /* VerbInfinitiveSynthesizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "VerbInfinitiveSynthesizer.swift"; path = "FRDEVocabMVP/VerbInfinitiveSynthesizer.swift"; sourceTree = "<group>"; };
-		CC15FF0700000000ABCDEF02 /* WideCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WideCard.swift; path = FRDEVocabMVP/WideCard.swift; sourceTree = "<group>"; };
-		CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingHubView.swift; path = FRDEVocabMVP/TrainingHubView.swift; sourceTree = "<group>"; };
-		CC15FF0B00000000ABCDEF02 /* DailyDropCardHighlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyDropCardHighlight.swift; path = FRDEVocabMVP/DailyDropCardHighlight.swift; sourceTree = "<group>"; };
-		CC15FF0C00000000ABCDEF02 /* DailyDropStackedCardsIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyDropStackedCardsIcon.swift; path = FRDEVocabMVP/DailyDropStackedCardsIcon.swift; sourceTree = "<group>"; };
-		CC22BB0000000000ABCDEF02 /* TrainingChainOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingChainOverviewView.swift; path = FRDEVocabMVP/TrainingChainOverviewView.swift; sourceTree = "<group>"; };
-		CC44DD0000000000ABCDEF02 /* ChainStepTimerBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChainStepTimerBar.swift; path = FRDEVocabMVP/ChainStepTimerBar.swift; sourceTree = "<group>"; };
-		CC55EE0000000000ABCDEF02 /* ChainTimerOverlayModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChainTimerOverlayModifier.swift; path = FRDEVocabMVP/ChainTimerOverlayModifier.swift; sourceTree = "<group>"; };
-		CC66FF0000000000ABCDEF02 /* ChainCutoffModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChainCutoffModal.swift; path = FRDEVocabMVP/ChainCutoffModal.swift; sourceTree = "<group>"; };
-		CC77FF0000000000ABCDEF04 /* PulsingModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PulsingModifier.swift; path = FRDEVocabMVP/PulsingModifier.swift; sourceTree = "<group>"; };
-		CC88FF0000000000ABCDEF06 /* TrainingChainCompleteSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingChainCompleteSummaryView.swift; path = FRDEVocabMVP/TrainingChainCompleteSummaryView.swift; sourceTree = "<group>"; };
-		CC99FF0000000000ABCDEF08 /* ConfettiBurst.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ConfettiBurst.swift; path = FRDEVocabMVP/ConfettiBurst.swift; sourceTree = "<group>"; };
-		CCAAFF0000000000ABCDEF0A /* JackpotCelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = JackpotCelebrationView.swift; path = FRDEVocabMVP/JackpotCelebrationView.swift; sourceTree = "<group>"; };
-		CCBBFF0000000000ABCDEF0C /* DismissingFooterActionsModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DismissingFooterActionsModifier.swift; path = FRDEVocabMVP/DismissingFooterActionsModifier.swift; sourceTree = "<group>"; };
-		FE12345678901234567890B2 /* ScanTuning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanTuning.swift; path = FRDEVocabMVP/ScanTuning.swift; sourceTree = "<group>"; };
-		FE12345678901234567890C2 /* WordRunnerGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerGameView.swift; path = FRDEVocabMVP/WordRunnerGameView.swift; sourceTree = "<group>"; };
-		FE12345678901234567890D2 /* WordRunnerModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerModels.swift; path = FRDEVocabMVP/WordRunnerModels.swift; sourceTree = "<group>"; };
-		FE12345678901234567890E2 /* WordRunnerTaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerTaskProvider.swift; path = FRDEVocabMVP/WordRunnerTaskProvider.swift; sourceTree = "<group>"; };
-		FE12345678901234567890E4 /* ElumiTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElumiTabView.swift; path = FRDEVocabMVP/ElumiTabView.swift; sourceTree = "<group>"; };
-		FE12345678901234567890E6 /* PersonalDeck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PersonalDeck.swift; path = FRDEVocabMVP/PersonalDeck.swift; sourceTree = "<group>"; };
-		FE12345678901234567890E8 /* PersonalDeckStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PersonalDeckStore.swift; path = FRDEVocabMVP/PersonalDeckStore.swift; sourceTree = "<group>"; };
-		FE12345678901234567890EC /* CreatePersonalDeckSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CreatePersonalDeckSheet.swift; path = FRDEVocabMVP/CreatePersonalDeckSheet.swift; sourceTree = "<group>"; };
-		FE12345678901234567890EE /* FlashcardsView+PersonalDeck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FlashcardsView+PersonalDeck.swift"; path = "FRDEVocabMVP/FlashcardsView+PersonalDeck.swift"; sourceTree = "<group>"; };
-		FE12345678901234567890F2 /* WordRunnerSpawner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerSpawner.swift; path = FRDEVocabMVP/WordRunnerSpawner.swift; sourceTree = "<group>"; };
-		FE12345678901234567890FB /* LiveListRunnerTaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LiveListRunnerTaskProvider.swift; path = FRDEVocabMVP/LiveListRunnerTaskProvider.swift; sourceTree = "<group>"; };
-		FE1234567890123456789101 /* TrainingGeneratorModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGeneratorModels.swift; path = FRDEVocabMVP/TrainingGeneratorModels.swift; sourceTree = "<group>"; };
-		FE1234567890123456789103 /* TrainingGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGenerator.swift; path = FRDEVocabMVP/TrainingGenerator.swift; sourceTree = "<group>"; };
-		FE1234567890123456789105 /* TrainingGeneratorStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGeneratorStore.swift; path = FRDEVocabMVP/TrainingGeneratorStore.swift; sourceTree = "<group>"; };
-		FE1234567890123456789111 /* VoiceModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VoiceModels.swift; path = FRDEVocabMVP/VoiceModels.swift; sourceTree = "<group>"; };
-		FE1234567890123456789113 /* SpeechVoiceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SpeechVoiceService.swift; path = FRDEVocabMVP/SpeechVoiceService.swift; sourceTree = "<group>"; };
-		FE1234567890123456789115 /* VoiceSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VoiceSettingsStore.swift; path = FRDEVocabMVP/VoiceSettingsStore.swift; sourceTree = "<group>"; };
-		FE1234567890123456789117 /* VoiceSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VoiceSettingsView.swift; path = FRDEVocabMVP/VoiceSettingsView.swift; sourceTree = "<group>"; };
-		FE1234567890123456789121 /* PersonalDecksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PersonalDecksView.swift; path = FRDEVocabMVP/PersonalDecksView.swift; sourceTree = "<group>"; };
-		FE1234567890123456789123 /* TrainingGeneratorSlotMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGeneratorSlotMachine.swift; path = FRDEVocabMVP/TrainingGeneratorSlotMachine.swift; sourceTree = "<group>"; };
-		FE12345678901234567891AB /* WordRunnerSFXPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerSFXPlayer.swift; path = FRDEVocabMVP/WordRunnerSFXPlayer.swift; sourceTree = "<group>"; };
-		FE12345678901234567891BB /* sfx_lane.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_lane.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_lane.wav; sourceTree = SOURCE_ROOT; };
-		FE12345678901234567891CB /* sfx_correct.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_correct.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_correct.wav; sourceTree = SOURCE_ROOT; };
-		FE12345678901234567891DB /* sfx_wrong.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_wrong.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_wrong.wav; sourceTree = SOURCE_ROOT; };
-		FE12345678901234567891EB /* sfx_life_loss.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_life_loss.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_life_loss.wav; sourceTree = SOURCE_ROOT; };
-		FE12345678901234567891FB /* sfx_pickup.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_pickup.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_pickup.wav; sourceTree = SOURCE_ROOT; };
-		FE12345678901234567892AB /* sfx_boost.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_boost.wav; path = FRDEVocabMVP/Sounds/sfx/sfx_boost.wav; sourceTree = SOURCE_ROOT; };
-		FE12345678901234567893AB /* GameStartScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GameStartScreen.swift; path = FRDEVocabMVP/GameStartScreen.swift; sourceTree = "<group>"; };
-		FE12345678901234567893BB /* GameSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GameSummaryView.swift; path = FRDEVocabMVP/GameSummaryView.swift; sourceTree = "<group>"; };
-		FE12345678901234567893CB /* WordRunnerListPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerListPickerSheet.swift; path = FRDEVocabMVP/WordRunnerListPickerSheet.swift; sourceTree = "<group>"; };
-		FE12345678901234567893DB /* AppMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppMotion.swift; path = FRDEVocabMVP/AppMotion.swift; sourceTree = "<group>"; };
+		FE1234567890123456789082 /* MusicCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MusicCatalog.swift; path = Elumi/MusicCatalog.swift; sourceTree = "<group>"; };
+		FE1234567890123456789092 /* TrophyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrophyView.swift; path = Elumi/TrophyView.swift; sourceTree = "<group>"; };
+		FE12345678901234567890A2 /* UUIDExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UUIDExtensions.swift; path = Elumi/UUIDExtensions.swift; sourceTree = "<group>"; };
+		CC11A1AA00000000ABCDEF02 /* TrainingChainContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingChainContext.swift; path = Elumi/TrainingChainContext.swift; sourceTree = "<group>"; };
+		CC55AA0000000000ABCDEF02 /* TrainingChainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingChainStore.swift; path = Elumi/TrainingChainStore.swift; sourceTree = "<group>"; };
+		CC15FF0000000000ABCDEF02 /* GlobalListPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GlobalListPickerSheet.swift; path = Elumi/GlobalListPickerSheet.swift; sourceTree = "<group>"; };
+		CC15FF0100000000ABCDEF02 /* AppLernjahrPill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppLernjahrPill.swift; path = Elumi/AppLernjahrPill.swift; sourceTree = "<group>"; };
+		CC15FF0200000000ABCDEF02 /* SpeedRoundCountdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SpeedRoundCountdown.swift; path = Elumi/SpeedRoundCountdown.swift; sourceTree = "<group>"; };
+		CC15FF0300000000ABCDEF02 /* ElumiHints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElumiHints.swift; path = Elumi/ElumiHints.swift; sourceTree = "<group>"; };
+		CC15FF0400000000ABCDEF02 /* SectionLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SectionLabel.swift; path = Elumi/SectionLabel.swift; sourceTree = "<group>"; };
+		CC15FF0500000000ABCDEF02 /* MethodCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MethodCard.swift; path = Elumi/MethodCard.swift; sourceTree = "<group>"; };
+		CC15FF0600000000ABCDEF02 /* ModuleCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ModuleCard.swift; path = Elumi/ModuleCard.swift; sourceTree = "<group>"; };
+		CC15FF0E00000000ABCDEF02 /* AnswerModeSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AnswerModeSelector.swift; path = Elumi/AnswerModeSelector.swift; sourceTree = "<group>"; };
+		CC15FF1000000000ABCDEF02 /* ChatMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatMessage.swift; path = Elumi/ChatMessage.swift; sourceTree = "<group>"; };
+		D5A1130000000000000000A2 /* ScanDraftDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftDetailView.swift; path = Elumi/ScanDraftDetailView.swift; sourceTree = "<group>"; };
+		D5A1120000000000000000A2 /* ScanDraftsSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftsSectionView.swift; path = Elumi/ScanDraftsSectionView.swift; sourceTree = "<group>"; };
+		D5A1100000000000000000A2 /* ScanDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraft.swift; path = Elumi/ScanDraft.swift; sourceTree = "<group>"; };
+		D5A1100000000000000000B2 /* DownscaleImageHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DownscaleImageHelper.swift; path = Elumi/DownscaleImageHelper.swift; sourceTree = "<group>"; };
+		D5A1100000000000000000C2 /* ScanDraftImageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftImageStore.swift; path = Elumi/ScanDraftImageStore.swift; sourceTree = "<group>"; };
+		D5A1100000000000000000D2 /* ScanDraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftStore.swift; path = Elumi/ScanDraftStore.swift; sourceTree = "<group>"; };
+		D5A1140000000000000000E2 /* MultiDraftMergeFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MultiDraftMergeFlow.swift; path = Elumi/MultiDraftMergeFlow.swift; sourceTree = "<group>"; };
+		D5A1140000000000000000F2 /* ListMergePickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ListMergePickerSheet.swift; path = Elumi/ListMergePickerSheet.swift; sourceTree = "<group>"; };
+		D5A1140000000000000000F4 /* ListMergeFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ListMergeFlow.swift; path = Elumi/ListMergeFlow.swift; sourceTree = "<group>"; };
+		D5A1140000000000000000A2 /* ListCategoryRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ListCategoryRow.swift; path = Elumi/ListCategoryRow.swift; sourceTree = "<group>"; };
+		D5A1140000000000000000A4 /* UnifiedListCategoryPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UnifiedListCategoryPicker.swift; path = Elumi/UnifiedListCategoryPicker.swift; sourceTree = "<group>"; };
+		D5A1100000000000000000E2 /* ScanDraftStoreRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftStoreRepository.swift; path = Elumi/ScanDraftStoreRepository.swift; sourceTree = "<group>"; };
+		D5A1100000000000000000F2 /* ScanDraftStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftStoreTests.swift; path = Elumi/ScanDraftStoreTests.swift; sourceTree = "<group>"; };
+		CC15FF1100000000ABCDEF02 /* ChatPersona.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatPersona.swift; path = Elumi/ChatPersona.swift; sourceTree = "<group>"; };
+		CC15FF1200000000ABCDEF02 /* ChatConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatConfig.swift; path = Elumi/ChatConfig.swift; sourceTree = "<group>"; };
+		CC15FF1300000000ABCDEF02 /* DeviceTokenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DeviceTokenManager.swift; path = Elumi/DeviceTokenManager.swift; sourceTree = "<group>"; };
+		CC15FF1400000000ABCDEF02 /* ChatService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatService.swift; path = Elumi/ChatService.swift; sourceTree = "<group>"; };
+		CC15FF1500000000ABCDEF02 /* ChatHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatHeaderView.swift; path = Elumi/ChatHeaderView.swift; sourceTree = "<group>"; };
+		CC15FF1600000000ABCDEF02 /* ChatBubbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatBubbleView.swift; path = Elumi/ChatBubbleView.swift; sourceTree = "<group>"; };
+		CC15FF1700000000ABCDEF02 /* ChatTypingIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatTypingIndicatorView.swift; path = Elumi/ChatTypingIndicatorView.swift; sourceTree = "<group>"; };
+		CC15FF1800000000ABCDEF02 /* ChatInputBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatInputBar.swift; path = Elumi/ChatInputBar.swift; sourceTree = "<group>"; };
+		CC15FF1900000000ABCDEF02 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatView.swift; path = Elumi/ChatView.swift; sourceTree = "<group>"; };
+		CC15FF1A00000000ABCDEF02 /* LeaChatHomeCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LeaChatHomeCard.swift; path = Elumi/LeaChatHomeCard.swift; sourceTree = "<group>"; };
+		CC15FF1B00000000ABCDEF02 /* ChatMarkerParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatMarkerParser.swift; path = Elumi/ChatMarkerParser.swift; sourceTree = "<group>"; };
+		CC15FF1C00000000ABCDEF02 /* CorrectionCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CorrectionCardView.swift; path = Elumi/CorrectionCardView.swift; sourceTree = "<group>"; };
+		CC15FF1D00000000ABCDEF02 /* ChatVocabularyProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatVocabularyProvider.swift; path = Elumi/ChatVocabularyProvider.swift; sourceTree = "<group>"; };
+		CC15FF1E00000000ABCDEF02 /* ChatNewWordTooltipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatNewWordTooltipView.swift; path = Elumi/ChatNewWordTooltipView.swift; sourceTree = "<group>"; };
+		CC15FF1F00000000ABCDEF02 /* ChatTimestampLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatTimestampLabel.swift; path = Elumi/ChatTimestampLabel.swift; sourceTree = "<group>"; };
+		CC15FF2000000000ABCDEF02 /* ChatSessionSummarySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatSessionSummarySheet.swift; path = Elumi/ChatSessionSummarySheet.swift; sourceTree = "<group>"; };
+		CC15FF2100000000ABCDEF02 /* ChatErrorBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatErrorBannerView.swift; path = Elumi/ChatErrorBannerView.swift; sourceTree = "<group>"; };
+		CC15FF2200000000ABCDEF02 /* VocabularyListStore+ChatStapel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "VocabularyListStore+ChatStapel.swift"; path = "Elumi/VocabularyListStore+ChatStapel.swift"; sourceTree = "<group>"; };
+		CC15FF2300000000ABCDEF02 /* VocabularyListStore+Wackelkandidaten.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "VocabularyListStore+Wackelkandidaten.swift"; path = "Elumi/VocabularyListStore+Wackelkandidaten.swift"; sourceTree = "<group>"; };
+		CC15FF2400000000ABCDEF02 /* VerbInfinitiveSynthesizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "VerbInfinitiveSynthesizer.swift"; path = "Elumi/VerbInfinitiveSynthesizer.swift"; sourceTree = "<group>"; };
+		CC15FF0700000000ABCDEF02 /* WideCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WideCard.swift; path = Elumi/WideCard.swift; sourceTree = "<group>"; };
+		CC15FF0800000000ABCDEF02 /* TrainingHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingHubView.swift; path = Elumi/TrainingHubView.swift; sourceTree = "<group>"; };
+		CC15FF0B00000000ABCDEF02 /* DailyDropCardHighlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyDropCardHighlight.swift; path = Elumi/DailyDropCardHighlight.swift; sourceTree = "<group>"; };
+		CC15FF0C00000000ABCDEF02 /* DailyDropStackedCardsIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DailyDropStackedCardsIcon.swift; path = Elumi/DailyDropStackedCardsIcon.swift; sourceTree = "<group>"; };
+		CC22BB0000000000ABCDEF02 /* TrainingChainOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingChainOverviewView.swift; path = Elumi/TrainingChainOverviewView.swift; sourceTree = "<group>"; };
+		CC44DD0000000000ABCDEF02 /* ChainStepTimerBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChainStepTimerBar.swift; path = Elumi/ChainStepTimerBar.swift; sourceTree = "<group>"; };
+		CC55EE0000000000ABCDEF02 /* ChainTimerOverlayModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChainTimerOverlayModifier.swift; path = Elumi/ChainTimerOverlayModifier.swift; sourceTree = "<group>"; };
+		CC66FF0000000000ABCDEF02 /* ChainCutoffModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChainCutoffModal.swift; path = Elumi/ChainCutoffModal.swift; sourceTree = "<group>"; };
+		CC77FF0000000000ABCDEF04 /* PulsingModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PulsingModifier.swift; path = Elumi/PulsingModifier.swift; sourceTree = "<group>"; };
+		CC88FF0000000000ABCDEF06 /* TrainingChainCompleteSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingChainCompleteSummaryView.swift; path = Elumi/TrainingChainCompleteSummaryView.swift; sourceTree = "<group>"; };
+		CC99FF0000000000ABCDEF08 /* ConfettiBurst.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ConfettiBurst.swift; path = Elumi/ConfettiBurst.swift; sourceTree = "<group>"; };
+		CCAAFF0000000000ABCDEF0A /* JackpotCelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = JackpotCelebrationView.swift; path = Elumi/JackpotCelebrationView.swift; sourceTree = "<group>"; };
+		CCBBFF0000000000ABCDEF0C /* DismissingFooterActionsModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DismissingFooterActionsModifier.swift; path = Elumi/DismissingFooterActionsModifier.swift; sourceTree = "<group>"; };
+		FE12345678901234567890B2 /* ScanTuning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanTuning.swift; path = Elumi/ScanTuning.swift; sourceTree = "<group>"; };
+		FE12345678901234567890C2 /* WordRunnerGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerGameView.swift; path = Elumi/WordRunnerGameView.swift; sourceTree = "<group>"; };
+		FE12345678901234567890D2 /* WordRunnerModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerModels.swift; path = Elumi/WordRunnerModels.swift; sourceTree = "<group>"; };
+		FE12345678901234567890E2 /* WordRunnerTaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerTaskProvider.swift; path = Elumi/WordRunnerTaskProvider.swift; sourceTree = "<group>"; };
+		FE12345678901234567890E4 /* ElumiTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ElumiTabView.swift; path = Elumi/ElumiTabView.swift; sourceTree = "<group>"; };
+		FE12345678901234567890E6 /* PersonalDeck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PersonalDeck.swift; path = Elumi/PersonalDeck.swift; sourceTree = "<group>"; };
+		FE12345678901234567890E8 /* PersonalDeckStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PersonalDeckStore.swift; path = Elumi/PersonalDeckStore.swift; sourceTree = "<group>"; };
+		FE12345678901234567890EC /* CreatePersonalDeckSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CreatePersonalDeckSheet.swift; path = Elumi/CreatePersonalDeckSheet.swift; sourceTree = "<group>"; };
+		FE12345678901234567890EE /* FlashcardsView+PersonalDeck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FlashcardsView+PersonalDeck.swift"; path = "Elumi/FlashcardsView+PersonalDeck.swift"; sourceTree = "<group>"; };
+		FE12345678901234567890F2 /* WordRunnerSpawner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerSpawner.swift; path = Elumi/WordRunnerSpawner.swift; sourceTree = "<group>"; };
+		FE12345678901234567890FB /* LiveListRunnerTaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LiveListRunnerTaskProvider.swift; path = Elumi/LiveListRunnerTaskProvider.swift; sourceTree = "<group>"; };
+		FE1234567890123456789101 /* TrainingGeneratorModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGeneratorModels.swift; path = Elumi/TrainingGeneratorModels.swift; sourceTree = "<group>"; };
+		FE1234567890123456789103 /* TrainingGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGenerator.swift; path = Elumi/TrainingGenerator.swift; sourceTree = "<group>"; };
+		FE1234567890123456789105 /* TrainingGeneratorStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGeneratorStore.swift; path = Elumi/TrainingGeneratorStore.swift; sourceTree = "<group>"; };
+		FE1234567890123456789111 /* VoiceModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VoiceModels.swift; path = Elumi/VoiceModels.swift; sourceTree = "<group>"; };
+		FE1234567890123456789113 /* SpeechVoiceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SpeechVoiceService.swift; path = Elumi/SpeechVoiceService.swift; sourceTree = "<group>"; };
+		FE1234567890123456789115 /* VoiceSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VoiceSettingsStore.swift; path = Elumi/VoiceSettingsStore.swift; sourceTree = "<group>"; };
+		FE1234567890123456789117 /* VoiceSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VoiceSettingsView.swift; path = Elumi/VoiceSettingsView.swift; sourceTree = "<group>"; };
+		FE1234567890123456789121 /* PersonalDecksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PersonalDecksView.swift; path = Elumi/PersonalDecksView.swift; sourceTree = "<group>"; };
+		FE1234567890123456789123 /* TrainingGeneratorSlotMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrainingGeneratorSlotMachine.swift; path = Elumi/TrainingGeneratorSlotMachine.swift; sourceTree = "<group>"; };
+		FE12345678901234567891AB /* WordRunnerSFXPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerSFXPlayer.swift; path = Elumi/WordRunnerSFXPlayer.swift; sourceTree = "<group>"; };
+		FE12345678901234567891BB /* sfx_lane.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_lane.wav; path = Elumi/Sounds/sfx/sfx_lane.wav; sourceTree = SOURCE_ROOT; };
+		FE12345678901234567891CB /* sfx_correct.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_correct.wav; path = Elumi/Sounds/sfx/sfx_correct.wav; sourceTree = SOURCE_ROOT; };
+		FE12345678901234567891DB /* sfx_wrong.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_wrong.wav; path = Elumi/Sounds/sfx/sfx_wrong.wav; sourceTree = SOURCE_ROOT; };
+		FE12345678901234567891EB /* sfx_life_loss.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_life_loss.wav; path = Elumi/Sounds/sfx/sfx_life_loss.wav; sourceTree = SOURCE_ROOT; };
+		FE12345678901234567891FB /* sfx_pickup.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_pickup.wav; path = Elumi/Sounds/sfx/sfx_pickup.wav; sourceTree = SOURCE_ROOT; };
+		FE12345678901234567892AB /* sfx_boost.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = sfx_boost.wav; path = Elumi/Sounds/sfx/sfx_boost.wav; sourceTree = SOURCE_ROOT; };
+		FE12345678901234567893AB /* GameStartScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GameStartScreen.swift; path = Elumi/GameStartScreen.swift; sourceTree = "<group>"; };
+		FE12345678901234567893BB /* GameSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GameSummaryView.swift; path = Elumi/GameSummaryView.swift; sourceTree = "<group>"; };
+		FE12345678901234567893CB /* WordRunnerListPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WordRunnerListPickerSheet.swift; path = Elumi/WordRunnerListPickerSheet.swift; sourceTree = "<group>"; };
+		FE12345678901234567893DB /* AppMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppMotion.swift; path = Elumi/AppMotion.swift; sourceTree = "<group>"; };
 		FEDEA1000000000000000002 /* FreierTextModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreierTextModels.swift; sourceTree = "<group>"; };
 		FEDEA1000000000000000004 /* FreierTextClaudeClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreierTextClaudeClient.swift; sourceTree = "<group>"; };
 		FEDEA1000000000000000006 /* FreierTextEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreierTextEntryView.swift; sourceTree = "<group>"; };
@@ -1411,20 +1411,20 @@
 				F43B1C092F877A000094BA73 /* VerbNounPairs.tsv */,
 				F43B1C0B2F877A100094BA73 /* VerbNounPairLoader.swift */,
 				F43B1C112F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift */,
-				B10CDA22DCE1454195172B47 /* FRDEVocabMVP/ListCategoryPickerView.swift */,
+				B10CDA22DCE1454195172B47 /* Elumi/ListCategoryPickerView.swift */,
 				F43B1C132F87C0100094BA73 /* ClaudeHaikuScanAIClient+Configuration.swift */,
 				F43B1C0D2F878B000094BA73 /* FillBlankSentences.tsv */,
 				F43B1C0F2F878B100094BA73 /* FillBlankSentenceLoader.swift */,
-				A00000000000000000000031 /* FRDEVocabMVP */,
+				A00000000000000000000031 /* Elumi */,
 				A00000000000000000000032 /* Products */,
 				A00000000000000000000033 /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
-		A00000000000000000000031 /* FRDEVocabMVP */ = {
+		A00000000000000000000031 /* Elumi */ = {
 			isa = PBXGroup;
 			children = (
-				A00000000000000000000011 /* FRDEVocabMVPApp.swift */,
+				A00000000000000000000011 /* ElumiApp.swift */,
 				A00000000000000000000221 /* AppStorageKeys.swift */,
 				A00000000000000000000685 /* AppTheme.swift */,
 				94E38F945ACB17745C201EF5 /* FeatureFlags.swift */,
@@ -1897,7 +1897,7 @@
 				FEDEA20000000000000006A2 /* AccentsSessionView.swift */,
 				FEDEA20000000000000008A2 /* AccentsResultView.swift */,
 			);
-			path = FRDEVocabMVP;
+			path = Elumi;
 			sourceTree = "<group>";
 		};
 		A00000000000000000000032 /* Products */ = {
@@ -1911,9 +1911,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A00000000000000000000040 /* FRDEVocabMVP */ = {
+		A00000000000000000000040 /* Elumi */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A00000000000000000000050 /* Build configuration list for PBXNativeTarget "FRDEVocabMVP" */;
+			buildConfigurationList = A00000000000000000000050 /* Build configuration list for PBXNativeTarget "Elumi" */;
 			buildPhases = (
 				A00000000000000000000021 /* Sources */,
 				A00000000000000000000020 /* Frameworks */,
@@ -1923,8 +1923,8 @@
 			);
 			dependencies = (
 			);
-			name = FRDEVocabMVP;
-			productName = FRDEVocabMVP;
+			name = Elumi;
+			productName = Elumi;
 			productReference = A00000000000000000000010 /* myVoc.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -1943,7 +1943,7 @@
 					};
 				};
 			};
-			buildConfigurationList = A00000000000000000000051 /* Build configuration list for PBXProject "FRDEVocabMVP" */;
+			buildConfigurationList = A00000000000000000000051 /* Build configuration list for PBXProject "Elumi" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1956,7 +1956,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A00000000000000000000040 /* FRDEVocabMVP */,
+				A00000000000000000000040 /* Elumi */,
 			);
 		};
 /* End PBXProject section */
@@ -2059,10 +2059,10 @@
 				C0F51A111A111A111A111111 /* SessionSummaryView.swift in Sources */,
 				F43B1C0C2F877A100094BA73 /* VerbNounPairLoader.swift in Sources */,
 				F43B1C122F87C0000094BA73 /* ClaudeHaikuScanAIClient.swift in Sources */,
-				DE208FC184184208BE875D1D /* FRDEVocabMVP/ListCategoryPickerView.swift in Sources */,
+				DE208FC184184208BE875D1D /* Elumi/ListCategoryPickerView.swift in Sources */,
 				F43B1C142F87C0100094BA73 /* ClaudeHaikuScanAIClient+Configuration.swift in Sources */,
 				F43B1C102F878B100094BA73 /* FillBlankSentenceLoader.swift in Sources */,
-				A00000000000000000000001 /* FRDEVocabMVPApp.swift in Sources */,
+				A00000000000000000000001 /* ElumiApp.swift in Sources */,
 				A00000000000000000000002 /* ContentView.swift in Sources */,
 				A00000000000000000000370 /* LexiconGenderUtilities.swift in Sources */,
 				A00000000000000000000666 /* LexiconGenderUtilities+Lookup.swift in Sources */,
@@ -2612,7 +2612,7 @@
 				DEVELOPMENT_TEAM = WMM478AK74;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = FRDEVocabMVP/Info.plist;
+				INFOPLIST_FILE = Elumi/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Elumi;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -2622,7 +2622,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.frank.FRDEVocabMVP;
-				PRODUCT_NAME = myVoc;
+				PRODUCT_NAME = Elumi;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -2644,7 +2644,7 @@
 				DEVELOPMENT_TEAM = WMM478AK74;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = FRDEVocabMVP/Info.plist;
+				INFOPLIST_FILE = Elumi/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Elumi;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -2654,7 +2654,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.frank.FRDEVocabMVP;
-				PRODUCT_NAME = myVoc;
+				PRODUCT_NAME = Elumi;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -2732,7 +2732,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A00000000000000000000050 /* Build configuration list for PBXNativeTarget "FRDEVocabMVP" */ = {
+		A00000000000000000000050 /* Build configuration list for PBXNativeTarget "Elumi" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A00000000000000000000060 /* Debug */,
@@ -2741,7 +2741,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A00000000000000000000051 /* Build configuration list for PBXProject "FRDEVocabMVP" */ = {
+		A00000000000000000000051 /* Build configuration list for PBXProject "Elumi" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A00000000000000000000062 /* Debug */,
