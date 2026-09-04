@@ -1249,8 +1249,22 @@ enum FrenchLemmaFormatter {
     ]
 
     /// Französisch display-ready aus Roh-Strings — gleiche Logik wie für VocabularyItem.
-    /// Wird vom Lexikon-Display genutzt, damit Nomen immer einen Artikel haben.
-    /// `gender` (m/f/pl) hilft beim Artikel-Wahl, sonst Heuristik.
+    /// Wird vom Lexikon-Display genutzt, damit Nomen einen Artikel bekommen.
+    /// `gender` (m/f/pl) bestimmt den Artikel.
+    ///
+    /// **Codeaudit 2026-09-03, Stufe 2** — ohne bekanntes Genus wird
+    /// **nicht mehr geraten**. Vorher setzte der `default`-Zweig fest
+    /// `"le"`, obwohl der Doc-Kommentar „sonst Heuristik" versprach:
+    /// feminine Nomen ohne Genus-Eintrag erschienen im Wörterbuch mit
+    /// maskulinem Artikel. Das widersprach zwei ausdrücklichen
+    /// Projektentscheidungen — `FrenchSpokenArticle` spricht ohne sichere
+    /// Quelle bewusst artikellos, und die Rate-Heuristik im
+    /// `FrenchGenderResolver` wurde am 2026-08-07 genau deshalb entfernt.
+    ///
+    /// Die Elision bleibt erhalten: „l'" ist genus-unabhängig korrekt
+    /// (l'ami/l'amie) und damit auch ohne Genus eine sichere Aussage.
+    /// Bei Konsonant-Anlaut und unbekanntem Genus kommt der Eintrag
+    /// artikellos zurück.
     static func displayFrenchRaw(_ text: String, isNoun: Bool, gender: String? = nil) -> String {
         let base = TextNormalizationEngine.normalize(text, language: .french)
         guard isNoun, !base.isEmpty else { return base }
@@ -1265,17 +1279,22 @@ enum FrenchLemmaFormatter {
                                               "\u{00EE}", "\u{00EF}",
                                               "\u{00F4}", "\u{00F6}",
                                               "\u{00F9}", "\u{00FB}", "\u{00FC}"]
+        let startsWithElisionVowel: Bool = {
+            guard let first = base.first?.lowercased().first else { return false }
+            return elisionVowels.contains(first)
+        }()
+
         let article: String
         switch gender?.lowercased() {
         case "m": article = "le"
         case "f": article = "la"
         case "pl": article = "les"
         default:
-            // Ohne Gender: heuristisch raten
-            article = "le"
+            // Ohne Genus ist nur die Elision sicher — sie gilt für beide
+            // Geschlechter. Sonst lieber gar kein Artikel als ein falscher.
+            return startsWithElisionVowel ? "l'\(base)" : base
         }
-        if (article == "le" || article == "la"),
-           let first = base.first, elisionVowels.contains(Character(first.lowercased())) {
+        if (article == "le" || article == "la"), startsWithElisionVowel {
             return "l'\(base)"
         }
         return "\(article) \(base)"
