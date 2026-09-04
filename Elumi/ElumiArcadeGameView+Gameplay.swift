@@ -1219,7 +1219,20 @@ extension ElumiArcadeGameView {
             survivors.append(snack)
         }
 
-        activeSnacks = survivors
+        // **Codeaudit 2026-09-03, Stufe 2** — hat in dieser Schleife ein
+        // Lebensverlust die Zäsur ausgelöst, dann hat
+        // `triggerLifeLossVisual()` das Spielfeld absichtlich geleert
+        // (User-Spec 2026-08-05: „der Screen muss frei sein"). Ohne
+        // diese Prüfung schriebe die Zeile darunter die eingesammelten
+        // `survivors` sofort wieder zurück und machte das Leeren
+        // zunichte — betroffen waren zwei der drei Verlust-Pfade
+        // (verpasster Snack und Elumi-Freund, beide innerhalb dieser
+        // Schleife). Der Quallen-Pfad liegt hinter einer eigenen
+        // Schleife und funktionierte deshalb schon vorher; dasselbe
+        // Ereignis verhielt sich also je nach Ursache unterschiedlich.
+        if !isInLifeLostPause(at: now) {
+            activeSnacks = survivors
+        }
 
         if caughtSnackCount > 0 {
             triggerCatchAnimation()
