@@ -366,10 +366,28 @@ struct WelcomeScreen: View {
             .buttonStyle(AppPrimaryButtonStyle(color: AppTheme.Colors.cta))
             .padding(.horizontal, AppLayout.screenPadding)
             .padding(.top, AppTheme.Spacing.sm)
-            .padding(.bottom, AppTheme.Spacing.md)
             .frame(maxWidth: AppTheme.Layout.maxContentWidth)
             .frame(maxWidth: .infinity)
+
+            // **Intro-Skip (Testphase, 2026-09-03)** — derselbe Skip
+            // wie auf dem Splash, hier als zweite Gelegenheit. Der
+            // Splash steht nur 2,8 Sekunden; wer den Button dort
+            // verpasst, müsste sonst das ganze Intro durchklicken.
+            // Bewusst dezent unter dem CTA: „Los geht's!" bleibt der
+            // Weg, den ein echter Nutzer nimmt.
+            if let onSkipIntro {
+                Button(action: onSkipIntro) {
+                    Text("Intro überspringen")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                        .padding(.vertical, 10)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, AppLayout.screenPadding)
+            }
         }
+        .padding(.bottom, AppTheme.Spacing.md)
         .background(AppTheme.Colors.background)
     }
 }

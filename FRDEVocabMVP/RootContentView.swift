@@ -340,9 +340,12 @@ struct ContentView: View {
             }
 
             if navigation.shouldShowSplashOverlay {
-                SplashView { isImmediateSkip in
-                    completeSplashAndEnsureMenuReady(immediate: isImmediateSkip)
-                }
+                SplashView(
+                    onFinish: { isImmediateSkip in
+                        completeSplashAndEnsureMenuReady(immediate: isImmediateSkip)
+                    },
+                    onSkipIntro: splashSkipAction
+                )
                 .id(navigation.splashReplayID)
                 .transition(.opacity)
             }
@@ -593,6 +596,27 @@ struct ContentView: View {
     private var introSkipAction: (() -> Void)? {
         guard FeatureFlags.allowsIntroSkipForTesting else { return nil }
         return { skipIntroForTesting() }
+    }
+
+    /// Callback für den „Intro überspringen"-Button auf dem Splash.
+    ///
+    /// **2026-09-03** — Der Skip saß zuerst nur auf dem Willkommens-
+    /// Screen und war ein unsichtbarer Tap aufs Maskottchen. Beides
+    /// falsch: Er soll gleich auf dem allerersten Screen liegen und als
+    /// Button sichtbar sein. Der Splash beendet sich hier selbst
+    /// (`completeSplashAndEnsureMenuReady`), weil `SplashView` beim
+    /// Skip absichtlich kein `onFinish` feuert — sonst liefen zwei
+    /// Abschluss-Pfade nebeneinander.
+    ///
+    /// Reihenfolge: erst der Splash-Abschluss, denn er startet das
+    /// Runtime-Bootstrapping, das die Account-Anlage danach braucht.
+    @MainActor
+    private var splashSkipAction: (() -> Void)? {
+        guard FeatureFlags.allowsIntroSkipForTesting else { return nil }
+        return {
+            completeSplashAndEnsureMenuReady(immediate: true)
+            skipIntroForTesting()
+        }
     }
 
     /// **Intro-Skip (Testphase, 2026-09-03)** — springt vom

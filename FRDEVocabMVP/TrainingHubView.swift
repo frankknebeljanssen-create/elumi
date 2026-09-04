@@ -237,7 +237,7 @@ struct TrainingHubView: View {
                     .padding(.horizontal, -AppLayout.screenPadding)
                     .padding(.bottom, 10)
 
-                SectionLabel(text: "Prüfen", size: 15, weight: .bold)
+                SectionLabel(text: "Check", size: 15, weight: .bold)
 
                 // **Quiz-Umzug 2026-09-03** — von Home hierher. Route
                 // unverändert (`.quiz(nil)`), nur der Einstiegspunkt
