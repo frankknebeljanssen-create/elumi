@@ -137,18 +137,6 @@ enum ArticleModeClassifier {
         "le", "la", "l'", "un", "une", "du",
     ]
 
-    /// Vokale (inkl. akzentuierter Varianten) UND `h` (geht als
-    /// „potenziell stummes h" durch — die Elision greift bei allen
-    /// h-Anfängen, die Unterscheidung h aspiré vs. h muet ist im MVP
-    /// nicht modelliert). Das ist dieselbe Regel, die bisher in
-    /// `determineFrenchArticle.needsElision` genutzt wurde.
-    private static let vowelOrHMuetStarters: Set<Character> = [
-        "a", "e", "i", "o", "u", "y",
-        "â", "ê", "î", "ô", "û",
-        "é", "è", "ë", "ï", "ü",
-        "à", "ù",
-        "h",
-    ]
 
     // MARK: Public API
 
@@ -524,12 +512,14 @@ enum ArticleModeClassifier {
     /// 41 Nomen-Einträge, u. a. „la meilleure amie" (fälschlich „l'"),
     /// „la connexion internet" (fälschlich „l'" wegen „internet"),
     /// „le menu enfant" (fälschlich „l'" wegen „enfant").
+    ///
+    /// **Codeaudit 2026-09-03, Stufe 3 (Punkt 22)** — prüfte vorher nur
+    /// den Anfangsbuchstaben gegen eine Zeichenmenge und kannte das
+    /// aspirierte „h" nicht: „le hibou" wurde als „l'" abgefragt,
+    /// während die Sprachausgabe korrekt „le hibou" sagte. Beide Module
+    /// nutzen jetzt `FrenchElision`.
     private static func startsWithVowelOrHMuet(_ core: String) -> Bool {
-        let trimmed = core.trimmingCharacters(in: .whitespacesAndNewlines)
-        let tokens = trimmed.split(whereSeparator: { $0.isWhitespace })
-        let relevant = (tokens.first.map(String.init) ?? trimmed).lowercased()
-        guard let first = relevant.first else { return false }
-        return vowelOrHMuetStarters.contains(first)
+        FrenchElision.elides(before: core)
     }
 
     /// Berechnet die erwartete Antwort aus Genus + Vokal/h-Anfang +

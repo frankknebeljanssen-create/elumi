@@ -83,26 +83,12 @@ enum FrenchSpokenArticle {
     /// stummen „h" ebenfalls („l'homme", „l'heure") — die Ausnahmen mit
     /// aspiriertem „h" („le héros", „le hibou") sind überschaubar und
     /// unten gelistet.
+    ///
+    /// **Codeaudit 2026-09-03, Stufe 3 (Punkt 22)** — die Regel samt
+    /// Ausnahmeliste lebt jetzt in `FrenchElision`, damit der
+    /// Artikel-Modus dieselbe Antwort bekommt wie die Sprachausgabe.
     private static func elidesArticle(before word: String) -> Bool {
-        let normalized = word
-            .lowercased()
-            .folding(options: .diacriticInsensitive, locale: Locale(identifier: "fr_FR"))
-
-        guard let first = normalized.first else { return false }
-
-        if "aeiou".contains(first) { return true }
-
-        guard first == "h" else { return false }
-        return !aspiratedHWords.contains { normalized == $0 || normalized.hasPrefix("\($0) ") }
+        FrenchElision.elides(before: word)
     }
-
-    /// Gebräuchliche Wörter mit aspiriertem „h" — hier bleibt der volle
-    /// Artikel stehen. Bewusst kurz gehalten: die Liste deckt den
-    /// Schulwortschatz ab, nicht das gesamte Lexikon.
-    private static let aspiratedHWords: Set<String> = [
-        "hamster", "handball", "hangar", "haricot", "hasard", "haut",
-        "hauteur", "heros", "hibou", "hierarchie", "hockey", "hollande",
-        "homard", "honte", "hoquet", "hors", "houx", "hublot", "huit",
-        "hurlement"
-    ]
 }
+
