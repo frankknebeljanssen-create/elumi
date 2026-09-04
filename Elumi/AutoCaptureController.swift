@@ -235,10 +235,17 @@ final class AutoCaptureController {
             // Gates jetzt gerade offen → Ready-Phase einleiten.
             autoCaptureState = .ready
             readyEnteredAt = now
-            readyHaptic.prepare()
-            readyHaptic.impactOccurred()
+            // **Codeaudit 2026-09-03, Stufe 2** — `UIImpactFeedbackGenerator`
+            // ist UIKit und muss auf dem Main-Thread benutzt werden. Diese
+            // Methode läuft aber auf der `sessionQueue` des Scanners
+            // (`com.frdevocab.smartscanner.session`); der `onEnterReady`-
+            // Callback direkt darunter wurde bereits korrekt gehoppt, die
+            // Haptik nicht. Beide gehören in denselben Block.
             DispatchQueue.main.async { [weak self] in
-                self?.onEnterReady?()
+                guard let self else { return }
+                self.readyHaptic.prepare()
+                self.readyHaptic.impactOccurred()
+                self.onEnterReady?()
             }
             #if DEBUG
             appDebugLog("📷 [AutoCapture] ➡️ READY (pre-fire warn \(config.readyHoldDuration)s)")
