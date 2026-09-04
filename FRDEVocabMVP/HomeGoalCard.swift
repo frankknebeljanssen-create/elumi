@@ -210,7 +210,14 @@ struct HomeGoalCard: View {
     /// dein Ziel"). Vorher stand hier z. B. „Ein Kapitel oder eine
     /// Unité üben", was wie eine weitere Übungs-Karte aussah statt wie
     /// der Einstieg ins Ziel. Der Anlass steht ja im Detail-Screen.
-    private var titleText: String { "Dein Ziel" }
+    ///
+    /// **2026-09-03** — zeigt zusätzlich das Tagesziel in Minuten
+    /// (User-Spec: „dein Ziel Doppelpunkt und dann x Minuten Schrägstrich
+    /// Tag"). Die Zahl stand bisher nur im Ziel-Detail hinter dem
+    /// Chevron; auf Home las man „Noch 20 Vokabeln heute", ohne zu
+    /// sehen, worauf sich das bezieht. Jetzt steht die eigene Einstellung
+    /// direkt da, wo der Fortschritt dagegen läuft.
+    private var titleText: String { "Dein Ziel: \(plan.dailyTargetMinutes) Minuten/Tag" }
 
     /// Countdown nur bei naher Deadline (≤ 7 Tage). Weiter entfernte
     /// Termine erzeugen nur Dauer-Druck ohne Handlungsrelevanz.
