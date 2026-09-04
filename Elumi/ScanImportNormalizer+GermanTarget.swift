@@ -195,68 +195,21 @@ extension ScanImportNormalizer {
         return false
     }
 
+    /// **Codeaudit 2026-09-03, Stufe 2** — die Implementierung stand
+    /// hier zeichengleich ein zweites Mal (siehe
+    /// `GermanSuggestionPrioritizer`). Jetzt nur noch Delegation.
     private func prioritizedGermanSuggestions(
         _ suggestions: [String],
         forSource source: String,
         cardType: CardType
     ) -> [String] {
-        guard suggestions.count > 1 else { return suggestions }
-        guard let sourcePunctuation = dependencies.detectedTerminalSentencePunctuation(source) else {
-            return suggestions
-        }
-
-        return suggestions.sorted { lhs, rhs in
-            let lhsScore = germanSuggestionPunctuationScore(
-                lhs,
-                matching: sourcePunctuation,
-                cardType: cardType
-            )
-            let rhsScore = germanSuggestionPunctuationScore(
-                rhs,
-                matching: sourcePunctuation,
-                cardType: cardType
-            )
-
-            if lhsScore == rhsScore {
-                return lhs.count < rhs.count
-            }
-            return lhsScore > rhsScore
-        }
-    }
-
-    private func germanSuggestionPunctuationScore(
-        _ suggestion: String,
-        matching sourcePunctuation: String,
-        cardType: CardType
-    ) -> Int {
-        let detectedSuggestionPunctuation = dependencies.detectedTerminalSentencePunctuation(suggestion)
-        let inferredSuggestionPunctuation = dependencies.inferredGermanTerminalSentencePunctuation(
-            suggestion,
-            cardType
+        GermanSuggestionPrioritizer.prioritized(
+            suggestions,
+            forSource: source,
+            cardType: cardType,
+            detectedTerminalPunctuation: dependencies.detectedTerminalSentencePunctuation,
+            inferredGermanTerminalPunctuation: dependencies.inferredGermanTerminalSentencePunctuation
         )
-
-        if sourcePunctuation.contains("?") {
-            if detectedSuggestionPunctuation?.contains("?") == true { return 6 }
-            if inferredSuggestionPunctuation?.contains("?") == true { return 5 }
-            if detectedSuggestionPunctuation?.contains(".") == true { return 1 }
-            return 0
-        }
-
-        if sourcePunctuation.contains("!") {
-            if detectedSuggestionPunctuation?.contains("!") == true { return 6 }
-            if inferredSuggestionPunctuation?.contains("!") == true { return 5 }
-            if detectedSuggestionPunctuation?.contains("?") == true { return 1 }
-            return 0
-        }
-
-        if sourcePunctuation.contains(".") {
-            if detectedSuggestionPunctuation?.contains(".") == true { return 6 }
-            if inferredSuggestionPunctuation?.contains(".") == true { return 5 }
-            if detectedSuggestionPunctuation?.contains("?") == true { return 1 }
-            return 0
-        }
-
-        return 0
     }
 
     private func normalizedWords(in text: String) -> [String] {
