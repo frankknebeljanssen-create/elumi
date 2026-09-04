@@ -108,11 +108,11 @@ struct HomeView: View {
     private var wideMethodCards: some View {
         VStack(spacing: 18) {
             WideCard(
+                // **2026-09-03** — ohne Untertitel. Die alte Zeile
+                // („Karteikarten, Vokabeln & Spezial") zählte auf, was
+                // im Hub liegt, und stimmte nach dem Quiz-Umzug nicht
+                // mehr; eine neue Aufzählung braucht die Karte nicht.
                 title: "Training",
-                // Subtitle folgt der neuen Hub-Gliederung (Üben /
-                // Prüfen) statt der alten Modulaufzählung — und sagt
-                // jetzt mit, dass das Quiz dort drin liegt.
-                subtitle: "Üben, prüfen und gezielt drillen",
                 accent: AppTheme.Colors.moduleVocabulary,
                 height: 92,
                 titleSize: 19,
