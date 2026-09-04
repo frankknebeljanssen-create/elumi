@@ -301,34 +301,14 @@ extension ScanImportView {
         previewPairs.filter { !$0.isImportable }.count
     }
 
-    /// Didactic word class overrides for common words misclassified in DB
-    private static let wordClassOverrides: [String: String] = [
-        // Interjektionen
-        "voil\u{00E0}": "interjection", "voila": "interjection",
-        "merci": "interjection", "salut": "interjection",
-        "bonjour": "interjection", "bonsoir": "interjection",
-        "bravo": "interjection", "h\u{00E9}las": "interjection",
-        "oui": "interjection", "non": "interjection",
-        "pardon": "interjection", "attention": "interjection",
-        // Adverbien
-        "l\u{00E0}": "adverb",
-        "ici": "adverb", "comment": "adverb",
-        "bien": "adverb", "mal": "adverb",
-        "tr\u{00E8}s": "adverb", "tres": "adverb",
-        "aussi": "adverb", "encore": "adverb",
-        "toujours": "adverb", "jamais": "adverb",
-        "d\u{00E9}j\u{00E0}": "adverb", "deja": "adverb",
-        "beaucoup": "adverb", "peu": "adverb",
-        "da": "adverb",
-        // Präpositionen
-        "de": "preposition",
-        // Artikel
-        "le/la": "article", "le / la": "article",
-        // Phrasen (feste Ausdrücke)
-        "c'est": "phrase", "ce sont": "phrase",
-        "il y a": "phrase", "s'il vous pla\u{00EE}t": "phrase",
-        "s'il te pla\u{00EE}t": "phrase",
-    ]
+    // **Codeaudit 2026-09-03, Stufe 2** — hier stand eine zweite,
+    // nie gelesene `wordClassOverrides`-Tabelle (20 Einträge). Sie
+    // suggerierte beim Lesen, die Scan-Vorschau hätte eigene
+    // Wortart-Regeln; tatsächlich entscheidet allein die zentrale
+    // Tabelle in `StandardVocabularyLoader.wordClassOverrides`.
+    // 15 der Einträge (u. a. `bravo`, `pardon`, `il y a`, `très`)
+    // stehen dort NICHT — falls sie fachlich gewollt sind, müssen
+    // sie bewusst dorthin übertragen werden, nicht hier wiederbelebt.
 
     /// French stopwords that should be skipped in word-by-word lookup
     private static let frenchStopwords: Set<String> = [

@@ -336,8 +336,8 @@ extension QuizBuildService {
                 answer = quizGermanWordCasing(germanRaw, sourceHint: frenchHint)
             }
 
-            let promptKey = fastQuizKey(prompt)
-            let answerKey = fastQuizKey(answer)
+            let promptKey = fastKey(prompt)
+            let answerKey = fastKey(answer)
 
             guard !promptKey.isEmpty, !answerKey.isEmpty else { continue }
             let uniqueKey = [promptKey, answerKey, category].joined(separator: "|")
@@ -399,12 +399,6 @@ extension QuizBuildService {
         usedPromptKeys[candidate.promptKey, default: 0] += 1
         usedCandidateIDs.insert(candidate.id)
         return wrappedQuestion
-    }
-
-    private static func fastQuizKey(_ text: String) -> String {
-        text.folding(options: .diacriticInsensitive, locale: .current)
-            .lowercased()
-            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     static func nextQuizPromptCandidate(
