@@ -950,6 +950,15 @@ enum StandardVocabularyLoader {
                     target: entry.target,
                     cardType: entry.cardType,
                     level: entry.level,
+                    // **Codeaudit 2026-09-03, Stufe 1** — derselbe Fehler wie
+                    // beim `lernjahr`-Bug-Fix direkt unten (2026-04-28), nur
+                    // beim `learnLevel`-Feld: der Init-Default `= ""` griff
+                    // hier still, weil dieser Resolver-Pass jedes Nomen ohne
+                    // DB-Genus als neuen Entry rekonstruiert. Betroffen waren
+                    // alle Monatsnamen und weitere Einträge — sie fielen aus
+                    // jeder Lernliste (`items(forLearnLevels:)` verwirft
+                    // leere Werte).
+                    learnLevel: entry.learnLevel,
                     wordClass: entry.wordClass,
                     gender: newGender,
                     topic: entry.topic,
