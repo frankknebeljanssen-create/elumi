@@ -940,6 +940,20 @@ enum FrenchEntryAnalyzer {
     /// „la carte d'identité", „la clé USB", „le tour de magie".
     /// Kein Treffer: „je ne sais pas" (kein Artikel-Start + konjugiertes Verb),
     /// „c'est fini" (ditto), „avec plaisir" (kein Artikel).
+    /// Nomen — direkt oder als regelmäßige Pluralform eines Nomens.
+    /// Siehe Begründung im Guard von `looksLikeCompoundNoun`.
+    private static func isNounOrPluralOfNoun(_ token: String) -> Bool {
+        if StandardVocabularyLoader.isNoun(token) { return true }
+        let lower = token.lowercased()
+        guard lower.count > 2, let last = lower.last, last == "s" || last == "x",
+              !singularNounsEndingInSXZ.contains(lower) else { return false }
+        if StandardVocabularyLoader.isNoun(String(lower.dropLast())) { return true }
+        if let naive = FrenchLemmaFormatter.naiveSingularizeFrenchNoun(lower), naive != lower {
+            return StandardVocabularyLoader.isNoun(naive)
+        }
+        return false
+    }
+
     static func looksLikeCompoundNoun(_ normalized: String) -> Bool {
         let articles = [
             "le ", "la ", "les ", "un ", "une ", "des ",
@@ -961,9 +975,19 @@ enum FrenchEntryAnalyzer {
             .filter { !$0.isEmpty }
         guard tokens.count >= 1, tokens.count <= 5 else { return false }
 
-        // Erstes Token nach Artikel muss als Nomen erkennbar sein (nounSet inkl. Plural)
-        guard let first = tokens.first,
-              StandardVocabularyLoader.isNoun(first) else { return false }
+        // Erstes Token nach Artikel muss als Nomen erkennbar sein.
+        //
+        // **Fix 2026-09-03** — der Kommentar hier versprach „nounSet inkl.
+        // Plural", aber `isNoun` kennt nur, was als Lemma im Lexikon
+        // steht (plus artikelfreie Variante). Eine Pluralform wie
+        // „enfants" ist nur dann bekannt, wenn zufällig eine
+        // `inflection`-Zeile dafür existiert — bei „la maison" gibt es
+        // die, bei „l'enfant" nicht. Folge: „des enfants" fiel aus dem
+        // Compound-Noun-Zweig heraus, landete im Token-Scan und behielt
+        // die Pluralform als Lemma. Deshalb zusätzlich der naive
+        // Singular, mit derselben Regel, die `normalizeNounLemma`
+        // weiter unten ohnehin anwendet.
+        guard let first = tokens.first, isNounOrPluralOfNoun(first) else { return false }
 
         // Kein konjugiertes Verb in den Tokens (Infinitive = nominalisierbar, OK)
         for token in tokens {
