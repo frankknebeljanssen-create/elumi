@@ -856,7 +856,7 @@ struct SettingsView: View {
                 GameStateResetService.resetCustomLists(in: listStore)
             }
         } message: {
-            Text("Alle vom dir angelegten Lernlisten werden entfernt. Die App-Startlisten bleiben. Eventuell einmal die App neu starten, damit die Änderung überall sichtbar wird.")
+            Text("Alle von dir angelegten Lernlisten werden entfernt. Die App-Startlisten bleiben.")
         }
     }
 
