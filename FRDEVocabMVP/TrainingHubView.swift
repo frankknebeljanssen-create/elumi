@@ -37,12 +37,6 @@ struct TrainingHubView: View {
 
     private let sectionStyle: AppSectionStyle = .home
 
-    /// **Polish 2026-05-06** — Aktuell sichtbarer Lern-Tipp aus
-    /// `TrainingHubTips.pool`. Wird beim Mount/Re-Visit (`.onAppear`)
-    /// neu gewürfelt. Initial-Wert ist ein Random-Pick, damit beim
-    /// ersten Build schon ein Tipp da ist.
-    @State private var currentTip: String = TrainingHubTips.random()
-
     /// Footer-Clearance — derselbe Pattern wie HomeView/AccentsEntryView.
     ///
     /// **2026-05-08 Padding-Cleanup** — Footer-Migration zu
@@ -268,24 +262,13 @@ struct TrainingHubView: View {
                         openScreen(.quiz(nil))
                     }
                 )
-                // Bottom 24 → 8 pt — Mascot rückt direkt an die letzte
-                // Card ran, damit der Block ohne Scroll im Viewport
-                // sitzt.
-                // **Polish 2026-05-07 Iteration 2** — Trennstrich-
-                // Hairline zwischen letzter Card und mascotTipBlock
-                // entfernt (User-Feedback „kann weg"). Reduziert
-                // visuelles Rauschen und spart die 0.5 pt + Padding-
-                // Bottom-Linie.
+                // **2026-09-03** — der Maskottchen-Tipp-Block stand
+                // hier und ist entfallen. Mit Quiz, sechs Drills und
+                // den beiden Übungs-Karten trägt der Screen jetzt neun
+                // Auswahlmöglichkeiten; der Tipp war das einzige
+                // Element ohne Funktion und wurde vom Footer
+                // angeschnitten. Lieber ganz weg als halb sichtbar.
                 .padding(.bottom, 8)
-
-                mascotTipBlock
-                    // Top 24 → 4 pt: Mascot rückt nahe an die Cards
-                    // ran, damit der Block ohne Scroll sichtbar bleibt.
-                    .padding(.top, 4)
-                    // Bottom-Atemraum reduziert auf 8 pt — Tipp atmet
-                    // weiterhin zum Footer hin, ohne den Block aus
-                    // dem Viewport zu schieben.
-                    .padding(.bottom, 8)
 
                 Color.clear.frame(height: footerClearance)
             }
@@ -336,13 +319,6 @@ struct TrainingHubView: View {
             Und wenn du wissen willst, ob es wirklich sitzt: unten das Quiz.
             """
         )
-        .onAppear {
-            // **Polish 2026-05-06** — Lern-Tipp pro Hub-Visit neu
-            // würfeln. `.onAppear` feuert beim ersten Mount und bei
-            // jedem Re-Visit nach dem Zurückkehren von einem Modul
-            // (Sub-Screen-Lifecycle re-mountet den Hub-Body).
-            currentTip = TrainingHubTips.random()
-        }
     }
 
     // MARK: - Zufalls-Platzhalter
@@ -388,55 +364,6 @@ struct TrainingHubView: View {
     }
 
     // MARK: - Header
-
-    // MARK: - Mascot + Lern-Tipp Block
-
-    /// **Polish 2026-05-06** — Dekorativer Maskottchen-Block am Ende
-    /// des Hubs: SplashCharacter-Asset zentriert mit Blink-Overlay,
-    /// darunter ein wechselnder Lern-Tipp aus `TrainingHubTips.pool`.
-    /// Kein Tap-Behavior (rein dekorativ). Der freie Raum zwischen
-    /// der letzten Card und dem Footer wirkt jetzt absichtlich
-    /// gestaltet statt leer.
-    private var mascotTipBlock: some View {
-        // **Polish 2026-05-07 Iteration 2** — Mascot kompakter
-        // (86 → 72 pt) + internal VStack-spacing (10 → 6 pt), damit
-        // der Block ohne Scroll in den Hub-Viewport passt nach den
-        // Card-Bumps von 76 → 88 pt. Tipp-Text-Größe unverändert.
-        //
-        // **2026-06-09** — 72 → 52 pt. Nach dem neuen „Alle Vokabeln"-
-        // Titel und dem Karteikarten-Eintrag in den Basics wurde der
-        // Tipp-Text unter dem Maskottchen aus dem Viewport gedrückt;
-        // mit dem kleineren Mascot ist er wieder sichtbar.
-        VStack(spacing: 6) {
-            ZStack {
-                Image("SplashCharacter")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 52, height: 52)
-                SplashCharacterBlinkOverlay(
-                    size: 52,
-                    startDate: .now
-                )
-                .frame(width: 52, height: 52)
-            }
-            // Subtiler Drop-Shadow, identisch zur Footer-Maskottchen-
-            // Behandlung — Maskottchen liegt visuell „auf" dem
-            // Background, nicht dahinter.
-            .shadow(color: .black.opacity(0.18), radius: 4, x: 0, y: 2)
-
-            Text(currentTip)
-                // **Polish-Iteration 2026-05-06**: 13 → 16 pt + medium-
-                // Weight (User-Feedback „Lerntipp Font viel zu klein").
-                // Liest jetzt als bewusster Hint, nicht als Caption.
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .minimumScaleFactor(0.9)
-                .padding(.horizontal, 24)
-        }
-        .frame(maxWidth: .infinity)
-    }
 
     // MARK: - Title-Header
 
