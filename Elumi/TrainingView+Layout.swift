@@ -953,8 +953,15 @@ extension TrainingView {
         let selectedIDs = session.selectedTrainingListIDs
         let selectedLists = availableTrainingLists.filter { selectedIDs.contains($0.id) }
         let hasSelection = !selectedLists.isEmpty
-        let lemmas = verbformsLemmasFromSelectedLists()
-        let verbformsCount = lemmas.count
+        // **Codeaudit 2026-09-03, Stufe 1** — vorher rief dieser View-Body bei
+        // jeder Render-Auswertung `verbformsLemmasFromSelectedLists()` direkt
+        // auf: vollen String-Hash über alle Einträge, synchron auf dem
+        // MainActor. Die Nomen-/Artikel-/Verben-Cards lesen dafür längst den
+        // Cache `setupCardLemmas` (siehe `refreshSetupCardLemmas`) — die
+        // Verbformen-Card war die einzige, die daran vorbeiging. Genau das
+        // war laut Kommentar an `TrainingView.swift:218` der Grund, warum die
+        // App "ab ~4 großen Listen" hing.
+        let verbformsCount = setupCardLemmas.count
 
         return Button {
             feedbackPlayer.playTabSwitch()
@@ -1072,7 +1079,10 @@ extension TrainingView {
             .toolbar(.hidden, for: .navigationBar)
         }
         .sheet(isPresented: $verbformsVerbDetailActive) {
-            VerbLemmaListSheet(lemmas: verbformsLemmasFromSelectedLists())
+            // **Codeaudit 2026-09-03, Stufe 1** — derselbe Cache-Fix wie bei
+            // `verbformsListSelectionCard`: liest jetzt `setupCardLemmas`
+            // statt bei jedem Öffnen neu zu analysieren.
+            VerbLemmaListSheet(lemmas: setupCardLemmas)
         }
     }
 
@@ -1116,19 +1126,6 @@ extension TrainingView {
                 setupCanStartCached = canStart
             }
         }
-    }
-
-    /// Anzahl eindeutiger Nomen-Lemmata aus der Listen-Analyse — Pendant zu
-    /// `verbformsLemmasFromSelectedLists()`. Wird in der Listen-Card der
-    /// Module „Nomen" und „Artikel" als Anzeige verwendet.
-    func nounsLemmasFromSelectedLists() -> [String] {
-        let selectedIDs = session.selectedTrainingListIDs
-        guard !selectedIDs.isEmpty else { return [] }
-        let lists = availableTrainingLists.filter { selectedIDs.contains($0.id) }
-        let items = lists.flatMap(\.items)
-            .filter { $0.sourceLanguage == selectedAppDirection.sourceLanguage }
-        let stats = FrenchListStatisticsAggregator.cachedStatistics(for: items)
-        return stats.nounLemmas
     }
 
     /// Generischer Helper für die Listen-Auswahl-Card im Speed-Round-Stil.
