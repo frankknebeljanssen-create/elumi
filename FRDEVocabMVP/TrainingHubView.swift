@@ -314,7 +314,7 @@ struct TrainingHubView: View {
             „Karteikarten" zeigt dir ein Wort — du überlegst und drehst um.
             „Alle Vokabeln" fragt dich ab, per Tippen oder Sprechen.
             Die kleinen Kacheln trainieren gezielt eine Sache: Nomen, Verben, Artikel, Verbformen oder Akzente.
-            Und wenn du wissen willst, ob es wirklich sitzt: unten das Quiz.
+            Du bestimmst vorher, wie viel du machen willst.
             """
         )
     }
