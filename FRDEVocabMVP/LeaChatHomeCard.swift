@@ -56,7 +56,11 @@ struct LeaChatHomeCard: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .frame(height: 72)
+                // **Home-Entlastung 2026-09-03** — 72 → 92 pt, synchron
+                // zu Training und Daily Drop. Die drei Home-Karten
+                // teilen sich den Platz, der durch den Quiz-Umzug in
+                // den Training-Hub frei geworden ist.
+                .frame(height: 92)
             // Glas-Chrome — identisch für beide States, kein Ternary.
             .background(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)

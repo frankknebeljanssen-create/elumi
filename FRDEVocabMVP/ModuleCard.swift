@@ -27,6 +27,14 @@ import SwiftUI
 struct ModuleCard<Icon: View>: View {
     let title: String
     let accent: Color
+    /// Kartenhöhe. Default 88 pt (siehe Polish-Historie unten).
+    ///
+    /// **2026-09-03** — konfigurierbar geworden, weil das Drill-Raster
+    /// im Training-Hub von zwei auf drei Reihen gewachsen ist (Akzente
+    /// wanderte aus der Quer-Card ins Raster, dazu die Zufalls-Zelle).
+    /// Mit 88 pt pro Zeile passte der Screen nicht mehr ohne Scrollen —
+    /// und die Quiz-Card darunter ist genau die, die man sehen soll.
+    var height: CGFloat = 88
     @ViewBuilder let icon: () -> Icon
     let onTap: () -> Void
 
@@ -58,7 +66,7 @@ struct ModuleCard<Icon: View>: View {
             // User-Spec Hub-Cards-Polish „etwas größer"). Wirkt
             // präsenter ohne das 2×2-Grid zu sprengen; Maskottchen
             // bleibt durch ScrollView-Verhalten erreichbar.
-            .frame(height: 88)
+            .frame(height: height)
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(

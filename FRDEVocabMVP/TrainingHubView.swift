@@ -6,16 +6,23 @@
 // gebündelt, damit Home auf vier zentrale Methoden fokussiert ist
 // (Karteikarten / Quiz / Mix-Training / Training).
 //
-// Layout (Spec-konform):
+// **Umbau 2026-09-03** — Quiz ist von Home hierher gezogen und der
+// Screen ist entlang der Frage gegliedert, was das Kind gerade tut:
+// üben oder nachsehen, ob es sitzt. Details im Kommentar an der
+// „Üben"-Sektion unten.
+//
+// Layout:
 //   ‹ Training
 //
-//   ALLGEMEIN
-//   [Vokabeln]                           ← ModuleCard, full-width
-//
-//   SPEZIAL
-//   [Nomen]    [Verben]                  ← ModuleCard 2×2
+//   ÜBEN
+//   [Karteikarten]                       ← WideCard 72pt
+//   [Alle Vokabeln]                      ← WideCard 72pt
+//   [Nomen]    [Verben]                  ← ModuleCard 2×3, 78pt
 //   [Artikel]  [Verbformen]
-//   [Akzente]                            ← WideCard 56pt, am Ende
+//   [Akzente]  [Zufall]                  ← Zufall = Platzhalter
+//   ──────────────────────────────────
+//   PRÜFEN
+//   [Quiz]                               ← WideCard 72pt
 
 import SwiftUI
 
@@ -45,6 +52,17 @@ struct TrainingHubView: View {
     private var footerClearance: CGFloat {
         AppTheme.Spacing.sm
     }
+
+    /// Höhe einer Drill-Kachel im Raster.
+    ///
+    /// **2026-09-03** — 88 → 78 pt. Das Raster ist von zwei auf drei
+    /// Reihen gewachsen (Akzente kam aus der Quer-Card dazu, plus die
+    /// Zufalls-Zelle) und darunter steht jetzt die Quiz-Card. Bei 88 pt
+    /// rutschte genau die unter den Footer — also die Karte, auf die
+    /// der Screen hinführt. Die 10 pt kommen aus dem Raster, weil die
+    /// Kacheln nur Icon plus ein Wort tragen und den Platz am
+    /// wenigsten brauchen.
+    private let gridCardHeight: CGFloat = 78
 
     var body: some View {
         // **Bug-Fix 2026-05-06 Iteration 4** — Chevron-Position-
@@ -85,19 +103,41 @@ struct TrainingHubView: View {
                         // Budget vom Title-Block weg.
                         .padding(.bottom, 18)
 
-                // **Naming-Sweep 2026-05-06** — „Allgemein" → „Basics"
-                // (Game-Sprache, kürzer, kindgerechter).
-                SectionLabel(text: "Basics", size: 15, weight: .bold)
+                // **Hub-Umbau 2026-09-03** — „Basics"/„Specials" →
+                // „Üben"/„Prüfen". Auslöser war der Umzug des Quiz von
+                // Home hierher (User-Spec: Home ist zu voll). Das Quiz
+                // ist kein Geschwister von Nomen und Verben, sondern
+                // eines von Karteikarten und Alle Vokabeln — die drei
+                // unterscheiden sich darin, wieviel das Kind selbst
+                // produzieren muss (erkennen → produzieren → geprüft
+                // werden). Deshalb steht es jetzt allein unter „Prüfen"
+                // am Ende des Screens: erst üben, dann nachsehen, ob es
+                // sitzt. Das ist auch die Reihenfolge, in der man es
+                // sinnvoll benutzt.
+                SectionLabel(text: "Üben", size: 15, weight: .bold)
 
                 // **Home-Rebuild 2026-06-09** — Karteikarten ist von
                 // Home in den Hub gewandert und liegt hier als erste
                 // Basics-Option (App-Kern-Methode), vor Vokabeln. Route
                 // unverändert: bestehender FlashcardsView-Flow (Setup-
                 // Sheet etc.) via `AppScreen.flashcards(nil)`.
-                ModuleCard(
+                // **Hub-Umbau 2026-09-03** — beide von `ModuleCard`
+                // (Icon oben, Text darunter, 88 pt) auf `WideCard`
+                // (Icon links, 72 pt) umgestellt. Zwei Gründe: Die
+                // gestapelte Variante verschenkt über die volle Breite
+                // viel Luft, und jetzt sehen alle drei Vollbreite-
+                // Karten des Screens gleich aus — Karteikarten, Alle
+                // Vokabeln und das Quiz unten. Das ist auch die
+                // Aussage: drei Modi derselben Klasse, die kleinen
+                // Kacheln dazwischen sind etwas anderes.
+                WideCard(
                     title: "Karteikarten",
                     accent: AppTheme.Colors.moduleFlashcards,
-                    icon: { HomeModuleIconView(icon: .karteikarten, size: 44, glyphTint: .white) },
+                    height: 72,
+                    titleSize: 20,
+                    showsChevron: true,
+                    iconFrameSize: 44,
+                    icon: { HomeModuleIconView(icon: .karteikarten, size: 40, glyphTint: .white) },
                     onTap: {
                         feedbackPlayer.playTabSwitch()
                         openScreen(.flashcards(nil))
@@ -105,33 +145,28 @@ struct TrainingHubView: View {
                 )
                 .padding(.bottom, 10)
 
-                ModuleCard(
+                WideCard(
                     title: "Alle Vokabeln",
                     accent: AppTheme.Colors.moduleVocabulary,
-                    icon: { HomeModuleIconView(icon: .vokabeln, size: 44, glyphTint: .white) },
+                    height: 72,
+                    titleSize: 20,
+                    showsChevron: true,
+                    iconFrameSize: 44,
+                    icon: { HomeModuleIconView(icon: .vokabeln, size: 40, glyphTint: .white) },
                     onTap: {
                         feedbackPlayer.playTabSwitch()
                         openScreen(.train(TrainingLaunchContext(preferredMode: .vocabulary)))
                     }
                 )
                 // Bottom 10 → 6 pt (Spacing-Trim 2026-05-07).
-                .padding(.bottom, 6)
+                .padding(.bottom, 10)
 
-                // Hairline-Divider zwischen Allgemein und Spezial,
-                // 0.5pt edge-to-edge. Bottom 10 → 6 pt.
-                Rectangle()
-                    .fill(AppTheme.Colors.border)
-                    .frame(height: 0.5)
-                    .padding(.horizontal, -AppLayout.screenPadding)
-                    .padding(.bottom, 6)
-
-                // SPEZIAL — 2×2 (Nomen, Verben, Artikel, Verbformen)
-                // mit 13pt Sub-Label.
-                // **Naming-Sweep 2026-05-06** — „Spezial" → „Specials"
-                // (parallel zu „Basics", konsistent in der
-                // Game-Sprache).
-                SectionLabel(text: "Specials", size: 15, weight: .bold)
-
+                // **Hub-Umbau 2026-09-03** — die gezielten Drills
+                // gehören inhaltlich weiter zu „Üben" und stehen
+                // deshalb ohne eigenen Trennstrich direkt darunter.
+                // Der Hairline-Divider markiert jetzt nur noch den
+                // einen Schnitt, der eine Bedeutung hat: üben vs.
+                // prüfen.
                 LazyVGrid(
                     columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)],
                     spacing: 10
@@ -139,6 +174,7 @@ struct TrainingHubView: View {
                     ModuleCard(
                         title: "Nomen",
                         accent: AppTheme.Colors.moduleNomen,
+                        height: gridCardHeight,
                         icon: { HomeModuleIconView(icon: .nomen, size: 44, glyphTint: .white) },
                         onTap: {
                             feedbackPlayer.playTabSwitch()
@@ -148,6 +184,7 @@ struct TrainingHubView: View {
                     ModuleCard(
                         title: "Verben",
                         accent: AppTheme.Colors.moduleVerbs,
+                        height: gridCardHeight,
                         icon: { HomeModuleIconView(icon: .verben, size: 44, glyphTint: .white) },
                         onTap: {
                             feedbackPlayer.playTabSwitch()
@@ -157,6 +194,7 @@ struct TrainingHubView: View {
                     ModuleCard(
                         title: "Artikel",
                         accent: AppTheme.Colors.moduleArticles,
+                        height: gridCardHeight,
                         icon: { HomeModuleIconView(icon: .artikel, size: 44, glyphTint: .white) },
                         onTap: {
                             feedbackPlayer.playTabSwitch()
@@ -166,39 +204,78 @@ struct TrainingHubView: View {
                     ModuleCard(
                         title: "Verbformen",
                         accent: AppTheme.Colors.moduleVerbforms,
+                        height: gridCardHeight,
                         icon: { HomeModuleIconView(icon: .verbformen, size: 44, glyphTint: .white) },
                         onTap: {
                             feedbackPlayer.playTabSwitch()
                             openScreen(.train(TrainingLaunchContext(preferredMode: .verbforms)))
                         }
                     )
+                    // **Hub-Umbau 2026-09-03** — Akzente lag vorher als
+                    // WideCard quer unter dem 2×2-Grid. Das war kein
+                    // Design-Statement, sondern ein Rest: fünf Kacheln
+                    // füllen kein Zweispalten-Raster, also wurde die
+                    // letzte breit gezogen — und wirkte dadurch
+                    // wichtiger als Nomen oder Artikel, was sie nicht
+                    // ist. Jetzt sitzt sie als gleich große Kachel im
+                    // Raster, die sechste Zelle füllt der Zufalls-
+                    // Platzhalter.
+                    ModuleCard(
+                        title: "Akzente",
+                        accent: AppTheme.Colors.moduleAccents,
+                        height: gridCardHeight,
+                        icon: { HomeModuleIconView(icon: .akzente, size: 44, glyphTint: .white) },
+                        onTap: {
+                            feedbackPlayer.playTabSwitch()
+                            openScreen(.accents(nil))
+                        }
+                    )
+                    placeholderCard
                 }
                 // LazyVGrid bottom 16 → 8 pt.
-                .padding(.bottom, 8)
+                .padding(.bottom, 10)
 
-                // Akzente quer am Ende der Spezial-Sektion.
-                // **Polish 2026-05-07** — Hub-Cards-Polish-Sweep:
-                // height 56 → 68 (+12 pt) und titleSize 18 → 20 (+2 pt),
-                // synchron zu den ModuleCards in BASICS/SPECIALS. Akzente
-                // bleibt visuell balanced mit Nomen/Verben/Artikel/
-                // Verbformen — dieselbe Größenklasse, nur quer.
+                // Der einzige Schnitt mit Bedeutung: alles darüber ist
+                // Übung, darunter kommt die Prüfung.
+                Rectangle()
+                    .fill(AppTheme.Colors.border)
+                    .frame(height: 0.5)
+                    .padding(.horizontal, -AppLayout.screenPadding)
+                    .padding(.bottom, 10)
+
+                SectionLabel(text: "Prüfen", size: 15, weight: .bold)
+
+                // **Quiz-Umzug 2026-09-03** — von Home hierher. Route
+                // unverändert (`.quiz(nil)`), nur der Einstiegspunkt
+                // wandert. Volle Breite, weil das Quiz ein ganzer
+                // Modus ist und kein Einzeldrill wie Nomen oder
+                // Artikel — und weil es allein in seiner Sektion steht.
                 WideCard(
-                    title: "Akzente",
-                    accent: AppTheme.Colors.moduleAccents,
-                    height: 68,
+                    title: "Quiz",
+                    subtitle: "Sitzt es wirklich?",
+                    accent: AppTheme.Colors.moduleQuiz,
+                    height: 72,
                     titleSize: 20,
-                    icon: { HomeModuleIconView(icon: .akzente, size: 44, glyphTint: .white) },
+                    subtitleSize: 13,
+                    showsChevron: true,
+                    cornerRadius: 18,
+                    horizontalPadding: 14,
+                    verticalPadding: 8,
+                    iconFrameSize: 44,
+                    icon: { HomeModuleIconView(icon: .quiz, size: 40, glyphTint: .white) },
                     onTap: {
                         feedbackPlayer.playTabSwitch()
-                        openScreen(.accents(nil))
+                        openScreen(.quiz(nil))
                     }
                 )
-                // Bottom 24 → 8 pt — Mascot rückt direkt an Akzente
-                // ran, damit der Block ohne Scroll im Viewport sitzt.
+                // Bottom 24 → 8 pt — Mascot rückt direkt an die letzte
+                // Card ran, damit der Block ohne Scroll im Viewport
+                // sitzt.
                 // **Polish 2026-05-07 Iteration 2** — Trennstrich-
-                // Hairline zwischen Akzente und mascotTipBlock entfernt
-                // (User-Feedback „kann weg"). Reduziert visuelles
-                // Rauschen und spart die 0.5 pt + Padding-Bottom-Linie.
+                // Hairline zwischen letzter Card und mascotTipBlock
+                // entfernt (User-Feedback „kann weg"). Reduziert
+                // visuelles Rauschen und spart die 0.5 pt + Padding-
+                // Bottom-Linie.
                 .padding(.bottom, 8)
 
                 mascotTipBlock
@@ -245,16 +322,18 @@ struct TrainingHubView: View {
                 onSettings: openSettings
             )
         }
-        // **Erstnutzer-Hint (2026-06-09)** — erklärt die Aufteilung
-        // Basics/Specials und fordert zur Auswahl auf.
+        // **Erstnutzer-Hint (2026-06-09)** — erklärt die Aufteilung des
+        // Screens und fordert zur Auswahl auf.
+        // **2026-09-03** — an den Umbau Üben/Prüfen angepasst; der
+        // Begriff „Specials" kommt auf dem Screen nicht mehr vor.
         .hintBubble(
             id: "training_intro",
             text: """
             Hier suchst du dir selbst aus, was du übst.
             „Karteikarten" zeigt dir ein Wort — du überlegst und drehst um.
             „Alle Vokabeln" fragt dich ab, per Tippen oder Sprechen.
-            Bei den „Specials" trainierst du gezielt eine Sache: Nomen, Verben, Artikel oder Akzente.
-            Du bestimmst vorher, wie viel du machen willst.
+            Die kleinen Kacheln trainieren gezielt eine Sache: Nomen, Verben, Artikel, Verbformen oder Akzente.
+            Und wenn du wissen willst, ob es wirklich sitzt: unten das Quiz.
             """
         )
         .onAppear {
@@ -264,6 +343,48 @@ struct TrainingHubView: View {
             // (Sub-Screen-Lifecycle re-mountet den Hub-Body).
             currentTip = TrainingHubTips.random()
         }
+    }
+
+    // MARK: - Zufalls-Platzhalter
+
+    /// Sechste Zelle im Drill-Raster — reserviert, noch ohne Funktion.
+    ///
+    /// **2026-09-03** — Das Raster hat fünf echte Drills (Nomen, Verben,
+    /// Artikel, Verbformen, Akzente) und braucht eine sechste Zelle,
+    /// damit keine der fünf durch Breite künstlich aufgewertet wird
+    /// (vorher zog Akzente quer über die volle Breite). Statt die Lücke
+    /// leer zu lassen, steht hier der reservierte Platz für „Zufall" —
+    /// Elumi würfelt einen Drill aus. Bewusst als sichtbarer, aber
+    /// nicht tippbarer Platzhalter: Der Screen ist dann schon in seiner
+    /// Endform, wenn die Funktion nachgezogen wird.
+    ///
+    /// Höhe und Radius spiegeln `ModuleCard` (88 pt / 16 pt), damit die
+    /// Zelle exakt im Raster sitzt.
+    private var placeholderCard: some View {
+        VStack(spacing: 4) {
+            Image(systemName: "dice.fill")
+                .font(.system(size: 26, weight: .semibold))
+                .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.45))
+            Text("Zufall")
+                .font(.system(size: 20, weight: .black, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.55))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: gridCardHeight)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.03))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(
+                    AppTheme.Colors.border,
+                    style: StrokeStyle(lineWidth: 1, dash: [5, 4])
+                )
+        )
+        .accessibilityHidden(true)
     }
 
     // MARK: - Header

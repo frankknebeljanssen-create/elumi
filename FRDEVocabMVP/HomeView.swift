@@ -6,11 +6,10 @@ import SwiftUI
 /// Blöcke von oben nach unten:
 ///   1. Greeting + Streak-Inline + Maskottchen (`HomeHeader`) — unverändert
 ///   2. Headline „Was möchtest du heute üben?"
-///   3. **4 Methoden-Cards Vollbreite** (Typ Wide, je 86 pt):
-///      • Training („Karteikarten, Vokabeln & Spezial") — führt zu
-///        `TrainingHubView`; Karteikarten ist hier als Auswahl-Option
-///        eingehängt (nicht mehr als eigene Home-Card)
-///      • Quiz („Teste dich!")
+///   3. **3 Methoden-Cards Vollbreite** (Typ Wide, je 92 pt):
+///      • Training („Üben, prüfen und gezielt drillen") — führt zu
+///        `TrainingHubView`; Karteikarten UND Quiz sind dort als
+///        Auswahl-Optionen eingehängt (nicht mehr als eigene Home-Cards)
 ///      • Live Chat (`LeaChatHomeCard`) — führt zu `AppScreen.leaChat`
 ///      • Daily Drop („Heute schon gecheckt?") — öffnet Slot-Pop-up
 ///        via `AppScreen.elumi`
@@ -87,21 +86,35 @@ struct HomeView: View {
 
     // MARK: - Wide-Methoden-Cards (Typ Wide ~86pt, untereinander)
 
-    /// **2026-06-09 Home-Rebuild** — Vier Vollbreite-Method-Cards
-    /// untereinander: Training, Quiz, Live Chat, Daily Drop. Vorher
-    /// lagen Karteikarten + Quiz als 2×1-Hero-Reihe oben; jetzt ist
-    /// die Karteikarten-Card ganz von Home entfernt und als Auswahl-
-    /// Option in den Training-Hub gewandert, Quiz ist zur Vollbreite-
-    /// Card geworden. Alle vier Cards teilen das gleiche Method-Style-
-    /// Profil (Icon-links + Title + Subtitle + Chevron, 86 pt).
+    /// **2026-06-09 Home-Rebuild** — Vollbreite-Method-Cards
+    /// untereinander. Damals lagen Karteikarten + Quiz als 2×1-Hero-
+    /// Reihe oben; mit dem Rebuild wanderte Karteikarten in den
+    /// Training-Hub und Quiz wurde zur Vollbreite-Card. Alle Cards
+    /// teilen dasselbe Method-Style-Profil (Icon links + Title +
+    /// Subtitle + Chevron).
+    ///
+    /// **Home-Entlastung 2026-09-03** — die Quiz-Card ist in den
+    /// Training-Hub gewandert (User-Spec: „der Startscreen ist ziemlich
+    /// voll"). Übrig bleiben drei Karten, die drei verschiedene Dinge
+    /// sind: selbst üben, mit Léa sprechen, sich etwas auswürfeln
+    /// lassen. Das Quiz war die vierte Übungs-Karte neben Training und
+    /// gehörte damit ohnehin eine Ebene tiefer.
+    ///
+    /// Der frei gewordene Platz (72 pt Card + 12 pt Abstand) wird
+    /// bewusst NICHT wieder gefüllt, sondern an die verbleibenden
+    /// Karten verteilt: Höhe 72 → 92 pt, Abstand 12 → 18 pt. Netto
+    /// bleibt der Block kürzer als vorher, wirkt aber ruhiger.
     @ViewBuilder
     private var wideMethodCards: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 18) {
             WideCard(
                 title: "Training",
-                subtitle: "Karteikarten, Vokabeln & Spezial",
+                // Subtitle folgt der neuen Hub-Gliederung (Üben /
+                // Prüfen) statt der alten Modulaufzählung — und sagt
+                // jetzt mit, dass das Quiz dort drin liegt.
+                subtitle: "Üben, prüfen und gezielt drillen",
                 accent: AppTheme.Colors.moduleVocabulary,
-                height: 72,
+                height: 92,
                 titleSize: 19,
                 showsChevron: true,
                 cornerRadius: 22,
@@ -114,23 +127,6 @@ struct HomeView: View {
                         .foregroundStyle(.white)
                 },
                 onTap: { openHomeScreen(.trainingHub) }
-            )
-
-            // Quiz — vorher Hero-Card neben Karteikarten, jetzt als
-            // Vollbreite-Method-Card. Route unverändert (`.quiz(nil)`).
-            WideCard(
-                title: "Quiz",
-                subtitle: "Teste dich!",
-                accent: AppTheme.Colors.moduleQuiz,
-                height: 72,
-                titleSize: 19,
-                showsChevron: true,
-                cornerRadius: 22,
-                horizontalPadding: 16,
-                verticalPadding: 10,
-                iconFrameSize: 44,
-                icon: { HomeModuleIconView(icon: .quiz, size: 38, glyphTint: .white) },
-                onTap: { openHomeScreen(.quiz(nil)) }
             )
 
             // **Live Chat — Léa-Chat MVP Schritt 1 (2026-05-10)** —
@@ -149,7 +145,7 @@ struct HomeView: View {
                 title: "Daily Drop",
                 subtitle: "Heute schon gecheckt?",
                 accent: AppTheme.Colors.elumiPinkDeep,
-                height: 72,
+                height: 92,
                 titleSize: 19,
                 showsChevron: true,
                 cornerRadius: 22,
