@@ -109,10 +109,26 @@ final class VerbformsSessionController: ObservableObject {
         // ist hier immer `.words` (Verben sind keine Phrasen, und ein
         // eigener `CardType.verbs` existiert im Projekt nicht — die
         // Wortart „Verb" lebt in `VocabularyItem.wordClass: String?`).
+        //
+        // **Codeaudit 2026-09-03, Stufe 1** — vorher las diese Funktion
+        // ausschließlich `currentQuestion`. Im Matching-Modus (Drag &
+        // Drop, der Default: `mode: VerbformsMode = .multipleChoice`)
+        // bleibt `currentQuestion` aber durchgehend nil — gesetzt wird
+        // nur `currentMatching`. Jedes richtige Drop erzeugte dadurch
+        // keinen Lernstatus-Eintrag; kein Verb erreichte über dieses
+        // Modul je „stark". Jetzt fällt die Funktion auf `currentMatching`
+        // zurück, das dieselben `infinitive`/`translation`-Felder trägt.
         if let question = currentQuestion {
             ItemLearningStatusRecorder.record(
                 french: question.infinitive,
                 german: question.translation,
+                cardType: .words,
+                correct: correct
+            )
+        } else if let matching = currentMatching {
+            ItemLearningStatusRecorder.record(
+                french: matching.infinitive,
+                german: matching.translation,
                 cardType: .words,
                 correct: correct
             )
@@ -214,6 +230,12 @@ final class VerbformsSessionController: ObservableObject {
     /// Start für Drag-and-Drop-Matching-Modus.
     func startMatching(with rounds: [VerbformsMatchingRound], inflections: [VerbformsEngine.VerbInflections], speedRound: Bool) {
         self.questions = []
+        // **Codeaudit 2026-09-03, Stufe 1** — muss hier explizit auf nil,
+        // sonst greift `recordAnswer`s neuer `currentMatching`-Fallback
+        // nie: nach einem vorherigen Typing-Durchlauf bliebe die letzte
+        // `currentQuestion` stehen, und jede Matching-Antwort würde dem
+        // alten Typing-Verb gutgeschrieben statt dem aktuellen.
+        self.currentQuestion = nil
         self.matchingRounds = rounds
         self.allInflections = inflections
         self.questionIndex = 0
