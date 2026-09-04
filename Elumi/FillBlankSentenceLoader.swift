@@ -20,7 +20,7 @@ enum FillBlankSentenceLoader {
         })
         let strippedKeys = Set(items.map { item -> String in
             let lower = item.french.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-            for art in ["le ", "la ", "l'", "l'", "les ", "un ", "une "] {
+            for art in ["le ", "la ", "l'", "l\u{2019}", "les ", "un ", "une "] {
                 if lower.hasPrefix(art) { return String(lower.dropFirst(art.count)).trimmingCharacters(in: .whitespaces) }
             }
             return lower
@@ -36,7 +36,7 @@ enum FillBlankSentenceLoader {
 
     private static func strippedNoun(_ text: String) -> String {
         let lower = text.lowercased()
-        for art in ["le ", "la ", "l'", "l'", "les ", "un ", "une "] {
+        for art in ["le ", "la ", "l'", "l\u{2019}", "les ", "un ", "une "] {
             if lower.hasPrefix(art) { return String(lower.dropFirst(art.count)).trimmingCharacters(in: .whitespaces) }
         }
         return lower

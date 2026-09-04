@@ -39,7 +39,10 @@ enum VerbNounPairLoader {
 
     private static func strippedNoun(_ text: String) -> String {
         let lower = text.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-        for article in ["le ", "la ", "l'", "l'", "les ", "un ", "une ", "des ", "du "] {
+        // Codeaudit 2026-09-03, Stufe 2 — zweites Element war eine
+        // Dublette desselben ASCII-Apostrophs; gemeint war der
+        // typografische U+2019, wie in StandardVocabularyLoader.
+        for article in ["le ", "la ", "l'", "l\u{2019}", "les ", "un ", "une ", "des ", "du "] {
             if lower.hasPrefix(article) {
                 return String(lower.dropFirst(article.count)).trimmingCharacters(in: .whitespaces)
             }
