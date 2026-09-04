@@ -456,7 +456,17 @@ enum TextNormalizationEngineSelfTest {
             Case(input: "Freund",            language: .german, expected: "Freund"),
             Case(input: "Samstag",           language: .german, expected: "Samstag"),
             Case(input: "Sie kommt morgen.", language: .german, expected: "Sie kommt morgen."),
-            Case(input: "sie",               language: .german, expected: "Sie"),
+            // **2026-09-03** — Erwartung von „Sie" auf „sie" korrigiert.
+            // Der Fall stammt aus der Zeit, als jedes „sie" als
+            // Höflichkeitsform kapitalisiert wurde. Am 2026-06-09 wurde
+            // das bewusst umgestellt (User-Report: aus „Das ist sie?"
+            // wurde „Das ist Sie?") — seitdem entscheidet die
+            // Schreibweise der Quelle, siehe Regel 1 in
+            // `normalizedGermanToken`. Der Testfall blieb stehen und
+            // meldete seither bei jedem App-Start einen Fehlschlag für
+            // Verhalten, das so gewollt ist.
+            Case(input: "sie",               language: .german, expected: "sie"),
+            Case(input: "Sie",               language: .german, expected: "Sie"),
             Case(input: "Paris est belle.",  language: .french, expected: "Paris est belle."),
             Case(input: "LA",                language: .french, expected: "la"),
             Case(input: "maison",            language: .french, expected: "maison"),
