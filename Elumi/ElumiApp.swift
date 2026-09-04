@@ -4,6 +4,12 @@ import SwiftData
 @main
 struct ElumiApp: App {
     init() {
+        // **Codeaudit 2026-09-03, Stufe 3 (Punkt 20)** — muss ganz vorne
+        // stehen: sobald ein Store seinen Tagesindex gelesen hat, wuerde
+        // die Umrechnung ihn nur noch auf Platte treffen und der Store
+        // schriebe den alten Wert spaeter zurueck.
+        DayIndexLocalTimeMigration.runIfNeeded()
+
         #if DEBUG
         _ = TextNormalizationEngineSelfTest.didRun
         _ = FrenchLinguisticAnalysisSelfTest.didRun

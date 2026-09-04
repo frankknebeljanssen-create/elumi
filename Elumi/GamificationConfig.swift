@@ -228,13 +228,56 @@ enum GamificationConfig {
 
     // MARK: - Tages-Rollover
 
+    /// Stunde, ab der ein neuer Lerntag zählt. Vor 6 Uhr morgens gehört
+    /// die Übung noch zum Vortag — wer um halb eins nachts weitermacht,
+    /// soll seine Serie nicht doppelt buchen.
+    static let dayRolloverHour = 6
+
     /// Day-Index mit 6-Uhr-Rollover — zentrale Quelle für „ist heute"-Checks.
     /// Wird sowohl vom `ProgressService` (Daily-Bonus-Throttling / Streak-Update)
     /// als auch von Views (Home-Daily-Chip) konsumiert, damit Logik und Anzeige
-    /// synchron sind. 6-Uhr-Cutoff entspricht `ElumiRewardVisuals`-Konvention.
+    /// synchron sind.
+    ///
+    /// **Codeaudit 2026-09-03, Stufe 3 (Punkt 20)** — vorher rechnete
+    /// diese Property `(timeIntervalSince1970 - 6*3600) / 86_400`. Das
+    /// ist 6 Uhr **UTC**, also 7 Uhr Winterzeit und 8 Uhr Sommerzeit bei
+    /// uns — mit einem Sprung zweimal im Jahr. Folge: Üben am
+    /// Donnerstagabend und am Freitag um 7:30 vor der Schule fiel auf
+    /// denselben Tagesindex. Der Freitags-Fortschritt landete auf dem
+    /// Donnerstags-Zähler, die Serie rückte nicht vor, und ein Joker
+    /// verbrannte für einen Tag, an dem tatsächlich geübt wurde.
+    ///
+    /// Jetzt über `Calendar` in Ortszeit — dieselbe Rechnung, die der
+    /// Nachbar `elumiRewardDayIndex` schon immer gemacht hat. Der
+    /// Zahlenwert verschiebt sich dadurch; die einmalige
+    /// `DayIndexLocalTimeMigration` zieht alle persistierten Indizes mit.
     static var currentDayIndex: Int {
+        dayIndex(for: Date())
+    }
+
+    /// Tagesindex eines beliebigen Zeitpunkts in **Ortszeit**, mit dem
+    /// 6-Uhr-Rollover. Einzige Implementierung im Projekt;
+    /// `elumiRewardDayIndex` delegiert hierher.
+    static func dayIndex(for date: Date) -> Int {
+        let calendar = Calendar(identifier: .gregorian)
+        let shiftedDate: Date
+
+        if calendar.component(.hour, from: date) < dayRolloverHour,
+           let previousDay = calendar.date(byAdding: .day, value: -1, to: date) {
+            shiftedDate = previousDay
+        } else {
+            shiftedDate = date
+        }
+
+        let startOfDay = calendar.startOfDay(for: shiftedDate)
+        return Int((startOfDay.timeIntervalSince1970 / 86_400).rounded(.down))
+    }
+
+    /// Die alte UTC-Rechnung. Bleibt ausschliesslich als Bezugspunkt für
+    /// die einmalige Migration stehen — sonst nirgends aufrufen.
+    static func legacyUTCDayIndex(for date: Date) -> Int {
         let secondsPerDay = 86_400
-        let offset = 6 * 3600
-        return (Int(Date().timeIntervalSince1970) - offset) / secondsPerDay
+        let offset = dayRolloverHour * 3600
+        return (Int(date.timeIntervalSince1970) - offset) / secondsPerDay
     }
 }

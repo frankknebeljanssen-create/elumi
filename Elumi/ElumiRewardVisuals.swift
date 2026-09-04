@@ -237,19 +237,13 @@ func nextElumiLevelTier(for xp: Int) -> ElumiLevelTier? {
     elumiLevelTiers.first(where: { xp < $0.threshold })
 }
 
+/// **Codeaudit 2026-09-03, Stufe 3 (Punkt 20)** — diese Rechnung war
+/// bis hierher die einzige im Projekt, die den Tageswechsel korrekt in
+/// Ortszeit bestimmte. Sie ist jetzt nach `GamificationConfig.dayIndex`
+/// gezogen, damit Belohnungen und Serie garantiert denselben Tag
+/// meinen; hier bleibt nur noch die Weiterleitung.
 private func elumiRewardDayIndex(for date: Date = .now) -> Int {
-    let calendar = Calendar(identifier: .gregorian)
-    let shiftedDate: Date
-
-    if calendar.component(.hour, from: date) < 6,
-       let previousDay = calendar.date(byAdding: .day, value: -1, to: date) {
-        shiftedDate = previousDay
-    } else {
-        shiftedDate = date
-    }
-
-    let startOfDay = calendar.startOfDay(for: shiftedDate)
-    return Int(startOfDay.timeIntervalSince1970 / 86_400)
+    GamificationConfig.dayIndex(for: date)
 }
 
 func elumiStreakMultiplier(for streak: Int) -> Double {
