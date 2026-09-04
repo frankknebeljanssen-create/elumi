@@ -23,6 +23,28 @@ final class PersonalDeckStore: ObservableObject {
 
     private init() {
         self.decks = Self.load()
+
+        // **Codeaudit 2026-09-03, Stufe 3 (Punkt 18)** — der Store ist
+        // ein Singleton und ueberlebt den Account-Wechsel. Ohne diesen
+        // Reload behielte er die Stapel des vorigen Kindes im Speicher
+        // und schriebe sie beim naechsten `save()` in dessen Slot.
+        NotificationCenter.default.addObserver(
+            forName: AccountStore.didSwitchAccount,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.reloadForCurrentAccount()
+            }
+        }
+    }
+
+    /// Liest die Stapel des jetzt aktiven Accounts neu ein. Wird nach
+    /// jedem Account-Wechsel gerufen; die Swap-Maschine im
+    /// `AccountStore` hat den globalen Slot zu diesem Zeitpunkt bereits
+    /// auf den neuen Account umgestellt.
+    func reloadForCurrentAccount() {
+        decks = Self.load()
     }
 
     // MARK: - Persistence

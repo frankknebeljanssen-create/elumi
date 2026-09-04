@@ -26,6 +26,19 @@ final class AppRuntimeContainer: ObservableObject {
     init() {
         let player = FeedbackPlayer()
         feedbackPlayer = player
+        // **Codeaudit 2026-09-03, Stufe 3 (Punkt 18)** — der
+        // `FlashcardSessionStore` ist container-scoped, kein Singleton,
+        // und kann sich deshalb nicht selbst beim `AccountStore`
+        // registrieren. Der Container reicht den Account-Wechsel durch.
+        NotificationCenter.default.addObserver(
+            forName: AccountStore.didSwitchAccount,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.flashcardSessionStore?.reloadForCurrentAccount()
+            }
+        }
         // `FeedbackEngine` bekommt einen globalen Player — dadurch können
         // alle Streak-/Milestone-Events zentral ertönen, ohne dass jede
         // Call-Site den Player durchreichen muss. Der Engine hält eine

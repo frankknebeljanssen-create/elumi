@@ -181,7 +181,51 @@ enum AccountScopedKeys {
         // Globale Listen-Auswahl (Stufe 5, 2026-04-29) — Toggle +
         // UUID-Set, pro Account isoliert.
         appUseGlobalListSelectionKey,
-        appGlobalSelectedListIDsKey
+        appGlobalSelectedListIDsKey,
+
+        // **Codeaudit 2026-09-03, Stufe 3 (Punkt 18, zweiter Teil)** —
+        // die folgenden Werte waren bis 2026-09-04 GAR NICHT
+        // account-getrennt: Geschwister auf einem Geraet teilten sich
+        // persoenliche Stapel, Tagesaktivitaet, die Karteikarten-Session
+        // und die Word-Runner-Bestwerte. Der Arcade-Highscore stand
+        // dagegen sehr wohl in der Liste — die Trennung war also
+        // gewollt, nur unvollstaendig.
+        //
+        // Alle diese Keys leben im globalen Slot, deshalb gehoeren sie
+        // hierher und nicht zu `storeOwnedKeys`. **Wichtig**: Wo ein
+        // Store einen solchen Wert im Speicher haelt, braucht er einen
+        // `reloadForCurrentAccount()`-Hook — sonst schreibt der noch
+        // geladene Store des vorigen Kindes seine Daten ueber die des
+        // neuen. Siehe `PersonalDeckStore`, `DailyStatsStore` und
+        // `FlashcardSessionStore`.
+
+        // Word Runner + Daily Drop
+        appLastCompletedDailyDropDateKey,
+        appWordRunnerBestScoreKey,
+        appWordRunnerTotalTrophiesKey,
+        appWordRunnerLastListIDKey,
+        // Lern-Einstellungen des Kindes
+        appLernjahrMaxKey,
+        appLeaFocusOnLessonKey,
+        appDirectionKey,
+        appFlashcardsSelectedCardCountKey,
+        appAnswerModeKarteikartenKey,
+        appAnswerModeVokabelnKey,
+        appAnswerModeNomenKey,
+        // PersonalDeckStore — die zwei persoenlichen Trainingsstapel.
+        appPersonalDecksKey,
+        // DailyStatsStore — Tagesaktivitaet.
+        "elumi.dailyStats.actionsToday.v1",
+        "elumi.dailyStats.lastSessionDelta.v1",
+        "elumi.dailyStats.dayIndex.v1",
+        // FlashcardSessionStore — laufende Karteikarten-Session + Stapelwahl.
+        "FRDEVocabMVP.flashcardSession.v1",
+        "FRDEVocabMVP.flashcardDeck.v1"
+
+        // **Bewusst NICHT account-getrennt**: die TTS-Stimmenauswahl
+        // (`appVoiceGermanSelectionKey` / `appVoiceFrenchSelectionKey`).
+        // Das ist eine Geraete-Audio-Einstellung, keine Lerndaten —
+        // welche Systemstimme gut klingt, haengt am Geraet, nicht am Kind.
     ]
 
     /// Alle per-Account isolierten Keys. Grundlage der einmaligen

@@ -49,6 +49,25 @@ final class DailyStatsStore: ObservableObject {
     init() {
         load()
         refreshForTodayIfNeeded()
+
+        // **Codeaudit 2026-09-03, Stufe 3 (Punkt 18)** — Singleton,
+        // ueberlebt den Account-Wechsel. Ohne Reload zaehlte die
+        // Tagesaktivitaet des vorigen Kindes beim neuen weiter.
+        NotificationCenter.default.addObserver(
+            forName: AccountStore.didSwitchAccount,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.reloadForCurrentAccount()
+            }
+        }
+    }
+
+    /// Liest die Tagesaktivitaet des jetzt aktiven Accounts neu ein.
+    func reloadForCurrentAccount() {
+        load()
+        refreshForTodayIfNeeded()
     }
 
     // MARK: - Public API
