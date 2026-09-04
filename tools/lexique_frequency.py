@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Ordnet den Einträgen des FRDEMasterLexicon echte Korpusfrequenzen zu.
+"""Ordnet den Einträgen des ElumiMasterLexicon echte Korpusfrequenzen zu.
 
 WARUM
 ─────
@@ -35,7 +35,7 @@ Deshalb die Produktentscheidung vom 2026-08-06:
 
   • Die Lexique-Datei wird NICHT ins App-Bundle aufgenommen.
   • Die berechneten Frequenzwerte werden NICHT in die
-    ausgelieferte `FRDEMasterLexicon.sqlite` geschrieben.
+    ausgelieferte `ElumiMasterLexicon.sqlite` geschrieben.
   • In die App wandert später nur unser **eigenes Niveau-Tag**
     (`entries.level`) — eine redaktionelle Einstufung, die Frequenz
     als EINES von mehreren Kriterien nutzt (siehe Konzept: Frequenz
@@ -64,7 +64,7 @@ import unicodedata
 import urllib.request
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB = os.path.join(REPO, "Elumi", "FRDEMasterLexicon.sqlite")
+DB = os.path.join(REPO, "Elumi", "ElumiMasterLexicon.sqlite")
 BUILD_DIR = os.path.join(REPO, "build-data")
 LEXIQUE = os.path.join(BUILD_DIR, "Lexique383.tsv")
 OUT = os.path.join(BUILD_DIR, "entry_frequency.tsv")

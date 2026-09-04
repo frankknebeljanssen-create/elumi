@@ -14,7 +14,7 @@ enum OfflineFrenchGermanKnowledgePool {
     private static func loadRecords() -> [OfflineFrenchGermanLexiconRecord] {
         let tsvRecords = loadRecordsFromTSV()
 
-        if let bundledSQLiteURL = Bundle.main.url(forResource: "FRDEKnowledgePool", withExtension: "sqlite"),
+        if let bundledSQLiteURL = Bundle.main.url(forResource: "ElumiKnowledgePool", withExtension: "sqlite"),
            let sqliteRecords = loadRecordsFromSQLite(at: bundledSQLiteURL),
            !sqliteRecords.isEmpty {
             return mergedRecords(base: sqliteRecords, overlay: tsvRecords)
@@ -157,7 +157,7 @@ enum OfflineFrenchGermanKnowledgePool {
     }
 
     private static func loadRecordsFromTSV() -> [OfflineFrenchGermanLexiconRecord] {
-        guard let url = Bundle.main.url(forResource: "FRDEKnowledgePool", withExtension: "tsv"),
+        guard let url = Bundle.main.url(forResource: "ElumiKnowledgePool", withExtension: "tsv"),
               let raw = try? String(contentsOf: url, encoding: .utf8) else {
             return []
         }

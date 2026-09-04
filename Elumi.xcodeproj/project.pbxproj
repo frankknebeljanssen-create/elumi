@@ -30,7 +30,7 @@
 		50F57B704E604DE98AD4FA51 /* Sounds/elumi_quizcomplete.wav in Resources */ = {isa = PBXBuildFile; fileRef = 21594A50F0B744E68ED245F2 /* Sounds/elumi_quizcomplete.wav */; };
 		535BC11A38424C789F12B637 /* Sounds/elumi_saugend.wav in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDD993CDA84C048277CCF7 /* Sounds/elumi_saugend.wav */; };
 		54A069E941A24FAA8F5763B6 /* Sounds/elumi_gameover.wav in Resources */ = {isa = PBXBuildFile; fileRef = 6DC3E67A0E5B47A6A21D7589 /* Sounds/elumi_gameover.wav */; };
-		55916C8754034661BBD48F46 /* FRDEMasterLexicon.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */; };
+		55916C8754034661BBD48F46 /* ElumiMasterLexicon.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = DD9675636C4F426CB3F001A6 /* ElumiMasterLexicon.sqlite */; };
 		FEDEA20900000000000099003 /* german_finite_verbs.json in Resources */ = {isa = PBXBuildFile; fileRef = FEDEA20900000000000099004 /* german_finite_verbs.json */; };
 		58A13D20DB064DC3A1CFBDDD /* Sounds/elumi_tentacle_sting.wav in Resources */ = {isa = PBXBuildFile; fileRef = 14D6AA0E2F7547C58EFD2C7B /* Sounds/elumi_tentacle_sting.wav */; };
 		616E2C714CE745070CD98CBB /* AppBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77D1F5E4FBCC08EBB9C7AFB9 /* AppBackButton.swift */; };
@@ -57,8 +57,8 @@
 		A00000000000000000000034 /* ESM_Wrong_Answer_Game_Over_6_Sound_FX_Arcade_Casino_Kids_Mobile_App.wav in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000035 /* ESM_Wrong_Answer_Game_Over_6_Sound_FX_Arcade_Casino_Kids_Mobile_App.wav */; };
 		A00000000000000000000036 /* ESM_Kids_Game_Correct_Fanfare_01_Trill_Bling_Tada_Happy_Success_Positive.wav in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000037 /* ESM_Kids_Game_Correct_Fanfare_01_Trill_Bling_Tada_Happy_Success_Positive.wav */; };
 		A00000000000000000000038 /* ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000039 /* ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav */; };
-		A00000000000000000000090 /* FRDEKnowledgePool.tsv in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000091 /* FRDEKnowledgePool.tsv */; };
-		A00000000000000000000092 /* FRDEKnowledgePool.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000093 /* FRDEKnowledgePool.sqlite */; };
+		A00000000000000000000090 /* ElumiKnowledgePool.tsv in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000091 /* ElumiKnowledgePool.tsv */; };
+		A00000000000000000000092 /* ElumiKnowledgePool.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000093 /* ElumiKnowledgePool.sqlite */; };
 		A00000000000000000000096 /* ScanModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000100 /* ScanModels.swift */; };
 		A00000000000000000000097 /* ScanProviders.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000101 /* ScanProviders.swift */; };
 		A00000000000000000000098 /* ScanEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000102 /* ScanEngine.swift */; };
@@ -686,8 +686,8 @@
 		A00000000000000000000035 /* ESM_Wrong_Answer_Game_Over_6_Sound_FX_Arcade_Casino_Kids_Mobile_App.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ESM_Wrong_Answer_Game_Over_6_Sound_FX_Arcade_Casino_Kids_Mobile_App.wav; sourceTree = "<group>"; };
 		A00000000000000000000037 /* ESM_Kids_Game_Correct_Fanfare_01_Trill_Bling_Tada_Happy_Success_Positive.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ESM_Kids_Game_Correct_Fanfare_01_Trill_Bling_Tada_Happy_Success_Positive.wav; sourceTree = "<group>"; };
 		A00000000000000000000039 /* ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav; sourceTree = "<group>"; };
-		A00000000000000000000091 /* FRDEKnowledgePool.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; path = FRDEKnowledgePool.tsv; sourceTree = "<group>"; };
-		A00000000000000000000093 /* FRDEKnowledgePool.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = FRDEKnowledgePool.sqlite; sourceTree = "<group>"; };
+		A00000000000000000000091 /* ElumiKnowledgePool.tsv */ = {isa = PBXFileReference; lastKnownFileType = text; path = ElumiKnowledgePool.tsv; sourceTree = "<group>"; };
+		A00000000000000000000093 /* ElumiKnowledgePool.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = ElumiKnowledgePool.sqlite; sourceTree = "<group>"; };
 		A00000000000000000000100 /* ScanModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanModels.swift; sourceTree = "<group>"; };
 		A00000000000000000000101 /* ScanProviders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanProviders.swift; sourceTree = "<group>"; };
 		A00000000000000000000102 /* ScanEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanEngine.swift; sourceTree = "<group>"; };
@@ -1067,7 +1067,7 @@
 		D60E8751B6404310BA69583D /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileView.swift; path = Elumi/ProfileView.swift; sourceTree = "<group>"; };
 		D7E48C7D56DE47BA8A612FB2 /* HomeDailyFocusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HomeDailyFocusCard.swift; path = Elumi/HomeDailyFocusCard.swift; sourceTree = "<group>"; };
 		DADBA6D5B4FF4413839CBF0D /* Sounds/elumi_shieldactivate.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_shieldactivate.wav; sourceTree = "<group>"; };
-		DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = FRDEMasterLexicon.sqlite; sourceTree = "<group>"; };
+		DD9675636C4F426CB3F001A6 /* ElumiMasterLexicon.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = ElumiMasterLexicon.sqlite; sourceTree = "<group>"; };
 		FEDEA20900000000000099004 /* german_finite_verbs.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = german_finite_verbs.json; sourceTree = "<group>"; };
 		ED6E2620B526439EA130ADE9 /* Sounds/elumi_jellyfish_ambient.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Sounds/elumi_jellyfish_ambient.wav; sourceTree = "<group>"; };
 		F1C01A111A111A111A111111 /* GamificationConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamificationConfig.swift; sourceTree = "<group>"; };
@@ -1814,9 +1814,9 @@
 				A00000000000000000000035 /* ESM_Wrong_Answer_Game_Over_6_Sound_FX_Arcade_Casino_Kids_Mobile_App.wav */,
 				A00000000000000000000037 /* ESM_Kids_Game_Correct_Fanfare_01_Trill_Bling_Tada_Happy_Success_Positive.wav */,
 				A00000000000000000000039 /* ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav */,
-				A00000000000000000000091 /* FRDEKnowledgePool.tsv */,
-				A00000000000000000000093 /* FRDEKnowledgePool.sqlite */,
-				DD9675636C4F426CB3F001A6 /* FRDEMasterLexicon.sqlite */,
+				A00000000000000000000091 /* ElumiKnowledgePool.tsv */,
+				A00000000000000000000093 /* ElumiKnowledgePool.sqlite */,
+				DD9675636C4F426CB3F001A6 /* ElumiMasterLexicon.sqlite */,
 				FEDEA20900000000000099004 /* german_finite_verbs.json */,
 				F1C01A111A111A111A111111 /* GamificationConfig.swift */,
 				F2C01A111A111A111A111111 /* LearningSession.swift */,
@@ -1970,9 +1970,9 @@
 				A00000000000000000000034 /* ESM_Wrong_Answer_Game_Over_6_Sound_FX_Arcade_Casino_Kids_Mobile_App.wav in Resources */,
 				A00000000000000000000036 /* ESM_Kids_Game_Correct_Fanfare_01_Trill_Bling_Tada_Happy_Success_Positive.wav in Resources */,
 				A00000000000000000000038 /* ESM_Explainer_Video_One_Shot_Positive_Notification_Alert_Fanfare_Ta_Da_Brass_Horn_2.wav in Resources */,
-				A00000000000000000000090 /* FRDEKnowledgePool.tsv in Resources */,
-				A00000000000000000000092 /* FRDEKnowledgePool.sqlite in Resources */,
-				55916C8754034661BBD48F46 /* FRDEMasterLexicon.sqlite in Resources */,
+				A00000000000000000000090 /* ElumiKnowledgePool.tsv in Resources */,
+				A00000000000000000000092 /* ElumiKnowledgePool.sqlite in Resources */,
+				55916C8754034661BBD48F46 /* ElumiMasterLexicon.sqlite in Resources */,
 				FEDEA20900000000000099003 /* german_finite_verbs.json in Resources */,
 				F43B1C0A2F877A000094BA73 /* VerbNounPairs.tsv in Resources */,
 				F43B1C0E2F878B000094BA73 /* FillBlankSentences.tsv in Resources */,

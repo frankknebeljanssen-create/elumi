@@ -17,7 +17,7 @@ import Foundation
 /// — „pleuvoir → regnen" neben „il pleut → es regnet".
 ///
 /// **Datenquelle** — nichts davon muss gespeichert werden, alles steht
-/// bereits im gebündelten `FRDEMasterLexicon.sqlite`:
+/// bereits im gebündelten `ElumiMasterLexicon.sqlite`:
 ///   • Konjugierte Form → Infinitiv über die `forms`-Tabelle
 ///     (`FrenchEntryAnalyzer` → `EntryLemmas.verbs`, gecached in
 ///     `FrenchListStatisticsAggregator`)

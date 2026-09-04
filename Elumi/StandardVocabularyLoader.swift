@@ -1,7 +1,7 @@
 import Foundation
 import SQLite3
 
-/// Loads all vocabulary from FRDEMasterLexicon.sqlite (unified source).
+/// Loads all vocabulary from ElumiMasterLexicon.sqlite (unified source).
 /// Single source of truth for all vocabulary in the app.
 enum StandardVocabularyLoader {
     struct Entry {
@@ -1090,7 +1090,7 @@ enum StandardVocabularyLoader {
             }
             return entries
         }) else {
-            appDebugLog("⚠️ FRDEMasterLexicon.sqlite not found or failed to open")
+            appDebugLog("⚠️ ElumiMasterLexicon.sqlite not found or failed to open")
             return []
         }
 

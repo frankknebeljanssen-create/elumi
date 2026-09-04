@@ -29,7 +29,10 @@ Elumi/OpenAIConfig.plist
 
 # DB-Backups vor Migrationen — bleiben außerhalb Repo
 # (jeweils ~62 MB, im ~/Dropbox/VocabMVP-DB-Backups/ Folder)
-Elumi/FRDEMasterLexicon_pre_*.sqlite
+Elumi/ElumiMasterLexicon_pre_*.sqlite
 
-# Stale SQLite at repo root (the real DB lives in Elumi/)
+# Stale SQLite at repo root (the real DB lives in Elumi/).
+# Der alte Dateiname bleibt gelistet: die Altdatei liegt noch dort und
+# soll nach der Umbenennung nicht ploetzlich als neu auftauchen.
+/ElumiMasterLexicon.sqlite
 /FRDEMasterLexicon.sqlite

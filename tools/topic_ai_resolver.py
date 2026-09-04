@@ -51,7 +51,7 @@ except ImportError:
 # ---------------------------------------------------------------------------
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-DB_PATH = REPO_ROOT / "Elumi" / "FRDEMasterLexicon.sqlite"
+DB_PATH = REPO_ROOT / "Elumi" / "ElumiMasterLexicon.sqlite"
 RESOLUTIONS_PATH = REPO_ROOT / "tools" / "topic_ai_resolutions.json"
 BATCH_SIZE = 40
 MODEL = "claude-haiku-4-5"
@@ -290,7 +290,7 @@ def cmd_apply(args):
         return
 
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    backup = f"/tmp/FRDEMasterLexicon.before_topic_apply_{stamp}.sqlite"
+    backup = f"/tmp/ElumiMasterLexicon.before_topic_apply_{stamp}.sqlite"
     shutil.copy2(DB_PATH, backup)
     print(f"\nBackup: {backup}")
 

@@ -70,9 +70,9 @@ import sys
 from collections import Counter, defaultdict
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB = os.path.join(REPO, "Elumi", "FRDEMasterLexicon.sqlite")
+DB = os.path.join(REPO, "Elumi", "ElumiMasterLexicon.sqlite")
 FREQ_FILE = os.path.join(REPO, "build-data", "entry_frequency.tsv")
-BACKUP = "/tmp/FRDEMasterLexicon.before_learn_levels.sqlite"
+BACKUP = "/tmp/ElumiMasterLexicon.before_learn_levels.sqlite"
 
 # Schwellen in Vorkommen pro Million (siehe Modul-Doc, Punkt 3).
 #

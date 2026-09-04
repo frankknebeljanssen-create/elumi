@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Build FRDEMasterLexicon.sqlite from app export TSV files.
+Build ElumiMasterLexicon.sqlite from app export TSV files.
 
 Usage:
     python3 build_master_lexicon_sqlite.py
 
 Input:  /Users/frankknebeljanssen/Documents/New project/frde_app_export/out/*.tsv
-Output: Elumi/FRDEMasterLexicon.sqlite
+Output: Elumi/ElumiMasterLexicon.sqlite
 
 Run this after updating the master DB export. Then rebuild the app (Shift+Cmd+K, Cmd+R).
 """
@@ -18,7 +18,7 @@ import sys
 import time
 
 EXPORT_DIR = "/Users/frankknebeljanssen/Documents/New project/frde_app_export/out"
-OUTPUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Elumi", "FRDEMasterLexicon.sqlite")
+OUTPUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Elumi", "ElumiMasterLexicon.sqlite")
 
 CORE_FILES = {
     "entries": os.path.join(EXPORT_DIR, "app_entries.tsv"),
@@ -584,7 +584,7 @@ def promote_compound_nouns(db):
 
 def main():
     start = time.time()
-    print("=== Building FRDEMasterLexicon.sqlite ===")
+    print("=== Building ElumiMasterLexicon.sqlite ===")
     print(f"Export dir: {EXPORT_DIR}")
     print(f"Output:     {OUTPUT_PATH}")
     print()

@@ -21,7 +21,7 @@ import sqlite3
 import sys
 from datetime import datetime
 
-DB = "Elumi/FRDEMasterLexicon.sqlite"
+DB = "Elumi/ElumiMasterLexicon.sqlite"
 
 # Tabelle -> Spalten, die auf `entries.entry_id` zeigen. Zentral
 # gepflegt: Kommt eine neue Nebentabelle dazu, gehört sie hierher,
@@ -78,7 +78,7 @@ def purge(entry_ids, dry_run=False):
         return 0
 
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    backup = f"/tmp/FRDEMasterLexicon.before_purge_{stamp}.sqlite"
+    backup = f"/tmp/ElumiMasterLexicon.before_purge_{stamp}.sqlite"
     shutil.copy2(DB, backup)
     print(f"\nBackup: {backup}")
 
