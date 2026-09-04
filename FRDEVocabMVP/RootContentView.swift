@@ -352,7 +352,10 @@ struct ContentView: View {
             // ist, und nur wenn schon ein Account existiert (sonst
             // läuft noch das Account-Onboarding).
             if shouldShowWelcomeScreen {
-                WelcomeScreen(onStart: dismissWelcomeScreen)
+                WelcomeScreen(
+                    onStart: dismissWelcomeScreen,
+                    onSkipIntro: introSkipAction
+                )
                     .transition(.opacity)
                     .zIndex(1)
             }
@@ -576,6 +579,67 @@ struct ContentView: View {
         return isGoalOnboardingLatched
             || goalStore.plan == nil
             || goalStore.pendingCelebrationRequested
+    }
+
+    /// Callback fürs Maskottchen im Willkommens-Screen. Im Release
+    /// (`allowsIntroSkipForTesting == false`) `nil` — dann ist die
+    /// Figur reine Deko und der Screen verhält sich wie vorher.
+    ///
+    /// Bewusst als eigene Property statt als Ternary an der Aufrufstelle:
+    /// Ein `Bool ? methode : nil` mitten im `body` bringt den
+    /// Type-Checker in dieser großen View zum Aufgeben
+    /// („failed to produce diagnostic for expression").
+    @MainActor
+    private var introSkipAction: (() -> Void)? {
+        guard FeatureFlags.allowsIntroSkipForTesting else { return nil }
+        return { skipIntroForTesting() }
+    }
+
+    /// **Intro-Skip (Testphase, 2026-09-03)** — springt vom
+    /// Willkommens-Screen direkt auf Home und überspringt dabei
+    /// Account-Anlage und Ziel-Onboarding.
+    ///
+    /// Beide Intro-Layer hängen an persistierten Bedingungen, nicht an
+    /// einem Schritt-Zähler: Das Account-Onboarding erscheint, solange
+    /// `accountStore.hasAnyAccount == false`, das Ziel-Onboarding,
+    /// solange `goalStore.plan == nil`. Der Skip erfüllt genau diese
+    /// beiden Bedingungen mit Platzhalterwerten und schließt danach den
+    /// Welcome-Layer.
+    ///
+    /// Reihenfolge ist wichtig: erst der Account, dann der Plan.
+    /// `createAccount` schaltet den UserDefaults-Namespace um — ein
+    /// vorher geschriebener Plan landete im Slot des alten Accounts.
+    ///
+    /// Bestehende Daten bleiben unberührt: Wer schon einen Account oder
+    /// ein Ziel hat, behält beides; der Skip füllt nur, was fehlt.
+    @MainActor
+    private func skipIntroForTesting() {
+        runtime.feedbackPlayer?.playTabSwitch()
+
+        if !accountStore.hasAnyAccount {
+            let account = accountStore.createAccount(
+                name: FeatureFlags.introSkipPlaceholderName
+            )
+            profileStore.completeOnboarding(
+                displayName: account.displayName,
+                learningGoal: nil
+            )
+        }
+
+        if goalStore.plan == nil {
+            goalStore.setPlan(
+                LearningGoalPlan(
+                    dailyTargetMinutes: LearningGoalPlan.defaultDailyTargetMinutes
+                )
+            )
+        }
+
+        isGoalOnboardingLatched = false
+        goalStore.pendingCelebrationRequested = false
+
+        withAnimation(.easeOut(duration: 0.28)) {
+            hasDismissedWelcomeThisLaunch = true
+        }
     }
 
     @MainActor

@@ -38,6 +38,28 @@ enum FeatureFlags {
     /// bei jedem App-Start sein gesetztes Lernziel.
     static let alwaysResetGoalOnboardingForTesting = true
 
+    /// **2026-09-03** — Intro-Abkürzung für die Testphase.
+    ///
+    /// Ein Tipp auf das Maskottchen im Willkommens-Screen überspringt
+    /// Account-Anlage und komplettes Ziel-Onboarding und landet direkt
+    /// auf Home. Der reguläre Weg bleibt unverändert erreichbar — wer
+    /// „Los geht's!" drückt, sieht das volle Intro wie bisher.
+    ///
+    /// Hintergrund: Mit `alwaysShowWelcomeScreen` und
+    /// `alwaysResetGoalOnboardingForTesting` auf `true` beginnt jeder
+    /// App-Start beim Intro. Für Tests an ganz anderen Stellen der App
+    /// sind das jedes Mal neun Taps, bevor überhaupt etwas geprüft
+    /// werden kann.
+    ///
+    /// Vor Release auf `false` stellen (oder mit den beiden Flags
+    /// darüber zusammen entfernen) — der Skip legt einen Platzhalter-
+    /// Account an, das will im Produktivbetrieb niemand.
+    static let allowsIntroSkipForTesting = true
+
+    /// Platzhalter-Name für den Account, den der Intro-Skip anlegt.
+    /// Nur wirksam, wenn noch gar kein Account existiert.
+    static let introSkipPlaceholderName = "Testkind"
+
     /// **2026-08-05** — Feature-Karten auf dem Willkommens-Screen
     /// ausblenden (Vokabelheft fotografieren / Üben / Jeden Tag /
     /// Spiele freischalten).

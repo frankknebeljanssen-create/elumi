@@ -24,6 +24,14 @@ struct WelcomeScreen: View {
     /// Wird vom CTA aufgerufen — der Aufrufer blendet den Screen aus.
     let onStart: () -> Void
 
+    /// **Intro-Skip (Testphase, 2026-09-03)** — ein Tipp auf das
+    /// Maskottchen springt am gesamten Intro vorbei direkt auf Home.
+    /// Bewusst ohne sichtbaren Button: Der reguläre Weg über „Los
+    /// geht's!" soll der offensichtliche bleiben, damit der Screen im
+    /// Test genau so wirkt wie später im Release. Ist der Callback
+    /// `nil` (Release-Pfad), verhält sich das Maskottchen wie vorher.
+    var onSkipIntro: (() -> Void)? = nil
+
     /// Hint-ID für den Release-Pfad (`alwaysShowWelcomeScreen == false`).
     /// In der Testphase ungenutzt, aber hier definiert, damit Gate und
     /// Screen dieselbe Konstante teilen.
@@ -128,6 +136,14 @@ struct WelcomeScreen: View {
         .shadow(color: .black.opacity(0.22), radius: 8, x: 0, y: 4)
         .scaleEffect(hasAppeared ? 1 : 0.88)
         .opacity(hasAppeared ? 1 : 0)
+        // **Intro-Skip (Testphase)** — siehe `onSkipIntro`. Der
+        // `contentShape` macht auch die transparenten Ecken des
+        // Maskottchens tippbar, sonst trifft man nur die Pixel der
+        // Figur selbst.
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onSkipIntro?()
+        }
     }
 
     /// **2026-08-05** — Würmchen, Wasserfloh und Algenkugel als
