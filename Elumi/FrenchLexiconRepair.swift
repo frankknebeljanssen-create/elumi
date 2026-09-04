@@ -93,6 +93,30 @@ enum FrenchLexiconRepair {
         if LexiconTextUtility.hasTerminalPunctuation(sourceMatch.sourceTerm)
             != LexiconTextUtility.hasTerminalPunctuation(sourceText) { return false }
 
+        // **Codeaudit 2026-09-04** — der Zuschnitt-Fall steht bewusst VOR
+        // der `targetMatchesSuggestions`-Prüfung.
+        //
+        // Beim Zuschnitt geht es darum, OCR-Müll aus dem **Französischen**
+        // zu entfernen („le chien adj inv" → „le chien"). Die Prüfung
+        // darunter beurteilt aber die **deutsche** Seite: Passt die
+        // Übersetzung der KI schon zu den Lexikon-Vorschlägen, bricht sie
+        // ab — und genau dann bleibt das Rauschen stehen. Gemessen an 373
+        // echten Lexikon-Einträgen mit angehängtem „adj inv" hat diese
+        // Reihenfolge **alle 373** Bereinigungen verhindert, ausnahmslos
+        // mit dem Grund „Übersetzung passt schon".
+        //
+        // Die Satzzeichen-Prüfung darüber bleibt wirksam — sie ist der
+        // Schutz, der beim Zuschnitt wirklich gebraucht wird („ça va ?"
+        // darf sein Fragezeichen nicht verlieren).
+        //
+        // Der Zuschnitt selbst ist kein blinder Ersatz: `bestTrimmedMatch`
+        // schneidet nur ab, wenn der abgeschnittene Rest als verdächtig
+        // gilt (`trailingLooksSuspicious`) und der Resttreffer eine
+        // Distanz ≤ 0.2 hat.
+        if sourceWasTrimmed {
+            return true
+        }
+
         if targetMatchesSuggestions(targetText, suggestions: sourceMatch.suggestions) {
             return false
         }
@@ -100,13 +124,6 @@ enum FrenchLexiconRepair {
         let sourceWordCount = max(1, LexiconTextUtility.normalizedWords(sourceMatch.sourceTerm).count)
         let targetWordCount = LexiconTextUtility.normalizedWords(targetText).count
         let suggestionWordCount = max(1, LexiconTextUtility.normalizedWords(firstSuggestion).count)
-
-        // Ein zugeschnittener Treffer hat den Verdachtstest bereits im
-        // Zuschnitt bestanden (`trailingLooksSuspicious`) — er gilt hier
-        // ohne weitere Prüfung.
-        if sourceWasTrimmed {
-            return true
-        }
 
         if sourceMatch.distance <= 0.08 && sourceWordCount <= 2 {
             return true

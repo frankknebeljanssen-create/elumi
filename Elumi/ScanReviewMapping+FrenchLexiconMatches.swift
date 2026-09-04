@@ -18,13 +18,14 @@ extension ScanReviewMapper {
     static func shouldForceFrenchLexiconReplacement(
         sourceText: String,
         targetText: String,
-        sourceMatch: (sourceTerm: String, suggestions: [String], distance: Double)
+        sourceMatch: (sourceTerm: String, suggestions: [String], distance: Double),
+        sourceWasTrimmed: Bool = false
     ) -> Bool {
         FrenchLexiconRepair.shouldForceReplacement(
             sourceText: sourceText,
             targetText: targetText,
             sourceMatch: sourceMatch,
-            sourceWasTrimmed: false
+            sourceWasTrimmed: sourceWasTrimmed
         )
     }
 

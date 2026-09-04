@@ -111,7 +111,19 @@ extension ScanReviewMapper {
         // Skip lexicon replacement if source has terminal punctuation — trust AI
         if LexiconTextUtility.hasTerminalPunctuation(entry.sourceText) { return entry }
 
-        if let trimmedMatch = bestTrimmedFrenchLexiconMatch(forSource: entry.sourceText) {
+        // **Codeaudit 2026-09-04** — dieser Zweig ersetzte bisher
+        // ungeprüft, während der Provider-Durchlauf denselben Zweig
+        // absicherte. Beide laufen im selben Import hintereinander; die
+        // Prüfung fehlte hier also nur einseitig. Jetzt derselbe Schutz —
+        // wirksam bleibt davon beim Zuschnitt die Satzzeichen-Prüfung,
+        // die verhindert, dass „ça va ?" sein Fragezeichen verliert.
+        if let trimmedMatch = bestTrimmedFrenchLexiconMatch(forSource: entry.sourceText),
+           shouldForceFrenchLexiconReplacement(
+                sourceText: entry.sourceText,
+                targetText: entry.targetText,
+                sourceMatch: trimmedMatch,
+                sourceWasTrimmed: true
+           ) {
             return ScanReviewEntry(
                 id: entry.id,
                 sourceText: trimmedMatch.sourceTerm,
