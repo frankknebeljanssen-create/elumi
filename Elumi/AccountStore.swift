@@ -76,12 +76,45 @@ struct AccountProfile: Codable, Equatable, Identifiable {
 /// isoliert gespeichert werden. Die Liste ist zentral, damit Migration
 /// + Reload-Hooks eine einzige Wahrheit haben.
 enum AccountScopedKeys {
-    /// Alle UserDefaults-Keys, die pro Account isoliert werden sollen.
-    /// Bei der One-Shot-Migration in `AccountStore.runMigrationIfNeeded`
-    /// wandern die Werte dieser Keys vom globalen Slot in den Slot des
-    /// gerade migrierten Accounts.
-    static let userDefaultsKeys: [String] = [
-        // Progress / Gamification (Phase E.1)
+
+    // **Codeaudit 2026-09-03, Stufe 3 (Punkt 18) — Eigentumsmodell.**
+    //
+    // Bis hierher gab es EINE Liste, und die Swap-Maschine kopierte
+    // beim Account-Wechsel jeden Key blind in beide Richtungen:
+    // Bare-Slot -> Namespace (stash) und zurueck (unstash). Das ist nur
+    // fuer Keys korrekt, die ausschliesslich ueber `@AppStorage` im
+    // globalen Slot leben.
+    //
+    // Fuer Keys, die ein Store selbst namespaced schreibt, war es
+    // zerstoererisch: der Store schreibt in den Namespace, der
+    // Bare-Slot bleibt auf dem Stand der einmaligen Migration stehen —
+    // und beim naechsten Account-Wechsel kopiert `stash` genau diesen
+    // veralteten Bare-Wert ueber die frischen Store-Daten. Betroffen
+    // waren unter anderem die eigenen Vokabellisten, das Lernerprofil,
+    // die Daily Challenge, das Lernziel und der Tagesabschluss.
+    //
+    // Deshalb jetzt zwei Listen mit klarem Besitz:
+    //
+    //   • `storeOwnedKeys` — ein Store ist Eigentuemer und schreibt
+    //     selbst ueber `AccountStore.namespacedKey(_:)`. Die
+    //     Swap-Maschine fasst diese Keys NICHT an. Wo `@AppStorage`
+    //     trotzdem den Bare-Key liest (XP, Credits, Streak), spiegelt
+    //     der besitzende Store selbst — siehe `ProgressStore.persist`
+    //     und `ProgressStore.reloadForCurrentAccount`.
+    //
+    //   • `appStorageOwnedKeys` — es gibt keinen Store, nur
+    //     `@AppStorage` im globalen Slot. Nur diese Keys werden beim
+    //     Account-Wechsel hin und her geswappt.
+    //
+    // `allKeys` ist die Vereinigung und bleibt die Grundlage der
+    // einmaligen Migration aus der Single-User-Welt. Ein `#if DEBUG`-
+    // Selbsttest (`AccountScopedKeysTests`) prueft, dass kein Key in
+    // beiden Listen steht.
+
+    /// Keys, deren Eigentuemer ein Store ist. **Niemals swappen.**
+    static let storeOwnedKeys: [String] = [
+        // ProgressStore — schreibt namespaced und spiegelt die vier
+        // Werte mit `@AppStorage`-Lesern zusaetzlich in den Bare-Slot.
         appElumiXPKey,
         appArcadeCreditsKey,
         appElumiCurrentStreakKey,
@@ -89,44 +122,46 @@ enum AccountScopedKeys {
         "elumi.gamification.lastSessionDay.v1",
         "elumi.gamification.lastDailyBonusDay.v1",
         "elumi.gamification.awardedStreakMilestones.v1",
-        // Vocabulary lists (Phase E.2)
+        // VocabularyListStore — die eigenen Listen des Kindes.
         "FRDEVocabMVP.customLists.v2",
         "FRDEVocabMVP.selectedListID.v2",
         "FRDEVocabMVP.sampleListsSeeded.v1",
-        // Profile + Daily Challenge (Phase E.4)
+        // ProfileStore
         appLearnerProfileKey,
         appOnboardingCompletedKey,
+        // DailyChallengeStore
         appDailyChallengeKey,
-        // Ziel-System (2026-08-05) — jeder Account hat sein eigenes Ziel
-        // und seinen eigenen Wochenfortschritt. Ohne diese Registrierung
-        // würden Geschwister sich im Familien-Modus dasselbe Wochenziel
-        // teilen.
+        // LearningGoalStore
         appLearningGoalPlanKey,
         appLearningGoalArchiveKey,
+        // DailyWrapUpStore
+        appDailyWrapUpDayKey,
+        appDailyWrapUpReminderSlotKey
+    ]
+
+    /// Keys ohne Store — nur `@AppStorage` im globalen Slot. Diese
+    /// werden beim Account-Wechsel geswappt.
+    static let appStorageOwnedKeys: [String] = [
+        // Lernziel-Nebenwerte. **Hinweis (2026-09-04)**: Beide Keys
+        // werden aktuell nirgends gelesen oder geschrieben — sie
+        // bleiben registriert, bis geklaert ist, ob sie noch gebraucht
+        // werden.
         appLearningGoalPracticedDaysKey,
         appLearningGoalWeekIndexKey,
-        // Tagesabschluss (2026-08-06) — pro Account, aus demselben Grund
-        // wie das Lernziel darüber: Geschwister im Familien-Modus sollen
-        // sich weder den Abschluss-Tag noch die Erinnerungszeit teilen.
-        appDailyWrapUpDayKey,
-        appDailyWrapUpReminderSlotKey,
-        // Zusätzliche User-Daten (Phase E.5) — Swap-Pattern greift
-        // für diese Keys: beim Account-Switch werden sie zwischen
-        // Global-Slot (wo `@AppStorage` liest) und Account-Namespace
-        // hin und her kopiert.
+        // Spiel- und Belohnungswerte
         appQuizHeartsKey,
         appElumiWaterflohKey,
         appElumiAlgenkugelKey,
         appElumiLastRewardDayIndexKey,
         appElumiArcadeHighScoreKey,
+        // Listen-Auswahl pro Modul
         appTrainingSelectedListIDsKey,
         // **Pre-existing-Bugfix Stufe 5 Schritt 2 (2026-04-30)**: die
         // Per-Mode-v2-Keys (vocabulary/nouns/articles/verbs/verbforms)
         // waren bisher NICHT account-scoped, obwohl ihre v1-Legacy-
         // Variante (`appTrainingSelectedListIDsKey`) registriert ist.
         // Side-Effect: bei Account-Wechsel haben Trainings-Modes ihre
-        // Listen-Selektion vom alten Account behalten. Mit der Global-
-        // Listen-Auswahl-Migration räumen wir das jetzt mit auf.
+        // Listen-Selektion vom alten Account behalten.
         trainingSelectedListIDsKey(for: TrainingMode.vocabulary.storageKey),
         trainingSelectedListIDsKey(for: TrainingMode.nouns.storageKey),
         trainingSelectedListIDsKey(for: TrainingMode.articles.storageKey),
@@ -141,16 +176,19 @@ enum AccountScopedKeys {
         appTrainingGeneratorOnboardingSeenKey,
         // Trainings-Generator Default-Trainingsdauer (Sache B,
         // 2026-04-29) — pro Account isoliert, sodass jeder Nutzer
-        // seine eigene zuletzt gewählte Dauer behält.
+        // seine eigene zuletzt gewaehlte Dauer behaelt.
         appTrainingGeneratorDurationKey,
         // Globale Listen-Auswahl (Stufe 5, 2026-04-29) — Toggle +
-        // UUID-Set. Pro Account isoliert: jeder Familien-Account hat
-        // seine eigene globale Auswahl bzw. seinen eigenen Toggle-
-        // State (Default `true`). Beim Account-Switch greifen die
-        // Werte des neuen Accounts.
+        // UUID-Set, pro Account isoliert.
         appUseGlobalListSelectionKey,
         appGlobalSelectedListIDsKey
     ]
+
+    /// Alle per-Account isolierten Keys. Grundlage der einmaligen
+    /// Migration aus der Single-User-Welt — die kopiert bare ->
+    /// namespaced und ist fuer beide Sorten korrekt, weil sie nur
+    /// schreibt, wenn im Namespace noch nichts steht.
+    static let allKeys: [String] = storeOwnedKeys + appStorageOwnedKeys
 }
 
 @MainActor
@@ -321,9 +359,10 @@ final class AccountStore: ObservableObject {
     // dem globalen Slot (wo `@AppStorage` liest) und dem account-
     // scoped Namespace hin und her.
     //
-    //   • `stashGlobalSlotIntoCurrentNamespace()` — schreibt ALLE
-    //     `AccountScopedKeys.userDefaultsKeys` vom globalen Slot in
-    //     den Namespace des **aktuellen** Accounts. Wird vor dem
+    //   • `stashGlobalSlotIntoCurrentNamespace()` — schreibt die
+    //     `AccountScopedKeys.appStorageOwnedKeys` vom globalen Slot in
+    //     den Namespace des **aktuellen** Accounts. Store-eigene Keys
+    //     bleiben bewusst aussen vor (siehe Eigentumsmodell oben). Wird vor dem
     //     ID-Wechsel gerufen, damit die Daten des vorigen Users
     //     landen, wo sie hingehören.
     //
@@ -336,7 +375,7 @@ final class AccountStore: ObservableObject {
     private func stashGlobalSlotIntoCurrentNamespace() {
         guard let _ = currentAccountID else { return }
         let defaults = UserDefaults.standard
-        for base in AccountScopedKeys.userDefaultsKeys {
+        for base in AccountScopedKeys.appStorageOwnedKeys {
             let scoped = namespacedKey(base)
             if let value = defaults.object(forKey: base) {
                 defaults.set(value, forKey: scoped)
@@ -346,7 +385,7 @@ final class AccountStore: ObservableObject {
 
     private func unstashNamespaceIntoGlobalSlot() {
         let defaults = UserDefaults.standard
-        for base in AccountScopedKeys.userDefaultsKeys {
+        for base in AccountScopedKeys.appStorageOwnedKeys {
             let scoped = namespacedKey(base)
             if let value = defaults.object(forKey: scoped) {
                 defaults.set(value, forKey: base)
@@ -474,7 +513,7 @@ final class AccountStore: ObservableObject {
         // namespaced Keys umgestellt sind, kann der globale Slot
         // gelöscht werden.
         let defs = UserDefaults.standard
-        for base in AccountScopedKeys.userDefaultsKeys {
+        for base in AccountScopedKeys.allKeys {
             let scopedKey = namespacedKey(base)
             // Wenn im namespaced Slot schon was steht, nicht
             // überschreiben (idempotent bei Mehrfach-Start).

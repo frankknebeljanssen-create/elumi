@@ -16,6 +16,7 @@ struct ElumiApp: App {
         // (ScanDraft Save/Load-Roundtrip, Bild-Storage, LKG-Recovery).
         // Gleiche Boot-Self-Test-Konvention; Release sieht nichts (#if DEBUG).
         ScanDraftStoreTests.runIfNeeded()
+        AccountScopedKeysTests.runIfNeeded()
 
         // **Dev-Mode 2026-05-09** — bei jedem App-Start auf 10 Credits
         // setzen, damit Frank ohne ständige Reset-Klicks/Streak-Loops

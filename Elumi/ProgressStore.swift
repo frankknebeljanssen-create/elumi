@@ -130,7 +130,25 @@ final class ProgressStore: ObservableObject {
     /// re-liest die Per-Account-Daten und publisht sie. Views, die auf
     /// `progress` binden, aktualisieren automatisch auf den neuen Stand.
     func reloadForCurrentAccount() {
-        progress = Self.loadSnapshot()
+        let snapshot = Self.loadSnapshot()
+        progress = snapshot
+        // **Codeaudit 2026-09-03, Stufe 3 (Punkt 18)** — der Bare-Slot
+        // gehoert jetzt ausschliesslich diesem Store; die Swap-Maschine
+        // im `AccountStore` fasst ihn nicht mehr an. Also muss der Store
+        // ihn hier selbst nachziehen, sonst zeigten Footer-Credits, XP
+        // und Streak nach einem Account-Wechsel noch die Zahlen des
+        // vorigen Kindes, bis zufaellig der naechste `persist` laeuft.
+        mirrorIntoBareSlot(snapshot)
+    }
+
+    /// Spiegelt die vier Werte mit `@AppStorage`-Lesern in den globalen
+    /// Slot. Einzige Stelle neben `persist`, die den Bare-Key schreibt.
+    private func mirrorIntoBareSlot(_ snapshot: UserProgress) {
+        let defaults = UserDefaults.standard
+        defaults.set(snapshot.totalXP, forKey: appElumiXPKey)
+        defaults.set(snapshot.arcadeCredits, forKey: appArcadeCreditsKey)
+        defaults.set(snapshot.currentStreak, forKey: appElumiCurrentStreakKey)
+        defaults.set(snapshot.bestStreak, forKey: appElumiBestStreakKey)
     }
 
     private func persist(_ snapshot: UserProgress) {
@@ -163,10 +181,7 @@ final class ProgressStore: ObservableObject {
         // Dual-Write mirrort jeden persist-Call in beide Slots —
         // Read-Pfade (namespaced via ProgressStore + bare via @AppStorage)
         // sehen jetzt synchron denselben Wert.
-        defaults.set(snapshot.totalXP, forKey: appElumiXPKey)
-        defaults.set(snapshot.arcadeCredits, forKey: appArcadeCreditsKey)
-        defaults.set(snapshot.currentStreak, forKey: appElumiCurrentStreakKey)
-        defaults.set(snapshot.bestStreak, forKey: appElumiBestStreakKey)
+        mirrorIntoBareSlot(snapshot)
     }
 }
 

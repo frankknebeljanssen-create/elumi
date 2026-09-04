@@ -495,6 +495,7 @@
 		D5A1140000000000000000A3 /* UnifiedListCategoryPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1140000000000000000A4 /* UnifiedListCategoryPicker.swift */; };
 		D5A1100000000000000000E1 /* ScanDraftStoreRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000E2 /* ScanDraftStoreRepository.swift */; };
 		D5A1100000000000000000F1 /* ScanDraftStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000F2 /* ScanDraftStoreTests.swift */; };
+		D5A1100000000000000000B7 /* AccountScopedKeysTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000B8 /* AccountScopedKeysTests.swift */; };
 		CC15FF1100000000ABCDEF01 /* ChatPersona.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1100000000ABCDEF02 /* ChatPersona.swift */; };
 		CC15FF1200000000ABCDEF01 /* ChatConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1200000000ABCDEF02 /* ChatConfig.swift */; };
 		CC15FF1300000000ABCDEF01 /* DeviceTokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC15FF1300000000ABCDEF02 /* DeviceTokenManager.swift */; };
@@ -1114,6 +1115,7 @@
 		D5A1140000000000000000A4 /* UnifiedListCategoryPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UnifiedListCategoryPicker.swift; path = Elumi/UnifiedListCategoryPicker.swift; sourceTree = "<group>"; };
 		D5A1100000000000000000E2 /* ScanDraftStoreRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftStoreRepository.swift; path = Elumi/ScanDraftStoreRepository.swift; sourceTree = "<group>"; };
 		D5A1100000000000000000F2 /* ScanDraftStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftStoreTests.swift; path = Elumi/ScanDraftStoreTests.swift; sourceTree = "<group>"; };
+		D5A1100000000000000000B8 /* AccountScopedKeysTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountScopedKeysTests.swift; path = Elumi/AccountScopedKeysTests.swift; sourceTree = "<group>"; };
 		CC15FF1100000000ABCDEF02 /* ChatPersona.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatPersona.swift; path = Elumi/ChatPersona.swift; sourceTree = "<group>"; };
 		CC15FF1200000000ABCDEF02 /* ChatConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatConfig.swift; path = Elumi/ChatConfig.swift; sourceTree = "<group>"; };
 		CC15FF1300000000ABCDEF02 /* DeviceTokenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DeviceTokenManager.swift; path = Elumi/DeviceTokenManager.swift; sourceTree = "<group>"; };
@@ -1304,6 +1306,7 @@
 				D5A1140000000000000000A4 /* UnifiedListCategoryPicker.swift */,
 				D5A1100000000000000000E2 /* ScanDraftStoreRepository.swift */,
 				D5A1100000000000000000F2 /* ScanDraftStoreTests.swift */,
+				D5A1100000000000000000B8 /* AccountScopedKeysTests.swift */,
 				CC15FF1100000000ABCDEF02 /* ChatPersona.swift */,
 				CC15FF1200000000ABCDEF02 /* ChatConfig.swift */,
 				CC15FF1300000000ABCDEF02 /* DeviceTokenManager.swift */,
@@ -2295,6 +2298,7 @@
 				D5A1140000000000000000A3 /* UnifiedListCategoryPicker.swift in Sources */,
 				D5A1100000000000000000E1 /* ScanDraftStoreRepository.swift in Sources */,
 				D5A1100000000000000000F1 /* ScanDraftStoreTests.swift in Sources */,
+				D5A1100000000000000000B7 /* AccountScopedKeysTests.swift in Sources */,
 				CC15FF1100000000ABCDEF01 /* ChatPersona.swift in Sources */,
 				CC15FF1200000000ABCDEF01 /* ChatConfig.swift in Sources */,
 				CC15FF1300000000ABCDEF01 /* DeviceTokenManager.swift in Sources */,
