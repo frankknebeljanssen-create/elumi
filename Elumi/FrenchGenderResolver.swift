@@ -186,6 +186,29 @@ enum FrenchGenderResolver {
                 normalizedLemma: rebuildLemma(article: "les", core: core, tail: remainingTail)
             )
         }
+        // Gegenstück zur Plural-Regel darüber: Ein Singular mit
+        // Vokal- oder h-Anlaut bekommt „l'" — diese Form ist im
+        // Französischen genusunabhängig, „l'ami" und „l'amie" sind
+        // beide richtig. Der Artikel lässt sich hier also setzen,
+        // obwohl das Genus unbekannt blieb.
+        //
+        // **2026-09-03** — vorher fehlte dieser Zweig, und ein
+        // Bareword wie „ami" kam ganz ohne Artikel zurück. Aufgefallen
+        // ist es am Selbsttest „Vokal-Elision Singular", der seit dem
+        // Wegfall der Genus-Heuristik (2026-08-07) fehlschlug: Damals
+        // war der Verlass auf das DB-Genus die Begründung, aber wo
+        // keine Lookup-Closure übergeben wird oder das Genus fehlt,
+        // blieb der Singular seither artikellos.
+        if detectedNumber == .singular, startsWithVowelOrH(core) {
+            return ResolvedGender(
+                gender: nil,
+                source: .unknown,
+                confidence: 0.0,
+                number: .singular,
+                normalizedLemma: rebuildLemma(article: "l'", core: core, tail: remainingTail)
+            )
+        }
+
         return ResolvedGender(
             gender: nil,
             source: .unknown,
