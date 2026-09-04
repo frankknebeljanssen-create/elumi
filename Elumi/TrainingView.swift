@@ -333,8 +333,11 @@ struct TrainingView: View {
         )
     }
 
+    /// **Codeaudit 2026-09-03, Stufe 3 (Punkt 21)** — liest jetzt den
+    /// Cache im Controller, statt die Anzeige-Pipeline bei jedem der
+    /// rund 13 Zugriffe pro Render neu zu durchlaufen.
     var currentCard: FlashCard? {
-        session.currentTrainingItem?.card(for: session.direction)
+        session.displayedCard
     }
 
     var isNounMode: Bool {

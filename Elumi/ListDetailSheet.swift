@@ -99,7 +99,14 @@ struct ListDetailSheet: View {
                 .appCardBackground(style, intensity: AppTheme.CardIntensity.soft)
             } else {
                 ScrollView {
-                    VStack(spacing: 10) {
+                    // **Codeaudit 2026-09-03, Stufe 3 (Punkt 21)** — vorher
+                    // `VStack`: SwiftUI baut damit ALLE Zeilen sofort, auch
+                    // die weit unterhalb des Bildschirms. Jede Zeile macht
+                    // bis zu drei Genus-Lookups; bei der XP-Liste mit 8030
+                    // Einträgen sind das bis zu 24.090 Lookups in einer
+                    // einzigen Body-Auswertung. Das Wörterbuch nutzt an
+                    // vergleichbarer Stelle längst `LazyVStack`.
+                    LazyVStack(spacing: 10) {
                         ForEach(list.items) { item in
                             // 3-zeiliges Layout:
                             //   Zeile 1: Original FR (volle Breite, für lange Phrasen)

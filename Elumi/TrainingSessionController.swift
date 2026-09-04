@@ -10,7 +10,9 @@ final class TrainingSessionController: ObservableObject {
             persistSelectedListIDs()
         }
     }
-    @Published var direction: Direction = .frenchToGerman
+    @Published var direction: Direction = .frenchToGerman {
+        didSet { refreshDisplayedCard() }
+    }
     @Published var cardType: CardType = .words
     @Published var trainingMode: TrainingMode = .vocabulary {
         didSet {
@@ -67,7 +69,27 @@ final class TrainingSessionController: ObservableObject {
         return raw.flatMap { AnswerMode(rawValue: $0) } ?? .speech
     }()
     var speedRoundTimer: Timer?
-    @Published var currentTrainingItem: VocabularyItem?
+    @Published var currentTrainingItem: VocabularyItem? {
+        didSet { refreshDisplayedCard() }
+    }
+
+    /// Fertig aufbereitete Anzeige-Karte zum aktuellen Eintrag.
+    ///
+    /// **Codeaudit 2026-09-03, Stufe 3 (Punkt 21)** — `TrainingView`
+    /// hatte `currentCard` als berechnete Property, die bei jedem
+    /// Zugriff `card(for:)` neu ausführte: Artikel-Anreicherung,
+    /// Genus-Lookups und Textnormalisierung für beide Sprachen. Der
+    /// View fasst sie rund 13-mal pro Render an, zehn davon nur, um
+    /// gegen `nil` zu prüfen. Der `FlashcardsSessionController` macht
+    /// es mit `displayedFlashCard` längst richtig — hier dieselbe
+    /// Lösung: einmal bauen, wenn sich Eintrag oder Richtung ändern.
+    @Published private(set) var displayedCard: FlashCard?
+
+    /// Baut `displayedCard` neu. Wird von den `didSet` auf
+    /// `currentTrainingItem` und `direction` gerufen.
+    func refreshDisplayedCard() {
+        displayedCard = currentTrainingItem?.card(for: direction)
+    }
     @Published var hasStartedTraining = false
     @Published var failedAttemptsOnCurrentCard = 0
     @Published var remainingTrainingItems: [VocabularyItem] = []
