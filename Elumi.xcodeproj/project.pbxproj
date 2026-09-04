@@ -495,6 +495,7 @@
 		D5A1140000000000000000A3 /* UnifiedListCategoryPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1140000000000000000A4 /* UnifiedListCategoryPicker.swift */; };
 		D5A1100000000000000000E1 /* ScanDraftStoreRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000E2 /* ScanDraftStoreRepository.swift */; };
 		D5A1100000000000000000F1 /* ScanDraftStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000F2 /* ScanDraftStoreTests.swift */; };
+		D5A1100000000000000000E7 /* FrenchLexiconRepair.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000E8 /* FrenchLexiconRepair.swift */; };
 		D5A1100000000000000000D7 /* FrenchElision.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000D8 /* FrenchElision.swift */; };
 		D5A1100000000000000000C7 /* DayIndexLocalTimeMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000C8 /* DayIndexLocalTimeMigration.swift */; };
 		D5A1100000000000000000B7 /* AccountScopedKeysTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A1100000000000000000B8 /* AccountScopedKeysTests.swift */; };
@@ -1117,6 +1118,7 @@
 		D5A1140000000000000000A4 /* UnifiedListCategoryPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UnifiedListCategoryPicker.swift; path = Elumi/UnifiedListCategoryPicker.swift; sourceTree = "<group>"; };
 		D5A1100000000000000000E2 /* ScanDraftStoreRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftStoreRepository.swift; path = Elumi/ScanDraftStoreRepository.swift; sourceTree = "<group>"; };
 		D5A1100000000000000000F2 /* ScanDraftStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScanDraftStoreTests.swift; path = Elumi/ScanDraftStoreTests.swift; sourceTree = "<group>"; };
+		D5A1100000000000000000E8 /* FrenchLexiconRepair.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FrenchLexiconRepair.swift; path = Elumi/FrenchLexiconRepair.swift; sourceTree = "<group>"; };
 		D5A1100000000000000000D8 /* FrenchElision.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FrenchElision.swift; path = Elumi/FrenchElision.swift; sourceTree = "<group>"; };
 		D5A1100000000000000000C8 /* DayIndexLocalTimeMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DayIndexLocalTimeMigration.swift; path = Elumi/DayIndexLocalTimeMigration.swift; sourceTree = "<group>"; };
 		D5A1100000000000000000B8 /* AccountScopedKeysTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AccountScopedKeysTests.swift; path = Elumi/AccountScopedKeysTests.swift; sourceTree = "<group>"; };
@@ -1310,6 +1312,7 @@
 				D5A1140000000000000000A4 /* UnifiedListCategoryPicker.swift */,
 				D5A1100000000000000000E2 /* ScanDraftStoreRepository.swift */,
 				D5A1100000000000000000F2 /* ScanDraftStoreTests.swift */,
+				D5A1100000000000000000E8 /* FrenchLexiconRepair.swift */,
 				D5A1100000000000000000D8 /* FrenchElision.swift */,
 				D5A1100000000000000000C8 /* DayIndexLocalTimeMigration.swift */,
 				D5A1100000000000000000B8 /* AccountScopedKeysTests.swift */,
@@ -2304,6 +2307,7 @@
 				D5A1140000000000000000A3 /* UnifiedListCategoryPicker.swift in Sources */,
 				D5A1100000000000000000E1 /* ScanDraftStoreRepository.swift in Sources */,
 				D5A1100000000000000000F1 /* ScanDraftStoreTests.swift in Sources */,
+				D5A1100000000000000000E7 /* FrenchLexiconRepair.swift in Sources */,
 				D5A1100000000000000000D7 /* FrenchElision.swift in Sources */,
 				D5A1100000000000000000C7 /* DayIndexLocalTimeMigration.swift in Sources */,
 				D5A1100000000000000000B7 /* AccountScopedKeysTests.swift in Sources */,
