@@ -532,7 +532,7 @@ struct GlobalListPickerSheet: View {
             Spacer(minLength: 0)
 
             Text(isEmpty ? "—" : "\(count)")
-                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.textSecondary)
                 .monospacedDigit()
         }

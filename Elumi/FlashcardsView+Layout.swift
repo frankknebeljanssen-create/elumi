@@ -713,7 +713,7 @@ extension FlashcardsView {
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("MENGE")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .font(AppTheme.Typography.caption)
                         .tracking(1.5)
                         .foregroundStyle(AppTheme.Colors.cardLabel)
                         .textCase(.uppercase)
@@ -737,7 +737,7 @@ extension FlashcardsView {
                         Text(omitted == 1
                              ? "von \(selectedStackCardCount) · 1 Wort kommt heute nicht dran"
                              : "von \(selectedStackCardCount) · \(omitted) Wörter kommen heute nicht dran")
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .font(AppTheme.Typography.caption)
                             .foregroundStyle(AppTheme.Colors.warning)
                             .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)

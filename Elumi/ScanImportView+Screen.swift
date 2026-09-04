@@ -447,7 +447,7 @@ extension ScanImportView {
                 isShowingFullscreenReview = true
             } label: {
                 Label("Jetzt überprüfen", systemImage: "list.bullet.rectangle")
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .font(AppTheme.Typography.button)
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: 52)
             }

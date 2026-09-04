@@ -187,7 +187,7 @@ struct GameSummaryView<IconContent: View>: View {
 
                     if let hint = primaryCTAHint, !hint.isEmpty {
                         Text(hint)
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .font(AppTheme.Typography.caption)
                             .foregroundStyle(AppTheme.Colors.textSecondary)
                             .multilineTextAlignment(.center)
                     }

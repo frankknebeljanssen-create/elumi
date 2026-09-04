@@ -315,7 +315,7 @@ extension QuizView {
                             submitFillBlanks(for: question)
                         } label: {
                             Text(option)
-                                .font(.system(size: 17, weight: .bold, design: .rounded))
+                                .font(AppTheme.Typography.button)
                                 .foregroundStyle(fillBlanksChipColor(option, correct: question.correctAnswer).text)
                                 .frame(maxWidth: .infinity)
                                 .frame(minHeight: 48)

@@ -87,7 +87,7 @@ struct ImportCompletionView: View {
                         Image(systemName: "eye.fill")
                             .font(.system(size: 18, weight: .semibold))
                         Text("Lernliste ansehen")
-                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                            .font(AppTheme.Typography.button)
                     }
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)

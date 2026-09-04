@@ -409,7 +409,7 @@ struct SmartScannerView: View {
                         Image(systemName: "text.viewfinder")
                             .font(.system(size: 12, weight: .semibold))
                         Text("Text erkannt — optimierte Analyse")
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .font(AppTheme.Typography.caption)
                     }
                     .foregroundStyle(.white.opacity(0.85))
                     .padding(.horizontal, 12)
@@ -1051,7 +1051,7 @@ struct SmartScannerView: View {
                 // Numeric Score (Slice 6): gibt dem User einen
                 // greifbaren Vergleichswert („71 %" statt nur Headline).
                 Text(report.scoreDisplay)
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .font(AppTheme.Typography.caption)
                     .foregroundStyle(accent)
                     .monospacedDigit()
                     .padding(.horizontal, 7)

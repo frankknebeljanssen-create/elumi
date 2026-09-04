@@ -790,7 +790,7 @@ struct SettingsView: View {
         } label: {
             HStack(spacing: 12) {
                 Text("Credits zurücksetzen")
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .font(AppTheme.Typography.button)
                     .foregroundStyle(AppTheme.Colors.textPrimary)
 
                 Spacer(minLength: 0)
@@ -939,7 +939,7 @@ struct SettingsView: View {
 
                 if let content = goalStore.plan?.content {
                     Text(content.displayTitle)
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.textPrimary)
 
                     if content.isAwaitingList {

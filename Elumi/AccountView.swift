@@ -56,7 +56,7 @@ struct AccountView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 
                 Text("Dieser Name wird im Startscreen und in der App verwendet.")
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .font(AppTheme.Typography.body)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }

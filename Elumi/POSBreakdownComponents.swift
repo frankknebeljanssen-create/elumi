@@ -251,7 +251,7 @@ struct POSLemmaListSheet: View {
                     }
                 } header: {
                     Text(headerLabel)
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .font(AppTheme.Typography.caption)
                 }
             }
             .listStyle(.plain)

@@ -13,7 +13,7 @@ extension FlashcardsView {
     /// `setupCardLabel` bleibt unverändert.
     func flashcardSetupCardLabelLarge(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 12, weight: .semibold, design: .rounded))
+            .font(AppTheme.Typography.caption)
             .tracking(1.5)
             .foregroundStyle(AppTheme.Colors.cardLabel)
             .textCase(.uppercase)

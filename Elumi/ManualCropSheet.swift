@@ -188,7 +188,7 @@ struct ManualCropSheet: View {
                         fineRotation = 0
                     } label: {
                         Text(String(format: "%+.1f°", fineRotation))
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .font(AppTheme.Typography.caption)
                             .foregroundStyle(fineRotation == 0 ? AppTheme.Colors.textSecondary : accent)
                             .frame(minWidth: 56)
                     }

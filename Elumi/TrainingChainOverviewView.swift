@@ -371,7 +371,7 @@ struct TrainingChainOverviewView: View {
             Spacer(minLength: 0)
 
             Text("kein Training")
-                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.textSecondary)
         }
         .padding(.horizontal, 14)

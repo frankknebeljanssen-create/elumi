@@ -46,7 +46,7 @@ struct ScanProgressOverlayCardView: View {
             // bewusst klein und unaufdringlich — die Stage-Info
             // darunter ist jetzt der Hauptfokus.
             Text(progressText)
-                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .font(AppTheme.Typography.caption)
                 .tracking(0.3)
                 .textCase(.uppercase)
                 .foregroundStyle(AppTheme.Colors.textSecondary.opacity(0.85))
@@ -451,7 +451,7 @@ struct ScanBatchThumbnailCardView: View {
             // steht klar: KI analysiert Bild X von Y".
             if isRecognizing && thumbnails.count > 1 {
                 Text("KI analysiert Bild \(currentIndex) von \(thumbnails.count)")
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
 

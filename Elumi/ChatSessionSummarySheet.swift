@@ -284,7 +284,7 @@ struct ChatSessionSummarySheet: View {
         VStack(spacing: 16) {
             Spacer(minLength: 0)
             Text("Bis bald! 👋")
-                .font(.system(size: 26, weight: .bold, design: .rounded))
+                .font(AppTheme.Typography.screenTitle)
                 .foregroundStyle(Color(red: 0.102, green: 0.102, blue: 0.102))
             Text("Du warst kurz da, das ist auch okay. Beim nächsten\nMal sammelst du wieder Wörter.")
                 .font(.system(size: 14, weight: .regular))

@@ -350,7 +350,7 @@ extension ElumiTabView {
                 .truncationMode(.tail)
 
             Text(summaryText)
-                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.textSecondary)
         }
     }

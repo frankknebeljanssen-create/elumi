@@ -283,7 +283,7 @@ extension ElumiTabView {
                     .font(.system(size: 18, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                 Text("\(count) Übungen")
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.textPrimary.opacity(0.78))
             }
         }
@@ -365,7 +365,7 @@ extension ElumiTabView {
                     .font(.system(size: 32, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
                 Text("min")
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.textPrimary.opacity(0.78))
             }
         }

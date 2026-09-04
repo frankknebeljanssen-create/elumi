@@ -71,7 +71,7 @@ struct FreierTextSummaryView: View {
             // CTA
             Button(action: onViewResults) {
                 Label("Jetzt ansehen", systemImage: "list.bullet.rectangle")
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .font(AppTheme.Typography.button)
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: 52)
             }

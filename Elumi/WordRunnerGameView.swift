@@ -2695,7 +2695,7 @@ struct WordRunnerGameView: View {
             // Leben-Row (analog Elumi) — Mini-Charaktere + Label.
             HStack(spacing: 8) {
                 Text("\(WordRunnerGame.startingLives) Leben")
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                 HStack(spacing: 3) {
                     ForEach(0..<WordRunnerGame.startingLives, id: \.self) { _ in

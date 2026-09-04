@@ -331,7 +331,7 @@ extension ElumiArcadeGameView {
             // Icon-Zeile, damit der Spieler weiß, was ihn erwartet.
             HStack(spacing: 8) {
                 Text("\(ElumiArcadeGameView.maxMisses) Leben")
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
                 HStack(spacing: 3) {
                     ForEach(0..<ElumiArcadeGameView.maxMisses, id: \.self) { _ in
@@ -549,7 +549,7 @@ extension ElumiArcadeGameView {
             .padding(.top, 4)
 
             Text("▶  Tippen zum Starten")
-                .font(.system(size: 17, weight: .bold, design: .rounded))
+                .font(AppTheme.Typography.button)
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
@@ -583,7 +583,7 @@ extension ElumiArcadeGameView {
             }
 
             Text("▶  Weiterspielen")
-                .font(.system(size: 17, weight: .bold, design: .rounded))
+                .font(AppTheme.Typography.button)
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)

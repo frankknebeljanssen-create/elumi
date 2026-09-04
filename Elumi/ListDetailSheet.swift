@@ -79,7 +79,7 @@ struct ListDetailSheet: View {
                 // Wortarten-Verteilung — 2-zeilig, „X Verben" tappable → Verb-Lemma-Sheet
                 POSBreakdownLine(
                     stats: FrenchListStatisticsAggregator.cachedStatistics(for: list.items),
-                    font: .system(size: 12, weight: .semibold, design: .rounded),
+                    font: AppTheme.Typography.caption,
                     layout: .twoLines
                 )
                 .padding(.top, 2)

@@ -127,7 +127,7 @@ extension HeartsView {
                         .font(.system(size: 11, weight: .bold))
                         .foregroundStyle(dailyChallengeFooterTint)
                     Text(dailyTagline)
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
                 .frame(maxWidth: .infinity)
@@ -142,7 +142,7 @@ extension HeartsView {
                         .font(.system(size: 11, weight: .bold))
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                     Text(streakTagline)
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
                 .frame(maxWidth: .infinity)
