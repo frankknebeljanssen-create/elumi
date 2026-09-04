@@ -236,6 +236,15 @@ struct ElumiArcadeSnackState: Identifiable, Equatable {
 struct ElumiArcadeGameView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.appSetImmersiveArcadeAction) var setImmersiveArcade
+    /// **Codeaudit 2026-09-03, Stufe 1** — die Spieluhr lief bisher nur
+    /// über Frame-Deltas, ohne auf Hintergrund/Vordergrund zu reagieren.
+    /// Ein Anruf oder die Home-Geste mitten im Spiel ließ die gesamte
+    /// Hintergrundzeit als ein einziges Delta einfließen: alle fliegenden
+    /// Objekte überschritten in einem Frame ihre Grenze, `maxMisses` war
+    /// sofort erreicht. Siehe `.onChange(of: scenePhase)` in
+    /// `ElumiArcadeGameView+Layout.swift`, das denselben Reset auslöst,
+    /// der schon für die Lebensverlust-Zäsur existiert (`lastFrameDate = nil`).
+    @Environment(\.scenePhase) var scenePhase
     @ObservedObject var feedbackPlayer: FeedbackPlayer
     @AppStorage(appElumiArcadeHighScoreKey) var highScore = 0
     @AppStorage(appArcadeCreditsKey) var arcadeCredits = 0

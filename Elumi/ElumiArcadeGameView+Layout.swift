@@ -353,6 +353,18 @@ extension ElumiArcadeGameView {
             .onChange(of: geometry.size) { _, newSize in
                 gameSize = newSize
             }
+            // **Codeaudit 2026-09-03, Stufe 1** — ohne diesen Handler
+            // fließt nach einem Anruf/Home-Geste die gesamte Hintergrund-
+            // zeit als ein einziges Delta in `advanceGameClock`, sobald
+            // die App wieder aktiv wird. Derselbe Reset, der schon die
+            // Lebensverlust-Zäsur sauber macht (siehe `updateGame` in
+            // ElumiArcadeGameView+Gameplay.swift) — nur bisher nicht für
+            // den Hintergrund-Fall verdrahtet.
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .active {
+                    lastFrameDate = nil
+                }
+            }
         }
         .ignoresSafeArea()
         // Phase 7.5 — System-Nav-Back-Button ausblenden. Der

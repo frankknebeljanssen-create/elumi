@@ -253,6 +253,36 @@ final class WordRunnerGame: ObservableObject {
     /// analysierbar).
     @Published private(set) var gameOverAt: Date?
 
+    /// Zeitpunkt, an dem die App zuletzt in den Hintergrund ging —
+    /// `nil` solange aktiv. Nur für `handleScenePhaseChange` relevant.
+    private var backgroundEnteredAt: Date?
+
+    /// **Codeaudit 2026-09-03, Stufe 1** — `tick(now:)` und `effectiveElapsed`
+    /// rechnen direkt gegen `now.timeIntervalSince(runStart)`. Anders als
+    /// beim Arcade-Spiel (das über Frame-Deltas läuft und einfach
+    /// `lastFrameDate = nil` setzen kann) gibt es hier keinen Delta-
+    /// Akkumulator zum Zurücksetzen — `runStart` ist ein fester Anker.
+    /// Bleibt die App im Hintergrund, wächst `realElapsed` beim ersten
+    /// Tick nach der Rückkehr um die volle Hintergrundzeit auf einen
+    /// Schlag: Hindernisse springen an Positionen, die ihrer inzwischen
+    /// verstrichenen Weltzeit entsprechen, und die Kollisionsprüfung
+    /// wertet das als verpasste Aufgaben statt als faires Ausweichen.
+    ///
+    /// Der Fix schiebt `runStart` beim Zurückkehren um exakt die
+    /// Hintergrunddauer nach vorne — die Weltzeit „merkt" sich die Pause
+    /// nicht, genau wie beim Arcade-Reset. Von der View aus per
+    /// `.onChange(of: scenePhase)` aufgerufen.
+    func handleScenePhaseChange(_ phase: ScenePhase) {
+        if phase == .active {
+            guard let enteredAt = backgroundEnteredAt else { return }
+            let pausedDuration = Date().timeIntervalSince(enteredAt)
+            runStart = runStart.addingTimeInterval(pausedDuration)
+            backgroundEnteredAt = nil
+        } else if backgroundEnteredAt == nil {
+            backgroundEnteredAt = Date()
+        }
+    }
+
     // MARK: - Dependencies
 
     private let spawner: WordRunnerSpawner

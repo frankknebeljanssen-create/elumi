@@ -36,6 +36,8 @@ struct WordRunnerGameView: View {
     /// im Summary bleibt der Footer sichtbar.
     @Environment(\.appSetImmersiveArcadeAction) private var setImmersiveArcade
     @Environment(\.dismiss) private var dismissEnvironment
+    /// **Codeaudit 2026-09-03, Stufe 1** — siehe `WordRunnerGame.handleScenePhaseChange`.
+    @Environment(\.scenePhase) private var scenePhase
 
     /// **Lifetime-Stats** (Phase 7.5 Nachsatz — „Punkte, Leben,
     /// Trophies analog Elumi"). Werden nach jedem Run aktualisiert
@@ -480,6 +482,14 @@ struct WordRunnerGameView: View {
             // Immersive sauber zurückräumen, damit der Footer in
             // nachfolgenden Screens wieder sichtbar ist.
             setImmersiveArcade?(false)
+        }
+        // **Codeaudit 2026-09-03, Stufe 1** — siehe
+        // `WordRunnerGame.handleScenePhaseChange`: ohne diesen Hook
+        // zählt ein Anruf oder die Home-Geste mitten im Lauf als
+        // Weltzeit und wertet beim nächsten Tick alle in der Pause
+        // "verstrichenen" Hindernisse als verpasste Aufgaben.
+        .onChange(of: scenePhase) { _, newPhase in
+            game.handleScenePhaseChange(newPhase)
         }
         // **Listen-Picker-Sheet** (Phase 7.6 Bug-3 Fix):
         // `listStore.allLists` = Custom + Level + Topic — dieselbe
