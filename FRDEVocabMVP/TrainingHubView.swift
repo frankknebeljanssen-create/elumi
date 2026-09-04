@@ -246,11 +246,9 @@ struct TrainingHubView: View {
                 // Artikel — und weil es allein in seiner Sektion steht.
                 WideCard(
                     title: "Quiz",
-                    subtitle: "Sitzt es wirklich?",
                     accent: AppTheme.Colors.moduleQuiz,
                     height: 72,
                     titleSize: 20,
-                    subtitleSize: 13,
                     showsChevron: true,
                     cornerRadius: 18,
                     horizontalPadding: 14,
