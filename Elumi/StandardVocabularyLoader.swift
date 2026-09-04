@@ -216,9 +216,26 @@ enum StandardVocabularyLoader {
         return frenchGenderMap[key]
     }
 
-    static let vocabularyItems: [VocabularyItem] = {
+    /// Entry **plus** daraus gebautes Item — als Paar, nicht als zwei
+    /// parallele Arrays.
+    ///
+    /// **Codeaudit 2026-09-03, Stufe 3 (Punkt 17)** — vorher war
+    /// `vocabularyItems` ein `compactMap` über `allEntries`, das
+    /// Duplikate verwarf; die Filter-Accessoren griffen danach mit dem
+    /// Index des **gefilterten** Arrays in das **ungefilterte**
+    /// `allEntries`. Ab dem ersten verworfenen Duplikat war deshalb
+    /// jedes Item mit den Metadaten eines fremden Eintrags gepaart —
+    /// Niveau, Lern-Niveau, Wortart, Thema und Lernjahr stammten vom
+    /// Nachbarn. Das Paar hier macht den Versatz strukturell unmöglich:
+    /// Es gibt keinen Index mehr, der falsch sein könnte.
+    struct EntryItemPair {
+        let entry: Entry
+        let item: VocabularyItem
+    }
+
+    static let entryItemPairs: [EntryItemPair] = {
         var seen = Set<String>()
-        return allEntries.compactMap { entry -> VocabularyItem? in
+        return allEntries.compactMap { entry -> EntryItemPair? in
             // Use cardType from DB (is_phrase), not word-count heuristic
             let cardType = entry.cardType
             let key = [
@@ -242,16 +259,21 @@ enum StandardVocabularyLoader {
                 wordClass: entry.wordClass
             )
 
-            return VocabularyItem(
-                rawFrench: entry.sourceDisplay,
-                rawGerman: normalizedGerman,
-                cardType: cardType,
-                level: vocabularyLevel(for: entry.level),
-                sourceLanguage: .french,
-                wordClass: entry.wordClass.isEmpty ? nil : entry.wordClass
+            return EntryItemPair(
+                entry: entry,
+                item: VocabularyItem(
+                    rawFrench: entry.sourceDisplay,
+                    rawGerman: normalizedGerman,
+                    cardType: cardType,
+                    level: vocabularyLevel(for: entry.level),
+                    sourceLanguage: .french,
+                    wordClass: entry.wordClass.isEmpty ? nil : entry.wordClass
+                )
             )
         }
     }()
+
+    static let vocabularyItems: [VocabularyItem] = entryItemPairs.map(\.item)
 
     // MARK: - Nomen-Kapitalisierung (2026-04-25)
     //
@@ -266,15 +288,11 @@ enum StandardVocabularyLoader {
     }
 
     static func items(for level: String) -> [VocabularyItem] {
-        vocabularyItems.enumerated().compactMap { index, item in
-            allEntries[index].level == level ? item : nil
-        }
+        entryItemPairs.compactMap { $0.entry.level == level ? $0.item : nil }
     }
 
     static func items(forLevels levels: Set<String>) -> [VocabularyItem] {
-        vocabularyItems.enumerated().compactMap { index, item in
-            levels.contains(allEntries[index].level) ? item : nil
-        }
+        entryItemPairs.compactMap { levels.contains($0.entry.level) ? $0.item : nil }
     }
 
     /// Items für ein oder mehrere **Lern-Niveaus** (`learnLevel`).
@@ -284,23 +302,19 @@ enum StandardVocabularyLoader {
     /// Wörterbuch-Logik speist. Einträge ohne Lern-Niveau (leerer
     /// String) tauchen hier nie auf — siehe `Entry.learnLevel`.
     static func items(forLearnLevels levels: Set<String>) -> [VocabularyItem] {
-        vocabularyItems.enumerated().compactMap { index, item in
-            let learnLevel = allEntries[index].learnLevel
+        entryItemPairs.compactMap { pair in
+            let learnLevel = pair.entry.learnLevel
             guard !learnLevel.isEmpty else { return nil }
-            return levels.contains(learnLevel) ? item : nil
+            return levels.contains(learnLevel) ? pair.item : nil
         }
     }
 
     static func items(forWordClass wordClass: String) -> [VocabularyItem] {
-        vocabularyItems.enumerated().compactMap { index, item in
-            allEntries[index].wordClass == wordClass ? item : nil
-        }
+        entryItemPairs.compactMap { $0.entry.wordClass == wordClass ? $0.item : nil }
     }
 
     static func items(forTopic topic: String) -> [VocabularyItem] {
-        vocabularyItems.enumerated().compactMap { index, item in
-            allEntries[index].topic == topic ? item : nil
-        }
+        entryItemPairs.compactMap { $0.entry.topic == topic ? $0.item : nil }
     }
 
     static var allTopics: [String] {
@@ -760,9 +774,7 @@ enum StandardVocabularyLoader {
         ]
         var lists: [VocabularyList] = []
         for year in 1...5 {
-            let yearItems = vocabularyItems.enumerated().compactMap { idx, item -> VocabularyItem? in
-                allEntries[idx].lernjahr == year ? item : nil
-            }
+            let yearItems = entryItemPairs.compactMap { $0.entry.lernjahr == year ? $0.item : nil }
             lists.append(VocabularyList(
                 id: uuids[year]!,
                 name: "\(year). Lernjahr",
