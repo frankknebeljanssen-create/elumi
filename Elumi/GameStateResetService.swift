@@ -69,20 +69,24 @@ enum GameStateResetService {
     }
 
     /// Entfernt **zusätzlich** alle vom Nutzer angelegten Listen.
-    /// Nutzt `VocabularyListStore.shared.resetToDefaults()` wenn
-    /// verfügbar, sonst direktes Löschen der Persistenz-Datei +
-    /// relevanter UserDefaults-Keys.
+    ///
+    /// **Codeaudit 2026-09-03, Stufe 3 (Punkt 19)** — delegiert jetzt an
+    /// `VocabularyListStore.resetToDefaults()`. Vorher löschte diese
+    /// Methode hartkodiert `vocabulary-lists-v2.json` und griff damit
+    /// ins Leere: sobald ein Account aktiv ist, heißt die Datei
+    /// `vocabulary-lists-v2-<uuid>.json`, und die Listen standen
+    /// zusätzlich im `.lastKnownGood.json`-Backup und im
+    /// UserDefaults-Spiegel. Der Nutzer bestätigte das Löschen, startete
+    /// wie im Alert empfohlen neu — und alle Listen waren wieder da.
     ///
     /// Diese Aktion ist **destruktiver** als `resetGameState()` und
     /// sollte in der UI einen **zweiten, eigenen Alert** haben — nicht
     /// in denselben Reset-Button wie oben packen.
-    static func resetCustomLists() {
-        // Listen-Datei direkt löschen — der VocabularyListStore-Flow
-        // liest beim nächsten App-Start neu und rebootet mit den
-        // Sample-/Built-in-Seeds. Wir umgehen bewusst den Store, weil
-        // er keine public `resetToDefaults()`-API hat; Direkt-Zugriff
-        // auf die Persistenz-Schicht ist die klarste Ausstieg-Option.
-        AppPersistenceSupport.removeData(named: "vocabulary-lists-v2.json")
+    static func resetCustomLists(in listStore: VocabularyListStore) {
+        // Der Store besitzt seine Persistenz — er räumt alle drei
+        // Ebenen (Datei, Last-Known-Good-Backup, UserDefaults-Spiegel)
+        // ab und lädt danach den Ausgangszustand mit den Startlisten.
+        listStore.resetToDefaults()
 
         // Relevante UserDefaults-Keys leeren — damit beim nächsten Start
         // nicht eine alte „ausgewählte Liste" ins Leere zeigt.
@@ -97,10 +101,8 @@ enum GameStateResetService {
         AccentSessionResumeStore.clear()
         QuizSessionResumeStore.clear()
 
-        // Hinweis: Ein voller Live-Refresh (Listen sofort aus dem Store
-        // raus, ohne App-Restart) bräuchte einen Hook im
-        // `VocabularyListStore`. Aktuell akzeptieren wir, dass der
-        // Nutzer die App einmal neu startet, um den Effekt zu sehen —
-        // der Reset-Alert im UI erklärt das.
+        // Der Live-Refresh passiert jetzt im Store selbst
+        // (`resetToDefaults` lädt direkt neu) — ein App-Neustart ist
+        // nicht mehr nötig, damit der Effekt sichtbar wird.
     }
 }

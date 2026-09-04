@@ -853,7 +853,7 @@ struct SettingsView: View {
         .alert("Meine Lernlisten löschen?", isPresented: $isShowingListsResetAlert) {
             Button("Abbrechen", role: .cancel) { }
             Button("Löschen", role: .destructive) {
-                GameStateResetService.resetCustomLists()
+                GameStateResetService.resetCustomLists(in: listStore)
             }
         } message: {
             Text("Alle vom dir angelegten Lernlisten werden entfernt. Die App-Startlisten bleiben. Eventuell einmal die App neu starten, damit die Änderung überall sichtbar wird.")

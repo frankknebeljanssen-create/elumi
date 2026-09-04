@@ -23,6 +23,33 @@ extension VocabularyListStore {
         loadState()
     }
 
+    /// Entfernt alle vom Nutzer angelegten Listen und laedt danach den
+    /// Ausgangszustand — inklusive der Startlisten, weil das
+    /// Sample-Seeding-Flag mitfaellt.
+    ///
+    /// **Codeaudit 2026-09-03, Stufe 3 (Punkt 19)** — bis hierher gab
+    /// es diese API nicht, und der `GameStateResetService` griff
+    /// deshalb an der Persistenz-Schicht vorbei direkt auf einen
+    /// hartkodierten Dateinamen zu. Jetzt besitzt der Store seinen
+    /// eigenen Reset: er raeumt alle Ebenen auf und aktualisiert sich
+    /// selbst, sodass der Effekt sofort sichtbar ist und nicht erst
+    /// nach einem App-Neustart.
+    func resetToDefaults() {
+        cancelPendingSave()
+
+        repository.setCurrentAccount(AccountStore.shared.currentAccountID)
+        repository.resetPersistedCustomLists(
+            customListsKey: customListsKey,
+            selectedListKey: selectedListKey,
+            sampleListsSeededKey: sampleListsSeededKey
+        )
+
+        // Der Load legt die Startlisten neu an (Flag ist gefallen) und
+        // schreibt sie ueber `shouldPersistMigratedLists` zurueck auf
+        // Platte — der Ausgangszustand ist damit auch persistiert.
+        loadState()
+    }
+
     func apply(snapshot: VocabularyListStoreSnapshot) {
         isApplyingStoredState = true
         customLists = snapshot.customLists

@@ -23,6 +23,16 @@ final class VocabularyListStore: ObservableObject {
 
     private var pendingSaveWorkItem: DispatchWorkItem?
 
+    /// Bricht einen ausstehenden debounced Save ab. Wird vom
+    /// `resetToDefaults()` gebraucht: das Work-Item traegt noch die
+    /// Listen von vor dem Reset und wuerde sie sonst 0,3 s spaeter
+    /// zurueckschreiben. Liegt hier, weil `pendingSaveWorkItem`
+    /// dateiprivat ist.
+    func cancelPendingSave() {
+        pendingSaveWorkItem?.cancel()
+        pendingSaveWorkItem = nil
+    }
+
     private func scheduleSave() {
         pendingSaveWorkItem?.cancel()
         let workItem = DispatchWorkItem { [weak self] in

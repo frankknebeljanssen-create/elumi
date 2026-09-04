@@ -138,6 +138,39 @@ final class VocabularyListStoreRepository {
         return snapshot
     }
 
+    /// Loescht **alle** Persistenz-Ebenen der Custom-Listen des aktuell
+    /// gesetzten Accounts.
+    ///
+    /// **Codeaudit 2026-09-03, Stufe 3 (Punkt 19)** — der Reset im
+    /// `GameStateResetService` loeschte bisher hartkodiert
+    /// `vocabulary-lists-v2.json`. Sobald ein Account aktiv ist, heisst
+    /// die Datei aber `vocabulary-lists-v2-<uuid>.json`, und daneben
+    /// stehen zwei weitere Sicherungsebenen: das
+    /// `.lastKnownGood.json`-Backup und der UserDefaults-Spiegel. Der
+    /// Reset traf also gar nichts — und `loadSnapshotFromDefaults`
+    /// stellte beim naechsten Start aus genau diesen Backups wieder
+    /// her. Der Nutzer sah seine geloeschten Listen zurueckkommen.
+    ///
+    /// Es muessen deshalb alle drei Ebenen fallen, plus das
+    /// Sample-Seeding-Flag: nur dann legt der naechste Load die
+    /// Startlisten wieder an, wie es der Alert im UI verspricht.
+    ///
+    /// Die globale Legacy-Datei bleibt bewusst stehen. Sie gehoert
+    /// keinem Account und dient nur noch der einmaligen Migration —
+    /// ein Reset in Account A darf sie nicht unter Account B wegziehen.
+    func resetPersistedCustomLists(
+        customListsKey: String,
+        selectedListKey: String,
+        sampleListsSeededKey: String
+    ) {
+        AppPersistenceSupport.removeData(named: currentScopedFileName())
+        AppPersistenceSupport.removeData(named: currentLastKnownGoodFileName())
+        userDefaults.removeObject(forKey: customListsKey)
+        userDefaults.removeObject(forKey: selectedListKey)
+        userDefaults.removeObject(forKey: sampleListsSeededKey)
+        invalidateCache()
+    }
+
     func persistCustomLists(
         _ customLists: [VocabularyList],
         key: String,
