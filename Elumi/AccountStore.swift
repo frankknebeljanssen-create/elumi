@@ -379,6 +379,13 @@ final class AccountStore: ObservableObject {
     ///      Initialen, Session-End) lesen ProfileStore.
     private func applyPostSwitchSideEffects() {
         ProgressStore.shared.reloadForCurrentAccount()
+        // **Codeaudit 2026-09-03, Stufe 1** — `StreakJokerStore` existierte
+        // samt `reloadForCurrentAccount()` und dem Kommentar „Wird vom
+        // AccountStore nach einem Account-Switch gerufen", wurde aber
+        // nirgends aufgerufen. Ohne diese Zeile behielt ein neu
+        // gewechselter Account den Joker-Verbrauch des vorigen — Kind B
+        // erbte den verbrauchten Joker von Kind A und verlor seine Serie.
+        StreakJokerStore.shared.reloadForCurrentAccount()
         // **Ziel-System (2026-08-05)** — Singleton wie ProgressStore, muss
         // deshalb direkt reloaden statt über die Notification. Ohne das
         // würde nach einem Account-Wechsel weiterhin das Ziel des vorigen
