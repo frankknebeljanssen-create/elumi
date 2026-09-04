@@ -508,15 +508,26 @@ enum ArticleModeClassifier {
     /// Prüft ob `core` mit einem Vokal oder `h` beginnt. Alles in einer
     /// Funktion, damit die Elision-Regel an genau einer Stelle lebt.
     ///
-    /// **Mehrwort-Kerne**: bei „mon meilleur ami" soll das Kernwort (das
-    /// letzte Nomen „ami") betrachtet werden — nicht das eingeschobene
-    /// Adjektiv „meilleur". Wir nehmen daher das **letzte** Token, wenn
-    /// der Kern aus mehreren Wörtern besteht. Für Einwort-Kerne ändert
-    /// sich nichts.
+    /// **Mehrwort-Kerne**: Elision ist eine Nachbarschafts-Regel — sie
+    /// hängt am Wort, das dem Artikel unmittelbar folgt, nicht am
+    /// Kopf-Nomen der Phrase. Bei „le meilleur ami" (Artikel „le" bereits
+    /// gestrippt, `core` = „meilleur ami") entscheidet „meilleur" (kein
+    /// Vokal-Anlaut) — die richtige Antwort bleibt „le", nicht „l'". Wir
+    /// nehmen daher das **erste** Token, wenn der Kern aus mehreren
+    /// Wörtern besteht. Für Einwort-Kerne ändert sich nichts.
+    ///
+    /// **Codeaudit 2026-09-03, Stufe 1** — vorher stand hier `tokens.last`
+    /// mit der gegenteiligen Begründung „das Kernwort, nicht das
+    /// eingeschobene Adjektiv". Das ist keine Elisionsregel des
+    /// Französischen: „le meilleur ami" bleibt unelidiert, obwohl „ami"
+    /// mit Vokal beginnt — genau wie „l'meilleur ami" falsch wäre. Betraf
+    /// 41 Nomen-Einträge, u. a. „la meilleure amie" (fälschlich „l'"),
+    /// „la connexion internet" (fälschlich „l'" wegen „internet"),
+    /// „le menu enfant" (fälschlich „l'" wegen „enfant").
     private static func startsWithVowelOrHMuet(_ core: String) -> Bool {
         let trimmed = core.trimmingCharacters(in: .whitespacesAndNewlines)
         let tokens = trimmed.split(whereSeparator: { $0.isWhitespace })
-        let relevant = (tokens.last.map(String.init) ?? trimmed).lowercased()
+        let relevant = (tokens.first.map(String.init) ?? trimmed).lowercased()
         guard let first = relevant.first else { return false }
         return vowelOrHMuetStarters.contains(first)
     }

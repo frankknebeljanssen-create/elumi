@@ -199,10 +199,24 @@ enum ArticleModeClassifierTests {
               expectedValid: true, expectedNoyau: "amis", expectedReponse: "les",
               note: "'des' implies pluriel")
 
-        // R2-14: Possessivbegleiter rettet auch wenn der Kern mehrwortig ist
+        // R2-14: Mehrwortiger Kern — Elision hängt am Wort direkt nach dem
+        // Begleiter, nicht am Kopf-Nomen.
+        //
+        // **Codeaudit 2026-09-03, Stufe 1** — vorher erwartete dieser Test
+        // "l'", weil `startsWithVowelOrHMuet` das LETZTE Token prüfte
+        // ("ami", Vokal-Anlaut) und die Elision dadurch unabhängig vom
+        // Genus gewann. Grammatisch korrekt ist "le meilleur ami" — das
+        // Adjektiv "meilleur" beginnt mit Konsonant, also keine Elision,
+        // Genus (masc., von "mon") entscheidet ganz normal.
         check("mon meilleur ami", german: "mein bester Freund", wordClass: nil,
-              expectedValid: true, expectedReponse: "l'",
-              note: "possessive + multi-word core (fallback: masc+vowel)")
+              expectedValid: true, expectedReponse: "le",
+              note: "possessive + multi-word core, no elision (adjective starts with consonant)")
+
+        // R2-14b: derselbe Fall über den direkten Artikel-Pfad statt über
+        // ein Possessiv — deckt genau die 41 betroffenen Nomen-Einträge ab.
+        check("le meilleur ami", german: "der beste Freund", wordClass: nil,
+              expectedValid: true, expectedReponse: "le",
+              note: "article + multi-word core, no elision (adjective starts with consonant)")
 
         // R2-15: Harter Stop — Begleiter + Nicht-Noun-Kern („mon très")
         check("mon très", german: "mein sehr", wordClass: "adverb",
