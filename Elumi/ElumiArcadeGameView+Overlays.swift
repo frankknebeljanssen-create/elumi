@@ -240,7 +240,9 @@ extension ElumiArcadeGameView {
             hint: hasCredits ? nil : "Lernen bringt Credits — dann wieder spielen",
             onPrimaryCTA: {
                 if hasCredits {
-                    arcadeCredits -= ArcadeCreditSystem.gamesCost
+                    // Codeaudit 2026-09-03, Stufe 2 — Abzug über den Store,
+                    // siehe `ArcadeCreditSystem.spendCredits`.
+                    arcadeCredits = ArcadeCreditSystem.spendCredits()
                     startGame()
                 } else {
                     // **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`)**:
@@ -488,7 +490,9 @@ extension ElumiArcadeGameView {
                 : "0 Credits — Lernen bringt Credits",
             onPrimaryCTA: {
                 if hasCredits {
-                    arcadeCredits -= ArcadeCreditSystem.gamesCost
+                    // Codeaudit 2026-09-03, Stufe 2 — Abzug über den Store,
+                    // siehe `ArcadeCreditSystem.spendCredits`.
+                    arcadeCredits = ArcadeCreditSystem.spendCredits()
                     restartGame()
                 } else {
                     // **Quick-Fix 2026-04-30 (`v2-elumi-gameover-cta-home`)**:

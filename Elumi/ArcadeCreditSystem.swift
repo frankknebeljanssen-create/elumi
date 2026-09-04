@@ -78,6 +78,33 @@ enum ArcadeCreditSystem {
     /// Cost to play one arcade game
     static let gamesCost = 1
 
+    /// Zieht Credits ab — über den `ProgressStore`, nicht direkt über
+    /// `@AppStorage`.
+    ///
+    /// **Codeaudit 2026-09-03, Stufe 2** — vorher schrieben fünf Stellen
+    /// (`arcadeCredits -= …` in Arcade-Overlays, PlayCredits und Word
+    /// Runner) nur den nackten `@AppStorage`-Key. Der `ProgressStore`
+    /// erfuhr davon nichts und behielt seinen alten, höheren Stand.
+    /// Beim nächsten `mutate` — also bei jedem Session-Abschluss —
+    /// spiegelte `persist()` diesen Stand zurück in beide Slots und
+    /// machte den Abzug rückgängig: Credits wurden faktisch erstattet.
+    ///
+    /// Der Store ist die Single Source of Truth; sein `persist()`
+    /// schreibt den Bare-Key gleich mit, sodass alle
+    /// `@AppStorage(appArcadeCreditsKey)`-Leser (Footer-Badge, GameHub,
+    /// Overlays) den neuen Wert unmittelbar sehen.
+    ///
+    /// - Returns: Der Kontostand nach dem Abzug — zum Spiegeln in die
+    ///   lokale `@AppStorage`-Property der aufrufenden View.
+    @discardableResult
+    @MainActor
+    static func spendCredits(_ amount: Int = gamesCost) -> Int {
+        ProgressStore.shared.mutate { progress in
+            progress.arcadeCredits = max(0, progress.arcadeCredits - amount)
+        }
+        return ProgressStore.shared.progress.arcadeCredits
+    }
+
     /// XP-Schwelle pro verdientem Spiel. Delegiert an die zentrale
     /// `GamificationConfig.xpPerBonusCredit` (Single-Source-of-Truth),
     /// damit ProgressService, SessionSetupEstimate, GameHub und alle

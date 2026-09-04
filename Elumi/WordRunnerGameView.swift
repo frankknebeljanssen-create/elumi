@@ -2975,7 +2975,12 @@ struct WordRunnerGameView: View {
 
         // Credit-Abzug **vor** dem Run-Start — konsistent mit Elumi
         // (dort zieht der Start-CTA auch direkt ab).
-        arcadeCredits -= ArcadeCreditSystem.gamesCost
+        //
+        // **Codeaudit 2026-09-03, Stufe 2** — Abzug über den Store, siehe
+        // `ArcadeCreditSystem.spendCredits`. Direkt auf `@AppStorage` zu
+        // schreiben ließ den `ProgressStore` auf dem alten Stand und
+        // erstattete den Abzug beim nächsten Session-Abschluss zurück.
+        arcadeCredits = ArcadeCreditSystem.spendCredits()
 
         // Runden-State zurücksetzen, damit das Badge beim ersten
         // Übergang zu Runde 2 korrekt triggert.

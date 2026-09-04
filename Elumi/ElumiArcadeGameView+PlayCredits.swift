@@ -195,7 +195,9 @@ extension ElumiArcadeGameView {
     func consumePlayCreditRescue() {
         guard !rescueConsumedForCurrentGameOver else { return }
         guard arcadeCredits > 0 else { return }
-        arcadeCredits -= 1
+        // Codeaudit 2026-09-03, Stufe 2 — Abzug über den Store,
+        // siehe `ArcadeCreditSystem.spendCredits`.
+        arcadeCredits = ArcadeCreditSystem.spendCredits(1)
         rescueConsumedForCurrentGameOver = true
 
         // Leben zurückgeben + States neutralisieren.
@@ -268,7 +270,9 @@ extension ElumiArcadeGameView {
     /// (alle 3 Runden) wird natürlich mit-getriggert.
     func consumePlayCreditSkipRound() {
         guard playCreditsSkipEnabled else { return }
-        arcadeCredits -= 1
+        // Codeaudit 2026-09-03, Stufe 2 — Abzug über den Store,
+        // siehe `ArcadeCreditSystem.spendCredits`.
+        arcadeCredits = ArcadeCreditSystem.spendCredits(1)
 
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         feedbackPlayer.playTabSwitch()
