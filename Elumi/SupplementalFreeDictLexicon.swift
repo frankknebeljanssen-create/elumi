@@ -9,7 +9,14 @@ enum SupplementalFreeDictLexicon {
     static var canonicalSourceCache: [String: String?] = [:]
     static var lexiconEntryCache: [LexiconEntry]?
     static var previewLexiconEntryCaches: [Int: [LexiconEntry]] = [:]
-    static var exactGenderPairCache: [String: ExactGenderPair] = [:]
+    /// **Codeaudit 2026-09-03, Stufe 2** — doppelt optional, damit auch
+    /// **Fehlschläge** gecacht werden: Ein Wort ohne Genus-Eintrag in der
+    /// DB landete vorher nie im Cache und löste bei jedem Zugriff erneut
+    /// ein `sqlite3_open_v2` plus Full-Scan über die 26-MB-Datei aus.
+    /// Nicht-Nomen — rund 44 % der Einträge — treffen konstruktions-
+    /// bedingt immer diesen Pfad. Muster wie beim `canonicalSourceCache`
+    /// eine Zeile darüber.
+    static var exactGenderPairCache: [String: ExactGenderPair?] = [:]
 
     static func exactTranslations(for lookupKey: String) -> [String] {
         let normalizedKey = normalizedLookupText(lookupKey)

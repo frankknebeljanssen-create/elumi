@@ -23,10 +23,11 @@ extension SupplementalFreeDictLexicon {
             )
         }
 
+        // **Codeaudit 2026-09-03, Stufe 2** — auch `nil` ablegen. Vorher
+        // wurde nur ein Treffer gecacht; jeder Fehlschlag öffnete die
+        // 26-MB-SQLite bei jedem weiteren Zugriff neu.
         translationCacheLock.lock()
-        if let resolved {
-            exactGenderPairCache[cacheKey] = resolved
-        }
+        exactGenderPairCache[cacheKey] = resolved
         translationCacheLock.unlock()
 
         return resolved

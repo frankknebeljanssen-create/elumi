@@ -101,6 +101,20 @@ final class AppRuntimeContainer: ObservableObject {
             // `loadState` mehr (das alte Race-Fenster ist damit zu).
             DataStore.prewarmBuiltInLaunchData()
             appDebugLog("⏱ [Warmup:List] builtin prewarm: \(Int(((CFAbsoluteTimeGetCurrent() - totalStart) * 1000).rounded()))ms")
+
+            // **Codeaudit 2026-09-03, Stufe 2** — `frenchFiniteVerbForms`
+            // baut sich aus rund 54.000 Flexions-Zeilen der Lexikon-DB
+            // auf (gemessen ~245 ms im Release **auf dem Mac**). Bisher
+            // löste die erste Phrasen-Karte im Training den Aufbau aus —
+            // synchron auf dem MainActor, mitten im Karten-Render.
+            //
+            // Bewusst NICHT der frühere, entfernte Lexikon-Prewarm (siehe
+            // Kommentar unten): der kostete ~11 s und speiste nur den
+            // Wörterbuch-Browser. Dieser Set hier hängt dagegen im
+            // Trainings-Hotpath und ist zwei Größenordnungen billiger.
+            let verbFormsStart = CFAbsoluteTimeGetCurrent()
+            _ = SentenceStructure.frenchFiniteVerbForms.count
+            appDebugLog("⏱ [Warmup:List] frenchFiniteVerbForms: \(Int(((CFAbsoluteTimeGetCurrent() - verbFormsStart) * 1000).rounded()))ms")
         }
 
         flashcardWarmupTask = Task.detached(priority: .userInitiated) { [weak self] in

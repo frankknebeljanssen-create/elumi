@@ -37,11 +37,16 @@ func exactKnowledgePoolGenderInfo(
     let targetKey = normalizedLookupText(strippingLeadingGermanArticle(from: german))
     guard !sourceKey.isEmpty, !targetKey.isEmpty else { return nil }
 
-    if let record = OfflineFrenchGermanKnowledgePool.translatedRecords.first(where: {
-        $0.cardType == cardType &&
-        normalizedLookupText(strippingLeadingFrenchArticle(from: $0.sourceTerm)) == sourceKey &&
-        normalizedLookupText(strippingLeadingGermanArticle(from: $0.targetTerm)) == targetKey
-    }) {
+    // **Codeaudit 2026-09-03, Stufe 2** — vorher ein linearer Scan über
+    // ~2.400 Einträge mit Neu-Normalisierung beider Seiten pro Eintrag,
+    // zweimal pro Karte aufgerufen. Jetzt O(1) über eine einmalig
+    // aufgebaute Map; der Schlüssel bildet exakt dieselbe Bedingung ab.
+    let lookupKey = OfflineFrenchGermanKnowledgePool.exactGenderLookupKey(
+        french: french,
+        german: german,
+        cardType: cardType
+    )
+    if let record = OfflineFrenchGermanKnowledgePool.exactGenderRecordLookup[lookupKey] {
         return (
             french: exactFrenchGenderInfo(gender: record.sourceGender, article: record.sourceArticle),
             german: exactGermanGenderInfo(gender: record.targetGender, article: record.targetLeadingArticle)

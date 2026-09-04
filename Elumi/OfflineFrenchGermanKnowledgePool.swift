@@ -9,7 +9,50 @@ enum OfflineFrenchGermanKnowledgePool {
     static let exactTranslationLookup: [String: [String]] = makeExactTranslationLookup()
     static let canonicalSourceLookup: [String: String] = makeCanonicalSourceLookup()
     static let translationLookupEntries: [TranslationLookupEntry] = makeTranslationLookupEntries()
+
+    /// Nachschlagetabelle für `exactKnowledgePoolGenderInfo` —
+    /// Schlüssel ist „französischer Kern | deutscher Kern | Kartentyp",
+    /// jeweils artikelfrei normalisiert.
+    ///
+    /// **Codeaudit 2026-09-03, Stufe 2** — vorher lief dort ein
+    /// `translatedRecords.first(where:)` über rund 2.400 Einträge und
+    /// normalisierte pro Eintrag beide Seiten neu (~4.800 Aufrufe mit
+    /// Regex-Anteil, gemessen ~11 ms im Release **auf dem Mac**) —
+    /// zweimal pro Karte. Die Normalisierung passiert jetzt einmalig
+    /// beim Aufbau dieser Map, der Zugriff ist danach O(1).
+    ///
+    /// Der Schlüssel bildet die frühere Vergleichsbedingung exakt nach
+    /// (`normalizedLookupText(strippingLeading…Article(…))`), nicht die
+    /// vorhandenen `sourceLookupKey`/`targetLookupKey` — die strippen
+    /// den führenden Artikel **nicht** und träfen andere Einträge.
+    /// Bei Schlüssel-Duplikaten gewinnt der erste Treffer, wie beim
+    /// bisherigen `first(where:)`.
+    static let exactGenderRecordLookup: [String: OfflineFrenchGermanLexiconRecord] = makeExactGenderRecordLookup()
+
     private static let variantSeparator = "\u{1F}"
+
+    /// Schlüssel für `exactGenderRecordLookup`. Muss auf Abfrage- und
+    /// Aufbauseite identisch gebildet werden.
+    static func exactGenderLookupKey(french: String, german: String, cardType: CardType) -> String {
+        let sourceKey = normalizedLookupText(strippingLeadingFrenchArticle(from: french))
+        let targetKey = normalizedLookupText(strippingLeadingGermanArticle(from: german))
+        return "\(sourceKey)|\(targetKey)|\(cardType.rawValue)"
+    }
+
+    private static func makeExactGenderRecordLookup() -> [String: OfflineFrenchGermanLexiconRecord] {
+        var lookup: [String: OfflineFrenchGermanLexiconRecord] = [:]
+        for record in translatedRecords {
+            let key = exactGenderLookupKey(
+                french: record.sourceTerm,
+                german: record.targetTerm,
+                cardType: record.cardType
+            )
+            if lookup[key] == nil {
+                lookup[key] = record
+            }
+        }
+        return lookup
+    }
 
     private static func loadRecords() -> [OfflineFrenchGermanLexiconRecord] {
         let tsvRecords = loadRecordsFromTSV()
